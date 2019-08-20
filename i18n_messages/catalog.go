@@ -44,200 +44,200 @@ func init() {
 }
 
 var messageKeyToIndex = map[string]int{
-	"Agreement %v already exists, ignoring proposal: %v":                                                                       113,
-	"Agreement for %v no longer valid on the agbot. Node will cancel it.":                                                      22,
-	"Agreement reached for service %v. The agreement id is %v.":                                                                21,
-	"Comparison operator: %v is not supported for boolean value: %v":                                                           188,
-	"Comparison operator: %v is not supported for numeric value: %v":                                                           187,
-	"Comparison operator: %v is not supported for single version: %v":                                                          191,
-	"Comparison operator: %v is not supported for string list value: %v":                                                       189,
-	"Comparison operator: %v is not supported for string value: %v":                                                            190,
-	"Comparison operator: %v is not supported for version expression: %v":                                                      192,
-	"Complete changing service configuration state to %v for %v for the node.":                                                 177,
-	"Complete cleaning up the service instance %v.":                                                                            40,
-	"Complete downgrading service %v/%v from version %v to version %v.":                                                        60,
-	"Complete node configuration/registration for node %v.":                                                                    161,
-	"Complete node update for %v.":                                                                                             145,
-	"Complete policy advertising with the exchange for service %v/%v.":                                                         92,
-	"Complete service auto configuration for %v/%v.":                                                                           172,
-	"Complete service configuration for %v/%v.":                                                                                171,
-	"Complete starting agreement-less service %v/%v and its dependents.":                                                       48,
-	"Complete terminating agreement for %v. Termination reason: %v":                                                            24,
-	"Complete upgrading service %v/%v from version %v to version %v.":                                                          54,
-	"Could not find lower version to downgrade for %v/%v version %v.":                                                          62,
-	"Deleted all node user input":                                                                                              168,
-	"Deleted node policy":                                                                                                      165,
-	"Deployment config %v contains unsupported bind for %v, %v":                                                                80,
-	"Deployment config %v contains unsupported bind for a workload, %v":                                                        79,
-	"Deployment config %v contains unsupported capability for a workload":                                                      77,
-	"Deployment config %v contains unsupported capability for infrastructure container.":                                       78,
-	"Encountered error for AgreementVerification for %v with agbot, error %v":                                                  26,
-	"Encountered error starting dependen services for %v/%v. %v":                                                               42,
-	"Error Unmarshalling deployment override string %v for agreement %v, error: %v":                                            82,
-	"Error Unmarshalling deployment string %v, error: %v":                                                                      81,
-	"Error changing service configstate %v, error %v":                                                                          175,
-	"Error cleaning up old containers before starting up new containers for %v. Error: %v":                                     86,
-	"Error configuring service %v. %v":                                                                                         174,
-	"Error converting the selections into Selectors: %v":                                                                       178,
-	"Error deleting agreement for %v in exchange: %v. Will retry.":                                                             25,
-	"Error downgrading service %v/%v from version %v to version %v. Eror: %v":                                                  63,
-	"Error downgrading service %v/%v version %v. %v":                                                                           64,
-	"Error finding the new service definition to downgrade to for %v/%v version %v key %v. error: %v":                          61,
-	"Error getting %v for output, error %v":                                                                                    125,
-	"Error getting all the services from agreements: %v":                                                                       46,
-	"Error getting service definitions %v from db. %v":                                                                         7,
-	"Error getting service instance %v from db. %v":                                                                            11,
-	"Error getting service references for pattern %v. %v":                                                                      163,
-	"Error handling Cancel message for %v. %v":                                                                                 35,
-	"Error handling Cancel message. %v":                                                                                        36,
-	"Error handling DataReceived message for %v. %v":                                                                           31,
-	"Error handling DataReceived message. %v":                                                                                  32,
-	"Error handling MeterNotification message for %v. %v":                                                                      33,
-	"Error handling MeterNotification message. %v":                                                                             34,
-	"Error handling ReplyAck message for %v. %v":                                                                               29,
-	"Error handling ReplyAck message. %v":                                                                                      30,
-	"Error handling proposal for service %v/%v. Error: %v":                                                                     117,
-	"Error in creating or replacing node policy. %v":                                                                           137,
-	"Error in deleting node policy. %v":                                                                                        139,
-	"Error in deleting node userinput. %v":                                                                                     142,
-	"Error in node configuration. The node is not found from the database.":                                                    155,
-	"Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to %v.": 156,
-	"Error in node configuration/registration for node %v. %v":                                                                 133,
-	"Error in node unregistration. %v":                                                                                         135,
-	"Error in patching node policy. %v":                                                                                        138,
-	"Error in patching node user input. %v":                                                                                    141,
-	"Error in service configuration for %v. %v":                                                                                162,
-	"Error in updating node %v. %v":                                                                                            134,
-	"Error in updating node user input. %v":                                                                                    140,
-	"Error loading image for %v/%v.":                                                                                           18,
-	"Error loading image for service %v/%v.":                                                                                   19,
-	"Error marking agreement %v terminated in database: %v.":                                                                   6,
-	"Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: %v, error: %v":            127,
-	"Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: %v, error: %v":                   126,
-	"Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: %v, error: %v": 130,
-	"Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: %v, error: %v":                131,
-	"Error parsing input for node policy. Input body could not be deserialized as a policy object: %v, error: %v":                                  129,
-	"Error parsing input for node update. Input body couldn't be deserialized to node object: %v, error: %v":                                       128,
-	"Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v":                           132,
-	"Error parsing the selections %v. %v":                                                                                             124,
-	"Error restarting containers for agreements %v: %v":                                                                               85,
-	"Error retrieving agreement %v from database, error %v":                                                                           0,
-	"Error retrieving all service instances from database for %v. %v":                                                                 9,
-	"Error retrieving all service instances from database, error: %v":                                                                 10,
-	"Error retrieving all service instances from datavase for %v/%v version %v key %v. %v":                                            8,
-	"Error retrieving matching agreements from database for workloads %v. Error: %v":                                                  12,
-	"Error retrieving node %v from the exchange: %v":                                                                                  14,
-	"Error saving new node config state (unconfiguring) in the database: %v":                                                          154,
-	"Error saving new node config state to database: %v":                                                                              160,
-	"Error starting containers for agreement %v: %v":                                                                                  84,
-	"Error starting containers: %v":                                                                                                   83,
-	"Error starting dependen service %v/%v version %v for agreement %v. %v":                                                           43,
-	"Error starting service %v/%v version %v, error: %v":                                                                              45,
-	"Error unregistring the node. The node is not found from the database.":                                                           148,
-	"Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.":                149,
-	"Error updating registeredServices for node %v in the exchange: %v":                                                               15,
-	"Error updating retry start state for service instance %v in dadabase. %v":                                                        68,
-	"Error verifiying exchange version. error: %v":                                                                                    136,
-	"Expression: %v is not valid":                                                                                                     193,
-	"Expression: %v should contain valid comparison operator - wrong operator %v. Allowed operators: %v, %v, %v, %v, %v, %v, %v, %v":  186,
-	"Failed get user input from local db. %v":                                                                                         158,
-	"Failed retrying number %v for dependent service %v version %v.":                                                                  66,
-	"Failed to downgrade service %v/%v version %v, error: %v":                                                                         59,
-	"Failed to find preferences for service %v/%v from the local user input, error: %v":                                               159,
-	"Failed to get a list of parent containers for service retry for %v. %v":                                                          87,
-	"Failed to get the service retry count for %v version %v. %v":                                                                     67,
-	"Failed to restoring the network connection with the parents for service %v. %v":                                                  88,
-	"Failed to upgrade service %v/%v from version %v to version %v, error: %v":                                                        55,
-	"Image loaded for %v/%v.":                                                                                                         16,
-	"Image loaded for service %v/%v.":                                                                                                 17,
-	"Input error for node unregistration. %v is an incorrect value for block":                                                         152,
-	"Input error for node unregistration. %v is an incorrect value for deepClean":                                                     151,
-	"Input error for node unregistration. %v is an incorrect value for removeNode":                                                    150,
-	"Input version string %v or %v is not a valid single version string.":                                                             123,
-	"Logical operator %v is not valid, expecting AND, OR, &&, ||":                                                                     183,
-	"Name, or Org is empty string.":                                                                                                   179,
-	"New node policy: %v":                                                                                                             164,
-	"New node user input: %v":                                                                                                         166,
-	"No node user input to detele":                                                                                                    167,
-	"Node could not verify the agreement %v with the consumer. Will cancel it":                                                        101,
-	"Node heartbeat failed for node %v/%v. Error: %v":                                                                                 93,
-	"Node heartbeat restored for node %v/%v.":                                                                                         94,
-	"Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored":                      102,
-	"Node policy updated with the exchange copy: %v":                                                                                  98,
-	"Node received Cancel message for %v/%v from agbot %v.":                                                                           28,
-	"Node received Proposal message for service %v/%v from the agbot %v.":                                                             115,
-	"Node rejected the proposal for service %v/%v.":                                                                                   116,
-	"Node state transition from '%v' to '%v' is not supported.":                                                                       157,
-	"Node unregistration complete for node %v.":                                                                                       147,
-	"Node user input updated with the exchange copy. The changed user inputs are: %v":                                                 100,
-	"Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of string.": 71,
-	"Property %s has invalid value type %T":                                                                                           76,
-	"Property %s with value %v is not a valid verion string":                                                                          75,
-	"Property must include a name and a value: %v":                                                                                    70,
-	"Property value is of type %T, expected type %s":                                                                                  72,
-	"ReplyAck indicated that the agbot did not want to pursue the agreement for %v. Node will cancel the agreement":                   27,
-	"Service containers for %v started.":                                                                                              39,
-	"Start agreement-less service %v/%v.":                                                                                             47,
-	"Start changing service configuration state to %v for %v for the node.":                                                           176,
-	"Start cleaning up service %v because agreement %v ended.":                                                                        44,
-	"Start dependent services for %v/%v.":                                                                                             41,
-	"Start downgrading service %v/%v version %v because service failed to start.":                                                     57,
-	"Start downgrading service %v/%v version %v because service for agreement failed to start.":                                       56,
-	"Start downgrading service %v/%v version %v because upgrade failed.":                                                              58,
-	"Start node configuration/registration for node %v.":                                                                              143,
-	"Start node unregistration.":                                                                                                      146,
-	"Start policy advertising with the exchange for service %v/%v.":                                                                   90,
-	"Start retrying number %v for dependent service %v version %v because service failed.":                                            65,
-	"Start service auto configuration for %v/%v.":                                                                                     170,
-	"Start service configuration with user input for %v/%v.":                                                                          169,
-	"Start terminating agreement for %v. Termination reason: %v":                                                                      20,
-	"Start updating node %v.":                                                                                                         144,
-	"Start upgrading service %v/%v from version %v to version %v.":                                                                    53,
-	"Start workload service for %v/%v.":                                                                                               37,
-	"The constraint expression: %v is type %T, but is expected to be an array of strings":                                             181,
-	"The serviceVersions array is empty.":                                                                                             180,
-	"Unable to advertise policies with exchange for service %v/%v, error: %v":                                                         91,
-	"Unable to read node object from database, error %v":                                                                              153,
-	"Unable to read node object from the local database. %v":                                                                          96,
-	"Unable to read policy file %v for service %v, error: %v":                                                                         89,
-	"Unable to retrieve agreement %v from database for Cancel message, error %v":                                                      2,
-	"Unable to retrieve agreement %v from database for DataReceived message, error %v":                                                4,
-	"Unable to retrieve agreement %v from database for MeteringNotification message, error %v":                                        1,
-	"Unable to retrieve agreement %v from database for ReplyAck message, error %v":                                                    3,
-	"Unable to retrieve the service configuration state for node resource %v from the exchange, error %v":                             13,
-	"Unable to retrieve unarchived agreements from database. %v":                                                                      5,
-	"Unable to start agreement-less service %v/%v, error %v":                                                                          49,
-	"Unable to start agreement-less service %v/%v, local service definition not found":                                                52,
-	"Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v":                                  50,
-	"Unable to start agreement-less services, pattern %v not found in exchange":                                                       51,
-	"Unable to sync the local node policy with the exchange copy. Error: %v":                                                          97,
-	"Unable to sync the local node user input with the exchange copy. Error: %v":                                                      99,
-	"Value %v of property %s is not a valid string. Please define type or change value to a string.":                                  74,
-	"Value %v of property %s is not an integer type":                                                                                  73,
-	"Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.": 173,
-	"Version_Expression: %v does not begin with an inclusion or exclusion directive.":                                                                                                120,
-	"Version_Expression: %v does not end with an inclusion or exclusion directive.":                                                                                                  121,
-	"Version_Expression: %v is not a valid version string.":                                                                                                                          119,
-	"Version_Expression: Incorrect number of versions in expression: %v.":                                                                                                            122,
-	"Version_Expression: Whitespace is not permitted in %v.":                                                                                                                         118,
-	"Workload destroyed for %v":                                                                  38,
-	"Workload service containers for %v/%v are up and running.":                                  23,
-	"found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value>": 184,
-	"found %v token(s), expecting 3 in an expression %v, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression": 185,
-	"properties contains an invalid property: %v":                                      69,
-	"received error demarshalling TsAndCs for agrement %v, %v":                         114,
-	"unable to close MMS API certificate file %v, error %v":                            109,
-	"unable to close MMS API certificate private key file %v, error %v":                112,
-	"unable to convert policy constraint %v into internal format, error %v":            182,
-	"unable to create MMS API certificate, error %v":                                   106,
-	"unable to encode MMS API certificate private key to file %v, error %v":            111,
-	"unable to encode MMS API certificate to file %v, error %v":                        108,
-	"unable to generate private key for MMS API certificate, error %v":                 105,
-	"unable to generate random number for MMS API certificate serial number, error %v": 104,
-	"unable to make directory for self signed MMS API certificate, error %v":           103,
-	"unable to read node policy from the local database. %v":                           95,
-	"unable to write MMS API certificate private key to file %v, error %v":             110,
-	"unable to write MMS API certificate to file %v, error %v":                         107,
+	"Agreement %v already exists, ignoring proposal: %v":                                                                       0,
+	"Agreement for %v no longer valid on the agbot. Node will cancel it.":                                                      124,
+	"Agreement reached for service %v. The agreement id is %v.":                                                                123,
+	"Comparison operator: %v is not supported for boolean value: %v":                                                           24,
+	"Comparison operator: %v is not supported for numeric value: %v":                                                           23,
+	"Comparison operator: %v is not supported for single version: %v":                                                          27,
+	"Comparison operator: %v is not supported for string list value: %v":                                                       25,
+	"Comparison operator: %v is not supported for string value: %v":                                                            26,
+	"Comparison operator: %v is not supported for version expression: %v":                                                      28,
+	"Complete changing service configuration state to %v for %v for the node.":                                                 86,
+	"Complete cleaning up the service instance %v.":                                                                            142,
+	"Complete downgrading service %v/%v from version %v to version %v.":                                                        162,
+	"Complete node configuration/registration for node %v.":                                                                    70,
+	"Complete node update for %v.":                                                                                             54,
+	"Complete policy advertising with the exchange for service %v/%v.":                                                         91,
+	"Complete service auto configuration for %v/%v.":                                                                           81,
+	"Complete service configuration for %v/%v.":                                                                                80,
+	"Complete starting agreement-less service %v/%v and its dependents.":                                                       150,
+	"Complete terminating agreement for %v. Termination reason: %v":                                                            126,
+	"Complete upgrading service %v/%v from version %v to version %v.":                                                          156,
+	"Could not find lower version to downgrade for %v/%v version %v.":                                                          164,
+	"Deleted all node user input":                                                                                              77,
+	"Deleted node policy":                                                                                                      74,
+	"Deployment config %v contains unsupported bind for %v, %v":                                                                8,
+	"Deployment config %v contains unsupported bind for a workload, %v":                                                        7,
+	"Deployment config %v contains unsupported capability for a workload":                                                      5,
+	"Deployment config %v contains unsupported capability for infrastructure container.":                                       6,
+	"Encountered error for AgreementVerification for %v with agbot, error %v":                                                  128,
+	"Encountered error starting dependen services for %v/%v. %v":                                                               144,
+	"Error Unmarshalling deployment override string %v for agreement %v, error: %v":                                            10,
+	"Error Unmarshalling deployment string %v, error: %v":                                                                      9,
+	"Error changing service configstate %v, error %v":                                                                          84,
+	"Error cleaning up old containers before starting up new containers for %v. Error: %v":                                     14,
+	"Error configuring service %v. %v":                                                                                         83,
+	"Error converting the selections into Selectors: %v":                                                                       87,
+	"Error deleting agreement for %v in exchange: %v. Will retry.":                                                             127,
+	"Error downgrading service %v/%v from version %v to version %v. Eror: %v":                                                  165,
+	"Error downgrading service %v/%v version %v. %v":                                                                           166,
+	"Error finding the new service definition to downgrade to for %v/%v version %v key %v. error: %v":                          163,
+	"Error getting %v for output, error %v":                                                                                    34,
+	"Error getting all the services from agreements: %v":                                                                       148,
+	"Error getting service definitions %v from db. %v":                                                                         109,
+	"Error getting service instance %v from db. %v":                                                                            113,
+	"Error getting service references for pattern %v. %v":                                                                      72,
+	"Error handling Cancel message for %v. %v":                                                                                 137,
+	"Error handling Cancel message. %v":                                                                                        138,
+	"Error handling DataReceived message for %v. %v":                                                                           133,
+	"Error handling DataReceived message. %v":                                                                                  134,
+	"Error handling MeterNotification message for %v. %v":                                                                      135,
+	"Error handling MeterNotification message. %v":                                                                             136,
+	"Error handling ReplyAck message for %v. %v":                                                                               131,
+	"Error handling ReplyAck message. %v":                                                                                      132,
+	"Error handling proposal for service %v/%v. Error: %v":                                                                     4,
+	"Error in creating or replacing node policy. %v":                                                                           46,
+	"Error in deleting node policy. %v":                                                                                        48,
+	"Error in deleting node userinput. %v":                                                                                     51,
+	"Error in node configuration. The node is not found from the database.":                                                    64,
+	"Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to %v.": 65,
+	"Error in node configuration/registration for node %v. %v":                                                                 42,
+	"Error in node unregistration. %v":                                                                                         44,
+	"Error in patching node policy. %v":                                                                                        47,
+	"Error in patching node user input. %v":                                                                                    50,
+	"Error in service configuration for %v. %v":                                                                                71,
+	"Error in updating node %v. %v":                                                                                            43,
+	"Error in updating node user input. %v":                                                                                    49,
+	"Error loading image for %v/%v.":                                                                                           120,
+	"Error loading image for service %v/%v.":                                                                                   121,
+	"Error marking agreement %v terminated in database: %v.":                                                                   108,
+	"Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: %v, error: %v":            36,
+	"Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: %v, error: %v":                   35,
+	"Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: %v, error: %v": 39,
+	"Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: %v, error: %v":                40,
+	"Error parsing input for node policy. Input body could not be deserialized as a policy object: %v, error: %v":                                  38,
+	"Error parsing input for node update. Input body couldn't be deserialized to node object: %v, error: %v":                                       37,
+	"Error parsing input for node user input. Input body could not be deserialized as a UserInput object: %v, error: %v":                           41,
+	"Error parsing the selections %v. %v":                                                                                             33,
+	"Error restarting containers for agreements %v: %v":                                                                               13,
+	"Error retrieving agreement %v from database, error %v":                                                                           102,
+	"Error retrieving all service instances from database for %v. %v":                                                                 111,
+	"Error retrieving all service instances from database, error: %v":                                                                 112,
+	"Error retrieving all service instances from datavase for %v/%v version %v key %v. %v":                                            110,
+	"Error retrieving matching agreements from database for workloads %v. Error: %v":                                                  114,
+	"Error retrieving node %v from the exchange: %v":                                                                                  116,
+	"Error saving new node config state (unconfiguring) in the database: %v":                                                          63,
+	"Error saving new node config state to database: %v":                                                                              69,
+	"Error starting containers for agreement %v: %v":                                                                                  12,
+	"Error starting containers: %v":                                                                                                   11,
+	"Error starting dependen service %v/%v version %v for agreement %v. %v":                                                           145,
+	"Error starting service %v/%v version %v, error: %v":                                                                              147,
+	"Error unregistring the node. The node is not found from the database.":                                                           57,
+	"Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.":                58,
+	"Error updating registeredServices for node %v in the exchange: %v":                                                               117,
+	"Error updating retry start state for service instance %v in dadabase. %v":                                                        170,
+	"Error verifiying exchange version. error: %v":                                                                                    45,
+	"Expression: %v is not valid":                                                                                                     29,
+	"Expression: %v should contain valid comparison operator - wrong operator %v. Allowed operators: %v, %v, %v, %v, %v, %v, %v, %v":  22,
+	"Failed get user input from local db. %v":                                                                                         67,
+	"Failed retrying number %v for dependent service %v version %v.":                                                                  168,
+	"Failed to downgrade service %v/%v version %v, error: %v":                                                                         161,
+	"Failed to find preferences for service %v/%v from the local user input, error: %v":                                               68,
+	"Failed to get a list of parent containers for service retry for %v. %v":                                                          15,
+	"Failed to get the service retry count for %v version %v. %v":                                                                     169,
+	"Failed to restoring the network connection with the parents for service %v. %v":                                                  16,
+	"Failed to upgrade service %v/%v from version %v to version %v, error: %v":                                                        157,
+	"Image loaded for %v/%v.":                                                                                                         118,
+	"Image loaded for service %v/%v.":                                                                                                 119,
+	"Input error for node unregistration. %v is an incorrect value for block":                                                         61,
+	"Input error for node unregistration. %v is an incorrect value for deepClean":                                                     60,
+	"Input error for node unregistration. %v is an incorrect value for removeNode":                                                    59,
+	"Input version string %v or %v is not a valid single version string.":                                                             193,
+	"Logical operator %v is not valid, expecting AND, OR, &&, ||":                                                                     19,
+	"Name, or Org is empty string.":                                                                                                   30,
+	"New node policy: %v":                                                                                                             73,
+	"New node user input: %v":                                                                                                         75,
+	"No node user input to detele":                                                                                                    76,
+	"Node could not verify the agreement %v with the consumer. Will cancel it":                                                        100,
+	"Node heartbeat failed for node %v/%v. Error: %v":                                                                                 92,
+	"Node heartbeat restored for node %v/%v.":                                                                                         93,
+	"Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored":                      101,
+	"Node policy updated with the exchange copy: %v":                                                                                  97,
+	"Node received Cancel message for %v/%v from agbot %v.":                                                                           130,
+	"Node received Proposal message using agreement %v for service %v/%v from the agbot %v.":                                          2,
+	"Node rejected the proposal for service %v/%v.":                                                                                   3,
+	"Node state transition from '%v' to '%v' is not supported.":                                                                       66,
+	"Node unregistration complete for node %v.":                                                                                       56,
+	"Node user input updated with the exchange copy. The changed user inputs are: %v":                                                 99,
+	"Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of string.": 182,
+	"Property %s has invalid value type %T":                                                                                           187,
+	"Property %s with value %v is not a valid verion string":                                                                          186,
+	"Property must include a name and a value: %v":                                                                                    181,
+	"Property value is of type %T, expected type %s":                                                                                  183,
+	"ReplyAck indicated that the agbot did not want to pursue the agreement for %v. Node will cancel the agreement":                   129,
+	"Service containers for %v started.":                                                                                              141,
+	"Start agreement-less service %v/%v.":                                                                                             149,
+	"Start changing service configuration state to %v for %v for the node.":                                                           85,
+	"Start cleaning up service %v because agreement %v ended.":                                                                        146,
+	"Start dependent services for %v/%v.":                                                                                             143,
+	"Start downgrading service %v/%v version %v because service failed to start.":                                                     159,
+	"Start downgrading service %v/%v version %v because service for agreement failed to start.":                                       158,
+	"Start downgrading service %v/%v version %v because upgrade failed.":                                                              160,
+	"Start node configuration/registration for node %v.":                                                                              52,
+	"Start node unregistration.":                                                                                                      55,
+	"Start policy advertising with the exchange for service %v/%v.":                                                                   89,
+	"Start retrying number %v for dependent service %v version %v because service failed.":                                            167,
+	"Start service auto configuration for %v/%v.":                                                                                     79,
+	"Start service configuration with user input for %v/%v.":                                                                          78,
+	"Start terminating agreement for %v. Termination reason: %v":                                                                      122,
+	"Start updating node %v.":                                                                                                         53,
+	"Start upgrading service %v/%v from version %v to version %v.":                                                                    155,
+	"Start workload service for %v/%v.":                                                                                               139,
+	"The constraint expression: %v is type %T, but is expected to be an array of strings":                                             17,
+	"The serviceVersions array is empty.":                                                                                             31,
+	"Unable to advertise policies with exchange for service %v/%v, error: %v":                                                         90,
+	"Unable to read node object from database, error %v":                                                                              62,
+	"Unable to read node object from the local database. %v":                                                                          95,
+	"Unable to read policy file %v for service %v, error: %v":                                                                         88,
+	"Unable to retrieve agreement %v from database for Cancel message, error %v":                                                      104,
+	"Unable to retrieve agreement %v from database for DataReceived message, error %v":                                                106,
+	"Unable to retrieve agreement %v from database for MeteringNotification message, error %v":                                        103,
+	"Unable to retrieve agreement %v from database for ReplyAck message, error %v":                                                    105,
+	"Unable to retrieve the service configuration state for node resource %v from the exchange, error %v":                             115,
+	"Unable to retrieve unarchived agreements from database. %v":                                                                      107,
+	"Unable to start agreement-less service %v/%v, error %v":                                                                          151,
+	"Unable to start agreement-less service %v/%v, local service definition not found":                                                154,
+	"Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v":                                  152,
+	"Unable to start agreement-less services, pattern %v not found in exchange":                                                       153,
+	"Unable to sync the local node policy with the exchange copy. Error: %v":                                                          96,
+	"Unable to sync the local node user input with the exchange copy. Error: %v":                                                      98,
+	"Value %v of property %s is not a valid string. Please define type or change value to a string.":                                  185,
+	"Value %v of property %s is not an integer type":                                                                                  184,
+	"Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.": 82,
+	"Version_Expression: %v does not begin with an inclusion or exclusion directive.":                                                                                                190,
+	"Version_Expression: %v does not end with an inclusion or exclusion directive.":                                                                                                  191,
+	"Version_Expression: %v is not a valid version string.":                                                                                                                          189,
+	"Version_Expression: Incorrect number of versions in expression: %v.":                                                                                                            192,
+	"Version_Expression: Whitespace is not permitted in %v.":                                                                                                                         188,
+	"Workload destroyed for %v":                                                                  140,
+	"Workload service containers for %v/%v are up and running.":                                  125,
+	"found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value>": 20,
+	"found %v token(s), expecting 3 in an expression %v, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression": 21,
+	"properties contains an invalid property: %v":                                      32,
+	"received error demarshalling TsAndCs for agrement %v, %v":                         1,
+	"unable to close MMS API certificate file %v, error %v":                            177,
+	"unable to close MMS API certificate private key file %v, error %v":                180,
+	"unable to convert policy constraint %v into internal format, error %v":            18,
+	"unable to create MMS API certificate, error %v":                                   174,
+	"unable to encode MMS API certificate private key to file %v, error %v":            179,
+	"unable to encode MMS API certificate to file %v, error %v":                        176,
+	"unable to generate private key for MMS API certificate, error %v":                 173,
+	"unable to generate random number for MMS API certificate serial number, error %v": 172,
+	"unable to make directory for self signed MMS API certificate, error %v":           171,
+	"unable to read node policy from the local database. %v":                           94,
+	"unable to write MMS API certificate private key to file %v, error %v":             178,
+	"unable to write MMS API certificate to file %v, error %v":                         175,
 }
 
 var deIndex = []uint32{ // 195 elements
@@ -303,548 +303,549 @@ const deData string = ""
 
 var enIndex = []uint32{ // 195 elements
 	// Entry 0 - 1F
-	0x00000000, 0x0000003c, 0x0000009b, 0x000000ec,
-	0x0000013f, 0x00000196, 0x000001d4, 0x00000211,
-	0x00000248, 0x000002ac, 0x000002f2, 0x00000335,
-	0x00000369, 0x000003be, 0x00000428, 0x0000045d,
-	0x000004a5, 0x000004c3, 0x000004e9, 0x0000050e,
-	0x0000053b, 0x0000057c, 0x000005bc, 0x00000603,
-	0x00000643, 0x00000687, 0x000006ca, 0x00000718,
-	0x00000789, 0x000007c8, 0x000007f9, 0x00000820,
+	0x00000000, 0x00000039, 0x00000078, 0x000000db,
+	0x0000010f, 0x0000014d, 0x00000194, 0x000001ea,
+	0x00000232, 0x00000275, 0x000002af, 0x00000306,
+	0x00000327, 0x0000035c, 0x00000394, 0x000003ef,
+	0x0000043c, 0x00000491, 0x000004eb, 0x00000537,
+	0x00000576, 0x000005d7, 0x00000673, 0x00000711,
+	0x00000756, 0x0000079b, 0x000007e4, 0x00000828,
+	0x0000086e, 0x000008b8, 0x000008d7, 0x000008f5,
 	// Entry 20 - 3F
-	0x00000855, 0x00000880, 0x000008ba, 0x000008ea,
-	0x00000919, 0x0000093e, 0x00000966, 0x00000983,
-	0x000009a9, 0x000009da, 0x00000a04, 0x00000a48,
-	0x00000a9d, 0x00000adc, 0x00000b1b, 0x00000b51,
-	0x00000b7b, 0x00000bc4, 0x00000c04, 0x00000c69,
-	0x00000cb6, 0x00000d0d, 0x00000d56, 0x00000da2,
-	0x00000dfa, 0x00000e5d, 0x00000eb2, 0x00000efe,
-	0x00000f42, 0x00000f90, 0x00000fff, 0x00001048,
+	0x00000919, 0x00000948, 0x00000972, 0x0000099e,
+	0x00000a1f, 0x00000aa7, 0x00000b14, 0x00000b86,
+	0x00000c19, 0x00000c9d, 0x00000d16, 0x00000d55,
+	0x00000d79, 0x00000d9d, 0x00000dcd, 0x00000dff,
+	0x00000e24, 0x00000e49, 0x00000e72, 0x00000e9b,
+	0x00000ec3, 0x00000ef9, 0x00000f14, 0x00000f34,
+	0x00000f4f, 0x00000f7c, 0x00000fc2, 0x00001033,
+	0x00001083, 0x000010d2, 0x0000111d, 0x00001153,
 	// Entry 40 - 5F
-	0x0000109f, 0x000010da, 0x00001138, 0x00001180,
-	0x000011c5, 0x00001214, 0x00001243, 0x00001273,
-	0x000012f9, 0x0000132e, 0x00001363, 0x000013c8,
-	0x00001405, 0x00001431, 0x00001478, 0x000014ce,
-	0x00001516, 0x00001559, 0x00001593, 0x000015ea,
-	0x0000160b, 0x00001640, 0x00001678, 0x000016d3,
-	0x00001720, 0x00001775, 0x000017b6, 0x000017fa,
-	0x0000184b, 0x00001892, 0x000018cb, 0x000018f9,
+	0x0000119d, 0x000011e3, 0x0000125f, 0x0000129f,
+	0x000012ca, 0x00001325, 0x0000135b, 0x00001394,
+	0x000013c4, 0x000013fe, 0x00001415, 0x00001429,
+	0x00001444, 0x00001461, 0x0000147d, 0x000014ba,
+	0x000014ec, 0x0000151c, 0x00001551, 0x00001609,
+	0x00001630, 0x00001666, 0x000016b2, 0x00001701,
+	0x00001737, 0x00001778, 0x000017bc, 0x0000180d,
+	0x00001854, 0x0000188d, 0x000018bb, 0x000018f5,
 	// Entry 60 - 7F
-	0x00001933, 0x0000196d, 0x000019b7, 0x000019e9,
-	0x00001a37, 0x00001a8a, 0x00001ad6, 0x00001b41,
-	0x00001b8b, 0x00001bdf, 0x00001c23, 0x00001c55,
-	0x00001c94, 0x00001cd4, 0x00001d10, 0x00001d5b,
-	0x00001da7, 0x00001def, 0x00001e28, 0x00001e67,
-	0x00001eb4, 0x00001ee8, 0x00001f26, 0x00001f60,
-	0x00001f99, 0x00001fec, 0x0000203d, 0x00002084,
-	0x000020ce, 0x000020f8, 0x00002124, 0x000021a5,
+	0x0000192f, 0x00001979, 0x000019ab, 0x000019f9,
+	0x00001a4c, 0x00001a98, 0x00001b03, 0x00001b3f,
+	0x00001b9e, 0x00001bef, 0x00001c42, 0x00001c99,
+	0x00001cd7, 0x00001d14, 0x00001d4b, 0x00001daf,
+	0x00001df5, 0x00001e38, 0x00001e6c, 0x00001ec1,
+	0x00001f2b, 0x00001f60, 0x00001fa8, 0x00001fc6,
+	0x00001fec, 0x00002011, 0x0000203e, 0x0000207f,
+	0x000020bf, 0x00002106, 0x00002146, 0x0000218a,
 	// Entry 80 - 9F
-	0x0000222d, 0x0000229a, 0x0000230c, 0x0000239f,
-	0x00002423, 0x0000249c, 0x000024db, 0x000024ff,
-	0x00002523, 0x00002553, 0x00002585, 0x000025aa,
-	0x000025cf, 0x000025f8, 0x00002621, 0x00002649,
-	0x0000267f, 0x0000269a, 0x000026ba, 0x000026d5,
-	0x00002702, 0x00002748, 0x000027b9, 0x00002809,
-	0x00002858, 0x000028a3, 0x000028d9, 0x00002923,
-	0x00002969, 0x000029e5, 0x00002a25, 0x00002a50,
+	0x000021cd, 0x0000221b, 0x0000228c, 0x000022cb,
+	0x000022fc, 0x00002323, 0x00002358, 0x00002383,
+	0x000023bd, 0x000023ed, 0x0000241c, 0x00002441,
+	0x00002469, 0x00002486, 0x000024ac, 0x000024dd,
+	0x00002507, 0x0000254b, 0x000025a0, 0x000025df,
+	0x0000261e, 0x00002654, 0x0000267e, 0x000026c7,
+	0x00002707, 0x0000276c, 0x000027b9, 0x00002810,
+	0x00002859, 0x000028a5, 0x000028fd, 0x00002960,
 	// Entry A0 - BF
-	0x00002aab, 0x00002ae1, 0x00002b1a, 0x00002b4a,
-	0x00002b84, 0x00002b9b, 0x00002baf, 0x00002bca,
-	0x00002be7, 0x00002c03, 0x00002c40, 0x00002c72,
-	0x00002ca2, 0x00002cd7, 0x00002d8f, 0x00002db6,
-	0x00002dec, 0x00002e38, 0x00002e87, 0x00002ebd,
-	0x00002edb, 0x00002eff, 0x00002f59, 0x00002fa5,
-	0x00002fe4, 0x00003045, 0x000030e1, 0x0000317f,
-	0x000031c4, 0x00003209, 0x00003252, 0x00003296,
+	0x000029b5, 0x00002a01, 0x00002a45, 0x00002a93,
+	0x00002b02, 0x00002b4b, 0x00002ba2, 0x00002bdd,
+	0x00002c3b, 0x00002c83, 0x00002cc8, 0x00002d17,
+	0x00002d61, 0x00002db5, 0x00002df9, 0x00002e2b,
+	0x00002e6a, 0x00002eaa, 0x00002ee6, 0x00002f31,
+	0x00002f7d, 0x00002fc5, 0x00002ff5, 0x0000307b,
+	0x000030b0, 0x000030e5, 0x0000314a, 0x00003187,
+	0x000031b3, 0x000031ed, 0x00003226, 0x00003279,
 	// Entry C0 - DF
-	0x000032dc, 0x00003326, 0x00003345,
+	0x000032ca, 0x00003311, 0x0000335b,
 } // Size: 804 bytes
 
-const enData string = "" + // Size: 13125 bytes
-	"\x02Error retrieving agreement %[1]v from database, error %[2]v\x02Unabl" +
-	"e to retrieve agreement %[1]v from database for MeteringNotification mes" +
-	"sage, error %[2]v\x02Unable to retrieve agreement %[1]v from database fo" +
-	"r Cancel message, error %[2]v\x02Unable to retrieve agreement %[1]v from" +
-	" database for ReplyAck message, error %[2]v\x02Unable to retrieve agreem" +
-	"ent %[1]v from database for DataReceived message, error %[2]v\x02Unable " +
-	"to retrieve unarchived agreements from database. %[1]v\x02Error marking " +
-	"agreement %[1]v terminated in database: %[2]v.\x02Error getting service " +
-	"definitions %[1]v from db. %[2]v\x02Error retrieving all service instanc" +
-	"es from datavase for %[1]v/%[2]v version %[3]v key %[4]v. %[5]v\x02Error" +
-	" retrieving all service instances from database for %[1]v. %[2]v\x02Erro" +
-	"r retrieving all service instances from database, error: %[1]v\x02Error " +
-	"getting service instance %[1]v from db. %[2]v\x02Error retrieving matchi" +
-	"ng agreements from database for workloads %[1]v. Error: %[2]v\x02Unable " +
-	"to retrieve the service configuration state for node resource %[1]v from" +
-	" the exchange, error %[2]v\x02Error retrieving node %[1]v from the excha" +
-	"nge: %[2]v\x02Error updating registeredServices for node %[1]v in the ex" +
-	"change: %[2]v\x02Image loaded for %[1]v/%[2]v.\x02Image loaded for servi" +
-	"ce %[1]v/%[2]v.\x02Error loading image for %[1]v/%[2]v.\x02Error loading" +
-	" image for service %[1]v/%[2]v.\x02Start terminating agreement for %[1]v" +
-	". Termination reason: %[2]v\x02Agreement reached for service %[1]v. The " +
-	"agreement id is %[2]v.\x02Agreement for %[1]v no longer valid on the agb" +
-	"ot. Node will cancel it.\x02Workload service containers for %[1]v/%[2]v " +
-	"are up and running.\x02Complete terminating agreement for %[1]v. Termina" +
-	"tion reason: %[2]v\x02Error deleting agreement for %[1]v in exchange: %[" +
-	"2]v. Will retry.\x02Encountered error for AgreementVerification for %[1]" +
-	"v with agbot, error %[2]v\x02ReplyAck indicated that the agbot did not w" +
-	"ant to pursue the agreement for %[1]v. Node will cancel the agreement" +
-	"\x02Node received Cancel message for %[1]v/%[2]v from agbot %[3]v.\x02Er" +
-	"ror handling ReplyAck message for %[1]v. %[2]v\x02Error handling ReplyAc" +
-	"k message. %[1]v\x02Error handling DataReceived message for %[1]v. %[2]v" +
-	"\x02Error handling DataReceived message. %[1]v\x02Error handling MeterNo" +
-	"tification message for %[1]v. %[2]v\x02Error handling MeterNotification " +
-	"message. %[1]v\x02Error handling Cancel message for %[1]v. %[2]v\x02Erro" +
-	"r handling Cancel message. %[1]v\x02Start workload service for %[1]v/%[2" +
-	"]v.\x02Workload destroyed for %[1]v\x02Service containers for %[1]v star" +
-	"ted.\x02Complete cleaning up the service instance %[1]v.\x02Start depend" +
-	"ent services for %[1]v/%[2]v.\x02Encountered error starting dependen ser" +
-	"vices for %[1]v/%[2]v. %[3]v\x02Error starting dependen service %[1]v/%[" +
-	"2]v version %[3]v for agreement %[4]v. %[5]v\x02Start cleaning up servic" +
-	"e %[1]v because agreement %[2]v ended.\x02Error starting service %[1]v/%" +
-	"[2]v version %[3]v, error: %[4]v\x02Error getting all the services from " +
-	"agreements: %[1]v\x02Start agreement-less service %[1]v/%[2]v.\x02Comple" +
-	"te starting agreement-less service %[1]v/%[2]v and its dependents.\x02Un" +
-	"able to start agreement-less service %[1]v/%[2]v, error %[3]v\x02Unable " +
-	"to start agreement-less services, error searching for pattern %[1]v in e" +
-	"xchange, error: %[2]v\x02Unable to start agreement-less services, patter" +
-	"n %[1]v not found in exchange\x02Unable to start agreement-less service " +
-	"%[1]v/%[2]v, local service definition not found\x02Start upgrading servi" +
-	"ce %[1]v/%[2]v from version %[3]v to version %[4]v.\x02Complete upgradin" +
-	"g service %[1]v/%[2]v from version %[3]v to version %[4]v.\x02Failed to " +
-	"upgrade service %[1]v/%[2]v from version %[3]v to version %[4]v, error: " +
-	"%[5]v\x02Start downgrading service %[1]v/%[2]v version %[3]v because ser" +
-	"vice for agreement failed to start.\x02Start downgrading service %[1]v/%" +
-	"[2]v version %[3]v because service failed to start.\x02Start downgrading" +
-	" service %[1]v/%[2]v version %[3]v because upgrade failed.\x02Failed to " +
-	"downgrade service %[1]v/%[2]v version %[3]v, error: %[4]v\x02Complete do" +
-	"wngrading service %[1]v/%[2]v from version %[3]v to version %[4]v.\x02Er" +
-	"ror finding the new service definition to downgrade to for %[1]v/%[2]v v" +
-	"ersion %[3]v key %[4]v. error: %[5]v\x02Could not find lower version to " +
-	"downgrade for %[1]v/%[2]v version %[3]v.\x02Error downgrading service %[" +
-	"1]v/%[2]v from version %[3]v to version %[4]v. Eror: %[5]v\x02Error down" +
-	"grading service %[1]v/%[2]v version %[3]v. %[4]v\x02Start retrying numbe" +
-	"r %[1]v for dependent service %[2]v version %[3]v because service failed" +
-	".\x02Failed retrying number %[1]v for dependent service %[2]v version %[" +
-	"3]v.\x02Failed to get the service retry count for %[1]v version %[2]v. %" +
-	"[3]v\x02Error updating retry start state for service instance %[1]v in d" +
-	"adabase. %[2]v\x02properties contains an invalid property: %[1]v\x02Prop" +
-	"erty must include a name and a value: %[1]v\x02Property %[1]s has invali" +
-	"d property type %[2]s. Allowed property types are: version, string, int," +
-	" boolean, float, and list of string.\x02Property value is of type %[1]T," +
-	" expected type %[2]s\x02Value %[1]v of property %[2]s is not an integer " +
-	"type\x02Value %[1]v of property %[2]s is not a valid string. Please defi" +
-	"ne type or change value to a string.\x02Property %[1]s with value %[2]v " +
-	"is not a valid verion string\x02Property %[1]s has invalid value type %[" +
-	"2]T\x02Deployment config %[1]v contains unsupported capability for a wor" +
-	"kload\x02Deployment config %[1]v contains unsupported capability for inf" +
-	"rastructure container.\x02Deployment config %[1]v contains unsupported b" +
-	"ind for a workload, %[2]v\x02Deployment config %[1]v contains unsupporte" +
-	"d bind for %[2]v, %[3]v\x02Error Unmarshalling deployment string %[1]v, " +
-	"error: %[2]v\x02Error Unmarshalling deployment override string %[1]v for" +
-	" agreement %[2]v, error: %[3]v\x02Error starting containers: %[1]v\x02Er" +
-	"ror starting containers for agreement %[1]v: %[2]v\x02Error restarting c" +
-	"ontainers for agreements %[1]v: %[2]v\x02Error cleaning up old container" +
-	"s before starting up new containers for %[1]v. Error: %[2]v\x02Failed to" +
-	" get a list of parent containers for service retry for %[1]v. %[2]v\x02F" +
-	"ailed to restoring the network connection with the parents for service %" +
-	"[1]v. %[2]v\x02Unable to read policy file %[1]v for service %[2]v, error" +
-	": %[3]v\x02Start policy advertising with the exchange for service %[1]v/" +
-	"%[2]v.\x02Unable to advertise policies with exchange for service %[1]v/%" +
-	"[2]v, error: %[3]v\x02Complete policy advertising with the exchange for " +
-	"service %[1]v/%[2]v.\x02Node heartbeat failed for node %[1]v/%[2]v. Erro" +
-	"r: %[3]v\x02Node heartbeat restored for node %[1]v/%[2]v.\x02unable to r" +
-	"ead node policy from the local database. %[1]v\x02Unable to read node ob" +
-	"ject from the local database. %[1]v\x02Unable to sync the local node pol" +
-	"icy with the exchange copy. Error: %[1]v\x02Node policy updated with the" +
-	" exchange copy: %[1]v\x02Unable to sync the local node user input with t" +
-	"he exchange copy. Error: %[1]v\x02Node user input updated with the excha" +
-	"nge copy. The changed user inputs are: %[1]v\x02Node could not verify th" +
-	"e agreement %[1]v with the consumer. Will cancel it\x02Node is offline. " +
-	"Logging of periodic offline error messages will be curtailed until conne" +
-	"ction is restored\x02unable to make directory for self signed MMS API ce" +
-	"rtificate, error %[1]v\x02unable to generate random number for MMS API c" +
-	"ertificate serial number, error %[1]v\x02unable to generate private key " +
-	"for MMS API certificate, error %[1]v\x02unable to create MMS API certifi" +
-	"cate, error %[1]v\x02unable to write MMS API certificate to file %[1]v, " +
-	"error %[2]v\x02unable to encode MMS API certificate to file %[1]v, error" +
-	" %[2]v\x02unable to close MMS API certificate file %[1]v, error %[2]v" +
-	"\x02unable to write MMS API certificate private key to file %[1]v, error" +
-	" %[2]v\x02unable to encode MMS API certificate private key to file %[1]v" +
-	", error %[2]v\x02unable to close MMS API certificate private key file %[" +
-	"1]v, error %[2]v\x02Agreement %[1]v already exists, ignoring proposal: %" +
-	"[2]v\x02received error demarshalling TsAndCs for agrement %[1]v, %[2]v" +
-	"\x02Node received Proposal message for service %[1]v/%[2]v from the agbo" +
-	"t %[3]v.\x02Node rejected the proposal for service %[1]v/%[2]v.\x02Error" +
-	" handling proposal for service %[1]v/%[2]v. Error: %[3]v\x02Version_Expr" +
-	"ession: Whitespace is not permitted in %[1]v.\x02Version_Expression: %[1" +
-	"]v is not a valid version string.\x02Version_Expression: %[1]v does not " +
-	"begin with an inclusion or exclusion directive.\x02Version_Expression: %" +
-	"[1]v does not end with an inclusion or exclusion directive.\x02Version_E" +
-	"xpression: Incorrect number of versions in expression: %[1]v.\x02Input v" +
-	"ersion string %[1]v or %[2]v is not a valid single version string.\x02Er" +
-	"ror parsing the selections %[1]v. %[2]v\x02Error getting %[1]v for outpu" +
-	"t, error %[2]v\x02Error parsing input for node configuration/registratio" +
-	"n. Input body couldn't be deserialized to node object: %[1]v, error: %[2" +
-	"]v\x02Error parsing input for node configuration/registration. Input bod" +
-	"y couldn't be deserialized to configstate object: %[1]v, error: %[2]v" +
-	"\x02Error parsing input for node update. Input body couldn't be deserial" +
-	"ized to node object: %[1]v, error: %[2]v\x02Error parsing input for node" +
-	" policy. Input body could not be deserialized as a policy object: %[1]v," +
-	" error: %[2]v\x02Error parsing input for node policy patch. Input body c" +
-	"ould not be deserialized into a Constraint Expression or Property List: " +
-	"%[1]v, error: %[2]v\x02Error parsing input for node policy patch. Input " +
-	"body did not contain a Constraint Expression or Property List: %[1]v, er" +
-	"ror: %[2]v\x02Error parsing input for node user input. Input body could " +
-	"not be deserialized as a UserInput object: %[1]v, error: %[2]v\x02Error " +
-	"in node configuration/registration for node %[1]v. %[2]v\x02Error in upd" +
-	"ating node %[1]v. %[2]v\x02Error in node unregistration. %[1]v\x02Error " +
-	"verifiying exchange version. error: %[1]v\x02Error in creating or replac" +
-	"ing node policy. %[1]v\x02Error in patching node policy. %[1]v\x02Error " +
-	"in deleting node policy. %[1]v\x02Error in updating node user input. %[1" +
-	"]v\x02Error in patching node user input. %[1]v\x02Error in deleting node" +
-	" userinput. %[1]v\x02Start node configuration/registration for node %[1]" +
-	"v.\x02Start updating node %[1]v.\x02Complete node update for %[1]v.\x02S" +
-	"tart node unregistration.\x02Node unregistration complete for node %[1]v" +
-	".\x02Error unregistring the node. The node is not found from the databas" +
-	"e.\x02Error unregistring the node. The node must be in 'configured' or '" +
-	"configuring' state in order to unconfigure it.\x02Input error for node u" +
-	"nregistration. %[1]v is an incorrect value for removeNode\x02Input error" +
-	" for node unregistration. %[1]v is an incorrect value for deepClean\x02I" +
-	"nput error for node unregistration. %[1]v is an incorrect value for bloc" +
-	"k\x02Unable to read node object from database, error %[1]v\x02Error savi" +
-	"ng new node config state (unconfiguring) in the database: %[1]v\x02Error" +
-	" in node configuration. The node is not found from the database.\x02Erro" +
-	"r in node configuration. The node must be in 'configured' or 'configurin" +
-	"g' state in order to change the state to %[1]v.\x02Node state transition" +
-	" from '%[1]v' to '%[2]v' is not supported.\x02Failed get user input from" +
-	" local db. %[1]v\x02Failed to find preferences for service %[1]v/%[2]v f" +
-	"rom the local user input, error: %[3]v\x02Error saving new node config s" +
-	"tate to database: %[1]v\x02Complete node configuration/registration for " +
-	"node %[1]v.\x02Error in service configuration for %[1]v. %[2]v\x02Error " +
-	"getting service references for pattern %[1]v. %[2]v\x02New node policy: " +
-	"%[1]v\x02Deleted node policy\x02New node user input: %[1]v\x02No node us" +
-	"er input to detele\x02Deleted all node user input\x02Start service confi" +
-	"guration with user input for %[1]v/%[2]v.\x02Start service auto configur" +
-	"ation for %[1]v/%[2]v.\x02Complete service configuration for %[1]v/%[2]v" +
-	".\x02Complete service auto configuration for %[1]v/%[2]v.\x02Variable %[" +
-	"1]v is missing in the service configuration for %[2]v/%[3]v. It may caus" +
-	"e agreement not formed if the business policy does not contain the setti" +
-	"ng for the missing variable.\x02Error configuring service %[1]v. %[2]v" +
-	"\x02Error changing service configstate %[1]v, error %[2]v\x02Start chang" +
-	"ing service configuration state to %[1]v for %[2]v for the node.\x02Comp" +
-	"lete changing service configuration state to %[1]v for %[2]v for the nod" +
-	"e.\x02Error converting the selections into Selectors: %[1]v\x02Name, or " +
-	"Org is empty string.\x02The serviceVersions array is empty.\x02The const" +
-	"raint expression: %[1]v is type %[2]T, but is expected to be an array of" +
-	" strings\x02unable to convert policy constraint %[1]v into internal form" +
-	"at, error %[2]v\x02Logical operator %[1]v is not valid, expecting AND, O" +
-	"R, &&, ||\x02found %[1]v token(s), expecting 3 in an expression %[2]v, e" +
-	"xpected form is <property> == <value>\x02found %[1]v token(s), expecting" +
-	" 3 in an expression %[2]v, expected form is expression with 3 tokens: <p" +
-	"roperty> <operator> <value> in constraint expression\x02Expression: %[1]" +
-	"v should contain valid comparison operator - wrong operator %[2]v. Allow" +
-	"ed operators: %[3]v, %[4]v, %[5]v, %[6]v, %[7]v, %[8]v, %[9]v, %[10]v" +
-	"\x02Comparison operator: %[1]v is not supported for numeric value: %[2]v" +
-	"\x02Comparison operator: %[1]v is not supported for boolean value: %[2]v" +
-	"\x02Comparison operator: %[1]v is not supported for string list value: %" +
-	"[2]v\x02Comparison operator: %[1]v is not supported for string value: %[" +
-	"2]v\x02Comparison operator: %[1]v is not supported for single version: %" +
-	"[2]v\x02Comparison operator: %[1]v is not supported for version expressi" +
-	"on: %[2]v\x02Expression: %[1]v is not valid"
+const enData string = "" + // Size: 13147 bytes
+	"\x02Agreement %[1]v already exists, ignoring proposal: %[2]v\x02received" +
+	" error demarshalling TsAndCs for agrement %[1]v, %[2]v\x02Node received " +
+	"Proposal message using agreement %[1]v for service %[2]v/%[3]v from the " +
+	"agbot %[4]v.\x02Node rejected the proposal for service %[1]v/%[2]v.\x02E" +
+	"rror handling proposal for service %[1]v/%[2]v. Error: %[3]v\x02Deployme" +
+	"nt config %[1]v contains unsupported capability for a workload\x02Deploy" +
+	"ment config %[1]v contains unsupported capability for infrastructure con" +
+	"tainer.\x02Deployment config %[1]v contains unsupported bind for a workl" +
+	"oad, %[2]v\x02Deployment config %[1]v contains unsupported bind for %[2]" +
+	"v, %[3]v\x02Error Unmarshalling deployment string %[1]v, error: %[2]v" +
+	"\x02Error Unmarshalling deployment override string %[1]v for agreement %" +
+	"[2]v, error: %[3]v\x02Error starting containers: %[1]v\x02Error starting" +
+	" containers for agreement %[1]v: %[2]v\x02Error restarting containers fo" +
+	"r agreements %[1]v: %[2]v\x02Error cleaning up old containers before sta" +
+	"rting up new containers for %[1]v. Error: %[2]v\x02Failed to get a list " +
+	"of parent containers for service retry for %[1]v. %[2]v\x02Failed to res" +
+	"toring the network connection with the parents for service %[1]v. %[2]v" +
+	"\x02The constraint expression: %[1]v is type %[2]T, but is expected to b" +
+	"e an array of strings\x02unable to convert policy constraint %[1]v into " +
+	"internal format, error %[2]v\x02Logical operator %[1]v is not valid, exp" +
+	"ecting AND, OR, &&, ||\x02found %[1]v token(s), expecting 3 in an expres" +
+	"sion %[2]v, expected form is <property> == <value>\x02found %[1]v token(" +
+	"s), expecting 3 in an expression %[2]v, expected form is expression with" +
+	" 3 tokens: <property> <operator> <value> in constraint expression\x02Exp" +
+	"ression: %[1]v should contain valid comparison operator - wrong operator" +
+	" %[2]v. Allowed operators: %[3]v, %[4]v, %[5]v, %[6]v, %[7]v, %[8]v, %[9" +
+	"]v, %[10]v\x02Comparison operator: %[1]v is not supported for numeric va" +
+	"lue: %[2]v\x02Comparison operator: %[1]v is not supported for boolean va" +
+	"lue: %[2]v\x02Comparison operator: %[1]v is not supported for string lis" +
+	"t value: %[2]v\x02Comparison operator: %[1]v is not supported for string" +
+	" value: %[2]v\x02Comparison operator: %[1]v is not supported for single " +
+	"version: %[2]v\x02Comparison operator: %[1]v is not supported for versio" +
+	"n expression: %[2]v\x02Expression: %[1]v is not valid\x02Name, or Org is" +
+	" empty string.\x02The serviceVersions array is empty.\x02properties cont" +
+	"ains an invalid property: %[1]v\x02Error parsing the selections %[1]v. %" +
+	"[2]v\x02Error getting %[1]v for output, error %[2]v\x02Error parsing inp" +
+	"ut for node configuration/registration. Input body couldn't be deseriali" +
+	"zed to node object: %[1]v, error: %[2]v\x02Error parsing input for node " +
+	"configuration/registration. Input body couldn't be deserialized to confi" +
+	"gstate object: %[1]v, error: %[2]v\x02Error parsing input for node updat" +
+	"e. Input body couldn't be deserialized to node object: %[1]v, error: %[2" +
+	"]v\x02Error parsing input for node policy. Input body could not be deser" +
+	"ialized as a policy object: %[1]v, error: %[2]v\x02Error parsing input f" +
+	"or node policy patch. Input body could not be deserialized into a Constr" +
+	"aint Expression or Property List: %[1]v, error: %[2]v\x02Error parsing i" +
+	"nput for node policy patch. Input body did not contain a Constraint Expr" +
+	"ession or Property List: %[1]v, error: %[2]v\x02Error parsing input for " +
+	"node user input. Input body could not be deserialized as a UserInput obj" +
+	"ect: %[1]v, error: %[2]v\x02Error in node configuration/registration for" +
+	" node %[1]v. %[2]v\x02Error in updating node %[1]v. %[2]v\x02Error in no" +
+	"de unregistration. %[1]v\x02Error verifiying exchange version. error: %[" +
+	"1]v\x02Error in creating or replacing node policy. %[1]v\x02Error in pat" +
+	"ching node policy. %[1]v\x02Error in deleting node policy. %[1]v\x02Erro" +
+	"r in updating node user input. %[1]v\x02Error in patching node user inpu" +
+	"t. %[1]v\x02Error in deleting node userinput. %[1]v\x02Start node config" +
+	"uration/registration for node %[1]v.\x02Start updating node %[1]v.\x02Co" +
+	"mplete node update for %[1]v.\x02Start node unregistration.\x02Node unre" +
+	"gistration complete for node %[1]v.\x02Error unregistring the node. The " +
+	"node is not found from the database.\x02Error unregistring the node. The" +
+	" node must be in 'configured' or 'configuring' state in order to unconfi" +
+	"gure it.\x02Input error for node unregistration. %[1]v is an incorrect v" +
+	"alue for removeNode\x02Input error for node unregistration. %[1]v is an " +
+	"incorrect value for deepClean\x02Input error for node unregistration. %[" +
+	"1]v is an incorrect value for block\x02Unable to read node object from d" +
+	"atabase, error %[1]v\x02Error saving new node config state (unconfigurin" +
+	"g) in the database: %[1]v\x02Error in node configuration. The node is no" +
+	"t found from the database.\x02Error in node configuration. The node must" +
+	" be in 'configured' or 'configuring' state in order to change the state " +
+	"to %[1]v.\x02Node state transition from '%[1]v' to '%[2]v' is not suppor" +
+	"ted.\x02Failed get user input from local db. %[1]v\x02Failed to find pre" +
+	"ferences for service %[1]v/%[2]v from the local user input, error: %[3]v" +
+	"\x02Error saving new node config state to database: %[1]v\x02Complete no" +
+	"de configuration/registration for node %[1]v.\x02Error in service config" +
+	"uration for %[1]v. %[2]v\x02Error getting service references for pattern" +
+	" %[1]v. %[2]v\x02New node policy: %[1]v\x02Deleted node policy\x02New no" +
+	"de user input: %[1]v\x02No node user input to detele\x02Deleted all node" +
+	" user input\x02Start service configuration with user input for %[1]v/%[2" +
+	"]v.\x02Start service auto configuration for %[1]v/%[2]v.\x02Complete ser" +
+	"vice configuration for %[1]v/%[2]v.\x02Complete service auto configurati" +
+	"on for %[1]v/%[2]v.\x02Variable %[1]v is missing in the service configur" +
+	"ation for %[2]v/%[3]v. It may cause agreement not formed if the business" +
+	" policy does not contain the setting for the missing variable.\x02Error " +
+	"configuring service %[1]v. %[2]v\x02Error changing service configstate %" +
+	"[1]v, error %[2]v\x02Start changing service configuration state to %[1]v" +
+	" for %[2]v for the node.\x02Complete changing service configuration stat" +
+	"e to %[1]v for %[2]v for the node.\x02Error converting the selections in" +
+	"to Selectors: %[1]v\x02Unable to read policy file %[1]v for service %[2]" +
+	"v, error: %[3]v\x02Start policy advertising with the exchange for servic" +
+	"e %[1]v/%[2]v.\x02Unable to advertise policies with exchange for service" +
+	" %[1]v/%[2]v, error: %[3]v\x02Complete policy advertising with the excha" +
+	"nge for service %[1]v/%[2]v.\x02Node heartbeat failed for node %[1]v/%[2" +
+	"]v. Error: %[3]v\x02Node heartbeat restored for node %[1]v/%[2]v.\x02una" +
+	"ble to read node policy from the local database. %[1]v\x02Unable to read" +
+	" node object from the local database. %[1]v\x02Unable to sync the local " +
+	"node policy with the exchange copy. Error: %[1]v\x02Node policy updated " +
+	"with the exchange copy: %[1]v\x02Unable to sync the local node user inpu" +
+	"t with the exchange copy. Error: %[1]v\x02Node user input updated with t" +
+	"he exchange copy. The changed user inputs are: %[1]v\x02Node could not v" +
+	"erify the agreement %[1]v with the consumer. Will cancel it\x02Node is o" +
+	"ffline. Logging of periodic offline error messages will be curtailed unt" +
+	"il connection is restored\x02Error retrieving agreement %[1]v from datab" +
+	"ase, error %[2]v\x02Unable to retrieve agreement %[1]v from database for" +
+	" MeteringNotification message, error %[2]v\x02Unable to retrieve agreeme" +
+	"nt %[1]v from database for Cancel message, error %[2]v\x02Unable to retr" +
+	"ieve agreement %[1]v from database for ReplyAck message, error %[2]v\x02" +
+	"Unable to retrieve agreement %[1]v from database for DataReceived messag" +
+	"e, error %[2]v\x02Unable to retrieve unarchived agreements from database" +
+	". %[1]v\x02Error marking agreement %[1]v terminated in database: %[2]v." +
+	"\x02Error getting service definitions %[1]v from db. %[2]v\x02Error retr" +
+	"ieving all service instances from datavase for %[1]v/%[2]v version %[3]v" +
+	" key %[4]v. %[5]v\x02Error retrieving all service instances from databas" +
+	"e for %[1]v. %[2]v\x02Error retrieving all service instances from databa" +
+	"se, error: %[1]v\x02Error getting service instance %[1]v from db. %[2]v" +
+	"\x02Error retrieving matching agreements from database for workloads %[1" +
+	"]v. Error: %[2]v\x02Unable to retrieve the service configuration state f" +
+	"or node resource %[1]v from the exchange, error %[2]v\x02Error retrievin" +
+	"g node %[1]v from the exchange: %[2]v\x02Error updating registeredServic" +
+	"es for node %[1]v in the exchange: %[2]v\x02Image loaded for %[1]v/%[2]v" +
+	".\x02Image loaded for service %[1]v/%[2]v.\x02Error loading image for %[" +
+	"1]v/%[2]v.\x02Error loading image for service %[1]v/%[2]v.\x02Start term" +
+	"inating agreement for %[1]v. Termination reason: %[2]v\x02Agreement reac" +
+	"hed for service %[1]v. The agreement id is %[2]v.\x02Agreement for %[1]v" +
+	" no longer valid on the agbot. Node will cancel it.\x02Workload service " +
+	"containers for %[1]v/%[2]v are up and running.\x02Complete terminating a" +
+	"greement for %[1]v. Termination reason: %[2]v\x02Error deleting agreemen" +
+	"t for %[1]v in exchange: %[2]v. Will retry.\x02Encountered error for Agr" +
+	"eementVerification for %[1]v with agbot, error %[2]v\x02ReplyAck indicat" +
+	"ed that the agbot did not want to pursue the agreement for %[1]v. Node w" +
+	"ill cancel the agreement\x02Node received Cancel message for %[1]v/%[2]v" +
+	" from agbot %[3]v.\x02Error handling ReplyAck message for %[1]v. %[2]v" +
+	"\x02Error handling ReplyAck message. %[1]v\x02Error handling DataReceive" +
+	"d message for %[1]v. %[2]v\x02Error handling DataReceived message. %[1]v" +
+	"\x02Error handling MeterNotification message for %[1]v. %[2]v\x02Error h" +
+	"andling MeterNotification message. %[1]v\x02Error handling Cancel messag" +
+	"e for %[1]v. %[2]v\x02Error handling Cancel message. %[1]v\x02Start work" +
+	"load service for %[1]v/%[2]v.\x02Workload destroyed for %[1]v\x02Service" +
+	" containers for %[1]v started.\x02Complete cleaning up the service insta" +
+	"nce %[1]v.\x02Start dependent services for %[1]v/%[2]v.\x02Encountered e" +
+	"rror starting dependen services for %[1]v/%[2]v. %[3]v\x02Error starting" +
+	" dependen service %[1]v/%[2]v version %[3]v for agreement %[4]v. %[5]v" +
+	"\x02Start cleaning up service %[1]v because agreement %[2]v ended.\x02Er" +
+	"ror starting service %[1]v/%[2]v version %[3]v, error: %[4]v\x02Error ge" +
+	"tting all the services from agreements: %[1]v\x02Start agreement-less se" +
+	"rvice %[1]v/%[2]v.\x02Complete starting agreement-less service %[1]v/%[2" +
+	"]v and its dependents.\x02Unable to start agreement-less service %[1]v/%" +
+	"[2]v, error %[3]v\x02Unable to start agreement-less services, error sear" +
+	"ching for pattern %[1]v in exchange, error: %[2]v\x02Unable to start agr" +
+	"eement-less services, pattern %[1]v not found in exchange\x02Unable to s" +
+	"tart agreement-less service %[1]v/%[2]v, local service definition not fo" +
+	"und\x02Start upgrading service %[1]v/%[2]v from version %[3]v to version" +
+	" %[4]v.\x02Complete upgrading service %[1]v/%[2]v from version %[3]v to " +
+	"version %[4]v.\x02Failed to upgrade service %[1]v/%[2]v from version %[3" +
+	"]v to version %[4]v, error: %[5]v\x02Start downgrading service %[1]v/%[2" +
+	"]v version %[3]v because service for agreement failed to start.\x02Start" +
+	" downgrading service %[1]v/%[2]v version %[3]v because service failed to" +
+	" start.\x02Start downgrading service %[1]v/%[2]v version %[3]v because u" +
+	"pgrade failed.\x02Failed to downgrade service %[1]v/%[2]v version %[3]v," +
+	" error: %[4]v\x02Complete downgrading service %[1]v/%[2]v from version %" +
+	"[3]v to version %[4]v.\x02Error finding the new service definition to do" +
+	"wngrade to for %[1]v/%[2]v version %[3]v key %[4]v. error: %[5]v\x02Coul" +
+	"d not find lower version to downgrade for %[1]v/%[2]v version %[3]v.\x02" +
+	"Error downgrading service %[1]v/%[2]v from version %[3]v to version %[4]" +
+	"v. Eror: %[5]v\x02Error downgrading service %[1]v/%[2]v version %[3]v. %" +
+	"[4]v\x02Start retrying number %[1]v for dependent service %[2]v version " +
+	"%[3]v because service failed.\x02Failed retrying number %[1]v for depend" +
+	"ent service %[2]v version %[3]v.\x02Failed to get the service retry coun" +
+	"t for %[1]v version %[2]v. %[3]v\x02Error updating retry start state for" +
+	" service instance %[1]v in dadabase. %[2]v\x02unable to make directory f" +
+	"or self signed MMS API certificate, error %[1]v\x02unable to generate ra" +
+	"ndom number for MMS API certificate serial number, error %[1]v\x02unable" +
+	" to generate private key for MMS API certificate, error %[1]v\x02unable " +
+	"to create MMS API certificate, error %[1]v\x02unable to write MMS API ce" +
+	"rtificate to file %[1]v, error %[2]v\x02unable to encode MMS API certifi" +
+	"cate to file %[1]v, error %[2]v\x02unable to close MMS API certificate f" +
+	"ile %[1]v, error %[2]v\x02unable to write MMS API certificate private ke" +
+	"y to file %[1]v, error %[2]v\x02unable to encode MMS API certificate pri" +
+	"vate key to file %[1]v, error %[2]v\x02unable to close MMS API certifica" +
+	"te private key file %[1]v, error %[2]v\x02Property must include a name a" +
+	"nd a value: %[1]v\x02Property %[1]s has invalid property type %[2]s. All" +
+	"owed property types are: version, string, int, boolean, float, and list " +
+	"of string.\x02Property value is of type %[1]T, expected type %[2]s\x02Va" +
+	"lue %[1]v of property %[2]s is not an integer type\x02Value %[1]v of pro" +
+	"perty %[2]s is not a valid string. Please define type or change value to" +
+	" a string.\x02Property %[1]s with value %[2]v is not a valid verion stri" +
+	"ng\x02Property %[1]s has invalid value type %[2]T\x02Version_Expression:" +
+	" Whitespace is not permitted in %[1]v.\x02Version_Expression: %[1]v is n" +
+	"ot a valid version string.\x02Version_Expression: %[1]v does not begin w" +
+	"ith an inclusion or exclusion directive.\x02Version_Expression: %[1]v do" +
+	"es not end with an inclusion or exclusion directive.\x02Version_Expressi" +
+	"on: Incorrect number of versions in expression: %[1]v.\x02Input version " +
+	"string %[1]v or %[2]v is not a valid single version string."
 
 var esIndex = []uint32{ // 195 elements
 	// Entry 0 - 1F
-	0x00000000, 0x00000045, 0x000000b6, 0x00000122,
-	0x00000187, 0x000001f3, 0x0000023f, 0x00000286,
-	0x000002d5, 0x0000035d, 0x000003b7, 0x0000040d,
-	0x00000458, 0x000004c4, 0x00000539, 0x0000056e,
-	0x000005be, 0x000005e9, 0x00000620, 0x0000064d,
-	0x00000686, 0x000006d8, 0x00000726, 0x00000771,
-	0x000007ca, 0x00000819, 0x00000869, 0x000008bf,
-	0x0000092b, 0x00000976, 0x000009ad, 0x000009d9,
+	0x00000000, 0x0000003a, 0x00000091, 0x000000ec,
+	0x0000012d, 0x0000018a, 0x000001ed, 0x0000025d,
+	0x000002c4, 0x0000031c, 0x0000035c, 0x000003ca,
+	0x000003f3, 0x0000042e, 0x00000471, 0x000004ec,
+	0x00000552, 0x000005ad, 0x0000061e, 0x0000067b,
+	0x000006c0, 0x00000737, 0x000007f1, 0x0000089d,
+	0x000008ef, 0x00000940, 0x000009aa, 0x000009fb,
+	0x00000a4c, 0x00000aa5, 0x00000ac5, 0x00000ae8,
 	// Entry 20 - 3F
-	0x00000a17, 0x00000a47, 0x00000a87, 0x00000abc,
-	0x00000af3, 0x00000b26, 0x00000b5e, 0x00000b84,
-	0x00000bbe, 0x00000bf6, 0x00000c2c, 0x00000c84,
-	0x00000ced, 0x00000d3a, 0x00000d94, 0x00000dd0,
-	0x00000dfd, 0x00000e48, 0x00000e93, 0x00000eff,
-	0x00000f5d, 0x00000fc4, 0x00001021, 0x00001088,
-	0x000010f3, 0x0000116e, 0x000011d9, 0x0000123d,
-	0x0000128c, 0x000012f0, 0x00001372, 0x000013dc,
+	0x00000b10, 0x00000b4a, 0x00000b79, 0x00000bac,
+	0x00000c4e, 0x00000cf2, 0x00000d8a, 0x00000e25,
+	0x00000eed, 0x00000f9f, 0x00001040, 0x00001086,
+	0x000010af, 0x000010d7, 0x00001114, 0x0000114b,
+	0x00001189, 0x000011b7, 0x000011f0, 0x00001238,
+	0x00001270, 0x000012b0, 0x000012d9, 0x00001308,
+	0x00001329, 0x00001374, 0x000013cb, 0x00001449,
+	0x000014a4, 0x000014fe, 0x00001558, 0x0000159c,
 	// Entry 40 - 5F
-	0x0000143d, 0x0000147e, 0x000014f5, 0x00001561,
-	0x000015cc, 0x0000163b, 0x00001675, 0x000016ab,
-	0x0000174c, 0x0000178e, 0x000017c8, 0x00001838,
-	0x00001880, 0x000018bb, 0x0000191e, 0x0000198e,
-	0x000019f5, 0x00001a4d, 0x00001a8d, 0x00001afb,
-	0x00001b24, 0x00001b5f, 0x00001ba2, 0x00001c1d,
-	0x00001c83, 0x00001cde, 0x00001d37, 0x00001d8a,
-	0x00001def, 0x00001e3f, 0x00001e84, 0x00001ec2,
+	0x00001606, 0x0000165c, 0x000016e3, 0x0000172d,
+	0x00001774, 0x000017e7, 0x0000183d, 0x0000187e,
+	0x000018b7, 0x000018fd, 0x0000191c, 0x00001938,
+	0x00001960, 0x0000198b, 0x000019be, 0x00001a11,
+	0x00001a56, 0x00001a90, 0x00001ad7, 0x00001b8e,
+	0x00001bbb, 0x00001c01, 0x00001c5f, 0x00001cbb,
+	0x00001cf3, 0x00001d4c, 0x00001d9f, 0x00001e04,
+	0x00001e54, 0x00001e99, 0x00001ed7, 0x00001f1e,
 	// Entry 60 - 7F
-	0x00001f09, 0x00001f4d, 0x00001fab, 0x00001fe9,
-	0x00002050, 0x000020be, 0x0000210f, 0x000021a0,
-	0x000021ff, 0x00002270, 0x000022c8, 0x0000230b,
-	0x0000235e, 0x000023b6, 0x00002404, 0x00002465,
-	0x000024cb, 0x00002530, 0x0000256a, 0x000025c1,
-	0x0000261c, 0x0000265d, 0x000026ba, 0x00002700,
-	0x0000273f, 0x00002792, 0x000027e5, 0x00002832,
-	0x0000288c, 0x000028bb, 0x000028ee, 0x00002990,
+	0x00001f62, 0x00001fc0, 0x00001ffe, 0x00002065,
+	0x000020d3, 0x00002124, 0x000021b5, 0x000021fa,
+	0x0000226b, 0x000022d7, 0x0000233c, 0x000023a8,
+	0x000023f4, 0x0000243b, 0x0000248a, 0x00002512,
+	0x0000256c, 0x000025c2, 0x0000260d, 0x00002679,
+	0x000026ee, 0x00002723, 0x00002773, 0x0000279e,
+	0x000027d5, 0x00002802, 0x0000283b, 0x0000288d,
+	0x000028db, 0x00002926, 0x0000297f, 0x000029ce,
 	// Entry 80 - 9F
-	0x00002a34, 0x00002acc, 0x00002b67, 0x00002c2f,
-	0x00002ce1, 0x00002d82, 0x00002dc8, 0x00002df1,
-	0x00002e19, 0x00002e56, 0x00002e8d, 0x00002ecb,
-	0x00002ef9, 0x00002f32, 0x00002f7a, 0x00002fb2,
-	0x00002ff2, 0x0000301b, 0x0000304a, 0x0000306b,
-	0x000030b6, 0x0000310d, 0x0000318b, 0x000031e6,
-	0x00003240, 0x0000329a, 0x000032de, 0x00003348,
-	0x0000339e, 0x00003425, 0x0000346f, 0x000034b6,
+	0x00002a1e, 0x00002a74, 0x00002ae0, 0x00002b2b,
+	0x00002b62, 0x00002b8e, 0x00002bcc, 0x00002bfc,
+	0x00002c3c, 0x00002c71, 0x00002ca8, 0x00002cdb,
+	0x00002d13, 0x00002d39, 0x00002d73, 0x00002dab,
+	0x00002de1, 0x00002e39, 0x00002ea2, 0x00002eef,
+	0x00002f49, 0x00002f85, 0x00002fb2, 0x00002ffd,
+	0x00003048, 0x000030b4, 0x00003112, 0x00003179,
+	0x000031d6, 0x0000323d, 0x000032a8, 0x00003323,
 	// Entry A0 - BF
-	0x00003529, 0x0000357f, 0x000035c0, 0x000035f9,
-	0x0000363f, 0x0000365e, 0x0000367a, 0x000036a2,
-	0x000036cd, 0x00003700, 0x00003753, 0x00003798,
-	0x000037d2, 0x00003819, 0x000038d0, 0x000038fd,
-	0x00003943, 0x000039a1, 0x000039fd, 0x00003a35,
-	0x00003a58, 0x00003a80, 0x00003af1, 0x00003b4e,
-	0x00003b93, 0x00003c0a, 0x00003cc4, 0x00003d70,
-	0x00003dc2, 0x00003e13, 0x00003e7d, 0x00003ece,
+	0x0000338e, 0x000033f2, 0x00003441, 0x000034a5,
+	0x00003527, 0x00003591, 0x000035f2, 0x00003633,
+	0x000036aa, 0x00003716, 0x00003781, 0x000037f0,
+	0x0000384f, 0x000038c0, 0x00003918, 0x0000395b,
+	0x000039ae, 0x00003a06, 0x00003a54, 0x00003ab5,
+	0x00003b1b, 0x00003b80, 0x00003bb6, 0x00003c57,
+	0x00003c9c, 0x00003cd6, 0x00003d46, 0x00003d8e,
+	0x00003dc9, 0x00003e0f, 0x00003e4e, 0x00003ea1,
 	// Entry C0 - DF
-	0x00003f1f, 0x00003f78, 0x00003f98,
+	0x00003ef4, 0x00003f41, 0x00003f9b,
 } // Size: 804 bytes
 
-const esData string = "" + // Size: 16280 bytes
-	"\x02Error al recuperar el acuerdo %[1]v de la base de datos, error %[2]v" +
-	"\x02No se ha podido recuperar el acuerdo %[1]v de la base de datos para " +
-	"el mensaje MeteringNotification, error %[2]v\x02No se ha podido recupera" +
-	"r el acuerdo %[1]v de la base de datos para el mensaje de cancelación, e" +
-	"rror %[2]v\x02No se ha podido recuperar el acuerdo %[1]v de la base de d" +
-	"atos para el mensaje ReplyAck, error %[2]v\x02No se ha podido recuperar " +
-	"el acuerdo %[1]v de la base de datos para el mensaje de DataReceived, er" +
-	"ror %[2]v\x02No se pueden recuperar los acuerdos sin archivar de la base" +
-	" de datos. %[1]v\x02Error al marcar el acuerdo %[1]v terminado en la bas" +
-	"e de datos: %[2]v.\x02Error al obtener las definiciones de servicio %[1]" +
-	"v de la base de datos. %[2]v\x02Error al recuperar todas las instancias " +
-	"de servicio desde la base de datos para la clave %[1]v/ %[2]v versión %[" +
-	"3]v clave %[4]v. %[5]v\x02Error al recuperar todas las instancias de ser" +
-	"vicio de la base de datos para %[1]v. %[2]v\x02Error al recuperar todas " +
-	"las instancias de servicio de la base de datos, error: %[1]v\x02Error al" +
-	" obtener la instancia de servicio %[1]v de la base de datos. %[2]v\x02Er" +
-	"ror al recuperar los acuerdos coincidentes de la base de datos para carg" +
-	"as de trabajo %[1]v. Error: %[2]v\x02No se puede recuperar el estado de " +
-	"configuración de servicio para el recurso de nodo %[1]v de la bolsa, err" +
-	"or %[2]v\x02Error al recuperar el nodo %[1]v del Exchange: %[2]v\x02Erro" +
-	"r al actualizar registeredServices para el nodo %[1]v en el Exchange: %[" +
-	"2]v\x02Se ha cargado la imagen para %[1]v/ %[2]v.\x02Se ha cargado la im" +
-	"agen para el servicio %[1]v/ %[2]v.\x02Error al cargar la imagen para %[" +
-	"1]v/ %[2]v.\x02Error al cargar la imagen para el servicio %[1]v/ %[2]v." +
-	"\x02Se inicia el acuerdo de terminación para %[1]v. Razón de la terminac" +
-	"ión: %[2]v\x02Se ha alcanzado un acuerdo para el servicio %[1]v. El ID d" +
-	"e acuerdo es %[2]v.\x02El acuerdo para %[1]v ya no es válido en el agbot" +
-	". El nodo lo cancelará.\x02Los contenedores de servicio de carga de trab" +
-	"ajo para %[1]v/ %[2]v están en ejecución.\x02Completar acuerdo de termin" +
-	"ación para %[1]v. Razón de la terminación: %[2]v\x02Error al suprimir el" +
-	" acuerdo para %[1]v a cambio: %[2]v. Volverá a intentarlo.\x02Se ha enco" +
-	"ntrado un error para AgreementVerification for %[1]v con agbot, error %[" +
-	"2]v\x02ReplyAck indicó que el agbot no quería llevar a cabo el acuerdo p" +
-	"ara %[1]v. El nodo cancelará el acuerdo\x02El nodo ha recibido el mensaj" +
-	"e Cancelar para %[1]v/ %[2]v del agbot %[3]v.\x02Error al manejar el men" +
-	"saje ReplyAck para %[1]v. %[2]v\x02Error al manejar el mensaje ReplyAck." +
-	" %[1]v\x02Error al manejar el mensaje de DataReceived para %[1]v. %[2]v" +
-	"\x02Error al manejar el mensaje DataReceived. %[1]v\x02Error al manejar " +
-	"el mensaje MeterNotification para %[1]v. %[2]v\x02Error al manejar el me" +
-	"nsaje MeterNotification. %[1]v\x02Error al manejar el mensaje Cancelar p" +
-	"ara %[1]v. %[2]v\x02Error al manejar el mensaje de cancelación. %[1]v" +
-	"\x02Iniciar servicio de carga de trabajo para %[1]v/ %[2]v.\x02Carga de " +
-	"trabajo destruida para %[1]v\x02Se han iniciado los contenedores de serv" +
-	"icios para %[1]v.\x02Complete la limpieza de la instancia de servicio %[" +
-	"1]v.\x02Iniciar los servicios dependientes para %[1]v/ %[2]v.\x02Se ha e" +
-	"ncontrado un error al iniciar los servicios de servicio para %[1]v/ %[2]" +
-	"v. %[3]v\x02Se ha producido un error al iniciar el servicio %[1]v/ %[2]v" +
-	" versión %[3]v para el acuerdo %[4]v. %[5]v\x02Iniciar la limpieza de se" +
-	"rvicio %[1]v porque el acuerdo %[2]v ha finalizado.\x02Se ha producido u" +
-	"n error al iniciar el servicio %[1]v/ %[2]v versión %[3]v, error: %[4]v" +
-	"\x02Error al obtener todos los servicios de los acuerdos: %[1]v\x02Inici" +
-	"ar contrato-less servicio %[1]v/ %[2]v.\x02Completar el acuerdo inicial-" +
-	"less service %[1]v/ %[2]v y sus dependientes.\x02No se ha podido iniciar" +
-	" el servicio %[1]v/ %[2]v, error %[3]v, error %[3]v\x02No se han podido " +
-	"iniciar los servicios sin acuerdo, error al buscar el patrón %[1]v a cam" +
-	"bio, error: %[2]v\x02No se pueden iniciar los servicios sin acuerdo, el " +
-	"patrón %[1]v no se ha encontrado a cambio\x02No se ha podido iniciar el " +
-	"servicio %[1]v/ %[2]v, no se ha encontrado la definición de servicio loc" +
-	"al\x02Inicie la actualización del servicio %[1]v/ %[2]v de la versión %[" +
-	"3]v a la versión %[4]v.\x02Se ha completado la actualización del servici" +
-	"o %[1]v/ %[2]v de la versión %[3]v a la versión %[4]v.\x02No se ha podid" +
-	"o actualizar el servicio %[1]v/ %[2]v de la versión %[3]v a la versión %" +
-	"[4]v, error: %[5]v\x02Inicie el servicio de degradación %[1]v/ %[2]v ver" +
-	"sión %[3]v porque no se ha podido iniciar el servicio para el acuerdo." +
-	"\x02Inicie el servicio de degradación %[1]v/ %[2]v versión %[3]v porque " +
-	"el servicio no se ha podido iniciar.\x02Inicie el servicio de degradació" +
-	"n %[1]v/ %[2]v versión %[3]v porque la actualización ha fallado.\x02No s" +
-	"e ha podido degradar el servicio %[1]v/ %[2]v versión %[3]v, error: %[4]" +
-	"v\x02Se ha completado el servicio de degradación %[1]v/ %[2]v de la vers" +
-	"ión %[3]v a la versión %[4]v.\x02Error al buscar la nueva definición de " +
-	"servicio a degradar a para la clave %[1]v/ %[2]v versión %[3]v clave %[4" +
-	"]v. error: %[5]v\x02No se ha podido encontrar una versión inferior para " +
-	"degradar la versión de %[1]v/ %[2]v versión %[3]v.\x02Error al degradar " +
-	"el servicio %[1]v/ %[2]v de la versión %[3]v a la versión %[4]v. Eror: %" +
-	"[5]v\x02Error al degradar el servicio %[1]v/ %[2]v versión %[3]v. %[4]v" +
-	"\x02Iniciar el reintento de número %[1]v para el servicio dependiente %[" +
-	"2]v versión %[3]v porque el servicio ha fallado.\x02No se ha podido rein" +
-	"tentar el número de reintento %[1]v para el servicio dependiente %[2]v v" +
-	"ersión %[3]v.\x02No se ha podido obtener el recuento de reintentos de se" +
-	"rvicio para la versión %[1]v versión %[2]v. %[3]v\x02Error al actualizar" +
-	" el estado de inicio de reintento para la instancia de servicio %[1]v en" +
-	" la database. %[2]v\x02Las propiedades contienen una propiedad no válida" +
-	": %[1]v\x02La propiedad debe incluir un nombre y un valor: %[1]v\x02La p" +
-	"ropiedad %[1]s tiene un tipo de propiedad no válido %[2]s. Los tipos de " +
-	"propiedad permitidos son: version, string, int, boolean, float, and list" +
-	" of string.\x02El valor de propiedad es de tipo %[1]T, se esperaba el ti" +
-	"po %[2]s\x02El valor %[1]v de la propiedad %[2]s no es un tipo entero" +
-	"\x02El valor %[1]v de la propiedad %[2]s no es una serie válida. Defina " +
-	"el tipo o el valor de cambio en una serie.\x02La propiedad %[1]s con el " +
-	"valor %[2]v no es una serie de verion válida\x02La propiedad %[1]s tiene" +
-	" un tipo de valor no válido %[2]T\x02La configuración de despliegue %[1]" +
-	"v contiene la capacidad no soportada para una carga de trabajo\x02La con" +
-	"figuración de despliegue %[1]v contiene la capacidad no soportada para e" +
-	"l contenedor de infraestructura.\x02La configuración de despliegue %[1]v" +
-	" contiene un enlace no soportado para una carga de trabajo, %[2]v\x02La " +
-	"configuración de despliegue %[1]v contiene un enlace no soportado para %" +
-	"[2]v, %[3]v\x02Error al desmarcando la serie de despliegue %[1]v, error:" +
-	" %[2]v\x02Error al desmarcando la serie de alteración temporal de despli" +
-	"egue %[1]v para el acuerdo %[2]v, error: %[3]v\x02Error al iniciar los c" +
-	"ontenedores: %[1]v\x02Error al iniciar contenedores para el acuerdo %[1]" +
-	"v: %[2]v\x02Error al reiniciar los contenedores para los acuerdos %[1]v:" +
-	" %[2]v\x02Se ha producido un error al borrar los contenedores antiguos a" +
-	"ntes de iniciar nuevos contenedores para %[1]v. Error: %[2]v\x02No se ha" +
-	" podido obtener una lista de contenedores padre para el reintento de ser" +
-	"vicio de %[1]v. %[2]v\x02No se ha podido restaurar la conexión de red co" +
-	"n los padres para el servicio %[1]v. %[2]v\x02No se ha podido leer el ar" +
-	"chivo de políticas %[1]v para el servicio %[2]v, error: %[3]v\x02Iniciar" +
-	" la publicidad de políticas con el Exchange para el servicio %[1]v/ %[2]" +
-	"v.\x02No se han podido anunciar las políticas con el Exchange para el se" +
-	"rvicio %[1]v/ %[2]v, error: %[3]v\x02Publicidad de política completa con" +
-	" el Exchange para el servicio %[1]v/ %[2]v.\x02El latido de nodo ha fall" +
-	"ado para el nodo %[1]v/ %[2]v. Error: %[3]v\x02Se ha restaurado el latid" +
-	"o de nodo para el nodo %[1]v/ %[2]v.\x02no se puede leer la política de " +
-	"nodo de la base de datos local. %[1]v\x02No se puede leer el objeto de n" +
-	"odo de la base de datos local. %[1]v\x02No se ha podido sincronizar la p" +
-	"olítica de nodo local con la copia de Exchange. Error: %[1]v\x02Política" +
-	" de nodo actualizada con la copia de Exchange: %[1]v\x02No se ha podido " +
-	"sincronizar la entrada de usuario de nodo local con la copia de Exchange" +
-	". Error: %[1]v\x02Entrada de usuario de nodo actualizada con la copia de" +
-	" Exchange. Las entradas de usuario cambiadas son: %[1]v\x02El nodo no ha" +
-	" podido verificar el acuerdo %[1]v con el consumidor. Se cancelará\x02El" +
-	" nodo está fuera de línea. El registro de los mensajes de error fuera de" +
-	" línea periódicos se recortará hasta que se restaure la conexión\x02no s" +
-	"e ha podido crear el directorio para el certificado de la API MMS autofi" +
-	"rmado, error %[1]v\x02no se ha podido generar un número aleatorio para e" +
-	"l número de serie del certificado de la API MMS, error %[1]v\x02no se ha" +
-	" podido generar la clave privada para el certificado de la API MMS, erro" +
-	"r %[1]v\x02no se ha podido crear el certificado de la API de MMS, error " +
-	"%[1]v\x02no se puede escribir el certificado de la API MMS en el archivo" +
-	" %[1]v, error %[2]v\x02no se ha podido codificar el certificado de la AP" +
-	"I MMS en el archivo %[1]v, error %[2]v\x02no se puede cerrar el archivo " +
-	"de certificado de la API MMS %[1]v, error %[2]v\x02no se puede escribir " +
-	"la clave privada de certificado de API MMS en el archivo %[1]v, error %[" +
-	"2]v\x02no se ha podido codificar la clave privada de certificado de API " +
-	"MMS en el archivo %[1]v, error %[2]v\x02no se ha podido cerrar el archiv" +
-	"o de claves privadas de certificado de API de MMS %[1]v, error %[2]v\x02" +
-	"El acuerdo %[1]v ya existe, ignorando la propuesta: %[2]v\x02se han reci" +
-	"bido errores de la llamada de error de TsAndCs para el acuerdo %[1]v, %[" +
-	"2]v\x02El nodo ha recibido el mensaje de propuesta para el servicio %[1]" +
-	"v/ %[2]v del agbot %[3]v.\x02El nodo ha rechazado la propuesta para el s" +
-	"ervicio %[1]v/ %[2]v.\x02Se ha producido un error al manejar la propuest" +
-	"a para el servicio %[1]v/ %[2]v. Error: %[3]v\x02Version_Expression: El " +
-	"espacio en blanco no está permitido en %[1]v.\x02Version_Expression: %[1" +
-	"]v no es una serie de versión válida.\x02Version_Expression: %[1]v no em" +
-	"pieza con una directiva de inclusión o exclusión.\x02Version_Expression:" +
-	" %[1]v no termina con una directiva de inclusión o exclusión.\x02Version" +
-	"_Expression: Número incorrecto de versiones en la expresión: %[1]v.\x02L" +
-	"a serie de versión de entrada %[1]v o %[2]v no es una serie de versión ú" +
-	"nica válida.\x02Error al analizar las selecciones %[1]v. %[2]v\x02Error " +
-	"al obtener %[1]v para la salida, error %[2]v\x02Error al analizar la ent" +
-	"rada para la configuración/registro del nodo. El cuerpo de entrada no se" +
-	" ha podido deserializar a un objeto de nodo: %[1]v, error: %[2]v\x02Erro" +
-	"r al analizar la entrada para la configuración/registro del nodo. El cue" +
-	"rpo de entrada no se ha podido deserializar al objeto configstate: %[1]v" +
-	", error: %[2]v\x02Error al analizar la entrada para la actualización de " +
-	"nodo. El cuerpo de entrada no se ha podido deserializar a un objeto de n" +
-	"odo: %[1]v, error: %[2]v\x02Error al analizar la entrada para la polític" +
-	"a de nodo. El cuerpo de entrada no se ha podido deserializar como un obj" +
-	"eto de política: %[1]v, error: %[2]v\x02Error al analizar la entrada par" +
-	"a el parche de política de nodo. El cuerpo de entrada no se ha podido de" +
-	"serializar en una expresión de restricción o en la lista de propiedades:" +
-	" %[1]v, error: %[2]v\x02Error al analizar la entrada para el parche de p" +
-	"olítica de nodo. El cuerpo de entrada no contenía una expresión de restr" +
-	"icción o la lista de propiedades: %[1]v, error: %[2]v\x02Error al analiz" +
-	"ar la entrada para la entrada de usuario de nodo. El cuerpo de entrada n" +
-	"o se ha podido deserializar como un objeto UserInput: %[1]v, error: %[2]" +
-	"v\x02Error en la configuración de nodo/registro para el nodo %[1]v. %[2]" +
-	"v\x02Error al actualizar el nodo %[1]v. %[2]v\x02Error en el desregistro" +
-	" del nodo. %[1]v\x02Error de comprobación de versión de Exchange. error:" +
-	" %[1]v\x02Error al crear o sustituir la política de nodo. %[1]v\x02Error" +
-	" en aplicación de parches a la política de nodo. %[1]v\x02Error al supri" +
-	"mir la política de nodo. %[1]v\x02Error al actualizar la entrada de usua" +
-	"rio de nodo. %[1]v\x02Error en la aplicación de parches de entrada de us" +
-	"uario de nodo. %[1]v\x02Error al suprimir la entrada de usuario del nodo" +
-	". %[1]v\x02Iniciar la configuración/registro del nodo para el nodo %[1]v" +
-	".\x02Inicie la actualización del nodo %[1]v.\x02Complete la actualizació" +
-	"n de nodo para %[1]v.\x02Iniciar el desregistro del nodo.\x02Se ha compl" +
-	"etado la eliminación del registro del nodo para el nodo %[1]v.\x02Error " +
-	"al anular el registro del nodo. El nodo no se ha encontrado en la base d" +
-	"e datos.\x02Error al anular el registro del nodo. El nodo debe estar en " +
-	"estado 'configurado' o 'configurando' para poder desconfigurarlo.\x02Err" +
-	"or de entrada para el desregistro de nodo. %[1]v es un valor incorrecto " +
-	"para removeNode\x02Error de entrada para el desregistro de nodo. %[1]v e" +
-	"s un valor incorrecto para deepClean\x02Error de entrada para el desregi" +
-	"stro de nodo. %[1]v es un valor incorrecto para el bloque\x02No se puede" +
-	" leer el objeto de nodo de la base de datos, error %[1]v\x02Error al gua" +
-	"rdar el estado de configuración del nuevo nodo  (desconfigurando) en la " +
-	"base de datos: %[1]v\x02Error en la configuración del nodo. El nodo no s" +
-	"e ha encontrado en la base de datos.\x02Error en la configuración del no" +
-	"do. El nodo debe estar en estado 'configurado' o 'configurando' para pod" +
-	"er cambiar el estado a %[1]v.\x02La transición de estado de nodo de '%[1" +
-	"]v' a '%[2]v' no está soportada.\x02Error al obtener la entrada de usuar" +
-	"io de la base de datos local %[1]v\x02No se han podido encontrar prefere" +
-	"ncias para el servicio %[1]v/ %[2]v de la entrada de usuario local, erro" +
-	"r: %[3]v\x02Error al guardar el nuevo estado de configuración de nodo en" +
-	" la base de datos: %[1]v\x02Complete la configuración/registro del nodo " +
-	"para el nodo %[1]v.\x02Error en la configuración de servicio para %[1]v." +
-	" %[2]v\x02Error al obtener referencias de servicio para el patrón %[1]v." +
-	" %[2]v\x02Política de nodo nueva: %[1]v\x02Política de nodo suprimida" +
-	"\x02Nueva entrada de usuario de nodo: %[1]v\x02No hay entrada de usuario" +
-	" de nodo a detele\x02Se ha suprimido toda la entrada de usuario de nodo" +
-	"\x02Iniciar la configuración de servicio con la entrada de usuario para " +
-	"%[1]v/ %[2]v.\x02Iniciar la configuración automática de servicio para %[" +
-	"1]v/ %[2]v.\x02Complete la configuración de servicio para %[1]v/ %[2]v." +
-	"\x02Completar la configuración automática de servicio para %[1]v/ %[2]v." +
-	"\x02La variable %[1]v falta en la configuración de servicio para %[2]v/ " +
-	"%[3]v. Puede que no se forme un acuerdo si la política de negocio no con" +
-	"tiene el valor de la variable que falta.\x02Error al configurar el servi" +
-	"cio %[1]v. %[2]v\x02Error al cambiar el estado configstate de servicio %" +
-	"[1]v, error %[2]v\x02Se inicia el cambio de estado de configuración de s" +
-	"ervicio en %[1]v para %[2]v para el nodo.\x02Complete el cambio de estad" +
-	"o de configuración de servicio a %[1]v para %[2]v para el nodo.\x02Error" +
-	" al convertir las selecciones en Selectores: %[1]v\x02Nombre, o Org es u" +
-	"na serie vacía.\x02La matriz serviceVersions está vacía.\x02La expresión" +
-	" de restricción: %[1]v es de tipo %[2]T, pero se espera que sea una matr" +
-	"iz de series de caracteres\x02no se ha podido convertir la restricción d" +
-	"e política %[1]v en formato interno, error %[2]v\x02El operador lógico %" +
-	"[1]v no es válido, se esperaba AND, OR, &, | |\x02se han encontrado %[1]" +
-	"v token (s), se esperaba 3 en una expresión %[2]v, el formato esperado e" +
-	"s <property> == <value>\x02se han encontrado %[1]v señal (s), se esperab" +
-	"a 3 en una expresión %[2]v, el formato esperado es expresión con 3 señal" +
-	"es: <property><operator><value> en la expresión de restricción\x02Expres" +
-	"ión: %[1]v debe contener un operador de comparación válido-operador erró" +
-	"neo %[2]v. Operadores permitidos: %[3]v, %[4]v, %[5]v, %[6]v, %[7]v, %[8" +
-	"]v, %[9]v, %[10]v\x02Operador de comparación: %[1]v no está soportado pa" +
-	"ra el valor numérico: %[2]v\x02Operador de comparación: %[1]v no está so" +
-	"portado para el valor booleano: %[2]v\x02Operador de comparación: %[1]v " +
-	"no está soportado para el valor de lista de cadenas de caracteres: %[2]v" +
-	"\x02Operador de comparación: %[1]v no está soportado para el valor de se" +
-	"rie: %[2]v\x02Operador de comparación: %[1]v no está soportado para una " +
-	"sola versión: %[2]v\x02Operador de comparación: %[1]v no está soportado " +
-	"para la expresión de versión: %[2]v\x02Expresión: %[1]v no es válida"
+const esData string = "" + // Size: 16283 bytes
+	"\x02El acuerdo %[1]v ya existe, ignorando la propuesta: %[2]v\x02se han " +
+	"recibido errores de la llamada de error de TsAndCs para el acuerdo %[1]v" +
+	", %[2]v\x02El nodo ha recibido el mensaje de propuesta para el servicio " +
+	"%[1]v/ %[2]v del agbot %[3]v.\x02El nodo ha rechazado la propuesta para " +
+	"el servicio %[1]v/ %[2]v.\x02Se ha producido un error al manejar la prop" +
+	"uesta para el servicio %[1]v/ %[2]v. Error: %[3]v\x02La configuración de" +
+	" despliegue %[1]v contiene la capacidad no soportada para una carga de t" +
+	"rabajo\x02La configuración de despliegue %[1]v contiene la capacidad no " +
+	"soportada para el contenedor de infraestructura.\x02La configuración de " +
+	"despliegue %[1]v contiene un enlace no soportado para una carga de traba" +
+	"jo, %[2]v\x02La configuración de despliegue %[1]v contiene un enlace no " +
+	"soportado para %[2]v, %[3]v\x02Error al desmarcando la serie de desplieg" +
+	"ue %[1]v, error: %[2]v\x02Error al desmarcando la serie de alteración te" +
+	"mporal de despliegue %[1]v para el acuerdo %[2]v, error: %[3]v\x02Error " +
+	"al iniciar los contenedores: %[1]v\x02Error al iniciar contenedores para" +
+	" el acuerdo %[1]v: %[2]v\x02Error al reiniciar los contenedores para los" +
+	" acuerdos %[1]v: %[2]v\x02Se ha producido un error al borrar los contene" +
+	"dores antiguos antes de iniciar nuevos contenedores para %[1]v. Error: %" +
+	"[2]v\x02No se ha podido obtener una lista de contenedores padre para el " +
+	"reintento de servicio de %[1]v. %[2]v\x02No se ha podido restaurar la co" +
+	"nexión de red con los padres para el servicio %[1]v. %[2]v\x02La expresi" +
+	"ón de restricción: %[1]v es de tipo %[2]T, pero se espera que sea una m" +
+	"atriz de series de caracteres\x02no se ha podido convertir la restricció" +
+	"n de política %[1]v en formato interno, error %[2]v\x02El operador lógic" +
+	"o %[1]v no es válido, se esperaba AND, OR, &, | |\x02se han encontrado %" +
+	"[1]v token (s), se esperaba 3 en una expresión %[2]v, el formato esperad" +
+	"o es <property> == <value>\x02se han encontrado %[1]v señal (s), se espe" +
+	"raba 3 en una expresión %[2]v, el formato esperado es expresión con 3 se" +
+	"ñales: <property><operator><value> en la expresión de restricción\x02Ex" +
+	"presión: %[1]v debe contener un operador de comparación válido-operador " +
+	"erróneo %[2]v. Operadores permitidos: %[3]v, %[4]v, %[5]v, %[6]v, %[7]v," +
+	" %[8]v, %[9]v, %[10]v\x02Operador de comparación: %[1]v no está soportad" +
+	"o para el valor numérico: %[2]v\x02Operador de comparación: %[1]v no est" +
+	"á soportado para el valor booleano: %[2]v\x02Operador de comparación: %" +
+	"[1]v no está soportado para el valor de lista de cadenas de caracteres: " +
+	"%[2]v\x02Operador de comparación: %[1]v no está soportado para el valor " +
+	"de serie: %[2]v\x02Operador de comparación: %[1]v no está soportado para" +
+	" una sola versión: %[2]v\x02Operador de comparación: %[1]v no está sopor" +
+	"tado para la expresión de versión: %[2]v\x02Expresión: %[1]v no es válid" +
+	"a\x02Nombre, o Org es una serie vacía.\x02La matriz serviceVersions está" +
+	" vacía.\x02Las propiedades contienen una propiedad no válida: %[1]v\x02E" +
+	"rror al analizar las selecciones %[1]v. %[2]v\x02Error al obtener %[1]v " +
+	"para la salida, error %[2]v\x02Error al analizar la entrada para la conf" +
+	"iguración/registro del nodo. El cuerpo de entrada no se ha podido deseri" +
+	"alizar a un objeto de nodo: %[1]v, error: %[2]v\x02Error al analizar la " +
+	"entrada para la configuración/registro del nodo. El cuerpo de entrada no" +
+	" se ha podido deserializar al objeto configstate: %[1]v, error: %[2]v" +
+	"\x02Error al analizar la entrada para la actualización de nodo. El cuerp" +
+	"o de entrada no se ha podido deserializar a un objeto de nodo: %[1]v, er" +
+	"ror: %[2]v\x02Error al analizar la entrada para la política de nodo. El " +
+	"cuerpo de entrada no se ha podido deserializar como un objeto de polític" +
+	"a: %[1]v, error: %[2]v\x02Error al analizar la entrada para el parche de" +
+	" política de nodo. El cuerpo de entrada no se ha podido deserializar en " +
+	"una expresión de restricción o en la lista de propiedades: %[1]v, error:" +
+	" %[2]v\x02Error al analizar la entrada para el parche de política de nod" +
+	"o. El cuerpo de entrada no contenía una expresión de restricción o la li" +
+	"sta de propiedades: %[1]v, error: %[2]v\x02Error al analizar la entrada " +
+	"para la entrada de usuario de nodo. El cuerpo de entrada no se ha podido" +
+	" deserializar como un objeto UserInput: %[1]v, error: %[2]v\x02Error en " +
+	"la configuración de nodo/registro para el nodo %[1]v. %[2]v\x02Error al " +
+	"actualizar el nodo %[1]v. %[2]v\x02Error en el desregistro del nodo. %[1" +
+	"]v\x02Error de comprobación de versión de Exchange. error: %[1]v\x02Erro" +
+	"r al crear o sustituir la política de nodo. %[1]v\x02Error en aplicación" +
+	" de parches a la política de nodo. %[1]v\x02Error al suprimir la polític" +
+	"a de nodo. %[1]v\x02Error al actualizar la entrada de usuario de nodo. %" +
+	"[1]v\x02Error en la aplicación de parches de entrada de usuario de nodo." +
+	" %[1]v\x02Error al suprimir la entrada de usuario del nodo. %[1]v\x02Ini" +
+	"ciar la configuración/registro del nodo para el nodo %[1]v.\x02Inicie la" +
+	" actualización del nodo %[1]v.\x02Complete la actualización de nodo para" +
+	" %[1]v.\x02Iniciar el desregistro del nodo.\x02Se ha completado la elimi" +
+	"nación del registro del nodo para el nodo %[1]v.\x02Error al anular el r" +
+	"egistro del nodo. El nodo no se ha encontrado en la base de datos.\x02Er" +
+	"ror al anular el registro del nodo. El nodo debe estar en estado 'config" +
+	"urado' o 'configurando' para poder desconfigurarlo.\x02Error de entrada " +
+	"para el desregistro de nodo. %[1]v es un valor incorrecto para removeNod" +
+	"e\x02Error de entrada para el desregistro de nodo. %[1]v es un valor inc" +
+	"orrecto para deepClean\x02Error de entrada para el desregistro de nodo. " +
+	"%[1]v es un valor incorrecto para el bloque\x02No se puede leer el objet" +
+	"o de nodo de la base de datos, error %[1]v\x02Error al guardar el estado" +
+	" de configuración del nuevo nodo  (desconfigurando) en la base de datos:" +
+	" %[1]v\x02Error en la configuración del nodo. El nodo no se ha encontrad" +
+	"o en la base de datos.\x02Error en la configuración del nodo. El nodo de" +
+	"be estar en estado 'configurado' o 'configurando' para poder cambiar el " +
+	"estado a %[1]v.\x02La transición de estado de nodo de '%[1]v' a '%[2]v' " +
+	"no está soportada.\x02Error al obtener la entrada de usuario de la base " +
+	"de datos local %[1]v\x02No se han podido encontrar preferencias para el " +
+	"servicio %[1]v/ %[2]v de la entrada de usuario local, error: %[3]v\x02Er" +
+	"ror al guardar el nuevo estado de configuración de nodo en la base de da" +
+	"tos: %[1]v\x02Complete la configuración/registro del nodo para el nodo %" +
+	"[1]v.\x02Error en la configuración de servicio para %[1]v. %[2]v\x02Erro" +
+	"r al obtener referencias de servicio para el patrón %[1]v. %[2]v\x02Polí" +
+	"tica de nodo nueva: %[1]v\x02Política de nodo suprimida\x02Nueva entrada" +
+	" de usuario de nodo: %[1]v\x02No hay entrada de usuario de nodo a detele" +
+	"\x02Se ha suprimido toda la entrada de usuario de nodo\x02Iniciar la con" +
+	"figuración de servicio con la entrada de usuario para %[1]v/ %[2]v.\x02I" +
+	"niciar la configuración automática de servicio para %[1]v/ %[2]v.\x02Com" +
+	"plete la configuración de servicio para %[1]v/ %[2]v.\x02Completar la co" +
+	"nfiguración automática de servicio para %[1]v/ %[2]v.\x02La variable %[1" +
+	"]v falta en la configuración de servicio para %[2]v/ %[3]v. Puede que no" +
+	" se forme un acuerdo si la política de negocio no contiene el valor de l" +
+	"a variable que falta.\x02Error al configurar el servicio %[1]v. %[2]v" +
+	"\x02Error al cambiar el estado configstate de servicio %[1]v, error %[2]" +
+	"v\x02Se inicia el cambio de estado de configuración de servicio en %[1]v" +
+	" para %[2]v para el nodo.\x02Complete el cambio de estado de configuraci" +
+	"ón de servicio a %[1]v para %[2]v para el nodo.\x02Error al convertir l" +
+	"as selecciones en Selectores: %[1]v\x02No se ha podido leer el archivo d" +
+	"e políticas %[1]v para el servicio %[2]v, error: %[3]v\x02Iniciar la pub" +
+	"licidad de políticas con el Exchange para el servicio %[1]v/ %[2]v.\x02N" +
+	"o se han podido anunciar las políticas con el Exchange para el servicio " +
+	"%[1]v/ %[2]v, error: %[3]v\x02Publicidad de política completa con el Exc" +
+	"hange para el servicio %[1]v/ %[2]v.\x02El latido de nodo ha fallado par" +
+	"a el nodo %[1]v/ %[2]v. Error: %[3]v\x02Se ha restaurado el latido de no" +
+	"do para el nodo %[1]v/ %[2]v.\x02no se puede leer la política de nodo de" +
+	" la base de datos local. %[1]v\x02No se puede leer el objeto de nodo de " +
+	"la base de datos local. %[1]v\x02No se ha podido sincronizar la política" +
+	" de nodo local con la copia de Exchange. Error: %[1]v\x02Política de nod" +
+	"o actualizada con la copia de Exchange: %[1]v\x02No se ha podido sincron" +
+	"izar la entrada de usuario de nodo local con la copia de Exchange. Error" +
+	": %[1]v\x02Entrada de usuario de nodo actualizada con la copia de Exchan" +
+	"ge. Las entradas de usuario cambiadas son: %[1]v\x02El nodo no ha podido" +
+	" verificar el acuerdo %[1]v con el consumidor. Se cancelará\x02El nodo e" +
+	"stá fuera de línea. El registro de los mensajes de error fuera de línea " +
+	"periódicos se recortará hasta que se restaure la conexión\x02Error al re" +
+	"cuperar el acuerdo %[1]v de la base de datos, error %[2]v\x02No se ha po" +
+	"dido recuperar el acuerdo %[1]v de la base de datos para el mensaje Mete" +
+	"ringNotification, error %[2]v\x02No se ha podido recuperar el acuerdo %[" +
+	"1]v de la base de datos para el mensaje de cancelación, error %[2]v\x02N" +
+	"o se ha podido recuperar el acuerdo %[1]v de la base de datos para el me" +
+	"nsaje ReplyAck, error %[2]v\x02No se ha podido recuperar el acuerdo %[1]" +
+	"v de la base de datos para el mensaje de DataReceived, error %[2]v\x02No" +
+	" se pueden recuperar los acuerdos sin archivar de la base de datos. %[1]" +
+	"v\x02Error al marcar el acuerdo %[1]v terminado en la base de datos: %[2" +
+	"]v.\x02Error al obtener las definiciones de servicio %[1]v de la base de" +
+	" datos. %[2]v\x02Error al recuperar todas las instancias de servicio des" +
+	"de la base de datos para la clave %[1]v/ %[2]v versión %[3]v clave %[4]v" +
+	". %[5]v\x02Error al recuperar todas las instancias de servicio de la bas" +
+	"e de datos para %[1]v. %[2]v\x02Error al recuperar todas las instancias " +
+	"de servicio de la base de datos, error: %[1]v\x02Error al obtener la ins" +
+	"tancia de servicio %[1]v de la base de datos. %[2]v\x02Error al recupera" +
+	"r los acuerdos coincidentes de la base de datos para cargas de trabajo %" +
+	"[1]v. Error: %[2]v\x02No se puede recuperar el estado de configuración d" +
+	"e servicio para el recurso de nodo %[1]v de la bolsa, error %[2]v\x02Err" +
+	"or al recuperar el nodo %[1]v del Exchange: %[2]v\x02Error al actualizar" +
+	" registeredServices para el nodo %[1]v en el Exchange: %[2]v\x02Se ha ca" +
+	"rgado la imagen para %[1]v/ %[2]v.\x02Se ha cargado la imagen para el se" +
+	"rvicio %[1]v/ %[2]v.\x02Error al cargar la imagen para %[1]v/ %[2]v.\x02" +
+	"Error al cargar la imagen para el servicio %[1]v/ %[2]v.\x02Se inicia el" +
+	" acuerdo de terminación para %[1]v. Razón de la terminación: %[2]v\x02Se" +
+	" ha alcanzado un acuerdo para el servicio %[1]v. El ID de acuerdo es %[2" +
+	"]v.\x02El acuerdo para %[1]v ya no es válido en el agbot. El nodo lo can" +
+	"celará.\x02Los contenedores de servicio de carga de trabajo para %[1]v/ " +
+	"%[2]v están en ejecución.\x02Completar acuerdo de terminación para %[1]v" +
+	". Razón de la terminación: %[2]v\x02Error al suprimir el acuerdo para %[" +
+	"1]v a cambio: %[2]v. Volverá a intentarlo.\x02Se ha encontrado un error " +
+	"para AgreementVerification for %[1]v con agbot, error %[2]v\x02ReplyAck " +
+	"indicó que el agbot no quería llevar a cabo el acuerdo para %[1]v. El no" +
+	"do cancelará el acuerdo\x02El nodo ha recibido el mensaje Cancelar para " +
+	"%[1]v/ %[2]v del agbot %[3]v.\x02Error al manejar el mensaje ReplyAck pa" +
+	"ra %[1]v. %[2]v\x02Error al manejar el mensaje ReplyAck. %[1]v\x02Error " +
+	"al manejar el mensaje de DataReceived para %[1]v. %[2]v\x02Error al mane" +
+	"jar el mensaje DataReceived. %[1]v\x02Error al manejar el mensaje MeterN" +
+	"otification para %[1]v. %[2]v\x02Error al manejar el mensaje MeterNotifi" +
+	"cation. %[1]v\x02Error al manejar el mensaje Cancelar para %[1]v. %[2]v" +
+	"\x02Error al manejar el mensaje de cancelación. %[1]v\x02Iniciar servici" +
+	"o de carga de trabajo para %[1]v/ %[2]v.\x02Carga de trabajo destruida p" +
+	"ara %[1]v\x02Se han iniciado los contenedores de servicios para %[1]v." +
+	"\x02Complete la limpieza de la instancia de servicio %[1]v.\x02Iniciar l" +
+	"os servicios dependientes para %[1]v/ %[2]v.\x02Se ha encontrado un erro" +
+	"r al iniciar los servicios de servicio para %[1]v/ %[2]v. %[3]v\x02Se ha" +
+	" producido un error al iniciar el servicio %[1]v/ %[2]v versión %[3]v pa" +
+	"ra el acuerdo %[4]v. %[5]v\x02Iniciar la limpieza de servicio %[1]v porq" +
+	"ue el acuerdo %[2]v ha finalizado.\x02Se ha producido un error al inicia" +
+	"r el servicio %[1]v/ %[2]v versión %[3]v, error: %[4]v\x02Error al obten" +
+	"er todos los servicios de los acuerdos: %[1]v\x02Iniciar contrato-less s" +
+	"ervicio %[1]v/ %[2]v.\x02Completar el acuerdo inicial-less service %[1]v" +
+	"/ %[2]v y sus dependientes.\x02No se ha podido iniciar el servicio %[1]v" +
+	"/ %[2]v, error %[3]v, error %[3]v\x02No se han podido iniciar los servic" +
+	"ios sin acuerdo, error al buscar el patrón %[1]v a cambio, error: %[2]v" +
+	"\x02No se pueden iniciar los servicios sin acuerdo, el patrón %[1]v no s" +
+	"e ha encontrado a cambio\x02No se ha podido iniciar el servicio %[1]v/ %" +
+	"[2]v, no se ha encontrado la definición de servicio local\x02Inicie la a" +
+	"ctualización del servicio %[1]v/ %[2]v de la versión %[3]v a la versión " +
+	"%[4]v.\x02Se ha completado la actualización del servicio %[1]v/ %[2]v de" +
+	" la versión %[3]v a la versión %[4]v.\x02No se ha podido actualizar el s" +
+	"ervicio %[1]v/ %[2]v de la versión %[3]v a la versión %[4]v, error: %[5]" +
+	"v\x02Inicie el servicio de degradación %[1]v/ %[2]v versión %[3]v porque" +
+	" no se ha podido iniciar el servicio para el acuerdo.\x02Inicie el servi" +
+	"cio de degradación %[1]v/ %[2]v versión %[3]v porque el servicio no se h" +
+	"a podido iniciar.\x02Inicie el servicio de degradación %[1]v/ %[2]v vers" +
+	"ión %[3]v porque la actualización ha fallado.\x02No se ha podido degrada" +
+	"r el servicio %[1]v/ %[2]v versión %[3]v, error: %[4]v\x02Se ha completa" +
+	"do el servicio de degradación %[1]v/ %[2]v de la versión %[3]v a la vers" +
+	"ión %[4]v.\x02Error al buscar la nueva definición de servicio a degradar" +
+	" a para la clave %[1]v/ %[2]v versión %[3]v clave %[4]v. error: %[5]v" +
+	"\x02No se ha podido encontrar una versión inferior para degradar la vers" +
+	"ión de %[1]v/ %[2]v versión %[3]v.\x02Error al degradar el servicio %[1]" +
+	"v/ %[2]v de la versión %[3]v a la versión %[4]v. Eror: %[5]v\x02Error al" +
+	" degradar el servicio %[1]v/ %[2]v versión %[3]v. %[4]v\x02Iniciar el re" +
+	"intento de número %[1]v para el servicio dependiente %[2]v versión %[3]v" +
+	" porque el servicio ha fallado.\x02No se ha podido reintentar el número " +
+	"de reintento %[1]v para el servicio dependiente %[2]v versión %[3]v.\x02" +
+	"No se ha podido obtener el recuento de reintentos de servicio para la ve" +
+	"rsión %[1]v versión %[2]v. %[3]v\x02Error al actualizar el estado de ini" +
+	"cio de reintento para la instancia de servicio %[1]v en la database. %[2" +
+	"]v\x02no se ha podido crear el directorio para el certificado de la API " +
+	"MMS autofirmado, error %[1]v\x02no se ha podido generar un número aleato" +
+	"rio para el número de serie del certificado de la API MMS, error %[1]v" +
+	"\x02no se ha podido generar la clave privada para el certificado de la A" +
+	"PI MMS, error %[1]v\x02no se ha podido crear el certificado de la API de" +
+	" MMS, error %[1]v\x02no se puede escribir el certificado de la API MMS e" +
+	"n el archivo %[1]v, error %[2]v\x02no se ha podido codificar el certific" +
+	"ado de la API MMS en el archivo %[1]v, error %[2]v\x02no se puede cerrar" +
+	" el archivo de certificado de la API MMS %[1]v, error %[2]v\x02no se pue" +
+	"de escribir la clave privada de certificado de API MMS en el archivo %[1" +
+	"]v, error %[2]v\x02no se ha podido codificar la clave privada de certifi" +
+	"cado de API MMS en el archivo %[1]v, error %[2]v\x02no se ha podido cerr" +
+	"ar el archivo de claves privadas de certificado de API de MMS %[1]v, err" +
+	"or %[2]v\x02La propiedad debe incluir un nombre y un valor: %[1]v\x02La " +
+	"propiedad %[1]s tiene un tipo de propiedad no válido %[2]s. Los tipos de" +
+	" propiedad permitidos son: version, string, int, boolean, float, and lis" +
+	"t of string.\x02El valor de la propiedad es de tipo %[1]T, se esperaba e" +
+	"l tipo %[2]s\x02El valor %[1]v de la propiedad %[2]s no es un tipo enter" +
+	"o\x02El valor %[1]v de la propiedad %[2]s no es una serie válida. Defina" +
+	" el tipo o el valor de cambio en una serie.\x02La propiedad %[1]s con el" +
+	" valor %[2]v no es una serie de verion válida\x02La propiedad %[1]s tien" +
+	"e un tipo de valor no válido %[2]T\x02Version_Expression: El espacio en " +
+	"blanco no está permitido en %[1]v.\x02Version_Expression: %[1]v no es un" +
+	"a serie de versión válida.\x02Version_Expression: %[1]v no empieza con u" +
+	"na directiva de inclusión o exclusión.\x02Version_Expression: %[1]v no t" +
+	"ermina con una directiva de inclusión o exclusión.\x02Version_Expression" +
+	": Número incorrecto de versiones en la expresión: %[1]v.\x02La serie de " +
+	"versión de entrada %[1]v o %[2]v no es una serie de versión única válida" +
+	"."
 
 var frIndex = []uint32{ // 195 elements
 	// Entry 0 - 1F
@@ -1273,4 +1274,4 @@ var zh_TWIndex = []uint32{ // 195 elements
 
 const zh_TWData string = ""
 
-// Total table size 37445 bytes (36KiB); checksum: 6094D7E4
+// Total table size 37470 bytes (36KiB); checksum: BAB3D396
