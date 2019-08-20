@@ -6,9 +6,9 @@
 # runtime context. Some parts of this test simulate the fact that anax is configured to auto-restart
 # when it terminates.
 
-EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+EXCH_URL="${EXCH_APP_HOST}"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
-export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 echo "Unregister node, non-blocking"
 hzn unregister -f
@@ -92,5 +92,3 @@ then
    echo -e "registeredServices should be empty: $RM"
    exit 2
 fi
-
-

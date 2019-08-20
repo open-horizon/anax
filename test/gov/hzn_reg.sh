@@ -3,7 +3,7 @@
 echo -e "Registering microservice and workload with hzn dev"
 
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
-export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR

@@ -8,7 +8,7 @@
 # export DEVICE_ORG="e2edev@somecomp.com"
 # export DEVICE_NAME="anaxdev1"
 # export ANAX_API="http://localhost"
-# export EXCH="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+# export EXCH="${EXCH_APP_HOST}"
 # export TOKEN="abcdefg"
 # This env var can be changed to whatever pattern you want to run.
 # export PATTERN="sall"
@@ -16,10 +16,18 @@
 if [ "$OLDANAX" == "1" ]
 then
     echo "Starting OLD Anax1 to run workloads."
-    /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+    if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+      /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+    else
+      /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-remote.config >/tmp/anax.log 2>&1 &
+    fi
 else
     echo "Starting Anax1 to run workloads."
-    /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+    if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+      /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+    else
+      /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-remote.config >/tmp/anax.log 2>&1 &
+    fi
 fi
 
 sleep 5
@@ -57,10 +65,18 @@ then
         if [ "$OLDANAX" == "1" ]
         then
             echo "Starting OLD Anax2 to run workloads."
-            /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2.config >/tmp/anax2.log 2>&1 &
+            if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+              /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2.config >/tmp/anax2.log 2>&1 &
+            else
+              /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2-remote.config >/tmp/anax2.log 2>&1 &
+            fi
         else
             echo "Starting Anax2 to run workloads."
-            /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2.config >/tmp/anax2.log 2>&1 &
+            if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+              /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2.config >/tmp/anax2.log 2>&1 &
+            else
+              /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2-remote.config >/tmp/anax2.log 2>&1 &
+            fi
         fi
 
         sleep 5

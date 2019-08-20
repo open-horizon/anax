@@ -6,7 +6,7 @@
 # runtime context. Some parts of this test simulate the fact that anax is configured to auto-restart
 # when it terminates.
 
-EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+EXCH_URL="${EXCH_APP_HOST}"
 
 for (( ; ; ))
 do

@@ -59,7 +59,11 @@ if [ "${3}" == "e2edev@somecomp.com" ]; then
     admin_pw="e2edevadminpw"
 fi
 
-ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+	ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+else
+	ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+fi
 
 if [ "$ADDM" != "204" ]
 then
@@ -68,7 +72,11 @@ then
   exit -1
 fi
 
-ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "https://css-api:9443/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+	ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+else
+	ADDF=$(curl -sLX PUT -w "%{http_code}" -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+fi
 
 if [ "$ADDF" == "204" ]
 then

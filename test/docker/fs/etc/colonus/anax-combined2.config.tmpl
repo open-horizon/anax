@@ -9,7 +9,7 @@
         "TrustSystemCACerts": true,
         "PublicKeyPath": "/root/.colonus/mtn-publicKey.pem",
         "DefaultServiceRegistrationRAM": 1024,
-        "ExchangeURL": "http://${EXCH_APP_HOST}:8080/v1/",
+        "ExchangeURL": "${EXCH_APP_HOST}/",
         "PolicyPath": "/root/.colonus2/policy.d/",
         "ExchangeHeartbeat": 60,
         "ExchangeVersionCheckIntervalM": 1,
@@ -25,7 +25,7 @@
         "FileSyncService": {
             "PersistencePath": "/tmp/ess-store2/",
             "AuthenticationPath": "/tmp/ess-auth2/",
-            "CSSURL": "https://css-api:9443/",
+            "CSSURL": "${CSS_URL}/",
             "CSSSSLCert": "/certs/css.crt",
             "PollingRate": 10
         }

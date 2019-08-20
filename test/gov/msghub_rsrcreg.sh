@@ -2,7 +2,7 @@
 
 echo -e "Registering services and patterns for msghub"
 
-EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+EXCH_URL="${EXCH_APP_HOST}"
 IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 MH_SAMPLES_PATH="/root/examples/edge/msghub"
@@ -48,7 +48,7 @@ then
 fi
 
 ## setup env vars
-export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 export HZN_ORG_ID=IBM
 export MYDOMAIN="bluehorizon.network"

@@ -1,16 +1,21 @@
 {
     "Edge": {
-        "ServiceStorage": "/root/.colonus/service_storage",
+        "ServiceStorage": "/tmp/service_storage",
         "APIListen": "0.0.0.0:80",
         "DBPath": "/root/.colonus",
-        "GethURL": "http://localhost:8545",
         "DockerEndpoint": "unix:///var/run/docker.sock",
-        "StaticWebContent": "/srv/anax_static",
+        "StaticWebContent": "/root/.colonus/static",
         "CACertsPath": "/root/.colonus/horizon.pem",
+        "TrustSystemCACerts": true,
         "PublicKeyPath": "/root/.colonus/mtn-publicKey.pem",
+        "DefaultServiceRegistrationRAM": 1024,
         "ExchangeURL": "${EXCH_APP_HOST}/",
         "PolicyPath": "/root/.colonus/policy.d/",
         "ExchangeHeartbeat": 60,
+        "ExchangeVersionCheckIntervalM": 1,
+        "AgreementTimeoutS": 600,
+        "ExchangeMessageTTL": 120,
+        "ReportDeviceStatus": true,
         "TrustCertUpdatesFromOrg": true,
         "TrustDockerAuthFromOrg": true,
         "ServiceUpgradeCheckIntervalS": 60,
@@ -21,7 +26,6 @@
             "PersistencePath": "/tmp/ess-store/",
             "AuthenticationPath": "/tmp/ess-auth/",
             "CSSURL": "${CSS_URL}/",
-            "CSSSSLCert": "/certs/css.crt",
             "PollingRate": 10
         }
     },
