@@ -246,7 +246,7 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	}
 
 	// add/replce node policy
-	msgPrinter.Printf("Updating Node policy ...")
+	msgPrinter.Println("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
@@ -287,7 +287,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid property list %s: %v", attribute, err))
 		}
 		newPolicy.Properties = newProp
-		msgPrinter.Printf("Updating Node %s policy properties in the horizon exchange ...", node)
+		msgPrinter.Printf("Updating Node %s policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
 		msgPrinter.Printf("Node %s policy properties updated in the horizon exchange.", node)
@@ -304,7 +304,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid constraint expression %s: %v", attribute, err))
 		}
 		newPolicy.Constraints = newConstr
-		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange ...", node)
+		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()	
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
 		msgPrinter.Printf("Node %s policy constraints updated in the horizon exchange.", node)
@@ -332,7 +332,7 @@ func NodeRemovePolicy(org, credToUse, node string, force bool) {
 	}
 
 	// remove policy
-	msgPrinter.Printf("Removing Node policy ...")
+	msgPrinter.Printf("Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Println("Node policy removed.")

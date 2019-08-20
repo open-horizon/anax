@@ -2972,7 +2972,7 @@
     {
       "id": "Found containers {Containers}",
       "message": "Found containers {Containers}",
-      "translation": "Contenedores encontrados {Contenedores}",
+      "translation": "Contenedores encontrados: {Containers}",
       "placeholders": [
         {
           "id": "Containers",
