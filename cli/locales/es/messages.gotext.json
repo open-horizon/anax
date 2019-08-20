@@ -1073,7 +1073,7 @@
     {
       "id": "failed to unmarshal deployment {Deployment}: {Err}",
       "message": "failed to unmarshal deployment {Deployment}: {Err}",
-      "translation": "no se ha podido desformar despliegue {Despliegue}: {Err}",
+      "translation": "no se ha podido desformar despliegue {Deployment}: {Err}",
       "placeholders": [
         {
           "id": "Deployment",
