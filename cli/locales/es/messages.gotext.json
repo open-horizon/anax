@@ -1080,7 +1080,7 @@
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
-          "argNum": 1,
+          "argNum": 1,{Deployment}
           "expr": "serviceDef.Deployment"
         },
         {
@@ -12672,7 +12672,7 @@
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
       "message": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "código HTTP incorrecto {HttpCode} de {ApiMsg}: {body}",
+      "translation": "código HTTP incorrecto {HttpCode} de {ApiMsg}: {Body}",
       "placeholders": [
         {
           "id": "HttpCode",
