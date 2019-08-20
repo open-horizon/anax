@@ -1080,7 +1080,7 @@
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
-          "argNum": 1,{Deployment}
+          "argNum": 1,
           "expr": "serviceDef.Deployment"
         },
         {
