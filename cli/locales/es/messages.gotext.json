@@ -1934,7 +1934,7 @@
     {
       "id": "{GlobalSet} encountered error: {Error}",
       "message": "{GlobalSet} encountered error: {Error}",
-      "translation": "{GlobalSet} ha encontrado un error: {Err}",
+      "translation": "{GlobalSet} ha encontrado un error: {Error}",
       "placeholders": [
         {
           "id": "GlobalSet",
