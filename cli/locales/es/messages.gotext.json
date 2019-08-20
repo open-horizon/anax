@@ -10302,7 +10302,7 @@
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
       "message": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
-      "translation": "{Image} analizada en: dominio = {Domain}, vía de acceso = {Path}, etiqueta = {Tag}",
+      "translation": "{Image} analizada en: dominio={Domain}, vía de acceso={Path}, etiqueta={Tag}",
       "placeholders": [
         {
           "id": "Image",
@@ -12242,7 +12242,7 @@
     {
       "id": "Pushing {Repository}:{Tag}...",
       "message": "Pushing {Repository}:{Tag}...",
-      "translation": "Empujando {Repository}: {Tag} ...",
+      "translation": "Empujando {Repository}:{Tag} ...",
       "placeholders": [
         {
           "id": "Repository",
@@ -12308,7 +12308,7 @@
     {
       "id": "Pulling {Repository}:{Tag}...",
       "message": "Pulling {Repository}:{Tag}...",
-      "translation": "Pulling {Repository}: {Tag} ...",
+      "translation": "Pulling {Repository}:{Tag} ...",
       "placeholders": [
         {
           "id": "Repository",
@@ -12906,7 +12906,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "No se puede conectar con la API REST de Horizon {Horizonervice} para ejecutar {ApiMethod}. Establezca {ServiceEnvVarName} para utilizar {Article} {Horizonervice_1} distintos de los que está configurado actualmente en el agente de Horizon. El error específico es: {Err}",
+      "translation": "No se puede conectar con la API REST de Horizon {HorizonService} para ejecutar {ApiMethod}. Establezca {ServiceEnvVarName} para utilizar {Article} {HorizonService_1} distintos de los que está configurado actualmente en el agente de Horizon. El error específico es: {Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -12961,7 +12961,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "No se puede conectar con la API REST de Horizon {Horizonervice} para ejecutar {ApiMethod}. ¿Tal vez {ServiceEnvVarName} se ha establecido de forma incorrecta? O desestablezca {ServiceEnvVarName_1} para utilizar {Horizonervice_1} para el que está configurado el agente de Horizon. El error específico es: {Err}",
+      "translation": "No se puede conectar con la API REST de Horizon {HorizonService} para ejecutar {ApiMethod}. ¿Tal vez {ServiceEnvVarName} se ha establecido de forma incorrecta? O desestablezca {ServiceEnvVarName_1} para utilizar {HorizonService_1} para el que está configurado el agente de Horizon. El error específico es: {Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -13201,7 +13201,7 @@
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
       "message": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "código HTTP incorrecto {HttpCode} de {ApiMsg}: {Tag}, {Msg}",
+      "translation": "código HTTP incorrecto {HttpCode} de {ApiMsg}: {Code}, {Msg}",
       "placeholders": [
         {
           "id": "HttpCode",
