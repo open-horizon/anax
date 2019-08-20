@@ -125,6 +125,8 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 		}
+		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
@@ -141,6 +143,8 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for properties: %v", err))
 		}
 		patch["properties"] = newValue
+		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
+                msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
@@ -156,6 +160,8 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for constraints: %v", err))
 		}
 		newValue = patch["constraints"]
+		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
+                msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
@@ -166,6 +172,8 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 		}
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
+                msgPrinter.Println()
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
 	} else {
@@ -177,6 +185,8 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 			}
+			msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
+                	msgPrinter.Println()
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 			msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 			msgPrinter.Println()
@@ -207,6 +217,8 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 		msgPrinter.Printf("Policy %v/%v not found in the Horizon Exchange", org, policy)
 		msgPrinter.Println()
 	} else {
+		msgPrinter.Printf("Removing Business policy %v/%v and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated", org, policy)
+		msgPrinter.Println()
 		msgPrinter.Printf("Business policy %v/%v removed", org, policy)
 		msgPrinter.Println()
 	}

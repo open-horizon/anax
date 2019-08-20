@@ -584,6 +584,8 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	}
 
 	// add/replace service policy
+	msgPrinter.Printf("Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.")
+	msgPrinter.Println()
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	msgPrinter.Println("Service policy updated.")
@@ -610,6 +612,8 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 	}
 
 	//remove service policy
+	msgPrinter.Printf("Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
+	msgPrinter.Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Println("Service policy removed.")
 }
