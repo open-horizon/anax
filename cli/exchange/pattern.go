@@ -209,7 +209,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	
 	//issue 924: Patterns with no services are not allowed 
 	if patFile.Services == nil || len(patFile.Services) == 0 {
-                cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "the input file (%s) must contain services, unable to proceed", patFile.Services)
+                cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the input file (%s) must contain services, unable to proceed", patFile.Services)
         }
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
 	if patFile.Services != nil && len(patFile.Services) > 0 {
