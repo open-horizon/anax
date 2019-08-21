@@ -523,76 +523,76 @@
 			"revisionTime": "2018-10-23T06:56:52Z"
 		},
 		{
-			"checksumSHA1": "wmykiF6ZvS7hZfDXrvNA1FubISs=",
+			"checksumSHA1": "utQJG8MMm4pr3EDzISgpFbRi52k=",
 			"path": "github.com/open-horizon/edge-sync-service/common",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z",
-			"version": "=0.10.1",
-			"versionExact": "0.10.1"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z",
+			"version": "=0.10.4",
+			"versionExact": "0.10.4"
 		},
 		{
-			"checksumSHA1": "NuXyPN7DapLpg370vOdb2d306Jo=",
+			"checksumSHA1": "tXOj8zbbALCPzl7wxRjoVRO9ToY=",
 			"path": "github.com/open-horizon/edge-sync-service/core/base",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z",
-			"version": "=0.10.1",
-			"versionExact": "0.10.1"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z",
+			"version": "=0.10.4",
+			"versionExact": "0.10.4"
 		},
 		{
-			"checksumSHA1": "0IOkHVXxRN7Ti3qUFbxQDI0sDXc=",
+			"checksumSHA1": "U3/Tuy0ReH7r7o7VUi8Z8wO8u5I=",
 			"path": "github.com/open-horizon/edge-sync-service/core/communications",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z"
 		},
 		{
 			"checksumSHA1": "KEnyffH5++LiuzT5EY5DJW2XGA0=",
 			"path": "github.com/open-horizon/edge-sync-service/core/dataURI",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z"
 		},
 		{
 			"checksumSHA1": "egV9xNEaGbCaiGOiT7UqO8zG/rc=",
 			"path": "github.com/open-horizon/edge-sync-service/core/leader",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z"
 		},
 		{
-			"checksumSHA1": "jmOIkwUlw2LOKwcMKJboMHaORgc=",
+			"checksumSHA1": "BEDPJK5+cBDYvi7fr014KJBY8UE=",
 			"path": "github.com/open-horizon/edge-sync-service/core/security",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z",
+			"version": "=0.10.4",
+			"versionExact": "0.10.4"
 		},
 		{
-			"checksumSHA1": "OkhVGIc4QhGa48lOggsRWWs2pCY=",
+			"checksumSHA1": "3k8U0dBGTXm5q5tW1tQuYb32RT0=",
 			"path": "github.com/open-horizon/edge-sync-service/core/storage",
-			"revision": "6fc53e736b9648102aae4b1305667439e3996b58",
-			"revisionTime": "2019-06-12T11:04:18Z"
+			"revision": "e203f63d627310e67186e74260695d7b7b85b3f5",
+			"revisionTime": "2019-08-21T15:56:12Z"
 		},
 		{
 			"checksumSHA1": "1LBOPvIRgYe/F2gDTN1Ro+gj2r0=",
 			"path": "github.com/open-horizon/edge-utilities/logger",
-			"revision": "f7e3297b1c33243ee764cc6ad25f03796434fa60",
-			"revisionTime": "2019-04-17T14:16:48Z"
+			"revision": "0908b45a7152323471f9cc586adc0c63993114f3",
+			"revisionTime": "2019-07-11T09:33:31Z"
 		},
 		{
 			"checksumSHA1": "BwRIAsiKh2FJa2tUaasIMhiYFGU=",
 			"path": "github.com/open-horizon/edge-utilities/logger/log",
-			"revision": "f7e3297b1c33243ee764cc6ad25f03796434fa60",
-			"revisionTime": "2019-04-17T14:16:48Z"
+			"revision": "0908b45a7152323471f9cc586adc0c63993114f3",
+			"revisionTime": "2019-07-11T09:33:31Z"
 		},
 		{
 			"checksumSHA1": "fnfvME8cm+CATwyHjtFD6Uu0ObM=",
 			"path": "github.com/open-horizon/edge-utilities/logger/trace",
-			"revision": "f7e3297b1c33243ee764cc6ad25f03796434fa60",
-			"revisionTime": "2019-04-17T14:16:48Z"
+			"revision": "0908b45a7152323471f9cc586adc0c63993114f3",
+			"revisionTime": "2019-07-11T09:33:31Z"
 		},
 		{
 			"checksumSHA1": "3HtDOzmIZo2tu8d+VcbRjm4cy68=",
 			"path": "github.com/open-horizon/edge-utilities/properties",
-			"revision": "f7e3297b1c33243ee764cc6ad25f03796434fa60",
-			"revisionTime": "2019-04-17T14:16:48Z",
-			"version": "=0.10.0",
-			"versionExact": "0.10.0"
+			"revision": "0908b45a7152323471f9cc586adc0c63993114f3",
+			"revisionTime": "2019-07-11T09:33:31Z"
 		},
 		{
 			"checksumSHA1": "h28o0+CEghkJELsf/KRNqGXZ7LA=",
