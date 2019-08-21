@@ -482,7 +482,8 @@ Environment Variables:
 	mmsObjectDeleteType := mmsObjectDeleteCmd.Flag("type", msgPrinter.Sprintf("The type of the object to delete.")).Short('t').Required().String()
 	mmsObjectDeleteId := mmsObjectDeleteCmd.Flag("id", msgPrinter.Sprintf("The id of the object to delete.")).Short('i').Required().String()
 
-	app.Version(msgPrinter.Sprintf("Run 'hzn version' to see the Horizon version."))
+	app.VersionFlag = nil
+
 	/* trying to override the base --version behavior does not work....
 	fmt.Printf("version: %v\n", *version)
 	if *version {
