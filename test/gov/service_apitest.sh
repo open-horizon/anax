@@ -3,7 +3,7 @@
 # ==================================================================
 # Begin testing service config API
 
-EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+EXCH_URL="${EXCH_APP_HOST}"
 
 # empty service URL
 read -d '' snsconfig <<EOF

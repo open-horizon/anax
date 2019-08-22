@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # $1 - results
-# $2 - 
+# $2 -
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
@@ -17,14 +17,14 @@ function results {
 echo -e "Registering services"
 echo -e "PATTERN setting is $PATTERN"
 
-EXCH_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+EXCH_URL="${EXCH_APP_HOST}"
 IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
 
 
-export HZN_EXCHANGE_URL="http://${EXCH_APP_HOST:-172.17.0.1}:8080/v1"
+export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
 ./hzn_dev_services.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH}
@@ -126,7 +126,7 @@ results "$RES"
 # Helm service
 VERS="1.0.0"
 echo -e "Register Helm service $VERS:"
-hzn exchange service publish -I -u root/root:Horizon-Rul3s -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for Helm service."
@@ -228,11 +228,11 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register IBM/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 
@@ -253,15 +253,15 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register IBM/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:Horizon-Rul3s" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 
-# GPS service 
+# GPS service
 VERS="2.0.3"
 cat <<EOF >$KEY_TEST_DIR/svc_gps.json
 {
@@ -1520,7 +1520,7 @@ read -d '' bpnsdef <<EOF
     "org": "e2edev@somecomp.com",
     "arch": "*",
     "serviceVersions": [
-      { 
+      {
         "version": "2.3.0",
         "priority":{
           "priority_value": 3,
@@ -1529,7 +1529,7 @@ read -d '' bpnsdef <<EOF
           "verified_durations": 45
        }
       },
-      { 
+      {
         "version": "2.3.0",
         "priority":{
           "priority_value": 2,
@@ -1629,7 +1629,7 @@ read -d '' bpgpstestdef <<EOF
     "org": "e2edev@somecomp.com",
     "arch": "amd64",
     "serviceVersions": [
-      { 
+      {
         "version": "1.0.0"
       }
     ]
@@ -1945,4 +1945,3 @@ RES=$(echo "$locpoldef" | curl -sLX PUT --header 'Content-Type: application/json
 results "$RES"
 
 unset HZN_EXCHANGE_URL
-

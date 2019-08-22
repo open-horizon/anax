@@ -31,10 +31,10 @@ function verifyAgreements {
                 fi
                 let AG_LOOP_CNT+=1
                 sleep 5
-        done    
+        done
 
         echo -e "Timed out, ${NUM_AGS} agreements formed but we were looking for ${TARGET_NUM_AG}"
-        exit 1                
+        exit 1
 }
 
 # Check if an agreement still exists. Returns non-zero if it doesnt.
@@ -208,7 +208,7 @@ function handleCPU {
 
         # There is another cpu service which is from e2edev@somecomp.com2edev org. CPU_NET_NAME should be the one from IBM org.
         netname=$(echo ${NET_KEYS} | jq -r '.[0]')
-        echo $netname | grep IBM 
+        echo $netname | grep IBM
         if [ $? -eq 0 ]; then
             CPU_NET_NAME=$netname
         fi

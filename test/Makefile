@@ -13,7 +13,7 @@ HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | 
 # sall,sns,spws,susehello,sgps,sloc,cpu2msghub (These are pattern with services)
 # all,ns,loc,gps,ns-keytest (These are patterns with workloads and microservices)
 #
-# If cpu2msghub pattern is in the TEST_PATTERNS, then 
+# If cpu2msghub pattern is in the TEST_PATTERNS, then
 # please export the following variables before calling 'make test'
 #    MSGHUB_BROKER_URL
 #    MSGHUB_API_KEY
@@ -35,7 +35,8 @@ UDS := /var/run/horizon/
 EXCHDB_USER := admin
 EXCHDB_PORT := 5432
 EXCHDB_NAME := exchange
-EXCH_ROOTPW := Horizon-Rul3s
+EXCH_ROOTPW ?= Horizon-Rul3s
+AGBOT_NAME ?= ag12345
 DOCKER_TEST_NETWORK := e2edev_test_network
 DOCKER_AGBOT_INAME := openhorizon/e2edev-agbot
 DOCKER_EXCH_INAME := openhorizon/amd64_exchange-api
@@ -59,11 +60,14 @@ all: default
 default: build
 stop: appstore-stop clean
 build: version-check agbot-image exchange-db-image exchange-image minikube-setup css-mongo-db-image
+build-remote: version-check agbot-image
 run: test
 distclean: realclean
 
 DOCKER_AGBOT_CNAME := agbot
-DOCKER_EXCH_CNAME := exchange-api
+DOCKER_EXCH ?= http://exchange-api:8080/v1
+CSS_URL ?= https://css-api:9443
+DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCHDB_CNAME := exchange-db
 DOCKER_REG_CNAME := e2edevregistry
 DOCKER_REG_PW_CNAME := htregistry
@@ -93,7 +97,10 @@ run-agbot: agbot-docker-prereqs test-network
 		-v /tmp/hzndev/:/tmp/hzndev/ \
 		-v $(AGBOT_TEMPFS)/certs:/certs \
 		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
-		-e "EXCH_APP_HOST=$(DOCKER_EXCH_CNAME)" \
+		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
+		-e "CSS_URL=$(CSS_URL)" \
+		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
+		-e "AGBOT_NAME=$(AGBOT_NAME)" \
 		-e "DOCKER_REG_CNAME=$(DOCKER_REG_CNAME)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
@@ -225,8 +232,8 @@ agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(AGBOT_TEMPFS)/root
-	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH_CNAME) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	curl $(DEB_PKGS_URL)/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
 	-o $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz
 	tar --strip=6 -C $(AGBOT_TEMPFS)/root/.colonus -zxvf $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
@@ -255,7 +262,11 @@ exchange-image:
 
 test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css appstore-start run-agbot
 	@echo -e  "\nStarting tests"
-	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); export $(CSS_URL); export $(EXCH_ROOTPW); export $(AGBOT_NAME); /root/gov-combined.sh"
+
+test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot
+	@echo -e  "\nStarting tests"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); export $(CSS_URL); export $(EXCH_ROOTPW); export $(AGBOT_NAME); /root/gov-combined.sh"
 
 minikube-setup:
 	@echo "Setting up minikube"
@@ -312,7 +323,7 @@ run-css: run-mongo-db
 		--name "$(DOCKER_CSS_CNAME)" \
 		-p 127.0.0.1:9443:9443 \
 		--network "$(DOCKER_TEST_NETWORK)" \
-		-e "HZN_EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1" \
+		-e "HZN_EXCHANGE_URL=$(DOCKER_EXCH)" \
 		-e "HZN_EXCHANGE_CA_CERT=/certs/domain.crt" \
 		-v $(CSS_CONFIG):/etc/edge-sync-service/ \
 		-v $(AGBOT_TEMPFS)/certs/:/certs/ \
@@ -321,7 +332,7 @@ run-css: run-mongo-db
 appstore-start:
 	if [ "$(APPSTORE)" = "1" ]; then \
 		echo "Starting app store"; \
-		docker run -d --rm --name app-store -p 9001:9001 -e EXCHANGE_URL=http://$(DOCKER_EXCH_CNAME):8080/v1 --network "$(DOCKER_TEST_NETWORK)" registry.ng.bluemix.net/rj-dev/app-store:0.7.0; \
+		docker run -d --rm --name app-store -p 9001:9001 -e EXCHANGE_URL=$(DOCKER_EXCH) -e CSS_URL=$(CSS_URL) -e EXCH_ROOTPW=$(EXCH_ROOTPW) -e AGBOT_NAME=$(AGBOT_NAME) --network "$(DOCKER_TEST_NETWORK)" registry.ng.bluemix.net/rj-dev/app-store:0.7.0; \
 		docker run -d --rm --name app-store-ui -p 9015:9015 --network "$(DOCKER_TEST_NETWORK)" -e NODE_ENV=production -e APP_STORE_CONTAINER_NAME=app-store -e APP_STORE_CONTAINER_PORT=9001 registry.ng.bluemix.net/rj-dev/app-store-ui:0.11.0; \
 	fi
 

@@ -83,3 +83,15 @@ Here is a full description of all the variables you can use to setup the test th
 - `make realclean`
  - Does all the above, plus removes the agbot and exchange base images, our docker test network, and all dangling docker images
  - NOTE: This is the only 'clean' command which requires re-running `make`
+
+ ### Remote environment testing
+-`export DOCKER_EXCH="Exchange's URL"`
+-`export CSS_URL="CSS's URL"`
+-`export EXCH_ROOTPW="Exchange Root PW"`
+-`export AGBOT_NAME="Agbot Name"`
+-`cd /anax`
+-`make`
+-`cd /test`
+-`make build-remote`
+-`make test-remote`
+-`make stop` - used between runs
