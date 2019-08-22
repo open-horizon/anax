@@ -133,8 +133,8 @@ func AgbotAddBusinessPolicy(org, userPw, agbot, polOrg string) {
 	org, agbot = cliutils.TrimOrg(org, agbot)
 
 	input := exchange.ServedBusinessPolicy{BusinessPolOrg: polOrg, BusinessPol: "*", NodeOrg: polOrg}
-        i18n.GetMessagePrinter().Printf("Adding Business policy org %s' to agbot '%s'. The agbot will start looking for nodes that are compatible with this policy.", polOrg, agbot)
-	i18n.GetMessagePrinter().Println()	
+	i18n.GetMessagePrinter().Printf("Adding Business policy org %s' to agbot '%s'. The agbot will start looking for nodes that are compatible with this policy.", polOrg, agbot)
+	i18n.GetMessagePrinter().Println()
 	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
 	if httpCode == 409 {
 		i18n.GetMessagePrinter().Printf("Business policy org %s' already exists in agbot '%s'", polOrg, agbot)
@@ -150,6 +150,6 @@ func AgbotRemoveBusinessPolicy(org, userPw, agbot, PolOrg string) {
 	org, agbot = cliutils.TrimOrg(org, agbot)
 	polId := formServicedObjectId(PolOrg, "*", PolOrg)
 	i18n.GetMessagePrinter().Printf("Removing Business policy org %s' to agbot '%s'. The agbot is no longer looking for nodes that are compatible with this policy.", PolOrg, agbot)
-	i18n.GetMessagePrinter().Println()	
+	i18n.GetMessagePrinter().Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/agbots/"+agbot+"/businesspols/"+polId, cliutils.OrgAndCreds(org, userPw), []int{204})
 }

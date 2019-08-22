@@ -305,7 +305,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		}
 		newPolicy.Constraints = newConstr
 		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
-		msgPrinter.Println()	
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
 		msgPrinter.Printf("Node %s policy constraints updated in the horizon exchange.", node)
 		msgPrinter.Println()

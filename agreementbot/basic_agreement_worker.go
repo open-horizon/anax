@@ -130,32 +130,34 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 			wi := workItem.(BAgreementVerification)
 
 			// Archived and terminating agreements are considered to be non-existent.
-			agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Verify.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()})
-			if err != nil {
+			exists := false
+			deleteMessage := true
+			if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Verify.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
 				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Verify.AgreementId(), err)))
+			} else if agreement != nil && agreement.Archived {
+				// The agreement is not active and it is archived, so this message belongs to this agbot, and verify will return false.
+				glog.V(3).Infof(bwlogstring(a.workerID, fmt.Sprintf("verify is for a cancelled agreement %v, deleting verify message.", wi.Verify.AgreementId())))
+			} else if agreement == nil {
+				// The verify is for an agreement that this agbot doesnt know anything about, so ignore the verify msg.
+				glog.Warningf(bwlogstring(a.workerID, fmt.Sprintf("discarding verify %v for agreement id %v not in this agbot's database", wi.MessageId, wi.Verify.AgreementId())))
+				deleteMessage = false
+			} else if agreement.AgreementTimedout == 0 {
+				exists = true
 			}
 
-			// If this agbot doesnt have the agreement then another agbot instance might, so we will ignore the msg.
-			if agreement != nil {
-				exists := false
-				if agreement.AgreementTimedout == 0 {
-					exists = true
-				}
+			// Reply to the sender with our decision on the agreement.
+			if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error creating message target: %v", err)))
+			} else if aph, ok := a.protocolHandler.AgreementProtocolHandler("", "", "").(*basicprotocol.ProtocolHandler); !ok {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error casting to basic protocol handler (%T): %v", a.protocolHandler.AgreementProtocolHandler("", "", ""), err)))
+			} else if err := aph.SendAgreementVerificationReply(wi.Verify.AgreementId(), exists, mt, a.protocolHandler.GetSendMessage()); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error trying to send agreement verification reply for %v to %v, error: %v", wi.Verify.AgreementId(), mt, err)))
+			}
 
-				// Reply to the sender with our decision on the agreement.
-				if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
-					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error creating message target: %v", err)))
-				} else if aph, ok := a.protocolHandler.AgreementProtocolHandler("", "", "").(*basicprotocol.ProtocolHandler); !ok {
-					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error casting to basic protocol handler (%T): %v", a.protocolHandler.AgreementProtocolHandler("", "", ""), err)))
-				} else if err := aph.SendAgreementVerificationReply(wi.Verify.AgreementId(), exists, mt, a.protocolHandler.GetSendMessage()); err != nil {
-					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error trying to send agreement verification reply for %v to %v, error: %v", wi.Verify.AgreementId(), mt, err)))
-				}
-
-				// Get rid of the original agreement validation request message.
-				if wi.MessageId != 0 {
-					if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
-						glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
-					}
+			// Get rid of the original agreement validation request message.
+			if wi.MessageId != 0 && deleteMessage {
+				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
 				}
 			}
 

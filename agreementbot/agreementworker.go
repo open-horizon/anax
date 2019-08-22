@@ -710,10 +710,15 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 	if reply.ProposalAccepted() {
 
-		// Find the saved agreement in the database
-		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
+		// Find the saved agreement in the database. The returned agreement might be archived. If it's archived, then it is our agreement
+		// so we will delete the protocol msg, but we will ignore the reply msg and not send a reply ack.
+		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
+		} else if agreement != nil && agreement.Archived {
+			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("reply %v is for a cancelled agreement %v, deleting reply message.", wi.MessageId, reply.AgreementId())))
+			sendReply = false // Don't send a reply ack, delete reply msg.
 		} else if agreement == nil {
+			// This protocol msg is not for this agbot, so ignore it.
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding reply %v, agreement id %v not in this agbot's database", wi.MessageId, reply.AgreementId())))
 			// this will cause us to not send a reply, which is what we want in this case because this reply is not for us.
 			sendReply = false
@@ -894,11 +899,16 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 		lock := b.alm.getAgreementLock(drAck.AgreementId())
 		lock.Lock()
 
-		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying timed out agreement %v, error: %v", drAck.AgreementId(), err)))
+		// The agreement might be archived in this agbot's partition. If it's archived, then it is our agreement
+		// so we will delete the protocol msg, but we will ignore the ack msg.
+		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v, error: %v", drAck.AgreementId(), err)))
+		} else if ag != nil && ag.Archived {
+			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("Data received Ack is for a cancelled agreement %v, deleting ack message.", drAck.AgreementId())))
 		} else if ag == nil {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("agreement %v not on this agbot, ignoring msg %v.", drAck.AgreementId(), wi.MessageId)))
-			deleteMessage = false
+			// This protocol msg is not for this agbot, so ignore it.
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding data received ack %v, agreement id %v not in this agbot's database", wi.MessageId, drAck.AgreementId())))
+			deleteMessage = false // causes the msg to not be deleted, which is what we want so that another agbot will see the msg.
 		} else if _, err := b.db.DataNotification(ag.CurrentAgreementId, cph.Name()); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to record data notification, error: %v", err)))
 		}
@@ -981,8 +991,14 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	// Update the database
 	if ag, err := b.db.AgreementTimedout(agreementId, cph.Name()); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
+	} else if ag != nil && ag.Archived {
+		// The agreement is not active and it is archived, so this message belongs to this agbot, but the cancel has already happened
+		// so we should just get rid of the protocol msg.
+		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("cancel is for a cancelled agreement %v, deleting cancel message.", agreementId)))
+		return true
 	} else if ag == nil {
-		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("agreement %v not owned by this agbot, ignoring cancel", agreementId)))
+		// The cancel is for an agreement that this agbot doesnt know anything about.
+		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding cancel for agreement id %v not in this agbot's database", agreementId)))
 		// Tell the caller not to delete the exchange message if this is what initiated the cancel because this cancel is not for us.
 		return false
 	}
