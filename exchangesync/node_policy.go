@@ -255,7 +255,7 @@ func NodePolicyInitalSetup(db *bolt.DB, config *config.HorizonConfig,
 }
 
 // check if the node policy has been changed from last sync.
-// It returns the latest node policy on the exchange. 
+// It returns the latest node policy on the exchange.
 func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB, getExchangeNodePolicy exchange.NodePolicyHandler) (bool, *externalpolicy.ExternalPolicy, error) {
 
 	// get the node policy from the exchange
@@ -289,7 +289,7 @@ func ExchangeNodePolicyChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 
 // Delete the node policy from local db and the exchange
 func DeleteNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB,
-	getExchangeNodePolicy exchange.NodePolicyHandler, 
+	getExchangeNodePolicy exchange.NodePolicyHandler,
 	deleteExchangeNodePolicy exchange.DeleteNodePolicyHandler) error {
 
 	nodePolicyUpdateLock.Lock()
@@ -300,7 +300,7 @@ func DeleteNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	_, nodePolicy, err := ExchangeNodePolicyChanged(pDevice, db, getExchangeNodePolicy)
 	if err != nil {
 		return fmt.Errorf("Failed to check the exchange for the node policy: %v.", err)
-	} 
+	}
 
 	// delete the node policy from the exchange if it exists
 	if nodePolicy != nil {

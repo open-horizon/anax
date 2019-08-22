@@ -55,7 +55,7 @@ func Remove(force bool) {
 		cliutils.ConfirmRemove(i18n.GetMessagePrinter().Sprintf("Are you sure you want to remove the node policy?"))
 	}
 	i18n.GetMessagePrinter().Println("Removing Horizon node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
-	i18n.GetMessagePrinter().Println()		
+	i18n.GetMessagePrinter().Println()
 	cliutils.HorizonDelete("node/policy", []int{200, 204}, false)
 
 	i18n.GetMessagePrinter().Println("Horizon node policy deleted.")

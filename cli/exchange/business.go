@@ -144,7 +144,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		}
 		patch["properties"] = newValue
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
-                msgPrinter.Println()
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
@@ -161,7 +161,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		}
 		newValue = patch["constraints"]
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
-                msgPrinter.Println()
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
@@ -173,7 +173,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		}
 		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
-                msgPrinter.Println()
+		msgPrinter.Println()
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 		msgPrinter.Println()
 	} else {
@@ -186,7 +186,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 			}
 			msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.", org, policyName)
-                	msgPrinter.Println()
+			msgPrinter.Println()
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
 			msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", org, policyName)
 			msgPrinter.Println()
