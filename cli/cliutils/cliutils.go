@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"os/exec"
@@ -519,7 +520,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	httpClient := &http.Client{}
+	httpClient := GetHTTPClient()
 
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
@@ -605,7 +606,7 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, quiet bool) (httpCode 
 	if IsDryRun() {
 		return 204, nil
 	}
-	httpClient := &http.Client{}
+	httpClient := GetHTTPClient()
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		if quiet {
@@ -651,7 +652,7 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	if IsDryRun() {
 		return 201, ""
 	}
-	httpClient := &http.Client{}
+	httpClient := GetHTTPClient()
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -782,11 +783,10 @@ func TrustIcpCert(httpClient *http.Client) error {
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(icpCert)
-		httpClient.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs: caCertPool,
-			},
-		}
+
+		transport := httpClient.Transport.(*http.Transport)
+		transport.TLSClientConfig.RootCAs = caCertPool
+
 	}
 	return nil
 }
@@ -974,15 +974,9 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 	msgPrinter := i18n.GetMessagePrinter()
 
 	Verbose(apiMsg)
-	httpClient := &http.Client{}
-	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
-	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
-		httpClient.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-	}
+
+	httpClient := GetHTTPClient()
+
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
@@ -1046,15 +1040,8 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	if IsDryRun() {
 		return 201
 	}
-	httpClient := &http.Client{}
-	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
-	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
-		httpClient.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-	}
+
+	httpClient := GetHTTPClient()
 
 	// Prepare body
 	var jsonBytes []byte
@@ -1134,15 +1121,8 @@ func ExchangePatch(service string, urlBase string, urlSuffix string, credentials
 	if IsDryRun() {
 		return 201
 	}
-	httpClient := &http.Client{}
-	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
-	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
-		httpClient.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-	}
+
+	httpClient := GetHTTPClient()
 
 	// Prepare body
 	var jsonBytes []byte
@@ -1210,15 +1190,8 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 	if IsDryRun() {
 		return 204
 	}
-	httpClient := &http.Client{}
-	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
-	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
-		httpClient.Transport = &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-	}
+
+	httpClient := GetHTTPClient()
 	TrustIcpCert(httpClient)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
@@ -1441,6 +1414,38 @@ func DisplayAsJson(data interface{}) (string, error) {
 	} else {
 		return buf.String(), nil
 	}
+}
+
+// Common function for getting an HTTP client connection object.
+func GetHTTPClient() *http.Client {
+
+	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
+	skipSSL := false
+	if os.Getenv("HZN_SSL_SKIP_VERIFY") != "" {
+		skipSSL = true
+	}
+
+	return &http.Client{
+		// remember that this timeout is for the whole request, including
+		// body reading. This means that you must set the timeout according
+		// to the total payload size you expect
+		Timeout: time.Second * time.Duration(config.HTTPRequestTimeoutS),
+		Transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   20 * time.Second,
+				KeepAlive: 60 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   20 * time.Second,
+			ResponseHeaderTimeout: 20 * time.Second,
+			ExpectContinueTimeout: 8 * time.Second,
+			MaxIdleConns:          config.MaxHTTPIdleConnections,
+			IdleConnTimeout:       config.HTTPIdleConnectionTimeoutS * time.Second,
+			TLSClientConfig:       &tls.Config{
+				InsecureSkipVerify: skipSSL,
+			},
+		},
+	}
+
 }
 
 /* Will probably need this....

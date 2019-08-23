@@ -170,7 +170,7 @@ func Read(file string) (*HorizonConfig, error) {
 		// instantiate mostly empty which will be filled. Values here are defaults that can be overridden by the user
 		config := HorizonConfig{
 			Edge: Config{
-				DefaultHTTPClientTimeoutS: 20,
+				DefaultHTTPClientTimeoutS: HTTPRequestTimeoutS,
 			},
 		}
 

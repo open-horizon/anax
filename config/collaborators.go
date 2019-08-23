@@ -133,8 +133,8 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 			Timeout: time.Second * time.Duration(timeoutS),
 			Transport: &http.Transport{
 				Dial: (&net.Dialer{
-					Timeout:   60 * time.Second,
-					KeepAlive: 120 * time.Second,
+					Timeout:   20 * time.Second,
+					KeepAlive: 60 * time.Second,
 				}).Dial,
 				TLSHandshakeTimeout:   20 * time.Second,
 				ResponseHeaderTimeout: 20 * time.Second,
