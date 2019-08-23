@@ -1,6 +1,13 @@
 #!/bin/bash
 
 # this command copies the out.gotext.json files from locales and cli/locales to i18n_translation directory
-cp $PKGPATH/locales/en/out.gotext.json $PKGPATH/i18n_translation/anax.out.gotext.json
+cp $PKGPATH/locales/en/out.gotext.json $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto
+
+# add START NON-TRANSLATABLE and END NON-TRANSLATABLE for translation process
+cat $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto | sed '/"translation":/  a //  START NON-TRANSLATABLE' | sed '/"translation":/  i //  END NON-TRANSLATABLE' | sed '1 i //  START NON-TRANSLATABLE' |  sed '$ a //  END NON-TRANSLATABLE' > $PKGPATH/i18n_translation/anax.out.gotext.json
  
-cp $PKGPATH/cli/locales/en/out.gotext.json $PKGPATH/i18n_translation/hzn.out.gotext.json
+cp $PKGPATH/cli/locales/en/out.gotext.json $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto
+
+# add START NON-TRANSLATABLE and END NON-TRANSLATABLE for translation process
+cat $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto | sed '/"translation":/  a //  START NON-TRANSLATABLE' | sed '/"translation":/  i //  END NON-TRANSLATABLE' | sed '1 i //  START NON-TRANSLATABLE' |  sed '$ a //  END NON-TRANSLATABLE' > $PKGPATH/i18n_translation/hzn.out.gotext.json
+ 

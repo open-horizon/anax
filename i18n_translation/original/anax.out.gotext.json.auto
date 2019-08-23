@@ -1,4 +1,3 @@
-//  START NON-TRANSLATABLE
 {
     "language": "en",
     "messages": [
@@ -8,9 +7,7 @@
                 "Error retrieving agreement {Arg_1} from database, error {Arg_2}"
             ],
             "message": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -36,9 +33,7 @@
                 "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}"
             ],
             "message": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -64,9 +59,7 @@
                 "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}"
             ],
             "message": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -92,9 +85,7 @@
                 "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}"
             ],
             "message": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -120,9 +111,7 @@
                 "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}"
             ],
             "message": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -148,9 +137,7 @@
                 "Unable to retrieve unarchived agreements from database. {Arg_1}"
             ],
             "message": "Unable to retrieve unarchived agreements from database. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to retrieve unarchived agreements from database. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -169,9 +156,7 @@
                 "Error marking agreement {Arg_1} terminated in database: {Arg_2}."
             ],
             "message": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -197,9 +182,7 @@
                 "Error getting service definitions {Arg_1} from db. {Arg_2}"
             ],
             "message": "Error getting service definitions {Arg_1} from db. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error getting service definitions {Arg_1} from db. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -225,9 +208,7 @@
                 "Error retrieving all service instances from datavase for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}"
             ],
             "message": "Error retrieving all service instances from datavase for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
-//  END NON-TRANSLATABLE
             "translation": "Error retrieving all service instances from datavase for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -274,9 +255,7 @@
                 "Error retrieving all service instances from database for {Arg_1}. {Arg_2}"
             ],
             "message": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -302,9 +281,7 @@
                 "Error retrieving all service instances from database, error: {Arg_1}"
             ],
             "message": "Error retrieving all service instances from database, error: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error retrieving all service instances from database, error: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -323,9 +300,7 @@
                 "Error getting service instance {Arg_1} from db. {Arg_2}"
             ],
             "message": "Error getting service instance {Arg_1} from db. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error getting service instance {Arg_1} from db. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -351,9 +326,7 @@
                 "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}"
             ],
             "message": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -379,9 +352,7 @@
                 "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
             ],
             "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -407,9 +378,7 @@
                 "Error retrieving node {Arg_1} from the exchange: {Arg_2}"
             ],
             "message": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -435,9 +404,7 @@
                 "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}"
             ],
             "message": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -463,9 +430,7 @@
                 "Image loaded for {Arg_1}/{Arg_2}."
             ],
             "message": "Image loaded for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Image loaded for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -491,9 +456,7 @@
                 "Image loaded for service {Arg_1}/{Arg_2}."
             ],
             "message": "Image loaded for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Image loaded for service {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -519,9 +482,7 @@
                 "Error loading image for {Arg_1}/{Arg_2}."
             ],
             "message": "Error loading image for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Error loading image for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -547,9 +508,7 @@
                 "Error loading image for service {Arg_1}/{Arg_2}."
             ],
             "message": "Error loading image for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Error loading image for service {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -575,9 +534,7 @@
                 "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}"
             ],
             "message": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -603,9 +560,7 @@
                 "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}."
             ],
             "message": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -631,9 +586,7 @@
                 "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it."
             ],
             "message": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
-//  END NON-TRANSLATABLE
             "translation": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -652,9 +605,7 @@
                 "Workload service containers for {Arg_1}/{Arg_2} are up and running."
             ],
             "message": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
-//  END NON-TRANSLATABLE
             "translation": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -680,9 +631,7 @@
                 "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}"
             ],
             "message": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -708,9 +657,7 @@
                 "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry."
             ],
             "message": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-//  END NON-TRANSLATABLE
             "translation": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -736,9 +683,7 @@
                 "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}"
             ],
             "message": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -764,9 +709,7 @@
                 "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement"
             ],
             "message": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
-//  END NON-TRANSLATABLE
             "translation": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -785,9 +728,7 @@
                 "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}."
             ],
             "message": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
-//  END NON-TRANSLATABLE
             "translation": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -820,9 +761,7 @@
                 "Error handling ReplyAck message for {Arg_1}. {Arg_2}"
             ],
             "message": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -848,9 +787,7 @@
                 "Error handling ReplyAck message. {Arg_1}"
             ],
             "message": "Error handling ReplyAck message. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling ReplyAck message. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -869,9 +806,7 @@
                 "Error handling DataReceived message for {Arg_1}. {Arg_2}"
             ],
             "message": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -897,9 +832,7 @@
                 "Error handling DataReceived message. {Arg_1}"
             ],
             "message": "Error handling DataReceived message. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling DataReceived message. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -918,9 +851,7 @@
                 "Error handling MeterNotification message for {Arg_1}. {Arg_2}"
             ],
             "message": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -946,9 +877,7 @@
                 "Error handling MeterNotification message. {Arg_1}"
             ],
             "message": "Error handling MeterNotification message. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling MeterNotification message. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -967,9 +896,7 @@
                 "Error handling Cancel message for {Arg_1}. {Arg_2}"
             ],
             "message": "Error handling Cancel message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling Cancel message for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -995,9 +922,7 @@
                 "Error handling Cancel message. {Arg_1}"
             ],
             "message": "Error handling Cancel message. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling Cancel message. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1016,9 +941,7 @@
                 "Start workload service for {Arg_1}/{Arg_2}."
             ],
             "message": "Start workload service for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Start workload service for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1044,9 +967,7 @@
                 "Workload destroyed for {Arg_1}"
             ],
             "message": "Workload destroyed for {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Workload destroyed for {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1065,9 +986,7 @@
                 "Service containers for {Arg_1} started."
             ],
             "message": "Service containers for {Arg_1} started.",
-//  END NON-TRANSLATABLE
             "translation": "Service containers for {Arg_1} started.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1086,9 +1005,7 @@
                 "Complete cleaning up the service instance {Arg_1}."
             ],
             "message": "Complete cleaning up the service instance {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete cleaning up the service instance {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1107,9 +1024,7 @@
                 "Start dependent services for {Arg_1}/{Arg_2}."
             ],
             "message": "Start dependent services for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Start dependent services for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1135,9 +1050,7 @@
                 "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}"
             ],
             "message": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1170,9 +1083,7 @@
                 "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}"
             ],
             "message": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
-//  END NON-TRANSLATABLE
             "translation": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1219,9 +1130,7 @@
                 "Start cleaning up service {Arg_1} because agreement {Arg_2} ended."
             ],
             "message": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
-//  END NON-TRANSLATABLE
             "translation": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1247,9 +1156,7 @@
                 "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}"
             ],
             "message": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-//  END NON-TRANSLATABLE
             "translation": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1289,9 +1196,7 @@
                 "Error getting all the services from agreements: {Arg_1}"
             ],
             "message": "Error getting all the services from agreements: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error getting all the services from agreements: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1310,9 +1215,7 @@
                 "Start agreement-less service {Arg_1}/{Arg_2}."
             ],
             "message": "Start agreement-less service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Start agreement-less service {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1338,9 +1241,7 @@
                 "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents."
             ],
             "message": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
-//  END NON-TRANSLATABLE
             "translation": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1366,9 +1267,7 @@
                 "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}"
             ],
             "message": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1401,9 +1300,7 @@
                 "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}"
             ],
             "message": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1429,9 +1326,7 @@
                 "Unable to start agreement-less services, pattern {Arg_1} not found in exchange"
             ],
             "message": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
-//  END NON-TRANSLATABLE
             "translation": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1450,9 +1345,7 @@
                 "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found"
             ],
             "message": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
-//  END NON-TRANSLATABLE
             "translation": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1478,9 +1371,7 @@
                 "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
             ],
             "message": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  END NON-TRANSLATABLE
             "translation": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1520,9 +1411,7 @@
                 "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
             ],
             "message": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1562,9 +1451,7 @@
                 "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}"
             ],
             "message": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-//  END NON-TRANSLATABLE
             "translation": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1611,9 +1498,7 @@
                 "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start."
             ],
             "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
-//  END NON-TRANSLATABLE
             "translation": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1646,9 +1531,7 @@
                 "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start."
             ],
             "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
-//  END NON-TRANSLATABLE
             "translation": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1681,9 +1564,7 @@
                 "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed."
             ],
             "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
-//  END NON-TRANSLATABLE
             "translation": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1716,9 +1597,7 @@
                 "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}"
             ],
             "message": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-//  END NON-TRANSLATABLE
             "translation": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1758,9 +1637,7 @@
                 "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
             ],
             "message": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1800,9 +1677,7 @@
                 "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}"
             ],
             "message": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
-//  END NON-TRANSLATABLE
             "translation": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1849,9 +1724,7 @@
                 "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}."
             ],
             "message": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
-//  END NON-TRANSLATABLE
             "translation": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1884,9 +1757,7 @@
                 "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}"
             ],
             "message": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
-//  END NON-TRANSLATABLE
             "translation": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1933,9 +1804,7 @@
                 "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}"
             ],
             "message": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
-//  END NON-TRANSLATABLE
             "translation": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -1975,9 +1844,7 @@
                 "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed."
             ],
             "message": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
-//  END NON-TRANSLATABLE
             "translation": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2010,9 +1877,7 @@
                 "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}."
             ],
             "message": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-//  END NON-TRANSLATABLE
             "translation": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2045,9 +1910,7 @@
                 "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}"
             ],
             "message": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2080,9 +1943,7 @@
                 "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}"
             ],
             "message": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2108,9 +1969,7 @@
                 "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
             ],
             "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2136,9 +1995,7 @@
                 "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
             ],
             "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2164,9 +2021,7 @@
                 "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
             ],
             "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-//  END NON-TRANSLATABLE
             "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2206,9 +2061,7 @@
                 "Node rejected the proposal for service {Arg_1}/{Arg_2}."
             ],
             "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2234,9 +2087,7 @@
                 "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
             ],
             "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2266,27 +2117,21 @@
         {
             "id": "Name, or Org is empty string.",
             "message": "Name, or Org is empty string.",
-//  END NON-TRANSLATABLE
             "translation": "Name, or Org is empty string.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
             "id": "The serviceVersions array is empty.",
             "message": "The serviceVersions array is empty.",
-//  END NON-TRANSLATABLE
             "translation": "The serviceVersions array is empty.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
             "id": "properties contains an invalid property: {Err}",
             "message": "properties contains an invalid property: {Err}",
-//  END NON-TRANSLATABLE
             "translation": "properties contains an invalid property: {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2303,9 +2148,7 @@
         {
             "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
             "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-//  END NON-TRANSLATABLE
             "translation": "Version_Expression: Whitespace is not permitted in {Expr}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2322,9 +2165,7 @@
         {
             "id": "Version_Expression: {Verstring} is not a valid version string.",
             "message": "Version_Expression: {Verstring} is not a valid version string.",
-//  END NON-TRANSLATABLE
             "translation": "Version_Expression: {Verstring} is not a valid version string.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2341,9 +2182,7 @@
         {
             "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
             "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-//  END NON-TRANSLATABLE
             "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2360,9 +2199,7 @@
         {
             "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
             "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-//  END NON-TRANSLATABLE
             "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2379,9 +2216,7 @@
         {
             "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
             "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-//  END NON-TRANSLATABLE
             "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2398,9 +2233,7 @@
         {
             "id": "Input version string {V1} or {V2} is not a valid single version string.",
             "message": "Input version string {V1} or {V2} is not a valid single version string.",
-//  END NON-TRANSLATABLE
             "translation": "Input version string {V1} or {V2} is not a valid single version string.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2425,9 +2258,7 @@
         {
             "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
             "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-//  END NON-TRANSLATABLE
             "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2452,9 +2283,7 @@
         {
             "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
             "message": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2479,9 +2308,7 @@
         {
             "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, \u0026\u0026, ||",
             "message": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, \u0026\u0026, ||",
-//  END NON-TRANSLATABLE
             "translation": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, \u0026\u0026, ||",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2498,9 +2325,7 @@
         {
             "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is \u003cproperty\u003e == \u003cvalue\u003e",
             "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is \u003cproperty\u003e == \u003cvalue\u003e",
-//  END NON-TRANSLATABLE
             "translation": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is \u003cproperty\u003e == \u003cvalue\u003e",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2525,9 +2350,7 @@
         {
             "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: \u003cproperty\u003e \u003coperator\u003e \u003cvalue\u003e in constraint expression",
             "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: \u003cproperty\u003e \u003coperator\u003e \u003cvalue\u003e in constraint expression",
-//  END NON-TRANSLATABLE
             "translation": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: \u003cproperty\u003e \u003coperator\u003e \u003cvalue\u003e in constraint expression",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2552,9 +2375,7 @@
         {
             "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
             "message": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-//  END NON-TRANSLATABLE
             "translation": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2643,9 +2464,7 @@
         {
             "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
             "message": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
-//  END NON-TRANSLATABLE
             "translation": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2670,9 +2489,7 @@
         {
             "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
             "message": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
-//  END NON-TRANSLATABLE
             "translation": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2697,9 +2514,7 @@
         {
             "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
             "message": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
-//  END NON-TRANSLATABLE
             "translation": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2724,9 +2539,7 @@
         {
             "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
             "message": "Comparison operator: {CompOp} is not supported for string value: {Value}",
-//  END NON-TRANSLATABLE
             "translation": "Comparison operator: {CompOp} is not supported for string value: {Value}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2751,9 +2564,7 @@
         {
             "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
             "message": "Comparison operator: {CompOp} is not supported for single version: {Value}",
-//  END NON-TRANSLATABLE
             "translation": "Comparison operator: {CompOp} is not supported for single version: {Value}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2778,9 +2589,7 @@
         {
             "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
             "message": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
-//  END NON-TRANSLATABLE
             "translation": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2805,9 +2614,7 @@
         {
             "id": "Expression: {Expression} is not valid",
             "message": "Expression: {Expression} is not valid",
-//  END NON-TRANSLATABLE
             "translation": "Expression: {Expression} is not valid",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2824,9 +2631,7 @@
         {
             "id": "Property must include a name and a value: {Property}",
             "message": "Property must include a name and a value: {Property}",
-//  END NON-TRANSLATABLE
             "translation": "Property must include a name and a value: {Property}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2843,9 +2648,7 @@
         {
             "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
             "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-//  END NON-TRANSLATABLE
             "translation": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2870,9 +2673,7 @@
         {
             "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
             "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-//  END NON-TRANSLATABLE
             "translation": "Property value is of type {ActualType}, expected type {DeclaredType}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2897,9 +2698,7 @@
         {
             "id": "Value {Value} of property {Name} is not an integer type",
             "message": "Value {Value} of property {Name} is not an integer type",
-//  END NON-TRANSLATABLE
             "translation": "Value {Value} of property {Name} is not an integer type",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2924,9 +2723,7 @@
         {
             "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
             "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-//  END NON-TRANSLATABLE
             "translation": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2951,9 +2748,7 @@
         {
             "id": "Property {Name} with value {Value} is not a valid verion string",
             "message": "Property {Name} with value {Value} is not a valid verion string",
-//  END NON-TRANSLATABLE
             "translation": "Property {Name} with value {Value} is not a valid verion string",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2978,9 +2773,7 @@
         {
             "id": "Property {Name} has invalid value type {ActualType}",
             "message": "Property {Name} has invalid value type {ActualType}",
-//  END NON-TRANSLATABLE
             "translation": "Property {Name} has invalid value type {ActualType}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3005,9 +2798,7 @@
         {
             "id": "unable to make directory for self signed MMS API certificate, error {Err}",
             "message": "unable to make directory for self signed MMS API certificate, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to make directory for self signed MMS API certificate, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3024,9 +2815,7 @@
         {
             "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
             "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to generate random number for MMS API certificate serial number, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3043,9 +2832,7 @@
         {
             "id": "unable to generate private key for MMS API certificate, error {Err}",
             "message": "unable to generate private key for MMS API certificate, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to generate private key for MMS API certificate, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3062,9 +2849,7 @@
         {
             "id": "unable to create MMS API certificate, error {Err}",
             "message": "unable to create MMS API certificate, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to create MMS API certificate, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3081,9 +2866,7 @@
         {
             "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
             "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3108,9 +2891,7 @@
         {
             "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
             "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3135,9 +2916,7 @@
         {
             "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
             "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3162,9 +2941,7 @@
         {
             "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
             "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3189,9 +2966,7 @@
         {
             "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
             "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3216,9 +2991,7 @@
         {
             "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
             "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3246,9 +3019,7 @@
                 "Deployment config {Arg_1} contains unsupported capability for a workload"
             ],
             "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-//  END NON-TRANSLATABLE
             "translation": "Deployment config {Arg_1} contains unsupported capability for a workload",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3267,9 +3038,7 @@
                 "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
             ],
             "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-//  END NON-TRANSLATABLE
             "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3288,9 +3057,7 @@
                 "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
             ],
             "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3316,9 +3083,7 @@
                 "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
             ],
             "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3351,9 +3116,7 @@
                 "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3379,9 +3142,7 @@
                 "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
             ],
             "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3414,9 +3175,7 @@
                 "Error starting containers: {Arg_1}"
             ],
             "message": "Error starting containers: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error starting containers: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3435,9 +3194,7 @@
                 "Error starting containers for agreement {Arg_1}: {Arg_2}"
             ],
             "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3463,9 +3220,7 @@
                 "Error restarting containers for agreements {Arg_1}: {Arg_2}"
             ],
             "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3491,9 +3246,7 @@
                 "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
             ],
             "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3519,9 +3272,7 @@
                 "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
             ],
             "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3547,9 +3298,7 @@
                 "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
             ],
             "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3572,9 +3321,7 @@
         {
             "id": "Error parsing the selections {Form}. {Err}",
             "message": "Error parsing the selections {Form}. {Err}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing the selections {Form}. {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3599,9 +3346,7 @@
         {
             "id": "Error getting {Resource} for output, error {Err}",
             "message": "Error getting {Resource} for output, error {Err}",
-//  END NON-TRANSLATABLE
             "translation": "Error getting {Resource} for output, error {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3629,9 +3374,7 @@
                 "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3657,9 +3400,7 @@
                 "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3685,9 +3426,7 @@
                 "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3713,9 +3452,7 @@
                 "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3741,9 +3478,7 @@
                 "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3769,9 +3504,7 @@
                 "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3797,9 +3530,7 @@
                 "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
             ],
             "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3825,9 +3556,7 @@
                 "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
             ],
             "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3853,9 +3582,7 @@
                 "Error in updating node {Arg_1}. {Arg_2}"
             ],
             "message": "Error in updating node {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error in updating node {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3881,9 +3608,7 @@
                 "Error in node unregistration. {Arg_1}"
             ],
             "message": "Error in node unregistration. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in node unregistration. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3902,9 +3627,7 @@
                 "Error verifiying exchange version. error: {Arg_1}"
             ],
             "message": "Error verifiying exchange version. error: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error verifiying exchange version. error: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3923,9 +3646,7 @@
                 "Error in creating or replacing node policy. {Arg_1}"
             ],
             "message": "Error in creating or replacing node policy. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in creating or replacing node policy. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3944,9 +3665,7 @@
                 "Error in patching node policy. {Arg_1}"
             ],
             "message": "Error in patching node policy. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in patching node policy. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3965,9 +3684,7 @@
                 "Error in deleting node policy. {Arg_1}"
             ],
             "message": "Error in deleting node policy. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in deleting node policy. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -3986,9 +3703,7 @@
                 "Error in updating node user input. {Arg_1}"
             ],
             "message": "Error in updating node user input. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in updating node user input. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4007,9 +3722,7 @@
                 "Error in patching node user input. {Arg_1}"
             ],
             "message": "Error in patching node user input. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in patching node user input. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4028,9 +3741,7 @@
                 "Error in deleting node userinput. {Arg_1}"
             ],
             "message": "Error in deleting node userinput. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error in deleting node userinput. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4049,9 +3760,7 @@
                 "Start node configuration/registration for node {Arg_1}."
             ],
             "message": "Start node configuration/registration for node {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Start node configuration/registration for node {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4070,9 +3779,7 @@
                 "Start updating node {Arg_1}."
             ],
             "message": "Start updating node {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Start updating node {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4091,9 +3798,7 @@
                 "Complete node update for {Arg_1}."
             ],
             "message": "Complete node update for {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete node update for {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4112,9 +3817,7 @@
                 "Start node unregistration."
             ],
             "message": "Start node unregistration.",
-//  END NON-TRANSLATABLE
             "translation": "Start node unregistration.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4124,9 +3827,7 @@
                 "Node unregistration complete for node {Arg_1}."
             ],
             "message": "Node unregistration complete for node {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Node unregistration complete for node {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4145,9 +3846,7 @@
                 "Error unregistring the node. The node is not found from the database."
             ],
             "message": "Error unregistring the node. The node is not found from the database.",
-//  END NON-TRANSLATABLE
             "translation": "Error unregistring the node. The node is not found from the database.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4157,9 +3856,7 @@
                 "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
             ],
             "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-//  END NON-TRANSLATABLE
             "translation": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4169,9 +3866,7 @@
                 "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
             ],
             "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-//  END NON-TRANSLATABLE
             "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4190,9 +3885,7 @@
                 "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
             ],
             "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-//  END NON-TRANSLATABLE
             "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4211,9 +3904,7 @@
                 "Input error for node unregistration. {Arg_1} is an incorrect value for block"
             ],
             "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-//  END NON-TRANSLATABLE
             "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4232,9 +3923,7 @@
                 "Unable to read node object from database, error {Arg_1}"
             ],
             "message": "Unable to read node object from database, error {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to read node object from database, error {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4253,9 +3942,7 @@
                 "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
             ],
             "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4274,9 +3961,7 @@
                 "Error in node configuration. The node is not found from the database."
             ],
             "message": "Error in node configuration. The node is not found from the database.",
-//  END NON-TRANSLATABLE
             "translation": "Error in node configuration. The node is not found from the database.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4286,9 +3971,7 @@
                 "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
             ],
             "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4307,9 +3990,7 @@
                 "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
             ],
             "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-//  END NON-TRANSLATABLE
             "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4335,9 +4016,7 @@
                 "Failed get user input from local db. {Arg_1}"
             ],
             "message": "Failed get user input from local db. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Failed get user input from local db. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4356,9 +4035,7 @@
                 "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
             ],
             "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4391,9 +4068,7 @@
                 "Error saving new node config state to database: {Arg_1}"
             ],
             "message": "Error saving new node config state to database: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Error saving new node config state to database: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4412,9 +4087,7 @@
                 "Complete node configuration/registration for node {Arg_1}."
             ],
             "message": "Complete node configuration/registration for node {Arg_1}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete node configuration/registration for node {Arg_1}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4433,9 +4106,7 @@
                 "Error in service configuration for {Arg_1}. {Arg_2}"
             ],
             "message": "Error in service configuration for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error in service configuration for {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4461,9 +4132,7 @@
                 "Error getting service references for pattern {Arg_1}. {Arg_2}"
             ],
             "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4489,9 +4158,7 @@
                 "New node policy: {Arg_1}"
             ],
             "message": "New node policy: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "New node policy: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4510,9 +4177,7 @@
                 "Deleted node policy"
             ],
             "message": "Deleted node policy",
-//  END NON-TRANSLATABLE
             "translation": "Deleted node policy",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4522,9 +4187,7 @@
                 "New node user input: {Arg_1}"
             ],
             "message": "New node user input: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "New node user input: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4543,9 +4206,7 @@
                 "No node user input to detele"
             ],
             "message": "No node user input to detele",
-//  END NON-TRANSLATABLE
             "translation": "No node user input to detele",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4555,9 +4216,7 @@
                 "Deleted all node user input"
             ],
             "message": "Deleted all node user input",
-//  END NON-TRANSLATABLE
             "translation": "Deleted all node user input",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -4567,9 +4226,7 @@
                 "Start service configuration with user input for {Arg_1}/{Arg_2}."
             ],
             "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4595,9 +4252,7 @@
                 "Start service auto configuration for {Arg_1}/{Arg_2}."
             ],
             "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4623,9 +4278,7 @@
                 "Complete service configuration for {Arg_1}/{Arg_2}."
             ],
             "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete service configuration for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4651,9 +4304,7 @@
                 "Complete service auto configuration for {Arg_1}/{Arg_2}."
             ],
             "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4679,9 +4330,7 @@
                 "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
             ],
             "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-//  END NON-TRANSLATABLE
             "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4714,9 +4363,7 @@
                 "Error configuring service {Arg_1}. {Arg_2}"
             ],
             "message": "Error configuring service {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error configuring service {Arg_1}. {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4742,9 +4389,7 @@
                 "Error changing service configstate {Arg_1}, error {Arg_2}"
             ],
             "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
-//  END NON-TRANSLATABLE
             "translation": "Error changing service configstate {Arg_1}, error {Arg_2}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4770,9 +4415,7 @@
                 "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
             ],
             "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-//  END NON-TRANSLATABLE
             "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4798,9 +4441,7 @@
                 "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
             ],
             "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-//  END NON-TRANSLATABLE
             "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4823,9 +4464,7 @@
         {
             "id": "Error converting the selections into Selectors: {Err}",
             "message": "Error converting the selections into Selectors: {Err}",
-//  END NON-TRANSLATABLE
             "translation": "Error converting the selections into Selectors: {Err}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4845,9 +4484,7 @@
                 "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
             ],
             "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4880,9 +4517,7 @@
                 "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
             ],
             "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4908,9 +4543,7 @@
                 "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
             ],
             "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4943,9 +4576,7 @@
                 "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
             ],
             "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -4971,9 +4602,7 @@
                 "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
             ],
             "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-//  END NON-TRANSLATABLE
             "translation": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5006,9 +4635,7 @@
                 "Node heartbeat restored for node {Arg_1}/{Arg_2}."
             ],
             "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
             "translation": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5034,9 +4661,7 @@
                 "unable to read node policy from the local database. {Arg_1}"
             ],
             "message": "unable to read node policy from the local database. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "unable to read node policy from the local database. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5055,9 +4680,7 @@
                 "Unable to read node object from the local database. {Arg_1}"
             ],
             "message": "Unable to read node object from the local database. {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to read node object from the local database. {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5076,9 +4699,7 @@
                 "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
             ],
             "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5097,9 +4718,7 @@
                 "Node policy updated with the exchange copy: {Arg_1}"
             ],
             "message": "Node policy updated with the exchange copy: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Node policy updated with the exchange copy: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5118,9 +4737,7 @@
                 "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
             ],
             "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5139,9 +4756,7 @@
                 "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
             ],
             "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-//  END NON-TRANSLATABLE
             "translation": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5160,9 +4775,7 @@
                 "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
             ],
             "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-//  END NON-TRANSLATABLE
             "translation": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5181,12 +4794,9 @@
                 "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
             ],
             "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-//  END NON-TRANSLATABLE
             "translation": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-//  START NON-TRANSLATABLE
             "translatorComment": "Copied from source.",
             "fuzzy": true
         }
     ]
 }
-//  END NON-TRANSLATABLE
