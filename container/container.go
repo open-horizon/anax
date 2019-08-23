@@ -1105,7 +1105,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	for serviceName, servicePair := range servicePairs {
 		if image, err := b.client.InspectImage(servicePair.serviceConfig.Config.Image); err != nil {
-			return nil, fail(nil, serviceName, fmt.Errorf("Failed to inspect image: %v. Original error: %v", servicePair.serviceConfig.Config.Image, err))
+			return nil, fail(nil, serviceName, fmt.Errorf("Failed to locally inspect image: %v. Please build and tag image locally or pull the image from your docker repository before running this command. Original error: %v", servicePair.serviceConfig.Config.Image, err))
 		} else if image == nil {
 			return nil, fail(nil, serviceName, fmt.Errorf("Unable to find Docker image: %v", servicePair.serviceConfig.Config.Image))
 		}
