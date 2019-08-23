@@ -1,6 +1,6 @@
-//  START NON-TRANSLATABLE
 {
     "language": "en",
+//  START NON-TRANSLATABLE
     "messages": [
         {
             "id": "properties contains an invalid property: {Err}",
@@ -5188,5 +5188,5 @@
             "fuzzy": true
         }
     ]
-}
 //  END NON-TRANSLATABLE
+}
