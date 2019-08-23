@@ -437,7 +437,7 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 	requestBody := bytes.NewBuffer(jsonBytes)
 
 	// First put the metadata into the CSS.
-	httpClient := &http.Client{}
+	httpClient := cliutils.GetHTTPClient()
 	req, err := http.NewRequest(http.MethodPut, url, requestBody)
 	if err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to create CSS file PUT request for %v, error %v", *metadata, err))
