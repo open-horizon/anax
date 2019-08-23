@@ -1,6 +1,6 @@
-//  START NON-TRANSLATABLE
 {
     "language": "en",
+//  START NON-TRANSLATABLE
     "messages": [
         {
             "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -17590,5 +17590,5 @@
             "fuzzy": true
         }
     ]
-}
 //  END NON-TRANSLATABLE
+}
