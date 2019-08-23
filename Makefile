@@ -22,6 +22,9 @@ CLI_MAN_DIR := cli/man1
 CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
+# used for creating hzn man pages
+CLI_TEMP_EXECUTABLE := cli/hzn.tmp
+
 ANAX_CONTAINER_DIR := anax-in-container
 DOCKER_IMAGE_VERSION ?= 2.23.10$(BRANCH_NAME)
 DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
@@ -101,6 +104,27 @@ else ifeq ($(opsys),Darwin)
 	COMPILE_ARGS += GOOS=darwin
 endif
 
+COMPILE_ARGS_LOCAL := CGO_ENABLED=0
+arch_local = $(shell tools/arch-tag)
+# TODO: handle other ARM architectures on build boxes too
+ifeq ($(arch_local),armhf)
+	COMPILE_ARGS_LOCAL +=  GOARCH=arm GOARM=6
+else ifeq ($(arch_local),arm64)
+	COMPILE_ARGS_LOCAL +=  GOARCH=arm64
+else ifeq ($(arch_local),amd64)
+	COMPILE_ARGS_LOCAL +=  GOARCH=amd64
+else ifeq ($(arch_local),ppc64el)
+	COMPILE_ARGS_LOCAL +=  GOARCH=ppc64le
+endif
+
+opsys_local = $(shell uname -s)
+ifeq ($(opsys_local),Linux)
+	COMPILE_ARGS_LOCAL += GOOS=linux
+else ifeq ($(opsys_local),Darwin)
+	COMPILE_ARGS_LOCAL += GOOS=darwin
+endif
+
+
 ifndef verbose
 .SILENT:
 endif
@@ -127,9 +151,16 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
 	    envsubst < cli/cliconfig/hzn.json.tmpl > $(CLI_CONFIG_FILE)
 	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
-	  mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
-	  mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
-	fi
+	  	mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
+	  	mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
+	else \
+		echo "Producing $(CLI_TEMP_EXECUTABLE) under $(arch_local) for generating hzn man pages"; \
+		cd $(PKGPATH) && \
+	  	  export GOPATH=$(TMPGOPATH); \
+	    	$(COMPILE_ARGS_LOCAL) go build -o $(CLI_TEMP_EXECUTABLE) $(CLI_EXECUTABLE).go; \
+	  		mkdir -p $(CLI_MAN_DIR) && $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
+	  		rm $(CLI_TEMP_EXECUTABLE); \
+	fi		
 
 $(CSS_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
