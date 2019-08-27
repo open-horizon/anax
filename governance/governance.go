@@ -954,7 +954,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_CANM, canReceived.AgreementId(), err),
 						persistence.EC_DATABASE_ERROR)
 				} else if len(ags) != 1 {
-					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", canReceived.AgreementId(), err)))
+					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, agreement not found", canReceived.AgreementId())))
 					deleteMessage = true
 				} else {
 					eventlog.LogAgreementEvent(
