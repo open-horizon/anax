@@ -179,6 +179,7 @@ type BaseWorker struct {
 	SubWorkers       map[string]*SubWorker // workers can have sub go routines that they own
 	ShuttingDown     bool
 	EC               *BaseExchangeContext // Holds the exchange context state
+	noWorkInterval   int
 }
 
 func NewBaseWorker(name string, cfg *config.HorizonConfig, ec *BaseExchangeContext) BaseWorker {
@@ -194,6 +195,7 @@ func NewBaseWorker(name string, cfg *config.HorizonConfig, ec *BaseExchangeConte
 		SubWorkers:       make(map[string]*SubWorker),
 		ShuttingDown:     false,
 		EC:               ec,
+		noWorkInterval:   0,
 	}
 }
 
@@ -234,6 +236,14 @@ func (w *BaseWorker) HasDeferredCommands() bool {
 
 func (w *BaseWorker) SetDeferredDelay(delay int) {
 	w.DeferredDelay = delay
+}
+
+func (w *BaseWorker) SetNoWorkInterval(interval int) {
+	w.noWorkInterval = interval
+}
+
+func (w *BaseWorker) GetNoWorkInterval() int {
+	return w.noWorkInterval
 }
 
 // Return handled (boolean) and terminate(boolean)
@@ -290,6 +300,9 @@ func (w *BaseWorker) internalCommandhandler(worker Worker, command Command) bool
 
 // This function kicks off the go routine that the worker's logic runs in.
 func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
+
+	w.SetNoWorkInterval(noWorkInterval)
+
 	go func() {
 
 		// log worker status
@@ -307,7 +320,7 @@ func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
 		// Process commands in blocking or non-blocking fashion, depending on how we were called.
 		for {
 
-			if noWorkInterval == 0 && !w.HasDeferredCommands() {
+			if w.GetNoWorkInterval() == 0 && !w.HasDeferredCommands() {
 				glog.V(2).Infof(cdLogString(fmt.Sprintf("%v command processor blocking for commands", w.GetName())))
 
 				// Get a command from the channel and dispatch to the command handler.
@@ -319,10 +332,10 @@ func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
 
 			} else {
 				glog.V(2).Infof(cdLogString(fmt.Sprintf("%v command processor non-blocking for commands", w.GetName())))
-				waitTime := noWorkInterval
+				waitTime := w.GetNoWorkInterval()
 
 				// If there are deferred commands, then we need to use the non-blocking recieve with a timeout.
-				if noWorkInterval == 0 {
+				if w.GetNoWorkInterval() == 0 {
 					waitTime = 5
 				}
 
@@ -336,7 +349,7 @@ func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
 
 				case <-time.After(time.Duration(waitTime) * time.Second):
 					// Call the no work to do handler if it was requested.
-					if noWorkInterval != 0 {
+					if w.GetNoWorkInterval() != 0 {
 						worker.NoWorkHandler()
 					}
 

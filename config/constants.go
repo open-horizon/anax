@@ -53,3 +53,12 @@ const HZN_FSS_CERT_KEY_FILE = "key.pem"
 
 // The number of seconds between polls to the CSS for updates.
 const HZN_FSS_POLLING_RATE = 60
+
+// The Default starting exchange message polling interval.
+const ExchangeMessagePollInterval_DEFAULT = 10
+
+// The Default message poll interval maximum.
+const ExchangeMessagePollMaxInterval_DEFAULT = 60
+
+// The Default message poll increment size.
+const ExchangeMessagePollIncrement_DEFAULT = 10

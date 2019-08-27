@@ -11,6 +11,7 @@ import (
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
 const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
+const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
 
 type HorizonConfig struct {
 	Edge          Config
@@ -41,6 +42,10 @@ type Config struct {
 	DVPrefix                         string    // When passing agreement ids into a workload container, add this prefix to the agreement id
 	RegistrationDelayS               uint64    // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
 	ExchangeMessageTTL               int       // The number of seconds the exchange will keep this message before automatically deleting it
+	ExchangeMessageDynamicPoll       bool      // Will the runtime dynamically increase the message poll interval? Default is true. Set to false to turn off dynamic message poll interval adjustments.
+	ExchangeMessagePollInterval      int       // The number of seconds the node will wait between polls to the exchange. This is the starting value, but at runtime this interval will increase if there is no message activity to reduce load on the exchange. If ExchangeMessageDynamicPoll is false, then the value of this field will never be changed by the runtime.
+	ExchangeMessagePollMaxInterval   int       // As the runtime increases the ExchangeMessagePollInterval, this value is the maximum that value can attain.
+	ExchangeMessagePollIncrement     int       // The number of seconds to increment the ExchangeMessagePollInterval when its time to increase the poll interval.
 	UserPublicKeyPath                string    // The location to store user keys uploaded through the REST API
 	ReportDeviceStatus               bool      // whether to report the device status to the exchange or not.
 	TrustCertUpdatesFromOrg          bool      // whether to trust the certs provided by the organization on the exchange or not.
@@ -153,6 +158,11 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 	if fssCSSURL := os.Getenv(FileSyncServiceCSSURLEnvvarName); fssCSSURL != "" {
 		config.Edge.FileSyncService.CSSURL = fssCSSURL
 	}
+
+	if noDynamicPoll := os.Getenv(ExchangeMessageNoDynamicPollEnvvarName); noDynamicPoll != "" {
+		config.Edge.ExchangeMessageDynamicPoll = false
+	}
+
 	return nil
 }
 
@@ -170,7 +180,11 @@ func Read(file string) (*HorizonConfig, error) {
 		// instantiate mostly empty which will be filled. Values here are defaults that can be overridden by the user
 		config := HorizonConfig{
 			Edge: Config{
-				DefaultHTTPClientTimeoutS: HTTPRequestTimeoutS,
+				DefaultHTTPClientTimeoutS:      HTTPRequestTimeoutS,
+				ExchangeMessageDynamicPoll:     true,
+				ExchangeMessagePollInterval:    ExchangeMessagePollInterval_DEFAULT,
+				ExchangeMessagePollMaxInterval: ExchangeMessagePollMaxInterval_DEFAULT,
+				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
 			},
 		}
 
@@ -260,7 +274,50 @@ func (c *HorizonConfig) String() string {
 }
 
 func (con *Config) String() string {
-	return fmt.Sprintf("ServiceStorage %v, APIListen %v, DBPath %v, DockerEndpoint %v, DockerCredFilePath %v, DefaultCPUSet %v, DefaultServiceRegistrationRAM: %v, StaticWebContent: %v, PublicKeyPath: %v, TrustSystemCACerts: %v, CACertsPath: %v, ExchangeURL: %v, DefaultHTTPClientTimeoutS: %v, PolicyPath: %v, ExchangeHeartbeat: %v, ExchangeVersionCheckIntervalM: %v, AgreementTimeoutS: %v, DVPrefix: %v, RegistrationDelayS: %v, ExchangeMessageTTL: %v, UserPublicKeyPath: %v, ReportDeviceStatus: %v, TrustCertUpdatesFromOrg: %v, TrustDockerAuthFromOrg: %v, ServiceUpgradeCheckIntervalS: %v, MultipleAnaxInstances: %v, DefaultServiceRetryCount: %v, DefaultServiceRetryDuration: %v, ServiceConfigStateCheckIntervalS: %v, FileSyncService: {%v}, BlockchainAccountId: %v, BlockchainDirectoryAddress %v", con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet, con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL, con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.ExchangeVersionCheckIntervalM, con.AgreementTimeoutS, con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.UserPublicKeyPath, con.ReportDeviceStatus, con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances, con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.ServiceConfigStateCheckIntervalS, con.FileSyncService.String(), con.BlockchainAccountId, con.BlockchainDirectoryAddress)
+	return fmt.Sprintf("ServiceStorage %v"+
+		", APIListen %v"+
+		", DBPath %v"+
+		", DockerEndpoint %v"+
+		", DockerCredFilePath %v"+
+		", DefaultCPUSet %v"+
+		", DefaultServiceRegistrationRAM: %v"+
+		", StaticWebContent: %v"+
+		", PublicKeyPath: %v"+
+		", TrustSystemCACerts: %v"+
+		", CACertsPath: %v"+
+		", ExchangeURL: %v"+
+		", DefaultHTTPClientTimeoutS: %v"+
+		", PolicyPath: %v"+
+		", ExchangeHeartbeat: %v"+
+		", ExchangeVersionCheckIntervalM: %v"+
+		", AgreementTimeoutS: %v"+
+		", DVPrefix: %v"+
+		", RegistrationDelayS: %v"+
+		", ExchangeMessageTTL: %v"+
+		", ExchangeMessageDynamicPoll: %v"+
+		", ExchangeMessagePollInterval: %v"+
+		", ExchangeMessagePollMaxInterval: %v"+
+		", ExchangeMessagePollIncrement: %v"+
+		", UserPublicKeyPath: %v"+
+		", ReportDeviceStatus: %v"+
+		", TrustCertUpdatesFromOrg: %v"+
+		", TrustDockerAuthFromOrg: %v"+
+		", ServiceUpgradeCheckIntervalS: %v"+
+		", MultipleAnaxInstances: %v"+
+		", DefaultServiceRetryCount: %v"+
+		", DefaultServiceRetryDuration: %v"+
+		", ServiceConfigStateCheckIntervalS: %v"+
+		", FileSyncService: {%v}"+
+		", BlockchainAccountId: %v"+
+		", BlockchainDirectoryAddress %v",
+		con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet,
+		con.DefaultServiceRegistrationRAM, con.StaticWebContent, con.PublicKeyPath, con.TrustSystemCACerts, con.CACertsPath, con.ExchangeURL,
+		con.DefaultHTTPClientTimeoutS, con.PolicyPath, con.ExchangeHeartbeat, con.ExchangeVersionCheckIntervalM, con.AgreementTimeoutS,
+		con.DVPrefix, con.RegistrationDelayS, con.ExchangeMessageTTL, con.ExchangeMessageDynamicPoll, con.ExchangeMessagePollInterval,
+		con.ExchangeMessagePollMaxInterval, con.ExchangeMessagePollIncrement, con.UserPublicKeyPath, con.ReportDeviceStatus,
+		con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances,
+		con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.ServiceConfigStateCheckIntervalS, con.FileSyncService.String(),
+		con.BlockchainAccountId, con.BlockchainDirectoryAddress)
 }
 
 func (agc *AGConfig) String() string {

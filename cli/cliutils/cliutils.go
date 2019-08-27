@@ -1440,7 +1440,7 @@ func GetHTTPClient() *http.Client {
 			ExpectContinueTimeout: 8 * time.Second,
 			MaxIdleConns:          config.MaxHTTPIdleConnections,
 			IdleConnTimeout:       config.HTTPIdleConnectionTimeoutS * time.Second,
-			TLSClientConfig:       &tls.Config{
+			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: skipSSL,
 			},
 		},
