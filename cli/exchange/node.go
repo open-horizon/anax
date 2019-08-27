@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 )
 
 // We only care about handling the node names, so the rest is left as interface{} and will be passed from the exchange to the display
@@ -329,4 +330,51 @@ func NodeRemovePolicy(org, credToUse, node string, force bool) {
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Println("Node policy removed.")
 
+}
+
+// Format for outputting eventlog objects
+type EventLog struct {
+	Id         string           `json:"record_id"` // unique primary key for records
+	Timestamp  string           `json:"timestamp"` // converted to "yyyy-mm-dd hh:mm:ss" format
+	Severity   string           `json:"severity"`  // info, warning or error
+	Message    string           `json:"message"`
+	EventCode  string           `json:"event_code"`
+	SourceType string           `json:"source_type"`  // the type of the source. It can be agreement, service, image, workload etc.
+	Source     *json.RawMessage `json:"event_source"` // source involved for this event.
+}
+
+// NodeListErrors Displays the node errors currently surfaced to the exchange
+func NodeListErrors(org string, credToUse string, node string, long bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	org, node = cliutils.TrimOrg(org, node)
+
+	var resp exchange.ExchangeSurfaceError
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/errors", cliutils.OrgAndCreds(org, credToUse), []int{200}, &resp)
+	errorList := resp.ErrorList
+
+	if !long {
+		jsonBytes, err := json.MarshalIndent(errorList, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange node listerrors' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	} else {
+		output := make([]EventLog, len(errorList))
+		for i, surfError := range errorList {
+			var fullEventLogSlice []persistence.EventLogRaw
+			cliutils.HorizonGet(fmt.Sprintf("eventlog/all?record_id=%s", surfError.Record_id), []int{200, 404}, fullEventLogSlice, false)
+			if len(fullEventLogSlice) > 0 {
+				var fullEventLog persistence.EventLogRaw
+				fullEventLog = fullEventLogSlice[0]
+				output[i] = EventLog{Id: fullEventLog.Id, Timestamp: cliutils.ConvertTime(fullEventLog.Timestamp), Severity: fullEventLog.Severity, Message: fullEventLog.Message, EventCode: fullEventLog.EventCode, SourceType: fullEventLog.SourceType, Source: fullEventLog.Source}
+			}
+		}
+		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange node listerrors' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	}
 }

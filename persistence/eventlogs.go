@@ -249,6 +249,7 @@ func SaveEventLog(db *bolt.DB, event_log *EventLog) error {
 		}
 	})
 
+	NewErrorLog(db, *event_log)
 	return writeErr
 }
 
@@ -697,4 +698,22 @@ func MatchAttributeValue(attr interface{}, selectors []Selector) (bool, bool, er
 	}
 
 	return true, true, nil
+}
+
+// GetEventLogObject returns the full eventlog object associated with a given record id
+func GetEventLogObject(db *bolt.DB, msgPrinter *message.Printer, recordID string) EventLog {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+	recordSelectorMap := make(map[string][]Selector)
+	selector := []Selector{Selector{Op: "=", MatchValue: recordID}}
+	recordSelectorMap["record_id"] = selector
+	logs, err := FindEventLogsWithSelectors(db, true, recordSelectorMap, msgPrinter)
+	if err != nil {
+		return EventLog{}
+	}
+	if len(logs) == 0 {
+		return EventLog{}
+	}
+	return logs[0]
 }
