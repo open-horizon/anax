@@ -123,7 +123,7 @@ func (self *Policy) Add_DataVerification(d *DataVerification) error {
 
 func (self *Policy) Add_Constraints(c *externalpolicy.ConstraintExpression) error {
 	if c != nil {
-		if err := c.Validate(); err != nil {
+		if _, err := c.Validate(); err != nil {
 			return errors.New(fmt.Sprintf("Add_Constraints validation error. %v.", err))
 		} else {
 			self.Constraints = *c

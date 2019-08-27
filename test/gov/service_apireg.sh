@@ -1558,7 +1558,7 @@ read -d '' bpnsdef <<EOF
       }
   ],
   "constraints": [
-    "purpose == network-testing"
+    "purpose==network-testing"
   ],
   "userInput": [
     {

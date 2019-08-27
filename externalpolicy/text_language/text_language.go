@@ -24,7 +24,7 @@ func NewTextConstraintLanguagePlugin() plugin_registry.ConstraintLanguagePlugin 
 	return new(TextConstraintLanguagePlugin)
 }
 
-func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool, error) {
+func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool, []string, error) {
 
 	var err error
 	var constraints []string
@@ -36,14 +36,15 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 	// Validate that the input is a ConstraintExpression type (string[])
 	if !isConstraintExpression(dconstraints) {
-		return false, errors.New(msgPrinter.Sprintf("The constraint expression: %v is type %T, but is expected to be an array of strings", dconstraints, dconstraints))
+		return false, []string{}, errors.New(msgPrinter.Sprintf("The constraint expression: %v is type %T, but is expected to be an array of strings", dconstraints, dconstraints))
 	}
 
 	// Validate that the expression is syntactically correct and parse-able
 	constraints = dconstraints.([]string)
+	validConstraints := make([]string, 0, 2)
 
 	for _, constraint = range constraints {
-		// 1 constrain inside constrain list
+		// 1 constraint inside constraint list
 		// handles space inside quote and inside string list
 		constraint = preprocessConstraintExpression(constraint)
 		remainder = constraint
@@ -51,33 +52,34 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 		for {
 			nextExpression, remainder, err = p.GetNextExpression(remainder)
 			if err != nil {
-				return false, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
+				return false, validConstraints, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
 			} else if nextExpression == "" {
 				break
 			}
 
 			validated, err = validateOneConstraintExpression(nextExpression)
 			if !validated {
-				return false, err
+				return false, validConstraints, err
 			}
 
 			nextLogicalOperator, remainder, err = p.GetNextOperator(remainder)
 			if err != nil {
-				return false, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
+				return false, validConstraints, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
 			} else if nextLogicalOperator == "" {
 				break
 			}
 
 			// verify logical operators
 			if !isAllowedLogicalOpType(nextLogicalOperator) {
-				return false, errors.New(msgPrinter.Sprintf("Logical operator %v is not valid, expecting AND, OR, &&, ||", nextLogicalOperator))
+				return false, validConstraints, errors.New(msgPrinter.Sprintf("Logical operator %v is not valid, expecting AND, OR, &&, ||", nextLogicalOperator))
 			}
 
 		}
+		validConstraints = append(validConstraints, constraint)
 
 	}
 
-	return true, nil
+	return true, validConstraints, nil
 }
 
 // This function parses out the next property expression and returns it along with the remainder of the expression.
@@ -252,6 +254,20 @@ func isAllowedLogicalOpType(s string) bool {
 	return false
 }
 
+func tokenContainsOperator(token string) string {
+
+	ops := fmt.Sprintf("%v %v %v %v %v %v %v", doubleequalto, lessthaneq, lessthan, greaterthaneq, greaterthan, notequalto, equalto)
+	allOps := strings.Split(ops, " ")
+	for _, op := range allOps {
+		if token == op {
+			return ""
+		} else if strings.Contains(token, op) {
+			return op
+		}
+	}
+	return ""
+}
+
 func preprocessConstraintExpression(str string) string {
 	re := regexp.MustCompile(`(?m)"(.*?)"(?m)`)
 
@@ -260,9 +276,19 @@ func preprocessConstraintExpression(str string) string {
 	s := space.ReplaceAllString(str, ",")
 
 	for _, match := range re.FindAllString(s, -1) {
-		// if find "a b", replace space inside quote with invisiable charactor \a
+		// if find "a b", replace space inside quote with invisible charactor \a
 		newStr := strings.Replace(match, " ", "\a", -1)
 		s = strings.Replace(s, match, newStr, -1)
+	}
+
+	// Insert whitespace if needed. White space could be completely missing from a comparison expression or it might be missing from only
+	// one side of the operator. White space is inserted to canonicalize the expression, making it easier to parse.
+	pieces := strings.Split(s, " ")
+	for _, token := range pieces {
+		if operator := tokenContainsOperator(token); operator != "" {
+			newToken := strings.Trim(strings.Replace(token, operator, fmt.Sprintf(" %v ", operator), -1), " ")
+			s = strings.Replace(s, token, newToken, -1)
+		}
 	}
 
 	return s
@@ -297,7 +323,7 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 	}
 
 	if canParseToFloat(value) || canParseToInteger(value) {
-		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, lessthan) == 0 || strings.Compare(compOp, greaterthan) == 0 || strings.Compare(compOp, lessthaneq) == 0 || strings.Compare(compOp, greaterthaneq) == 0 {
+		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, notequalto) == 0 || strings.Compare(compOp, lessthan) == 0 || strings.Compare(compOp, greaterthan) == 0 || strings.Compare(compOp, lessthaneq) == 0 || strings.Compare(compOp, greaterthaneq) == 0 {
 			return true, nil
 		}
 		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for numeric value: %v", compOp, value))
@@ -318,7 +344,7 @@ func validateOneConstraintExpression(expression string) (bool, error) {
 	}
 
 	if canParseToString(value) {
-		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
+		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, notequalto) == 0 {
 			return true, nil
 		}
 		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for string value: %v", compOp, value))

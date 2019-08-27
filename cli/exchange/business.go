@@ -155,7 +155,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 		}
-		err = newValue.Validate()
+		_, err = newValue.Validate()
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for constraints: %v", err))
 		}

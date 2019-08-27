@@ -122,7 +122,8 @@ func (b *BusinessPolicy) Validate() error {
 
 	// Validate the Constraints expression by invoking the plugins.
 	if b != nil && len(b.Constraints) != 0 {
-		return b.Constraints.Validate()
+		_, err := b.Constraints.Validate()
+		return err
 	}
 
 	// We only get here if the input object is nil OR all of the top level fields are empty.
