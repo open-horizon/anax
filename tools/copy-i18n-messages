@@ -4,10 +4,10 @@
 cp $PKGPATH/locales/en/out.gotext.json $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto
 
 # add START NON-TRANSLATABLE and END NON-TRANSLATABLE for translation process
-cat $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto | sed '1 i // NLS_CHARSET=UTF-8' | sed '/"translation":/  a //  START NON-TRANSLATABLE' | sed '/"translation":/  i //  END NON-TRANSLATABLE' | sed '/"language":/  a //  START NON-TRANSLATABLE' |  sed '$ i //  END NON-TRANSLATABLE' > $PKGPATH/i18n_translation/anax.out.gotext.json
+cat $PKGPATH/i18n_translation/original/anax.out.gotext.json.auto | jq 'del(.messages[].placeholders)| del(.messages[].id) | del(.messages[].translatorComment) | del(.messages[].fuzzy) ' | sed '1 i // NLS_CHARSET=UTF-8' | sed '/"message":/  i //  START NON-TRANSLATABLE' | sed '/"message":/  a //  END NON-TRANSLATABLE' > $PKGPATH/i18n_translation/anax.out.gotext.json
  
 cp $PKGPATH/cli/locales/en/out.gotext.json $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto
 
 # add START NON-TRANSLATABLE and END NON-TRANSLATABLE for translation process
-cat $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto | sed '1 i // NLS_CHARSET=UTF-8' | sed '/"translation":/  a //  START NON-TRANSLATABLE' | sed '/"translation":/  i //  END NON-TRANSLATABLE' | sed '/"language":/  a //  START NON-TRANSLATABLE' |  sed '$ i //  END NON-TRANSLATABLE' > $PKGPATH/i18n_translation/hzn.out.gotext.json
+cat $PKGPATH/i18n_translation/original/hzn.out.gotext.json.auto | jq 'del(.messages[].placeholders)| del(.messages[].id) | del(.messages[].translatorComment) | del(.messages[].fuzzy) ' | sed '1 i // NLS_CHARSET=UTF-8' | sed '/"message":/  i //  START NON-TRANSLATABLE' | sed '/"message":/  a //  END NON-TRANSLATABLE' > $PKGPATH/i18n_translation/hzn.out.gotext.json
  
