@@ -2,6 +2,421 @@
     "language": "en",
     "messages": [
         {
+            "id": [
+                "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
+                "Deployment config {Arg_1} contains unsupported capability for a workload"
+            ],
+            "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
+            "translation": "Deployment config {Arg_1} contains unsupported capability for a workload",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
+                "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+            ],
+            "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+            "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
+                "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+            ],
+            "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+            "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
+                "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+            ],
+            "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+            "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
+                "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+            "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
+                "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+            ],
+            "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+            "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_START_CONTAINER_ERROR",
+                "Error starting containers: {Arg_1}"
+            ],
+            "message": "Error starting containers: {Arg_1}",
+            "translation": "Error starting containers: {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
+                "Error starting containers for agreement {Arg_1}: {Arg_2}"
+            ],
+            "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+            "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
+                "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+            ],
+            "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+            "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
+                "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+            ],
+            "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+            "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
+                "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+            ],
+            "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+            "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
+                "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+            ],
+            "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+            "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+            "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
+            "translation": "Version_Expression: Whitespace is not permitted in {Expr}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Expr",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "expr"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Version_Expression: {Verstring} is not a valid version string.",
+            "message": "Version_Expression: {Verstring} is not a valid version string.",
+            "translation": "Version_Expression: {Verstring} is not a valid version string.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Verstring",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ver_string"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+            "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+            "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Verstring",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ver_string"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+            "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+            "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Verstring",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "ver_string"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+            "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+            "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Expr",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "expr"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Input version string {V1} or {V2} is not a valid single version string.",
+            "message": "Input version string {V1} or {V2} is not a valid single version string.",
+            "translation": "Input version string {V1} or {V2} is not a valid single version string.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "V1",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "v1"
+                },
+                {
+                    "id": "V2",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "v2"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "properties contains an invalid property: {Err}",
             "message": "properties contains an invalid property: {Err}",
             "translation": "properties contains an invalid property: {Err}",
@@ -181,6 +596,157 @@
                     "underlyingType": "interface{}",
                     "argNum": 2,
                     "expr": "actualType"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
+                "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+            ],
+            "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+            "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
+                "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+            ],
+            "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+            "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
+                "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+            ],
+            "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+            "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                },
+                {
+                    "id": "Arg_4",
+                    "string": "%[4]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 4
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_PROD_NODE_REJECTED_PROPOSAL",
+                "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+            ],
+            "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+            "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_PROD_ERR_HANDLE_PROPOSAL",
+                "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+            ],
+            "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+            "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
                 }
             ],
             "fuzzy": true
@@ -502,6 +1068,20 @@
             ],
             "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
             "translation": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Name, or Org is empty string.",
+            "message": "Name, or Org is empty string.",
+            "translation": "Name, or Org is empty string.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The serviceVersions array is empty.",
+            "message": "The serviceVersions array is empty.",
+            "translation": "The serviceVersions array is empty.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -874,6 +1454,1384 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "expression"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+            "message": "unable to make directory for self signed MMS API certificate, error {Err}",
+            "translation": "unable to make directory for self signed MMS API certificate, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+            "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
+            "translation": "unable to generate random number for MMS API certificate serial number, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to generate private key for MMS API certificate, error {Err}",
+            "message": "unable to generate private key for MMS API certificate, error {Err}",
+            "translation": "unable to generate private key for MMS API certificate, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to create MMS API certificate, error {Err}",
+            "message": "unable to create MMS API certificate, error {Err}",
+            "translation": "unable to create MMS API certificate, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+            "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+            "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServerCertificate",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "common.Configuration.ServerCertificate"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+            "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+            "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServerCertificate",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "common.Configuration.ServerCertificate"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+            "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+            "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServerCertificate",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "common.Configuration.ServerCertificate"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+            "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+            "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServerKey",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "common.Configuration.ServerKey"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+            "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+            "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServerKey",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "common.Configuration.ServerKey"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+            "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+            "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServerKey",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "common.Configuration.ServerKey"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error parsing the selections {Form}. {Err}",
+            "message": "Error parsing the selections {Form}. {Err}",
+            "translation": "Error parsing the selections {Form}. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Form",
+                    "string": "%[1]v",
+                    "type": "net/url.Values",
+                    "underlyingType": "map[string][]string",
+                    "argNum": 1,
+                    "expr": "r.Form"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error getting {Resource} for output, error {Err}",
+            "message": "Error getting {Resource} for output, error {Err}",
+            "translation": "Error getting {Resource} for output, error {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Resource",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "resource"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
+                "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
+                "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
+                "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
+                "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
+                "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
+                "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
+                "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
+            ],
+            "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+            "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_REG",
+                "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
+            ],
+            "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+            "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_UPDATE",
+                "Error in updating node {Arg_1}. {Arg_2}"
+            ],
+            "message": "Error in updating node {Arg_1}. {Arg_2}",
+            "translation": "Error in updating node {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_UNREG",
+                "Error in node unregistration. {Arg_1}"
+            ],
+            "message": "Error in node unregistration. {Arg_1}",
+            "translation": "Error in node unregistration. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
+                "Error verifiying exchange version. error: {Arg_1}"
+            ],
+            "message": "Error verifiying exchange version. error: {Arg_1}",
+            "translation": "Error verifiying exchange version. error: {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_POLICY_CREATE",
+                "Error in creating or replacing node policy. {Arg_1}"
+            ],
+            "message": "Error in creating or replacing node policy. {Arg_1}",
+            "translation": "Error in creating or replacing node policy. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_POLICY_PATCH",
+                "Error in patching node policy. {Arg_1}"
+            ],
+            "message": "Error in patching node policy. {Arg_1}",
+            "translation": "Error in patching node policy. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_POLICY_DEL",
+                "Error in deleting node policy. {Arg_1}"
+            ],
+            "message": "Error in deleting node policy. {Arg_1}",
+            "translation": "Error in deleting node policy. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_UI_UPDATE",
+                "Error in updating node user input. {Arg_1}"
+            ],
+            "message": "Error in updating node user input. {Arg_1}",
+            "translation": "Error in updating node user input. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_UI_PATCH",
+                "Error in patching node user input. {Arg_1}"
+            ],
+            "message": "Error in patching node user input. {Arg_1}",
+            "translation": "Error in patching node user input. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_IN_NODE_UI_DEL",
+                "Error in deleting node userinput. {Arg_1}"
+            ],
+            "message": "Error in deleting node userinput. {Arg_1}",
+            "translation": "Error in deleting node userinput. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_START_NODE_REG",
+                "Start node configuration/registration for node {Arg_1}."
+            ],
+            "message": "Start node configuration/registration for node {Arg_1}.",
+            "translation": "Start node configuration/registration for node {Arg_1}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_START_NODE_UPDATE",
+                "Start updating node {Arg_1}."
+            ],
+            "message": "Start updating node {Arg_1}.",
+            "translation": "Start updating node {Arg_1}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_COMPLETE_NODE_UPDATE",
+                "Complete node update for {Arg_1}."
+            ],
+            "message": "Complete node update for {Arg_1}.",
+            "translation": "Complete node update for {Arg_1}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_START_NODE_UNREG",
+                "Start node unregistration."
+            ],
+            "message": "Start node unregistration.",
+            "translation": "Start node unregistration.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_COMPLETE_NODE_UNREG",
+                "Node unregistration complete for node {Arg_1}."
+            ],
+            "message": "Node unregistration complete for node {Arg_1}.",
+            "translation": "Node unregistration complete for node {Arg_1}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_UNREG_NOT_FOUND",
+                "Error unregistring the node. The node is not found from the database."
+            ],
+            "message": "Error unregistring the node. The node is not found from the database.",
+            "translation": "Error unregistring the node. The node is not found from the database.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
+                "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+            ],
+            "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+            "translation": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
+                "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
+            ],
+            "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+            "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
+                "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
+            ],
+            "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+            "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
+                "Input error for node unregistration. {Arg_1} is an incorrect value for block"
+            ],
+            "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+            "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_READ_NODE_FROM_DB",
+                "Unable to read node object from database, error {Arg_1}"
+            ],
+            "message": "Unable to read node object from database, error {Arg_1}",
+            "translation": "Unable to read node object from database, error {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
+                "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
+            ],
+            "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+            "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_CONF_NOT_FOUND",
+                "Error in node configuration. The node is not found from the database."
+            ],
+            "message": "Error in node configuration. The node is not found from the database.",
+            "translation": "Error in node configuration. The node is not found from the database.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_NODE_CONF_WRONG_STATE",
+                "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
+            ],
+            "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+            "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_UNSUP_NODE_STATE_TRANS",
+                "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
+            ],
+            "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+            "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_FAIL_GET_UI_FROM_DB",
+                "Failed get user input from local db. {Arg_1}"
+            ],
+            "message": "Failed get user input from local db. {Arg_1}",
+            "translation": "Failed get user input from local db. {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
+                "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
+            ],
+            "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+            "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_SAVE_NODE_CONFSTATE",
+                "Error saving new node config state to database: {Arg_1}"
+            ],
+            "message": "Error saving new node config state to database: {Arg_1}",
+            "translation": "Error saving new node config state to database: {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_COMPLETE_NODE_REG",
+                "Complete node configuration/registration for node {Arg_1}."
+            ],
+            "message": "Complete node configuration/registration for node {Arg_1}.",
+            "translation": "Complete node configuration/registration for node {Arg_1}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_SVC_CONF",
+                "Error in service configuration for {Arg_1}. {Arg_2}"
+            ],
+            "message": "Error in service configuration for {Arg_1}. {Arg_2}",
+            "translation": "Error in service configuration for {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_GET_SREFS_FOR_PATTERN",
+                "Error getting service references for pattern {Arg_1}. {Arg_2}"
+            ],
+            "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+            "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_NEW_NODE_POL",
+                "New node policy: {Arg_1}"
+            ],
+            "message": "New node policy: {Arg_1}",
+            "translation": "New node policy: {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_NODE_POL_DELETED",
+                "Deleted node policy"
+            ],
+            "message": "Deleted node policy",
+            "translation": "Deleted node policy",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_NEW_NODE_UI",
+                "New node user input: {Arg_1}"
+            ],
+            "message": "New node user input: {Arg_1}",
+            "translation": "New node user input: {Arg_1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_NO_NODE_UI_TO_DEL",
+                "No node user input to detele"
+            ],
+            "message": "No node user input to detele",
+            "translation": "No node user input to detele",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_DELETED_ALL_NODE_UI",
+                "Deleted all node user input"
+            ],
+            "message": "Deleted all node user input",
+            "translation": "Deleted all node user input",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_START_SVC_CONFIG",
+                "Start service configuration with user input for {Arg_1}/{Arg_2}."
+            ],
+            "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+            "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_START_SVC_AUTO_CONFIG",
+                "Start service auto configuration for {Arg_1}/{Arg_2}."
+            ],
+            "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+            "translation": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_COMPLETE_SVC_CONFIG",
+                "Complete service configuration for {Arg_1}/{Arg_2}."
+            ],
+            "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
+            "translation": "Complete service configuration for {Arg_1}/{Arg_2}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_COMPLETE_SVC_AUTO_CONFIG",
+                "Complete service auto configuration for {Arg_1}/{Arg_2}."
+            ],
+            "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+            "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
+                "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
+            ],
+            "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+            "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_CONFIG_SVC",
+                "Error configuring service {Arg_1}. {Arg_2}"
+            ],
+            "message": "Error configuring service {Arg_1}. {Arg_2}",
+            "translation": "Error configuring service {Arg_1}. {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
+                "Error changing service configstate {Arg_1}, error {Arg_2}"
+            ],
+            "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
+            "translation": "Error changing service configstate {Arg_1}, error {Arg_2}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_START_CHANGE_SVC_CONFIGSTATE",
+                "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
+            ],
+            "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+            "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": [
+                "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
+                "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
+            ],
+            "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+            "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Arg_1",
+                    "string": "%[1]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 1
+                },
+                {
+                    "id": "Arg_2",
+                    "string": "%[2]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 2
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error converting the selections into Selectors: {Err}",
+            "message": "Error converting the selections into Selectors: {Err}",
+            "translation": "Error converting the selections into Selectors: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -2836,1964 +4794,6 @@
                     "type": "",
                     "underlyingType": "interface{}",
                     "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
-                "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
-            ],
-            "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-            "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
-                "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
-            ],
-            "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-            "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
-                "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
-            ],
-            "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-            "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                },
-                {
-                    "id": "Arg_3",
-                    "string": "%[3]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 3
-                },
-                {
-                    "id": "Arg_4",
-                    "string": "%[4]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 4
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_PROD_NODE_REJECTED_PROPOSAL",
-                "Node rejected the proposal for service {Arg_1}/{Arg_2}."
-            ],
-            "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-            "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_PROD_ERR_HANDLE_PROPOSAL",
-                "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
-            ],
-            "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-            "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                },
-                {
-                    "id": "Arg_3",
-                    "string": "%[3]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 3
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-            "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-            "translation": "Version_Expression: Whitespace is not permitted in {Expr}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Expr",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "expr"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Version_Expression: {Verstring} is not a valid version string.",
-            "message": "Version_Expression: {Verstring} is not a valid version string.",
-            "translation": "Version_Expression: {Verstring} is not a valid version string.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Verstring",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "ver_string"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-            "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-            "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Verstring",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "ver_string"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-            "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-            "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Verstring",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "ver_string"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-            "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-            "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Expr",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "expr"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Input version string {V1} or {V2} is not a valid single version string.",
-            "message": "Input version string {V1} or {V2} is not a valid single version string.",
-            "translation": "Input version string {V1} or {V2} is not a valid single version string.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "V1",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "v1"
-                },
-                {
-                    "id": "V2",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
-                    "expr": "v2"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Name, or Org is empty string.",
-            "message": "Name, or Org is empty string.",
-            "translation": "Name, or Org is empty string.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "The serviceVersions array is empty.",
-            "message": "The serviceVersions array is empty.",
-            "translation": "The serviceVersions array is empty.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Error parsing the selections {Form}. {Err}",
-            "message": "Error parsing the selections {Form}. {Err}",
-            "translation": "Error parsing the selections {Form}. {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Form",
-                    "string": "%[1]v",
-                    "type": "net/url.Values",
-                    "underlyingType": "map[string][]string",
-                    "argNum": 1,
-                    "expr": "r.Form"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Error getting {Resource} for output, error {Err}",
-            "message": "Error getting {Resource} for output, error {Err}",
-            "translation": "Error getting {Resource} for output, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Resource",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "resource"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
-                "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
-                "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
-                "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
-                "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
-                "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-                "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
-                "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-            "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_REG",
-                "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
-            ],
-            "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-            "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_UPDATE",
-                "Error in updating node {Arg_1}. {Arg_2}"
-            ],
-            "message": "Error in updating node {Arg_1}. {Arg_2}",
-            "translation": "Error in updating node {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_UNREG",
-                "Error in node unregistration. {Arg_1}"
-            ],
-            "message": "Error in node unregistration. {Arg_1}",
-            "translation": "Error in node unregistration. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
-                "Error verifiying exchange version. error: {Arg_1}"
-            ],
-            "message": "Error verifiying exchange version. error: {Arg_1}",
-            "translation": "Error verifiying exchange version. error: {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_POLICY_CREATE",
-                "Error in creating or replacing node policy. {Arg_1}"
-            ],
-            "message": "Error in creating or replacing node policy. {Arg_1}",
-            "translation": "Error in creating or replacing node policy. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_POLICY_PATCH",
-                "Error in patching node policy. {Arg_1}"
-            ],
-            "message": "Error in patching node policy. {Arg_1}",
-            "translation": "Error in patching node policy. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_POLICY_DEL",
-                "Error in deleting node policy. {Arg_1}"
-            ],
-            "message": "Error in deleting node policy. {Arg_1}",
-            "translation": "Error in deleting node policy. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_UI_UPDATE",
-                "Error in updating node user input. {Arg_1}"
-            ],
-            "message": "Error in updating node user input. {Arg_1}",
-            "translation": "Error in updating node user input. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_UI_PATCH",
-                "Error in patching node user input. {Arg_1}"
-            ],
-            "message": "Error in patching node user input. {Arg_1}",
-            "translation": "Error in patching node user input. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_IN_NODE_UI_DEL",
-                "Error in deleting node userinput. {Arg_1}"
-            ],
-            "message": "Error in deleting node userinput. {Arg_1}",
-            "translation": "Error in deleting node userinput. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_START_NODE_REG",
-                "Start node configuration/registration for node {Arg_1}."
-            ],
-            "message": "Start node configuration/registration for node {Arg_1}.",
-            "translation": "Start node configuration/registration for node {Arg_1}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_START_NODE_UPDATE",
-                "Start updating node {Arg_1}."
-            ],
-            "message": "Start updating node {Arg_1}.",
-            "translation": "Start updating node {Arg_1}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_COMPLETE_NODE_UPDATE",
-                "Complete node update for {Arg_1}."
-            ],
-            "message": "Complete node update for {Arg_1}.",
-            "translation": "Complete node update for {Arg_1}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_START_NODE_UNREG",
-                "Start node unregistration."
-            ],
-            "message": "Start node unregistration.",
-            "translation": "Start node unregistration.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_COMPLETE_NODE_UNREG",
-                "Node unregistration complete for node {Arg_1}."
-            ],
-            "message": "Node unregistration complete for node {Arg_1}.",
-            "translation": "Node unregistration complete for node {Arg_1}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_UNREG_NOT_FOUND",
-                "Error unregistring the node. The node is not found from the database."
-            ],
-            "message": "Error unregistring the node. The node is not found from the database.",
-            "translation": "Error unregistring the node. The node is not found from the database.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
-                "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
-            ],
-            "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-            "translation": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
-                "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
-            ],
-            "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-            "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
-                "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
-            ],
-            "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-            "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
-                "Input error for node unregistration. {Arg_1} is an incorrect value for block"
-            ],
-            "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-            "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_READ_NODE_FROM_DB",
-                "Unable to read node object from database, error {Arg_1}"
-            ],
-            "message": "Unable to read node object from database, error {Arg_1}",
-            "translation": "Unable to read node object from database, error {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
-                "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
-            ],
-            "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-            "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_CONF_NOT_FOUND",
-                "Error in node configuration. The node is not found from the database."
-            ],
-            "message": "Error in node configuration. The node is not found from the database.",
-            "translation": "Error in node configuration. The node is not found from the database.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_NODE_CONF_WRONG_STATE",
-                "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
-            ],
-            "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-            "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_UNSUP_NODE_STATE_TRANS",
-                "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
-            ],
-            "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-            "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_FAIL_GET_UI_FROM_DB",
-                "Failed get user input from local db. {Arg_1}"
-            ],
-            "message": "Failed get user input from local db. {Arg_1}",
-            "translation": "Failed get user input from local db. {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
-                "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
-            ],
-            "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-            "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                },
-                {
-                    "id": "Arg_3",
-                    "string": "%[3]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 3
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_SAVE_NODE_CONFSTATE",
-                "Error saving new node config state to database: {Arg_1}"
-            ],
-            "message": "Error saving new node config state to database: {Arg_1}",
-            "translation": "Error saving new node config state to database: {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_COMPLETE_NODE_REG",
-                "Complete node configuration/registration for node {Arg_1}."
-            ],
-            "message": "Complete node configuration/registration for node {Arg_1}.",
-            "translation": "Complete node configuration/registration for node {Arg_1}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_SVC_CONF",
-                "Error in service configuration for {Arg_1}. {Arg_2}"
-            ],
-            "message": "Error in service configuration for {Arg_1}. {Arg_2}",
-            "translation": "Error in service configuration for {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_GET_SREFS_FOR_PATTERN",
-                "Error getting service references for pattern {Arg_1}. {Arg_2}"
-            ],
-            "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-            "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_NEW_NODE_POL",
-                "New node policy: {Arg_1}"
-            ],
-            "message": "New node policy: {Arg_1}",
-            "translation": "New node policy: {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_NODE_POL_DELETED",
-                "Deleted node policy"
-            ],
-            "message": "Deleted node policy",
-            "translation": "Deleted node policy",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_NEW_NODE_UI",
-                "New node user input: {Arg_1}"
-            ],
-            "message": "New node user input: {Arg_1}",
-            "translation": "New node user input: {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_NO_NODE_UI_TO_DEL",
-                "No node user input to detele"
-            ],
-            "message": "No node user input to detele",
-            "translation": "No node user input to detele",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_DELETED_ALL_NODE_UI",
-                "Deleted all node user input"
-            ],
-            "message": "Deleted all node user input",
-            "translation": "Deleted all node user input",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_START_SVC_CONFIG",
-                "Start service configuration with user input for {Arg_1}/{Arg_2}."
-            ],
-            "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-            "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_START_SVC_AUTO_CONFIG",
-                "Start service auto configuration for {Arg_1}/{Arg_2}."
-            ],
-            "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-            "translation": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_COMPLETE_SVC_CONFIG",
-                "Complete service configuration for {Arg_1}/{Arg_2}."
-            ],
-            "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
-            "translation": "Complete service configuration for {Arg_1}/{Arg_2}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_COMPLETE_SVC_AUTO_CONFIG",
-                "Complete service auto configuration for {Arg_1}/{Arg_2}."
-            ],
-            "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-            "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
-                "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
-            ],
-            "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-            "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                },
-                {
-                    "id": "Arg_3",
-                    "string": "%[3]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 3
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_CONFIG_SVC",
-                "Error configuring service {Arg_1}. {Arg_2}"
-            ],
-            "message": "Error configuring service {Arg_1}. {Arg_2}",
-            "translation": "Error configuring service {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
-                "Error changing service configstate {Arg_1}, error {Arg_2}"
-            ],
-            "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
-            "translation": "Error changing service configstate {Arg_1}, error {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_START_CHANGE_SVC_CONFIGSTATE",
-                "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
-            ],
-            "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-            "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
-                "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
-            ],
-            "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-            "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Error converting the selections into Selectors: {Err}",
-            "message": "Error converting the selections into Selectors: {Err}",
-            "translation": "Error converting the selections into Selectors: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
-                "Deployment config {Arg_1} contains unsupported capability for a workload"
-            ],
-            "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-            "translation": "Deployment config {Arg_1} contains unsupported capability for a workload",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
-                "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-            ],
-            "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-            "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
-                "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-            ],
-            "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-            "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
-                "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-            ],
-            "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-            "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                },
-                {
-                    "id": "Arg_3",
-                    "string": "%[3]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 3
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
-                "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-            ],
-            "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-            "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
-                "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-            ],
-            "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-            "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                },
-                {
-                    "id": "Arg_3",
-                    "string": "%[3]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 3
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_START_CONTAINER_ERROR",
-                "Error starting containers: {Arg_1}"
-            ],
-            "message": "Error starting containers: {Arg_1}",
-            "translation": "Error starting containers: {Arg_1}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
-                "Error starting containers for agreement {Arg_1}: {Arg_2}"
-            ],
-            "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-            "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
-                "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-            ],
-            "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-            "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
-                "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-            ],
-            "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-            "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
-                "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-            ],
-            "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-            "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": [
-                "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
-                "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-            ],
-            "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-            "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Arg_1",
-                    "string": "%[1]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 1
-                },
-                {
-                    "id": "Arg_2",
-                    "string": "%[2]v",
-                    "type": "",
-                    "underlyingType": "interface{}",
-                    "argNum": 2
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-            "message": "unable to make directory for self signed MMS API certificate, error {Err}",
-            "translation": "unable to make directory for self signed MMS API certificate, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-            "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
-            "translation": "unable to generate random number for MMS API certificate serial number, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to generate private key for MMS API certificate, error {Err}",
-            "message": "unable to generate private key for MMS API certificate, error {Err}",
-            "translation": "unable to generate private key for MMS API certificate, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to create MMS API certificate, error {Err}",
-            "message": "unable to create MMS API certificate, error {Err}",
-            "translation": "unable to create MMS API certificate, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-            "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-            "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ServerCertificate",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "common.Configuration.ServerCertificate"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-            "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-            "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ServerCertificate",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "common.Configuration.ServerCertificate"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-            "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-            "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ServerCertificate",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "common.Configuration.ServerCertificate"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-            "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-            "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ServerKey",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "common.Configuration.ServerKey"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-            "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-            "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ServerKey",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "common.Configuration.ServerKey"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-            "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-            "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ServerKey",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "common.Configuration.ServerKey"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
                 }
             ],
             "fuzzy": true
