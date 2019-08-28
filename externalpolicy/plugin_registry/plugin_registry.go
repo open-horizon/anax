@@ -7,7 +7,7 @@ import (
 
 // Each constraint language plugin implements this interface.
 type ConstraintLanguagePlugin interface {
-	Validate(constraints interface{}) (bool, error)
+	Validate(constraints interface{}) (bool, []string, error)
 	GetNextExpression(expression string) (string, string, error)
 	GetNextOperator(expression string) (string, string, error)
 }
@@ -25,14 +25,14 @@ func Register(name string, p ConstraintLanguagePlugin) {
 // Ask each plugin to attempt to validate the input constraint language. Plugins are called
 // until one of them claims ownership of the constraint language field. If no error is
 // returned, then one of the plugins has validated the constraint expression.
-func (d ConstraintLanguageRegistry) ValidatedByOne(constraints interface{}) error {
+func (d ConstraintLanguageRegistry) ValidatedByOne(constraints interface{}) ([]string, error) {
 	for _, p := range d {
-		if owned, err := p.Validate(constraints); owned {
-			return err
+		if owned, constraints, err := p.Validate(constraints); owned {
+			return constraints, err
 		}
 	}
 
-	return errors.New(fmt.Sprintf("constraint language %v is not supported", constraints))
+	return nil, errors.New(fmt.Sprintf("constraint language %v is not supported", constraints))
 }
 
 // Ask each plugin to claim the input constraint language. Plugins are called
@@ -40,7 +40,7 @@ func (d ConstraintLanguageRegistry) ValidatedByOne(constraints interface{}) erro
 // returned, then one of the plugins has claimed ownership.
 func (d ConstraintLanguageRegistry) GetLanguageHandlerByOne(constraints interface{}) (ConstraintLanguagePlugin, error) {
 	for _, p := range d {
-		if owned, err := p.Validate(constraints); owned {
+		if owned, _, err := p.Validate(constraints); owned {
 			return p, err
 		}
 	}

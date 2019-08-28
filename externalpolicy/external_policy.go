@@ -35,7 +35,8 @@ func (e *ExternalPolicy) Validate() error {
 
 	// Validate the Constraints expression by invoking the plugins.
 	if e != nil && len(e.Constraints) != 0 {
-		return e.Constraints.Validate()
+		_, err := e.Constraints.Validate()
+		return err
 	}
 
 	// We only get here if the input object is nil OR all of the top level fields are empty.

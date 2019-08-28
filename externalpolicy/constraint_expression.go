@@ -10,7 +10,7 @@ import (
 // This type implements all the ConstraintLanguage Plugin methods and delegates to plugin system.
 type ConstraintExpression []string
 
-func (c *ConstraintExpression) Validate() error {
+func (c *ConstraintExpression) Validate() ([]string, error) {
 	return plugin_registry.ConstraintLanguagePlugins.ValidatedByOne((*c).GetStrings())
 }
 
@@ -132,8 +132,12 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 		return allRP, nil
 	}
 
-	for _, remainder = range []string(*extConstraint) {
-		extConstraint.Validate()
+	constraints, verr := extConstraint.Validate()
+	if verr != nil {
+		return nil, verr
+	}
+
+	for _, remainder = range constraints {
 
 		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
 		// to drop expressions into the structure as they come in through the GetNextExpression function.

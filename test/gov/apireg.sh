@@ -60,9 +60,9 @@ sleep 30
 
 constraint2=""
 if [ "$NONS" == "1" ]; then 
-    constraint2="NONS == true"
+    constraint2="NONS==true"
 else
-    constraint2="NONS == false"
+    constraint2="NONS==false"
 fi
 if [ "$NOGPS" == "1" ]; then 
     constraint2="$constraint2 || NOGPS == true"

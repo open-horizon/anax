@@ -299,7 +299,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 		}
 		newConstr := constraintPatch["constraints"]
-		err = newConstr.Validate()
+		_, err = newConstr.Validate()
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid constraint expression %s: %v", attribute, err))
 		}
