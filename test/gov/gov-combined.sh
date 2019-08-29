@@ -123,13 +123,13 @@ if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   # Clean up the exchange DB to make sure we start out clean
   echo "Drop and recreate the exchange DB."
 
-  UPGRADEDB=$(curl -sLX POST --header 'Authorization:Basic root/root:${EXCH_ROOTPW}' "${EXCH_URL}/admin/upgradedb" | jq -r '.msg')
+  UPGRADEDB=$(curl -sLX POST --header "Authorization:Basic root/root:${EXCH_ROOTPW}" "${EXCH_URL}/admin/upgradedb" | jq -r '.msg')
   echo "Exchange DB Upgrade Response: $UPGRADEDB"
 
   # loop until DBTOK contains a string value
   while :
   do
-    DBTOK=$(curl -sLX GET --header 'Authorization:Basic root/root:${EXCH_ROOTPW}' "${EXCH_URL}/admin/dropdb/token" | jq -r '.token')
+    DBTOK=$(curl -sLX GET --header "Authorization:Basic root/root:${EXCH_ROOTPW}" "${EXCH_URL}/admin/dropdb/token" | jq -r '.token')
     if test -z "$DBTOK"
     then
       sleep 5
@@ -138,10 +138,10 @@ if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
     fi
   done
 
-  DROPDB=$(curl -sLX POST --header 'Authorization:Basic root/root:'$DBTOK "${EXCH_URL}/admin/dropdb" | jq -r '.msg')
+  DROPDB=$(curl -sLX POST --header "Authorization:Basic root/root:"$DBTOK "${EXCH_URL}/admin/dropdb" | jq -r '.msg')
   echo "Exchange DB Drop Response: $DROPDB"
 
-  INITDB=$(curl -sLX POST --header 'Authorization:Basic root/root:${EXCH_ROOTPW}' "${EXCH_URL}/admin/initdb" | jq -r '.msg')
+  INITDB=$(curl -sLX POST --header "Authorization:Basic root/root:${EXCH_ROOTPW}" "${EXCH_URL}/admin/initdb" | jq -r '.msg')
   echo "Exchange DB Init Response: $INITDB"
 
   cd /root
@@ -426,33 +426,40 @@ then
 
     if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
       # Start the agbot
+      su - agbotuser -c "mkdir -p /home/agbotuser/policy.d"
+      su - agbotuser -c "mkdir -p /home/agbotuser/policy2.d"
+      su - agbotuser -c "mkdir -p /home/agbotuser/.colonus"
+      export HZN_VAR_BASE=/home/agbotuser
+
       if [ "$OLDAGBOT" == "1" ]
       then
         echo "Starting the OLD Agreement Bot 1."
-        /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &
+        su agbotuser -c "/usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
       else
         echo "Starting Agreement Bot 1."
-        /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &
+        su agbotuser -c "/usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
 
         if [ "$MULTIAGBOT" == "1" ]; then
           sleep 5
           echo "Starting Agreement Bot 2."
-          /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot2.config >/tmp/agbot2.log 2>&1 &
+          su agbotuser -c "/usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot2.config >/tmp/agbot2.log 2>&1 &"
         fi
       fi
 
       sleep 5
 
       # Check that the agbot is still alive
-      if ! curl -sSL http://localhost:81/agreement > /dev/null; then
+      if ! curl -sSL http://localhost:8082/agreement > /dev/null; then
         echo "Agreement Bot 1 startup failure."
         TESTFAIL="1"
+        exit 1
       fi
 
       if [ "$MULTIAGBOT" == "1" ]; then
-        if ! curl -sSL http://localhost:82/agreement > /dev/null; then
+        if ! curl -sSL http://localhost:8083/agreement > /dev/null; then
           echo "Agreement Bot 2 startup failure."
           TESTFAIL="1"
+          exit 1
         fi
       fi
     fi
