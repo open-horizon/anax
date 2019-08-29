@@ -8,6 +8,8 @@ RUN curl https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz | tar -xzf- -C /us
 ENV GOROOT=/usr/local/go
 ENV PATH="${PATH}:${GOROOT}/bin"
 
+RUN adduser agbotuser --disabled-password --gecos "agbot user,1,2,3"
+
 ENV HZN_ORG_ID="e2edev@somecomp.com"
 ENV HZN_EXCHANGE_USER_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 

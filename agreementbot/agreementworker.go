@@ -711,12 +711,11 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 	if reply.ProposalAccepted() {
 
 		// Find the saved agreement in the database. The returned agreement might be archived. If it's archived, then it is our agreement
-		// so we will delete the protocol msg, but we will ignore the reply msg and not send a reply ack.
+		// so we will delete the protocol msg.
 		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
 		} else if agreement != nil && agreement.Archived {
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("reply %v is for a cancelled agreement %v, deleting reply message.", wi.MessageId, reply.AgreementId())))
-			sendReply = false // Don't send a reply ack, delete reply msg.
 		} else if agreement == nil {
 			// This protocol msg is not for this agbot, so ignore it.
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding reply %v, agreement id %v not in this agbot's database", wi.MessageId, reply.AgreementId())))

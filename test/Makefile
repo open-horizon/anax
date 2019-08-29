@@ -82,13 +82,13 @@ run-agbot: agbot-docker-prereqs test-network
 		docker run -d \
 		--privileged \
 		-p 127.0.0.1:80:80 \
-		-p 127.0.0.1:81:81 \
-		-p 127.0.0.1:82:82 \
+		-p 127.0.0.1:81:8082 \
+		-p 127.0.0.1:82:8083 \
 		--name "$(DOCKER_AGBOT_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
-		-v ~/.docker:/root/.docker \
+		-v ~/.docker:/home/agbotuser/.docker \
 		-v ~/.kube:/root/.kube \
 		-v ~/.minikube:$(HOME)/.minikube \
 		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
@@ -262,7 +262,7 @@ exchange-image:
 
 test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css appstore-start run-agbot
 	@echo -e  "\nStarting tests"
-	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); export $(CSS_URL); export $(EXCH_ROOTPW); export $(AGBOT_NAME); /root/gov-combined.sh"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
 test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot
 	@echo -e  "\nStarting tests"
