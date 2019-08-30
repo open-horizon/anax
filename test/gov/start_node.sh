@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Please set the following env variable before calling this script. 
+# Please set the following env variable before calling this script.
 # For example:
 # export USER=anax1
 # export PASS=anax1pw
@@ -16,14 +16,14 @@
 if [ "$OLDANAX" == "1" ]
 then
     echo "Starting OLD Anax1 to run workloads."
-    if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+    if [ ${CERT_LOC} -eq "1" ]; then
       /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
     else
       /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-remote.config >/tmp/anax.log 2>&1 &
     fi
 else
     echo "Starting Anax1 to run workloads."
-    if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+    if [ ${CERT_LOC} -eq "1" ]; then
       /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
     else
       /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-remote.config >/tmp/anax.log 2>&1 &
@@ -65,14 +65,14 @@ then
         if [ "$OLDANAX" == "1" ]
         then
             echo "Starting OLD Anax2 to run workloads."
-            if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+            if [ ${CERT_LOC} -eq "1" ]; then
               /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2.config >/tmp/anax2.log 2>&1 &
             else
               /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2-remote.config >/tmp/anax2.log 2>&1 &
             fi
         else
             echo "Starting Anax2 to run workloads."
-            if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+            if [ ${CERT_LOC} -eq "1" ]; then
               /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2.config >/tmp/anax2.log 2>&1 &
             else
               /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined2-remote.config >/tmp/anax2.log 2>&1 &
