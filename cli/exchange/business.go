@@ -244,7 +244,7 @@ func BusinessNewPolicy() {
 		`      }`,
 		`    ]`,
 		`  },`,
-		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the service being dployed.") + ` */`,
+		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the service being deployed.") + ` */`,
 		`    {`,
 		`       "name": "",`,
 		`       "value": nil`,
