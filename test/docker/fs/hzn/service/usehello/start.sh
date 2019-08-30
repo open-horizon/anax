@@ -20,7 +20,7 @@ then
     verify "HZN_ARCH" $HZN_ARCH
     verify "HZN_DEVICE_ID" $HZN_DEVICE_ID
     verify "HZN_ORGANIZATION" $HZN_ORGANIZATION
-#    verify "HZN_HASH" $HZN_HASH
+#    verify "HZN_HASH" $HZN_HASH - Delete
     verify "HZN_EXCHANGE_URL" $HZN_EXCHANGE_URL
     verify "HZN_ESS_API_PROTOCOL" $HZN_ESS_API_PROTOCOL
     verify "HZN_ESS_API_ADDRESS" $HZN_ESS_API_ADDRESS
@@ -124,7 +124,7 @@ do
     fi
 done
 
-# Keep everything alive 
+# Keep everything alive
 while :
 do
     echo -e "Service usehello running."

@@ -209,7 +209,11 @@ read -d '' service <<EOF
 }
 EOF
 
-WLRES=$(echo "$service" | curl -sS -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
+if [ ${CERT_LOC} -eq "1" ] && [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+  WLRES=$(echo "$service" | curl -sS -X POST --cacert /certs/css.crt -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
+else
+  WLRES=$(echo "$service" | curl -sS -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
+fi
 echo -e "Registered testwl: $WLRES"
 MSG=$(echo $WLRES | jq -r ".msg")
 if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_amd64' created" ]
@@ -584,7 +588,7 @@ fi
 # context testcases here. Checking userInput against API input
 
 if [ "$PATTERN" != "" ]
-then 
+then
   # missing variable in the variables section
   read -d '' snsconfig <<EOF
 {
