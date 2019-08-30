@@ -5,9 +5,9 @@
 The e2e project is used by Horizon developers to test an X86 device and X86 agbot together, thus the name End to End test.
 
 The project will create 3 containers:
-- exchange-db 
+- exchange-db
   - A postgres container for the exchange-api
-- exchange-api 
+- exchange-api
   - Pulled from openhorizon/amd64_exchange-api:latest
 - agbot
   - Where anax runs, built initially from openhorizon/anax source, uses local copy of source afterwards unless told otherwise
@@ -89,6 +89,8 @@ Here is a full description of all the variables you can use to setup the test th
 -`export CSS_URL="CSS's URL"`
 -`export EXCH_ROOTPW="Exchange Root PW"`
 -`export AGBOT_NAME="Agbot Name"`
+-`export CERT_LOC=1` 1 for if cert is used. 0 if cert is not being used.
+-put css.crt file in test directory if using cert with ICP or DEV
 -`cd /anax`
 -`make`
 -`cd /test`
