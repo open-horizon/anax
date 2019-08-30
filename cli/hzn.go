@@ -69,7 +69,7 @@ Environment Variables:
   HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,
       to specify the organization ID'.
   HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn
-	  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set 
+	  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set
 	  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.
   HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use
       to communicate with the Horizon Model Management Service, for example
@@ -159,6 +159,10 @@ Environment Variables:
 	exNodeRemovePolicyIdTok := exNodeRemovePolicyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeRemovePolicyNode := exNodeRemovePolicyCmd.Arg("node", msgPrinter.Sprintf("Remove policy for this node.")).Required().String()
 	exNodeRemovePolicyForce := exNodeRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	exNodeErrorsList := exNodeCmd.Command("listerrors", msgPrinter.Sprintf("List the node errors currently surfaced to the exchange."))
+	exNodeErrorsListIdTok := exNodeErrorsList.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNodeErrorsListNode := exNodeErrorsList.Arg("node", msgPrinter.Sprintf("List surfaced errors for this node.")).Required().String()
+	exNodeErrorsListLong := exNodeErrorsList.Flag("long", msgPrinter.Sprintf("Show the full eventlog object of the errors currently surfaced to the exchange.")).Short('l').Bool()
 
 	exAgbotCmd := exchangeCmd.Command("agbot", msgPrinter.Sprintf("List and manage agbots in the Horizon Exchange"))
 	exAgbotListCmd := exAgbotCmd.Command("list", msgPrinter.Sprintf("Display the agbot resources from the Horizon Exchange."))
@@ -398,6 +402,8 @@ Environment Variables:
 	listAllEventlogs := eventlogListCmd.Flag("all", msgPrinter.Sprintf("List all the event logs including the previous registrations.")).Short('a').Bool()
 	listDetailedEventlogs := eventlogListCmd.Flag("long", msgPrinter.Sprintf("List event logs with details.")).Short('l').Bool()
 	listSelectedEventlogs := eventlogListCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
+	surfaceErrorsEventlogs := eventlogCmd.Command("surface", msgPrinter.Sprintf("List all the active errors that will be shared with the exchange if the node is online."))
+	surfaceErrorsEventlogsLong := surfaceErrorsEventlogs.Flag("long", msgPrinter.Sprintf("List the full event logs of the surface errors.")).Short('l').Bool()
 
 	devCmd := app.Command("dev", msgPrinter.Sprintf("Development tools for creation of services."))
 	devHomeDirectory := devCmd.Flag("directory", msgPrinter.Sprintf("Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.")).Short('d').String()
@@ -527,6 +533,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeUpdatePolicyIdTok)
 		case "node removepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemovePolicyIdTok)
+		case "node listerrors":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok)
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
@@ -633,6 +641,8 @@ Environment Variables:
 		exchange.NodeUpdatePolicy(*exOrg, credToUse, *exNodeUpdatePolicyNode, *exNodeUpdatePolicyJsonFile)
 	case exNodeRemovePolicyCmd.FullCommand():
 		exchange.NodeRemovePolicy(*exOrg, credToUse, *exNodeRemovePolicyNode, *exNodeRemovePolicyForce)
+	case exNodeErrorsList.FullCommand():
+		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
@@ -757,6 +767,8 @@ Environment Variables:
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
 		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs)
+	case surfaceErrorsEventlogs.FullCommand():
+		eventlog.ListSurfaced(*surfaceErrorsEventlogsLong)
 	case devServiceNewCmd.FullCommand():
 		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdName, *devServiceNewCmdVer, *devServiceNewCmdImage, *devServiceNewCmdNoImageGen, *devServiceNewCmdCfg, *devServiceNewCmdNoPattern, *devServiceNewCmdNoPolicy)
 	case devServiceStartTestCmd.FullCommand():

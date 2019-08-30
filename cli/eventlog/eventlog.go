@@ -113,3 +113,35 @@ func List(all bool, detail bool, selections []string) {
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
+
+func ListSurfaced(long bool) {
+	apiOutput := make([]persistence.EventLogRaw, 0)
+	cliutils.HorizonGet("eventlog/surface", []int{200}, &apiOutput, false)
+	long_output := make([]EventLog, len(apiOutput))
+	for i, v := range apiOutput {
+		long_output[i].Id = v.Id
+		long_output[i].Timestamp = cliutils.ConvertTime(v.Timestamp)
+		long_output[i].Severity = v.Severity
+		long_output[i].Message = v.Message
+		long_output[i].EventCode = v.EventCode
+		long_output[i].SourceType = v.SourceType
+		long_output[i].Source = v.Source
+	}
+	if long {
+		jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog surface' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	} else {
+		output := make([]persistence.SurfaceError, len(apiOutput))
+		for i, fullLog := range long_output {
+			output[i] = persistence.SurfaceError{Record_id: fullLog.Id, Event_code: fullLog.EventCode, Message: fullLog.Message}
+		}
+		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog surface' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	}
+}

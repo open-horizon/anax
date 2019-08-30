@@ -10,6 +10,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/edge-sync-service/common"
@@ -609,6 +610,53 @@ func GetNodeHealthStatus(httpClientFactory *config.HTTPClientFactory, pattern st
 
 }
 
+type ExchangeSurfaceError struct {
+	ErrorList []persistence.SurfaceError `json:"errors"`
+}
+
+func GetSurfaceErrors(ec ExchangeContext, deviceId string) (*ExchangeSurfaceError, error) {
+	var resp interface{}
+	resp = new(ExchangeSurfaceError)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/errors", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning node surface errors %v for %v.", resp, deviceId)))
+			surfaceErrors := resp.(*ExchangeSurfaceError)
+
+			return surfaceErrors, nil
+		}
+	}
+}
+
+func PutSurfaceErrors(ec ExchangeContext, deviceId string, errorList *ExchangeSurfaceError) (*PutDeviceResponse, error) {
+	var resp interface{}
+	resp = new(PutDeviceResponse)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/errors", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), errorList, &resp); err != nil {
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("put node surface errors for %v to exchange %v", deviceId, errorList)))
+			return resp.(*PutDeviceResponse), nil
+		}
+	}
+}
+
 // This function is used to invoke an exchange API
 // For GET, the given resp parameter will be untouched when http returns code 404.
 func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
@@ -775,6 +823,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *ObjectDestinationStatuses:
+						return nil, nil
+
+					case *ExchangeSurfaceError:
 						return nil, nil
 
 					default:

@@ -50,3 +50,27 @@ func (a *API) eventlog(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (a *API) surface(w http.ResponseWriter, r *http.Request) {
+	resource := "eventlog/surface"
+	errorHandler := GetHTTPErrorHandler(w)
+
+	switch r.Method {
+	case "GET":
+		lan := r.Header.Get("Accept-Language")
+		if lan == "" {
+			lan = i18n.DEFAULT_LANGUAGE
+		}
+		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
+		if out, err := FindSurfaceLogsForOutput(a.db, msgPrinter); err != nil {
+			errorHandler(NewSystemError(msgPrinter.Sprintf("Error getting %v for output, error %v", resource, err)))
+		} else {
+			writeResponse(w, out, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}

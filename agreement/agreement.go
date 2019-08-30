@@ -31,6 +31,7 @@ import (
 const HEARTBEAT = "HeartBeat"
 const NODEPOLICY = "NodePolicy"
 const NODEUSERINPUT = "NodeUserInput"
+const SURFACEERRORS = "SurfaceExchErrors"
 
 // messages for eventlog
 const (
@@ -256,6 +257,7 @@ func (w *AgreementWorker) Initialize() bool {
 		w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS, false)
 		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
 		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
+		w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
 	}
 
 	// Publish what we have for the world to see
@@ -442,6 +444,8 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	w.heartBeatFailed = false
 	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 
+	// start checking for issues closed by agreements and putting updated surface errors in the exchange
+	w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
 }
 
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
@@ -504,6 +508,16 @@ func (w *AgreementWorker) heartBeat() int {
 	}
 
 	return 0
+}
+
+func (w *AgreementWorker) surfaceErrors() int {
+	pDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.V(3).Infof("Error getting persistence device. %v", err)
+	}
+	errorsHandler := exchange.GetHTTPSurfaceErrorsHandler(w)
+	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w)
+	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, errorsHandler, putErrorsHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
 }
 
 // handles the node policy UPDATE_POLICY event

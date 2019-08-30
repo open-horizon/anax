@@ -59,6 +59,9 @@ type Config struct {
 	NodePolicyCheckIntervalS         int       // the node policy check interval. The default is 15 seconds.
 	NodeUserInputCheckIntervalS      int       // the node user input check interval. The default is 15 seconds.
 	FileSyncService                  FSSConfig // The config for the embedded ESS sync service.
+	SurfaceErrorTimeoutS             int       //How long surfaced errors will remain active after they're created. Default is no timeout
+	SurfaceErrorCheckIntervalS       int       //How often the node will check for errors that are no longer active and update the exchange. Default is 15 seconds
+	SurfaceErrorAgreementPersistentS int       //How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -220,6 +223,14 @@ func Read(file string) (*HorizonConfig, error) {
 
 		if config.Edge.NodeUserInputCheckIntervalS == 0 {
 			config.Edge.NodeUserInputCheckIntervalS = 15
+		}
+
+		if config.Edge.SurfaceErrorCheckIntervalS == 0 {
+			config.Edge.SurfaceErrorCheckIntervalS = 15
+		}
+
+		if config.Edge.SurfaceErrorAgreementPersistentS == 0 {
+			config.Edge.SurfaceErrorAgreementPersistentS = 90
 		}
 
 		// set default retry parameters

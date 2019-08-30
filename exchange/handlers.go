@@ -188,6 +188,24 @@ func GetHTTPDeleteNodePolicyHandler(ec ExchangeContext) DeleteNodePolicyHandler 
 	}
 }
 
+// A handler for getting the list of node surface errors from the exchange
+type SurfaceErrorsHandler func(deviceId string) (*ExchangeSurfaceError, error)
+
+func GetHTTPSurfaceErrorsHandler(ec ExchangeContext) SurfaceErrorsHandler {
+	return func(deviceId string) (*ExchangeSurfaceError, error) {
+		return GetSurfaceErrors(ec, deviceId)
+	}
+}
+
+// A handler for putting a list of node surface errors in the exchange
+type PutSurfaceErrorsHandler func(deviceId string, errorList *ExchangeSurfaceError) (*PutDeviceResponse, error)
+
+func GetHTTPPutSurfaceErrorsHandler(ec ExchangeContext) PutSurfaceErrorsHandler {
+	return func(deviceId string, errorList *ExchangeSurfaceError) (*PutDeviceResponse, error) {
+		return PutSurfaceErrors(ec, deviceId, errorList)
+	}
+}
+
 // Two handlers for getting the service policy from the exchange.
 type ServicePolicyWithIdHandler func(service_id string) (*ExchangePolicy, error)
 
