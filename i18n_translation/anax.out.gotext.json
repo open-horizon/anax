@@ -3,1167 +3,1167 @@
   "language": "en",
   "messages": [
     {
-//  START NON-TRANSLATABLE
-      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-//  END NON-TRANSLATABLE
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+
       "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-//  END NON-TRANSLATABLE
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+
       "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+
       "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+
       "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+
       "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+
       "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error starting containers: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error starting containers: {Arg_1}",
+
       "translation": "Error starting containers: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+
       "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+
       "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+
       "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+
       "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+
       "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+
       "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Version_Expression: {Verstring} is not a valid version string.",
-//  END NON-TRANSLATABLE
+
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+
       "translation": "Version_Expression: {Verstring} is not a valid version string."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-//  END NON-TRANSLATABLE
+
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+
       "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-//  END NON-TRANSLATABLE
+
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+
       "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+
       "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Input version string {V1} or {V2} is not a valid single version string.",
-//  END NON-TRANSLATABLE
+
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+
       "translation": "Input version string {V1} or {V2} is not a valid single version string."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "properties contains an invalid property: {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "properties contains an invalid property: {Err}",
+
       "translation": "properties contains an invalid property: {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Property must include a name and a value: {Property}",
-//  END NON-TRANSLATABLE
+
+      "id": "Property must include a name and a value: {Property}",
+
       "translation": "Property must include a name and a value: {Property}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-//  END NON-TRANSLATABLE
+
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+
       "translation": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-//  END NON-TRANSLATABLE
+
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+
       "translation": "Property value is of type {ActualType}, expected type {DeclaredType}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Value {Value} of property {Name} is not an integer type",
-//  END NON-TRANSLATABLE
+
+      "id": "Value {Value} of property {Name} is not an integer type",
+
       "translation": "Value {Value} of property {Name} is not an integer type"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-//  END NON-TRANSLATABLE
+
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+
       "translation": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Property {Name} with value {Value} is not a valid verion string",
-//  END NON-TRANSLATABLE
+
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+
       "translation": "Property {Name} with value {Value} is not a valid verion string"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Property {Name} has invalid value type {ActualType}",
-//  END NON-TRANSLATABLE
+
+      "id": "Property {Name} has invalid value type {ActualType}",
+
       "translation": "Property {Name} has invalid value type {ActualType}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+
       "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+
       "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+
       "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+
       "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+
       "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+
       "translation": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+
       "translation": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+
       "translation": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+
       "translation": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+
       "translation": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+
       "translation": "Node heartbeat restored for node {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to read node policy from the local database. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to read node policy from the local database. {Arg_1}",
+
       "translation": "unable to read node policy from the local database. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to read node object from the local database. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to read node object from the local database. {Arg_1}",
+
       "translation": "Unable to read node object from the local database. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+
       "translation": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node policy updated with the exchange copy: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Node policy updated with the exchange copy: {Arg_1}",
+
       "translation": "Node policy updated with the exchange copy: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+
       "translation": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+
       "translation": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-//  END NON-TRANSLATABLE
+
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+
       "translation": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-//  END NON-TRANSLATABLE
+
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+
       "translation": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Name, or Org is empty string.",
-//  END NON-TRANSLATABLE
+
+      "id": "Name, or Org is empty string.",
+
       "translation": "Name, or Org is empty string."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "The serviceVersions array is empty.",
-//  END NON-TRANSLATABLE
+
+      "id": "The serviceVersions array is empty.",
+
       "translation": "The serviceVersions array is empty."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-//  END NON-TRANSLATABLE
+
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+
       "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
+
       "translation": "unable to convert policy constraint {Remainder} into internal format, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
-//  END NON-TRANSLATABLE
+
+      "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
+
       "translation": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
-//  END NON-TRANSLATABLE
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
+
       "translation": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
-//  END NON-TRANSLATABLE
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
+
       "translation": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-//  END NON-TRANSLATABLE
+
+      "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+
       "translation": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
-//  END NON-TRANSLATABLE
+
+      "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
+
       "translation": "Comparison operator: {CompOp} is not supported for numeric value: {Value}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
-//  END NON-TRANSLATABLE
+
+      "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
+
       "translation": "Comparison operator: {CompOp} is not supported for boolean value: {Value}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
-//  END NON-TRANSLATABLE
+
+      "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
+
       "translation": "Comparison operator: {CompOp} is not supported for string list value: {Value}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Comparison operator: {CompOp} is not supported for string value: {Value}",
-//  END NON-TRANSLATABLE
+
+      "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
+
       "translation": "Comparison operator: {CompOp} is not supported for string value: {Value}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Comparison operator: {CompOp} is not supported for single version: {Value}",
-//  END NON-TRANSLATABLE
+
+      "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
+
       "translation": "Comparison operator: {CompOp} is not supported for single version: {Value}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
-//  END NON-TRANSLATABLE
+
+      "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
+
       "translation": "Comparison operator: {CompOp} is not supported for version expression: {Value}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Expression: {Expression} is not valid",
-//  END NON-TRANSLATABLE
+
+      "id": "Expression: {Expression} is not valid",
+
       "translation": "Expression: {Expression} is not valid"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to make directory for self signed MMS API certificate, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+
       "translation": "unable to make directory for self signed MMS API certificate, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+
       "translation": "unable to generate random number for MMS API certificate serial number, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to generate private key for MMS API certificate, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+
       "translation": "unable to generate private key for MMS API certificate, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to create MMS API certificate, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to create MMS API certificate, error {Err}",
+
       "translation": "unable to create MMS API certificate, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+
       "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+
       "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+
       "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+
       "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+
       "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+
       "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing the selections {Form}. {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing the selections {Form}. {Err}",
+
       "translation": "Error parsing the selections {Form}. {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error getting {Resource} for output, error {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error getting {Resource} for output, error {Err}",
+
       "translation": "Error getting {Resource} for output, error {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+
       "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+
       "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in updating node {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+
       "translation": "Error in updating node {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in node unregistration. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in node unregistration. {Arg_1}",
+
       "translation": "Error in node unregistration. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error verifiying exchange version. error: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+
       "translation": "Error verifiying exchange version. error: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in creating or replacing node policy. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+
       "translation": "Error in creating or replacing node policy. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in patching node policy. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in patching node policy. {Arg_1}",
+
       "translation": "Error in patching node policy. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in deleting node policy. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in deleting node policy. {Arg_1}",
+
       "translation": "Error in deleting node policy. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in updating node user input. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in updating node user input. {Arg_1}",
+
       "translation": "Error in updating node user input. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in patching node user input. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in patching node user input. {Arg_1}",
+
       "translation": "Error in patching node user input. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in deleting node userinput. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in deleting node userinput. {Arg_1}",
+
       "translation": "Error in deleting node userinput. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start node configuration/registration for node {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start node configuration/registration for node {Arg_1}.",
+
       "translation": "Start node configuration/registration for node {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start updating node {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start updating node {Arg_1}.",
+
       "translation": "Start updating node {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete node update for {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete node update for {Arg_1}.",
+
       "translation": "Complete node update for {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start node unregistration.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start node unregistration.",
+
       "translation": "Start node unregistration."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node unregistration complete for node {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Node unregistration complete for node {Arg_1}.",
+
       "translation": "Node unregistration complete for node {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error unregistring the node. The node is not found from the database.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error unregistring the node. The node is not found from the database.",
+
       "translation": "Error unregistring the node. The node is not found from the database."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+
       "translation": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-//  END NON-TRANSLATABLE
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+
       "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-//  END NON-TRANSLATABLE
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+
       "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-//  END NON-TRANSLATABLE
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+
       "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to read node object from database, error {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to read node object from database, error {Arg_1}",
+
       "translation": "Unable to read node object from database, error {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+
       "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in node configuration. The node is not found from the database.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in node configuration. The node is not found from the database.",
+
       "translation": "Error in node configuration. The node is not found from the database."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+
       "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-//  END NON-TRANSLATABLE
+
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+
       "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed get user input from local db. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed get user input from local db. {Arg_1}",
+
       "translation": "Failed get user input from local db. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+
       "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error saving new node config state to database: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error saving new node config state to database: {Arg_1}",
+
       "translation": "Error saving new node config state to database: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete node configuration/registration for node {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+
       "translation": "Complete node configuration/registration for node {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+
       "translation": "Error in service configuration for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+
       "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "New node policy: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "New node policy: {Arg_1}",
+
       "translation": "New node policy: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Deleted node policy",
-//  END NON-TRANSLATABLE
+
+      "id": "Deleted node policy",
+
       "translation": "Deleted node policy"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "New node user input: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "New node user input: {Arg_1}",
+
       "translation": "New node user input: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "No node user input to detele",
-//  END NON-TRANSLATABLE
+
+      "id": "No node user input to detele",
+
       "translation": "No node user input to detele"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Deleted all node user input",
-//  END NON-TRANSLATABLE
+
+      "id": "Deleted all node user input",
+
       "translation": "Deleted all node user input"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+
       "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+
       "translation": "Start service auto configuration for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+
       "translation": "Complete service configuration for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+
       "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-//  END NON-TRANSLATABLE
+
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+
       "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error configuring service {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+
       "translation": "Error configuring service {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+
       "translation": "Error changing service configstate {Arg_1}, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
       "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
       "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error converting the selections into Selectors: {Err}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error converting the selections into Selectors: {Err}",
+
       "translation": "Error converting the selections into Selectors: {Err}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
+
       "translation": "Error retrieving agreement {Arg_1} from database, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
+
       "translation": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
+
       "translation": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
+
       "translation": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
+
       "translation": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to retrieve unarchived agreements from database. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
+
       "translation": "Unable to retrieve unarchived agreements from database. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
+
       "translation": "Error marking agreement {Arg_1} terminated in database: {Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error getting service definitions {Arg_1} from db. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
+
       "translation": "Error getting service definitions {Arg_1} from db. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
+
       "translation": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
+
       "translation": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error retrieving all service instances from database, error: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error retrieving all service instances from database, error: {Arg_1}",
+
       "translation": "Error retrieving all service instances from database, error: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error getting service instance {Arg_1} from db. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
+
       "translation": "Error getting service instance {Arg_1} from db. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
+
       "translation": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+
       "translation": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
+
       "translation": "Error retrieving node {Arg_1} from the exchange: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
+
       "translation": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Image loaded for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Image loaded for {Arg_1}/{Arg_2}.",
+
       "translation": "Image loaded for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Image loaded for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
+
       "translation": "Image loaded for service {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error loading image for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error loading image for {Arg_1}/{Arg_2}.",
+
       "translation": "Error loading image for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error loading image for service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
+
       "translation": "Error loading image for service {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+
       "translation": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
+
       "translation": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
-//  END NON-TRANSLATABLE
+
+      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
+
       "translation": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
-//  END NON-TRANSLATABLE
+
+      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
+
       "translation": "Workload service containers for {Arg_1}/{Arg_2} are up and running."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+
       "translation": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-//  END NON-TRANSLATABLE
+
+      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
+
       "translation": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
+
       "translation": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
-//  END NON-TRANSLATABLE
+
+      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
+
       "translation": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
+
       "translation": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
+
       "translation": "Error handling ReplyAck message for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling ReplyAck message. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling ReplyAck message. {Arg_1}",
+
       "translation": "Error handling ReplyAck message. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
+
       "translation": "Error handling DataReceived message for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling DataReceived message. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling DataReceived message. {Arg_1}",
+
       "translation": "Error handling DataReceived message. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
+
       "translation": "Error handling MeterNotification message for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling MeterNotification message. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling MeterNotification message. {Arg_1}",
+
       "translation": "Error handling MeterNotification message. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling Cancel message for {Arg_1}. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
+
       "translation": "Error handling Cancel message for {Arg_1}. {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error handling Cancel message. {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error handling Cancel message. {Arg_1}",
+
       "translation": "Error handling Cancel message. {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start workload service for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start workload service for {Arg_1}/{Arg_2}.",
+
       "translation": "Start workload service for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Workload destroyed for {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Workload destroyed for {Arg_1}",
+
       "translation": "Workload destroyed for {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Service containers for {Arg_1} started.",
-//  END NON-TRANSLATABLE
+
+      "id": "Service containers for {Arg_1} started.",
+
       "translation": "Service containers for {Arg_1} started."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete cleaning up the service instance {Arg_1}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete cleaning up the service instance {Arg_1}.",
+
       "translation": "Complete cleaning up the service instance {Arg_1}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start dependent services for {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
+
       "translation": "Start dependent services for {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
+
       "translation": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
+
       "translation": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
+
       "translation": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+
       "translation": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error getting all the services from agreements: {Arg_1}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error getting all the services from agreements: {Arg_1}",
+
       "translation": "Error getting all the services from agreements: {Arg_1}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start agreement-less service {Arg_1}/{Arg_2}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
+
       "translation": "Start agreement-less service {Arg_1}/{Arg_2}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
+
       "translation": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
+
       "translation": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
+
       "translation": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
+
       "translation": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
-//  END NON-TRANSLATABLE
+
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
+
       "translation": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
       "translation": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
       "translation": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
+
       "translation": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
+
       "translation": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
+
       "translation": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
+
       "translation": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+
       "translation": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
       "translation": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
+
       "translation": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
+
       "translation": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
+
       "translation": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
+
       "translation": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
-//  END NON-TRANSLATABLE
+
+      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
+
       "translation": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
+
       "translation": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}."
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-//  END NON-TRANSLATABLE
+
+      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
+
       "translation": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}"
     },
     {
-//  START NON-TRANSLATABLE
-      "message": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
-//  END NON-TRANSLATABLE
+
+      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
+
       "translation": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}"
     }
   ]
