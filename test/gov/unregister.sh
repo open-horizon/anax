@@ -13,10 +13,16 @@ export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 echo "Unregister node, non-blocking"
 hzn unregister -f
 
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/css.crt"
+else
+  CERT_VAR=""
+fi
+
 if [ $? -ne 0 ]
 then
-   echo -e "Error unregistering the node."
-   exit 2
+  echo -e "Error unregistering the node."
+  exit 2
 fi
 
 # Start polling for unconfig completion. Unconfig could take several minutes if we are running this test with a blockchain
@@ -25,18 +31,18 @@ echo -e "Polling anax API for completion of device unconfigure."
 COUNT=1
 while :
 do
-   GET=$(curl -sSL 'http://localhost/node')
-   if [ $? -eq 7 ]; then
-      break
-   else
-      echo -e "Is anax still up: $GET"
+  GET=$(curl -sSL 'http://localhost/node')
+  if [ $? -eq 7 ]; then
+    break
+  else
+    echo -e "Is anax still up: $GET"
 
-      # Since anax is still up, verify that a POST to /node will return the correct error.
-      pat=$PATTERN
-      if [[ "$PATTERN" != "" ]]; then
-        pat="e2edev@somecomp.com/$PATTERN"
-      fi
-read -d '' newhzndevice <<EOF
+    # Since anax is still up, verify that a POST to /node will return the correct error.
+    pat=$PATTERN
+    if [[ "$PATTERN" != "" ]]; then
+      pat="e2edev@somecomp.com/$PATTERN"
+    fi
+    read -d '' newhzndevice <<EOF
 {
   "id": "$DEVICE_ID",
   "token": "$TOKEN",
@@ -45,54 +51,50 @@ read -d '' newhzndevice <<EOF
   "pattern": "$pat"
 }
 EOF
-      HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
+    HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
 
-      rc=$?
+    rc=$?
 
-      # We only want to look at the response if it's a json document. Everything else we can ignore because anax could have terminated
-      # between the GET call above and this POST call.
-      if [ $rc -eq 0 ] && [ "$HDS" != "null" ] && [ "${HDS:0:1}" == "{" ]
+    # We only want to look at the response if it's a json document. Everything else we can ignore because anax could have terminated
+    # between the GET call above and this POST call.
+    if [ $rc -eq 0 ] && [ "$HDS" != "null" ] && [ "${HDS:0:1}" == "{" ]
+    then
+      ERR=$(echo $HDS | jq -r '.error')
+      if [ "${ERR:0:19}" != "Node is restarting," ]
       then
-         ERR=$(echo $HDS | jq -r '.error')
-         if [ "${ERR:0:19}" != "Node is restarting," ]
-         then
-            echo -e "node object has the wrong state: $HDS"
-            exit 2
-         fi
-      elif [ $rc -eq 7 ]; then
-        echo -e "Anax is down."
-        break
+        echo -e "node object has the wrong state: $HDS"
+        exit 2
       fi
-   fi
+    elif [ $rc -eq 7 ]; then
+      echo -e "Anax is down."
+      break
+    fi
+  fi
 
-   # This is the loop/timeout control. Exit the test in error after 4 mins without an anax termination.
-   if [ "$COUNT" == "48" ]
-   then
-      echo -e "Error, anax is taking too long to terminate."
-      exit 2
-   fi
-   sleep 5
-   COUNT=COUNT+1
+  # This is the loop/timeout control. Exit the test in error after 4 mins without an anax termination.
+  if [ "$COUNT" == "48" ]
+  then
+    echo -e "Error, anax is taking too long to terminate."
+    exit 2
+  fi
+  sleep 5
+  COUNT=COUNT+1
 done
 
 # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
 # and the list of registered microservices should be empty.
 echo -e "Checking node status in the exchange."
-if [ ${CERT_LOC} -eq "1" ] && [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
-  NST=$(curl -sSL --cacert /certs/css.crt --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.')
-else
-  NST=$(curl -sSL --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.')
-fi
+NST=$(curl -sSL $CERT_VAR --header 'Accept: application/json' -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/an12345" | jq -r '.')
 PK=$(echo "$NST" | jq -r '.publicKey')
 if [ "$PK" != "null" ]
 then
-   echo -e "publicKey should be empty: $PK"
-   exit 2
+  echo -e "publicKey should be empty: $PK"
+  exit 2
 fi
 
 RM=$(echo "$NST" | jq -r '.registeredServices[0]')
 if [ "$RM" != "null" ]
 then
-   echo -e "registeredServices should be empty: $RM"
-   exit 2
+  echo -e "registeredServices should be empty: $RM"
+  exit 2
 fi

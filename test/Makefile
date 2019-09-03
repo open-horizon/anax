@@ -58,7 +58,7 @@ endif
 
 all: default
 default: build
-stop: appstore-stop clean
+stop: appstore-stop clean-silent
 build: version-check agbot-image exchange-db-image exchange-image minikube-setup css-mongo-db-image
 build-remote: version-check agbot-image
 run: test
@@ -239,7 +239,7 @@ clean:
 	-rm -rf $(CURDIR)/docker/tempfs
 	-sudo rm -fr $(UDS)
 
-mostlyclean: clean
+mostlyclean: clean-silent
 	@echo "Cleaning anax binaries and configs"
 	-cd $(ANAX_SOURCE) && make clean
 
@@ -296,11 +296,11 @@ exchange-db-image:
 exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
-test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css appstore-start run-agbot
+test: clean-silent $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css appstore-start run-agbot
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
-test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot css-cert
+test-remote: clean-silent $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot css-cert
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
@@ -380,5 +380,5 @@ appstore-stop:
 	-@docker stop app-store-ui 2>/dev/null || true
 	-@docker stop app-store 2>/dev/null || true
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop css-mongo-db-image run-mongo-db run-css css-cert
+.PHONY: all default stop build run distclean clean mostlyclean realclean clean-silent run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop css-mongo-db-image run-mongo-db run-css css-cert
 #.SILENT: clean
