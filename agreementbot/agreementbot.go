@@ -1475,7 +1475,7 @@ func (w *AgreementBotWorker) stalePartitions() int {
 // we will panic (that should not happen). If the key is missing (i.e. the current key is a zero length byte array)
 // we will add our key back. If there is a key but it is just wrong, we will panic. This latter case could occur if
 // multiple agbots are setup without sharing the same messaging key.
-func (w *AgreementBotWorker) messageKeyCheck () int {
+func (w *AgreementBotWorker) messageKeyCheck() int {
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("checking agbot message key")))
 
