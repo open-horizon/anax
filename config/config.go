@@ -190,7 +190,7 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollMaxInterval: ExchangeMessagePollMaxInterval_DEFAULT,
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
 			},
-			AgreementBot: AGConfig {
+			AgreementBot: AGConfig{
 				MessageKeyCheck: AgbotMessageKeyCheck_DEFAULT,
 			},
 		}

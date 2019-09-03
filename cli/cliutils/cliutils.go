@@ -986,6 +986,13 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	}
 
+	// add the language request to the http header
+	localeTag, err := i18n.GetLocale()
+	if err != nil {
+		Fatal(HTTP_ERROR, err.Error())
+	}
+	req.Header.Add("Accept-Language", localeTag.String())
+
 	resp := invokeRestApi(httpClient, req, service, apiMsg)
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -1084,6 +1091,14 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	} else {
 		req.Header.Add("Content-Type", "application/json")
 	}
+
+	// add the language request to the http header
+	localeTag, err := i18n.GetLocale()
+	if err != nil {
+		Fatal(HTTP_ERROR, err.Error())
+	}
+	req.Header.Add("Accept-Language", localeTag.String())
+
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	} // else it is an anonymous call
@@ -1154,6 +1169,14 @@ func ExchangePatch(service string, urlBase string, urlSuffix string, credentials
 	} else {
 		req.Header.Add("Content-Type", "application/json")
 	}
+
+	// add the language request to the http header
+	localeTag, err := i18n.GetLocale()
+	if err != nil {
+		Fatal(HTTP_ERROR, err.Error())
+	}
+	req.Header.Add("Accept-Language", localeTag.String())
+
 	if credentials != "" {
 		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 	} // else it is an anonymous call
