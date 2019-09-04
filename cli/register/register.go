@@ -57,6 +57,11 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
+type ExchangeNodes struct {
+	LastIndex int                        `json:"lastIndex"`
+	Nodes     map[string]exchange.Device `json:"nodes"`
+}
+
 // read and verify a node policy file
 func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.ExternalPolicy) {
 	// get message printer
@@ -82,12 +87,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	// check the input
 	org, pattern, nodepolicyFlag = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, nodepolicyFlag)
-
-	// no pattern and no policy, proceed as a policy case.
-	if pattern == "" && nodepolicyFlag == "" {
-		msgPrinter.Printf("No pattern or node policy is specified. Will proceeed with the existing node policy.")
-		msgPrinter.Println()
-	}
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
@@ -156,7 +155,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 
 	// See if the node exists in the exchange, and create if it doesn't
-	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, nil)
+	var nodes ExchangeNodes
+	exchangePattern := ""
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &nodes)
 
 	if httpCode != 200 {
 		if userPw == "" {
@@ -167,10 +168,38 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)
+		for _, n := range nodes.Nodes {
+			exchangePattern = n.Pattern
+			break
+		}
 		msgPrinter.Println()
 	}
 
-	// Update node policy
+	// Use the exchange node pattern if any
+	if pattern == "" {
+		if exchangePattern == "" {
+			if nodepolicyFlag == "" {
+				msgPrinter.Printf("No pattern or node policy is specified. Will proceeed with the existing node policy.")
+				msgPrinter.Println()
+			} else {
+				msgPrinter.Printf("Will proceeed with the given node policy.")
+				msgPrinter.Println()
+			}
+		} else {
+			msgPrinter.Printf("Pattern %s defined for the node on the exchange. Will proceeed with this pattern.", exchangePattern)
+			msgPrinter.Println()
+			pattern = exchangePattern
+		}
+	} else {
+		if exchangePattern != "" && cliutils.AddOrg(org, pattern) != cliutils.AddOrg(org, exchangePattern) {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the exchange.", pattern, exchangePattern))
+		} else {
+			msgPrinter.Printf("Will proceeed with the given pattern %s.", pattern)
+			msgPrinter.Println()
+		}
+	}
+
+	// Update node policy if specified
 	if nodepolicyFlag != "" {
 		msgPrinter.Println("Updating the node policy...")
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"/policy", cliutils.OrgAndCreds(org, nodeIdTok), []int{201}, nodePol)

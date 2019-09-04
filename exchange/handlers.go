@@ -73,6 +73,13 @@ func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
 	}
 }
 
+// this is used when ExchangeContext is not set up yet.
+func GetHTTPDeviceHandler2(cfg *config.HorizonConfig) DeviceHandler {
+	return func(id string, token string) (*Device, error) {
+		return GetExchangeDevice(cfg.Collaborators.HTTPClientFactory, id, token, cfg.Edge.ExchangeURL)
+	}
+}
+
 // A handler for modifying the device information on the exchange
 type PutDeviceHandler func(deviceId string, deviceToken string, pdr *PutDeviceRequest) (*PutDeviceResponse, error)
 

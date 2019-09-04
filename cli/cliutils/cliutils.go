@@ -322,9 +322,22 @@ func TrimOrg(org, id string) (string, string) {
 	} else if len(substrings) == 2 {
 		return substrings[0], substrings[1] // in this case the org the prepended to the id will override the org they may have specified thru the -o flag or env var
 	} else {
-		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("the resource id can not contain more than 1 '/'"))
+		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("the id can not contain more than 1 '/'"))
 	}
 	return "", "" // will never get here
+}
+
+// Add the given org to the id if the id does not already contain an org
+func AddOrg(org, id string) string {
+	substrings := strings.Split(id, "/")
+	if len(substrings) <= 1 { // this means id was empty, or did not contain '/'
+		return fmt.Sprintf("%v/%v", org, id)
+	} else if len(substrings) == 2 {
+		return id
+	} else {
+		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("the id can not contain more than 1 '/'"))
+	}
+	return "" // will never get here
 }
 
 // FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
