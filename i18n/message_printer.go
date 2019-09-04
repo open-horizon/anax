@@ -28,21 +28,24 @@ var supportedLangs = []language.Tag{
 	language.Make("ko"),
 }
 
-// use HZN_LANG or LC_ALL or LANG env variables
+// use HZN_LANG or LANG env variables
 func GetLocale() (language.Tag, error) {
 	locale := os.Getenv(HZN_LANG)
 	if locale == "" {
-		locale = os.Getenv("LC_ALL")
+		locale = os.Getenv("LANG")
 		if locale == "" {
-			locale = os.Getenv("LANG")
-			if locale == "" {
-				// default
-				return language.English, nil
-			}
+			// default
+			return language.English, nil
 		}
 	}
 
 	current_locale := strings.Split(locale, ".")[0]
+
+	// some os had default LANG setting as "C" or "C.UTF-8", GO does not recognize it, we will default it to en_US
+	if current_locale == "C" {
+		current_locale = DEFAULT_LANGUAGE
+	}
+
 	tag, err := language.Parse(current_locale)
 	if err != nil {
 		return language.English, fmt.Errorf("Could not parse locale %v.: %v\n", current_locale, err)

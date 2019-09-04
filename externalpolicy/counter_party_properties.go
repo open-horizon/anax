@@ -59,7 +59,8 @@ func (rp *RequiredProperty) TopLevelElements() []interface{} {
 // These are the comparison operators that are supported
 const lessthan = "<"
 const greaterthan = ">"
-const equalto = "=="
+const equalto = "="
+const doubleequalto = "=="
 const lessthaneq = "<="
 const greaterthaneq = ">="
 const notequalto = "!="
@@ -278,12 +279,12 @@ func controlOperators() map[string]int {
 // of the supported comparison operators.
 func comparisonOperators() map[string]int {
 	// return map[string]int {and:0, or:0, not:0}
-	return map[string]int{lessthan: 0, greaterthan: 0, equalto: 0, lessthaneq: 0, greaterthaneq: 0, notequalto: 0, isin: 0}
+	return map[string]int{lessthan: 0, greaterthan: 0, doubleequalto: 0, equalto: 0, lessthaneq: 0, greaterthaneq: 0, notequalto: 0, isin: 0}
 }
 
 // Return a map of comparison operators that only work on strings
 func stringOperators() map[string]int {
-	return map[string]int{equalto: 0, notequalto: 0, isin: 0}
+	return map[string]int{doubleequalto: 0, equalto: 0, notequalto: 0, isin: 0}
 }
 
 // This function checks the type of the input interface object to see if it's a map of string to
@@ -452,7 +453,7 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 					return false
 				} else if propexp.Op == notequalto {
 					return p.Value.(bool) != propexpBool
-				} else if propexp.Op == equalto {
+				} else if propexp.Op == equalto || propexp.Op == doubleequalto {
 					return p.Value.(bool) == propexpBool
 				}
 			} else if isString(p.Value) && isString(propexp.Value) {

@@ -40,7 +40,7 @@ func main() {
 
 	// initialize the message printer for globalization for the cliconfig.SetEnvVarsFromConfigFiles("") call
 	if err := i18n.InitMessagePrinter(false); err != nil {
-		cliutils.Warning("%v. The messages will be displayed in English.", err)
+		cliutils.Verbose("%v. The messages will be displayed in English.", err)
 		i18n.InitMessagePrinter(true)
 	}
 
@@ -49,7 +49,7 @@ func main() {
 
 	// initialize the message printer for globalization again because HZN_LANG could have changed from the above call.
 	if err := i18n.InitMessagePrinter(false); err != nil {
-		cliutils.Warning("%v. The messages will be displayed in English.", err)
+		cliutils.Verbose("%v. The messages will be displayed in English.", err)
 		i18n.InitMessagePrinter(true)
 	}
 

@@ -20,7 +20,7 @@ fi
 
 # remove the markups from the PII process
 translated_json_file="/tmp/translated.json"
-cat $translated_file | sed '/NON-TRANSLATABLE/d' |sed '/UTF-8/d' > $translated_json_file
+cat $translated_file | sed 's/"id":/"message":/g' | sed '/UTF-8/d' > $translated_json_file
 
 # replace the original file with the translation
 output=$(jq '.messages' $original_file)

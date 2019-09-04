@@ -94,6 +94,7 @@ type AGConfig struct {
 	ActiveDeviceTimeoutS          int              // The amount of time a device can go without heartbeating and still be considered active for the purposes of search
 	ExchangeMessageTTL            int              // The number of seconds the exchange will keep this message before automatically deleting it
 	MessageKeyPath                string           // The path to the location of messaging keys
+	MessageKeyCheck               int              // The interval (in seconds) indicating how often the agbot checks its own object in the exchange to ensure that the message key is still available.
 	DefaultWorkloadPW             string           // The default workload password if none is specified in the policy file
 	APIListen                     string           // Host and port for the API to listen on
 	PurgeArchivedAgreementHours   int              // Number of hours to leave an archived agreement in the database before automatically deleting it
@@ -188,6 +189,9 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollInterval:    ExchangeMessagePollInterval_DEFAULT,
 				ExchangeMessagePollMaxInterval: ExchangeMessagePollMaxInterval_DEFAULT,
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
+			},
+			AgreementBot: AGConfig{
+				MessageKeyCheck: AgbotMessageKeyCheck_DEFAULT,
 			},
 		}
 

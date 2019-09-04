@@ -31,6 +31,7 @@ const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
 const GENERATE_POLICY = "AgBotPolicyGenerator"
 const STALE_PARTITIONS = "AgbotStaleDatabasePartition"
+const MESSAGE_KEY_CHECK = "AgbotMessageKeyCheck"
 
 // Agreement governance timing state. Used in the GovernAgreements subworker.
 type DVState struct {
@@ -337,6 +338,8 @@ func (w *AgreementBotWorker) Initialize() bool {
 	w.DispatchSubworker(GOVERN_AGREEMENTS, w.GovernAgreements, int(w.BaseWorker.Manager.Config.AgreementBot.ProcessGovernanceIntervalS), false)
 	w.DispatchSubworker(GOVERN_ARCHIVED_AGREEMENTS, w.GovernArchivedAgreements, 1800, false)
 	w.DispatchSubworker(GOVERN_BC_NEEDS, w.GovernBlockchainNeeds, 60, false)
+	w.DispatchSubworker(MESSAGE_KEY_CHECK, w.messageKeyCheck, w.BaseWorker.Manager.Config.AgreementBot.MessageKeyCheck, false)
+
 	if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
 		// Use custom subworker APIs for the policy watcher because it is stateful and already does its own time management.
 		ch := w.AddSubworker(POLICY_WATCHER)
@@ -1472,6 +1475,63 @@ func (w *AgreementBotWorker) stalePartitions() int {
 	if err := w.db.MovePartition(w.Config.GetPartitionStale()); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("Error claiming an unowned partition, error: %v", err)))
 	}
+	return 0
+}
+
+// Ensure that the agbot's message key is still in its object in the exchange. If the agbot itself is missing,
+// we will panic (that should not happen). If the key is missing (i.e. the current key is a zero length byte array)
+// we will add our key back. If there is a key but it is just wrong, we will panic. This latter case could occur if
+// multiple agbots are setup without sharing the same messaging key.
+func (w *AgreementBotWorker) messageKeyCheck() int {
+
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("checking agbot message key")))
+
+	key := exchange.CreateAgbotPublicKeyPatch(w.Config.AgreementBot.MessageKeyPath).PublicKey
+	var resp interface{}
+	resp = new(exchange.GetAgbotsResponse)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId())
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return 0
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+
+			// Got a response from the exchange. Make sure this agbot is in the response.
+			ags := resp.(*exchange.GetAgbotsResponse).Agbots
+			if agbot, there := ags[w.GetExchangeId()]; !there {
+				msg := AWlogString(fmt.Sprintf("agbot %v not in GET response %v as expected", w.GetExchangeId(), ags))
+				glog.Errorf(msg)
+				panic(msg)
+
+			} else if len(agbot.PublicKey) == 0 {
+
+				// There is no message key in the exchange, this should not happen but we can fix it, so we will add it back in if we can.
+				glog.Errorf(AWlogString(fmt.Sprintf("agbot message key is empty, adding it back in %v", key)))
+				if err := w.registerPublicKey(); err != nil {
+					msg := AWlogString(fmt.Sprintf("unable to register public key, error: %v", err))
+					glog.Errorf(msg)
+					panic(msg)
+				}
+
+			} else if !bytes.Equal(key, agbot.PublicKey) {
+
+				// Make sure the message key in the exchange is our key. If not, exit quickly.
+				msg := AWlogString(fmt.Sprintf("agbot message key has changed from %v to %v", key, agbot.PublicKey))
+				glog.Errorf(msg)
+				panic(msg)
+
+			} else {
+				glog.V(5).Infof(AWlogString(fmt.Sprintf("agbot message key is present")))
+			}
+			return 0
+
+		}
+	}
+
 	return 0
 }
 
