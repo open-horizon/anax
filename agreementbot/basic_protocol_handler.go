@@ -217,6 +217,17 @@ func (b *BasicProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageCom
 		b.WorkQueue() <- agreementWork
 		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify message")))
 
+	} else if verifyr, perr := b.agreementPH.ValidateAgreementVerifyReply(string(cmd.Message)); perr == nil {
+		agreementWork := BAgreementVerificationReply{
+			workType:     AGREEMENT_VERIFICATION_REPLY,
+			VerifyReply:  *verifyr,
+			SenderId:     cmd.From,
+			SenderPubKey: cmd.PubKey,
+			MessageId:    cmd.MessageId,
+		}
+		b.WorkQueue() <- agreementWork
+		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify reply message")))
+
 	} else {
 		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
 		return errors.New(BsCPHlogString(fmt.Sprintf("unknown protocol msg %s", cmd.Message)))

@@ -1537,7 +1537,11 @@ read -d '' bpnsdef <<EOF
           "retry_durations": 3600
         }
       }
-    ]
+    ],
+    "nodeHealth": {
+      "missing_heartbeat_interval": 0,
+      "check_agreement_status": 0
+    }
   },
   "properties": [
       {
@@ -1751,7 +1755,7 @@ results "$RES"
 
 read -d '' bppwsdef <<EOF
 {
-  "label": "business policy for persoanl weather station",
+  "label": "business policy for personal weather station",
   "description": "for pws",
   "service": {
     "name": "https://bluehorizon.network/services/weather",

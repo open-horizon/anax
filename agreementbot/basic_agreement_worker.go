@@ -73,6 +73,36 @@ func (b BAgreementVerification) String() string {
 		b.workType, b.Verify, b.From, b.SenderId, pkey, b.MessageId)
 }
 
+// These are work items that represent extensions to the protocol.
+const AGREEMENT_VERIFICATION_REPLY = "AGREEMENT_VERIFY_REPLY"
+
+type BAgreementVerificationReply struct {
+	workType     string
+	VerifyReply  basicprotocol.BAgreementVerifyReply
+	From         string // deprecated whisper address
+	SenderId     string // exchange Id of sender
+	SenderPubKey []byte
+	MessageId    int
+}
+
+func (b BAgreementVerificationReply) Type() string {
+	return b.workType
+}
+
+func (b BAgreementVerificationReply) String() string {
+	pkey := "not set"
+	if len(b.SenderPubKey) != 0 {
+		pkey = "set"
+	}
+	return fmt.Sprintf("WorkType: %v, "+
+		"VerifyReply: %v, "+
+		"MsgEndpoint: %v, "+
+		"SenderId: %v, "+
+		"SenderPubKey: %v, "+
+		"MessageId: %v",
+		b.workType, b.VerifyReply, b.From, b.SenderId, pkey, b.MessageId)
+}
+
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
 func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
@@ -160,6 +190,35 @@ func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand)
 			}
 
 			// Get rid of the original agreement validation request message.
+			if wi.MessageId != 0 && deleteMessage {
+				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
+				}
+			}
+
+		} else if workItem.Type() == AGREEMENT_VERIFICATION_REPLY {
+			wi := workItem.(BAgreementVerificationReply)
+
+			cancel := false
+			deleteMessage := true
+			if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.VerifyReply.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.VerifyReply.AgreementId(), err)))
+			} else if agreement != nil && agreement.Archived {
+				// The agreement is not active and it is archived, so this message belongs to this agbot.
+				glog.V(3).Infof(bwlogstring(a.workerID, fmt.Sprintf("verify reply is for a cancelled agreement %v, deleting verify reply message.", wi.VerifyReply.AgreementId())))
+			} else if agreement == nil {
+				// The verify is for an agreement that this agbot doesnt know anything about, so ignore the verify reply msg.
+				glog.Warningf(bwlogstring(a.workerID, fmt.Sprintf("discarding verify reply %v for agreement id %v not in this agbot's database", wi.MessageId, wi.VerifyReply.AgreementId())))
+				deleteMessage = false
+			} else if agreement.AgreementTimedout == 0 && !wi.VerifyReply.Exists {
+				cancel = true
+			}
+
+			if cancel {
+				deleteMessage = a.CancelAgreementWithLock(a.protocolHandler, wi.VerifyReply.AgreementId(), basicprotocol.AB_CANCEL_AG_MISSING, a.workerID)
+			}
+
+			// Get rid of the original message if the agreement is owned by this agbot.
 			if wi.MessageId != 0 && deleteMessage {
 				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))

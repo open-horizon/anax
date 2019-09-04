@@ -716,6 +716,13 @@ func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResu
 		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
 			glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
 		} else if len(agreements) != 0 {
+
+			ag := agreements[0]
+			if ag.AgreementFinalizedTime != 0 {
+				glog.V(5).Infof("AgreementBotWorker sending agreement verify for %v", ag.CurrentAgreementId)
+				w.consumerPH[ag.AgreementProtocol].VerifyAgreement(&ag, w.consumerPH[ag.AgreementProtocol])
+			}
+
 			return true, nil
 		}
 	}
