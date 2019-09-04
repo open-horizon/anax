@@ -105,14 +105,49 @@ func (c *BasicProtocolHandler) VerifyAgreement(ag *persistence.EstablishedAgreem
 func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDeviceMessage, exchangeMsg *exchange.DeviceMessage) (bool, bool, string, error) {
 
 	// The agreement verification reply indicates whether or not the consumer thinks the agreement is still valid.
-	if verify, err := c.agreementPH.ValidateAgreementVerifyReply(msg.ProtocolMessage()); err != nil {
-		glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring non-agreement verify reply message: %s due to %v", msg.ShortProtocolMessage(), err)))
-	} else {
+	if verify, err := c.agreementPH.ValidateAgreementVerifyReply(msg.ProtocolMessage()); err == nil {
 		glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension handler handled agreement verification reply for %v", verify.AgreementId())))
 		return true, !verify.Exists, verify.AgreementId(), nil
+
+	} else if verify, err := c.agreementPH.ValidateAgreementVerify(msg.ProtocolMessage()); err == nil {
+		// This is a request to verify that an agreement exists.
+		exists := false
+		sendReply := true
+		agreements, err := persistence.FindEstablishedAgreements(c.db, c.Name(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(verify.AgreementId())})
+		if err != nil {
+			glog.Errorf(BPHlogString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", verify.AgreementId(), err)))
+			sendReply = false
+		} else if len(agreements) > 0 {
+			// The verify is for an agreement that is active, so reply that it exists.
+			exists = true
+		}
+
+		// Reply to the sender with our decision on the agreement.
+		if sendReply {
+			if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(agreements[0].ConsumerId); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error getting agbot message target: %v", err)))
+			} else if mt, err := exchange.CreateMessageTarget(agreements[0].ConsumerId, nil, pubkey, ""); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error creating message target: %v", err)))
+			} else if err := c.agreementPH.SendAgreementVerificationReply(agreements[0].CurrentAgreementId, exists, mt, c.GetSendMessage()); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error sending verify response for agreement %v, error %v", agreements[0].CurrentAgreementId, err)))
+			}
+		}
+
+		return true, false, verify.AgreementId(), nil
+
+	} else {
+
+		// Not a known protocol extension message. The only protocol message that is not handled in this code path is the proposal
+		// so make sure it's not one of those, then we know if it's an unknown msg or not.
+		if _, err := c.agreementPH.ValidateProposal(msg.ProtocolMessage()); err == nil {
+			glog.V(5).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring message: %s because it is a proposal.", msg.ShortProtocolMessage())))
+			return false, false, "", nil
+		} else {
+			glog.V(3).Infof(BPHlogString(fmt.Sprintf("extension message handler ignoring message: %s because it is not a known protocol msg.", msg.ShortProtocolMessage())))
+			return true, false, "", nil
+		}
 	}
 
-	return false, false, "", nil
 }
 
 func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {

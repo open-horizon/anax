@@ -786,10 +786,9 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 			deleteMessage = false
 			protocolHandler := w.producerPH[msgProtocol].AgreementProtocolHandler("", "", "")
+
 			// ReplyAck messages could indicate that the agbot has decided not to pursue the agreement any longer.
-			if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err != nil {
-				glog.V(5).Infof(logString(fmt.Sprintf("ReplyAck handler ignoring non-reply ack message: %s due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-			} else {
+			if replyAck, err := protocolHandler.ValidateReplyAck(protocolMsg); err == nil {
 				err_log_msg := ""
 				ags := []persistence.EstablishedAgreement{}
 				var err error
@@ -847,12 +846,10 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 							persistence.EC_ERROR_PROCESSING_REPLYACT_MESSAGE, replyAck.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", replyAck.Protocol())
 					}
 				}
-			}
 
-			// Data notification message indicates that the agbot has found that data is being received from the workload.
-			if dataReceived, err := protocolHandler.ValidateDataReceived(protocolMsg); err != nil {
-				glog.V(5).Infof(logString(fmt.Sprintf("DataReceived handler ignoring non-data received message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-			} else {
+			} else if dataReceived, err := protocolHandler.ValidateDataReceived(protocolMsg); err == nil {
+
+				// Data notification message indicates that the agbot has found that data is being received from the workload.
 				err_log_msg := ""
 				ags := []persistence.EstablishedAgreement{}
 				var err error
@@ -890,12 +887,10 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 							persistence.EC_ERROR_PROCESSING_DATARECEIVED_MESSAGE, dataReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", dataReceived.Protocol())
 					}
 				}
-			}
 
-			// Metering notification messages indicate that the agbot is metering data sent to the data ingest.
-			if mnReceived, err := protocolHandler.ValidateMeterNotification(protocolMsg); err != nil {
-				glog.V(5).Infof(logString(fmt.Sprintf("Meter Notification handler ignoring non-metering message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-			} else {
+			} else if mnReceived, err := protocolHandler.ValidateMeterNotification(protocolMsg); err == nil {
+				// Metering notification messages indicate that the agbot is metering data sent to the data ingest.
+
 				err_log_msg := ""
 				ags := []persistence.EstablishedAgreement{}
 				var err error
@@ -937,12 +932,9 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 							mnReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", mnReceived.Protocol())
 					}
 				}
-			}
 
-			// Cancel messages indicate that the agbot wants to get rid of the agreement.
-			if canReceived, err := protocolHandler.ValidateCancel(protocolMsg); err != nil {
-				glog.V(5).Infof(logString(fmt.Sprintf("Cancel handler ignoring non-cancel message: %v due to %v", cmd.Msg.ShortProtocolMessage(), err)))
-			} else {
+			} else if canReceived, err := protocolHandler.ValidateCancel(protocolMsg); err == nil {
+				// Cancel messages indicate that the agbot wants to get rid of the agreement.
 
 				err_log_msg := ""
 				ags := []persistence.EstablishedAgreement{}
@@ -993,14 +985,14 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 							canReceived.AgreementId(), persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", canReceived.Protocol())
 					}
 				}
-			}
 
-			// Allow the message extension handler to see the message
-			handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
-			if err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to handle extension message %v , error: %v", protocolMsg, err)))
 			} else {
-				if cancel {
+
+				// Allow the message extension handler to see the message
+				handled, cancel, agid, err := w.producerPH[msgProtocol].HandleExtensionMessages(&cmd.Msg, exchangeMsg)
+				if err != nil {
+					glog.Errorf(logString(fmt.Sprintf("unable to handle message %v , error: %v", protocolMsg, err)))
+				} else if cancel {
 					reason := w.producerPH[msgProtocol].GetTerminationCode(producer.TERM_REASON_AGBOT_REQUESTED)
 
 					if ags, err := persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(agid)}); err != nil {
@@ -1027,10 +1019,10 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						w.handleMicroserviceInstForAgEnded(agid, false)
 					}
 				}
-			}
 
-			if handled {
-				deleteMessage = handled
+				if handled {
+					deleteMessage = handled
+				}
 			}
 
 		}
