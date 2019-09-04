@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"golang.org/x/text/language"
 	"io"
 	"io/ioutil"
 	"net"
@@ -535,7 +536,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	// add the language request to the http header
 	localeTag, err := i18n.GetLocale()
 	if err != nil {
-		Fatal(HTTP_ERROR, err.Error())
+		localeTag = language.English
 	}
 	req.Header.Add("Accept-Language", localeTag.String())
 
@@ -989,7 +990,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 	// add the language request to the http header
 	localeTag, err := i18n.GetLocale()
 	if err != nil {
-		Fatal(HTTP_ERROR, err.Error())
+		localeTag = language.English
 	}
 	req.Header.Add("Accept-Language", localeTag.String())
 
@@ -1095,7 +1096,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	// add the language request to the http header
 	localeTag, err := i18n.GetLocale()
 	if err != nil {
-		Fatal(HTTP_ERROR, err.Error())
+		localeTag = language.English
 	}
 	req.Header.Add("Accept-Language", localeTag.String())
 
@@ -1173,7 +1174,7 @@ func ExchangePatch(service string, urlBase string, urlSuffix string, credentials
 	// add the language request to the http header
 	localeTag, err := i18n.GetLocale()
 	if err != nil {
-		Fatal(HTTP_ERROR, err.Error())
+		localeTag = language.English
 	}
 	req.Header.Add("Accept-Language", localeTag.String())
 
