@@ -1427,7 +1427,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY, lc.Configure.Deployment, err),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+				"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", lc.Configure.Deployment, err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
@@ -1435,7 +1435,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT, lc.Configure.Deployment),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-				"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+				"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container.", lc.Configure.Deployment)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
@@ -1450,7 +1450,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 					persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err),
 					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 				glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 				return true
@@ -1504,7 +1504,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(log_str, fmt.Sprintf("%v", lc.AgreementIds), err),
 				persistence.EC_ERROR_START_CONTAINER, "",
-				lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+				lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 
