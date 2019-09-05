@@ -29,9 +29,10 @@ type API struct {
 	EC             *worker.BaseExchangeContext
 	em             *events.EventStateManager
 	shutdownError  string
+	configFile     string
 }
 
-func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -40,10 +41,11 @@ func NewAPIListener(name string, config *config.HorizonConfig, db persistence.Ag
 			Messages: messages,
 		},
 
-		name: name,
-		db:   db,
-		EC:   worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
-		em:   events.NewEventStateManager(),
+		name:       name,
+		db:         db,
+		EC:         worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
+		em:         events.NewEventStateManager(),
+		configFile: configFile,
 	}
 
 	listener.listen(config.AgreementBot.APIListen)
@@ -190,6 +192,7 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
 		router.HandleFunc("/node", a.node).Methods("GET", "DELETE", "OPTIONS")
+		router.HandleFunc("/config", a.config).Methods("GET", "OPTIONS")
 
 		if err := http.ListenAndServe(apiListen, nocache(router)); err != nil {
 			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
@@ -559,6 +562,25 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+//Get Agbot config info
+func (a *API) config(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		if cfg, err := a.GetHorizonAgbotConfig(); err != nil {
+			// ConfigFile does not exist
+			glog.Error(APIlogString(fmt.Sprintf("error with File System Config File, error: %v", err)))
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			writeResponse(w, cfg, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 func (a *API) partition(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
@@ -641,8 +663,23 @@ func NewHorizonAgbot(id string, org string) *HorizonAgbot {
 	}
 }
 
-func getAgbotInfo(config *config.HorizonConfig) {
+type HorizonAgbotConfig struct {
+	InMemoryConfig   config.AGConfig `json:"InMemoryConfig"`
+	FileSystemConfig config.AGConfig `json:"FileSystemConfig"`
+}
 
+func (a *API) GetHorizonAgbotConfig() (*HorizonAgbotConfig, error) {
+	cfg, err := config.Read(a.configFile)
+	if err != nil {
+		glog.Error(APIlogString(fmt.Sprintf("error finding File System Config File %v, error: %v", a.configFile, err)))
+	}
+	return &HorizonAgbotConfig{
+		InMemoryConfig:   a.Config.AgreementBot,
+		FileSystemConfig: cfg.AgreementBot,
+	}, err
+}
+
+func getAgbotInfo(config *config.HorizonConfig) {
 }
 
 type APIUserInputError struct {
