@@ -62,6 +62,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		patternHandler := exchange.GetHTTPExchangePatternHandlerWithContext(a.Config)
 		versionHandler := exchange.GetHTTPExchangeVersionHandler(a.Config)
 		patchDeviceHandler := exchange.GetHTTPPatchDeviceHandler2(a.Config)
+		getDeviceHandler := exchange.GetHTTPDeviceHandler2(a.Config)
 
 		create_device_error_handler := func(err error) bool {
 			dev_id := ""
@@ -73,7 +74,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Validate and create the new device registration.
-		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, versionHandler, patchDeviceHandler, a.em, a.db)
+		errHandled, device, exDev := CreateHorizonDevice(&newDevice, create_device_error_handler, orgHandler, patternHandler, versionHandler, patchDeviceHandler, getDeviceHandler, a.em, a.db)
 		if errHandled {
 			return
 		}

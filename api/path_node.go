@@ -89,6 +89,7 @@ func CreateHorizonDevice(device *HorizonDevice,
 	getPatterns exchange.PatternHandlerWithContext,
 	getExchangeVersion exchange.ExchangeVersionHandler,
 	patchDeviceHandler exchange.PatchDeviceHandler,
+	getDeviceHandler exchange.DeviceHandler,
 	em *events.EventStateManager,
 	db *bolt.DB) (bool, *HorizonDevice, *HorizonDevice) {
 
@@ -164,6 +165,29 @@ func CreateHorizonDevice(device *HorizonDevice,
 	}
 
 	// Verify the pattern org if the patter is not in the same org as the device.
+
+	// Check the node on the exchange to see if there is a pattern already defined for the node
+	if exchDevice, err := getDeviceHandler(deviceId, *device.Token); err != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Error getting device %v from the exchange. %v", deviceId, err))), nil, nil
+	} else {
+		if exchDevice.Pattern != "" {
+			_, _, exchange_pattern := persistence.GetFormatedPatternString(exchDevice.Pattern, *device.Org)
+
+			if device.Pattern != nil && *device.Pattern != "" {
+				_, _, input_pattern := persistence.GetFormatedPatternString(*device.Pattern, *device.Org)
+
+				if input_pattern != exchange_pattern {
+					// error if the pattern from the input is different from the pattern on the exchange
+					return errorhandler(NewAPIUserInputError(fmt.Sprintf("There is a conflict between the node pattern %v defined in the exchange and pattern %v. Please leave the pattern field empty if you want to use the pattern defined for the node in the exchange.", exchDevice.Pattern, *device.Pattern), "device.pattern")), nil, nil
+				}
+			} else {
+				glog.Infof(apiLogString(fmt.Sprintf("No pattern specified with the device, will use the pattern %v defined for the node in the exchange.", exchDevice.Pattern)))
+			}
+
+			// use the pattern from the exchange if there is no pattern in the input device
+			device.Pattern = &exchange_pattern
+		}
+	}
 
 	// Verify that the input pattern is defined in the exchange.
 	// The input pattern is in the format of <pattern org>/<pattern name>
