@@ -1,6 +1,8 @@
-FROM registry.access.redhat.com/ubi8/ubi:8.0
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
 
-RUN yum install --disableplugin=subscription-manager -y openssl ca-certificates
+# yum is not installed, use microdnf instead
+RUN microdnf install -y --nodocs openssl ca-certificates \
+	&& microdnf clean all
 
 ADD edge-sync-service /edge-sync-service/
 
