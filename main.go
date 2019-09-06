@@ -151,7 +151,7 @@ func main() {
 
 	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotDB))
 	if cfg.AgreementBot.APIListen != "" {
-		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotDB))
+		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotDB, *configFile))
 	}
 
 	if db != nil {
