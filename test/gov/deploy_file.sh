@@ -9,16 +9,22 @@
 # 6 - the destination id. The node's id. Specify "none" to leave the field unset.
 # 7 - the object policy (optional).
 
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/css.crt"
+else
+  CERT_VAR=""
+fi
+
 DEST_TYPE=${5}
 if [ "${5}" == "none" ]
 then
-	DEST_TYPE=""
+  DEST_TYPE=""
 fi
 
 DEST_ID=${6}
 if [ "${6}" == "none" ]
 then
-	DEST_ID=""
+  DEST_ID=""
 fi
 
 OBJ_POLICY=${7}
@@ -55,34 +61,26 @@ EOF
 admin_user="${3}admin"
 admin_pw="${3}adminpw"
 if [ "${3}" == "e2edev@somecomp.com" ]; then
-    admin_user="e2edevadmin"
-    admin_pw="e2edevadminpw"
+  admin_user="e2edevadmin"
+  admin_pw="e2edevadminpw"
 fi
 
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-	ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
-else
-	ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
-fi
+ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 
 if [ "$ADDM" != "204" ]
 then
-	echo -e "$resmeta \nPUT returned:"
- 	echo $ADDM
+  echo -e "$resmeta \nPUT returned:"
+  echo $ADDM
   exit -1
 fi
 
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-	ADDF=$(curl -sLX PUT -w "%{http_code}" --cacert /certs/css.crt -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
-else
-	ADDF=$(curl -sLX PUT -w "%{http_code}" -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
-fi
+ADDF=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
 
 if [ "$ADDF" == "204" ]
 then
-	echo -e "Data file ${1} added successfully"
+  echo -e "Data file ${1} added successfully"
 else
-	echo -e "Data file PUT returned:"
- 	echo $ADDF
+  echo -e "Data file PUT returned:"
+  echo $ADDF
   exit -1
 fi

@@ -1,15 +1,15 @@
 {
     "Edge": {
         "ServiceStorage": "/tmp/service_storage",
-         "APIListen": "0.0.0.0:82",
+        "APIListen": "0.0.0.0:82",
         "DBPath": "/root/.colonus2",
         "DockerEndpoint": "unix:///var/run/docker.sock",
         "StaticWebContent": "/root/.colonus/static",
-        "CACertsPath": "/root/.colonus/horizon.pem",
         "TrustSystemCACerts": true,
         "PublicKeyPath": "/root/.colonus/mtn-publicKey.pem",
         "DefaultServiceRegistrationRAM": 1024,
         "ExchangeURL": "${EXCH_APP_HOST}/",
+        "CACertsPath": "/certs/css.crt",
         "PolicyPath": "/root/.colonus2/policy.d/",
         "ExchangeHeartbeat": 60,
         "ExchangeVersionCheckIntervalM": 1,

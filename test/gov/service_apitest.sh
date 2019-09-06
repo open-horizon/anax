@@ -5,6 +5,12 @@
 
 EXCH_URL="${EXCH_APP_HOST}"
 
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/css.crt"
+else
+  CERT_VAR=""
+fi
+
 # empty service URL
 read -d '' snsconfig <<EOF
 {
@@ -209,7 +215,7 @@ read -d '' service <<EOF
 }
 EOF
 
-WLRES=$(echo "$service" | curl -sS -X POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
+WLRES=$(echo "$service" | curl -sS -X POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
 echo -e "Registered testwl: $WLRES"
 MSG=$(echo $WLRES | jq -r ".msg")
 if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_amd64' created" ]
@@ -584,7 +590,7 @@ fi
 # context testcases here. Checking userInput against API input
 
 if [ "$PATTERN" != "" ]
-then 
+then
   # missing variable in the variables section
   read -d '' snsconfig <<EOF
 {
@@ -620,12 +626,12 @@ EOF
     echo -e "$snsconfig \nresulted in incorrect response: $RES"
     exit 2
   else
-   echo -e "found expected response: $RES"
+    echo -e "found expected response: $RES"
   fi
 
 
- # another missing variable in the variables section
- read -d '' snsconfig <<EOF
+  # another missing variable in the variables section
+  read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
   "version": "1.0.0",

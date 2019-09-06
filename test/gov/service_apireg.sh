@@ -13,6 +13,12 @@ function results {
   fi
 }
 
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/css.crt"
+else
+  CERT_VAR=""
+fi
+
 
 echo -e "Registering services"
 echo -e "PATTERN setting is $PATTERN"
@@ -80,7 +86,8 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register amd64 test service:"
-RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
 results "$RES"
 
 # test service arm64
@@ -100,7 +107,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register arm64 test service:"
-RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
 results "$RES"
 
 # test service arm
@@ -120,7 +129,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register arm test service:"
-RES=$(echo "$sdef" | curl -sLX POST -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
 results "$RES"
 
 # Helm service
@@ -228,11 +239,15 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register IBM/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
 results "$RES"
 
 
@@ -253,11 +268,15 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register IBM/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/IBM/services" | jq -r '.')
+
 results "$RES"
 
 echo -e "Register e2edev@somecomp.com/network service $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
 results "$RES"
 
 
@@ -282,12 +301,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
     {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"string","defaultValue":"0.5"},
     {"name":"HZN_USE_GPS","label":"","type":"string","defaultValue":"false"}
   ],
-  "deployment": {
+  "deployment":{
     "services":{
       "gps":{
-        "image":"openhorizon/amd64_gps:2.0.3",
-        "privileged":true,
-        "devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"]
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -322,12 +339,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
     {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
     {"name":"HZN_USE_GPS","label":"","type":"bool"}
   ],
-  "deployment": {
+  "deployment":{
     "services":{
-      "gps":{
-        "image":"openhorizon/amd64_gps:2.0.3",
-        "privileged":true,
-        "devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"]
+      "gps2":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -366,12 +381,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
     {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
     {"name":"HZN_USE_GPS","label":"","type":"bool"}
   ],
-  "deployment": {
+  "deployment":{
     "services":{
-      "gps":{
-        "image":"openhorizon/amd64_gps:2.0.3",
-        "privileged":true,
-        "devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"]
+      "locgps":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -417,12 +430,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
     {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
     {"name":"HZN_USE_GPS","label":"","type":"bool"}
   ],
-  "deployment": {
+  "deployment":{
     "services":{
-      "gps":{
-        "image":"openhorizon/amd64_gps:2.0.3",
-        "privileged":true,
-        "devices":["/dev/bus/usb/001/001:/dev/bus/usb/001/001"]
+      "locgps2":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -500,9 +511,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   ],
   "deployment":{
     "services":{
-      "netspeed5":{
-        "image":"openhorizon/amd64_netspeed:2.5.0",
-        "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+      "netspeed":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -568,9 +578,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   ],
   "deployment":{
     "services":{
-      "netspeed5":{
-        "image":"openhorizon/amd64_netspeed:2.5.0",
-        "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging","SKIP_NUM_REPEAT_LOC_READINGS=0"]
+      "netspeed":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -600,11 +609,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_gpstest.json
     {"url":"https://bluehorizon.network/service-gps","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
-  "deployment": {
-    "services": {
-      "gpstest": {
-        "environment":["REPORTING_INTERVAL=1", "INTERVAL_SLEEP=5", "HEARTBEAT_TO_MQTT=true"],
-        "image": "openhorizon/amd64_gps-test:latest"
+  "deployment":{
+    "services":{
+      "gpstest":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -641,11 +649,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_location.json
     {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
-  "deployment": {
+  "deployment":{
     "services":{
       "location":{
-        "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging"],
-        "image":"openhorizon/amd64_location:2.0.6"
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -679,11 +686,10 @@ cat <<EOF >$KEY_TEST_DIR/svc_location2.json
     {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
   ],
   "userInput":[],
-  "deployment": {
+  "deployment":{
     "services":{
-      "location":{
-        "environment":["USE_NEW_STAGING_URL=false","DEPL_ENV=staging"],
-        "image":"openhorizon/amd64_location:2.0.6"
+      "location2":{
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
@@ -725,14 +731,13 @@ cat <<EOF >$KEY_TEST_DIR/svc_weather.json
     {"name":"HZN_LOCATION_ACCURACY_KM","label":"","type":"float"},
     {"name":"HZN_USE_GPS","label":"","type":"bool"}
 ],
-  "deployment": {
-    "services": {
-      "eaweather": {
-        "environment":["DEPL_ENV=staging", "USE_NEW_STAGING_URL=false", "MOCK=true"],
-        "image": "openhorizon/amd64_eaweather:1.8"
-      }
+"deployment":{
+  "services":{
+    "weather":{
+      "image":"openhorizon/amd64_cpu:1.2.2"
     }
-  },
+  }
+},
   "deploymentSignature": ""
 }
 EOF
@@ -849,7 +854,9 @@ read -d '' pdef <<EOF
 }
 EOF
 echo -e "Register sns (service based netspeed) pattern $VERS:"
-RES=$(echo "$pdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
+
+  RES=$(echo "$pdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
+
 results "$RES"
 
 # sgps test pattern
@@ -888,7 +895,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register gps service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sgps" | jq -r '.')
+
 results "$RES"
 
 # shelm test pattern
@@ -927,7 +936,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register Helm service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
+
 results "$RES"
 
 # susehello test pattern
@@ -966,7 +977,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register usehello service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
+
 results "$RES"
 
 #
@@ -1079,7 +1092,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register location service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sloc" | jq -r '.')
+
 results "$RES"
 
 # weather pattern
@@ -1148,7 +1163,9 @@ read -d '' sdef <<EOF
 }
 EOF
 echo -e "Register weather service pattern $VERS:"
-RES=$(echo "$sdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/spws" | jq -r '.')
+
 results "$RES"
 
 # the sall pattern
@@ -1506,7 +1523,9 @@ if [[ $TEST_DIFF_ORG -eq 0 ]]; then
 fi
 
 echo -e "Register service based all pattern:"
-RES=$(echo "$msdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
+
+  RES=$(echo "$msdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
+
 results "$RES"
 
 
@@ -1621,7 +1640,9 @@ read -d '' bpnsdef <<EOF
 }
 EOF
 echo -e "Register business policy for netspeed:"
-RES=$(echo "$bpnsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+
+  RES=$(echo "$bpnsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+
 results "$RES"
 
 read -d '' bpgpstestdef <<EOF
@@ -1662,7 +1683,9 @@ read -d '' bpgpstestdef <<EOF
 }
 EOF
 echo -e "Register business policy for gpstest:"
-RES=$(echo "$bpgpstestdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
+
+  RES=$(echo "$bpgpstestdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_gpstest" | jq -r '.')
+
 results "$RES"
 
 read -d '' bplocdef <<EOF
@@ -1750,7 +1773,9 @@ read -d '' bplocdef <<EOF
 }
 EOF
 echo -e "Register business policy for location:"
-RES=$(echo "$bplocdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
+
+  RES=$(echo "$bplocdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_location" | jq -r '.')
+
 results "$RES"
 
 read -d '' bppwsdef <<EOF
@@ -1838,7 +1863,9 @@ read -d '' bppwsdef <<EOF
 }
 EOF
 echo -e "Register business policy for pws:"
-RES=$(echo "$bppwsdef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
+
+  RES=$(echo "$bppwsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_pws" | jq -r '.')
+
 results "$RES"
 
 read -d '' bphellodef <<EOF
@@ -1881,7 +1908,9 @@ read -d '' bphellodef <<EOF
 }
 EOF
 echo -e "Register business policy for usehelllo:"
-RES=$(echo "$bphellodef" | curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
+
+  RES=$(echo "$bphellodef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
+
 results "$RES"
 
 # ======================= Service Policies that use top level services ======================
@@ -1903,7 +1932,9 @@ read -d '' nspoldef <<EOF
 }
 EOF
 echo -e "Register service policy for netspeed:"
-RES=$(echo "$nspoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_amd64/policy" | jq -r '.')
+
+  RES=$(echo "$nspoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_amd64/policy" | jq -r '.')
+
 results "$RES"
 
 read -d '' gpstestpoldef <<EOF
@@ -1924,7 +1955,9 @@ read -d '' gpstestpoldef <<EOF
 }
 EOF
 echo -e "Register service policy for gpstest:"
-RES=$(echo "$gpstestpoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_amd64/policy" | jq -r '.')
+
+  RES=$(echo "$gpstestpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_amd64/policy" | jq -r '.')
+
 results "$RES"
 
 read -d '' locpoldef <<EOF
@@ -1945,7 +1978,9 @@ read -d '' locpoldef <<EOF
 }
 EOF
 echo -e "Register service policy for location:"
-RES=$(echo "$locpoldef" | curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_amd64/policy" | jq -r '.')
+
+  RES=$(echo "$locpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic $E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_amd64/policy" | jq -r '.')
+
 results "$RES"
 
 unset HZN_EXCHANGE_URL
