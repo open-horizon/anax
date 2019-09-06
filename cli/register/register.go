@@ -86,7 +86,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input
-	org, pattern, nodepolicyFlag = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, nodepolicyFlag)
+	org, pattern = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag)
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
@@ -118,12 +118,19 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		msgPrinter.Println()
 	}
 
+	// Get node info from anax
+	horDevice := api.HorizonDevice{}
+	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+
+	// exit if the node is already registered
+	if horDevice.Config != nil && horDevice.Config.State != nil && (*horDevice.Config.State != persistence.CONFIGSTATE_UNCONFIGURED) {
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
+	}
+
 	// Default node id and token if necessary
 	nodeId, nodeToken := cliutils.SplitIdToken(nodeIdTok)
 	if nodeId == "" {
 		// Get the id from anax
-		horDevice := api.HorizonDevice{}
-		cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 		if horDevice.Id == nil {
 			cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, msgPrinter.Sprintf("Failed to get proper response from the Horizon agent"))
 		}
@@ -287,7 +294,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	msgPrinter.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 }
 
-func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string, nodepolicyFlag string) (string, string, string) {
+func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string) (string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -300,15 +307,6 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFl
 		}
 	}
 
-	if nodepolicyFlag != "" {
-		if patternFromFlag != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--policy is mutually exclusive with -p."))
-		}
-		if pattern != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--policy is mutually exclusive with <pattern> argument."))
-		}
-	}
-
 	// get default org if needed
 	if org == "" {
 		org = os.Getenv("HZN_ORG_ID")
@@ -317,7 +315,7 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFl
 	if org == "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the node organization id."))
 	}
-	return org, pattern, nodepolicyFlag
+	return org, pattern
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges

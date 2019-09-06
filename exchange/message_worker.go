@@ -161,7 +161,7 @@ func (w *ExchangeMessageWorker) NoWorkHandler() {
 			} else if mBytes, err := json.Marshal(msg); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marshalling message %v, error: %v", msg, err)))
 			} else {
-				em := events.NewExchangeDeviceMessage(events.RECEIVED_EXCHANGE_DEV_MSG, mBytes, string(protocolMessage))
+				em := events.NewExchangeDeviceMessage(events.RECEIVED_EXCHANGE_DEV_MSG, msg.AgbotId, mBytes, string(protocolMessage))
 				w.Messages() <- em
 			}
 		}

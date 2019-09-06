@@ -642,7 +642,9 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 			exchange.GetId(w.GetExchangeId()),
 			w.devicePattern, "")
 
-		w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
+		if pDevice.Pattern == "" {
+			w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
+		}
 	} else {
 		w.hznOffline = false
 	}
