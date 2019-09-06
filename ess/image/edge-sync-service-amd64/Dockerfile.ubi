@@ -1,0 +1,7 @@
+FROM registry.access.redhat.com/ubi8/ubi:8.0
+
+RUN yum install --disableplugin=subscription-manager -y openssl ca-certificates
+
+ADD edge-sync-service /edge-sync-service/
+
+CMD ["/edge-sync-service/edge-sync-service"]

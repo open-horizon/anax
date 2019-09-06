@@ -1,0 +1,14 @@
+FROM registry.access.redhat.com/ubi8/ubi:8.0
+
+RUN yum update --disableplugin=subscription-manager -y && rm -rf /var/cache/yum
+
+RUN groupadd -g 1000 cssuser && adduser -u 1000 -g cssuser cssuser \
+       && yum install --disableplugin=subscription-manager -y openssl ca-certificates
+
+ADD cloud-sync-service /home/cssuser/cloud-sync-service
+
+RUN mkdir /var/edge-sync-service && chown -R cssuser:cssuser /var/edge-sync-service
+
+USER cssuser
+
+CMD ["/home/cssuser/cloud-sync-service"]
