@@ -761,6 +761,14 @@ hzn exchange service list -o IBM
 
 # ======================= Patterns that use top level services ======================
 # sns pattern
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=120
+  CAS=30
+else
+  MHI=600
+  CAS=600
+fi
+
 VERS="2.3.0"
 read -d '' pdef <<EOF
 {
@@ -799,8 +807,8 @@ read -d '' pdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 120,
-        "check_agreement_status": 30
+        "missing_heartbeat_interval": $MHI,
+        "check_agreement_status": $CAS
       }
     }
   ],
@@ -859,6 +867,15 @@ echo -e "Register sns (service based netspeed) pattern $VERS:"
 
 results "$RES"
 
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=90
+  CAS=60
+else
+  MHI=600
+  CAS=600
+fi
+
+
 # sgps test pattern
 VERS="1.0.0"
 read -d '' sdef <<EOF
@@ -882,8 +899,8 @@ read -d '' sdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 90,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI,
+        "check_agreement_status": $CAS
       }
     }
   ],
@@ -901,6 +918,14 @@ echo -e "Register gps service pattern $VERS:"
 results "$RES"
 
 # shelm test pattern
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=90
+  CAS=60
+else
+  MHI=600
+  CAS=600
+fi
+
 VERS="1.0.0"
 read -d '' sdef <<EOF
 {
@@ -923,8 +948,8 @@ read -d '' sdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 90,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI,
+        "check_agreement_status": $CAS
       }
     }
   ],
@@ -942,6 +967,14 @@ echo -e "Register Helm service pattern $VERS:"
 results "$RES"
 
 # susehello test pattern
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=90
+  CAS=60
+else
+  MHI=600
+  CAS=600
+fi
+
 VERS="1.0.0"
 read -d '' sdef <<EOF
 {
@@ -964,8 +997,8 @@ read -d '' sdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 90,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI,
+        "check_agreement_status": $CAS
       }
     }
   ],
@@ -991,7 +1024,13 @@ results "$RES"
 #
 # The verify_sloc.sh script verifies that this service is running correctly.
 #
-
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=240
+  CAS=60
+else
+  MHI=600
+  CAS=600
+fi
 LOCVERS1="2.0.6"
 LOCVERS2="2.0.7"
 read -d '' sdef <<EOF
@@ -1032,8 +1071,8 @@ read -d '' sdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 240,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI,
+        "check_agreement_status": $CAS
       }
     },
     {
@@ -1098,6 +1137,13 @@ echo -e "Register location service pattern $VERS:"
 results "$RES"
 
 # weather pattern
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=90
+  CAS=60
+else
+  MHI=600
+  CAS=600
+fi
 VERS="1.5.0"
 read -d '' sdef <<EOF
 {
@@ -1120,8 +1166,8 @@ read -d '' sdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 90,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI,
+        "check_agreement_status": $CAS
       }
     }
   ],
@@ -1175,6 +1221,23 @@ LOCVERS1="2.0.6"
 LOCVERS2="2.0.7"
 GPSVERS="1.0.0"
 UHSVERS="1.0.0"
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI_240=240
+  MHI_180=180
+  MHI_120=120
+  MHI_90=90
+  CAS_60=60
+  CAS_45=45
+  CAS_30=30
+else
+  MHI_240=600
+  MHI_180=600
+  MHI_120=600
+  MHI_90=600
+  CAS_60=600
+  CAS_45=600
+  CAS_30=600
+fi
 read -d '' msdef <<EOF
 {
   "label": "All",
@@ -1213,8 +1276,8 @@ read -d '' msdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 180,
-        "check_agreement_status": 45
+        "missing_heartbeat_interval": $MHI_180,
+        "check_agreement_status": $CAS_45
       }
     },
     {
@@ -1248,8 +1311,8 @@ read -d '' msdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 120,
-        "check_agreement_status": 30
+        "missing_heartbeat_interval": $MHI_120,
+        "check_agreement_status": $CAS_30
       }
     },
     {
@@ -1283,8 +1346,8 @@ read -d '' msdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 120,
-        "check_agreement_status": 30
+        "missing_heartbeat_interval": $MHI_120,
+        "check_agreement_status": $CAS_30
       }
     },
     {
@@ -1319,8 +1382,8 @@ read -d '' msdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 240,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI_240,
+        "check_agreement_status": $CAS_60
       }
     },
     {
@@ -1371,8 +1434,8 @@ read -d '' msdef <<EOF
       ],
       "dataVerification": {},
       "nodeHealth": {
-        "missing_heartbeat_interval": 90,
-        "check_agreement_status": 60
+        "missing_heartbeat_interval": $MHI_90,
+        "check_agreement_status": $CAS_60
       }
     }
   ],
