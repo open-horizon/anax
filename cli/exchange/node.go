@@ -23,14 +23,15 @@ type ExchangeNodes struct {
 
 func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 	if node == "*" {
 		node = ""
 	}
 	if namesOnly && node == "" {
 		// Only display the names
 		var resp ExchangeNodes
-		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
 		nodes := []string{}
 		for n := range resp.Nodes {
 			nodes = append(nodes, n)
@@ -43,9 +44,9 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	} else {
 		// Display the full resources
 		var nodes ExchangeNodes
-		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 		if httpCode == 404 && node != "" {
-			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", node, org))
+			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", node, nodeOrg))
 		}
 		output := cliutils.MarshalIndent(nodes.Nodes, "exchange node list")
 		fmt.Println(output)
@@ -119,18 +120,19 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 
 	//check that the node exists
 	var nodeReq ExchangeNodes
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodeReq)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodeReq)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s/%s not found in the Horizon Exchange.", org, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s/%s not found in the Horizon Exchange.", nodeOrg, node))
 	}
 
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, attribute)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, attribute)
 	msgPrinter.Printf("Node %s updated in the Horizon Exchange.", node)
 	msgPrinter.Println()
 }
@@ -141,8 +143,10 @@ type NodeExchangePatchToken struct {
 
 func NodeSetToken(org, credToUse, node, token string) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 	patchNodeReq := NodeExchangePatchToken{Token: token}
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
 }
 
 func NodeConfirm(org, node, token string, nodeIdTok string) {
@@ -186,14 +190,16 @@ func NodeRemove(org, credToUse, node string, force bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
+
 	if !force {
-		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove node %v/%v from the Horizon Exchange (should not be done while an edge node is registered with this node id)?", org, node))
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove node %v/%v from the Horizon Exchange (should not be done while an edge node is registered with this node id)?", nodeOrg, node))
 	}
 
-	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%s' not found in org %s", node, org))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%s' not found in org %s", node, nodeOrg))
 	}
 }
 
@@ -202,18 +208,19 @@ func NodeListPolicy(org string, credToUse string, node string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 
 	// check node exists first
 	var nodes ExchangeNodes
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", org, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, node))
 	}
 
 	// list policy
 	var policy exchange.ExchangePolicy
-	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
 	output := cliutils.MarshalIndent(policy.GetExternalPolicy(), "exchange node listpolicy")
 	fmt.Println(output)
 }
@@ -223,7 +230,8 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 
 	// Read in the policy metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
@@ -241,15 +249,15 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 
 	// check node exists first
 	var nodes ExchangeNodes
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", org, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, node))
 	}
 
 	// add/replce node policy
 	msgPrinter.Println("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	msgPrinter.Println("Node policy updated.")
 }
@@ -259,15 +267,16 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(jsonfile)
 
 	//Check if the node policy exists in the exchange
 	var newPolicy externalpolicy.ExternalPolicy
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &newPolicy)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &newPolicy)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node policy not found for node %s/%s", node, org))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node policy not found for node %s/%s", node, nodeOrg))
 	}
 
 	findAttrType := make(map[string]interface{})
@@ -290,7 +299,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		newPolicy.Properties = newProp
 		msgPrinter.Printf("Updating Node %s policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
 		msgPrinter.Printf("Node %s policy properties updated in the horizon exchange.", node)
 		msgPrinter.Println()
 	} else if _, ok = findAttrType["constraints"]; ok {
@@ -307,7 +316,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		newPolicy.Constraints = newConstr
 		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
 		msgPrinter.Printf("Node %s policy constraints updated in the horizon exchange.", node)
 		msgPrinter.Println()
 	} else {
@@ -320,22 +329,23 @@ func NodeRemovePolicy(org, credToUse, node string, force bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 	if !force {
-		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove node policy for %v/%v from the Horizon Exchange?", org, node))
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove node policy for %v/%v from the Horizon Exchange?", nodeOrg, node))
 	}
 
 	// check node exists first
 	var nodes ExchangeNodes
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", org, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, node))
 	}
 
 	// remove policy
 	msgPrinter.Printf("Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Println("Node policy removed.")
 
 }
@@ -356,10 +366,11 @@ func NodeListErrors(org string, credToUse string, node string, long bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, node = cliutils.TrimOrg(org, node)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
 
 	var resp exchange.ExchangeSurfaceError
-	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/errors", cliutils.OrgAndCreds(org, credToUse), []int{200}, &resp)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/errors", cliutils.OrgAndCreds(org, credToUse), []int{200}, &resp)
 	errorList := resp.ErrorList
 
 	if !long {

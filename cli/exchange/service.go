@@ -374,18 +374,19 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 	// Get service resource from exchange
 	var output GetServicesResponse
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, org))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, svcorg))
 	}
 
 	// Loop thru services array, checking the deployment string signature
-	svc, ok := output.Services[org+"/"+service]
+	svc, ok := output.Services[svcorg+"/"+service]
 	if !ok {
-		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in resources returned from exchange", org+"/"+service))
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in resources returned from exchange", svcorg+"/"+service))
 	}
 	someInvalid := false
 
@@ -414,14 +415,15 @@ func ServiceRemove(org, userPw, service string, force bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 	if !force {
-		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove service %v/%v from the Horizon Exchange?", org, service))
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove service %v/%v from the Horizon Exchange?", svcorg, service))
 	}
 
-	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, org))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, svcorg))
 	}
 }
 
@@ -432,11 +434,12 @@ func ServiceListKey(org, userPw, service, keyName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 	if keyName == "" {
 		// Only display the names
 		var output string
-		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/keys", cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("keys not found"))
 		}
@@ -444,7 +447,7 @@ func ServiceListKey(org, userPw, service, keyName string) {
 	} else {
 		// Display the content of the key
 		var output []byte
-		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("key '%s' not found", keyName))
 		}
@@ -457,8 +460,9 @@ func ServiceRemoveKey(org, userPw, service, keyName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
-	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("key '%s' not found", keyName))
 	}
@@ -471,13 +475,14 @@ func ServiceListAuth(org, userPw, service string, authId uint) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 	var authIdStr string
 	if authId != 0 {
 		authIdStr = "/" + strconv.Itoa(int(authId))
 	}
 	var output string
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/dockauths"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/dockauths"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		if authId != 0 {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("docker auth %d not found", authId))
@@ -493,9 +498,10 @@ func ServiceRemoveAuth(org, userPw, service string, authId uint) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(userPw)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 	authIdStr := strconv.Itoa(int(authId))
-	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/dockauths/"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
+	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/dockauths/"+authIdStr, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("docker auth %d not found", authId))
 	}
@@ -507,16 +513,17 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 
 	// Check that the service exists
 	var services ServiceExch
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", org, service))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
 	}
 	var policy exchange.ExchangePolicy
-	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
 
 	buf := new(bytes.Buffer)
 	enc := json.NewEncoder(buf)
@@ -535,8 +542,9 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, service = cliutils.TrimOrg(org, service)
-	fullServiceName := fmt.Sprintf(org + "/" + service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
+	fullServiceName := fmt.Sprintf(svcorg + "/" + service)
 
 	// Read in the policy metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
@@ -554,9 +562,9 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 
 	// Check that the service exists
 	var services GetServicesResponse
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", org, service))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
 	}
 	serviceFromExchange := services.Services[fullServiceName]
 
@@ -571,7 +579,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	properties := policyFile.Properties
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), true)
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_NAME, serviceName), true)
-	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, org), true)
+	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ORG, svcorg), true)
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_VERSION, serviceVersion), true)
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_ARCH, serviceArch), true)
 
@@ -586,7 +594,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	// add/replace service policy
 	msgPrinter.Printf("Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	msgPrinter.Println("Service policy updated.")
 }
@@ -597,24 +605,25 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 	msgPrinter := i18n.GetMessagePrinter()
 
 	cliutils.SetWhetherUsingApiKey(credToUse)
-	org, service = cliutils.TrimOrg(org, service)
+	var svcorg string
+	svcorg, service = cliutils.TrimOrg(org, service)
 
 	//confirm removal with user
 	if !force {
-		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove service policy for %v/%v from the Horizon Exchange?", org, service))
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove service policy for %v/%v from the Horizon Exchange?", svcorg, service))
 	}
 
 	// Check that the service exists
 	var services ServiceExch
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", org, service))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
 	}
 
 	//remove service policy
 	msgPrinter.Printf("Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
+	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Println("Service policy removed.")
 }
 
