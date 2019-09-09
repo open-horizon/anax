@@ -124,12 +124,12 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 
 		// Reply to the sender with our decision on the agreement.
 		if sendReply {
-			if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(agreements[0].ConsumerId); err != nil {
+			if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(msg.AgbotId()); err != nil {
 				glog.Errorf(BPHlogString(fmt.Sprintf("error getting agbot message target: %v", err)))
-			} else if mt, err := exchange.CreateMessageTarget(agreements[0].ConsumerId, nil, pubkey, ""); err != nil {
+			} else if mt, err := exchange.CreateMessageTarget(msg.AgbotId(), nil, pubkey, ""); err != nil {
 				glog.Errorf(BPHlogString(fmt.Sprintf("error creating message target: %v", err)))
-			} else if err := c.agreementPH.SendAgreementVerificationReply(agreements[0].CurrentAgreementId, exists, mt, c.GetSendMessage()); err != nil {
-				glog.Errorf(BPHlogString(fmt.Sprintf("error sending verify response for agreement %v, error %v", agreements[0].CurrentAgreementId, err)))
+			} else if err := c.agreementPH.SendAgreementVerificationReply(verify.AgreementId(), exists, mt, c.GetSendMessage()); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error sending verify response for agreement %v, error %v", verify.AgreementId(), err)))
 			}
 		}
 

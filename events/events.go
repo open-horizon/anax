@@ -1312,10 +1312,15 @@ type ExchangeDeviceMessage struct {
 	exchangeMessage []byte
 	protocolMessage string
 	Time            uint64
+	agbotId         string
 }
 
 func (m *ExchangeDeviceMessage) Event() Event {
 	return m.event
+}
+
+func (m *ExchangeDeviceMessage) AgbotId() string {
+	return m.agbotId
 }
 
 func (m *ExchangeDeviceMessage) ExchangeMessage() []byte {
@@ -1335,14 +1340,14 @@ func (m *ExchangeDeviceMessage) ShortProtocolMessage() string {
 }
 
 func (m ExchangeDeviceMessage) String() string {
-	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.protocolMessage, m.Time, m.exchangeMessage)
+	return fmt.Sprintf("Event: %v, AgbotId: %v, ProtocolMessage: %v, Time: %v, ExchangeMessage: %s", m.event, m.agbotId, m.protocolMessage, m.Time, m.exchangeMessage)
 }
 
 func (m ExchangeDeviceMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v, ProtocolMessage: %v, Time: %v", m.event, m.ShortProtocolMessage(), m.Time)
+	return fmt.Sprintf("Event: %v, AgbotId: %v, ProtocolMessage: %v, Time: %v", m.event, m.agbotId, m.ShortProtocolMessage(), m.Time)
 }
 
-func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDeviceMessage {
+func NewExchangeDeviceMessage(id EventId, agbotId string, exMsg []byte, pMsg string) *ExchangeDeviceMessage {
 	return &ExchangeDeviceMessage{
 		event: Event{
 			Id: id,
@@ -1350,6 +1355,7 @@ func NewExchangeDeviceMessage(id EventId, exMsg []byte, pMsg string) *ExchangeDe
 		exchangeMessage: exMsg,
 		protocolMessage: pMsg,
 		Time:            uint64(time.Now().Unix()),
+		agbotId:         agbotId,
 	}
 }
 

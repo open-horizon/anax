@@ -47,8 +47,13 @@ func UpdateNodePolicy(nodePolicy *externalpolicy.ExternalPolicy,
 	} else {
 		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NEW_NODE_POL, *nodePolicy), persistence.EC_NODE_POLICY_UPDATED, pDevice)
 
-		nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
-		return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
+		if pDevice.Pattern == "" {
+			// create node-policy-changed event only for the policy mode.
+			nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
+			return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
+		} else {
+			return false, nodePolicy, []*events.NodePolicyMessage{}
+		}
 	}
 }
 
@@ -71,8 +76,13 @@ func PatchNodePolicy(patchObject interface{},
 	} else {
 		LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NEW_NODE_POL, patchObject), persistence.EC_NODE_POLICY_UPDATED, pDevice)
 
-		nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
-		return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
+		if pDevice.Pattern == "" {
+			// create node-policy-changed event only for the policy mode.
+			nodePolicyUpdated := events.NewNodePolicyMessage(events.UPDATE_POLICY)
+			return false, nodePolicy, []*events.NodePolicyMessage{nodePolicyUpdated}
+		} else {
+			return false, nodePolicy, []*events.NodePolicyMessage{}
+		}
 	}
 }
 
@@ -97,6 +107,11 @@ func DeleteNodePolicy(errorhandler DeviceErrorHandler, db *bolt.DB,
 
 	LogDeviceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_NODE_POL_DELETED), persistence.EC_NODE_POLICY_DELETED, pDevice)
 
-	nodePolicyDeleted := events.NewNodePolicyMessage(events.DELETED_POLICY)
-	return false, []*events.NodePolicyMessage{nodePolicyDeleted}
+	if pDevice.Pattern == "" {
+		// create node-policy-deleted event only for the policy mode.
+		nodePolicyDeleted := events.NewNodePolicyMessage(events.DELETED_POLICY)
+		return false, []*events.NodePolicyMessage{nodePolicyDeleted}
+	} else {
+		return false, []*events.NodePolicyMessage{}
+	}
 }
