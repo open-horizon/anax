@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"golang.org/x/text/message"
 	"time"
 )
@@ -13,7 +14,7 @@ import (
 // UpdateSurfaceErrors is called periodically by a subwoker under the agreement worker.
 // This will close any surfaced errors that have persistent related agreements and update the local and exchange copies.
 // The node copy is the master EXCEPT for the hidden field of each error.
-func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErrors exchange.SurfaceErrorsHandler, putErrors exchange.PutSurfaceErrorsHandler, errorTimeout int, agreementPersistentTime int) int {
+func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErrors exchange.SurfaceErrorsHandler, putErrors exchange.PutSurfaceErrorsHandler, serviceResolverHandler exchange.ServiceResolverHandler, errorTimeout int, agreementPersistentTime int) int {
 	var updatedExchLogs []persistence.SurfaceError
 
 	dbErrors, err := persistence.FindSurfaceErrors(db)
@@ -26,7 +27,7 @@ func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErr
 	if err != nil {
 		for _, dbError := range dbErrors {
 			if errorTimeout == 0 || time.Since(time.Unix(int64(persistence.GetEventLogObject(db, nil, dbError.Record_id).Timestamp), 0)).Seconds() < float64(errorTimeout) {
-				if !HasPersistentAgreement(db, pDevice, nil, dbError.Record_id, agreementPersistentTime) {
+				if !HasPersistentAgreement(db, serviceResolverHandler, pDevice, nil, dbError, agreementPersistentTime) {
 					updatedExchLogs = append(updatedExchLogs, dbError)
 
 				}
@@ -40,7 +41,7 @@ func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErr
 	for _, dbError := range dbErrors {
 		fullDbError := persistence.GetEventLogObject(db, nil, dbError.Record_id)
 		if errorTimeout == 0 || time.Since(time.Unix(int64(persistence.GetEventLogObject(db, nil, dbError.Record_id).Timestamp), 0)).Seconds() < float64(errorTimeout) {
-			if !HasPersistentAgreement(db, pDevice, nil, dbError.Record_id, agreementPersistentTime) {
+			if !HasPersistentAgreement(db, serviceResolverHandler, pDevice, nil, dbError, agreementPersistentTime) {
 				for _, exchError := range exchErrors {
 					if persistence.MatchWorkload(fullDbError, persistence.GetEventLogObject(db, nil, exchError.Record_id)) && dbError.Event_code == dbError.Event_code {
 						dbError.Hidden = exchError.Hidden
@@ -68,28 +69,59 @@ func PersistingEAFilter(agreementPersistentTime int) persistence.EAFilter {
 }
 
 // HasPersistentAgreement takes a recordID and returns true if there is a persistent agreement with the same workload on the node.
-func HasPersistentAgreement(db *bolt.DB, pDevice persistence.ExchangeDevice, msgPrinter *message.Printer, recordID string, agreementPersistentTime int) bool {
-	eventLog := persistence.GetEventLogObject(db, msgPrinter, recordID)
+func HasPersistentAgreement(db *bolt.DB, serviceResolverHandler exchange.ServiceResolverHandler, pDevice persistence.ExchangeDevice, msgPrinter *message.Printer, errorLog persistence.SurfaceError, agreementPersistentTime int) bool {
+	eventLog := persistence.GetEventLogObject(db, msgPrinter, errorLog.Record_id)
+	workload := persistence.GetWorkloadInfo(eventLog)
 
-	acitvePersistAgreements, err := persistence.FindEstablishedAgreements(db, "Basic", []persistence.EAFilter{persistence.UnarchivedEAFilter(), PersistingEAFilter(agreementPersistentTime)})
+	allServices, err := getAllServicesFromAgreements(db, serviceResolverHandler, agreementPersistentTime)
 	if err != nil {
+		glog.V(3).Infof("Error getting the services for active agreements.")
 		return false
 	}
 
-	for _, agreement := range acitvePersistAgreements {
-		urlSelector := make(map[string][]persistence.Selector)
-		orgSelector := make(map[string][]persistence.Selector)
-		versSelector := make(map[string][]persistence.Selector)
-		archSelector := make(map[string][]persistence.Selector)
-		urlSelector["workload_to_run.url"] = []persistence.Selector{persistence.Selector{Op: "=", MatchValue: agreement.RunningWorkload.URL}}
-		orgSelector["workload_to_run.org"] = []persistence.Selector{persistence.Selector{Op: "=", MatchValue: agreement.RunningWorkload.Org}}
-		versSelector["workload_to_run.version"] = []persistence.Selector{persistence.Selector{Op: "=", MatchValue: agreement.RunningWorkload.Version}}
-		archSelector["workload_to_run.arch"] = []persistence.Selector{persistence.Selector{Op: "=", MatchValue: agreement.RunningWorkload.Arch}}
-		if eventLog.Matches(urlSelector) && eventLog.Matches(orgSelector) && eventLog.Matches(versSelector) && eventLog.Matches(archSelector) {
+	for _, service := range *allServices {
+		if (service.SpecRef == workload.URL || workload.URL == "") && (service.Org == workload.Org || workload.Org == "") {
 			return true
 		}
 	}
+
 	return false
+}
+
+// get the all the top level and dependent services the given agreements are using
+func getAllServicesFromAgreements(db *bolt.DB, serviceResolverHandler exchange.ServiceResolverHandler, agreementPersistentTime int) (*policy.APISpecList, error) {
+
+	ags, err := persistence.FindEstablishedAgreementsAllProtocols(db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), PersistingEAFilter(agreementPersistentTime)})
+
+	if err != nil {
+		return nil, fmt.Errorf("Unable to retrieve unarchived agreements from database. %v", err)
+	}
+
+	apiSpecs := new(policy.APISpecList)
+
+	if ags != nil {
+		for _, ag := range ags {
+			workload := ag.RunningWorkload
+			if workload.URL == "" || workload.Org == "" {
+				continue
+			}
+
+			apiSpecs.Add_API_Spec(policy.APISpecification_Factory(workload.URL, workload.Org, "", workload.Arch))
+
+			asl, _, _, err := serviceResolverHandler(workload.URL, workload.Org, workload.Version, workload.Arch)
+			if err != nil {
+				return nil, fmt.Errorf((fmt.Sprintf("error searching for service details %v, error: %v", workload, err)))
+			}
+
+			if asl != nil {
+				for _, s := range *asl {
+					apiSpecs.Add_API_Spec(policy.APISpecification_Factory(s.SpecRef, s.Org, "", s.Arch))
+				}
+			}
+		}
+	}
+
+	return apiSpecs, nil
 }
 
 // This function returns the node errors currently surfaced to the exchange

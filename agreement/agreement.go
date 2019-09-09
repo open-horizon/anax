@@ -517,7 +517,8 @@ func (w *AgreementWorker) surfaceErrors() int {
 	}
 	errorsHandler := exchange.GetHTTPSurfaceErrorsHandler(w)
 	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w)
-	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, errorsHandler, putErrorsHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
+	serviceResolverHandler := exchange.GetHTTPServiceResolverHandler(w)
+	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, errorsHandler, putErrorsHandler, serviceResolverHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
 }
 
 // handles the node policy UPDATE_POLICY event

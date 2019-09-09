@@ -573,6 +573,8 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
+./verify_surfaced_error.sh
+if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
 
 # Start the node unconfigure tests if they have been enabled.
 echo -e "Node unconfig setting is $UNCONFIG"

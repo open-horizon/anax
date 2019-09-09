@@ -369,19 +369,25 @@ func NodeListErrors(org string, credToUse string, node string, long bool) {
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
-		output := make([]EventLog, len(errorList))
-		for i, surfError := range errorList {
-			var fullEventLogSlice []persistence.EventLogRaw
-			cliutils.HorizonGet(fmt.Sprintf("eventlog/all?record_id=%s", surfError.Record_id), []int{200, 404}, fullEventLogSlice, false)
-			if len(fullEventLogSlice) > 0 {
-				var fullEventLog persistence.EventLogRaw
-				fullEventLog = fullEventLogSlice[0]
-				output[i] = EventLog{Id: fullEventLog.Id, Timestamp: cliutils.ConvertTime(fullEventLog.Timestamp), Severity: fullEventLog.Severity, Message: fullEventLog.Message, EventCode: fullEventLog.EventCode, SourceType: fullEventLog.SourceType, Source: fullEventLog.Source}
+		long_output := make([]EventLog, len(errorList))
+		for i, v := range errorList {
+			var fullVSlice []persistence.EventLogRaw
+			cliutils.HorizonGet(fmt.Sprintf("eventlog/all?record_id=%s", v.Record_id), []int{200}, &fullVSlice, false)
+			if len(fullVSlice) == 0 {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("Error: event record could not be found"))
 			}
+			fullV := fullVSlice[0]
+			long_output[i].Id = fullV.Id
+			long_output[i].Timestamp = cliutils.ConvertTime(fullV.Timestamp)
+			long_output[i].Severity = fullV.Severity
+			long_output[i].Message = fullV.Message
+			long_output[i].EventCode = fullV.EventCode
+			long_output[i].SourceType = fullV.SourceType
+			long_output[i].Source = fullV.Source
 		}
-		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange node listerrors' output: %v", err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn exchange node listerrors' output: %v", err))
 		}
 		fmt.Printf("%s\n", jsonBytes)
 	}

@@ -32,23 +32,16 @@ func FindEventLogsForOutput(db *bolt.DB, all_logs bool, selections map[string][]
 	}
 }
 
-func FindSurfaceLogsForOutput(db *bolt.DB, msgPrinter *message.Printer) ([]persistence.EventLog, error) {
-	eventLogs := make([]persistence.EventLog, 0)
-
-	if surfaceLogs, err := persistence.FindSurfaceErrors(db); err != nil {
+func FindSurfaceLogsForOutput(db *bolt.DB, msgPrinter *message.Printer) ([]persistence.SurfaceError, error) {
+	outputLogs := make([]persistence.SurfaceError, 0)
+	surfaceLogs, err := persistence.FindSurfaceErrors(db)
+	if err != nil {
 		return nil, err
-	} else {
-		for _, log := range surfaceLogs {
-			if !log.Hidden {
-				recordSelector := []persistence.Selector{persistence.Selector{Op: "=", MatchValue: log.Record_id}}
-				recordSelectorMap := make(map[string][]persistence.Selector)
-				recordSelectorMap["record_id"] = recordSelector
-				fullEventlog, err := eventlog.GetEventLogs(db, true, recordSelectorMap, msgPrinter)
-				if err == nil && len(fullEventlog) > 0 {
-					eventLogs = append(eventLogs, fullEventlog[0])
-				}
-			}
+	}
+	for _, log := range surfaceLogs {
+		if !log.Hidden {
+			outputLogs = append(outputLogs, log)
 		}
 	}
-	return eventLogs, nil
+	return outputLogs, nil
 }
