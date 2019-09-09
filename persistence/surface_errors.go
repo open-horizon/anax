@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/i18n"
 	"time"
 )
 
@@ -134,7 +135,11 @@ func MatchWorkload(error1 EventLog, error2 EventLog) bool {
 // NewSurfaceError returns a surface error from the eventlog parameter
 func NewSurfaceError(eventLog EventLog) SurfaceError {
 	timestamp := time.Unix((int64)(eventLog.Timestamp), 0).String()
-	return SurfaceError{Record_id: eventLog.Id, Message: fmt.Sprintf("%s: %v", eventLog.MessageMeta.MessageKey, eventLog.MessageMeta.MessageArgs), Event_code: eventLog.EventCode, Hidden: false, Workload: GetWorkloadInfo(eventLog), Timestamp: timestamp}
+	newErr := SurfaceError{Record_id: eventLog.Id, Message: fmt.Sprintf("%s: %v", eventLog.MessageMeta.MessageKey, eventLog.MessageMeta.MessageArgs), Event_code: eventLog.EventCode, Hidden: false, Workload: GetWorkloadInfo(eventLog), Timestamp: timestamp}
+	if eventLog.MessageMeta != nil && eventLog.MessageMeta.MessageKey != "" {
+		newErr.Message = i18n.GetMessagePrinter().Sprintf(eventLog.MessageMeta.MessageKey, eventLog.MessageMeta.MessageArgs...)
+	}
+	return newErr
 }
 
 func GetWorkloadInfo(eventLog EventLog) WorkloadInfo {
