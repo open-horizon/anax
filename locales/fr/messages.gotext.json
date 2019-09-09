@@ -1153,7 +1153,7 @@
     {
       "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
       "message": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-      "translation": "L'expression {Expression} doit contenir un opérateur de comparaison valide. L'opérateur {Pieces1} n'est pas correct. Les opérateurs autorisés sont les suivants : {lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+      "translation": "L'expression {Expression} doit contenir un opérateur de comparaison valide. L'opérateur {Pieces1} n'est pas correct. Les opérateurs autorisés sont les suivants : {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
       "placeholders": [
         {
           "id": "Expression",
