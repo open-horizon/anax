@@ -1,0 +1,6048 @@
+// NLS_CHARSET=UTF-8
+{
+  "language": "zh-tw",
+  "messages": [
+    {
+
+      "id": "failed to unmarshal json input file {FilePath}: {Err}",
+
+      "translation": "無法解除配置 JSON 輸入檔 {FilePath}：{Err}"
+    },
+    {
+
+      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
+
+      "translation": "檔案 {JsonFilePath} 中的節點原則格式不正確：{Err}"
+    },
+    {
+
+      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
+
+      "translation": "未指定型樣或節點原則。將繼續使用現有的節點原則。"
+    },
+    {
+
+      "id": "Reading input file {InputFile}...",
+
+      "translation": "正在讀取輸入檔 {InputFile}..."
+    },
+    {
+
+      "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
+
+      "translation": "hzn cli 配置了來自 {ExchangeUrlLocation} 的 Exchange URL {ExchUrlBase}，而 Horizon 代理程式配置了來自 {ExchangeUrlLocationFromAnax} 的 Exchange URL {AnaxExchUrlBase}。hzn 登錄將不適合不相符的交換 URL。"
+    },
+    {
+
+      "id": "Horizon Exchange base URL: {ExchUrlBase}",
+
+      "translation": "Horizon Exchange 基本 URL：{ExchUrlBase}"
+    },
+    {
+
+      "id": "Failed to get proper response from the Horizon agent",
+
+      "translation": "無法從 Horizon 代理程式中取得適當的回應"
+    },
+    {
+
+      "id": "Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable.",
+
+      "translation": "請使用 -n 旗標或 HZN_EXCHANGE_NODE_AUTH 環境變數指定節點 ID 和記號。"
+    },
+    {
+
+      "id": "Using node ID '{NodeId}' from the Horizon agent",
+
+      "translation": "使用 Horizon 代理程式中的節點 ID '{NodeId}'"
+    },
+    {
+
+      "id": "could not create a random token",
+
+      "translation": "無法建立隨機記號"
+    },
+    {
+
+      "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
+
+      "translation": "在具有指定記號的 Exchange 中不存在節點 '{Org}/{NodeId}'，並且未指定 -u 旗標以提供 Exchange 使用者認證來建立/更新該節點。"
+    },
+    {
+
+      "id": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it...",
+
+      "translation": "在具有指定記號的 Exchange 中不存在節點 {Org}/{NodeId}，正在建立/更新該節點..."
+    },
+    {
+
+      "id": "Node {Org}/{NodeId} exists in the exchange",
+
+      "translation": "在 Exchange 中存在節點 {Org}/{NodeId}"
+    },
+    {
+
+      "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
+
+      "translation": "此 Horizon 節點已登錄或正在登錄。如果您想要以其他方式登錄它，請先執行 'hzn unregister'。"
+    },
+    {
+
+      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+
+      "translation": "由於 {Matches0}，登錄失敗，請在輸入檔 {InputFile} 中更新服務區段。執行 'hzn unregister'，然後再次執行 'hzn register...'"
+    },
+    {
+
+      "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+
+      "translation": "{Errstring}。請在輸入檔 {InputFile} 中為服務 {Matches2} 定義變數。執行 'hzn unregister'，然後再次執行 'hzn register...'"
+    },
+    {
+
+      "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
+
+      "translation": "{Errstring}。請建立輸入檔，為服務 {Matches2} 定義變數。執行 'hzn unregister'，然後使用 -f 旗標再次執行 'hzn register...' 以指定輸入檔。"
+    },
+    {
+
+      "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
+
+      "translation": "-o 和 -p 與 <nodeorg> 和 <pattern> 引數互斥。"
+    },
+    {
+
+      "id": "--policy is mutually exclusive with -p.",
+
+      "translation": "--policy 與 -p 互斥。"
+    },
+    {
+
+      "id": "--policy is mutually exclusive with <pattern> argument.",
+
+      "translation": "--policy 與 <pattern> 引數互斥。"
+    },
+    {
+
+      "id": "Please specify the node organization id.",
+
+      "translation": "請指定節點組織 ID。"
+    },
+    {
+
+      "id": "invalid version range '{Vr}': {Err}",
+
+      "translation": "版本範圍 '{Vr}' 無效：{Err}"
+    },
+    {
+
+      "id": "unable to verify that {Version} is within {VRange}, error {Err}",
+
+      "translation": "無法驗證 {Version} 是否位於 {VRange} 範圍之內，錯誤為：{Err}"
+    },
+    {
+
+      "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",
+
+      "translation": "在 Exchange 相符項中找不到服務：組織={Org}，URL={Url}，架構={Arch}"
+    },
+    {
+
+      "id": "error comparing version {ServiceshighestKey} with version {Version}. {Err}",
+
+      "translation": "將版本 {ServiceshighestKey} 與版本 {Version} 比較時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}",
+
+      "translation": "在相符的 Exchange 中找不到服務：組織={Org}，specRef={Url}，版本範圍={VersionRanges}，架構={Arch}"
+    },
+    {
+
+      "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
+
+      "translation": "找到：{Org}、{Url}、{Arch}、{VersionRange}"
+    },
+    {
+
+      "id": "did not find pattern '{PatKey}' as expected",
+
+      "translation": "找不到預期的型樣 '{PatKey}'"
+    },
+    {
+
+      "id": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}",
+
+      "translation": "忽略作為其他架構的服務：{ServiceOrg}、{ServiceURL}、{ServiceArch}"
+    },
+    {
+
+      "id": "failed to marshal the user input template file: {Err}",
+
+      "translation": "無法配置使用者輸入範本檔案：{Err}"
+    },
+    {
+
+      "id": "problem writing the user input template file: {Err}",
+
+      "translation": "寫入使用者輸入範本檔案時發生問題：{Err}"
+    },
+    {
+
+      "id": "Wrote {InputFile}",
+
+      "translation": "已寫入 {InputFile}"
+    },
+    {
+
+      "id": "Reading configuration file: {ConfigFile}",
+
+      "translation": "正在讀取配置檔：{ConfigFile}"
+    },
+    {
+
+      "id": "Unable to read config file: {ConfigFile}. {Err}",
+
+      "translation": "無法讀取配置檔：{ConfigFile}。{Err}"
+    },
+    {
+
+      "id": "Unable to decode content of config file {ConfigFile}. {Err}",
+
+      "translation": "無法對配置檔 {ConfigFile} 的內容進行解碼。{Err}"
+    },
+    {
+
+      "id": "Config file does not exist: {ConfigFile}.",
+
+      "translation": "配置檔不存在：{ConfigFile}。"
+    },
+    {
+
+      "id": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
+
+      "translation": "無法設定在檔案 {ConfigFile} 的 MetadataVars 屬性中定義的環境變數。{Err}"
+    },
+    {
+
+      "id": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
+
+      "translation": "無法在檔案 {ConfigFile} 的最上層設定環境變數。{Err}"
+    },
+    {
+
+      "id": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
+
+      "translation": "無法設定在檔案 {ConfigFile} 中定義的環境變數。{Err}"
+    },
+    {
+
+      "id": "Local configuration {LocalConfigFile} has been setup at the beginning of this command. Will not setup twice.",
+
+      "translation": "已在此指令的開頭設定本端配置 {LocalConfigFile}。將不會設定兩次。"
+    },
+    {
+
+      "id": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
+
+      "translation": "無法設定檔案 {FilePath} 的本端配置檔 {LocalConfigFile} 中的環境變數。錯誤為：{Err}"
+    },
+    {
+
+      "id": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
+
+      "translation": "無法在使用本端配置檔 {UseLocalConfig} 之後還原環境變數。{Err}"
+    },
+    {
+
+      "id": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
+
+      "translation": "無法取得檔案 {ConfigFilepkg} 的絕對路徑。{Err}"
+    },
+    {
+
+      "id": "Error reading environment variables from file {ConfigFilepkg}. {Err}",
+
+      "translation": "讀取檔案 {ConfigFilepkg} 中的環境變數時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Error reading environment variables from file /etc/default/horizon. {Err}",
+
+      "translation": "讀取檔案 /etc/default/horizon 中的環境變數時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
+
+      "translation": "無法取得檔案 ~/.hzn/hzn.json 的絕對路徑。{Err}"
+    },
+    {
+
+      "id": "Error getting project level configuration file name. {Err}",
+
+      "translation": "取得專案層次配置檔名稱時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "No project level configuration file found.",
+
+      "translation": "找不到專案層次配置檔。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn status -l' output: {Err}",
+
+      "translation": "無法配置 'hzn status -l' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn status' output: {Err}",
+
+      "translation": "無法配置 'hzn status' 輸出：{Err}"
+    },
+    {
+
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+
+      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+
+      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
+    },
+    {
+
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+
+      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
+    },
+    {
+
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+
+      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
+    },
+    {
+
+      "id": "The selection string {V} is not valid.",
+
+      "translation": "selection 字串 {V} 無效。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
+
+      "translation": "無法配置 'hzn eventlog list' 輸出：{Err}"
+    },
+    {
+
+      "id": "Are you sure you want to unregister this Horizon node?",
+
+      "translation": "確定要取消登錄這個 Horizon 節點嗎？"
+    },
+    {
+
+      "id": "Horizon node delete call successful with return code: {Output}",
+
+      "translation": "Horizon 節點刪除呼叫成功，回覆碼為：{Output}"
+    },
+    {
+
+      "id": "Timeout in {TotalWait} seconds ...",
+
+      "translation": "在 {TotalWait} 秒內逾時 ..."
+    },
+    {
+
+      "id": "Waiting for Horizon node unregister to complete: {UpdateStatus}",
+
+      "translation": "正在等待 Horizon 節點完成取消登錄：{UpdateStatus}"
+    },
+    {
+
+      "id": "No Timeout specified ...",
+
+      "translation": "未指定逾時值 ..."
+    },
+    {
+
+      "id": "Stopping horizon...",
+
+      "translation": "正在停止 Horizon..."
+    },
+    {
+
+      "id": "Node configuration state: {State}",
+
+      "translation": "節點配置狀態：{State}"
+    },
+    {
+
+      "id": "Timeout waiting for node change to 'unconfigured' state.",
+
+      "translation": "等待節點變更為「未配置」狀態時發生逾時。"
+    },
+    {
+
+      "id": "unable to list containers, {Err}",
+
+      "translation": "無法列出儲存器：{Err}"
+    },
+    {
+
+      "id": "Error deleting container {Names0}. {Err}",
+
+      "translation": "刪除儲存器 {Names0} 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Removed service container: {Names0}",
+
+      "translation": "已移除服務儲存器：{Names0}"
+    },
+    {
+
+      "id": "Error pruning docker networks. {Err}",
+
+      "translation": "刪改 Docker 網路時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "New dependency created: {Target} .",
+
+      "translation": "已建立新的相依關係：{Target}。"
+    },
+    {
+
+      "id": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' unable to create json object from dependencies, {Err}",
+
+      "translation": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' 無法從相依關係建立 JSON 物件：{Err}"
+    },
+    {
+
+      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
+
+      "translation": "無法設定環境變數 'HZN_DONT_SUBST_ENV_VARS'，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
+
+      "translation": "無法還原環境變數 'HZN_DONT_SUBST_ENV_VARS'，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to get list of dependency files in {DepPath}, error: {Err}",
+
+      "translation": "無法取得 {DepPath} 中的相依關係檔清單，錯誤為：{Err}"
+    },
+    {
+
+      "id": "could not create dependency directory {NewDir}, error: {Err}",
+
+      "translation": "無法建立相依關係目錄 {NewDir}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "dependency validation failed, unable to read {Name}, error: {Err}",
+
+      "translation": "相依關係驗證失敗，無法讀取 {Name}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
+
+      "translation": "相依關係驗證失敗，相依關係 {Name} 的版本 {Version} 無效，錯誤為：{Err}"
+    },
+    {
+
+      "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
+
+      "translation": "相依關係驗證失敗，無法驗證版本範圍 {Version} 是否在所需的範圍 {Expression} 內，錯誤為：{Err}"
+    },
+    {
+
+      "id": "dependency {URL} at version {VersionRange} does not exist in {Joindirectory_DEFAULTDEPENDENCYDIR}.",
+
+      "translation": "在 {Joindirectory_DEFAULTDEPENDENCYDIR} 中不存在處於版本 {VersionRange} 的相依關係 {URL}。"
+    },
+    {
+
+      "id": "dependency {Name} did not validate, error: {Err}",
+
+      "translation": "相依關係 {Name} 未驗證，錯誤為：{Err}"
+    },
+    {
+
+      "id": "variable {Name} has no default and must be specified in {UserInputsFilePath}",
+
+      "translation": "變數 {Name} 沒有預設值，必須在 {UserInputsFilePath} 中指定"
+    },
+    {
+
+      "id": "--specRef is mutually exclusive with --url.",
+
+      "translation": "--specRef 與 --url 互斥。"
+    },
+    {
+
+      "id": "--project is mutually exclusive with --specRef, --org and --url.",
+
+      "translation": "--project 與 --specRef、--org 和 --url 互斥。"
+    },
+    {
+
+      "id": "one of --project, or --specRef and --org, or --url and --org must be specified.",
+
+      "translation": "必須指定 --project 或指定 --specRef 和 --org 或指定 --url 和 --org。"
+    },
+    {
+
+      "id": "either --specRef and --org, or --url and --org must be specified.",
+
+      "translation": "必須指定 --specRef 和 --org 或指定 --url 和 --org。"
+    },
+    {
+
+      "id": "use --url with service projects.",
+
+      "translation": "將 --url 與服務專案搭配使用。"
+    },
+    {
+
+      "id": "--project {Project} does not contain Horizon service metadata.",
+
+      "translation": "--project {Project} 不含 Horizon 服務 meta 資料。"
+    },
+    {
+
+      "id": "Reading Horizon metadata from {Dir}",
+
+      "translation": "正在從 {Dir} 中讀取 Horizon meta 資料"
+    },
+    {
+
+      "id": "--specRef or --url is required for remove.",
+
+      "translation": "需要 --specRef 或 --url 才能進行移除作業。"
+    },
+    {
+
+      "id": "--specRef and --url are mutually exclusive.",
+
+      "translation": "--specRef 和 --url 互斥。"
+    },
+    {
+
+      "id": "Service project {Dir} verified.",
+
+      "translation": "已驗證服務專案 {Dir}。"
+    },
+    {
+
+      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error {Err}",
+
+      "translation": "無法將環境變數 'HZN_DONT_SUBST_ENV_VARS' 設為零，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
+
+      "translation": "無法取得 {Project} 目錄下的 hzn.json 配置檔。錯誤為：{Err}"
+    },
+    {
+
+      "id": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
+
+      "translation": "無法設定配置檔 {Projconfigfile} 中的環境變數。錯誤為：{Err}"
+    },
+    {
+
+      "id": "Reading Horizon metadata from dependency: {AbsProject}",
+
+      "translation": "正在讀取相依關係中的 Horizon meta 資料：{AbsProject}"
+    },
+    {
+
+      "id": "Found dependency {URL}, Org: {Org}",
+
+      "translation": "找到相依關係 {URL}，組織：{Org}"
+    },
+    {
+
+      "id": "Failed to restore the environment variables. {Err}",
+
+      "translation": "無法還原環境變數。{Err}"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable and global attribute configuration.",
+
+      "translation": "已使用相依關係的變數與廣域屬性配置更新 {HomeDirectory}/{USERINPUTFILE}。"
+    },
+    {
+
+      "id": "To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.",
+
+      "translation": "為了確保相依關係正確運作，請在此服務需要變數值時將變數值新增至 userinput.json 檔。"
+    },
+    {
+
+      "id": "The current project already has userinputs defined for this dependency.",
+
+      "translation": "現行專案已為此相依關係定義使用者輸入。"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable configuration.",
+
+      "translation": "已使用相依關係的變數配置更新 {HomeDirectory}/{USERINPUTFILE}。"
+    },
+    {
+
+      "id": "unsupported project type",
+
+      "translation": "不受支援的專案類型"
+    },
+    {
+
+      "id": "Created {FilePath}/{FileName} as a new dependency.",
+
+      "translation": "已建立 {FilePath}/{FileName} 作為新的相依關係。"
+    },
+    {
+
+      "id": "unable to find highest version of {Surl} {Org} in the exchange: {Services}",
+
+      "translation": "在 Exchange 中找不到最高版本的 {Surl} {Org}：{Services}"
+    },
+    {
+
+      "id": "no services found in the exchange.",
+
+      "translation": "在 Exchange 中找不到服務。"
+    },
+    {
+
+      "id": "Creating dependency on: {ServiceDef}, Org: {Org}",
+
+      "translation": "正在建立對 {ServiceDef} 的相依關係，組織：{Org}"
+    },
+    {
+
+      "id": "failed to unmarshal deployment {Deployment}: {Err}",
+
+      "translation": "無法解除配置部署 {Deployment}：{Err}"
+    },
+    {
+
+      "id": "The image docker auths for the service {Org}/{Surl} are: {Imgauths}",
+
+      "translation": "服務 {Org}/{Surl} 的映像檔 Docker 授權為：{Imgauths}"
+    },
+    {
+
+      "id": "failed to get images for {Org}/{Surl}: {Err}",
+
+      "translation": "無法取得 {Org}/{Surl} 的映像檔：{Err}"
+    },
+    {
+
+      "id": "Unable to get dependency info for {Sp} , error {Err}",
+
+      "translation": "無法取得 {Sp} 的相依關係資訊，錯誤為：{Err}"
+    },
+    {
+
+      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' failed to get a list of dependecies. Error {Err}",
+
+      "translation": "'相依關係 {DEPENDENCYREMOVECOMMAND}' 無法取得相依關係清單。錯誤為：{Err}"
+    },
+    {
+
+      "id": "All dependencies are: {Deps}",
+
+      "translation": "所有相依關係為：{Deps}"
+    },
+    {
+
+      "id": "Found dependency: {Name}",
+
+      "translation": "找到相依關係：{Name}"
+    },
+    {
+
+      "id": "Will not remove dependency {Name} because it is referenced by other services.",
+
+      "translation": "將不會移除相依關係 {Name}，因為它已被其他服務參照。"
+    },
+    {
+
+      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
+
+      "translation": "'找不到相依關係 {DEPENDENCYREMOVECOMMAND} 相依關係'。"
+    },
+    {
+
+      "id": "Could not read the dependency file {Name}. Error: {Err}",
+
+      "translation": "無法讀取相依關係檔 {Name}。錯誤為：{Err}"
+    },
+    {
+
+      "id": "Error updating project definition: {Err}",
+
+      "translation": "更新專案定義時發生錯誤：{Err}"
+    },
+    {
+
+      "id": "Dependency {Name} could not be removed. Error: {Err}",
+
+      "translation": "無法移除相依關係 {Name}。錯誤為：{Err}"
+    },
+    {
+
+      "id": "Error updating userinputs: {Err}",
+
+      "translation": "更新使用者輸入時發生錯誤：{Err}"
+    },
+    {
+
+      "id": "Removed dependency {Arch}.",
+
+      "translation": "已移除相依關係：{Arch}。"
+    },
+    {
+
+      "id": "Removed dependency's dependency {Arch}.",
+
+      "translation": "已移除相依關係的相依關係 {Arch}。"
+    },
+    {
+
+      "id": "error creating {DOCKERFILE} for service image. {Err}",
+
+      "translation": "為服務映像檔建立 {DOCKERFILE} 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Edge $SERVICE_NAME Service Pattern for $ARCH",
+
+      "translation": "$ARCH 的邊緣 $SERVICE_NAME 服務型樣"
+    },
+    {
+
+      "id": "Pattern for $SERVICE_NAME for $ARCH",
+
+      "translation": "$ARCH 的 $SERVICE_NAME 的型樣"
+    },
+    {
+
+      "id": "Edge $SERVICE_NAME Service Pattern for all architectures",
+
+      "translation": "所有架構的邊緣 $SERVICE_NAME 服務型樣"
+    },
+    {
+
+      "id": "Pattern for $SERVICE_NAME",
+
+      "translation": "$SERVICE_NAME 的型樣"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' 無法從映像檔名稱中取得服務名稱。{Err}"
+    },
+    {
+
+      "id": "Creating config file for environmental variables: {Dir}/{HZNENVFILE}",
+
+      "translation": "正在為環境變數建立配置檔：{Dir}/{HZNENVFILE}"
+    },
+    {
+
+      "id": "Creating user input file: {Dir}/{USERINPUTFILE}",
+
+      "translation": "正在建立使用者輸入檔：{Dir}/{USERINPUTFILE}"
+    },
+    {
+
+      "id": "Creating service definition file: {Dir}/{SERVICEDEFINITIONFILE}",
+
+      "translation": "正在建立服務定義檔：{Dir}/{SERVICEDEFINITIONFILE}"
+    },
+    {
+
+      "id": "Creating pattern definition file: {Dir}/{PATTERNDEFINITIONFILE}",
+
+      "translation": "正在建立型樣定義檔：{Dir}/{PATTERNDEFINITIONFILE}"
+    },
+    {
+
+      "id": "Creating service policy file: {Dir}/{SERVICEPOLICYFILE}",
+
+      "translation": "正在建立服務原則檔：{Dir}/{SERVICEPOLICYFILE}"
+    },
+    {
+
+      "id": "Creating .gitignore files for source code management.",
+
+      "translation": "正在建立 .gitignore 檔以進行原始碼管理。"
+    },
+    {
+
+      "id": "Creating image generation files under {Currentdir} directory.",
+
+      "translation": "正在 {Currentdir} 目錄下建立映像檔產生檔案。"
+    },
+    {
+
+      "id": "Created image generation files in {Currentdir} and horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
+
+      "translation": "已在 {Currentdir} 中建立映像檔產生檔案並在 {Dir} 中建立 Horizon meta 資料檔案。編輯這些檔案以定義並配置新的 {SERVICECOMMAND}。"
+    },
+    {
+
+      "id": "Created horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
+
+      "translation": "已在 {Dir} 中建立 Horizon meta 資料檔案。編輯這些檔案以定義並配置新的 {SERVICECOMMAND}。"
+    },
+    {
+
+      "id": "must specify either --org or set the {DEVTOOLHZNORG} environment variable.",
+
+      "translation": "必須指定 --org 或設定 {DEVTOOLHZNORG} 環境變數。"
+    },
+    {
+
+      "id": "invalid version string: {Version}",
+
+      "translation": "版本字串 {Version} 無效"
+    },
+    {
+
+      "id": "only support one image for a service unless --noImageGen flag is specified.",
+
+      "translation": "除非指定 --noImageGen 旗標，否則只支援一個服務擁有一個映像檔。"
+    },
+    {
+
+      "id": "image {Image} has invalid format.",
+
+      "translation": "映像檔 {Image} 的格式無效。"
+    },
+    {
+
+      "id": "please specify the image name with -i flag.",
+
+      "translation": "請使用 -i 旗標指定映像檔名稱。"
+    },
+    {
+
+      "id": "unsupported deployment config type: {Dconfig}",
+
+      "translation": "部署配置類型 {Dconfig} 不受支援"
+    },
+    {
+
+      "id": "$SERVICE_NAME for $ARCH",
+
+      "translation": "$ARCH 的 $SERVICE_NAME"
+    },
+    {
+
+      "id": "Who to say hello to",
+
+      "translation": "問候對象"
+    },
+    {
+
+      "id": "unknown deployment type: {DeploymentType}",
+
+      "translation": "部署類型 {DeploymentType} 不明"
+    },
+    {
+
+      "id": "{FilePath}: URL must be set.",
+
+      "translation": "{FilePath}：必須設定 URL。"
+    },
+    {
+
+      "id": "{FilePath}: version must be set to a specific version, e.g. 1.0.0.",
+
+      "translation": "{FilePath}：版本必須設為特定的版本，例如 1.0.0。"
+    },
+    {
+
+      "id": "{FilePath}: org must be set.",
+
+      "translation": "{FilePath}：必須設定組織。"
+    },
+    {
+
+      "id": "{FilePath}: deployment configuration, {Err}",
+
+      "translation": "{FilePath}：部署配置： {Err}"
+    },
+    {
+
+      "id": "{FilePath}: userInput array index {Ix} does not have name and type specified.",
+
+      "translation": "{FilePath}：使用者輸入陣列索引 {Ix} 未指定名稱和類型。"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
+
+      "translation": "已更新 {HomeDirectory}/{SERVICEDEFINITIONFILE} 相依關係。"
+    },
+    {
+
+      "id": "No need to update {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
+
+      "translation": "無需更新 {HomeDirectory}/{SERVICEDEFINITIONFILE} 相依關係。"
+    },
+    {
+
+      "id": "error creating {HORIZONGITIGNOREFILE} for source code management. {Err}",
+
+      "translation": "建立 {HORIZONGITIGNOREFILE} 以進行原始碼管理時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
+
+      "translation": "無法解除配置 {UserInputFilePath} 檔案，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
+
+      "translation": "已將使用者輸入屬性 {GlobalSet} 轉換為 API 屬性：{Attr}"
+    },
+    {
+
+      "id": "{GlobalSet} encountered error: {Error}",
+
+      "translation": "{GlobalSet} 發現錯誤：{Error}"
+    },
+    {
+
+      "id": "Converted API Attributes: {Global} to persistent attributes: {Attributes}",
+
+      "translation": "已將 API 屬性 {Global} 轉換為持續性屬性：{Attributes}"
+    },
+    {
+
+      "id": "{OriginalUserInputFilePath}: global array element ({GlobalSet}) has an empty type, must be one of the supported attribute types. See the Horizon agent /attribute API.",
+
+      "translation": "{OriginalUserInputFilePath}：廣域陣列元素 ({GlobalSet}) 具有空類型，它必須屬於下列其中一種受支援的屬性類型。請參閱 Horizon 代理程式/屬性 API。"
+    },
+    {
+
+      "id": "{USERINPUTFILE} has error: {Err}",
+
+      "translation": "{USERINPUTFILE} 發生錯誤：{Err}"
+    },
+    {
+
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
+
+      "translation": "{OriginalUserInputFilePath}：索引 {Ix} 處的服務陣列元素為 {MicroWork}：{Err}"
+    },
+    {
+
+      "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
+
+      "translation": "{OriginalUserInputFilePath}：服務陣列不包含 {URL} 的元素。錯誤為：{Err}"
+    },
+    {
+
+      "id": "please provice a user input file for service {URL}. Error: {Err}",
+
+      "translation": "請為服務 {URL} 提供使用者輸入檔。錯誤為：{Err}"
+    },
+    {
+
+      "id": "has empty org, must be set to the name of the organization that owns the service.",
+
+      "translation": "具有空組織，必須設為擁有服務的組織名稱。"
+    },
+    {
+
+      "id": "has empty url. Must be set to this service's url or a dependency's url.",
+
+      "translation": "具有空 URL。必須設定為此服務的 URL 或相依關係的 URL。"
+    },
+    {
+
+      "id": "sets variable {VarName} using a value of {Err}.",
+
+      "translation": "使用 {Err} 的值設定變數 {VarName}。"
+    },
+    {
+
+      "id": "sets variable {VarName} of type {VarValue} that is not defined.",
+
+      "translation": "設定類型為尚未定義的 {VarValue} 的變數 {VarName}。"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE}.",
+
+      "translation": "已更新 {HomeDirectory}/{USERINPUTFILE}。"
+    },
+    {
+
+      "id": "No need to update {HomeDirectory}/{USERINPUTFILE}.",
+
+      "translation": "無需更新 {HomeDirectory}/{USERINPUTFILE}。"
+    },
+    {
+
+      "id": "could not create directory {NewDepDir}, error: {Err}",
+
+      "translation": "無法建立目錄 {NewDepDir}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "could not get status of directory {NewDepDir}, error: {Err}",
+
+      "translation": "無法取得目錄 {NewDepDir} 的狀態，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Using working directory: {Dir}",
+
+      "translation": "使用工作目錄：{Dir}"
+    },
+    {
+
+      "id": "horizon project in {Dir} already contains {FileName}.",
+
+      "translation": "{Dir} 中的 Horizon 專案已包含 {FileName}。"
+    },
+    {
+
+      "id": "error checking for {FileName}: {Err}",
+
+      "translation": "檢查是否存在 {FileName} 時發生錯誤：{Err}"
+    },
+    {
+
+      "id": "failed to unmarshal {FilePath}, error: {Err}",
+
+      "translation": "無法解除配置 {FilePath}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "failed to create json object for {FileName}, error: {Err}",
+
+      "translation": "無法建立 {FileName} 的 JSON 物件，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
+
+      "translation": "無法將 {FileName} 的 JSON 物件寫入檔案 {FilePath}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
+
+      "translation": "必須設定環境變數 {DEVTOOLHZNORG} 或在 --user-pw 旗標上將使用者指定為 'org/user'"
+    },
+    {
+
+      "id": "Must set environment variable {DEVTOOLHZNUSER} or specify user exchange credentials with --user-pw",
+
+      "translation": "必須設定環境變數 {DEVTOOLHZNUSER} 或使用 --user-pw 指定使用者 Exchange 認證"
+    },
+    {
+
+      "id": "Unable to set env var {DEVTOOLHZNEXCHANGEURL} to {ExchangeUrl}, error {Err}",
+
+      "translation": "無法將環境變數 {DEVTOOLHZNEXCHANGEURL} 設為 {ExchangeUrl}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Environment variable {DEVTOOLHZNEXCHANGEURL} must be set.",
+
+      "translation": "必須設定環境變數 {DEVTOOLHZNEXCHANGEURL}。"
+    },
+    {
+
+      "id": "project has no horizon metadata directory. Use hzn dev to create a new project. Error: {Err}",
+
+      "translation": "專案沒有 Horizon meta 資料目錄。使用 hzn dev 建立一個新專案。錯誤為：{Err}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' project does not validate. {Derr}",
+
+      "translation": "'{ProjectType} {Cmd}' 專案未經驗證。{Derr}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' project does not validate. {Verr}",
+
+      "translation": "'{ProjectType} {Cmd}' 專案未經驗證。{Verr}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' Must specify configuration file type (-t) when a configuration file is specified (-m).",
+
+      "translation": "當指定了配置檔 (-m) 時，'{ProjectType} {Cmd}' 必須指定配置檔類型 (-t)。"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' configuration file {FileRef} error {Err}",
+
+      "translation": "'{ProjectType} {Cmd}' 配置檔 {FileRef} 錯誤 {Err}"
+    },
+    {
+
+      "id": "project does not validate. {Verr}",
+
+      "translation": "專案未經驗證。{Verr}"
+    },
+    {
+
+      "id": "project in {Dir} is not a horizon project.",
+
+      "translation": "{Dir} 中的專案不是 Horizon 專案。"
+    },
+    {
+
+      "id": "Final Attributes: {Attrs}",
+
+      "translation": "最終屬性：{Attrs}"
+    },
+    {
+
+      "id": "global attribute conversion error: {Cerr}",
+
+      "translation": "廣域屬性轉換錯誤：{Cerr}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
+
+      "translation": "'{ProjectType} {Cmd}' 無法建立儲存器工作者：{Cerr}"
+    },
+    {
+
+      "id": "unable to list existing containers: {Err}",
+
+      "translation": "無法列出現有儲存器：{Err}"
+    },
+    {
+
+      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
+
+      "translation": "找到服務 {Nwname} 的主要網路：{ContainerNetwork}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
+
+      "translation": "相依關係 {URL} 的 '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr}"
+    },
+    {
+
+      "id": "unable to retrieve dependency metadata: {Err}",
+
+      "translation": "無法擷取相依關係 meta 資料：{Err}"
+    },
+    {
+
+      "id": "unable to start dependencies: {Err}",
+
+      "translation": "無法啟動相依關係：{Err}"
+    },
+    {
+
+      "id": "Skipping service because it has no deployment configuration: {DepConfig}",
+
+      "translation": "正在跳過服務，因為它沒有部署配置：{DepConfig}"
+    },
+    {
+
+      "id": "unable to generate instance ID: {Err}",
+
+      "translation": "無法產生實例 ID：{Err}"
+    },
+    {
+
+      "id": "unable to create environment variables",
+
+      "translation": "無法建立環境變數"
+    },
+    {
+
+      "id": "Passing environment variables: {EnvironmentAdditions}",
+
+      "translation": "正在傳遞環境變數：{EnvironmentAdditions}"
+    },
+    {
+
+      "id": "Start {LogName}: {CLIString} with instance id prefix {Id}",
+
+      "translation": "啟動 {LogName}：實例 ID 字首為 {Id} 的 {CLIString}"
+    },
+    {
+
+      "id": "unable to start container using {CLIString}, error: {StartErr}",
+
+      "translation": "無法使用 {CLIString} 啟動儲存器，錯誤為：{StartErr}"
+    },
+    {
+
+      "id": "Running {LogName}.",
+
+      "translation": "正在執行 {LogName}。"
+    },
+    {
+
+      "id": "Stopping dependencies.",
+
+      "translation": "正在停止相依關係。"
+    },
+    {
+
+      "id": "unable to stop dependencies: {Err}",
+
+      "translation": "無法停止相依關係：{Err}"
+    },
+    {
+
+      "id": "Found containers {Containers}",
+
+      "translation": "找到儲存器 {Containers}"
+    },
+    {
+
+      "id": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
+
+      "translation": "停止 {LogName}：實例 ID 字首為 {MsId} 的 {CLIString}"
+    },
+    {
+
+      "id": "failed to create docker client, error: {Derr}",
+
+      "translation": "無法建立 Docker 用戶端，錯誤為：{Derr}"
+    },
+    {
+
+      "id": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
+
+      "translation": "無法轉換 {USERINPUTFILE} 中的廣域屬性，錯誤為：{Err}"
+    },
+    {
+
+      "id": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
+
+      "translation": "無法從 {USERINPUTFILE} 擷取鑑別屬性，錯誤為：{Err}"
+    },
+    {
+
+      "id": "getting container images into docker.",
+
+      "translation": "將容器映像檔放入 Docker。"
+    },
+    {
+
+      "id": "failed to get container images, error: {Err}",
+
+      "translation": "無法取得容器映像檔，錯誤為：{Err}"
+    },
+    {
+
+      "id": "invalid image format: {Image}",
+
+      "translation": "映像檔格式無效：{Image}"
+    },
+    {
+
+      "id": "file {FilePath} exists already",
+
+      "translation": "檔案 {FilePath} 已存在"
+    },
+    {
+
+      "id": "unable to write content to file {FilePath}, error: {Err}",
+
+      "translation": "無法將內容寫入檔案 {FilePath}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "horizon api agreement output did not include 'agreements' key",
+
+      "translation": "Horizon API 合約輸出不包括 'agreements' 金鑰"
+    },
+    {
+
+      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
+
+      "translation": "Horizon API 合約輸出不包括 '{WhichAgreements}' 金鑰"
+    },
+    {
+
+      "id": "failed to marshal 'hzn metering list' output: {Err}",
+
+      "translation": "無法配置 'hzn metering list' 輸出：{Err}"
+    },
+    {
+
+      "id": "unable to set env var 'HORIZON_URL', error {Err}",
+
+      "translation": "無法設定環境變數 'HORIZON_URL'，錯誤為：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'agreement list' output: {Err}",
+
+      "translation": "無法配置 'agreement list' 輸出：{Err}"
+    },
+    {
+
+      "id": "either an agreement ID or -a must be specified.",
+
+      "translation": "必須指定合約 ID 或 -a。"
+    },
+    {
+
+      "id": "Canceling agreement {Id} ...",
+
+      "translation": "正在取消合約 {Id} ..."
+    },
+    {
+
+      "id": "failed to marshal 'hzn node list' output: {Err}",
+
+      "translation": "無法配置 'hzn node list' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'policy list' output: {Err}",
+
+      "translation": "無法配置 'policy list' 輸出：{Err}"
+    },
+    {
+
+      "id": "Error: The organization '{Org}' does not exist.",
+
+      "translation": "錯誤：組織 '{Org}' 不存在。"
+    },
+    {
+
+      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
+
+      "translation": "錯誤：組織 '{Org}' 不存在或原則 '{Name}' 不是由這個 agbot 託管。"
+    },
+    {
+
+      "id": "failed to marshal 'exchange agbot list' output: {Err}",
+
+      "translation": "無法配置 'exchange agbot list' 輸出：{Err}"
+    },
+    {
+
+      "id": "agbot '{Agbot}' not found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到 agbot '{Agbot}'"
+    },
+    {
+
+      "id": "both patternorg and pattern must be specified (or neither)",
+
+      "translation": "必須同時指定 patternorg 或 pattern（或都不指定）"
+    },
+    {
+
+      "id": "pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' not found in agbot '{Agbot}'",
+
+      "translation": "在 agbot '{Agbot}' 中找不到組織為 '{PatternOrg}' 而節點組織為 '{NodeOrg}' 的型樣 '{Pattern}'"
+    },
+    {
+
+      "id": "Pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' already exists in agbot '{Agbot}'",
+
+      "translation": "agbot '{Agbot}' 中已存在組織為 '{PatternOrg}' 而節點組織為 '{NodeOrg}' 的型樣 '{Pattern}'"
+    },
+    {
+
+      "id": "Adding Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot will start looking for nodes that are compatible with this policy.",
+
+      "translation": "正在將商業原則組織 {PolOrg}' 新增至 agbot '{Agbot}'。agbot 將會開始尋找符合此原則的節點。"
+    },
+    {
+
+      "id": "Business policy org {PolOrg}' already exists in agbot '{Agbot}'",
+
+      "translation": "agbot '{Agbot}' 中已存在商業原則組織 {PolOrg}'"
+    },
+    {
+
+      "id": "Removing Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot is no longer looking for nodes that are compatible with this policy.",
+
+      "translation": "正在移除 agbot '{Agbot}' 中的商業原則組織 {PolOrg}'。agbot 不再尋找符合此原則的節點。"
+    },
+    {
+
+      "id": "Policy {Policy} not found in org {PolOrg}",
+
+      "translation": "在組織 {PolOrg} 中找不到原則 {Policy}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange business listpolicy' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange business listpolicy' 輸出：{Err}"
+    },
+    {
+
+      "id": "Incorrect business policy format in file {JsonFilePath}: {Err}",
+
+      "translation": "檔案 {JsonFilePath} 中的商業原則格式不正確：{Err}"
+    },
+    {
+
+      "id": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
+
+      "translation": "已在 Horizon Exchange 中更新商業原則：{Org}/{Policy}"
+    },
+    {
+
+      "id": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
+
+      "translation": "已在 Horizon Exchange 中新增商業原則：{Org}/{Policy}"
+    },
+    {
+
+      "id": "failed to unmarshal attribute input {Attribute}: {Err}",
+
+      "translation": "無法解除配置屬性輸入 {Attribute}：{Err}"
+    },
+    {
+
+      "id": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "正在更新 Horizon Exchange 中的原則 {Org}/{PolicyName} 並根據此商業原則重新評估所有合約。必須取消現有合約並重新協議。"
+    },
+    {
+
+      "id": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
+
+      "translation": "已在 Horizon Exchange 中更新原則 {Org}/{PolicyName}"
+    },
+    {
+
+      "id": "Invalid format for properties: {Err}",
+
+      "translation": "內容的格式無效：{Err}"
+    },
+    {
+
+      "id": "Invalid format for constraints: {Err}",
+
+      "translation": "限制項的格式無效：{Err}"
+    },
+    {
+
+      "id": "Business policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, and userInput.",
+
+      "translation": "在輸入檔中找不到要更新的商業原則屬性。受支援的屬性為：標籤、說明、服務、內容、限制項及使用者輸入。"
+    },
+    {
+
+      "id": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
+
+      "translation": "確定要從 Horizon Exchange 中移除組織 {Org} 的商業原則 {Policy} 嗎？"
+    },
+    {
+
+      "id": "Policy {Org}/{Policy} not found in the Horizon Exchange",
+
+      "translation": "在 Horizon Exchange 中找不到原則 {Org}/{Policy}"
+    },
+    {
+
+      "id": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+
+      "translation": "正在移除商業原則 {Org}/{Policy} 並僅根據內建的節點原則來重新評估所有合約。必須取消現有合約並重新協議"
+    },
+    {
+
+      "id": "Business policy {Org}/{Policy} removed",
+
+      "translation": "已移除商業原則 {Org}/{Policy}"
+    },
+    {
+
+      "id": "Business policy label.",
+
+      "translation": "商業原則標籤。"
+    },
+    {
+
+      "id": "Business policy description.",
+
+      "translation": "商業原則說明。"
+    },
+    {
+
+      "id": "The name of the service.",
+
+      "translation": "服務的名稱。"
+    },
+    {
+
+      "id": "The org of the service.",
+
+      "translation": "服務的組織。"
+    },
+    {
+
+      "id": "Set to '*' to use services of any hardware architecture.",
+
+      "translation": "設為 '*' 以使用任何硬體架構的服務。"
+    },
+    {
+
+      "id": "A list of service versions.",
+
+      "translation": "服務版本清單。"
+    },
+    {
+
+      "id": "A list of policy properties that describe the service being dployed.",
+
+      "translation": "說明所部署服務的原則內容清單。"
+    },
+    {
+
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>,",
+
+      "translation": "格式為 <property name> <operator> <property value> 的限制項表示式清單，"
+    },
+    {
+
+      "id": "separated by boolean operators AND (&&) or OR (||).",
+
+      "translation": "以布林運算子 AND (&&) 或 OR (||) 分隔。"
+    },
+    {
+
+      "id": "A list of userInput variables to set when the service runs, listed by service.",
+
+      "translation": "要在服務執行時設定的使用者輸入變數清單，依服務列出。"
+    },
+    {
+
+      "id": "The service version range to which these variables should be applied.",
+
+      "translation": "應套用這些變數的服務版本範圍。"
+    },
+    {
+
+      "id": "The input variables to be set.",
+
+      "translation": "要設定的輸入變數。"
+    },
+    {
+
+      "id": "Flags -s and -l are mutually exclusive.",
+
+      "translation": "旗標 -s 與 -l 互斥。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange catalog servicelist -l' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange catalog servicelist -s' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange catalog servicelist' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange catalog patternlist -l' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange catalog patternlist -s' ：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange catalog patternlist' 輸出：{Err}"
+    },
+    {
+
+      "id": "no service name",
+
+      "translation": "無服務名稱"
+    },
+    {
+
+      "id": "no docker image for service {ServiceName}",
+
+      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
+    },
+    {
+
+      "id": "failed to marshal body for {D}: {Err}",
+
+      "translation": "無法配置 {D} 的主體：{Err}"
+    },
+    {
+
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+
+      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'exchange node list' output: {Err}",
+
+      "translation": "無法配置 'exchange node list' 輸出：{Err}"
+    },
+    {
+
+      "id": "node '{Node}' not found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到節點 '{Node}'"
+    },
+    {
+
+      "id": "if node or token are specified then they both must be specified",
+
+      "translation": "若要指定節點或記號，必須同時指定這兩者"
+    },
+    {
+
+      "id": "do not specify both the -n flag and the node and token positional arguments. They mean the same thing.",
+
+      "translation": "請勿同時指定 -n 旗標以及節點和記號位置引數。它們的意思相同。"
+    },
+    {
+
+      "id": "either the node and token positional arguments, or the -n flag must be specified.",
+
+      "translation": "必須指定節點和記號位置引數，或指定 -n 旗標。"
+    },
+    {
+
+      "id": "User {Org}/{User} does not exist in the exchange with the specified password, creating it...",
+
+      "translation": "在 Exchange 中不存在具有指定密碼的使用者 {Org}/{User}，正在建立該使用者..."
+    },
+    {
+
+      "id": "user '{Org}/{User}' does not exist with the specified password or -e was not specified to be able to create it in the 'public' org.",
+
+      "translation": "不存在具有指定密碼的使用者 '{Org}/{User}' 或未指定 -e 以便在 'public' 組織中建立該使用者。"
+    },
+    {
+
+      "id": "key '{OrgAndCredsorg_nodeId}' not found in exchange nodes output",
+
+      "translation": "在 Exchange 節點輸出中找不到金鑰'{OrgAndCredsorg_nodeId}'"
+    },
+    {
+
+      "id": "can not update existing node {NodeId} because it is owned by another user ({Owner})",
+
+      "translation": "無法更新現有節點 {NodeId}，因為它由其他使用者 ({Owner}) 擁有"
+    },
+    {
+
+      "id": "Node {Org}/{Node} not found in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中找不到節點 {Org}/{Node}。"
+    },
+    {
+
+      "id": "Node {Node} updated in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中更新了節點 {Node}。"
+    },
+    {
+
+      "id": "-n is mutually exclusive with <node> and <token> arguments.",
+
+      "translation": "-n 與 <node> 和 <token> 引數互斥。"
+    },
+    {
+
+      "id": "Please specify both node and token.",
+
+      "translation": "請同時指定節點和記號。"
+    },
+    {
+
+      "id": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+
+      "translation": "確定要從 Horizon Exchange 中移除節點 {Org}/{Node} 嗎（如果使用此節點 ID 登錄了邊緣節點，則不應這樣做）？"
+    },
+    {
+
+      "id": "node '{Org}/{Node}' not found.",
+
+      "translation": "找不到節點 '{Org}/{Node}'。"
+    },
+    {
+
+      "id": "Incorrect policy format in file {JsonFilePath}: {Err}",
+
+      "translation": "檔案 {JsonFilePath} 中的原則格式不正確：{Err}"
+    },
+    {
+
+      "id": "Node policy not found for node {Node}/{Org}",
+
+      "translation": "找不到節點 {Node}/{Org} 的節點原則"
+    },
+    {
+
+      "id": "Invalid property list {Attribute}: {Err}",
+
+      "translation": "內容清單 {Attribute} 無效：{Err}"
+    },
+    {
+
+      "id": "Updating Node {Node} policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "正在更新 Horizon Exchange 中的節點 {Node} 原則內容並根據此原則重新評估所有合約。必須取消現有合約並重新協議。"
+    },
+    {
+
+      "id": "Node {Node} policy properties updated in the horizon exchange.",
+
+      "translation": "在 Horizon Exchange 中更新了節點 {Node} 原則內容。"
+    },
+    {
+
+      "id": "Invalid constraint expression {Attribute}: {Err}",
+
+      "translation": "限制項表示式 {Attribute} 無效：{Err}"
+    },
+    {
+
+      "id": "Updating Node {Node} policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "正在更新 Horizon Exchange 中的節點 {Node} 原則限制項並根據此原則重新評估所有合約。必須取消現有合約並重新協議。"
+    },
+    {
+
+      "id": "Node {Node} policy constraints updated in the horizon exchange.",
+
+      "translation": "在 Horizon Exchange 中更新了節點 {Node} 原則限制項。"
+    },
+    {
+
+      "id": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
+
+      "translation": "在輸入 {Attribute} 中找不到要更新的有效屬性。屬性是限制項和內容。"
+    },
+    {
+
+      "id": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
+
+      "translation": "確定要從 Horizon Exchange 中移除 {Org}/{Node} 的節點原則嗎？"
+    },
+    {
+
+      "id": "Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "正在移除節點原則並僅根據內建的節點原則來重新評估所有合約。必須取消現有合約並重新協議。"
+    },
+    {
+
+      "id": "failed to marshal 'exchange pattern list' output: {Err}",
+
+      "translation": "無法配置 'exchange pattern list' 輸出：{Err}"
+    },
+    {
+
+      "id": "pattern '{Pattern}' not found in org {PatOrg}",
+
+      "translation": "在組織 {PatOrg} 中找不到型樣 '{Pattern}'"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange pattern list' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange pattern list' 輸出：{Err}"
+    },
+    {
+
+      "id": "Pattern {Pattern}/{PatOrg} updated in the Horizon exchange.",
+
+      "translation": "在 Horizon Exchange 中更新了型樣 {Pattern}/{PatOrg}。"
+    },
+    {
+
+      "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
+
+      "translation": "無法解除配置部署置換欄位 {StringjsonBytes} 的 JSON：{Err}"
+    },
+    {
+
+      "id": "the org specified in the input file ({Org}) must match the org specified on the command line ({Org_1})",
+
+      "translation": "在輸入檔中指定的組織 ({Org}) 必須符合在指令行上指定的組織 ({Org_1})"
+    },
+    {
+
+      "id": "the pattern definition ({Services}) must contain services, unable to proceed",
+
+      "translation": "型樣定義 ({Services}) 必須包含服務，無法繼續"
+    },
+    {
+
+      "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
+
+      "translation": "正在簽署服務 {I__1}（serviceVersion 號碼為 {J__1}）中的 deployment_overrides 欄位"
+    },
+    {
+
+      "id": "failed to marshal deployment_overrides field in service {I__1}, serviceVersion number {J__1}: {Err}",
+
+      "translation": "無法配置服務 {I__1}（serviceVersion 號碼為 {J__1}）中的 deployment_overrides 欄位：{Err}"
+    },
+    {
+
+      "id": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
+
+      "translation": "使用 {KeyFilePath} 簽署 deployment_overrides 字串時發生問題：{Err}"
+    },
+    {
+
+      "id": "Updating {ExchId} in the exchange...",
+
+      "translation": "正在 Exchange 中更新 {ExchId} ..."
+    },
+    {
+
+      "id": "Creating {ExchId} in the exchange...",
+
+      "translation": "正在 Exchange 中建立 {ExchId} ..."
+    },
+    {
+
+      "id": "Storing {BaseName} with the pattern in the exchange...",
+
+      "translation": "正在 Exchange 中儲存 {BaseName} 與型樣..."
+    },
+    {
+
+      "id": "key '{Org____pattern}' not found in resources returned from exchange",
+
+      "translation": "在從 Exchange 傳回的資源中找不到金鑰 '{Org____pattern}'"
+    },
+    {
+
+      "id": "verifying deployment_overrides string in service {I__1}, serviceVersion number {J__1}",
+
+      "translation": "正在驗證服務 {I__1}（serviceVersion 號碼為 {J__1}）中的 deployment_overrides 字串"
+    },
+    {
+
+      "id": "problem verifying deployment_overrides string in service {I__1}, serviceVersion number {J__1} with {KeyFilePath}: {Err}",
+
+      "translation": "使用 {KeyFilePath} 驗證服務 {I__1}（serviceVersion 號碼為 {J__1}）中的 deployment_overrides 字串時出現問題：{Err}"
+    },
+    {
+
+      "id": "Deployment_overrides string in service {I__1}, serviceVersion number {J__1} was not signed with the private key associated with this public key {KeyFilePath}.",
+
+      "translation": "未使用與此公開金鑰 {KeyFilePath} 相關聯的私密金鑰簽署服務 {I__1}（serviceVersion 號碼為 {J__1}）中的 Deployment_overrides 字串。"
+    },
+    {
+
+      "id": "Are you sure you want to remove pattern {Org}/{Pattern} from the Horizon Exchange?",
+
+      "translation": "確定要從 Horizon Exchange 中移除型樣 {Org}/{Pattern} 嗎？"
+    },
+    {
+
+      "id": "key '{KeyName}' not found",
+
+      "translation": "找不到金鑰 '{KeyName}'"
+    },
+    {
+
+      "id": "user input {Name} has no default value and is not set",
+
+      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange service list' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange service list' 輸出：{Err}"
+    },
+    {
+
+      "id": "service '{Service}' not found in org {SvcOrg}",
+
+      "translation": "在組織 {SvcOrg} 中找不到服務 '{Service}'"
+    },
+    {
+
+      "id": "Flags -I and -P are mutually exclusive.",
+
+      "translation": "旗標 -I 和 -P 互斥。"
+    },
+    {
+
+      "id": "Adding service policy for service: {ServiceAddPolicyService}",
+
+      "translation": "正在為服務新增服務原則：{ServiceAddPolicyService}"
+    },
+    {
+
+      "id": "Service policy added for service: {ServiceAddPolicyService}",
+
+      "translation": "已為服務新增服務原則：{ServiceAddPolicyService}"
+    },
+    {
+
+      "id": "the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null",
+
+      "translation": "'deploymentSignature' 為非空白欄位，但將被忽略，因為 'deployment' 欄位為空值"
+    },
+    {
+
+      "id": "unable to sign deployment config: {Err}",
+
+      "translation": "無法簽署部署配置：{Err}"
+    },
+    {
+
+      "id": "the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty",
+
+      "translation": "'deployment' 欄位是非空字串，這表示此服務已預先簽署，但 'deploymentSignature' 欄位為空"
+    },
+    {
+
+      "id": "'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)",
+
+      "translation": "'deployment' 欄位是無效類型。它必須是 JSON 物件或字串（針對預先簽署的服務）"
+    },
+    {
+
+      "id": "Service {Org}/{ExchId} exists in the exchange, do you want to overwrite it?",
+
+      "translation": "Exchange 中已存在服務 {Org}/{ExchId}，您要改寫它嗎？"
+    },
+    {
+
+      "id": "Storing {BaseName} with the service in the exchange...",
+
+      "translation": "正在 Exchange 中儲存 {BaseName} 與服務..."
+    },
+    {
+
+      "id": "Error: registry-token value of '{RegTok}' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.",
+
+      "translation": "錯誤：'{RegTok}' 的登錄記號值未採用所需的格式：registry:user:token。未將其儲存在 Horizon Exchange 中。"
+    },
+    {
+
+      "id": "unable to get container images from deployment: {Err}",
+
+      "translation": "無法從部署取得容器映像檔：{Err}"
+    },
+    {
+
+      "id": "problem verifying deployment string with {KeyFilePath}: {Err}",
+
+      "translation": "使用 {KeyFilePath} 驗證部署字串時發生問題：{Err}"
+    },
+    {
+
+      "id": "Deployment string was not signed with the private key associated with this public key {KeyFilePath}.",
+
+      "translation": "未使用與此公開金鑰 {KeyFilePath} 相關聯的私密金鑰簽署部署字串。"
+    },
+    {
+
+      "id": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
+
+      "translation": "確定要從 Horizon Exchange 中移除服務 {Org}/{Service} 嗎？"
+    },
+    {
+
+      "id": "keys not found",
+
+      "translation": "找不到金鑰"
+    },
+    {
+
+      "id": "docker auth {AuthId} not found",
+
+      "translation": "找不到 Docker 授權 {AuthId}"
+    },
+    {
+
+      "id": "docker auths not found",
+
+      "translation": "找不到 Docker 授權"
+    },
+    {
+
+      "id": "service '{Org}/{Service}' not found.",
+
+      "translation": "找不到服務 '{Org}/{Service}'。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
+
+      "translation": "無法配置 'hzn exchange service listpolicy' 輸出：{Err}"
+    },
+    {
+
+      "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "正在更新服務原則並根據此服務原則來重新評估所有合約。必須取消現有合約並重新協議。"
+    },
+    {
+
+      "id": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
+
+      "translation": "確定要從 Horizon Exchange 中移除 {Org}/{Service} 的服務原則嗎？"
+    },
+    {
+
+      "id": "Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "正在移除服務原則並僅根據內建的節點原則來重新評估所有合約。必須取消現有合約並重新協議。"
+    },
+    {
+
+      "id": "theUser '{TrimPrefixtheUser_}' not found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到使用者 '{TrimPrefixtheUser_}'"
+    },
+    {
+
+      "id": "failed to marshal 'exchange user list' output: {Err}",
+
+      "translation": "無法配置 'exchange user list' 輸出：{Err}"
+    },
+    {
+
+      "id": "the email must be specified via -e if the username is not an email address.",
+
+      "translation": "如果使用者名稱不是電子郵件位址，則必須透過 -e 來指定電子郵件。"
+    },
+    {
+
+      "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
+
+      "translation": "警告：這樣做還會刪除此使用者擁有的所有 Exchange 資源（節點、服務、型樣等）。確定要從 Horizon Exchange 中移除使用者 {Org}/{User} 嗎？"
+    },
+    {
+
+      "id": "user '{User}' not found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到使用者 '{User}'"
+    },
+    {
+
+      "id": "Error parsing the selections {Form}. {Err}",
+
+      "translation": "剖析 selections {Form} 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Error getting {Resource} for output, error {Err}",
+
+      "translation": "取得輸出的 {Resource} 時發生錯誤，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。輸入主體無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點更新的輸入時發生錯誤。輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點原則的輸入時發生錯誤。輸入主體無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。輸入主體無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。輸入主體不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "剖析節點使用者輸入的輸入時發生錯誤。輸入主體無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+
+      "translation": "在節點 {Arg_1} 的節點配置/登錄中發生錯誤。{Arg_2}"
+    },
+    {
+
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+
+      "translation": "更新節點 {Arg_1} 時發生錯誤。{Arg_2}"
+    },
+    {
+
+      "id": "Error in node unregistration. {Arg_1}",
+
+      "translation": "在節點取消登錄中發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+
+      "translation": "驗證 Exchange 版本時發生錯誤。錯誤為：{Arg_1}"
+    },
+    {
+
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+
+      "translation": "建立或取代節點原則時發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node policy. {Arg_1}",
+
+      "translation": "修補節點原則時發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node policy. {Arg_1}",
+
+      "translation": "刪除節點原則時發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Error in updating node user input. {Arg_1}",
+
+      "translation": "更新節點使用者輸入時發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node user input. {Arg_1}",
+
+      "translation": "修補節點使用者輸入時發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node userinput. {Arg_1}",
+
+      "translation": "刪除節點使用者輸入時發生錯誤。{Arg_1}"
+    },
+    {
+
+      "id": "Start node configuration/registration for node {Arg_1}.",
+
+      "translation": "啟動節點 {Arg_1} 的節點配置/登錄。"
+    },
+    {
+
+      "id": "Start updating node {Arg_1}.",
+
+      "translation": "開始更新節點 {Arg_1}。"
+    },
+    {
+
+      "id": "Complete node update for {Arg_1}.",
+
+      "translation": "完成 {Arg_1} 的節點更新。"
+    },
+    {
+
+      "id": "Start node unregistration.",
+
+      "translation": "啟動節點取消登錄。"
+    },
+    {
+
+      "id": "Node unregistration complete for node {Arg_1}.",
+
+      "translation": "完成節點 {Arg_1} 的節點取消登錄。"
+    },
+    {
+
+      "id": "Error unregistring the node. The node is not found from the database.",
+
+      "translation": "取消登錄節點時發生錯誤。在資料庫中找不到該節點。"
+    },
+    {
+
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+
+      "translation": "取消登錄節點時發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能進行取消配置。"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+
+      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 removeNode 而言不正確"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+
+      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 deepClean 而言不正確"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+
+      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 block 而言不正確"
+    },
+    {
+
+      "id": "Unable to read node object from database, error {Arg_1}",
+
+      "translation": "無法從資料庫中讀取節點物件，錯誤為：{Arg_1}"
+    },
+    {
+
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+
+      "translation": "在資料庫中儲存新的節點配置狀態 (unconfiguring) 時發生錯誤：{Arg_1}"
+    },
+    {
+
+      "id": "Error in node configuration. The node is not found from the database.",
+
+      "translation": "節點配置中發生錯誤。在資料庫中找不到該節點。"
+    },
+    {
+
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+
+      "translation": "節點配置中發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能將狀態變更為 {Arg_1}。"
+    },
+    {
+
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+
+      "translation": "不支援將節點狀態從 '{Arg_1}' 轉移為 '{Arg_2}'。"
+    },
+    {
+
+      "id": "Failed get user input from local db. {Arg_1}",
+
+      "translation": "無法從本端資料庫取得使用者輸入。{Arg_1}"
+    },
+    {
+
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+
+      "translation": "在本端使用者輸入中找不到服務 {Arg_1}/{Arg_2} 的喜好設定，錯誤為：{Arg_3}"
+    },
+    {
+
+      "id": "Error saving new node config state to database: {Arg_1}",
+
+      "translation": "將新的節點配置狀態儲存至資料庫時發生錯誤：{Arg_1}"
+    },
+    {
+
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+
+      "translation": "完成節點 {Arg_1} 的節點配置/登錄。"
+    },
+    {
+
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+
+      "translation": "在 {Arg_1} 的服務配置中發生錯誤。{Arg_2}"
+    },
+    {
+
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+
+      "translation": "取得型樣 {Arg_1} 的服務參照時發生錯誤。{Arg_2}"
+    },
+    {
+
+      "id": "New node policy: {Arg_1}",
+
+      "translation": "新建節點原則：{Arg_1}"
+    },
+    {
+
+      "id": "Deleted node policy",
+
+      "translation": "已刪除節點原則"
+    },
+    {
+
+      "id": "New node user input: {Arg_1}",
+
+      "translation": "新建節點使用者輸入：{Arg_1}"
+    },
+    {
+
+      "id": "No node user input to detele",
+
+      "translation": "沒有要刪除的節點使用者輸入"
+    },
+    {
+
+      "id": "Deleted all node user input",
+
+      "translation": "刪除所有節點使用者輸入"
+    },
+    {
+
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+
+      "translation": "開始使用使用者輸入配置 {Arg_1}/{Arg_2} 的服務。"
+    },
+    {
+
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "開始自動配置 {Arg_1}/{Arg_2} 的服務。"
+    },
+    {
+
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "完成 {Arg_1}/{Arg_2} 的服務配置。"
+    },
+    {
+
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "完成 {Arg_1}/{Arg_2} 的服務自動配置。"
+    },
+    {
+
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+
+      "translation": "變數 {Arg_1} 在 {Arg_2}/{Arg_3} 的服務配置中遺漏。它可能會造成合約格式不正確（如果商業原則不包含遺漏變數的設定）。"
+    },
+    {
+
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+
+      "translation": "配置服務 {Arg_1} 時發生錯誤。{Arg_2}"
+    },
+    {
+
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+
+      "translation": "變更服務配置狀態 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "開始將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
+    },
+    {
+
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
+    },
+    {
+
+      "id": "Error converting the selections into Selectors: {Err}",
+
+      "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
+    },
+    {
+
+      "id": "properties contains an invalid property: {Err}",
+
+      "translation": "內容包含無效內容：{Err}"
+    },
+    {
+
+      "id": "Property must include a name and a value: {Property}",
+
+      "translation": "內容必須包括名稱及值：{Property}"
+    },
+    {
+
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+
+      "translation": "內容 {Name} 的內容類型 {DeclaredType} 無效。容許的內容類型為：版本、字串、整數、布林、浮點數及字串清單。"
+    },
+    {
+
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+
+      "translation": "內容值的類型為 {ActualType}，但預期的類型為 {DeclaredType}"
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not an integer type",
+
+      "translation": "內容 {Name} 的值 {Value} 類型不是整數"
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+
+      "translation": "內容 {Name} 的值 {Value} 不是有效字串。請定義類型或將值變更為字串。"
+    },
+    {
+
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+
+      "translation": "值為 {Value} 的內容 {Name} 不是有效的版本字串"
+    },
+    {
+
+      "id": "Property {Name} has invalid value type {ActualType}",
+
+      "translation": "內容 {Name} 的值類型 {ActualType} 無效"
+    },
+    {
+
+      "id": "failed to marshal 'hzn policy list' output: {Err}",
+
+      "translation": "無法配置 'hzn policy list' 輸出：{Err}"
+    },
+    {
+
+      "id": "Are you sure you want to remove the node policy?",
+
+      "translation": "確定要移除節點原則嗎？"
+    },
+    {
+
+      "id": "A list of policy properties that describe the object.",
+
+      "translation": "說明物件的原則內容清單。"
+    },
+    {
+
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+
+      "translation": "無法建立目錄來存放自行簽署的 MMS API 憑證，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+
+      "translation": "無法為 MMS API 憑證序號產生亂數，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+
+      "translation": "無法為 MMS API 憑證產生私密金鑰，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to create MMS API certificate, error {Err}",
+
+      "translation": "無法建立 MMS API 憑證，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "無法將 MMS API 憑證寫入檔案 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "無法將 MMS API 憑證編碼至檔案 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+
+      "translation": "無法關閉 MMS API 憑證檔 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "無法將 MMS API 憑證私密金鑰寫入檔案 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "無法將 MMS API 憑證私密金鑰編碼至檔案 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+
+      "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "this command can not be run before running 'hzn register'",
+
+      "translation": "在執行 'hzn register' 之前無法執行此指令"
+    },
+    {
+
+      "id": "horizon api attributes output did not include 'attributes' key",
+
+      "translation": "Horizon API 屬性輸出不包括 'attributes' 金鑰"
+    },
+    {
+
+      "id": "failed to marshal 'hzn attribute list' output: {Err}",
+
+      "translation": "無法配置 'hzn attribute list' 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal agreement with index {I}: {Err}",
+
+      "translation": "無法配置索引為 {I} 的合約：{Err}"
+    },
+    {
+
+      "id": "agreement id {AgreementId} not found",
+
+      "translation": "找不到合約 ID {AgreementId}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn agreement list' output: {Err}",
+
+      "translation": "無法配置 'hzn agreement list' 輸出：{Err}"
+    },
+    {
+
+      "id": "deployment config {Dep} is not supported",
+
+      "translation": "不支援部署配置 {Dep}"
+    },
+    {
+
+      "id": "starting test mode is not supported for this project",
+
+      "translation": "此專案不支援啟動測試模式"
+    },
+    {
+
+      "id": "Failed to get proper response from Horizon agent",
+
+      "translation": "無法從 Horizon 代理程式中取得適當的回應"
+    },
+    {
+
+      "id": "Horizon CLI version: {HORIZONVERSION}",
+
+      "translation": "Horizon CLI 版本：{HORIZONVERSION}"
+    },
+    {
+
+      "id": "Horizon Agent version: {HorizonVersion}",
+
+      "translation": "Horizon 代理程式版本：{HorizonVersion}"
+    },
+    {
+
+      "id": "must specify exchange credentials to access the model management service.",
+
+      "translation": "必須指定 Exchange 認證來存取模型管理服務。"
+    },
+    {
+
+      "id": "must specify object ID when requesting object details.",
+
+      "translation": "必須在要求物件詳細資料時指定物件 ID。"
+    },
+    {
+
+      "id": "no objects type '{ObjType}' found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到物件類型 '{ObjType}'"
+    },
+    {
+
+      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到類型為 '{ObjType}' 的物件 '{ObjId}'"
+    },
+    {
+
+      "id": "destination detail for object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+
+      "translation": "在組織 {Org} 中找不到類型為 '{ObjType}' 的物件 '{ObjId}' 的目的地明細"
+    },
+    {
+
+      "id": "Object status: {Stringresp}",
+
+      "translation": "物件狀態：{Stringresp}"
+    },
+    {
+
+      "id": "Required: A unique identifier of the object.",
+
+      "translation": "必需：物件的唯一 ID。"
+    },
+    {
+
+      "id": "Required: The type of the object.",
+
+      "translation": "必需：物件的類型。"
+    },
+    {
+
+      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
+
+      "translation": "必需：物件的組織 ID（一個物件只屬於一個組織）。"
+    },
+    {
+
+      "id": "The node id (without org prefix) where the object should be placed.",
+
+      "translation": "應用來放置物件的節點 ID（不含組織字首）。"
+    },
+    {
+
+      "id": "If omitted the object is sent to all nodes the same destinationType.",
+
+      "translation": "省略的話，物件會傳送至屬於同一目的地類型的所有節點。"
+    },
+    {
+
+      "id": "Delete this field when you are using destinationPolicy.",
+
+      "translation": "在使用目的地原則時刪除此欄位。"
+    },
+    {
+
+      "id": "The pattern in use by nodes that should receive this object.",
+
+      "translation": "型樣正由應該接收此物件的節點使用。"
+    },
+    {
+
+      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
+
+      "translation": "省略的話（同時省略目的地清單），物件會播送至所有已知節點。"
+    },
+    {
+
+      "id": "Delete this field when you are using policy.",
+
+      "translation": "在使用原則時刪除此欄位。"
+    },
+    {
+
+      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
+
+      "translation": "作為應接收此物件之 pattern:nodeId 配對陣列的目的地清單。"
+    },
+    {
+
+      "id": "If provided, destinationType and destinationID must be omitted.",
+
+      "translation": "提供的話，必須省略目的地類型和目的地 ID。"
+    },
+    {
+
+      "id": "The policy specification that should be used to distribute this object.",
+
+      "translation": "應該用來配送此物件的原則規範。"
+    },
+    {
+
+      "id": "Delete these fields if the target node is using a pattern.",
+
+      "translation": "當目標節點正在使用型樣時刪除這些欄位。"
+    },
+    {
+
+      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
+
+      "translation": "有效類型是字串、布林、整數、浮點數、字串清單（以逗點分隔）、版本。"
+    },
+    {
+
+      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
+
+      "translation": "如果類型可與值區別（例如，true 不加引號表示布林），則可以省略類型。"
+    },
+    {
+
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
+
+      "translation": "格式為 <property name> <operator> <property value> 的限制項表示式清單，以布林運算子 AND (&&) 或 OR (||) 分隔。"
+    },
+    {
+
+      "id": "The service(s) that will use this object.",
+
+      "translation": "將使用此物件的服務。"
+    },
+    {
+
+      "id": "Set to '*' to indcate services of any hardware architecture.",
+
+      "translation": "設為 '*' 表示任何硬體架構的服務。"
+    },
+    {
+
+      "id": "A version range.",
+
+      "translation": "版本範圍。"
+    },
+    {
+
+      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
+
+      "translation": "時間戳記/日期表示物件的到期日（系統會自動將它刪除）。應該以 RFC3339 格式提供時間戳記。"
+    },
+    {
+
+      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
+
+      "translation": "任意字串值。該值沒有語義解譯。「模型管理系統」不會保留物件的多個版本。"
+    },
+    {
+
+      "id": "An arbitrary description.",
+
+      "translation": "任意說明。"
+    },
+    {
+
+      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
+
+      "translation": "時間戳記/日期指出何時應自動啟動此物件。應該以 RFC3339 格式提供時間戳記。"
+    },
+    {
+
+      "id": "must specify exchange credentials to access the model management service",
+
+      "translation": "必須指定 Exchange 認證來存取模型管理服務"
+    },
+    {
+
+      "id": "must specify --type with --id",
+
+      "translation": "必須指定 --type 與 --id"
+    },
+    {
+
+      "id": "must specify --id with --type",
+
+      "translation": "必須指定 --id 與 --type"
+    },
+    {
+
+      "id": "cannot specify --id and --type with --def",
+
+      "translation": "無法指定 --id 和 --type 與 --def"
+    },
+    {
+
+      "id": "must specify either --type and --id or --def",
+
+      "translation": "必須指定 --type 和 --id 或指定 --def"
+    },
+    {
+
+      "id": "cannot specify --pattern with --def",
+
+      "translation": "無法指定 --pattern 與 --def"
+    },
+    {
+
+      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
+
+      "translation": "無法讀取定義檔 {ObjMetadataFile}：{Err}"
+    },
+    {
+
+      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
+
+      "translation": "無法解除配置定義檔 {ObjMetadataFile}：{Err}"
+    },
+    {
+
+      "id": "unable to open object file {ObjFile}: {Err}",
+
+      "translation": "無法開啟物件檔 {ObjFile}：{Err}"
+    },
+    {
+
+      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
+
+      "translation": "物件 {ObjFile} 已上傳至「模型管理服務」中的組織 {Org}"
+    },
+    {
+
+      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
+
+      "translation": "物件 {ObjectID} 已新增至「模型管理服務」中的組織 {Org}"
+    },
+    {
+
+      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
+
+      "translation": "已從「模型管理服務」的組織 {Org} 中刪除物件 {ObjId}"
+    },
+    {
+
+      "id": "health status API returned HTTP code {HttpCode}",
+
+      "translation": "性能狀態 API 傳回了 HTTP 代碼 {HttpCode}"
+    },
+    {
+
+      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
+
+      "translation": "無法建立檔案同步服務的網路 {NETWORKNAME}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to start CSS, error {Err}",
+
+      "translation": "無法啟動 CSS，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to load file objects into CSS, error {Err}",
+
+      "translation": "無法將檔案物件載入 CSS，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to start ESS, error {Err}",
+
+      "translation": "無法啟動 ESS，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
+
+      "translation": "無法停止 {MakeLabelNameESSNAME}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
+
+      "translation": "無法移除檔案同步服務的網路 {NETWORKNAME}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to list existing docker images, error {Err}",
+
+      "translation": "無法列出現有 Docker 映像檔，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Found docker image {Name} locally.",
+
+      "translation": "在本端找到 Docker 映像檔 {Name}。"
+    },
+    {
+
+      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
+
+      "translation": "無法使用映像檔 {GetFSSFullImageName} 擷取 CSS 儲存器，錯誤為：{Err}。設定環境變數 {DEVTOOLHZNFSSIMAGETAG} 以使用其他映像檔標籤。"
+    },
+    {
+
+      "id": "Pulled docker image {Name}.",
+
+      "translation": "已擷取 Docker 映像檔 {Name}。"
+    },
+    {
+
+      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
+
+      "translation": "無法使用映像檔 {GetFSSImageName} 建立 CSS 儲存器，錯誤為：{Err}。設定環境變數 {DEVTOOLHZNFSSIMAGETAG} 以使用其他映像檔標籤。"
+    },
+    {
+
+      "id": "unable to start CSS container, error {Err}",
+
+      "translation": "無法啟動 CSS 儲存器，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
+
+      "translation": "已建立 {MakeLabelNameCSSNAME} 儲存器，在主機埠 {GetCSSPort} 上接聽"
+    },
+    {
+
+      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
+
+      "translation": "在主機埠 {GetCSSPort} 上接聽的檔案同步服務儲存器 {MakeLabelNameCSSNAME}"
+    },
+    {
+
+      "id": "unable to create SSL certificate for ESS, error {Err}",
+
+      "translation": "無法為 ESS 建立 SSL 憑證，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+
+      "translation": "無法開啟 ESS SSL 憑證檔 {ESSSSLClientCertPath}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+
+      "translation": "無法讀取 ESS SSL 憑證檔 {ESSSSLClientCertPath}，錯誤為 {Err}"
+    },
+    {
+
+      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+
+      "translation": "無法開啟 ESS SSL 憑證金鑰檔 {ESSSSLCertKeyPath}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+
+      "translation": "無法讀取 ESS SSL 憑證金鑰檔 {ESSSSLCertKeyPath}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to create ESS container, error {Err}",
+
+      "translation": "無法建立 ESS 儲存器，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to start ESS container, error {Err}",
+
+      "translation": "無法啟動 ESS 儲存器，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Created {MakeLabelNameESSNAME} container",
+
+      "translation": "已建立 {MakeLabelNameESSNAME} 儲存器"
+    },
+    {
+
+      "id": "unable to list docker containers, error {Err}",
+
+      "translation": "無法列出 Docker 儲存器，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to stop docker container {Name}, error {Err}",
+
+      "translation": "無法停止 Docker 儲存器 {Name}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to remove docker container {Name}, error {Err}",
+
+      "translation": "無法移除 Docker 儲存器 {Name}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Stopped {Name} container",
+
+      "translation": "已停止 {Name} 儲存器"
+    },
+    {
+
+      "id": "Loading {FileName} into CSS",
+
+      "translation": "正在將 {FileName} 載入 CSS"
+    },
+    {
+
+      "id": "unable to open file object {FileName}, error {Err}",
+
+      "translation": "無法開啟檔案物件 {FileName}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to read file object {FileName}, error {Err}",
+
+      "translation": "無法讀取檔案物件 {FileName}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to add file {FileName} to the CSS, error {Err}",
+
+      "translation": "無法將檔案 {FileName} 新增至 CSS，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+
+      "translation": "配置檔 {FileObjects} 已載入檔案同步服務。"
+    },
+    {
+
+      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
+
+      "translation": "無法為 {Metadata} 配置 CSS 檔案 PUT 要求，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
+
+      "translation": "無法為 {Metadata} 建立 CSS 檔案 PUT 要求，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
+
+      "translation": "無法將針對 {Metadata} 發出的 CSS 檔案 PUT 要求傳送給 CSS，錯誤為：{Err}"
+    },
+    {
+
+      "id": "HTTP code: {StatusCode}",
+
+      "translation": "HTTP 代碼：{StatusCode}"
+    },
+    {
+
+      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
+
+      "translation": "無法將檔案 {Metadata} 放置在 CSS 中，HTTP 代碼為：{StatusCode}"
+    },
+    {
+
+      "id": "Created network {Name}",
+
+      "translation": "已建立網路 {Name}"
+    },
+    {
+
+      "id": "unable to list docker networks, error {Err}",
+
+      "translation": "無法列出 Docker 網路，錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to remove docker network {Name}, error {Err}",
+
+      "translation": "無法移除 Docker 網路 {Name}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Name, or Org is empty string.",
+
+      "translation": "名稱或組織為空字串。"
+    },
+    {
+
+      "id": "The serviceVersions array is empty.",
+
+      "translation": "serviceVersions 陣列為空。"
+    },
+    {
+
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+
+      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
+    },
+    {
+
+      "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
+
+      "translation": "無法將原則限制項 {Remainder} 轉換為內部格式，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
+
+      "translation": "邏輯運算子 {NextLogicalOperator} 無效，預期為 AND、OR、&&、||"
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
+
+      "translation": "找到 {Lenpieces} 個記號，預期一個表示式 {Expression} 中有 3 個記號，預期的格式為 <property> == <value>"
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
+
+      "translation": "找到 {Lenpieces} 個記號，預期一個表示式 {Expression} 中有 3 個記號，預期的表示式格式如下：在限制項表示式中具有 <property> <operator> <value> 這 3 個記號"
+    },
+    {
+
+      "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+
+      "translation": "表示式 {Expression} 應包含有效的比較運算子 - 運算子 {Pieces1} 錯誤。容許使用的運算子：{Lessthan}、{Greaterthan}、{Equalto}、{Doubleequalto}、{Lessthaneq}、{Greaterthaneq}、{Notequalto}、{Inoperator}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
+
+      "translation": "比較運算子：數值 {Value} 不支援使用 {CompOp}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
+
+      "translation": "比較運算子：布林值 {Value} 不支援使用 {CompOp}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
+
+      "translation": "比較運算子：字串清單值 {Value} 不支援使用 {CompOp}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
+
+      "translation": "比較運算子：字串值 {Value} 不支援使用 {CompOp}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
+
+      "translation": "比較運算子：單一版本 {Value} 不支援使用 {CompOp}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
+
+      "translation": "比較運算子：版本表示式 {Value} 不支援使用 {CompOp}"
+    },
+    {
+
+      "id": "Expression: {Expression} is not valid",
+
+      "translation": "表示式 {Expression} 無效"
+    },
+    {
+
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+
+      "translation": "Horizon 代理程式的指令行介面。大部分次指令使用位於預設位置 http://localhost 的  Horizon 代理程式 API（請參閱「環境變數」區段以置換此項）。\n\n環境變數：\n  HORIZON_URL：置換 hzn 在其中聯絡 Horizon 代理程式 API 的 URL。\n      這樣做可協助透過 ssh 通道使用 Horizon 代理程式。\n  HZN_EXCHANGE_URL：置換 'hzn exchange' 次指令用來\n與 Horizon Exchange 通訊的 URL，例如\n      https://exchange.bluehorizon.network/api/v1。（依預設，hzn 將要求\n      Horizon 代理程式提供 URL。）\n  HZN_ORG_ID：'hzn exchange -o' 旗標的預設值，\n用來指定組織 ID。\n  HZN_EXCHANGE_USER_AUTH：'hzn exchange -u' 或 'hzn\n\t  register -u' 旗標的預設值，格式為 '[org/]user:pw'。請注意，當設定了 HZN_EXCHANGE_USER_AUTH 時，可以設定 HZN_ORG_ID\n\t（如果已省略組織）。\n  HZN_FSS_CSSURL：置換 'hzn mms' 次指令\n用來與 Horizon 模型管理服務通訊的 URL，例如\n      https://exchange.bluehorizon.network/css/。（依預設，hzn 將要求\n      Horizon 代理程式提供 URL。）\n\n可在 JSON 格式的使用者配置檔 ~/.hzn/hzn.json 中指定\n所有上述環境變數以及指令說明中提到的環境變數。\n  例如：\n  {Com____}"
+    },
+    {
+
+      "id": "Verbose output.",
+
+      "translation": "詳細輸出。"
+    },
+    {
+
+      "id": "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.",
+
+      "translation": "呼叫 Horizon 或 Exchange API 時，請執行 GET，但請勿執行 PUT、POST 或 DELETE。"
+    },
+    {
+
+      "id": "Show the Horizon version.",
+
+      "translation": "顯示 Horizon 版本。"
+    },
+    {
+
+      "id": "Show the architecture of this machine (as defined by Horizon and golang).",
+
+      "translation": "顯示此機器的架構（如 Horizon 和 golang 所定義）。"
+    },
+    {
+
+      "id": "List and manage Horizon Exchange resources.",
+
+      "translation": "列出並管理 Horizon Exchange 資源。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
+
+      "translation": "Horizon Exchange 組織 ID。如果未指定，則將使用 HZN_ORG_ID 作為預設值。"
+    },
+    {
+
+      "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
+
+      "translation": "用來查詢並建立 Exchange 資源的 Horizon Exchange 使用者認證。如果未指定，則將使用 HZN_EXCHANGE_USER_AUTH 作為預設值。如果您未在它前面加上使用者的組織，則它前面會自動加上 -o 值。作為使用 -o 的替代方案，您可以使用 Horizon Exchange 組織 ID 來設定 HZN_ORG_ID"
+    },
+    {
+
+      "id": "Display the version of the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 的版本。"
+    },
+    {
+
+      "id": "Display the status of the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 的狀態。"
+    },
+    {
+
+      "id": "List and manage users in the Horizon Exchange.",
+
+      "translation": "列出並管理 Horizon Exchange 中的使用者。"
+    },
+    {
+
+      "id": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
+
+      "translation": "顯示 Horizon Exchange 中的使用者資源。（通常您只能顯示自己的使用者。如果使用者不存在，您會收到認證無效錯誤。）"
+    },
+    {
+
+      "id": "List this one user. Default is your own user. Only admin users can list other users.",
+
+      "translation": "列出這一個使用者。預設為您自己的使用者。只有管理者可以列出其他使用者。"
+    },
+    {
+
+      "id": "List all users in the org. Will only do this if you are a user with admin privilege.",
+
+      "translation": "列出組織中的所有使用者。僅當您是具有管理專用權的使用者時才能這樣做。"
+    },
+    {
+
+      "id": "When listing all of the users, show only the usernames, instead of each entire resource.",
+
+      "translation": "當列出所有使用者時，只會顯示使用者名稱而不是每個使用者的整個資源。"
+    },
+    {
+
+      "id": "Create the user resource in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中建立使用者資源。"
+    },
+    {
+
+      "id": "Your username for this user account when creating it in the Horizon exchange.",
+
+      "translation": "此使用者帳戶的使用者名稱（當您在 Horizon Exchange 中建立帳戶時）。"
+    },
+    {
+
+      "id": "Your password for this user account when creating it in the Horizon exchange.",
+
+      "translation": "此使用者帳戶的密碼（當您在 Horizon Exchange 中建立帳戶時）。"
+    },
+    {
+
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
+
+      "translation": "應該與此使用者帳戶相關聯的電子郵件位址（當您在 Horizon Exchange 中建立帳戶時）。如果使用者名稱是電子郵件位址，則可以省略此引數。"
+    },
+    {
+
+      "id": "This user should be an administrator, capable of managing all resources in this org of the exchange.",
+
+      "translation": "此使用者應該為管理者，能夠管理這個 Exchange 組織中的全部資源。"
+    },
+    {
+
+      "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
+
+      "translation": "將現有使用者變更為管理使用者（例如其組織內的 root 使用者）或變更為非管理使用者。只有 Exchange root 使用者或其他管理使用者才能執行此動作。"
+    },
+    {
+
+      "id": "The user to be modified.",
+
+      "translation": "要修改的使用者。"
+    },
+    {
+
+      "id": "True if they should be an admin user, otherwise false.",
+
+      "translation": "如果他們應該為管理使用者，則為 True，否則為 False。"
+    },
+    {
+
+      "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
+
+      "translation": "從 Horizon Exchange 中移除使用者資源。警告：這樣做還會導致刪除此使用者擁有的所有 Exchange 資源（節點、服務、型樣等）。"
+    },
+    {
+
+      "id": "The user to remove.",
+
+      "translation": "要移除的使用者。"
+    },
+    {
+
+      "id": "Skip the 'are you sure?' prompt.",
+
+      "translation": "跳過「確定嗎？」提示。"
+    },
+    {
+
+      "id": "List and manage nodes in the Horizon Exchange",
+
+      "translation": "列出並管理 Horizon Exchange 中的節點。"
+    },
+    {
+
+      "id": "Display the node resources from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的節點資源。"
+    },
+    {
+
+      "id": "List just this one node.",
+
+      "translation": "僅列出這一個節點。"
+    },
+    {
+
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+
+      "translation": "用來作為查詢和修改節點資源之認證的 Horizon Exchange 節點 ID 和記號（如果未指定 -u 旗標）。HZN_EXCHANGE_NODE_AUTH 將用作 -n 的預設值。如果您未在它前面加上節點的組織，則它前面會自動加上 -o 值。"
+    },
+    {
+
+      "id": "When listing all of the nodes, show the entire resource of each node, instead of just the name.",
+
+      "translation": "列出所有節點時，顯示每個節點的整個資源而不是僅顯示名稱。"
+    },
+    {
+
+      "id": "Create the node resource in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中建立節點資源。"
+    },
+    {
+
+      "id": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
+
+      "translation": "要建立的 Horizon Exchange 節點 ID 和記號。節點 ID 在組織中必須是唯一的。"
+    },
+    {
+
+      "id": "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.",
+
+      "translation": "您的電子郵件位址。只有以下情況需要指定：在 -u 旗標中指定的使用者不存在，並且您指定了 'public' 組織。如果這兩項都滿足，我們將建立使用者並包括此值作為電子郵件屬性。"
+    },
+    {
+
+      "id": "Your node architecture. If not specified, arch will leave blank.",
+
+      "translation": "您的節點架構。如果未指定，則架構將留為空白。"
+    },
+    {
+
+      "id": "The name of your node",
+
+      "translation": "您的節點名稱"
+    },
+    {
+
+      "id": "The node to be created.",
+
+      "translation": "要建立的節點。"
+    },
+    {
+
+      "id": "The token the new node should have.",
+
+      "translation": "新節點應該具有的記號。"
+    },
+    {
+
+      "id": "Update an attribute of the node in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中更新節點的屬性。"
+    },
+    {
+
+      "id": "The node to be updated.",
+
+      "translation": "要更新的節點。"
+    },
+    {
+
+      "id": "The path to a json file containing the changed attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "要在 Horizon Exchange 中更新的已變更屬性所在的 JSON 檔案的路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Change the token of a node resource in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中變更節點資源的記號。"
+    },
+    {
+
+      "id": "The node to be changed.",
+
+      "translation": "要變更的節點。"
+    },
+    {
+
+      "id": "The new token for the node.",
+
+      "translation": "節點的新記號。"
+    },
+    {
+
+      "id": "Check to see if the specified node and token are valid in the Horizon Exchange.",
+
+      "translation": "檢查指定的節點和記號在 Horizon Exchange 中是否有效。"
+    },
+    {
+
+      "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
+
+      "translation": "要檢查的 Horizon Exchange 節點 ID 和記號。如果未指定，則將使用 HZN_EXCHANGE_NODE_AUTH 作為預設值。與 <node> 和 <token> 引數互斥。"
+    },
+    {
+
+      "id": "The node id to be checked. Mutually exclusive with -n flag.",
+
+      "translation": "要檢查的節點 ID。與 -n 旗標互斥。"
+    },
+    {
+
+      "id": "The token for the node. Mutually exclusive with -n flag.",
+
+      "translation": "節點的記號。與 -n 旗標互斥。"
+    },
+    {
+
+      "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
+
+      "translation": "從 Horizon Exchange 中移除節點資源。當邊緣節點已使用此節點 ID 登錄時請勿這樣做。"
+    },
+    {
+
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+
+      "translation": "用來作為查詢和修改節點資源之認證的 Horizon Exchange 節點 ID 和記號（如果未指定 -u 旗標）。HZN_EXCHANGE_NODE_AUTH 將用作 -n 的預設值。如果您未在它前面加上節點的組織，則它前面會自動加上 -o 值。"
+    },
+    {
+
+      "id": "The node to remove.",
+
+      "translation": "要移除的節點。"
+    },
+    {
+
+      "id": "Display the node policy from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的節點原則。"
+    },
+    {
+
+      "id": "List policy for this node.",
+
+      "translation": "列出此節點的原則。"
+    },
+    {
+
+      "id": "Add or replace the node policy in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中新增或取代節點原則。"
+    },
+    {
+
+      "id": "Add or replace policy for this node.",
+
+      "translation": "新增或取代此節點的原則。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
+
+      "translation": "在 Horizon Exchange 中建立/更新節點原則所需 meta 資料所在的 JSON 檔案的路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Update an attribute of the policy for this node in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中更新此節點的原則屬性。"
+    },
+    {
+
+      "id": "Update the policy for this node.",
+
+      "translation": "更新此節點的原則。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "要在 Horizon Exchange 中更新的屬性所在的 JSON 檔案的路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Remove the node policy in the Horizon Exchange.",
+
+      "translation": "移除 Horizon Exchange 中的節點原則。"
+    },
+    {
+
+      "id": "Remove policy for this node.",
+
+      "translation": "移除此節點的原則。"
+    },
+    {
+
+      "id": "List and manage agbots in the Horizon Exchange",
+
+      "translation": "列出並管理 Horizon Exchange 中的 agbot。"
+    },
+    {
+
+      "id": "Display the agbot resources from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的 agbot 資源。"
+    },
+    {
+
+      "id": "List just this one agbot.",
+
+      "translation": "僅列出這一個 agbot。"
+    },
+    {
+
+      "id": "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.",
+
+      "translation": "列出所有 agbot 時，顯示每個 agbot 的整個資源而不是僅顯示名稱。"
+    },
+    {
+
+      "id": "Display the patterns that this agbot is serving.",
+
+      "translation": "顯示此 agbot 負責處理的型樣。"
+    },
+    {
+
+      "id": "The agbot to list the patterns for.",
+
+      "translation": "列出其型樣的 agbot。"
+    },
+    {
+
+      "id": "The organization of the 1 pattern to list.",
+
+      "translation": "要列出的一個型樣的組織。"
+    },
+    {
+
+      "id": "The name of the 1 pattern to list.",
+
+      "translation": "要列出的一個型樣的名稱。"
+    },
+    {
+
+      "id": "The organization of the nodes that should be searched. Defaults to patternorg.",
+
+      "translation": "應該搜尋的節點的組織。預設為 patternorg。"
+    },
+    {
+
+      "id": "Add this pattern to the list of patterns this agbot is serving.",
+
+      "translation": "將此型樣新增至此 agbot 負責處理的型樣清單。"
+    },
+    {
+
+      "id": "The agbot to add the pattern to.",
+
+      "translation": "要在其中新增型樣的 agbot。"
+    },
+    {
+
+      "id": "The organization of the pattern to add.",
+
+      "translation": "要新增的型樣的組織。"
+    },
+    {
+
+      "id": "The name of the pattern to add.",
+
+      "translation": "要新增的型樣的名稱。"
+    },
+    {
+
+      "id": "Remove this pattern from the list of patterns this agbot is serving.",
+
+      "translation": "從此 agbot 負責處理的型樣清單中移除此型樣。"
+    },
+    {
+
+      "id": "The agbot to remove the pattern from.",
+
+      "translation": "要從中移除型樣的 agbot。"
+    },
+    {
+
+      "id": "The organization of the pattern to remove.",
+
+      "translation": "要移除的型樣的組織。"
+    },
+    {
+
+      "id": "The name of the pattern to remove.",
+
+      "translation": "要移除的型樣的名稱。"
+    },
+    {
+
+      "id": "Display the business policies that this agbot is serving.",
+
+      "translation": "顯示此 agbot 負責處理的商業原則。"
+    },
+    {
+
+      "id": "The agbot to list serving business policies for.",
+
+      "translation": "列出其負責處理的商業原則的 agbot。"
+    },
+    {
+
+      "id": "Add this business policy to the list of policies this agbot is serving. Currently only support adding all the business polycies from an organization.",
+
+      "translation": "將此商業原則新增至此 agbot 負責處理的原則清單。目前只支援新增來自一個組織的所有商業原則。"
+    },
+    {
+
+      "id": "The agbot to add the business policy to.",
+
+      "translation": "要在其中新增商業原則的 agbot。"
+    },
+    {
+
+      "id": "The organization of the business policy to add.",
+
+      "translation": "要新增的商業原則的組織。"
+    },
+    {
+
+      "id": "Remove this business policy from the list of policies this agbot is serving. Currently only support removing all the business polycies from an organization.",
+
+      "translation": "從此 agbot 負責處理的原則清單中移除此商業原則。目前只支援移除來自一個組織的所有商業原則。"
+    },
+    {
+
+      "id": "The agbot to remove the business policy from.",
+
+      "translation": "要從中移除商業原則的 agbot。"
+    },
+    {
+
+      "id": "The organization of the business policy to remove.",
+
+      "translation": "要移除的商業原則的組織。"
+    },
+    {
+
+      "id": "List and manage patterns in the Horizon Exchange",
+
+      "translation": "列出並管理 Horizon Exchange 中的型樣。"
+    },
+    {
+
+      "id": "Display the pattern resources from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的型樣資源。"
+    },
+    {
+
+      "id": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
+
+      "translation": "僅列出這一個型樣。使用 <org>/<pat> 來指定另一個組織中的公用型樣，或使用 <org>/ 來列出另一個組織中的所有公用型樣。"
+    },
+    {
+
+      "id": "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.",
+
+      "translation": "列出所有型樣時，顯示每個型樣的整個資源而不是僅顯示名稱。"
+    },
+    {
+
+      "id": "Sign and create/update the pattern resource in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中簽署並建立/更新型樣資源。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.",
+
+      "translation": "在 Horizon Exchange 中建立/更新型樣所需 meta 資料所在的 JSON 檔案的路徑。請參閱 /usr/horizon/samples/pattern.json。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+
+      "translation": "用來簽署型樣之私密金鑰檔的路徑。如果未指定，則將會使用環境變數 HZN_PRIVATE_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.private.key 是預設值。"
+    },
+    {
+
+      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
+
+      "translation": "應該與型樣一起儲存的公開金鑰檔（對應於私密金鑰）的路徑，Horizon Agent 將使用公開金鑰來驗證簽章。如果未指定該項及 -k 旗標，則將會使用環境變數 HZN_PUBLIC_KEY_FILE。如果未設定 HZN_PUBLIC_KEY_FILE，則 ~/.hzn/keys/service.public.pem 為預設值。如果指定了 -k 但未指定此旗標，則不會隨型樣儲存任何公開金鑰檔。Horizon 代理程式需要匯入公開金鑰來驗證簽章。"
+    },
+    {
+
+      "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
+
+      "translation": "在 Horizon Exchange 中用於此型樣的名稱。如果未指定，則將預設為以 -f 指定之檔案路徑的基本名稱。"
+    },
+    {
+
+      "id": "Verify the signatures of a pattern resource in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中驗證型樣資源的簽章。"
+    },
+    {
+
+      "id": "The pattern to verify.",
+
+      "translation": "要驗證的型樣。"
+    },
+    {
+
+      "id": "The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "用來驗證型樣之 pem 公開金鑰檔的路徑。如果未指定，則將會使用環境變數 HZN_PUBLIC_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.public.pem 是預設值。"
+    },
+    {
+
+      "id": "Update an attribute of the pattern in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中更新型樣的屬性。"
+    },
+    {
+
+      "id": "The name of the pattern in the Horizon Exchange to publish.",
+
+      "translation": "Horizon Exchange 中要發佈之型樣的名稱。"
+    },
+    {
+
+      "id": "The path to a json file containing the updated attribute of the pattern to be put in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "要在 Horizon Exchange 中放置之型樣的已更新屬性所在的 JSON 檔案的路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Remove a pattern resource from the Horizon Exchange.",
+
+      "translation": "從 Horizon Exchange 中移除型樣資源。"
+    },
+    {
+
+      "id": "The pattern to remove.",
+
+      "translation": "要移除的型樣。"
+    },
+    {
+
+      "id": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
+
+      "translation": "列出 Horizon Exchange 中的這個型樣資源的簽署公用金鑰/憑證。"
+    },
+    {
+
+      "id": "The existing pattern to list the keys for.",
+
+      "translation": "要列出其金鑰的現有型樣。"
+    },
+    {
+
+      "id": "The existing key name to see the contents of.",
+
+      "translation": "要查看其內容的現有金鑰名稱。"
+    },
+    {
+
+      "id": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
+
+      "translation": "移除 Horizon Exchange 中的這個型樣資源的簽署公用金鑰/憑證。"
+    },
+    {
+
+      "id": "The existing pattern to remove the key from.",
+
+      "translation": "要從中移除其金鑰的現有型樣。"
+    },
+    {
+
+      "id": "The existing key name to remove.",
+
+      "translation": "要移除的現有金鑰名稱。"
+    },
+    {
+
+      "id": "List and manage services in the Horizon Exchange",
+
+      "translation": "列出並管理 Horizon Exchange 中的服務。"
+    },
+    {
+
+      "id": "Display the service resources from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的服務資源。"
+    },
+    {
+
+      "id": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
+
+      "translation": "僅列出這一個服務。使用 <org>/<svc> 來指定另一個組織中的公用服務，或使用 <org>/ 來列出另一個組織中的所有公用服務。"
+    },
+    {
+
+      "id": "When listing all of the services, show the entire resource of each services, instead of just the name.",
+
+      "translation": "列出所有服務時，顯示每個服務的整個資源而不是僅顯示名稱。"
+    },
+    {
+
+      "id": "Sign and create/update the service resource in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中簽署並建立/更新服務資源。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.",
+
+      "translation": "在 Horizon Exchange 中建立/更新服務所需 meta 資料所在的 JSON 檔案的路徑。請參閱 /usr/horizon/samples/service.json。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+
+      "translation": "用來簽署服務之私密金鑰檔的路徑。如果未指定，則將會使用環境變數 HZN_PRIVATE_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.private.key 是預設值。"
+    },
+    {
+
+      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
+
+      "translation": "應該與服務一起儲存的公開金鑰檔（對應於私密金鑰）的路徑，Horizon Agent 將使用公開金鑰來驗證簽章。如果未指定該項及 -k 旗標，則將會使用環境變數 HZN_PUBLIC_KEY_FILE。如果未設定 HZN_PUBLIC_KEY_FILE，則 ~/.hzn/keys/service.public.pem 為預設值。如果指定了 -k 但未指定此旗標，則不會隨服務儲存任何公開金鑰檔。Horizon 代理程式需要匯入公開金鑰來驗證簽章。"
+    },
+    {
+
+      "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
+
+      "translation": "部署欄位中的映像檔路徑包含一般標籤，且不應變更為 sha256 摘要值。該映像檔將不會自動上傳至儲存庫。僅當在經常測試新版本時於部署期間使用此映像檔。"
+    },
+    {
+
+      "id": "Use the image from the image repository. It will pull the image from the image repository and overwrite the local image if exists. This flag is mutually exclusive with -I.",
+
+      "translation": "使用映像檔儲存庫中的映像檔。它將從映像檔儲存庫中擷取映像檔並改寫存在的本端映像檔。此旗標與 -I 互斥。"
+    },
+    {
+
+      "id": "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token",
+
+      "translation": "應該隨服務一起儲存的 Docker 登錄網域及授權，可讓 Horizon 邊緣節點存取服務的 Docker 映像檔。此旗標可以重複使用，且每個旗標都應該採用以下格式：registry:user:token"
+    },
+    {
+
+      "id": "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.",
+
+      "translation": "如果 Exchange 中存在服務，則改寫現有版本。它將會跳過「要改寫嗎」提示。"
+    },
+    {
+
+      "id": "The path of the service policy JSON file to be used for the service to be published. This flag is optional",
+
+      "translation": "要發佈之服務所要使用的服務原則 JSON 檔案的路徑。這是選用旗標"
+    },
+    {
+
+      "id": "Verify the signatures of a service resource in the Horizon Exchange.",
+
+      "translation": "驗證 Horizon Exchange 中的服務資源的簽章。"
+    },
+    {
+
+      "id": "The service to verify.",
+
+      "translation": "要驗證的服務。"
+    },
+    {
+
+      "id": "The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "要用來驗證服務之 pem 公開金鑰檔的路徑。如果未指定，則將會使用環境變數 HZN_PUBLIC_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.public.pem 是預設值。"
+    },
+    {
+
+      "id": "Remove a service resource from the Horizon Exchange.",
+
+      "translation": "從 Horizon Exchange 中移除服務資源。"
+    },
+    {
+
+      "id": "The service to remove.",
+
+      "translation": "要移除的服務。"
+    },
+    {
+
+      "id": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
+
+      "translation": "列出 Horizon Exchange 中的這個服務資源的簽署公用金鑰/憑證。"
+    },
+    {
+
+      "id": "The existing service to list the keys for.",
+
+      "translation": "要列出其金鑰的現有服務。"
+    },
+    {
+
+      "id": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
+
+      "translation": "移除 Horizon Exchange 中的這個服務資源的簽署公用金鑰/憑證。"
+    },
+    {
+
+      "id": "The existing service to remove the key from.",
+
+      "translation": "要從中移除其金鑰的現有服務。"
+    },
+    {
+
+      "id": "List the docker auth tokens for this service resource in the Horizon Exchange.",
+
+      "translation": "列出 Horizon Exchange 中的這個服務資源的 Docker 授權記號。"
+    },
+    {
+
+      "id": "The existing service to list the docker auths for.",
+
+      "translation": "要列出其 Docker 授權的現有服務。"
+    },
+    {
+
+      "id": "The existing docker auth id to see the contents of.",
+
+      "translation": "要查看其內容的現有 Docker 授權 ID。"
+    },
+    {
+
+      "id": "Remove a docker auth token for this service resource in the Horizon Exchange.",
+
+      "translation": "移除 Horizon Exchange 中的這個服務資源的 Docker 授權記號。"
+    },
+    {
+
+      "id": "The existing service to remove the docker auth from.",
+
+      "translation": "要從中移除 Docker 授權的現有服務。"
+    },
+    {
+
+      "id": "The existing docker auth id to remove.",
+
+      "translation": "要移除的現有 Docker 授權 ID。"
+    },
+    {
+
+      "id": "Display the service policy from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的服務原則。"
+    },
+    {
+
+      "id": "The Horizon Exchange id and password of the user",
+
+      "translation": "使用者的 Horizon Exchange ID 和密碼"
+    },
+    {
+
+      "id": "List policy for this service.",
+
+      "translation": "列出此服務的原則。"
+    },
+    {
+
+      "id": "Display an empty service policy template that can be filled in.",
+
+      "translation": "顯示可填寫的空服務原則範本。"
+    },
+    {
+
+      "id": "Add or replace the service policy in the Horizon Exchange.",
+
+      "translation": "在 Horizon Exchange 中新增或取代服務原則。"
+    },
+    {
+
+      "id": "The Horizon Exchange ID and password of the user",
+
+      "translation": "使用者的 Horizon Exchange ID 和密碼"
+    },
+    {
+
+      "id": "Add or replace policy for this service.",
+
+      "translation": "新增或取代此服務的原則。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "在 Horizon Exchange 中建立/更新服務原則所需 meta 資料所在的 JSON 檔案的路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Remove the service policy in the Horizon Exchange.",
+
+      "translation": "移除 Horizon Exchange 中的服務原則。"
+    },
+    {
+
+      "id": "Remove policy for this service.",
+
+      "translation": "移除此服務的原則。"
+    },
+    {
+
+      "id": "List and manage business policies in the Horizon Exchange.",
+
+      "translation": "列出並管理 Horizon Exchange 中的商業原則。"
+    },
+    {
+
+      "id": "Display the business policies from the Horizon Exchange.",
+
+      "translation": "顯示 Horizon Exchange 中的商業原則。"
+    },
+    {
+
+      "id": "The Horizon ID and password of the user.",
+
+      "translation": "使用者的 Horizon ID 和密碼。"
+    },
+    {
+
+      "id": "Display detailed output about the business policies.",
+
+      "translation": "顯示關於商業原則的詳細輸出。"
+    },
+    {
+
+      "id": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+
+      "translation": "僅列出這一個原則。使用 <org>/<policy> 來指定另一個組織中的公用原則，或使用 <org>/ 來列出另一個組織中的所有公用原則。"
+    },
+    {
+
+      "id": "Display an empty business policy template that can be filled in.",
+
+      "translation": "顯示可填寫的空商業原則範本。"
+    },
+    {
+
+      "id": "Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template.",
+
+      "translation": "在 Horizon Exchange 中新增或取代商業原則。針對空商業原則範本使用 'hzn exchange business new'。"
+    },
+    {
+
+      "id": "The name of the policy to add or overwrite.",
+
+      "translation": "要新增或改寫之原則的名稱。"
+    },
+    {
+
+      "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.",
+
+      "translation": "在 Horizon Exchange 中更新現有原則的屬性。受支援的屬性是原則定義中的最上層屬性，如指令 'hzn exchange business new' 所示。"
+    },
+    {
+
+      "id": "The name of the policy to be updated in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 中要更新的原則名稱。"
+    },
+    {
+
+      "id": "The path to the json file containing the updated business policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "要在 Horizon Exchange 中變更之已更新商業原則屬性所在的 JSON 檔案的路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Remove the business policy in the Horizon Exchange.",
+
+      "translation": "移除 Horizon Exchange 中的商業原則。"
+    },
+    {
+
+      "id": "The name of the business policy to be removed.",
+
+      "translation": "要移除之商業原則的名稱。"
+    },
+    {
+
+      "id": "List all public services/patterns in all orgs that have orgType: IBM.",
+
+      "translation": "列出組織類型為 IBM 的所有組織中的所有公用服務/型樣。"
+    },
+    {
+
+      "id": "Display all public services in all orgs that have orgType: IBM.",
+
+      "translation": "顯示組織類型為 IBM 的所有組織中的所有公用服務。"
+    },
+    {
+
+      "id": "Only display org (IBM) and service names.",
+
+      "translation": "僅顯示組織 (IBM) 和服務名稱。"
+    },
+    {
+
+      "id": "Display detailed output about public services in all orgs that have orgType: IBM.",
+
+      "translation": "顯示組織類型為 IBM 的所有組織中關於公用服務的詳細輸出。"
+    },
+    {
+
+      "id": "Display all public patterns in all orgs that have orgType: IBM.",
+
+      "translation": "顯示組織類型為 IBM 的所有組織中的所有公用型樣。"
+    },
+    {
+
+      "id": "Only display org (IBM) and pattern names.",
+
+      "translation": "僅顯示組織 (IBM) 和型樣名稱。"
+    },
+    {
+
+      "id": "Display detailed output about public patterns in all orgs that have orgType: IBM.",
+
+      "translation": "顯示組織類型為 IBM 的所有組織中關於公用型樣的詳細輸出。"
+    },
+    {
+
+      "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
+
+      "translation": "針對可用於 'hzn register' 指令（一旦填寫）的這個型樣建立一個輸入檔範本。這會檢查指定的型樣使用的服務並判定服務所需的節點擁有者。"
+    },
+    {
+
+      "id": "The Horizon exchange node ID and token (it must already exist).",
+
+      "translation": "Horizon Exchange 節點 ID 和記號（必須存在）。"
+    },
+    {
+
+      "id": "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.",
+
+      "translation": "應該建立的 JSON 輸入範本檔名。此檔案將包含位置保留元供您填寫使用者輸入值。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID that the node will be registered in.",
+
+      "translation": "將在其中登錄節點的 Horizon Exchange 組織 ID。"
+    },
+    {
+
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
+
+      "translation": "說明應該將哪些工作量部署至此節點的 Horizon Exchange 型樣。如果型樣來自節點所在組織以外的組織，請使用 'other_org/pattern' 格式。"
+    },
+    {
+
+      "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
+
+      "translation": "要為其撰寫範本檔案的架構。（Horizon 會忽略其架構不同於目標系統之型樣中的服務）。架構必須是在目標系統上由 'hzn node list' 傳回的架構。"
+    },
+    {
+
+      "id": "Register this edge node with Horizon.",
+
+      "translation": "使用 Horizon 登錄此邊緣節點。"
+    },
+    {
+
+      "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
+
+      "translation": "Horizon Exchange 節點 ID 和記號。節點 ID 在組織中必須是唯一的。如果未指定，則將使用 HZN_EXCHANGE_NODE_AUTH 作為預設值。如果未指定 -n 和 HZN_EXCHANGE_NODE_AUTH，則 Horizon 將根據機器序號或完整主機名稱來建立節點 ID。如果未指定記號，則 Horizon 將建立一個隨機記號。如果 Exchange 中由 ID 和記號識別的節點資源尚不存在，您還必須指定 -u 旗標以便建立節點資源。"
+    },
+    {
+
+      "id": "The name of the node. If not specified, it will be the same as the node id.",
+
+      "translation": "節點的名稱。如果未指定，則將與節點 ID 相同。"
+    },
+    {
+
+      "id": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
+
+      "translation": "用來在 Horizon Exchange 中建立尚不存在的節點資源的使用者認證。如果未指定，則將使用 HZN_EXCHANGE_USER_AUTH 作為預設值。"
+    },
+    {
+
+      "id": "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.",
+
+      "translation": "您的電子郵件位址。只有以下情況需要指定：Horizon Exchange 中尚不存在節點資源，在 -u 旗標中指定的使用者不存在，並且您指定了 'public' 組織。如果所有這幾項都滿足，我們將建立使用者並包括此值作為電子郵件屬性。"
+    },
+    {
+
+      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.",
+
+      "translation": "用來設定或置換節點及屬於此型樣之服務所需變數的 JSON 檔案。請參閱 /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
+
+      "translation": "應在其中登錄節點的 Horizon Exchange 組織 ID。預設值是 HZN_ORG_ID 環境變數。與 <nodeorg> 和 <pattern> 引數互斥。"
+    },
+    {
+
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag.",
+
+      "translation": "說明應該將哪些工作量部署至此節點的 Horizon Exchange 型樣。如果型樣來自節點所在組織以外的組織，請使用 'other_org/pattern' 格式。與 <nodeorg> 和 <pattern> 引數以及 --policy 旗標互斥。"
+    },
+    {
+
+      "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.",
+
+      "translation": "用來設定或置換此節點的節點原則（將用於原則型合約協議）的 JSON 檔案。與 -p 引數互斥。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
+
+      "translation": "應在其中登錄節點的 Horizon Exchange 組織 ID。與 -o 和 -p 互斥。"
+    },
+    {
+
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.",
+
+      "translation": "說明應該將哪些工作量部署至此節點的 Horizon Exchange 型樣。如果型樣來自節點所在組織以外的組織，請使用 'other_org/pattern' 格式。與 -o、-p 和 --policy。"
+    },
+    {
+
+      "id": "List and manage keys for signing and verifying services.",
+
+      "translation": "列出並管理用於簽署及驗證服務的金鑰。"
+    },
+    {
+
+      "id": "List the signing keys that have been imported into this Horizon agent.",
+
+      "translation": "列出已匯入至此 Horizon 代理程式的簽署金鑰。"
+    },
+    {
+
+      "id": "The name of a specific key to show.",
+
+      "translation": "要顯示之特定金鑰的名稱。"
+    },
+    {
+
+      "id": "List the names of all signing keys, even the older public keys not wrapped in a certificate.",
+
+      "translation": "列出所有簽署金鑰的名稱，甚至包含在憑證中未覆蓋的較舊公開金鑰。"
+    },
+    {
+
+      "id": "Generate a signing key pair.",
+
+      "translation": "產生簽署金鑰組。"
+    },
+    {
+
+      "id": "x509 certificate Organization (O) field (preferably a company name or other organization's name).",
+
+      "translation": "x509 憑證組織 (O) 欄位（最好是公司名稱或其他組織的名稱）。"
+    },
+    {
+
+      "id": "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).",
+
+      "translation": "x509 憑證通用名稱 (CN) 欄位（最好是由 x509org 簽發的電子郵件位址）。"
+    },
+    {
+
+      "id": "The directory to put the key pair files in. Mutually exclusive with -k and -K. The file names will be randomly generated.",
+
+      "translation": "放置金鑰組檔案的目錄。與 -k 和 -K 互斥。檔名將隨機產生。"
+    },
+    {
+
+      "id": "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+
+      "translation": "私密金鑰檔的完整路徑。與 -d 互斥。如果未指定，則將會使用環境變數 HZN_PRIVATE_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.private.key 是預設值。"
+    },
+    {
+
+      "id": "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "公開金鑰檔的完整路徑。與 -d 互斥。如果未指定，則將會使用環境變數 HZN_PUBLIC_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.public.pem 是預設值。"
+    },
+    {
+
+      "id": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
+
+      "translation": "改寫現有檔案。它將會跳過「要改寫嗎」提示。"
+    },
+    {
+
+      "id": "The length of the key to create.",
+
+      "translation": "要建立之金鑰的長度。"
+    },
+    {
+
+      "id": "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.",
+
+      "translation": "x509 憑證有效性（有效性 > 有效終止日期），以天數表示（從產生之日起計算）。"
+    },
+    {
+
+      "id": "Automatically import the created public key into the local Horizon agent.",
+
+      "translation": "自動將建立的公開金鑰匯入至本端 Horizon 代理程式。"
+    },
+    {
+
+      "id": "Imports a signing public key into the Horizon agent.",
+
+      "translation": "將簽署公開金鑰匯入至 Horizon 代理程式。"
+    },
+    {
+
+      "id": "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "要匯入之 pem 公開金鑰檔的路徑。路徑中的基本名稱也會用來作為 Horizon 代理程式中的金鑰名稱。如果未指定，則將會使用環境變數 HZN_PUBLIC_KEY_FILE。如果未設定任何一項，則 ~/.hzn/keys/service.public.pem 是預設值。"
+    },
+    {
+
+      "id": "Remove the specified signing key from this Horizon agent.",
+
+      "translation": "從 Horizon 代理程式中移除指定的簽署金鑰。"
+    },
+    {
+
+      "id": "The name of a specific key to remove.",
+
+      "translation": "要移除之特定金鑰的名稱。"
+    },
+    {
+
+      "id": "List and manage general information about this Horizon edge node.",
+
+      "translation": "列出並管理關於這個 Horizon 邊緣節點的一般資訊。"
+    },
+    {
+
+      "id": "Display general information about this Horizon edge node.",
+
+      "translation": "顯示關於這個 Horizon 邊緣節點的一般資訊。"
+    },
+    {
+
+      "id": "List and manage policy for this Horizon edge node.",
+
+      "translation": "列出並管理這個 Horizon 邊緣節點的原則。"
+    },
+    {
+
+      "id": "Display this edge node's policy.",
+
+      "translation": "顯示這個邊緣節點的原則。"
+    },
+    {
+
+      "id": "Display an empty policy template that can be filled in.",
+
+      "translation": "顯示可填寫的空原則範本。"
+    },
+    {
+
+      "id": "Update the node's policy. The node's built-in properties will be automatically added if the input policy does not contain them.",
+
+      "translation": "更新節點的原則。如果輸入原則不含節點的內建內容，則系統會自動新增這些內容。"
+    },
+    {
+
+      "id": "The JSON input file name containing the node policy.",
+
+      "translation": "包含節點原則的 JSON 輸入檔名稱。"
+    },
+    {
+
+      "id": "Add or update node policy properties or overwrite the node policy constraint expression.",
+
+      "translation": "新增或更新節點原則內容或改寫節點原則限制項表示式。"
+    },
+    {
+
+      "id": "The new constraints or properties in the format '{Constraintsconstraint_list}' or '{Propertiesproperty_list}'.",
+
+      "translation": "格式為 '{Constraintsconstraint_list}' 或 '{Propertiesproperty_list}' 的新限制項或內容。"
+    },
+    {
+
+      "id": "Remove the node's policy.",
+
+      "translation": "移除節點的原則。"
+    },
+    {
+
+      "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
+
+      "translation": "列出或管理這個邊緣節點使用 Horizon 合約機器人建立的作用中合約或保存合約。"
+    },
+    {
+
+      "id": "List the active or archived agreements this edge node has made with a Horizon agreement bot.",
+
+      "translation": "列出這個邊緣節點使用 Horizon 合約機器人建立的作用中合約或保存合約。"
+    },
+    {
+
+      "id": "Show the details of this active or archived agreement.",
+
+      "translation": "顯示這份作用中合約或保存合約的詳細資料。"
+    },
+    {
+
+      "id": "List archived agreements instead of the active agreements.",
+
+      "translation": "列出保存合約而不是作用中合約。"
+    },
+    {
+
+      "id": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
+
+      "translation": "取消這個邊緣節點使用 Horizon 合約機器人建立的一個或全部作用中合約。agbot 通常會立即協議新合約。如果您想要取消所有合約而不希望此邊緣節點接受新合約，請執行 'hzn unregister'。"
+    },
+    {
+
+      "id": "Cancel all of the current agreements.",
+
+      "translation": "取消所有現行合約。"
+    },
+    {
+
+      "id": "The active agreement to cancel.",
+
+      "translation": "要取消的作用中合約。"
+    },
+    {
+
+      "id": "List or manage the metering (payment) information for the active or archived agreements.",
+
+      "translation": "列出或管理作用中合約或保存合約的計量（付款）資訊。"
+    },
+    {
+
+      "id": "List the metering (payment) information for the active or archived agreements.",
+
+      "translation": "列出作用中合約或保存合約的計量（付款）資訊。"
+    },
+    {
+
+      "id": "List archived agreement metering information instead of metering for the active agreements.",
+
+      "translation": "列出保存合約計量資訊而非作用中合約的計量資訊。"
+    },
+    {
+
+      "id": "List or manage the global attributes that are currently registered on this Horizon edge node.",
+
+      "translation": "列出或管理目前登錄在這個 Horizon 邊緣節點上的廣域屬性。"
+    },
+    {
+
+      "id": "List the global attributes that are currently registered on this Horizon edge node.",
+
+      "translation": "列出目前登錄在這個 Horizon 邊緣節點上的廣域屬性。"
+    },
+    {
+
+      "id": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
+
+      "translation": "列出或管理目前登錄在這個 Horizon 邊緣節點上的服務使用者輸入。"
+    },
+    {
+
+      "id": "List the service user inputs currently registered on this Horizon edge node.",
+
+      "translation": "列出目前登錄在這個 Horizon 邊緣節點上的服務使用者輸入。"
+    },
+    {
+
+      "id": "Display an empty userinput template.",
+
+      "translation": "顯示空使用者輸入範本。"
+    },
+    {
+
+      "id": "Add a new user input object or overwrite the current user input object for this Horizon edge node.",
+
+      "translation": "針對此 Horizon 邊緣節點新增新的使用者輸入物件或改寫現行使用者輸入物件。"
+    },
+    {
+
+      "id": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
+
+      "translation": "包含使用者輸入物件之 JSON 檔案的檔案路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Update an existing user input object for this Horizon edge node.",
+
+      "translation": "更新這個 Horizon 邊緣節點的現有使用者輸入物件。"
+    },
+    {
+
+      "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
+
+      "translation": "包含已更新使用者輸入物件之 JSON 檔案的檔案路徑。指定 -f- 以從 stdin 中讀取。"
+    },
+    {
+
+      "id": "Remove the user inputs that are currently registered on this Horizon edge node.",
+
+      "translation": "移除目前登錄在這個 Horizon 邊緣節點上的使用者輸入。"
+    },
+    {
+
+      "id": "Skip the 'Are you sure?' prompt.",
+
+      "translation": "跳過「確定嗎？」提示。"
+    },
+    {
+
+      "id": "List or manage the services that are currently registered on this Horizon edge node.",
+
+      "translation": "列出或管理目前登錄在這個 Horizon 邊緣節點上的服務。"
+    },
+    {
+
+      "id": "List the services variable configuration that has been done on this Horizon edge node.",
+
+      "translation": "列出已在這個 Horizon 邊緣節點上完成的服務變數配置。"
+    },
+    {
+
+      "id": "List the services that are currently registered on this Horizon edge node.",
+
+      "translation": "列出目前登錄在這個 Horizon 邊緣節點上的服務。"
+    },
+    {
+
+      "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
+
+      "translation": "列出或管理目前登錄在這個 Horizon 邊緣節點上的服務的配置狀態。"
+    },
+    {
+
+      "id": "List the configuration state for the services that are currently registered on this Horizon edge node.",
+
+      "translation": "列出目前登錄在這個 Horizon 邊緣節點上的服務的配置狀態。"
+    },
+    {
+
+      "id": "Change the configuration state to 'suspend' for a service.",
+
+      "translation": "將服務的配置狀態變更為「暫停」。"
+    },
+    {
+
+      "id": "Change the configuration state to 'active' for a service.",
+
+      "translation": "將服務的配置狀態變更為「作用中」。"
+    },
+    {
+
+      "id": "Suspend all registerd services.",
+
+      "translation": "暫停所有登錄服務。"
+    },
+    {
+
+      "id": "The organization of the service that should be suspended.",
+
+      "translation": "應該暫停的服務的組織。"
+    },
+    {
+
+      "id": "The name of the service that should be suspended.",
+
+      "translation": "應該暫停的服務的名稱。"
+    },
+    {
+
+      "id": "Resume all registerd services.",
+
+      "translation": "回復所有登錄服務。"
+    },
+    {
+
+      "id": "The organization of the service that should be resumed.",
+
+      "translation": "應該回復的服務的組織。"
+    },
+    {
+
+      "id": "The name of the service that should be resumed.",
+
+      "translation": "應該回復的服務的名稱。"
+    },
+    {
+
+      "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
+
+      "translation": "取消登錄並重設 Horizon 邊緣節點以便備妥進行重新登錄。警告：這樣做將會停止在此邊緣節點上執行的所有 Horizon 服務，然後重新啟動 Horizon 代理程式。"
+    },
+    {
+
+      "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
+
+      "translation": "此外，還會從 Horizon Exchange 中移除這個節點資源（因為您不再想要將此節點與 Horizon 搭配使用）。"
+    },
+    {
+
+      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
+
+      "translation": "還會移除所有先前的登錄資訊。僅在 'hzn unregister' 指令失敗之後使用它。請在使用此旗標之前透過執行 'hzn eventlog list -a -l' 指令來擷取日誌。"
+    },
+    {
+
+      "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
+
+      "translation": "等待完成取消註冊的分鐘數。預設值是零，表示永遠等待。"
+    },
+    {
+
+      "id": "Display the current horizon internal status for the node.",
+
+      "translation": "顯示節點目前的 Horizon 內部狀態。"
+    },
+    {
+
+      "id": "Show detailed status",
+
+      "translation": "顯示詳細狀態"
+    },
+    {
+
+      "id": "List the event logs for the current or all registrations.",
+
+      "translation": "列出現行或所有登錄的事件日誌。"
+    },
+    {
+
+      "id": "List all the event logs including the previous registrations.",
+
+      "translation": "列出所有事件日誌，包括先前的登錄。"
+    },
+    {
+
+      "id": "List event logs with details.",
+
+      "translation": "詳細列出事件日誌。"
+    },
+    {
+
+      "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+
+      "translation": "Selection 字串。這個旗標表示 'AND'，可以重複使用。每個旗標都應採用以下格式：attribute=value、attribute~value、\"attribute>value\" 或 \"attribute<value\"，其中 '~' 表示包含。共同屬性名稱是時間戳記、嚴重性、訊息、事件碼、來源類型、合約 ID、服務 URL 等。使用 '-l' 旗標可查看所有屬性名稱。"
+    },
+    {
+
+      "id": "Development tools for creation of services.",
+
+      "translation": "建立服務的開發工具。"
+    },
+    {
+
+      "id": "Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.",
+
+      "translation": "包含 Horizon 專案 meta 資料的目錄。省略的話，將會使用現行目錄下的 'horizon' 子目錄。"
+    },
+    {
+
+      "id": "For working with a service project.",
+
+      "translation": "使用服務專案。"
+    },
+    {
+
+      "id": "Create a new service project.",
+
+      "translation": "建立新的服務專案。"
+    },
+    {
+
+      "id": "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.",
+
+      "translation": "在其中定義服務的組織 ID。如果省略此旗標，則會使用 HZN_ORG_ID 環境變數。"
+    },
+    {
+
+      "id": "The name of the service. If this flag and the -i flag are omitted, only the skeletal horizon metadata files will be generated.",
+
+      "translation": "服務的名稱。如果省略此旗標和 -i 旗標，則只會產生 skeletal horizon meta 資料檔案。"
+    },
+    {
+
+      "id": "The version of the service. If this flag is omitted, '0.0.1' is used.",
+
+      "translation": "服務的版本。如果省略此旗標，則會使用 '0.0.1'。"
+    },
+    {
+
+      "id": "The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.",
+
+      "translation": "Docker 儲存器映像檔基本名稱（不含服務的版本標籤）。此指令將在基本名稱中新增架構和版本以形成最終映像檔名稱。格式為 'basename_arch:serviceversion'。可以重複使用此旗標來指定多個映像檔，但前提是指定了 '--noImageGen' 旗標。"
+    },
+    {
+
+      "id": "Indicates that the image is built somewhere else. No image sample code will be created by this command. If this flag is not specified, files for generating a simple service image will be created under current directory.",
+
+      "translation": "指出該映像檔建置在其他位置。此指令將不會建立任何映像檔範例程式碼。如果未指定此旗標，則將在現行目錄下建立用來產生簡式服務映像檔的檔案。"
+    },
+    {
+
+      "id": "Indicates no pattern definition file will be created.",
+
+      "translation": "指出將不會建立型樣定義檔。"
+    },
+    {
+
+      "id": "Indicate no policy file will be created.",
+
+      "translation": "指出將不會建立原則檔案。"
+    },
+    {
+
+      "id": "Indicates the type of deployment that will be used, e.g. native (the default), or helm.",
+
+      "translation": "指出將使用部署類型，例如原生（預設值）或 helm。"
+    },
+    {
+
+      "id": "Run a service in a mocked Horizon Agent environment.",
+
+      "translation": "在模擬 Horizon 代理程式環境中執行服務。"
+    },
+    {
+
+      "id": "File containing user input values for running a test. If omitted, the userinput file for the project will be used.",
+
+      "translation": "用於執行測試之使用者輸入值所在的檔案。省略的話，將會使用專案的使用者輸入檔案。"
+    },
+    {
+
+      "id": "File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.",
+
+      "translation": "要透過同步服務 API 提供的檔案。此旗標可以重複使用以移入多個檔案。"
+    },
+    {
+
+      "id": "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.",
+
+      "translation": "要透過同步服務 API 提供的檔案的類型。假設所有配置檔的類型都相同。如果指定了任何配置檔，則需要此旗標。"
+    },
+    {
+
+      "id": "Do not bring up file sync service (FSS) containers. They are brought up by default.",
+
+      "translation": "請勿啟動檔案同步服務 (FSS) 儲存器。預設情況下會啟動。"
+    },
+    {
+
+      "id": "Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+
+      "translation": "用來查詢 Exchange 資源的 Horizon Exchange 使用者認證。當您想要從 Exchange 中自動提取遺漏的相依服務時，請指定該認證。預設值是 HZN_EXCHANGE_USER_AUTH 環境變數。如果您未在它前面加上使用者的組織，則它前面會自動加上 HZN_ORG_ID 環境變數的值。"
+    },
+    {
+
+      "id": "Stop a service that is running in a mocked Horizon Agent environment.",
+
+      "translation": "停止在模擬 Horizon 代理程式環境中執行的服務。"
+    },
+    {
+
+      "id": "Validate the project for completeness and schema compliance.",
+
+      "translation": "驗證專案的完整性和綱目合規性。"
+    },
+    {
+
+      "id": "File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.",
+
+      "translation": "用於驗證專案之使用者輸入值所在的檔案。省略的話，將會使用專案的使用者輸入檔案。"
+    },
+    {
+
+      "id": "For working with project dependencies.",
+
+      "translation": "使用專案相依關係。"
+    },
+    {
+
+      "id": "The URL of the service dependency in the exchange. Mutually exclusive with -p and --url.",
+
+      "translation": "Exchange 中的服務相依關係的 URL。與 -p 和 --url 互斥。"
+    },
+    {
+
+      "id": "The URL of the service dependency in the exchange. Mutually exclusive with -p and --specRef.",
+
+      "translation": "Exchange 中的服務相依關係的 URL。與 -p 和 --specRef 互斥。"
+    },
+    {
+
+      "id": "The Org of the service dependency in the exchange. Mutually exclusive with -p.",
+
+      "translation": "Exchange 中的服務相依關係的組織。與 -p 互斥。"
+    },
+    {
+
+      "id": "(optional) The Version of the service dependency in the exchange. Mutually exclusive with -p.",
+
+      "translation": "（選用）Exchange 中的服務相依關係的版本。與 -p 互斥。"
+    },
+    {
+
+      "id": "(optional) The hardware Architecture of the service dependency in the exchange. Mutually exclusive with -p.",
+
+      "translation": "（選用）Exchange 中的服務相依關係的硬體架構。與 -p 互斥。"
+    },
+    {
+
+      "id": "Retrieving Horizon metadata for a new dependency.",
+
+      "translation": "擷取新相依關係的 Horizon meta 資料。"
+    },
+    {
+
+      "id": "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.",
+
+      "translation": "包含相依關係定義的 Horizon 專案。與 -s -o --ver -a 和 --url 互斥。"
+    },
+    {
+
+      "id": "Horizon Exchange user credentials to query exchange resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+
+      "translation": "用來查詢 Exchange 資源的 Horizon Exchange 使用者認證。預設值是 HZN_EXCHANGE_USER_AUTH 環境變數。如果您未在它前面加上使用者的組織，則它前面會自動加上 HZN_ORG_ID 環境變數的值。"
+    },
+    {
+
+      "id": "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.",
+
+      "translation": "用於配置新相依關係之使用者輸入值所在的檔案。省略的話，將會使用相依關係專案中的使用者輸入檔案。"
+    },
+    {
+
+      "id": "List all dependencies.",
+
+      "translation": "列出所有相依關係。"
+    },
+    {
+
+      "id": "Remove a project dependency.",
+
+      "translation": "移除專案相依關係。"
+    },
+    {
+
+      "id": "List and manage Horizon agreement bot resources.",
+
+      "translation": "列出並管理 Horizon 合約機器人資源。"
+    },
+    {
+
+      "id": "Display general information about this Horizon agbot node.",
+
+      "translation": "顯示關於這個 Horizon agbot 節點的一般資訊。"
+    },
+    {
+
+      "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
+
+      "translation": "列出或管理這個 Horizon 合約機器人與邊緣節點建立的作用中合約或保存合約。"
+    },
+    {
+
+      "id": "List the active or archived agreements this Horizon agreement bot has with edge nodes.",
+
+      "translation": "列出這個 Horizon 合約機器人與邊緣節點建立的作用中合約或保存合約。"
+    },
+    {
+
+      "id": "List just this one agreement.",
+
+      "translation": "僅列出這一個合約。"
+    },
+    {
+
+      "id": "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement.",
+
+      "translation": "取消這個 Horizon 合約機器人與邊緣節點建立的作用中合約。agbot 通常會立即協議新合約。"
+    },
+    {
+
+      "id": "List the policies this Horizon agreement bot hosts.",
+
+      "translation": "列出這個 Horizon 合約機器人管理的原則。"
+    },
+    {
+
+      "id": "List policies this Horizon agreement bot hosts.",
+
+      "translation": "列出這個 Horizon 合約機器人管理的原則。"
+    },
+    {
+
+      "id": "The organization the policy belongs to.",
+
+      "translation": "原則所隸屬的組織。"
+    },
+    {
+
+      "id": "The policy name.",
+
+      "translation": "原則名稱。"
+    },
+    {
+
+      "id": "Display the current horizon internal status for the Horizon agreement bot.",
+
+      "translation": "顯示 Horizon 合約機器人目前的 Horizon 內部狀態。"
+    },
+    {
+
+      "id": "Utility commands.",
+
+      "translation": "公用程式指令。"
+    },
+    {
+
+      "id": "Sign the text in stdin. The signature is sent to stdout.",
+
+      "translation": "簽署 stdin 中的文字。簽章將傳送至 stdout。"
+    },
+    {
+
+      "id": "The path of a private key file to be used to sign the stdin.",
+
+      "translation": "用來簽署 stdin 之私密金鑰檔的路徑。"
+    },
+    {
+
+      "id": "Verify that the signature specified via -s is a valid signature for the text in stdin.",
+
+      "translation": "驗證透過 -s 指定的簽章是否是 stdin 中的文字的有效簽章。"
+    },
+    {
+
+      "id": "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.",
+
+      "translation": "用來驗證 stdin 簽章之公開金鑰檔（對應於用來簽署的私密金鑰）的路徑。"
+    },
+    {
+
+      "id": "The supposed signature of stdin.",
+
+      "translation": "stdin 的假定簽章。"
+    },
+    {
+
+      "id": "Convert the configuration file from JSON format to a shell script.",
+
+      "translation": "將配置檔從 JSON 格式轉換為 Shell Script。"
+    },
+    {
+
+      "id": "The path of a configuration file to be converted.",
+
+      "translation": "要轉換之配置檔的路徑。"
+    },
+    {
+
+      "id": "List and manage Horizon Model Management Service resources.",
+
+      "translation": "列出並管理 Horizon 模型管理服務資源。"
+    },
+    {
+
+      "id": "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.",
+
+      "translation": "Horizon 組織 ID。如果未指定，則將使用 HZN_ORG_ID 作為預設值。"
+    },
+    {
+
+      "id": "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+
+      "translation": "用來查詢並建立模型管理服務資源的 Horizon 使用者認證。如果未指定，則將使用 HZN_EXCHANGE_USER_AUTH 作為預設值。如果您未在它前面加上使用者的組織，則它前面會自動加上 -o 值。"
+    },
+    {
+
+      "id": "Display the status of the Horizon Model Management Service.",
+
+      "translation": "顯示 Horizon 模型管理服務的狀態。"
+    },
+    {
+
+      "id": "List and manage objects in the Horizon Model Management Service.",
+
+      "translation": "列出並管理 Horizon 模型管理服務的物件。"
+    },
+    {
+
+      "id": "List objects in the Horizon Model Management Service.",
+
+      "translation": "列出 Horizon 模型管理服務中的物件。"
+    },
+    {
+
+      "id": "The type of the object to list.",
+
+      "translation": "要列出之物件的類型。"
+    },
+    {
+
+      "id": "The id of the object to list. This flag is optional. Omit this flag to list all objects of a given object type.",
+
+      "translation": "要列出之物件的類 ID。這是選用旗標。省略此旗標會列出給定物件類型的所有物件。"
+    },
+    {
+
+      "id": "Provides additional detail about the deployment of the object on edge nodes. This flag is only used when --id is specified.",
+
+      "translation": "提供有關邊緣節點上物件部署的其他詳細資料。僅當指定了 --id 時才能使用此旗標。"
+    },
+    {
+
+      "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
+
+      "translation": "顯示可以填寫的空物件 meta 資料 範本，並將其作為 'hzn mms object publish' 指令上的 -m 選項傳遞。"
+    },
+    {
+
+      "id": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
+
+      "translation": "發佈 Horizon 模型管理服務中的物件，將其提供給節點上部署的服務。"
+    },
+    {
+
+      "id": "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m",
+
+      "translation": "要發佈之物件的類型。此旗標必須與 -i 搭配使用。它與 -m 互斥"
+    },
+    {
+
+      "id": "The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m",
+
+      "translation": "要發佈之物件的 ID。此旗標必須與 -t 搭配使用。它與 -m 互斥"
+    },
+    {
+
+      "id": "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optional and can only be used with --type and --id. It is mutually exclusive with -m",
+
+      "translation": "若要在使用給定型樣的節點上部署物件，請使用此旗標來指定物件。這是選用旗標，只能與 --type 和 --id 搭配使用。它與 -m 互斥"
+    },
+    {
+
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
+
+      "translation": "要發佈之物件的定義。空白範本可透過 'hzn mss object new' 指令來獲取。"
+    },
+    {
+
+      "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
+
+      "translation": "要發佈的物件（檔案格式）。這是選用旗標，以便您可以僅更新物件的定義。"
+    },
+    {
+
+      "id": "The type of the object to delete.",
+
+      "translation": "要刪除之物件的類型。"
+    },
+    {
+
+      "id": "The id of the object to delete.",
+
+      "translation": "要刪除之物件的 ID。"
+    },
+    {
+
+      "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
+
+      "translation": "必須使用 -o 旗標或 HZN_ORG_ID 來指定組織 ID"
+    },
+    {
+
+      "id": "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH",
+
+      "translation": "必須使用 -u 旗標或 HZN_EXCHANGE_USER_AUTH 來指定 Exchange 使用者鑑別"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+
+      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+
+      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+
+      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+
+      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
+    },
+    {
+
+      "id": "Error starting containers: {Arg_1}",
+
+      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
+    },
+    {
+
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+
+      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+    },
+    {
+
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+
+      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+    },
+    {
+
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+
+      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。錯誤為：{Arg_2}"
+    },
+    {
+
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+
+      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。{Arg_2}"
+    },
+    {
+
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+
+      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。{Arg_2}"
+    },
+    {
+
+      "id": "[verbose] {M}",
+
+      "translation": "[verbose] {M}"
+    },
+    {
+
+      "id": "Error: {Msg}",
+
+      "translation": "錯誤：{Msg}"
+    },
+    {
+
+      "id": "Warning: {Msg}",
+
+      "translation": "警告：{Msg}"
+    },
+    {
+
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+
+      "translation": "無法解除配置 {ErrMsg} 中的位元組：{Err}"
+    },
+    {
+
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+
+      "translation": "無法解除配置 {ErrMsg} 中的資料類型：{Err}"
+    },
+    {
+
+      "id": "problem testing api key match: {Err}",
+
+      "translation": "測試 API 金鑰符合時發生問題：{Err}"
+    },
+    {
+
+      "id": "Using API key",
+
+      "translation": "使用 API 金鑰"
+    },
+    {
+
+      "id": "unable to create docker client: {Err}",
+
+      "translation": "無法建立 Docker 用戶端：{Err}"
+    },
+    {
+
+      "id": "docker auth domainName: {DomainName}",
+
+      "translation": "Docker 授權網域名稱：{DomainName}"
+    },
+    {
+
+      "id": "unable to find docker credentials for {Domain}",
+
+      "translation": "找不到 {Domain} 的 Docker 認證"
+    },
+    {
+
+      "id": "Pushing {Repository}:{Tag}...",
+
+      "translation": "正在推送 {Repository}:{Tag}..."
+    },
+    {
+
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+
+      "translation": "無法從 ~/.docker/config.json 中獲取 Docker 認證：{Err}。您可能需要執行 'docker login ...' 以為映像檔登錄提供認證。"
+    },
+    {
+
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+
+      "translation": "無法推送 Docker 映像檔 {Repository____tag}：{Err}"
+    },
+    {
+
+      "id": "could not find the image digest in the docker push output",
+
+      "translation": "在 Docker 推送輸出中找不到映像檔摘要"
+    },
+    {
+
+      "id": "Pulling {Repository}:{Tag}...",
+
+      "translation": "正在擷取 {Repository}:{Tag}..."
+    },
+    {
+
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+
+      "translation": "無法擷取 Docker 映像檔 {Repository____tag}。找不到 Docker 認證。如果映像檔登錄為私密，則您可能需要執行 'docker login ...'。錯誤為：{Err}"
+    },
+    {
+
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+
+      "translation": "無法擷取 Docker 映像檔 {Repository____tag}：{Err}"
+    },
+    {
+
+      "id": "the resource id can not contain more than 1 '/'",
+
+      "translation": "資源 ID 不能包含多個 '/'"
+    },
+    {
+
+      "id": "reading stdin failed: {Err}",
+
+      "translation": "讀取 stdin 失敗：{Err}"
+    },
+    {
+
+      "id": "reading {FilePath} failed: {Err}",
+
+      "translation": "讀取 {FilePath} 失敗：{Err}"
+    },
+    {
+
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+
+      "translation": "警告：環境變數 '{EnvVarName}' 在輸入檔中參照，但在環境中並未定義。"
+    },
+    {
+
+      "id": "Error scanning input, error {Err}",
+
+      "translation": "掃描輸入時發生錯誤，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Error reading HTTP response, error {Err}",
+
+      "translation": "讀取 HTTP 回應時發生錯誤，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。請執行 'systemctl status horizon' 以檢查 Horizon 是否在執行中。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。特定的錯誤為：{Err}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。可能是與該埠相關聯的 ssh 通道已關閉。或者可能是該通道另一端的 Horizon 代理程式已關閉。特定的錯誤為：{Err}"
+    },
+    {
+
+      "id": "{ApiMsg} new request failed: {Err}",
+
+      "translation": "{ApiMsg} 新建要求失敗：{Err}"
+    },
+    {
+
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+
+      "translation": "{ApiMsg} 中的 HTTP 代碼不正確：{HttpCode}"
+    },
+    {
+
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+
+      "translation": "{ApiMsg} 中的 HTTP 代碼不正確：{HttpCode}"
+    },
+    {
+
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+
+      "translation": "無法讀取 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+
+      "translation": "無法讀取 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+
+      "translation": "無法解除配置 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+
+      "translation": "無法解除配置 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確：{Body}"
+    },
+    {
+
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+
+      "translation": "無法配置 {ApiMsg} 的主體：{Err}"
+    },
+    {
+
+      "id": "Failed to unmarshal bytes. {Err}",
+
+      "translation": "無法解除配置位元組。{Err}"
+    },
+    {
+
+      "id": "Error getting HZN_ICP_CA_CERT_PATH from {ANAXOVERWRITEFILE}: {Err}",
+
+      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_ICP_CA_CERT_PATH 時發生錯誤：{Err}"
+    },
+    {
+
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+
+      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_EXCHANGE_URL 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+
+      "translation": "從 {ANAXCONFIGFILE} 中獲取 ExchangeUrl 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+
+      "translation": "未設定 HZN_EXCHANGE_URL，請從節點上的 Horizon 代理程式配置中獲取。"
+    },
+    {
+
+      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+
+      "translation": "無法從環境變數 HZN_EXCHANGE_URL 或 Horizon 代理程式中獲取 Exchange URL"
+    },
+    {
+
+      "id": "The exchange url: {ExchUrl}",
+
+      "translation": "Exchange URL：{ExchUrl}"
+    },
+    {
+
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+
+      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_FSS_CSSURL 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+
+      "translation": "從 {ANAXCONFIGFILE} 中獲取模型管理服務 URL 時發生錯誤。{Err}"
+    },
+    {
+
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+
+      "translation": "未設定 HZN_FSS_CSSURL，請從節點上的 Horizon 代理程式配置中獲取。"
+    },
+    {
+
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+
+      "translation": "無法從環境變數 HZN_FSS_CSSURL 或 Horizon 代理程式中獲取模型管理服務 URL"
+    },
+    {
+
+      "id": "The model management service url: {MmsUrl}",
+
+      "translation": "模型管理服務 URL：{MmsUrl}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+
+      "translation": "無法連接至 Horizon {HorizonService} REST API 以執行 {ApiMethod}。將 {ServiceEnvVarName} 設為使用 {Article} {HorizonService_1} 而不是目前針對 Horizon 代理程式配置的服務。特定的錯誤為：{Err}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+
+      "translation": "無法連接至 Horizon {HorizonService} REST API 以執行 {ApiMethod}。可能是未正確設定 {ServiceEnvVarName}？或者，未將 {ServiceEnvVarName_1} 設定為使用針對 Horizon 代理程式配置的 {HorizonService_1}。特定的錯誤為：{Err}"
+    },
+    {
+
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. Will retry.",
+
+      "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}。將重試。"
+    },
+    {
+
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}",
+
+      "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確，輸出：{StringbodyBytes}"
+    },
+    {
+
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+
+      "translation": "無法解除配置 {ApiMsg} 中的 Exchange 主體回應：{Err}"
+    },
+    {
+
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+
+      "translation": "無法配置 {ApiMsg} 中的 Exchange 輸出：{Err}"
+    },
+    {
+
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+
+      "translation": "無法配置 {ApiMsg} 的 Exchange 主體：{Err}"
+    },
+    {
+
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+
+      "translation": "無法從 {ApiMsg} 中讀取 Exchange 主體回應：{Err}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確：{Code}，{Msg}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確"
+    },
+    {
+
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+
+      "translation": "必須使用下列其中一項指定 Exchange 鑑別：-u 旗標、-n 旗標、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+
+      "translation": "無法取得檔案 {KeyFile} 的絕對路徑。{Err}"
+    },
+    {
+
+      "id": "{Err}. Please create the signing key.",
+
+      "translation": "{Err}。請建立簽署金鑰。"
+    },
+    {
+
+      "id": "running: {CmdStr}",
+
+      "translation": "正在執行：{CmdStr}"
+    },
+    {
+
+      "id": "did not get a command object",
+
+      "translation": "未取得指令物件"
+    },
+    {
+
+      "id": "Could not get Stdin pipe, error: {Err}",
+
+      "translation": "無法取得 stdin 管線，錯誤為：{Err}"
+    },
+    {
+
+      "id": "could not retrieve output from command, error: {Err}",
+
+      "translation": "無法從指令中擷取輸出，錯誤為：{Err}"
+    },
+    {
+
+      "id": "could not retrieve stderr from command, error: {Err}",
+
+      "translation": "無法從指令中擷取 stderr，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Unable to start command, error: {Err}",
+
+      "translation": "無法啟動指令：{Err}"
+    },
+    {
+
+      "id": "Unable to write to stdin of command, error: {Err}",
+
+      "translation": "無法寫入指令的 stdin，錯誤為：{Err}"
+    },
+    {
+
+      "id": "Unable to close stdin, error: {Err}",
+
+      "translation": "無法關閉 stdin，錯誤為：{Err}"
+    },
+    {
+
+      "id": "could not read stdout, error: {Err}",
+
+      "translation": "無法讀取 stdout，錯誤為：{Err}"
+    },
+    {
+
+      "id": "could not read stderr, error: {Err}",
+
+      "translation": "無法讀取 stderr，錯誤為：{Err}"
+    },
+    {
+
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+
+      "translation": "指令失敗：{Err}，stderr 為：{StringstderrBytes}"
+    },
+    {
+
+      "id": "Unable to marshal userinput object: {Err}",
+
+      "translation": "無法配置使用者輸入物件：{Err}"
+    },
+    {
+
+      "id": "A list of objects, each one containing the user inputs required for a specified service.",
+
+      "translation": "物件清單，每個物件都包含特定服務所需的使用者輸入。"
+    },
+    {
+
+      "id": "The horizon org of the specified service.",
+
+      "translation": "所指定服務的 Horizon 組織。"
+    },
+    {
+
+      "id": "The unique string used to identify the specified service.",
+
+      "translation": "用來識別所指定服務的唯一字串。"
+    },
+    {
+
+      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
+
+      "translation": "套用這些輸入的服務架構。省略或留為空白表示這些輸入套用於所有架構。"
+    },
+    {
+
+      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
+
+      "translation": "套用這些輸入的服務版本。省略或指定 \"[0.0.0,INFINITY)\" 表示這些輸入套用於所有版本。"
+    },
+    {
+
+      "id": "A list of objects with the names and values for the user inputs used by this service.",
+
+      "translation": "包含此服務所使用之使用者輸入的名稱和值的物件清單。"
+    },
+    {
+
+      "id": "Error unmarshaling userInput json file: {Err}",
+
+      "translation": "解除配置使用者輸入 JSON 檔案時發生錯誤：{Err}"
+    },
+    {
+
+      "id": "Are you sure you want to remove the node user inputs?",
+
+      "translation": "確定要移除節點使用者輸入嗎？"
+    },
+    {
+
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+
+      "translation": "{Image} 剖析為：網域={Domain}，路徑={Path}，標籤={Tag}"
+    },
+    {
+
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+
+      "translation": "警告：無法剖析映像檔路徑 '{Image}'。不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
+    },
+    {
+
+      "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
+
+      "translation": "在 'deployment' 欄位中使用 '{NewImage}' 而不是使用 '{Image}'"
+    },
+    {
+
+      "id": "failed to marshal deployment string {Dep}, error {Err}",
+
+      "translation": "無法配置部署字串 {Dep}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
+
+      "translation": "使用 {KeyFilePath} 簽署部署字串時發生問題：{Err}"
+    },
+    {
+
+      "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
+
+      "translation": "'deployment.services' 下定義的每個服務都必須是 JSON 物件（使用字串作為金鑰）"
+    },
+    {
+
+      "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
+
+      "translation": "在 'deployment.services' 之下定義的服務 '{SvcName}' 沒有必要的 'image' 欄位"
+    },
+    {
+
+      "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
+
+      "translation": "在 'deployment.services' 之下定義的服務 '{SvcName}' 有未被辨識的欄位 '{K}'。請參閱 https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md"
+    },
+    {
+
+      "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
+
+      "translation": "'deployment' 欄位必須包含 'services'欄位，其值必須是 JSON 物件（使用字串作為金鑰）"
+    },
+    {
+
+      "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
+
+      "translation": "'deployment' 欄位必須包含原生 Horizon 部署配置或 Helm 部署配置，其值必須是 JSON 物件（使用字串作為金鑰）"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動檔案同步服務，錯誤為：{Sserr}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法取得服務相依關係，錯誤為：{Derr}"
+    },
+    {
+
+      "id": "Starting dependencies.",
+
+      "translation": "正在啟動相依關係。"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動服務相依關係，錯誤為：{Perr}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法產生測試合約 ID，錯誤為：{Aerr}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' 無法停止服務相依關係，錯誤為：{Err}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法停止檔案同步服務，錯誤為：{Sserr}"
+    },
+    {
+
+      "id": "Stopped service.",
+
+      "translation": "已停止服務。"
+    },
+    {
+
+      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
+
+      "translation": "無法配置 '/service/config' 輸出屬性 {Attr}。{Err}"
+    },
+    {
+
+      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
+
+      "translation": "無法將 '/service/config' 輸出屬性 {Attr} 轉換為其原始類型。{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn service list' output: {Err}",
+
+      "translation": "無法配置 'hzn service list' 輸出，錯誤為：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn service registered' output: {Err}",
+
+      "translation": "無法配置 'hzn service registered' 輸出，錯誤為：{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn service configstate' output: {Err}",
+
+      "translation": "無法配置 'hzn service configstate' 輸出，錯誤為：{Err}"
+    },
+    {
+
+      "id": "all the registered services",
+
+      "translation": "所有登錄服務"
+    },
+    {
+
+      "id": "service {ServiceOrg}/{ServiceUrl}",
+
+      "translation": "服務 {ServiceOrg}/{ServiceUrl}"
+    },
+    {
+
+      "id": "all the registered services from organization {ServiceOrg}",
+
+      "translation": "組織 {ServiceOrg} 中的所有登錄服務"
+    },
+    {
+
+      "id": "Please specify the organization for service {ServiceUrl}.",
+
+      "translation": "請為服務 {ServiceUrl} 指定組織。"
+    },
+    {
+
+      "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
+
+      "translation": "確定要暫停此 Horizon 節點的 {Msgpart} 嗎？"
+    },
+    {
+
+      "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
+
+      "translation": "正在暫停 {Msgpart}、正在取消相關合約、正在停止相關服務儲存器..."
+    },
+    {
+
+      "id": "Resuming {Msgpart} ...",
+
+      "translation": "正在回復 {Msgpart} ..."
+    },
+    {
+
+      "id": "failed to marshal 'key list' output: {Err}",
+
+      "translation": "無法配置 'key list' 輸出：{Err}"
+    },
+    {
+
+      "id": "horizon api trust output did not include 'pem' key",
+
+      "translation": "Horizon API 信任輸出不包括 'pem' 金鑰"
+    },
+    {
+
+      "id": "failed to create a new key pair: {Err}",
+
+      "translation": "無法建立新的金鑰組：{Err}"
+    },
+    {
+
+      "id": "Move private key file from {PrivKeyName} to {PrivKeyFile}",
+
+      "translation": "將私密金鑰檔從 {PrivKeyName} 移至 {PrivKeyFile}"
+    },
+    {
+
+      "id": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
+
+      "translation": "無法將私密金鑰檔從 {PrivKeyName} 移至 {PrivKeyFile}。{Err}"
+    },
+    {
+
+      "id": "Move public key file from {PubKeyName} to {PubKeyFile}.",
+
+      "translation": "將公開金鑰檔從 {PubKeyName} 移至 {PubKeyFile}。"
+    },
+    {
+
+      "id": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
+
+      "translation": "無法將公開金鑰檔從 {PubKeyName} 移至 {PubKeyFile}。{Err}"
+    },
+    {
+
+      "id": "Created keys:\n \t{PrivKeyFile}\n\t{PubKeyFile}",
+
+      "translation": "已建立金鑰：\n \t{PrivKeyFile}\n\t{PubKeyFile}"
+    },
+    {
+
+      "id": "asked to import the created public key, but can not determine the name.",
+
+      "translation": "要求匯入已建立的公開金鑰，但無法確定名稱。"
+    },
+    {
+
+      "id": "Importing public key file {PubKeyFile} to the Horizon agent.",
+
+      "translation": "正在將公開金鑰檔 {PubKeyFile} 匯入 Horizon 代理程式。"
+    },
+    {
+
+      "id": "{PubKeyFile} imported to the Horizon agent",
+
+      "translation": "{PubKeyFile} 已匯入 Horizon 代理程式"
+    },
+    {
+
+      "id": "Public key '{KeyName}' removed from the Horizon agent.",
+
+      "translation": "公開金鑰 '{KeyName}' 已從 Horizon 代理程式中移除。"
+    },
+    {
+
+      "id": "-d is mutually exclusive with -k and -K",
+
+      "translation": "-d 與 -k 和 -K 互斥"
+    },
+    {
+
+      "id": "Creating directory {OutputDirPub}.",
+
+      "translation": "正在建立目錄 {OutputDirPub}。"
+    },
+    {
+
+      "id": "{PrivKeyFile} is a directory. Please specify a file name.",
+
+      "translation": "{PrivKeyFile} 是一個目錄。請指定檔名。"
+    },
+    {
+
+      "id": "File {PrivKeyFile} and {PubKeyFile} exist, do you want to overwrite?",
+
+      "translation": "檔案 {PrivKeyFile} 和 {PubKeyFile} 存在，要改寫嗎？"
+    },
+    {
+
+      "id": "File {PrivKeyFile} exists, do you want to overwrite?",
+
+      "translation": "檔案 {PrivKeyFile} 存在，要改寫嗎？"
+    },
+    {
+
+      "id": "Deleting file {PrivKeyFile}.",
+
+      "translation": "正在刪除檔案 {PrivKeyFile}。"
+    },
+    {
+
+      "id": "cleaned {String} resulted in an empty string.",
+
+      "translation": "已清除 {String} 導致出現空字串。"
+    },
+    {
+
+      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
+
+      "translation": "外掛程式環境定義必須包括 'currentDir' 作為服務定義檔的現行目錄"
+    },
+    {
+
+      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
+
+      "translation": "無法讀取圖表保存檔 {Depchartarchive}，錯誤為：{Err}"
+    },
+    {
+
+      "id": "chart_archive must have a string type value, has {C}",
+
+      "translation": "chart_archive 必須包含具有 {C} 的字串類型值"
+    },
+    {
+
+      "id": "release_name must have a string type value, has {R}",
+
+      "translation": "release_name 必須包含具有 {R} 的字串類型值"
+    },
+    {
+
+      "id": "chart_archive and release_name must be non-empty strings",
+
+      "translation": "chart_archive 和 release_name 必須是非空字串"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
+
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 不支援進行 Helm 部署"
+    },
+    {
+
+      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
+
+      "translation": "使用 {PrivKeyFilePath} 簽署 stdin 時發生問題：{Err}"
+    },
+    {
+
+      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
+
+      "translation": "無法從 {CofigFile} 中獲取變數。錯誤為：{Err}"
+    }
+  ]
+}

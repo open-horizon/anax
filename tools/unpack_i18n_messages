@@ -23,7 +23,7 @@ translated_json_file="/tmp/translated.json"
 cat $translated_file | sed 's/"id":/"message":/g' | sed '/UTF-8/d' > $translated_json_file
 
 # replace the original file with the translation
-output=$(jq '.messages' $original_file)
+output=$(jq '.messages | del(.[].translatorComment)' $original_file)
 while read -r i; do
 	orig_msg=$(echo "$i" | jq -r '.message')
 	trans_msg=$(echo "$i" | jq -r '.translation')
