@@ -42,7 +42,9 @@ then
     echo -e "hzn exchange service publish failed for IBM/cpu."
     exit 2
 fi
-hzn policy patch '{"constraints":["iame2edev == true"]}'
+
+hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
+
 echo "Waiting on error to surface"
 NUM_ERRS=0
 TIMEOUT=0
@@ -94,7 +96,9 @@ then
     echo -e "hzn exchange service publish failed for IBM/cpu."
     exit 2
 fi
-hzn policy patch '{"constraints":["iame2edev == true"]}'
+
+hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
+
 echo "Waiting on the surfaced error to be resolved"
 NUM_ERRS=1
 TIMEOUT=0
