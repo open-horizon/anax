@@ -276,7 +276,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 	var newPolicy externalpolicy.ExternalPolicy
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &newPolicy)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node policy not found for node %s/%s", node, nodeOrg))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node policy not found for node %s/%s", nodeOrg, node))
 	}
 
 	findAttrType := make(map[string]interface{})

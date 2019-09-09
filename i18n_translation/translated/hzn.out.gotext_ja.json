@@ -4,13 +4,13 @@
   "messages": [
     {
 
-      "id": "failed to unmarshal json input file {FilePath}: {Err}",
+      "id": "failed to unmarshal json input file {JsonFilePath}: {Err}",
 
-      "translation": "JSON 入力ファイル {FilePath} のアンマーシャルに失敗しました: {Err}"
+      "translation": "JSON 入力ファイル {JsonFilePath} のアンマーシャルに失敗しました: {Err}"
     },
     {
 
-      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
+      "id": "Incorrect node policy format in file {FilePath}: {Err}",
 
       "translation": "ファイル {JsonFilePath} にノード・ポリシー・フォーマットの誤りがあります: {Err}"
     },
@@ -1366,9 +1366,9 @@
     },
     {
 
-      "id": "agbot '{Agbot}' not found in org {Org}",
+      "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
 
-      "translation": "agbot「{Agbot}」は、org {Org} 内で検出されませんでした。"
+      "translation": "agbot「{Agbot}」は、org {AgbotOrg} 内で検出されませんでした。"
     },
     {
 
@@ -1426,15 +1426,15 @@
     },
     {
 
-      "id": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
+      "id": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
 
-      "translation": "ビジネス・ポリシー: {Org}/{Policy} は Horizon Exchange で更新されました"
+      "translation": "ビジネス・ポリシー: {PolOrg}/{Policy} は Horizon Exchange で更新されました"
     },
     {
 
-      "id": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
+      "id": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
 
-      "translation": "ビジネス・ポリシー: {Org}/{Policy} は Horizon Exchange に追加されました"
+      "translation": "ビジネス・ポリシー: {PolOrg}/{Policy} は Horizon Exchange に追加されました"
     },
     {
 
@@ -1444,15 +1444,15 @@
     },
     {
 
-      "id": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "id": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
 
-      "translation": "Horizon Exchange でポリシー {Org}/{PolicyName} を更新中です。このビジネス・ポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
+      "translation": "Horizon Exchange でポリシー {PolOrg}/{PolicyName} を更新中です。このビジネス・ポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
     },
     {
 
-      "id": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
+      "id": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
 
-      "translation": "ポリシー {Org}/{PolicyName} は Horizon Exchange で更新されました"
+      "translation": "ポリシー {PolOrg}/{PolicyName} は Horizon Exchange で更新されました"
     },
     {
 
@@ -1474,27 +1474,27 @@
     },
     {
 
-      "id": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
+      "id": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
 
-      "translation": "Horizon Exchange から組織 {Org} 用のビジネス・ポリシー {Policy} を削除しますか?"
+      "translation": "Horizon Exchange から組織 {PolOrg} 用のビジネス・ポリシー {Policy} を削除しますか?"
     },
     {
 
-      "id": "Policy {Org}/{Policy} not found in the Horizon Exchange",
+      "id": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
 
-      "translation": "ポリシー {Org}/{Policy} は Horizon Exchange で検出されませんでした"
+      "translation": "ポリシー {PolOrg}/{Policy} は Horizon Exchange で検出されませんでした"
     },
     {
 
-      "id": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "id": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
 
-      "translation": "ビジネス・ポリシー {Org}/{Policy} を削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。既存の契約は解除および再交渉される場合があります。"
+      "translation": "ビジネス・ポリシー {PolOrg}/{Policy} を削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。既存の契約は解除および再交渉される場合があります。"
     },
     {
 
-      "id": "Business policy {Org}/{Policy} removed",
+      "id": "Business policy {PolOrg}/{Policy} removed",
 
-      "translation": "ビジネス・ポリシー {Org}/{Policy} は削除されました"
+      "translation": "ビジネス・ポリシー {PolOrg}/{Policy} は削除されました"
     },
     {
 
@@ -1534,7 +1534,7 @@
     },
     {
 
-      "id": "A list of policy properties that describe the service being dployed.",
+      "id": "A list of policy properties that describe the service being deployed.",
 
       "translation": "デプロイされているサービスを特徴づけるポリシー・プロパティーのリスト。"
     },
@@ -1642,9 +1642,9 @@
     },
     {
 
-      "id": "node '{Node}' not found in org {Org}",
+      "id": "node '{Node}' not found in org {NodeOrg}",
 
-      "translation": "ノード「{Node}」は組織 {Org} 内で検出されませんでした"
+      "translation": "ノード「{Node}」は組織 {NodeOrg} 内で検出されませんでした"
     },
     {
 
@@ -1690,9 +1690,9 @@
     },
     {
 
-      "id": "Node {Org}/{Node} not found in the Horizon Exchange.",
+      "id": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
 
-      "translation": "ノード {Org}/{Node} は Horizon Exchange 内で検出されませんでした"
+      "translation": "ノード {NodeOrg}/{Node} は Horizon Exchange 内で検出されませんでした"
     },
     {
 
@@ -1714,15 +1714,15 @@
     },
     {
 
-      "id": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
 
-      "translation": "ノード {Org}/{Node} を Horizon Exchange から削除しますか? (エッジ・ノードがこのノード ID で登録されている場合は削除すべきではありません)"
+      "translation": "ノード {NodeOrg}/{Node} を Horizon Exchange から削除しますか? (エッジ・ノードがこのノード ID で登録されている場合は削除すべきではありません)"
     },
     {
 
-      "id": "node '{Org}/{Node}' not found.",
+      "id": "node '{NodeOrg}/{Node}' not found.",
 
-      "translation": "ノード「{Org}/{Node}」は検出されませんでした。"
+      "translation": "ノード「{NodeOrg}/{Node}」は検出されませんでした。"
     },
     {
 
@@ -1732,9 +1732,9 @@
     },
     {
 
-      "id": "Node policy not found for node {Node}/{Org}",
+      "id": "Node policy not found for node {NodeOrg}/{Node}",
 
-      "translation": "ノード {Node}/{Org} のノード・ポリシーは検出されませんでした"
+      "translation": "ノード {NodeOrg}/{Node} のノード・ポリシーは検出されませんでした"
     },
     {
 
@@ -1780,9 +1780,9 @@
     },
     {
 
-      "id": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
+      "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
 
-      "translation": "Horizon Exchange から {Org}/{Node} のノード・ポリシーを削除しますか?"
+      "translation": "Horizon Exchange から {NodeOrg}/{Node} のノード・ポリシーを削除しますか?"
     },
     {
 
@@ -1990,9 +1990,9 @@
     },
     {
 
-      "id": "problem verifying deployment string with {KeyFilePath}: {Err}",
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
 
-      "translation": "deployment ストリングを {KeyFilePath} で検査する際に問題が発生しました: {Err}"
+      "translation": "deployment ストリングを {PubKeyFilePath} で検査する際に問題が発生しました: {Err}"
     },
     {
 
@@ -2002,9 +2002,9 @@
     },
     {
 
-      "id": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
+      "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
 
-      "translation": "Horizon Exchange からサービス {Org}/{Service} を削除しますか?"
+      "translation": "Horizon Exchange からサービス {Svcorg}/{Service} を削除しますか?"
     },
     {
 
@@ -2026,9 +2026,9 @@
     },
     {
 
-      "id": "service '{Org}/{Service}' not found.",
+      "id": "service '{Svcorg}/{Service}' not found.",
 
-      "translation": "サービス「{Org}/{Service}」は検出されませんでした。"
+      "translation": "サービス「{Svcorg}/{Service}」は検出されませんでした。"
     },
     {
 
@@ -2044,9 +2044,9 @@
     },
     {
 
-      "id": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
+      "id": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
 
-      "translation": "Horizon Exchange から {Org}/{Service} のサービス・ポリシーを削除しますか?"
+      "translation": "Horizon Exchange から {Svcorg}/{Service} のサービス・ポリシーを削除しますか?"
     },
     {
 
@@ -3184,8 +3184,7 @@
     },
     {
 
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "translation": "Horizon エージェントのコマンド・ライン・インターフェース。ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください。)\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介してリモート Horizon エージェントを使用することを円滑にすることができます。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために使用する URL をオーバーライドします。\n例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を問い合わせます。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。HZN_EXCHANGE_USER_AUTH を設定した時に org を省略した場合は、HZN_ORG_ID を設定できる\n\tことに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと通信するために使用する\n URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。(デフォルトで hzn は\n      Horizon エージェントに URL を問い合わせます。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
     },
     {
@@ -5572,9 +5571,9 @@
     },
     {
 
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "id": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
 
-      "translation": "ファイル {KeyFile} の絶対パスの取得に失敗しました。{Err}"
+      "translation": "ファイル {PrivKeyFile} の絶対パスの取得に失敗しました。{Err}"
     },
     {
 

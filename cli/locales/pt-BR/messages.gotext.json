@@ -2,9 +2,9 @@
   "language": "pt-BR",
   "messages": [
     {
-      "id": "failed to unmarshal json input file {FilePath}: {Err}",
-      "message": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "Falha ao desserializar o arquivo de entrada JSON {FilePath}: {Err}",
+      "id": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "message": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "translation": "Falha ao desserializar o arquivo de entrada JSON {JsonFilePath}: {Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -4304,9 +4304,9 @@
       "fuzzy": true
     },
     {
-      "id": "agbot '{Agbot}' not found in org {Org}",
-      "message": "agbot '{Agbot}' not found in org {Org}",
-      "translation": "agbot '{Agbot}' não localizado na organização {Org}",
+      "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
+      "message": "agbot '{Agbot}' not found in org {AgbotOrg}",
+      "translation": "agbot '{Agbot}' não localizado na organização {AgbotOrg}",
       "placeholders": [
         {
           "id": "Agbot",
@@ -4550,9 +4550,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
-      "message": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
-      "translation": "Política de negócios: {Org}/{Policy} atualizada no Horizon Exchange",
+      "id": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
+      "message": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
+      "translation": "Política de negócios: {PolOrg}/{Policy} atualizada no Horizon Exchange",
       "placeholders": [
         {
           "id": "Org",
@@ -4574,9 +4574,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
-      "message": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
-      "translation": "Política de negócios: {Org}/{Policy} incluída no Horizon Exchange",
+      "id": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
+      "message": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
+      "translation": "Política de negócios: {PolOrg}/{Policy} incluída no Horizon Exchange",
       "placeholders": [
         {
           "id": "Org",
@@ -4622,9 +4622,9 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Atualizando a política {Org}/{PolicyName} no Horizon Exchange e reavaliando todos os contratos baseados nesta política de negócio. Os contratos existentes podem ser cancelados e renegociados.",
+      "id": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "Atualizando a política {PolOrg}/{PolicyName} no Horizon Exchange e reavaliando todos os contratos baseados nesta política de negócio. Os contratos existentes podem ser cancelados e renegociados.",
       "placeholders": [
         {
           "id": "Org",
@@ -4646,9 +4646,9 @@
       "fuzzy": true
     },
     {
-      "id": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
-      "message": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
-      "translation": "Política {Org}/{PolicyName} atualizada no Horizon Exchange",
+      "id": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
+      "message": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
+      "translation": "Política {PolOrg}/{PolicyName} atualizada no Horizon Exchange",
       "placeholders": [
         {
           "id": "Org",
@@ -4708,9 +4708,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
-      "translation": "Tem certeza de que deseja remover a política de negócio {Policy} da organização {Org} do Horizon Exchange?",
+      "id": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
+      "translation": "Tem certeza de que deseja remover a política de negócio {Policy} da organização {PolOrg} do Horizon Exchange?",
       "placeholders": [
         {
           "id": "Policy",
@@ -4732,9 +4732,9 @@
       "fuzzy": true
     },
     {
-      "id": "Policy {Org}/{Policy} not found in the Horizon Exchange",
-      "message": "Policy {Org}/{Policy} not found in the Horizon Exchange",
-      "translation": "Política {Org}/{Policy} não localizada no Horizon Exchange",
+      "id": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
+      "message": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
+      "translation": "Política {PolOrg}/{Policy} não localizada no Horizon Exchange",
       "placeholders": [
         {
           "id": "Org",
@@ -4756,9 +4756,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "message": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "translation": "Removendo a política de negócio {Org}/{Policy} e reavaliando todos os contratos baseados apenas na política do nó integrado. Os contratos existentes podem ser cancelados e renegociados",
+      "id": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "message": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "translation": "Removendo a política de negócio {PolOrg}/{Policy} e reavaliando todos os contratos baseados apenas na política do nó integrado. Os contratos existentes podem ser cancelados e renegociados",
       "placeholders": [
         {
           "id": "Org",
@@ -4780,9 +4780,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy {Org}/{Policy} removed",
-      "message": "Business policy {Org}/{Policy} removed",
-      "translation": "Política de negócio {Org}/{Policy} removida",
+      "id": "Business policy {PolOrg}/{Policy} removed",
+      "message": "Business policy {PolOrg}/{Policy} removed",
+      "translation": "Política de negócio {PolOrg}/{Policy} removida",
       "placeholders": [
         {
           "id": "Org",
@@ -4840,8 +4840,8 @@
       "fuzzy": true
     },
     {
-      "id": "A list of policy properties that describe the service being dployed.",
-      "message": "A list of policy properties that describe the service being dployed.",
+      "id": "A list of policy properties that describe the service being deployed.",
+      "message": "A list of policy properties that describe the service being deployed.",
       "translation": "Uma lista de propriedades de política que descrevem o serviço que está sendo utilizado.",
       "fuzzy": true
     },
@@ -5064,9 +5064,9 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Node}' not found in org {Org}",
-      "message": "node '{Node}' not found in org {Org}",
-      "translation": "Nó '{Node}' não localizado na organização {Org}",
+      "id": "node '{Node}' not found in org {NodeOrg}",
+      "message": "node '{Node}' not found in org {NodeOrg}",
+      "translation": "Nó '{Node}' não localizado na organização {NodeOrg}",
       "placeholders": [
         {
           "id": "Node",
@@ -5194,9 +5194,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node {Org}/{Node} not found in the Horizon Exchange.",
-      "message": "Node {Org}/{Node} not found in the Horizon Exchange.",
-      "translation": "Nó {Org}/{Node} não localizado no Horizon Exchange.",
+      "id": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
+      "message": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
+      "translation": "Nó {NodeOrg}/{Node} não localizado no Horizon Exchange.",
       "placeholders": [
         {
           "id": "Org",
@@ -5246,9 +5246,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "message": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "Tem certeza de que deseja remover o nó {Org}/{Node} do Horizon Exchange (não deve ser feito enquanto um nó de ponta estiver registrado com este ID de nó)?",
+      "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "message": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "translation": "Tem certeza de que deseja remover o nó {NodeOrg}/{Node} do Horizon Exchange (não deve ser feito enquanto um nó de ponta estiver registrado com este ID de nó)?",
       "placeholders": [
         {
           "id": "Org",
@@ -5270,9 +5270,9 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Org}/{Node}' not found.",
-      "message": "node '{Org}/{Node}' not found.",
-      "translation": "Nó '{Org}/{Node}' não localizado.",
+      "id": "node '{NodeOrg}/{Node}' not found.",
+      "message": "node '{NodeOrg}/{Node}' not found.",
+      "translation": "Nó '{NodeOrg}/{Node}' não localizado.",
       "placeholders": [
         {
           "id": "Org",
@@ -5318,9 +5318,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node policy not found for node {Node}/{Org}",
-      "message": "Node policy not found for node {Node}/{Org}",
-      "translation": "Política de nó não localizada para o nó {Node}/{Org}",
+      "id": "Node policy not found for node {NodeOrg}/{Node}",
+      "message": "Node policy not found for node {NodeOrg}/{Node}",
+      "translation": "Política de nó não localizada para o nó {NodeOrg}/{Node}",
       "placeholders": [
         {
           "id": "Node",
@@ -5470,9 +5470,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
-      "translation": "Tem certeza de que deseja remover a política de nó para {Org}/{Node} do Horizon Exchange?",
+      "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
+      "translation": "Tem certeza de que deseja remover a política de nó para {NodeOrg}/{Node} do Horizon Exchange?",
       "placeholders": [
         {
           "id": "Org",
@@ -6124,9 +6124,9 @@
       "fuzzy": true
     },
     {
-      "id": "problem verifying deployment string with {KeyFilePath}: {Err}",
-      "message": "problem verifying deployment string with {KeyFilePath}: {Err}",
-      "translation": "Problema ao verificar a sequência de implementação com {KeyFilePath}: {Err}",
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "message": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "translation": "Problema ao verificar a sequência de implementação com {PubKeyFilePath}: {Err}",
       "placeholders": [
         {
           "id": "KeyFilePath",
@@ -6164,9 +6164,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
-      "translation": "Tem certeza de que deseja remover o serviço {Org}/{Service} do Horizon Exchange?",
+      "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
+      "translation": "Tem certeza de que deseja remover o serviço {Svcorg}/{Service} do Horizon Exchange?",
       "placeholders": [
         {
           "id": "Org",
@@ -6216,9 +6216,9 @@
       "fuzzy": true
     },
     {
-      "id": "service '{Org}/{Service}' not found.",
-      "message": "service '{Org}/{Service}' not found.",
-      "translation": "Serviço '{Org}/{Service}' não localizado.",
+      "id": "service '{Svcorg}/{Service}' not found.",
+      "message": "service '{Svcorg}/{Service}' not found.",
+      "translation": "Serviço '{Svcorg}/{Service}' não localizado.",
       "placeholders": [
         {
           "id": "Org",
@@ -6262,9 +6262,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
-      "translation": "Tem certeza de que deseja remover a política de serviço de {Org}/{Service} do Horizon Exchange?",
+      "id": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
+      "translation": "Tem certeza de que deseja remover a política de serviço de {Svcorg}/{Service} do Horizon Exchange?",
       "placeholders": [
         {
           "id": "Org",
@@ -9677,8 +9677,8 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "translation": "Interface da linha de comandos para o agente do Horizon. A maioria dos subcomandos usa a API do Horizon Agent no local padrão http://localhost (consulte a seção Variáveis de ambiente para substituir isso).\n\nVariáveis de ambiente:\n  HORIZON_URL:  substitua a URL na qual o hzn entra em contato com a API do Horizon Agent.\n      Isso pode facilitar o uso do Horizon Agent remoto por meio de um túnel ssh.\n  HZN_EXCHANGE_URL:  substitua a URL que os subcomandos 'hzn exchange' usam\n      para se comunicar com o Horizon Exchange, por exemplo\n      https://exchange.bluehorizon.network/api/v1. (Por padrão, o hzn solicitará ao\n      Horizon Agent que forneça a URL.)\n  HZN_ORG_ID:  o valor padrão para a sinalização 'hzn exchange -o',\n     para especificar o ID da organização'.\n  HZN_EXCHANGE_USER_AUTH:  o valor padrão para a sinalização 'hzn exchange -u' ou 'hzn\n\t  register -u', no formato '[org/]user:pw'. Observe que HZN_ORG_ID pode ser configurado \n\t  se a organização for omitida quando HZN_EXCHANGE_USER_AUTH for configurado.\n  HZN_FSS_CSSURL:  substitua a URL que os subcomandos 'hzn mms' usam\n      para se comunicar com o Horizon Model Management Service, por exemplo\n      https://exchange.bluehorizon.network/css/. (Por padrão, o hzn solicitará ao\n      Horizon Agent que forneça a URL.)\n\n  Todas essas variáveis de ambiente e as que são mencionadas na ajuda do comando podem ser\n  especificadas no arquivo de configuração do usuário: ~/.hzn/hzn.json com formato JSON.\n  Por exemplo:\n  {Com____}",
       "placeholders": [
         {
@@ -13206,9 +13206,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Falha ao obter o caminho absoluto para o arquivo {KeyFile}. {Err}",
+      "id": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
+      "message": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
+      "translation": "Falha ao obter o caminho absoluto para o arquivo {PrivKeyFile}. {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
