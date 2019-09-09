@@ -1,0 +1,1170 @@
+// NLS_CHARSET=UTF-8
+{
+  "language": "fr",
+  "messages": [
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+
+      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de charge de travail non prise en charge."
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+
+      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de conteneur d'infrastructure non prise en charge."
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+
+      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour la charge de travail, {Arg_2}"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+
+      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour {Arg_2}, {Arg_3}"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de la désérialisation de la chaîne de déploiement {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+
+      "translation": "Erreur lors de la désérialisation de la chaîne de remplacement {Arg_1} pour l'accord {Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+
+      "id": "Error starting containers: {Arg_1}",
+
+      "translation": "Erreur lors du démarrage des conteneurs : {Arg_1}"
+    },
+    {
+
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+
+      "translation": "Erreur lors du démarrage des conteneurs pour l'accord {Arg_1} : {Arg_2}"
+    },
+    {
+
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+
+      "translation": "Erreur lors du redémarrage des conteneurs pour les accords {Arg_1} : {Arg_2}"
+    },
+    {
+
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+
+      "translation": "Erreur lors du nettoyage des anciens conteneurs avant de démarrer les nouveaux conteneurs pour {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+
+      "translation": "Impossible d'obtenir la liste des conteneurs parents pour une nouvelle tentative de service pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+
+      "translation": "Impossible de restaurer la connexion réseau avec les parents pour le service {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+
+      "translation": "Version_Expression : Les espaces blancs ne sont pas autorisés dans {Expr}."
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+
+      "translation": "Version_Expression : {Verstring} n'est pas une chaîne de version valide."
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression : {Verstring} ne commence pas par une directive d'inclusion ou d'exclusion."
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression : {Verstring} ne se termine pas par une directive d'inclusion ou d'exclusion."
+    },
+    {
+
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+
+      "translation": "Version_Expression : Nombre incorrect de versions dans l'expression : {Expr}."
+    },
+    {
+
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+
+      "translation": "La chaîne de version d'entrée {V1} ou {V2} n'est pas une chaîne de version unique valide."
+    },
+    {
+
+      "id": "properties contains an invalid property: {Err}",
+
+      "translation": "Les propriétés comportent une propriété non valide : {Err}"
+    },
+    {
+
+      "id": "Property must include a name and a value: {Property}",
+
+      "translation": "La propriété doit inclure un nom et une valeur : {Property}"
+    },
+    {
+
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+
+      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriétés autorisés sont : version, string, int, boolean, float et list of string."
+    },
+    {
+
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+
+      "translation": "La valeur de la propriété est de type {ActualType}, alors que le type attendu est {DeclaredType}"
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not an integer type",
+
+      "translation": "La valeur {Value} de la propriété {Name} n'est pas un type entier."
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+
+      "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Veuillez définir le type ou modifier la valeur en chaîne."
+    },
+    {
+
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+
+      "translation": "La propriété {Name} avec la valeur {Value} n'est pas une chaîne de version valide."
+    },
+    {
+
+      "id": "Property {Name} has invalid value type {ActualType}",
+
+      "translation": "La propriété {Name} possède un type de valeur {ActualType} non valide."
+    },
+    {
+
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+
+      "translation": "L'accord {Arg_1} existe déjà, la proposition est ignorée : {Arg_2}"
+    },
+    {
+
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+
+      "translation": "Une erreur s'est produite lors de la désérialisation de TsAndCs pour l'accord {Arg_1}, {Arg_2}"
+    },
+    {
+
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+
+      "translation": "Le noeud a reçu un message de proposition à l'aide de l'accord {Arg_1} pour le service {Arg_2}/{Arg_3} à partir de l'agbot {Arg_4}."
+    },
+    {
+
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Le noeud a rejeté la proposition pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+
+      "translation": "Erreur lors du traitement de la proposition pour le service {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+
+      "translation": "Impossible de lire le fichier de règles {Arg_1} pour le service {Arg_2}, erreur : {Arg_3}"
+    },
+    {
+
+      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Démarre la publicité des règles avec Exchange pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+
+      "translation": "Impossible de faire la publicité des règles avec Exchange pour le service {Arg_1}/{Arg_2}, erreur : {Arg_3}"
+    },
+    {
+
+      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Termine la publicité des règles avec Exchange pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+
+      "translation": "Echec de la pulsation du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+
+      "translation": "Restauration de la pulsation du noeud {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "unable to read node policy from the local database. {Arg_1}",
+
+      "translation": "impossible de lire la règle du noeud à partir de la base de données locale. {Arg_1}"
+    },
+    {
+
+      "id": "Unable to read node object from the local database. {Arg_1}",
+
+      "translation": "Impossible de lire l'objet du noeud à partir de la base de données locale. {Arg_1}"
+    },
+    {
+
+      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+
+      "translation": "Impossible de synchroniser la règle du noeud local avec la copie d'Exchange. Erreur : {Arg_1}"
+    },
+    {
+
+      "id": "Node policy updated with the exchange copy: {Arg_1}",
+
+      "translation": "Mise à jour de la règle du noeud avec la copie d'Exchange : {Arg_1}"
+    },
+    {
+
+      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+
+      "translation": "Impossible de synchroniser l'entrée utilisateur du noeud local avec la copie d'Exchange. Erreur : {Arg_1}"
+    },
+    {
+
+      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+
+      "translation": "Mise à jour de l'entrée utilisateur du noeud avec la copie d'Exchange. Les entrées utilisateur modifiées sont les suivantes : {Arg_1}"
+    },
+    {
+
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+
+      "translation": "Le noeud n'a pas pu vérifier l'accord {Arg_1} auprès du consommateur. Il sera annulé."
+    },
+    {
+
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+
+      "translation": "Le noeud est hors ligne. La consignation de messages d'erreur périodiques sera limitée tant que la connexion n'est pas rétablie. "
+    },
+    {
+
+      "id": "Name, or Org is empty string.",
+
+      "translation": "La chaîne Name ou Org est vide."
+    },
+    {
+
+      "id": "The serviceVersions array is empty.",
+
+      "translation": "Le tableau serviceVersions est vide."
+    },
+    {
+
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+
+      "translation": "L'expression de contrainte {Dconstraints} est de type {Dconstraints_1}, alors qu'elle devrait être un tableau de chaînes"
+    },
+    {
+
+      "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
+
+      "translation": "Impossible de convertir la contrainte de règle {Remainder} au format interne, erreur {Err}"
+    },
+    {
+
+      "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
+
+      "translation": "L'opérateur logique {NextLogicalOperator} n'est pas valide. Les valeurs attendues sont AND, OR, &&, ||"
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
+
+      "translation": "{Lenpieces} jetons ont été trouvés, alors que 3 sont requis dans une expression {Expression}. Le format attendu est <property> == <value>."
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
+
+      "translation": "{Lenpieces} jetons ont été trouvés, alors que 3 jetons sont requis dans une expression {Expression}. Le format attendu est une expression avec les 3 jetons <property> <operator> <value> dans une expression de contrainte."
+    },
+    {
+
+      "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+
+      "translation": "L'expression {Expression} doit contenir un opérateur de comparaison valide. L'opérateur {Pieces1} n'est pas correct. Les opérateurs autorisés sont les suivants : {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
+
+      "translation": "L'opérateur de comparaison {CompOp} n'est pas pris en charge pour la valeur numérique {Value}."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
+
+      "translation": "L'opérateur de comparaison {CompOp} n'est pas pris en charge pour la valeur booléenne {Value}."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
+
+      "translation": "L'opérateur de comparaison {CompOp} n'est pas pris en charge pour la valeur de liste de chaîne {Value}."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
+
+      "translation": "L'opérateur de comparaison {CompOp} n'est pas pris en charge pour la valeur de chaîne {Value}."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
+
+      "translation": "L'opérateur de comparaison {CompOp} n'est pas pris en charge pour la version unique {Value}."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
+
+      "translation": "L'opérateur de comparaison {CompOp} n'est pas pris en charge pour l'expression de version {Value}."
+    },
+    {
+
+      "id": "Expression: {Expression} is not valid",
+
+      "translation": "L'expression {Expression} n'est pas valide."
+    },
+    {
+
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+
+      "translation": "Impossible de créer le répertoire pour le certificat d'API MMS autosigné. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+
+      "translation": "Impossible de générer un numéro aléatoire pour le numéro de série du certificat d'API MMS. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+
+      "translation": "Impossible de générer la clé privée pour le certificat d'API MMS. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to create MMS API certificate, error {Err}",
+
+      "translation": "Impossible de créer le certificat d'API MMS. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "Impossible d'écrire le fichier du certificat d'API MMS dans le fichier {ServerCertificate}. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "Impossible de coder le certificat d'API MMS dans le fichier {ServerCertificate}. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+
+      "translation": "Impossible de fermer le fichier certificat d'API MMS {ServerCertificate}. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "Impossible d'écrire la clé privée du certificat d'API MMS dans le fichier {ServerKey}. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "Impossible de coder la clé privée du certificat d'API MMS dans le fichier {ServerKey}. Erreur {Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+
+      "translation": "Impossible de fermer le fichier de la clé privée du certificat d'API MMS {ServerKey}. Erreur {Err}"
+    },
+    {
+
+      "id": "Error parsing the selections {Form}. {Err}",
+
+      "translation": "Erreur lors de l'analyse syntaxique des sélections {Form}. {Err}"
+    },
+    {
+
+      "id": "Error getting {Resource} for output, error {Err}",
+
+      "translation": "Erreur lors de l'obtention de {Resource} pour la sortie. Erreur {Err}"
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour la configuration/l'enregistrement du noeud. Le corps de l'entrée n'a pas pu être désérialisé en objet noeud {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour la configuration/l'enregistrement du noeud. Le corps de l'entrée n'a pas pu être désérialisé en objet configstate {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour la mise à jour du noeud. Le corps de l'entrée n'a pas pu être désérialisé en objet noeud {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour la règle du noeud. Le corps de l'entrée n'a pas pu être désérialisé en tant qu'objet de règle {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour le correctif de la règle du noeud. Le corps de l'entrée n'a pas pu être désérialisé dans une expression de contrainte ou une liste de propriétés {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée pour le correctif de la règle du noeud. Le corps de l'entrée ne comportait pas d'expression de contrainte ni de liste de propriétés {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Erreur lors de l'analyse syntaxique de l'entrée utilisateur du noeud. Le corps de l'entrée n'a pas pu être désérialisé en tant qu'objet UserInput {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors de la configuration/l'enregistrement du noeud {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors de la mise à jour du noeud {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error in node unregistration. {Arg_1}",
+
+      "translation": "Erreur lors de l'annulation de l'enregistrement du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+
+      "translation": "Erreur lors de la vérification de la version d'Exchange. Erreur : {Arg_1}"
+    },
+    {
+
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+
+      "translation": "Erreur lors de la création ou du remplacement de la règle du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node policy. {Arg_1}",
+
+      "translation": "Erreur lors de la correction de la règle du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node policy. {Arg_1}",
+
+      "translation": "Erreur lors de la suppression de la règle du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Error in updating node user input. {Arg_1}",
+
+      "translation": "Erreur lors de la mise à jour de l'entrée utilisateur du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node user input. {Arg_1}",
+
+      "translation": "Erreur lors de la correction de l'entrée utilisateur du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node userinput. {Arg_1}",
+
+      "translation": "Erreur lors de la suppression de l'entrée utilisateur du noeud. {Arg_1}"
+    },
+    {
+
+      "id": "Start node configuration/registration for node {Arg_1}.",
+
+      "translation": "Démarrage de la configuration/l'enregistrement du noeud {Arg_1}."
+    },
+    {
+
+      "id": "Start updating node {Arg_1}.",
+
+      "translation": "Démarrage de la mise à jour du noeud {Arg_1}."
+    },
+    {
+
+      "id": "Complete node update for {Arg_1}.",
+
+      "translation": "Fin de la mise à jour du noeud pour {Arg_1}."
+    },
+    {
+
+      "id": "Start node unregistration.",
+
+      "translation": "Démarrage de l'annulation de l'enregistrement du noeud."
+    },
+    {
+
+      "id": "Node unregistration complete for node {Arg_1}.",
+
+      "translation": "Fin de l'annulation de l'enregistrement du noeud {Arg_1}."
+    },
+    {
+
+      "id": "Error unregistring the node. The node is not found from the database.",
+
+      "translation": "Erreur lors de l'annulation de l'enregistrement du noeud. Le noeud est introuvable dans la base de données."
+    },
+    {
+
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+
+      "translation": "Erreur lors de l'annulation de l'enregistrement du noeud. Le noeud doit être à l'état 'configuré' ou 'en cours de configuration' pour pouvoir annuler sa configuration."
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+
+      "translation": "Erreur d'entrée pour l'annulation d'enregistrement du noeud. {Arg_1} est une valeur incorrecte pour removeNode"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+
+      "translation": "Erreur d'entrée pour l'annulation d'enregistrement du noeud. {Arg_1} est une valeur incorrecte pour deepClean"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+
+      "translation": "Erreur d'entrée pour l'annulation d'enregistrement du noeud. {Arg_1} est une valeur incorrecte pour block"
+    },
+    {
+
+      "id": "Unable to read node object from database, error {Arg_1}",
+
+      "translation": "Impossible de lire un objet du noeud à partir de la base de données. Erreur {Arg_1}"
+    },
+    {
+
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+
+      "translation": "Erreur lors de la sauvegarde d'un nouvel état de configuration du noeud (unconfiguring) dans la base de données {Arg_1}"
+    },
+    {
+
+      "id": "Error in node configuration. The node is not found from the database.",
+
+      "translation": "Erreur lors de la configuration du noeud. Le noeud est introuvable dans la base de données."
+    },
+    {
+
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+
+      "translation": "Erreur lors de la configuration du noeud. Le noeud doit être à l'état 'configuré' ou 'en cours de configuration' pour pouvoir modifier son état en {Arg_1}."
+    },
+    {
+
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+
+      "translation": "La transition de l'état '{Arg_1}' vers '{Arg_2}' n'est pas prise en charge."
+    },
+    {
+
+      "id": "Failed get user input from local db. {Arg_1}",
+
+      "translation": "Impossible d'obtenir l'entrée utilisateur à partir de la base de données locale. {Arg_1}"
+    },
+    {
+
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+
+      "translation": "Impossible de trouver les préférences du service {Arg_1}/{Arg_2} à partir de l'entrée utilisateur locale. Erreur {Arg_3}"
+    },
+    {
+
+      "id": "Error saving new node config state to database: {Arg_1}",
+
+      "translation": "Erreur lors de la sauvegarde d'un nouvel état de configuration du noeud dans la base de données {Arg_1}"
+    },
+    {
+
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+
+      "translation": "Fin de la configuration/l'enregistrement du noeud {Arg_1}."
+    },
+    {
+
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors de la configuration du service pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors de l'obtention des références du service pour le pattern {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "New node policy: {Arg_1}",
+
+      "translation": "Nouvelle règle de noeud : {Arg_1}"
+    },
+    {
+
+      "id": "Deleted node policy",
+
+      "translation": "Règle de noeud supprimée"
+    },
+    {
+
+      "id": "New node user input: {Arg_1}",
+
+      "translation": "Nouvelle entrée utilisateur du noeud : {Arg_1}"
+    },
+    {
+
+      "id": "No node user input to detele",
+
+      "translation": "Aucune entrée utilisateur du noeud à supprimer"
+    },
+    {
+
+      "id": "Deleted all node user input",
+
+      "translation": "Entrées utilisateur de noeud supprimées"
+    },
+    {
+
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+
+      "translation": "Démarrage de la configuration du service à l'aide de l'entrée utilisateur pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "Démarrage de la configuration automatique du service pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "Fin de la configuration du service pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "Fin de la configuration automatique du service pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+
+      "translation": "La variable {Arg_1} est manquante dans la configuration du service pour {Arg_2}/{Arg_3}. Il se peut qu'un accord ne soit pas trouvé si la règle métier ne comporte pas le paramètre de la variable manquante."
+    },
+    {
+
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors de la configuration du service {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+
+      "translation": "Erreur lors du changement d'état de la configuration du service {Arg_1}. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "Démarrage du changement d'état de configuration du service de {Arg_1} en {Arg_2} pour le noeud."
+    },
+    {
+
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "Fin de changement d'état de configuration du service de {Arg_1} en {Arg_2} pour le noeud. "
+    },
+    {
+
+      "id": "Error converting the selections into Selectors: {Err}",
+
+      "translation": "Erreur lors de la conversion des sélections en sélecteurs : {Err}"
+    },
+    {
+
+      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
+
+      "translation": "Erreur lors de la récupération de l'accord {Arg_1} à partir de la base de données. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
+
+      "translation": "Impossible de récupérer l'accord {Arg_1} à partir de la base de données pour le message MeteringNotification. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
+
+      "translation": "Impossible de récupérer l'accord {Arg_1} à partir de la base de données pour le message Cancel. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
+
+      "translation": "Impossible de récupérer l'accord {Arg_1} à partir de la base de données pour le message ReplyAck. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
+
+      "translation": "Impossible de récupérer l'accord {Arg_1} à partir de la base de données pour le message DataReceived. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
+
+      "translation": "Impossible de récupérer les accords non archivés à partir de la base de données. {Arg_1}"
+    },
+    {
+
+      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
+
+      "translation": "Erreur lors du marquage de l'accord {Arg_1} comme étant terminé dans la base de données {Arg_2}."
+    },
+    {
+
+      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
+
+      "translation": "Erreur lors de l'obtention des définitions de service {Arg_1} à partir de la base de données. {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
+
+      "translation": "Erreur lors de la récupération de toutes les instances de service à partir de la base de données pour {Arg_1}/{Arg_2} version {Arg_3} clé {Arg_4}. {Arg_5}"
+    },
+    {
+
+      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors de la récupération de toutes les instances de service à partir de la base de données pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving all service instances from database, error: {Arg_1}",
+
+      "translation": "Erreur lors de la récupération de toutes les instances de service à partir de la base de données. Erreur {Arg_1}"
+    },
+    {
+
+      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
+
+      "translation": "Erreur lors de l'obtention de l'instance de service {Arg_1} à partir de la base de données. {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
+
+      "translation": "Erreur lors de la récupération des accords correspondants à partir de la base de données pour les charges de travail {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+
+      "translation": "Impossible de récupérer l'état de configuration du service pour la ressource de noeud {Arg_1} à partir d'Exchange. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
+
+      "translation": "Erreur lors de la récupération du noeud {Arg_1} à partir d'Exchange {Arg_2}"
+    },
+    {
+
+      "id": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
+
+      "translation": "Erreur lors de la mise à jour de registeredServices pour le noeud {Arg_1} dans Exchange {Arg_2}"
+    },
+    {
+
+      "id": "Image loaded for {Arg_1}/{Arg_2}.",
+
+      "translation": "Image chargée pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Image chargée pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Error loading image for {Arg_1}/{Arg_2}.",
+
+      "translation": "Erreur lors du chargement de l'image pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Erreur lors du chargement de l'image pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+
+      "translation": "Démarrage de la résiliation de l'accord pour {Arg_1}. Motif de résiliation : {Arg_2}"
+    },
+    {
+
+      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
+
+      "translation": "Accord trouvé pour le service {Arg_1}. L'ID de l'accord est {Arg_2}."
+    },
+    {
+
+      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
+
+      "translation": "L'accord pour {Arg_1} n'est plus valide sur l'agbot. Le noeud l'annulera. "
+    },
+    {
+
+      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
+
+      "translation": "Les conteneurs de service de charge de travail pour {Arg_1}/{Arg_2} sont opérationnels."
+    },
+    {
+
+      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+
+      "translation": "Fin de la résiliation de l'accord pour {Arg_1}. Motif de résiliation : {Arg_2}"
+    },
+    {
+
+      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
+
+      "translation": "Erreur lors de la suppression de l'accord pour {Arg_1} dans Exchange : {Arg_2}. Une nouvelle tentative sera effectuée."
+    },
+    {
+
+      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
+
+      "translation": "Une erreur s'est produite lors de la vérification de l'accord pour {Arg_1} avec l'agbot. Erreur {Arg_2}"
+    },
+    {
+
+      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
+
+      "translation": "ReplyAck a indiqué que l'agbot n'a pas voulu poursuivre l'accord pour {Arg_1}. Le noeud annulera l'accord."
+    },
+    {
+
+      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
+
+      "translation": "Le noeud a reçu un message Cancel pour {Arg_1}/{Arg_2} depuis l'agbot {Arg_3}."
+    },
+    {
+
+      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors du traitement du message ReplyAck pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling ReplyAck message. {Arg_1}",
+
+      "translation": "Erreur lors du traitement du message ReplyAck. {Arg_1}"
+    },
+    {
+
+      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors du traitement du message DataReceived pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling DataReceived message. {Arg_1}",
+
+      "translation": "Erreur lors du traitement du message DataReceived. {Arg_1}"
+    },
+    {
+
+      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors du traitement du message MeterNotification pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling MeterNotification message. {Arg_1}",
+
+      "translation": "Erreur lors du traitement du message MeterNotification. {Arg_1}"
+    },
+    {
+
+      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
+
+      "translation": "Erreur lors du traitement du message Cancel pour {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling Cancel message. {Arg_1}",
+
+      "translation": "Erreur lors du traitement du message Cancel. {Arg_1}"
+    },
+    {
+
+      "id": "Start workload service for {Arg_1}/{Arg_2}.",
+
+      "translation": "Démarrage du service de charge de travail pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Workload destroyed for {Arg_1}",
+
+      "translation": "Charge de travail supprimée pour {Arg_1}"
+    },
+    {
+
+      "id": "Service containers for {Arg_1} started.",
+
+      "translation": "Les conteneurs de service pour {Arg_1} ont démarré."
+    },
+    {
+
+      "id": "Complete cleaning up the service instance {Arg_1}.",
+
+      "translation": "Fin du nettoyage de l'instance de service {Arg_1}."
+    },
+    {
+
+      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
+
+      "translation": "Démarrage des services dépendants pour {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
+
+      "translation": "Une erreur s'est produite lors du démarrage des services dépendants pour {Arg_1}/{Arg_2}. {Arg_3}"
+    },
+    {
+
+      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
+
+      "translation": "Erreur lors du démarrage du service dépendant {Arg_1}/{Arg_2} version {Arg_3} pour l'accord {Arg_4}. {Arg_5}"
+    },
+    {
+
+      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
+
+      "translation": "Démarrage du nettoyage du service {Arg_1}, car l'accord {Arg_2} a pris fin."
+    },
+    {
+
+      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+
+      "translation": "Erreur lors du démarrage du service {Arg_1}/{Arg_2} version {Arg_3}. Erreur : {Arg_4}"
+    },
+    {
+
+      "id": "Error getting all the services from agreements: {Arg_1}",
+
+      "translation": "Erreur lors de l'obtention de tous les services à partir des accords {Arg_1}"
+    },
+    {
+
+      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
+
+      "translation": "Démarrage du service sans accord {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
+
+      "translation": "Fin du démarrage du service sans accord {Arg_1}/{Arg_2} et de ses éléments dépendants."
+    },
+    {
+
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
+
+      "translation": "Impossible de démarrer le service sans accord {Arg_1}/{Arg_2}. Erreur {Arg_3}"
+    },
+    {
+
+      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
+
+      "translation": "Impossible de démarrer les services sans accord. Une erreur s'est produite lors de la recherche du pattern {Arg_1} dans Exchange. Erreur : {Arg_2}"
+    },
+    {
+
+      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
+
+      "translation": "Impossible de démarrer les services sans accord. Pattern {Arg_1} introuvable dans Exchange."
+    },
+    {
+
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
+
+      "translation": "Impossible de démarrer le service sans accord {Arg_1}/{Arg_2}. La définition du service local est introuvable. "
+    },
+    {
+
+      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
+      "translation": "Démarrage de la mise à niveau du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}."
+    },
+    {
+
+      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
+      "translation": "Fin de la mise à niveau du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}."
+    },
+    {
+
+      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
+
+      "translation": "Echec de la mise à niveau du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}. Erreur : {Arg_5}"
+    },
+    {
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
+
+      "translation": "Démarrage de la rétromigration du service {Arg_1}/{Arg_2} version {Arg_3}, car le démarrage du service d'accord a échoué."
+    },
+    {
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
+
+      "translation": "Démarrage de la rétromigration du service {Arg_1}/{Arg_2} version {Arg_3}, car le démarrage du service a échoué."
+    },
+    {
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
+
+      "translation": "Démarrage de la rétromigration du service {Arg_1}/{Arg_2} version {Arg_3} en raison de l'échec de la mise à niveau."
+    },
+    {
+
+      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+
+      "translation": "Echec de la rétromigration du service {Arg_1}/{Arg_2} version {Arg_3}. Erreur : {Arg_4}"
+    },
+    {
+
+      "id": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
+      "translation": "Fin de la rétromigration du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}."
+    },
+    {
+
+      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
+
+      "translation": "Erreur lors de la recherche de la nouvelle définition de service à rétromigrer pour {Arg_1}/{Arg_2} version {Arg_3} clé {Arg_4}. Erreur : {Arg_5}"
+    },
+    {
+
+      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
+
+      "translation": "Impossible de trouver une version antérieure pour rétromigrer {Arg_1}/{Arg_2} version {Arg_3}."
+    },
+    {
+
+      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
+
+      "translation": "Erreur lors de la rétromigration du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}. Erreur : {Arg_5}"
+    },
+    {
+
+      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
+
+      "translation": "Erreur lors de la rétromigration du service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}"
+    },
+    {
+
+      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
+
+      "translation": "Démarrage d'une nouvelle tentative {Arg_1} pour le service dépendant {Arg_2} version {Arg_3}, car le service a échoué."
+    },
+    {
+
+      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
+
+      "translation": "Echec de la nouvelle tentative {Arg_1} pour le service dépendant {Arg_2} version {Arg_3}."
+    },
+    {
+
+      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
+
+      "translation": "Echec de l'obtention du nombre de tentatives de service pour {Arg_1} version {Arg_2}. {Arg_3}"
+    },
+    {
+
+      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
+
+      "translation": "Erreur lors de la mise à jour du statut des tentatives pour l'instance de service {Arg_1} dans la base de données. {Arg_2}"
+    }
+  ]
+}

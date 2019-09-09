@@ -1,0 +1,6048 @@
+// NLS_CHARSET=UTF-8
+{
+  "language": "ja",
+  "messages": [
+    {
+
+      "id": "failed to unmarshal json input file {FilePath}: {Err}",
+
+      "translation": "JSON 入力ファイル {FilePath} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
+
+      "translation": "ファイル {JsonFilePath} にノード・ポリシー・フォーマットの誤りがあります: {Err}"
+    },
+    {
+
+      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
+
+      "translation": "パターンまたはノード・ポリシーが指定されていません。既存のノード・ポリシーで処理を進めます。"
+    },
+    {
+
+      "id": "Reading input file {InputFile}...",
+
+      "translation": "入力ファイル {InputFile} を読み取り中..."
+    },
+    {
+
+      "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
+
+      "translation": "hzn cli には {ExchangeUrlLocation} の交換 URL {ExchUrlBase} が構成され、Horizon エージェントには {ExchangeUrlLocationFromAnax} の交換 URL {AnaxExchUrlBase} が構成されます。hzn register は、交換 URL が一致しない場合は機能しません。"
+    },
+    {
+
+      "id": "Horizon Exchange base URL: {ExchUrlBase}",
+
+      "translation": "Horizon Exchange ベース URL: {ExchUrlBase}"
+    },
+    {
+
+      "id": "Failed to get proper response from the Horizon agent",
+
+      "translation": "Horizon エージェントから適切な応答を取得できませんでした"
+    },
+    {
+
+      "id": "Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable.",
+
+      "translation": "-n フラグまたは HZN_EXCHANGE_NODE_AUTH 環境変数を使用してノード ID とトークンを指定してください。"
+    },
+    {
+
+      "id": "Using node ID '{NodeId}' from the Horizon agent",
+
+      "translation": "Horizon エージェントからのノード ID「{NodeId}」を使用します"
+    },
+    {
+
+      "id": "could not create a random token",
+
+      "translation": "ランダム・トークンを作成できませんでした"
+    },
+    {
+
+      "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
+
+      "translation": "指定されたトークンのノード「{Org}/{NodeId}」は、交換内に存在しません。また、交換用ユーザー資格情報を入力するための -u フラグが指定されていないので、ノードを作成または更新できません。"
+    },
+    {
+
+      "id": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it...",
+
+      "translation": "ノード {Org}/{NodeId} は、指定されたトークンの交換内に存在しないので、作成中/更新中です..."
+    },
+    {
+
+      "id": "Node {Org}/{NodeId} exists in the exchange",
+
+      "translation": "ノード {Org}/{NodeId} は交換内に存在します"
+    },
+    {
+
+      "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
+
+      "translation": "この Horizon ノードは既に登録済みか現在登録処理中です。別に登録するには、まず「hzn unregister」を実行してください。"
+    },
+    {
+
+      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+
+      "translation": "次の理由で登録は失敗しました: {Matches0} 入力ファイル {InputFile} のサービス・セクションを更新してください。「hzn unregister」を実行してから、「hzn register...」を再度実行してください"
+    },
+    {
+
+      "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+
+      "translation": "{Errstring}。入力ファイル {InputFile} でサービス {Matches2} 用の変数を定義してください。「hzn unregister」を実行してから、「hzn register...」を再度実行してください"
+    },
+    {
+
+      "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
+
+      "translation": "{Errstring}。入力ファイルを作成し、サービス {Matches2} 用の変数を定義してください。「hzn unregister」を実行してから、-f フラグを使用して入力ファイルを指定し、「hzn register...」を再度実行してください。"
+    },
+    {
+
+      "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
+
+      "translation": "-o と -p は、<nodeorg> 引数と <pattern> 引数と同時に指定することはできません。"
+    },
+    {
+
+      "id": "--policy is mutually exclusive with -p.",
+
+      "translation": "--policy と -p は同時に指定することはできません。"
+    },
+    {
+
+      "id": "--policy is mutually exclusive with <pattern> argument.",
+
+      "translation": "--policy と <pattern> 引数は同時に指定することはできません。"
+    },
+    {
+
+      "id": "Please specify the node organization id.",
+
+      "translation": "ノードの組織 IDを指定してください。"
+    },
+    {
+
+      "id": "invalid version range '{Vr}': {Err}",
+
+      "translation": "バージョン範囲「{Vr}」は無効です: {Err}"
+    },
+    {
+
+      "id": "unable to verify that {Version} is within {VRange}, error {Err}",
+
+      "translation": "{Version} が {VRange} 内であることを確認できません、エラー {Err}"
+    },
+    {
+
+      "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",
+
+      "translation": "交換内で次に一致するサービスは見つかりませんでした: org={Org}、url={Url}、arch={Arch}"
+    },
+    {
+
+      "id": "error comparing version {ServiceshighestKey} with version {Version}. {Err}",
+
+      "translation": "バージョン {ServiceshighestKey} とバージョン {Version} との比較中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}",
+
+      "translation": "交換内で次に一致するサービスは見つかりませんでした: org={Org}、specRef={Url}、version range={VersionRanges}、arch={Arch}"
+    },
+    {
+
+      "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
+
+      "translation": "次が見つかりました: {Org}、{Url}、{Arch}、{VersionRange}"
+    },
+    {
+
+      "id": "did not find pattern '{PatKey}' as expected",
+
+      "translation": "予期されるパターン「{PatKey}」は見つかりませんでした"
+    },
+    {
+
+      "id": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}",
+
+      "translation": "アーキテクチャーが異なる次のサービスは無視されます: {ServiceOrg}、{ServiceURL}、{ServiceArch}"
+    },
+    {
+
+      "id": "failed to marshal the user input template file: {Err}",
+
+      "translation": "ユーザー入力テンプレート・ファイルのマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "problem writing the user input template file: {Err}",
+
+      "translation": "ユーザー入力テンプレート・ファイルの書き込み中に問題が発生しました: {Err}"
+    },
+    {
+
+      "id": "Wrote {InputFile}",
+
+      "translation": "{InputFile} を書き込みました"
+    },
+    {
+
+      "id": "Reading configuration file: {ConfigFile}",
+
+      "translation": "構成ファイル {ConfigFile} を読み取り中"
+    },
+    {
+
+      "id": "Unable to read config file: {ConfigFile}. {Err}",
+
+      "translation": "構成ファイル {ConfigFile} を読み取ることができません。{Err}"
+    },
+    {
+
+      "id": "Unable to decode content of config file {ConfigFile}. {Err}",
+
+      "translation": "構成ファイル {ConfigFile} のコンテンツをデコードできません。{Err}"
+    },
+    {
+
+      "id": "Config file does not exist: {ConfigFile}.",
+
+      "translation": "構成ファイル {ConfigFile} は存在しません。"
+    },
+    {
+
+      "id": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
+
+      "translation": "ファイル {ConfigFile} の MetadataVars 属性に定義されている環境変数の設定に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
+
+      "translation": "ファイル {ConfigFile} の最上位の環境変数の設定に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
+
+      "translation": "ファイル {ConfigFile} に定義されている環境変数の設定に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Local configuration {LocalConfigFile} has been setup at the beginning of this command. Will not setup twice.",
+
+      "translation": "ローカル構成 {LocalConfigFile} はこのコマンドの開始時にセットアップ済みです。セットアップは 2 回行いません。"
+    },
+    {
+
+      "id": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
+
+      "translation": "ファイル {FilePath} 用のローカル構成ファイル {LocalConfigFile} による環境変数の設定に失敗しました。エラー: {Err}"
+    },
+    {
+
+      "id": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
+
+      "translation": "ローカル構成ファイル {UseLocalConfig} の使用後、環境変数の復元に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
+
+      "translation": "ファイル {ConfigFilepkg} の絶対パスの取得に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Error reading environment variables from file {ConfigFilepkg}. {Err}",
+
+      "translation": "ファイル {ConfigFilepkg} から環境変数を読み取り中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Error reading environment variables from file /etc/default/horizon. {Err}",
+
+      "translation": "ファイル /etc/default/horizon から環境変数を読み取り中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
+
+      "translation": "ファイル ~/.hzn/hzn.json の絶対パスの取得に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Error getting project level configuration file name. {Err}",
+
+      "translation": "プロジェクト・レベル構成ファイルの名前を取得中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "No project level configuration file found.",
+
+      "translation": "プロジェクト・レベル構成ファイルが見つかりませんでした。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn status -l' output: {Err}",
+
+      "translation": "「hzn status -l」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn status' output: {Err}",
+
+      "translation": "「hzn status」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+
+      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+
+      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression: {Verstring} はインクルード・ディレクティブまたは除外ディレクティブで開始されていません。"
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression: {Verstring} はインクルード・ディレクティブまたは除外ディレクティブで終了されていません。"
+    },
+    {
+
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+
+      "translation": "Version_Expression: 次の式のバージョン数に誤りがあります: {Expr}"
+    },
+    {
+
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+
+      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
+    },
+    {
+
+      "id": "The selection string {V} is not valid.",
+
+      "translation": "選択ストリング {V} は無効です。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
+
+      "translation": "「hzn eventlog list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Are you sure you want to unregister this Horizon node?",
+
+      "translation": "この Horizon ノードを登録抹消しますか?"
+    },
+    {
+
+      "id": "Horizon node delete call successful with return code: {Output}",
+
+      "translation": "Horizon ノードの削除コールが成功しました。戻りコード: {Output}"
+    },
+    {
+
+      "id": "Timeout in {TotalWait} seconds ...",
+
+      "translation": "{TotalWait} 秒でタイムアウトになります..."
+    },
+    {
+
+      "id": "Waiting for Horizon node unregister to complete: {UpdateStatus}",
+
+      "translation": "Horizon ノードの登録抹消の完了を待機しています: {UpdateStatus}"
+    },
+    {
+
+      "id": "No Timeout specified ...",
+
+      "translation": "タイムアウトが指定されていません..."
+    },
+    {
+
+      "id": "Stopping horizon...",
+
+      "translation": "Horizon を停止中..."
+    },
+    {
+
+      "id": "Node configuration state: {State}",
+
+      "translation": "ノード構成状態: {State}"
+    },
+    {
+
+      "id": "Timeout waiting for node change to 'unconfigured' state.",
+
+      "translation": "ノードが「未構成」状態に変わるのを待機中にタイムアウトになりました。"
+    },
+    {
+
+      "id": "unable to list containers, {Err}",
+
+      "translation": "コンテナーをリストできません。{Err}"
+    },
+    {
+
+      "id": "Error deleting container {Names0}. {Err}",
+
+      "translation": "コンテナー {Names0} の削除中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Removed service container: {Names0}",
+
+      "translation": "次のサービス・コンテナーを削除しました: {Names0}"
+    },
+    {
+
+      "id": "Error pruning docker networks. {Err}",
+
+      "translation": "Docker ネットワークの削除中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "New dependency created: {Target} .",
+
+      "translation": "次の新規依存関係が作成されました: {Target}"
+    },
+    {
+
+      "id": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' unable to create json object from dependencies, {Err}",
+
+      "translation": "「{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}」は依存関係から JSON オブジェクトを作成できません。{Err}"
+    },
+    {
+
+      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
+
+      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」を設定できません、エラー {Err}"
+    },
+    {
+
+      "id": "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
+
+      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」を復元できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to get list of dependency files in {DepPath}, error: {Err}",
+
+      "translation": "{DepPath} の依存ファイル・リストを取得できません、エラー: {Err}"
+    },
+    {
+
+      "id": "could not create dependency directory {NewDir}, error: {Err}",
+
+      "translation": "依存ディレクトリー {NewDir} を作成できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "dependency validation failed, unable to read {Name}, error: {Err}",
+
+      "translation": "依存関係確認に失敗しました、{Name} を読み取ることができません、エラー: {Err}"
+    },
+    {
+
+      "id": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
+
+      "translation": "依存関係確認に失敗しました、依存関係 {Name} のバージョン {Version} は無効です、エラー: {Err}"
+    },
+    {
+
+      "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
+
+      "translation": "依存関係確認に失敗しました、バージョン範囲 {Version} が必要な範囲内 {Expression} であることを確認できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "dependency {URL} at version {VersionRange} does not exist in {Joindirectory_DEFAULTDEPENDENCYDIR}.",
+
+      "translation": "バージョン {VersionRange} の依存関係 {URL} は {Joindirectory_DEFAULTDEPENDENCYDIR} に存在しません。"
+    },
+    {
+
+      "id": "dependency {Name} did not validate, error: {Err}",
+
+      "translation": "依存関係 {Name} を確認できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "variable {Name} has no default and must be specified in {UserInputsFilePath}",
+
+      "translation": "変数 {Name} にはデフォルトが無く、{UserInputsFilePath} に指定する必要があります"
+    },
+    {
+
+      "id": "--specRef is mutually exclusive with --url.",
+
+      "translation": "--specRef は --url と同時に指定することはできません。"
+    },
+    {
+
+      "id": "--project is mutually exclusive with --specRef, --org and --url.",
+
+      "translation": "--project は、--specRef、--org、および --url と同時に指定することはできません。"
+    },
+    {
+
+      "id": "one of --project, or --specRef and --org, or --url and --org must be specified.",
+
+      "translation": "--project、または --specRef と --org、または --url と --org のいずれか 1 つを指定する必要があります。"
+    },
+    {
+
+      "id": "either --specRef and --org, or --url and --org must be specified.",
+
+      "translation": "--specRef と --org、または --url と --org のいずれかを指定する必要があります。"
+    },
+    {
+
+      "id": "use --url with service projects.",
+
+      "translation": "サービス・プロジェクトには、--url を使用してください。"
+    },
+    {
+
+      "id": "--project {Project} does not contain Horizon service metadata.",
+
+      "translation": "--project {Project} には、Horizon サービス・メタデータが含まれていません。"
+    },
+    {
+
+      "id": "Reading Horizon metadata from {Dir}",
+
+      "translation": "{Dir} から Horizon メタデータを読み取り中"
+    },
+    {
+
+      "id": "--specRef or --url is required for remove.",
+
+      "translation": "削除には、--specRef または --url が必要です。"
+    },
+    {
+
+      "id": "--specRef and --url are mutually exclusive.",
+
+      "translation": "--specRef と --url は、同時に指定することはできません。"
+    },
+    {
+
+      "id": "Service project {Dir} verified.",
+
+      "translation": "サービス・プロジェクト {Dir} が確認されました。"
+    },
+    {
+
+      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error {Err}",
+
+      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」をゼロに設定できません、エラー {Err}"
+    },
+    {
+
+      "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
+
+      "translation": "{Project} ディレクトリーの hzn.json 構成ファイルの取得に失敗しました。エラー: {Err}"
+    },
+    {
+
+      "id": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
+
+      "translation": "構成ファイル {Projconfigfile} による環境変数の設定に失敗しました。エラー: {Err}"
+    },
+    {
+
+      "id": "Reading Horizon metadata from dependency: {AbsProject}",
+
+      "translation": "次の依存関係から Horizon メタデータを読み取り中: {AbsProject}"
+    },
+    {
+
+      "id": "Found dependency {URL}, Org: {Org}",
+
+      "translation": "依存関係 {URL}、Org: {Org} が見つかりました"
+    },
+    {
+
+      "id": "Failed to restore the environment variables. {Err}",
+
+      "translation": "環境変数の復元に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable and global attribute configuration.",
+
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を依存関係の変数およびグローバル属性構成で更新しました。"
+    },
+    {
+
+      "id": "To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.",
+
+      "translation": "依存関係が適切に動作するようにするには、このサービスが必要とする変数値を userinput.json ファイルに追加してください。"
+    },
+    {
+
+      "id": "The current project already has userinputs defined for this dependency.",
+
+      "translation": "現行プロジェクトには、この依存関係用に定義されたユーザー入力が既にあります。"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable configuration.",
+
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を依存関係の変数構成で更新しました。"
+    },
+    {
+
+      "id": "unsupported project type",
+
+      "translation": "サポートされないプロジェクト・タイプ"
+    },
+    {
+
+      "id": "Created {FilePath}/{FileName} as a new dependency.",
+
+      "translation": "{FilePath}/{FileName} を新規依存関係として作成しました。"
+    },
+    {
+
+      "id": "unable to find highest version of {Surl} {Org} in the exchange: {Services}",
+
+      "translation": "交換内で {Surl} {Org} の最高バージョンは見つかりませんでした: {Services}"
+    },
+    {
+
+      "id": "no services found in the exchange.",
+
+      "translation": "交換内でサービスは見つかりませんでした。"
+    },
+    {
+
+      "id": "Creating dependency on: {ServiceDef}, Org: {Org}",
+
+      "translation": "次に対して依存関係を作成します: {ServiceDef}、Org: {Org}"
+    },
+    {
+
+      "id": "failed to unmarshal deployment {Deployment}: {Err}",
+
+      "translation": "デプロイメント {Deployment} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "The image docker auths for the service {Org}/{Surl} are: {Imgauths}",
+
+      "translation": "サービス {Org}/{Surl} 用のイメージ Docker 認証は次のとおりです: {Imgauths}"
+    },
+    {
+
+      "id": "failed to get images for {Org}/{Surl}: {Err}",
+
+      "translation": "{Org}/{Surl} 用のイメージの取得に失敗しました: {Err}"
+    },
+    {
+
+      "id": "Unable to get dependency info for {Sp} , error {Err}",
+
+      "translation": "{Sp} 用の依存関係情報を取得できません、エラー {Err}"
+    },
+    {
+
+      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' failed to get a list of dependecies. Error {Err}",
+
+      "translation": "「dependency {DEPENDENCYREMOVECOMMAND}」は、依存関係リストの取得に失敗しました。エラー {Err}"
+    },
+    {
+
+      "id": "All dependencies are: {Deps}",
+
+      "translation": "すべての依存関係: {Deps}"
+    },
+    {
+
+      "id": "Found dependency: {Name}",
+
+      "translation": "見つかった依存関係: {Name}"
+    },
+    {
+
+      "id": "Will not remove dependency {Name} because it is referenced by other services.",
+
+      "translation": "依存関係 {Name} は他のサービスによって参照されているため、削除されません。"
+    },
+    {
+
+      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
+
+      "translation": "「dependency {DEPENDENCYREMOVECOMMAND}」 依存関係は見つかりませんでした。"
+    },
+    {
+
+      "id": "Could not read the dependency file {Name}. Error: {Err}",
+
+      "translation": "依存ファイル {Name} を読み取ることができませんでした。エラー: {Err}"
+    },
+    {
+
+      "id": "Error updating project definition: {Err}",
+
+      "translation": "プロジェクト定義の更新中にエラーが発生しました: {Err}"
+    },
+    {
+
+      "id": "Dependency {Name} could not be removed. Error: {Err}",
+
+      "translation": "依存関係 {Name} を削除できませんでした。エラー: {Err}"
+    },
+    {
+
+      "id": "Error updating userinputs: {Err}",
+
+      "translation": "ユーザー入力の更新中にエラーが発生しました: {Err}"
+    },
+    {
+
+      "id": "Removed dependency {Arch}.",
+
+      "translation": "依存関係 {Arch} を削除しました。"
+    },
+    {
+
+      "id": "Removed dependency's dependency {Arch}.",
+
+      "translation": "この依存関係の依存先 {Arch} を削除しました。"
+    },
+    {
+
+      "id": "error creating {DOCKERFILE} for service image. {Err}",
+
+      "translation": "サービス・イメージ用の {DOCKERFILE} の作成中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Edge $SERVICE_NAME Service Pattern for $ARCH",
+
+      "translation": "$ARCH 用のエッジ $SERVICE_NAME サービス・パターン"
+    },
+    {
+
+      "id": "Pattern for $SERVICE_NAME for $ARCH",
+
+      "translation": "$ARCH 用の $SERVICE_NAME のパターン"
+    },
+    {
+
+      "id": "Edge $SERVICE_NAME Service Pattern for all architectures",
+
+      "translation": "すべてのアーキテクチャー用のエッジ $SERVICE_NAME サービス・パターン"
+    },
+    {
+
+      "id": "Pattern for $SERVICE_NAME",
+
+      "translation": "$SERVICE_NAME のパターン"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICECREATIONCOMMAND}」イメージ名からサービス名の取得に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Creating config file for environmental variables: {Dir}/{HZNENVFILE}",
+
+      "translation": "環境変数用の構成ファイルを作成中: {Dir}/{HZNENVFILE}"
+    },
+    {
+
+      "id": "Creating user input file: {Dir}/{USERINPUTFILE}",
+
+      "translation": "ユーザー入力ファイルを作成中: {Dir}/{USERINPUTFILE}"
+    },
+    {
+
+      "id": "Creating service definition file: {Dir}/{SERVICEDEFINITIONFILE}",
+
+      "translation": "サービス定義ファイルを作成中: {Dir}/{SERVICEDEFINITIONFILE}"
+    },
+    {
+
+      "id": "Creating pattern definition file: {Dir}/{PATTERNDEFINITIONFILE}",
+
+      "translation": "パターン定義ファイルを作成中: {Dir}/{PATTERNDEFINITIONFILE}"
+    },
+    {
+
+      "id": "Creating service policy file: {Dir}/{SERVICEPOLICYFILE}",
+
+      "translation": "サービス・ポリシー・ファイルを作成中: {Dir}/{SERVICEPOLICYFILE}"
+    },
+    {
+
+      "id": "Creating .gitignore files for source code management.",
+
+      "translation": "ソース・コードの管理のために .gitignore ファイルを作成中。"
+    },
+    {
+
+      "id": "Creating image generation files under {Currentdir} directory.",
+
+      "translation": "{Currentdir} ディレクトリーの下にイメージ生成ファイルを作成中。"
+    },
+    {
+
+      "id": "Created image generation files in {Currentdir} and horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
+
+      "translation": "{Currentdir} 内にイメージ生成ファイル、{Dir} 内に Horizon メタデータ・ファイルを作成しました。これらのファイルを編集して、新規 {SERVICECOMMAND} を定義および構成してください。"
+    },
+    {
+
+      "id": "Created horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
+
+      "translation": "{Dir} 内に Horizon メタデータ・ファイルを作成しました。これらのファイルを編集して、新規 {SERVICECOMMAND} を定義および構成してください。"
+    },
+    {
+
+      "id": "must specify either --org or set the {DEVTOOLHZNORG} environment variable.",
+
+      "translation": "--org を指定するか、{DEVTOOLHZNORG} 環境変数を設定する必要があります。"
+    },
+    {
+
+      "id": "invalid version string: {Version}",
+
+      "translation": "無効な version ストリング: {Version}"
+    },
+    {
+
+      "id": "only support one image for a service unless --noImageGen flag is specified.",
+
+      "translation": "--noImageGen フラグが指定されていない限り、1 つのサービスに対して 1 つのイメージのみがサポートされます。"
+    },
+    {
+
+      "id": "image {Image} has invalid format.",
+
+      "translation": "イメージ {Image} のフォーマットが無効です。"
+    },
+    {
+
+      "id": "please specify the image name with -i flag.",
+
+      "translation": "-i フラグを使用してイメージ名を指定してください。"
+    },
+    {
+
+      "id": "unsupported deployment config type: {Dconfig}",
+
+      "translation": "サポートされないデプロイメント構成タイプ: {Dconfig}"
+    },
+    {
+
+      "id": "$SERVICE_NAME for $ARCH",
+
+      "translation": "$ARCH 用の $SERVICE_NAME"
+    },
+    {
+
+      "id": "Who to say hello to",
+
+      "translation": "挨拶する相手"
+    },
+    {
+
+      "id": "unknown deployment type: {DeploymentType}",
+
+      "translation": "不明なデプロイメント・タイプ: {DeploymentType}"
+    },
+    {
+
+      "id": "{FilePath}: URL must be set.",
+
+      "translation": "{FilePath}: URL を設定する必要があります。"
+    },
+    {
+
+      "id": "{FilePath}: version must be set to a specific version, e.g. 1.0.0.",
+
+      "translation": "{FilePath}: バージョンは、例えば 1.0.0 などの特定のバージョンに設定する必要があります。"
+    },
+    {
+
+      "id": "{FilePath}: org must be set.",
+
+      "translation": "{FilePath}: org を設定する必要があります。"
+    },
+    {
+
+      "id": "{FilePath}: deployment configuration, {Err}",
+
+      "translation": "{FilePath}: デプロイメント構成、{Err}"
+    },
+    {
+
+      "id": "{FilePath}: userInput array index {Ix} does not have name and type specified.",
+
+      "translation": "{FilePath}: ユーザー入力配列添字 {Ix} には名前とタイプが指定されていません。"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
+
+      "translation": "{HomeDirectory}/{SERVICEDEFINITIONFILE} の依存関係を更新しました。"
+    },
+    {
+
+      "id": "No need to update {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
+
+      "translation": "{HomeDirectory}/{SERVICEDEFINITIONFILE} の依存関係を更新する必要はありません。"
+    },
+    {
+
+      "id": "error creating {HORIZONGITIGNOREFILE} for source code management. {Err}",
+
+      "translation": "ソース・コード管理のための {HORIZONGITIGNOREFILE} を作成中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
+
+      "translation": "{UserInputFilePath} ファイルをデマーシャルできませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
+
+      "translation": "ユーザー入力属性: {GlobalSet} を API 属性: {Attr} に変換しました"
+    },
+    {
+
+      "id": "{GlobalSet} encountered error: {Error}",
+
+      "translation": "{GlobalSet} でエラーが発生しました: {Error}"
+    },
+    {
+
+      "id": "Converted API Attributes: {Global} to persistent attributes: {Attributes}",
+
+      "translation": "API 属性: {Global} を永続属性: {Attributes} に変換しました"
+    },
+    {
+
+      "id": "{OriginalUserInputFilePath}: global array element ({GlobalSet}) has an empty type, must be one of the supported attribute types. See the Horizon agent /attribute API.",
+
+      "translation": "{OriginalUserInputFilePath}: グローバル配列エレメント ({GlobalSet}) のタイプが空です。いずれかのサポート対象属性タイプである必要があります。Horizon エージェント / 属性 API を参照してください。"
+    },
+    {
+
+      "id": "{USERINPUTFILE} has error: {Err}",
+
+      "translation": "{USERINPUTFILE} に誤りがあります: {Err}"
+    },
+    {
+
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
+
+      "translation": "{OriginalUserInputFilePath}: 添字 {Ix} のサービス配列エレメントは {MicroWork} です。{Err}"
+    },
+    {
+
+      "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
+
+      "translation": "{OriginalUserInputFilePath}: サービス配列には {URL} のエレメントが含まれていません。エラー: {Err}"
+    },
+    {
+
+      "id": "please provice a user input file for service {URL}. Error: {Err}",
+
+      "translation": "サービス {URL} 用のユーザー入力ファイルを指定してください。エラー: {Err}"
+    },
+    {
+
+      "id": "has empty org, must be set to the name of the organization that owns the service.",
+
+      "translation": "org が空です。サービスを所有する組織の名前に設定する必要があります。"
+    },
+    {
+
+      "id": "has empty url. Must be set to this service's url or a dependency's url.",
+
+      "translation": "url が空です。このサービスの URL または依存関係の URL に設定する必要があります。"
+    },
+    {
+
+      "id": "sets variable {VarName} using a value of {Err}.",
+
+      "translation": "変数 {VarName} に値 {Err} を設定します。"
+    },
+    {
+
+      "id": "sets variable {VarName} of type {VarValue} that is not defined.",
+
+      "translation": "定義されていない型 {VarValue} の変数 {VarName} を設定します。"
+    },
+    {
+
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE}.",
+
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を更新しました。"
+    },
+    {
+
+      "id": "No need to update {HomeDirectory}/{USERINPUTFILE}.",
+
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を更新する必要はありません。"
+    },
+    {
+
+      "id": "could not create directory {NewDepDir}, error: {Err}",
+
+      "translation": "ディレクトリー {NewDepDir} を作成できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "could not get status of directory {NewDepDir}, error: {Err}",
+
+      "translation": "ディレクトリー {NewDepDir} の状況を取得できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "Using working directory: {Dir}",
+
+      "translation": "次の作業ディレクトリーを使用します: {Dir}"
+    },
+    {
+
+      "id": "horizon project in {Dir} already contains {FileName}.",
+
+      "translation": "{Dir} の Horizon プロジェクトには、{FileName} が既に含まれています。"
+    },
+    {
+
+      "id": "error checking for {FileName}: {Err}",
+
+      "translation": "{FileName} の確認中にエラーが発生しました: {Err}"
+    },
+    {
+
+      "id": "failed to unmarshal {FilePath}, error: {Err}",
+
+      "translation": "{FilePath} のアンマーシャルに失敗しました、エラー: {Err}"
+    },
+    {
+
+      "id": "failed to create json object for {FileName}, error: {Err}",
+
+      "translation": "{FileName} 用の JSON オブジェクトの作成に失敗しました、エラー: {Err}"
+    },
+    {
+
+      "id": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
+
+      "translation": "{FileName} 用の JSON オブジェクトを、ファイル {FilePath} に書き込むことができません、エラー: {Err}"
+    },
+    {
+
+      "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
+
+      "translation": "環境変数 {DEVTOOLHZNORG} を設定するか、--user-pw フラグでユーザーを「org/user」として指定する必要があります。"
+    },
+    {
+
+      "id": "Must set environment variable {DEVTOOLHZNUSER} or specify user exchange credentials with --user-pw",
+
+      "translation": "環境変数 {DEVTOOLHZNUSER} を設定するか、--user-pw を使用してユーザーの交換用資格情報を指定する必要があります。"
+    },
+    {
+
+      "id": "Unable to set env var {DEVTOOLHZNEXCHANGEURL} to {ExchangeUrl}, error {Err}",
+
+      "translation": "環境変数 {DEVTOOLHZNEXCHANGEURL} を {ExchangeUrl} に設定することができません、エラー {Err}"
+    },
+    {
+
+      "id": "Environment variable {DEVTOOLHZNEXCHANGEURL} must be set.",
+
+      "translation": "環境変数 {DEVTOOLHZNEXCHANGEURL} を設定する必要があります。"
+    },
+    {
+
+      "id": "project has no horizon metadata directory. Use hzn dev to create a new project. Error: {Err}",
+
+      "translation": "プロジェクトには Horizon メタデータ・ディレクトリーがありません。hzn dev を使用して新規プロジェクトを作成してください。エラー: {Err}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' project does not validate. {Derr}",
+
+      "translation": "「{ProjectType} {Cmd}」プロジェクトを検証できません。{Derr}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' project does not validate. {Verr}",
+
+      "translation": "「{ProjectType} {Cmd}」プロジェクトを検証できません。{Verr}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' Must specify configuration file type (-t) when a configuration file is specified (-m).",
+
+      "translation": "「{ProjectType} {Cmd}」構成ファイル (-m) が指定されている場合、構成ファイル・タイプ (-t) を指定する必要があります。"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' configuration file {FileRef} error {Err}",
+
+      "translation": "「{ProjectType} {Cmd}」構成ファイル {FileRef} エラー {Err}"
+    },
+    {
+
+      "id": "project does not validate. {Verr}",
+
+      "translation": "プロジェクトを検証できません。{Verr}"
+    },
+    {
+
+      "id": "project in {Dir} is not a horizon project.",
+
+      "translation": "{Dir} 内のプロジェクトは Horizon プロジェクトではありません。"
+    },
+    {
+
+      "id": "Final Attributes: {Attrs}",
+
+      "translation": "最終属性: {Attrs}"
+    },
+    {
+
+      "id": "global attribute conversion error: {Cerr}",
+
+      "translation": "グローバル属性変換エラー: {Cerr}"
+    },
+    {
+
+      "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
+
+      "translation": "「{ProjectType} {Cmd}」コンテナー・ワーカーを作成できません、{Cerr}"
+    },
+    {
+
+      "id": "unable to list existing containers: {Err}",
+
+      "translation": "既存のコンテナーをリストできません: {Err}"
+    },
+    {
+
+      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
+
+      "translation": "サービス {Nwname}、{ContainerNetwork} のメイン・ネットワークが見つかりました。"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」依存関係 {URL} の {StartErr}"
+    },
+    {
+
+      "id": "unable to retrieve dependency metadata: {Err}",
+
+      "translation": "依存関係メタデータを取得できません: {Err}"
+    },
+    {
+
+      "id": "unable to start dependencies: {Err}",
+
+      "translation": "依存関係を開始できません: {Err}"
+    },
+    {
+
+      "id": "Skipping service because it has no deployment configuration: {DepConfig}",
+
+      "translation": "デプロイメント構成が無いため、サービスをスキップします: {DepConfig}"
+    },
+    {
+
+      "id": "unable to generate instance ID: {Err}",
+
+      "translation": "インスタンス ID を生成できません: {Err}"
+    },
+    {
+
+      "id": "unable to create environment variables",
+
+      "translation": "環境変数を作成できません"
+    },
+    {
+
+      "id": "Passing environment variables: {EnvironmentAdditions}",
+
+      "translation": "次の環境変数を引き渡します: {EnvironmentAdditions}"
+    },
+    {
+
+      "id": "Start {LogName}: {CLIString} with instance id prefix {Id}",
+
+      "translation": "インスタンス ID プレフィックス {Id} の {LogName}: {CLIString} を開始します"
+    },
+    {
+
+      "id": "unable to start container using {CLIString}, error: {StartErr}",
+
+      "translation": "{CLIString} を使用してコンテナーを開始できません、エラー: {StartErr}"
+    },
+    {
+
+      "id": "Running {LogName}.",
+
+      "translation": "{LogName} を実行中です。"
+    },
+    {
+
+      "id": "Stopping dependencies.",
+
+      "translation": "依存関係を停止中。"
+    },
+    {
+
+      "id": "unable to stop dependencies: {Err}",
+
+      "translation": "依存関係を停止できませんでした: {Err}"
+    },
+    {
+
+      "id": "Found containers {Containers}",
+
+      "translation": "コンテナー {Containers} が見つかりました"
+    },
+    {
+
+      "id": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
+
+      "translation": "インスタンス ID プレフィックス {MsId} の {LogName}: {CLIString} を停止します。"
+    },
+    {
+
+      "id": "failed to create docker client, error: {Derr}",
+
+      "translation": "Docker クライアントの作成に失敗しました、エラー: {Derr}"
+    },
+    {
+
+      "id": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
+
+      "translation": "{USERINPUTFILE} 内のグローバル属性の変換に失敗しました、エラー: {Err}"
+    },
+    {
+
+      "id": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
+
+      "translation": "{USERINPUTFILE} から認証属性を抽出できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "getting container images into docker.",
+
+      "translation": "Docker にコンテナー・イメージを取り込みます。"
+    },
+    {
+
+      "id": "failed to get container images, error: {Err}",
+
+      "translation": "コンテナー・イメージの取得に失敗しました、エラー: {Err}"
+    },
+    {
+
+      "id": "invalid image format: {Image}",
+
+      "translation": "無効なイメージ・フォーマット: {Image}"
+    },
+    {
+
+      "id": "file {FilePath} exists already",
+
+      "translation": "ファイル {FilePath} は既に存在します"
+    },
+    {
+
+      "id": "unable to write content to file {FilePath}, error: {Err}",
+
+      "translation": "ファイル {FilePath} にコンテンツを書き込むことができません、エラー: {Err}"
+    },
+    {
+
+      "id": "horizon api agreement output did not include 'agreements' key",
+
+      "translation": "Horizon API のご使用条件の出力には「agreements」キーが含まれていませんでした。"
+    },
+    {
+
+      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
+
+      "translation": "Horizon API のご使用条件の出力には「{WhichAgreements}」キーが含まれていませんでした。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn metering list' output: {Err}",
+
+      "translation": "「hzn metering list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "unable to set env var 'HORIZON_URL', error {Err}",
+
+      "translation": "環境変数「HORIZON_URL」を設定できません、エラー {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'agreement list' output: {Err}",
+
+      "translation": "「agreement list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "either an agreement ID or -a must be specified.",
+
+      "translation": "契約 ID または -a のいずれかを指定する必要があります。"
+    },
+    {
+
+      "id": "Canceling agreement {Id} ...",
+
+      "translation": "契約 {Id} をキャンセル中..."
+    },
+    {
+
+      "id": "failed to marshal 'hzn node list' output: {Err}",
+
+      "translation": "「hzn node list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'policy list' output: {Err}",
+
+      "translation": "「policy list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Error: The organization '{Org}' does not exist.",
+
+      "translation": "エラー: 組織 「{Org}」は存在しません。"
+    },
+    {
+
+      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
+
+      "translation": "エラー: 組織「{Org}」が存在しないか、またはポリシー「{Name}」はこの agbot でホストされていません。"
+    },
+    {
+
+      "id": "failed to marshal 'exchange agbot list' output: {Err}",
+
+      "translation": "「exchange agbot list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "agbot '{Agbot}' not found in org {Org}",
+
+      "translation": "agbot「{Agbot}」は、org {Org} 内で検出されませんでした。"
+    },
+    {
+
+      "id": "both patternorg and pattern must be specified (or neither)",
+
+      "translation": "patternorg と pattern の両方を指定する (またはどちらも指定しない) 必要があります"
+    },
+    {
+
+      "id": "pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' not found in agbot '{Agbot}'",
+
+      "translation": "org が「{PatternOrg}」で node org が「{NodeOrg}」のパターン「{Pattern}」は、agbot「{Agbot}」内で検出されませんでした"
+    },
+    {
+
+      "id": "Pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' already exists in agbot '{Agbot}'",
+
+      "translation": "org が「{PatternOrg}」で node org が「{NodeOrg}」のパターン「{Pattern}」は、agbot「{Agbot}」内に既に存在します。"
+    },
+    {
+
+      "id": "Adding Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot will start looking for nodes that are compatible with this policy.",
+
+      "translation": "ビジネス・ポリシー org 「{PolOrg}」を agbot「{Agbot}」に追加しています。agbot は、このポリシーに対応するノードを探し始めます。"
+    },
+    {
+
+      "id": "Business policy org {PolOrg}' already exists in agbot '{Agbot}'",
+
+      "translation": "ビジネス・ポリシー org「{PolOrg}」は agbot「{Agbot}」内に既に存在します"
+    },
+    {
+
+      "id": "Removing Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot is no longer looking for nodes that are compatible with this policy.",
+
+      "translation": "agbot「{Agbot}」からビジネス・ポリシー org「{PolOrg}」を削除しています。agbot は、このポリシーに対応するノードを探さなくなります。"
+    },
+    {
+
+      "id": "Policy {Policy} not found in org {PolOrg}",
+
+      "translation": "ポリシー {Policy} は org {PolOrg} で検出されませんでした"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange business listpolicy' output: {Err}",
+
+      "translation": "「hzn exchange business listpolicy」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Incorrect business policy format in file {JsonFilePath}: {Err}",
+
+      "translation": "ファイル {JsonFilePath} のビジネス・ポリシー・フォーマットに誤りがあります: {Err}"
+    },
+    {
+
+      "id": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
+
+      "translation": "ビジネス・ポリシー: {Org}/{Policy} は Horizon Exchange で更新されました"
+    },
+    {
+
+      "id": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
+
+      "translation": "ビジネス・ポリシー: {Org}/{Policy} は Horizon Exchange に追加されました"
+    },
+    {
+
+      "id": "failed to unmarshal attribute input {Attribute}: {Err}",
+
+      "translation": "属性入力 {Attribute} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "Horizon Exchange でポリシー {Org}/{PolicyName} を更新中です。このビジネス・ポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
+
+      "translation": "ポリシー {Org}/{PolicyName} は Horizon Exchange で更新されました"
+    },
+    {
+
+      "id": "Invalid format for properties: {Err}",
+
+      "translation": "プロパティーのフォーマットが無効です: {Err}"
+    },
+    {
+
+      "id": "Invalid format for constraints: {Err}",
+
+      "translation": "制約のフォーマットが無効です: {Err}"
+    },
+    {
+
+      "id": "Business policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, and userInput.",
+
+      "translation": "更新するビジネス・ポリシー属性が入力ファイル内で見つかりませんでした。次の属性がサポートされます: ラベル、説明、サービス、プロパティー、制約、およびユーザー入力"
+    },
+    {
+
+      "id": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
+
+      "translation": "Horizon Exchange から組織 {Org} 用のビジネス・ポリシー {Policy} を削除しますか?"
+    },
+    {
+
+      "id": "Policy {Org}/{Policy} not found in the Horizon Exchange",
+
+      "translation": "ポリシー {Org}/{Policy} は Horizon Exchange で検出されませんでした"
+    },
+    {
+
+      "id": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+
+      "translation": "ビジネス・ポリシー {Org}/{Policy} を削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "Business policy {Org}/{Policy} removed",
+
+      "translation": "ビジネス・ポリシー {Org}/{Policy} は削除されました"
+    },
+    {
+
+      "id": "Business policy label.",
+
+      "translation": "ビジネス・ポリシーのラベル。"
+    },
+    {
+
+      "id": "Business policy description.",
+
+      "translation": "ビジネス・ポリシーの説明。"
+    },
+    {
+
+      "id": "The name of the service.",
+
+      "translation": "サービスの名前。"
+    },
+    {
+
+      "id": "The org of the service.",
+
+      "translation": "サービスの組織。"
+    },
+    {
+
+      "id": "Set to '*' to use services of any hardware architecture.",
+
+      "translation": "あらゆるハードウェア・アーキテクチャーのサービスを使用するには、「*」に設定します。"
+    },
+    {
+
+      "id": "A list of service versions.",
+
+      "translation": "サービス・バージョンのリスト。"
+    },
+    {
+
+      "id": "A list of policy properties that describe the service being dployed.",
+
+      "translation": "デプロイされているサービスを特徴づけるポリシー・プロパティーのリスト。"
+    },
+    {
+
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>,",
+
+      "translation": "<property name> <operator> <property value> という形式の制約式のリスト、"
+    },
+    {
+
+      "id": "separated by boolean operators AND (&&) or OR (||).",
+
+      "translation": "ブール演算子 AND (&&) または OR (||) で分離。"
+    },
+    {
+
+      "id": "A list of userInput variables to set when the service runs, listed by service.",
+
+      "translation": "サービスの実行時に設定するユーザー入力変数のリスト (サービス別のリスト)。"
+    },
+    {
+
+      "id": "The service version range to which these variables should be applied.",
+
+      "translation": "これらの変数を適用すべきサービス・バージョン範囲。"
+    },
+    {
+
+      "id": "The input variables to be set.",
+
+      "translation": "設定する入力変数。"
+    },
+    {
+
+      "id": "Flags -s and -l are mutually exclusive.",
+
+      "translation": "フラグ -s と -l は同時に指定することはできません。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
+
+      "translation": "「hzn exchange catalog servicelist -l」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
+
+      "translation": "「hzn exchange catalog servicelist -s」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
+
+      "translation": "「hzn exchange catalog servicelist」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
+
+      "translation": "「hzn exchange catalog patternlist -l」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
+
+      "translation": "「hzn exchange catalog patternlist -s」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
+
+      "translation": "「hzn exchange catalog patternlist」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "no service name",
+
+      "translation": "サービス名がありません"
+    },
+    {
+
+      "id": "no docker image for service {ServiceName}",
+
+      "translation": "サービス {ServiceName} の Docker イメージがありません"
+    },
+    {
+
+      "id": "failed to marshal body for {D}: {Err}",
+
+      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+
+      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'exchange node list' output: {Err}",
+
+      "translation": "「exchange node list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "node '{Node}' not found in org {Org}",
+
+      "translation": "ノード「{Node}」は組織 {Org} 内で検出されませんでした"
+    },
+    {
+
+      "id": "if node or token are specified then they both must be specified",
+
+      "translation": "ノードまたはトークンを指定する場合は両方指定する必要があります"
+    },
+    {
+
+      "id": "do not specify both the -n flag and the node and token positional arguments. They mean the same thing.",
+
+      "translation": "-n フラグと、node および token の固定引数とを両方指定しないでください。これらは同じ意味を持ちます。"
+    },
+    {
+
+      "id": "either the node and token positional arguments, or the -n flag must be specified.",
+
+      "translation": "node および token の固定引数、または -n フラグのいずれかを指定する必要があります。"
+    },
+    {
+
+      "id": "User {Org}/{User} does not exist in the exchange with the specified password, creating it...",
+
+      "translation": "指定されたパスワードのユーザー {Org}/{User} は、交換内に存在しないので、作成します..."
+    },
+    {
+
+      "id": "user '{Org}/{User}' does not exist with the specified password or -e was not specified to be able to create it in the 'public' org.",
+
+      "translation": "指定されたパスワードのユーザー「{Org}/{User}」は存在しません。または、-e が指定されていないので、ユーザーを組織「public」内に作成することができません。"
+    },
+    {
+
+      "id": "key '{OrgAndCredsorg_nodeId}' not found in exchange nodes output",
+
+      "translation": "交換のノード出力内でキー「{OrgAndCredsorg_nodeId}」は検出されませんでした"
+    },
+    {
+
+      "id": "can not update existing node {NodeId} because it is owned by another user ({Owner})",
+
+      "translation": "既存ノード {NodeId} は別のユーザー ({Owner}) に所有されているので、更新できません"
+    },
+    {
+
+      "id": "Node {Org}/{Node} not found in the Horizon Exchange.",
+
+      "translation": "ノード {Org}/{Node} は Horizon Exchange 内で検出されませんでした"
+    },
+    {
+
+      "id": "Node {Node} updated in the Horizon Exchange.",
+
+      "translation": "ノード {Node} は Horizon Exchange 内で更新されました。"
+    },
+    {
+
+      "id": "-n is mutually exclusive with <node> and <token> arguments.",
+
+      "translation": "-n と、<node> および <token> 引数とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "Please specify both node and token.",
+
+      "translation": "node および token の両方を指定してください。"
+    },
+    {
+
+      "id": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+
+      "translation": "ノード {Org}/{Node} を Horizon Exchange から削除しますか? (エッジ・ノードがこのノード ID で登録されている場合は削除すべきではありません)"
+    },
+    {
+
+      "id": "node '{Org}/{Node}' not found.",
+
+      "translation": "ノード「{Org}/{Node}」は検出されませんでした。"
+    },
+    {
+
+      "id": "Incorrect policy format in file {JsonFilePath}: {Err}",
+
+      "translation": "ファイル {JsonFilePath} のポリシー・フォーマットに誤りがあります: {Err}"
+    },
+    {
+
+      "id": "Node policy not found for node {Node}/{Org}",
+
+      "translation": "ノード {Node}/{Org} のノード・ポリシーは検出されませんでした"
+    },
+    {
+
+      "id": "Invalid property list {Attribute}: {Err}",
+
+      "translation": "プロパティー・リスト {Attribute} は無効です: {Err}"
+    },
+    {
+
+      "id": "Updating Node {Node} policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "Horizon Exchange でノード {Node} のポリシー・プロパティーを更新中です。このポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "Node {Node} policy properties updated in the horizon exchange.",
+
+      "translation": "ノード {Node} のポリシー・プロパティーが Horizon Exchange 内で更新されました。"
+    },
+    {
+
+      "id": "Invalid constraint expression {Attribute}: {Err}",
+
+      "translation": "制約式 {Attribute} は無効です: {Err}"
+    },
+    {
+
+      "id": "Updating Node {Node} policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "Horizon Exchange でノード {Node} のポリシー制約を更新中です。このポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "Node {Node} policy constraints updated in the horizon exchange.",
+
+      "translation": "ノード {Node} のポリシー制約が Horizon Exchange 内で更新されました。"
+    },
+    {
+
+      "id": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
+
+      "translation": "更新する有効な属性 {Attribute} が入力内に見つかりませんでした。属性とは、制約やプロパティーのことです。"
+    },
+    {
+
+      "id": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
+
+      "translation": "Horizon Exchange から {Org}/{Node} のノード・ポリシーを削除しますか?"
+    },
+    {
+
+      "id": "Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "ノード・ポリシーを削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "failed to marshal 'exchange pattern list' output: {Err}",
+
+      "translation": "「exchange pattern list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "pattern '{Pattern}' not found in org {PatOrg}",
+
+      "translation": "パターン「{Pattern}」は組織 {PatOrg} 内で検出されませんでした"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange pattern list' output: {Err}",
+
+      "translation": "「hzn exchange pattern list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Pattern {Pattern}/{PatOrg} updated in the Horizon exchange.",
+
+      "translation": "パターン {Pattern}/{PatOrg} は Horizon Exchange 内で更新されました。"
+    },
+    {
+
+      "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
+
+      "translation": "deployment overrides フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "the org specified in the input file ({Org}) must match the org specified on the command line ({Org_1})",
+
+      "translation": "入力ファイルで指定された組織 ({Org}) は、コマンド・ラインで指定された組織 ({Org_1}) と一致する必要があります。"
+    },
+    {
+
+      "id": "the pattern definition ({Services}) must contain services, unable to proceed",
+
+      "translation": "パターン定義 ({Services}) にはサービスが含まれている必要があります。続行できません"
+    },
+    {
+
+      "id": "Signing deployment_overrides field in service {I__1}, serviceVersion number {J__1}",
+
+      "translation": "サービス {I__1}、サービス・バージョン番号 {J__1} の deployment_overrides フィールドを署名中"
+    },
+    {
+
+      "id": "failed to marshal deployment_overrides field in service {I__1}, serviceVersion number {J__1}: {Err}",
+
+      "translation": "サービス {I__1}、サービス・バージョン番号 {J__1} の deployment_overrides フィールドのマーシャルに失敗しました: {Err} "
+    },
+    {
+
+      "id": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
+
+      "translation": "{KeyFilePath} による deployment_overrides ストリングの署名で問題が発生しました: {Err}"
+    },
+    {
+
+      "id": "Updating {ExchId} in the exchange...",
+
+      "translation": "Exchange 内で {ExchId} を更新中..."
+    },
+    {
+
+      "id": "Creating {ExchId} in the exchange...",
+
+      "translation": "Exchange 内で {ExchId} を作成中..."
+    },
+    {
+
+      "id": "Storing {BaseName} with the pattern in the exchange...",
+
+      "translation": "Exchange 内で {BaseName} とパターンを保存中..."
+    },
+    {
+
+      "id": "key '{Org____pattern}' not found in resources returned from exchange",
+
+      "translation": "キー「{Org____pattern}」は、Exchange から返されたリソース内で検出されませんでした"
+    },
+    {
+
+      "id": "verifying deployment_overrides string in service {I__1}, serviceVersion number {J__1}",
+
+      "translation": "サービス {I__1}、サービス・バージョン番号 {J__1} の deployment_overrides ストリングを検査中"
+    },
+    {
+
+      "id": "problem verifying deployment_overrides string in service {I__1}, serviceVersion number {J__1} with {KeyFilePath}: {Err}",
+
+      "translation": "サービス {I__1}、サービス・バージョン番号 {J__1} の deployment_overrides ストリングの {KeyFilePath} による検査で問題が発生しました: {Err} "
+    },
+    {
+
+      "id": "Deployment_overrides string in service {I__1}, serviceVersion number {J__1} was not signed with the private key associated with this public key {KeyFilePath}.",
+
+      "translation": "サービス {I__1}、サービス・バージョン番号 {J__1} の deployment_overrides ストリングは、この公開鍵 {KeyFilePath} に関連付けられた秘密鍵で署名されていません。"
+    },
+    {
+
+      "id": "Are you sure you want to remove pattern {Org}/{Pattern} from the Horizon Exchange?",
+
+      "translation": "Horizon Exchange からパターン {Org}/{Pattern} を削除しますか?"
+    },
+    {
+
+      "id": "key '{KeyName}' not found",
+
+      "translation": "鍵「{KeyName}」が見つかりません"
+    },
+    {
+
+      "id": "user input {Name} has no default value and is not set",
+
+      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange service list' output: {Err}",
+
+      "translation": "「hzn exchange service list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "service '{Service}' not found in org {SvcOrg}",
+
+      "translation": "サービス「{Service}」は org {SvcOrg} 内で検出されませんでした"
+    },
+    {
+
+      "id": "Flags -I and -P are mutually exclusive.",
+
+      "translation": "フラグ -I と -P は同時に指定することはできません。"
+    },
+    {
+
+      "id": "Adding service policy for service: {ServiceAddPolicyService}",
+
+      "translation": "サービス用のサービス・ポリシーを追加中: {ServiceAddPolicyService}"
+    },
+    {
+
+      "id": "Service policy added for service: {ServiceAddPolicyService}",
+
+      "translation": "サービス用のサービス・ポリシーが追加されました: {ServiceAddPolicyService}"
+    },
+    {
+
+      "id": "the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null",
+
+      "translation": "「deploymentSignature」フィールドは非ブランクですが、「deployment」フィールドがヌルなので、無視されます"
+    },
+    {
+
+      "id": "unable to sign deployment config: {Err}",
+
+      "translation": "デプロイメント構成を署名できません: {Err}"
+    },
+    {
+
+      "id": "the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty",
+
+      "translation": "「deployment」フィールドは空ストリングではないので、サービスが事前に署名されていることを暗黙に示していますが、「deploymentSignature」フィールドは空です"
+    },
+    {
+
+      "id": "'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)",
+
+      "translation": "「deployment」フィールドのタイプが無効です。JSON オブジェクトまたはストリング (事前署名の場合) のいずれかである必要があります"
+    },
+    {
+
+      "id": "Service {Org}/{ExchId} exists in the exchange, do you want to overwrite it?",
+
+      "translation": "サービス {Org}/{ExchId} は交換内に存在します。上書きしますか?"
+    },
+    {
+
+      "id": "Storing {BaseName} with the service in the exchange...",
+
+      "translation": "Exchange 内で {BaseName} とサービスを保存中..."
+    },
+    {
+
+      "id": "Error: registry-token value of '{RegTok}' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.",
+
+      "translation": "エラー: レジストリー・トークン値「{RegTok}」は次の必要な形式になっていません: registry:user:token。Horizon Exchange に保存されません。"
+    },
+    {
+
+      "id": "unable to get container images from deployment: {Err}",
+
+      "translation": "デプロイメントからコンテナー・イメージを取得できません: {Err}"
+    },
+    {
+
+      "id": "problem verifying deployment string with {KeyFilePath}: {Err}",
+
+      "translation": "deployment ストリングを {KeyFilePath} で検査する際に問題が発生しました: {Err}"
+    },
+    {
+
+      "id": "Deployment string was not signed with the private key associated with this public key {KeyFilePath}.",
+
+      "translation": "deployment ストリングはこの公開鍵 {KeyFilePath} に関連付けられた秘密鍵で署名されていません。"
+    },
+    {
+
+      "id": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
+
+      "translation": "Horizon Exchange からサービス {Org}/{Service} を削除しますか?"
+    },
+    {
+
+      "id": "keys not found",
+
+      "translation": "鍵が見つかりません"
+    },
+    {
+
+      "id": "docker auth {AuthId} not found",
+
+      "translation": "Docker 認証 {AuthId} が見つかりません"
+    },
+    {
+
+      "id": "docker auths not found",
+
+      "translation": "Docker 認証が見つかりません"
+    },
+    {
+
+      "id": "service '{Org}/{Service}' not found.",
+
+      "translation": "サービス「{Org}/{Service}」は検出されませんでした。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
+
+      "translation": "「hzn exchange service listpolicy」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "サービス・ポリシーを更新中です。このサービス・ポリシーに基づいてすべての契約が再評価されます。既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
+
+      "translation": "Horizon Exchange から {Org}/{Service} のサービス・ポリシーを削除しますか?"
+    },
+    {
+
+      "id": "Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
+
+      "translation": "サービス・ポリシーを削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+
+      "id": "theUser '{TrimPrefixtheUser_}' not found in org {Org}",
+
+      "translation": "ユーザー「{TrimPrefixtheUser_}」は組織 {Org} 内で検出されませんでした"
+    },
+    {
+
+      "id": "failed to marshal 'exchange user list' output: {Err}",
+
+      "translation": "「exchange user list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "the email must be specified via -e if the username is not an email address.",
+
+      "translation": "ユーザー名が E メール・アドレスではない場合、-e で　E メールを指定する必要があります。"
+    },
+    {
+
+      "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
+
+      "translation": "警告: このユーザーが所有するすべての Exchange リソース (ノード、サービス、パターン、その他) も削除されます。Horizon Exchange からユーザー {Org}/{User} を削除しますか?"
+    },
+    {
+
+      "id": "user '{User}' not found in org {Org}",
+
+      "translation": "ユーザー「{User}」は組織 {Org} 内で検出されませんでした"
+    },
+    {
+
+      "id": "Error parsing the selections {Form}. {Err}",
+
+      "translation": "選択 {Form} の構文解析にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Error getting {Resource} for output, error {Err}",
+
+      "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}"
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノード更新用の入力の構文解析中にエラーが発生しました。入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。入力ボディに制約式またはプロパティー・リストが含まれていませんでした:{Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。入力ボディをユーザー入力オブジェクトとしてデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+
+      "translation": "ノード {Arg_1} のノード構成/登録に誤りがあります。{Arg_2}"
+    },
+    {
+
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+
+      "translation": "ノード {Arg_1} の更新でエラーが発生しました。{Arg_2}"
+    },
+    {
+
+      "id": "Error in node unregistration. {Arg_1}",
+
+      "translation": "ノードの登録抹消でエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+
+      "translation": "交換のバージョンの確認でエラーが発生しました。エラー: {Arg_1}"
+    },
+    {
+
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+
+      "translation": "ノード・ポリシーの作成または置き換えでエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node policy. {Arg_1}",
+
+      "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node policy. {Arg_1}",
+
+      "translation": "ノード・ポリシーの削除でエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Error in updating node user input. {Arg_1}",
+
+      "translation": "ノードのユーザー入力の更新でエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node user input. {Arg_1}",
+
+      "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node userinput. {Arg_1}",
+
+      "translation": "ノードのユーザー入力の削除でエラーが発生しました。{Arg_1}"
+    },
+    {
+
+      "id": "Start node configuration/registration for node {Arg_1}.",
+
+      "translation": "ノード {Arg_1} のノード構成/登録を開始します。"
+    },
+    {
+
+      "id": "Start updating node {Arg_1}.",
+
+      "translation": "ノード {Arg_1} の更新を開始します。"
+    },
+    {
+
+      "id": "Complete node update for {Arg_1}.",
+
+      "translation": "{Arg_1} のノード更新を完了します。"
+    },
+    {
+
+      "id": "Start node unregistration.",
+
+      "translation": "ノードの登録抹消を開始します。"
+    },
+    {
+
+      "id": "Node unregistration complete for node {Arg_1}.",
+
+      "translation": "ノード {Arg_1} のノード登録抹消が完了しました。"
+    },
+    {
+
+      "id": "Error unregistring the node. The node is not found from the database.",
+
+      "translation": "ノードの登録抹消中にエラーが発生しました。ノードはデータベースで検出されませんでした。"
+    },
+    {
+
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+
+      "translation": "ノードの登録抹消中にエラーが発生しました。ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+
+      "translation": "ノードの登録抹消の入力エラーです。{Arg_1} は removeNode の誤った値です"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+
+      "translation": "ノードの登録抹消の入力エラーです。{Arg_1} は deepClean の誤った値です"
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+
+      "translation": "ノードの登録抹消の入力エラーです。{Arg_1} は block の誤った値です"
+    },
+    {
+
+      "id": "Unable to read node object from database, error {Arg_1}",
+
+      "translation": "データベースからノード・オブジェクトを読み取れません、エラー {Arg_1}"
+    },
+    {
+
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+
+      "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}"
+    },
+    {
+
+      "id": "Error in node configuration. The node is not found from the database.",
+
+      "translation": "ノードの構成に誤りがあります。ノードはデータベースで検出されませんでした。"
+    },
+    {
+
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+
+      "translation": "ノードの構成に誤りがあります。状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。"
+    },
+    {
+
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+
+      "translation": "ノードの「{Arg_1}」から「{Arg_2}」への状態遷移はサポートされていません。"
+    },
+    {
+
+      "id": "Failed get user input from local db. {Arg_1}",
+
+      "translation": "ローカル・データベースからユーザー入力の取得に失敗しました。{Arg_1}"
+    },
+    {
+
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+
+      "translation": "ローカル・ユーザーの入力でサービス {Arg_1}/{Arg_2} のプリファレンスが見つかりませんでした、エラー: {Arg_3}"
+    },
+    {
+
+      "id": "Error saving new node config state to database: {Arg_1}",
+
+      "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}"
+    },
+    {
+
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+
+      "translation": "ノード {Arg_1} のノード構成/登録を完了します。"
+    },
+    {
+
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+
+      "translation": "{Arg_1} のサービス構成に誤りがあります。{Arg_2}"
+    },
+    {
+
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+
+      "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。{Arg_2}"
+    },
+    {
+
+      "id": "New node policy: {Arg_1}",
+
+      "translation": "新規ノード・ポリシー: {Arg_1}"
+    },
+    {
+
+      "id": "Deleted node policy",
+
+      "translation": "ノード・ポリシーを削除しました"
+    },
+    {
+
+      "id": "New node user input: {Arg_1}",
+
+      "translation": "新規ノードのユーザー入力: {Arg_1}"
+    },
+    {
+
+      "id": "No node user input to detele",
+
+      "translation": "削除するノード・ユーザー入力がありません"
+    },
+    {
+
+      "id": "Deleted all node user input",
+
+      "translation": "すべてのノード・ユーザー入力を削除しました"
+    },
+    {
+
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+
+      "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。"
+    },
+    {
+
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "{Arg_1}/{Arg_2} のサービスの自動構成を開始します。"
+    },
+    {
+
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "{Arg_1}/{Arg_2} のサービス構成を完了します。"
+    },
+    {
+
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "{Arg_1}/{Arg_2} のサービスの自動構成を完了します。"
+    },
+    {
+
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+
+      "translation": "{Arg_2}/{Arg_3} のサービス構成で、変数 {Arg_1} が欠落しています。欠落している変数の設定がビジネス・ポリシーに含まれていない場合、契約が形成されないことがあります。"
+    },
+    {
+
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+
+      "translation": "サービス {Arg_1} の構成中にエラーが発生しました。{Arg_2}"
+    },
+    {
+
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+
+      "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}"
+    },
+    {
+
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "ノードのサービス構成状態 {Arg_2} の {Arg_1} への変更を開始します。"
+    },
+    {
+
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "ノードのサービス構成状態 {Arg_2} の {Arg_1} への変更を完了します。"
+    },
+    {
+
+      "id": "Error converting the selections into Selectors: {Err}",
+
+      "translation": "選択をセレクターに変換する際にエラーが発生しました: {Err}"
+    },
+    {
+
+      "id": "properties contains an invalid property: {Err}",
+
+      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
+    },
+    {
+
+      "id": "Property must include a name and a value: {Property}",
+
+      "translation": "プロパティーには名前と値が含まれている必要があります: {Property}"
+    },
+    {
+
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+
+      "translation": "プロパティー {Name} のプロパティー型 {DeclaredType} が無効です。許可されているプロパティー型は次のとおりです: version、string、int、boolean、float、および list of string"
+    },
+    {
+
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+
+      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not an integer type",
+
+      "translation": "プロパティー {Name} の 値 {Value} の型は整数ではありません"
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+
+      "translation": "プロパティー {Name} の 値 {Value} は有効なストリングではありません。型を定義するか、値をストリングに変更してください。"
+    },
+    {
+
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+
+      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+    },
+    {
+
+      "id": "Property {Name} has invalid value type {ActualType}",
+
+      "translation": "プロパティー {Name} の値の型 {ActualType} が無効です。"
+    },
+    {
+
+      "id": "failed to marshal 'hzn policy list' output: {Err}",
+
+      "translation": "「hzn policy list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Are you sure you want to remove the node policy?",
+
+      "translation": "ノード・ポリシーを削除しますか?"
+    },
+    {
+
+      "id": "A list of policy properties that describe the object.",
+
+      "translation": "オブジェクトを特徴づけるポリシー・プロパティーのリスト。"
+    },
+    {
+
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+
+      "translation": "自己署名 MMS API 証明書用のディレクトリーを作成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+
+      "translation": "MMS API 証明書シリアル番号用に乱数を生成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+
+      "translation": "MMS API 証明書用に秘密鍵を生成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to create MMS API certificate, error {Err}",
+
+      "translation": "MMS API 証明書を作成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "MMS API 証明書をファイル {ServerCertificate} に書き込むことができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "MMS API 証明書をファイル {ServerCertificate} にエンコードすることができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+
+      "translation": "MMS API 証明書ファイル {ServerCertificate} を閉じることができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} に書き込むことができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} にエンコードすることができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+
+      "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
+    },
+    {
+
+      "id": "this command can not be run before running 'hzn register'",
+
+      "translation": "このコマンドは「hzn register」を実行する前に実行することはできません"
+    },
+    {
+
+      "id": "horizon api attributes output did not include 'attributes' key",
+
+      "translation": "Horizon API 属性の出力には「attributes」キーが含まれていませんでした"
+    },
+    {
+
+      "id": "failed to marshal 'hzn attribute list' output: {Err}",
+
+      "translation": "「hzn attribute list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal agreement with index {I}: {Err}",
+
+      "translation": "添字 {I} の契約のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "agreement id {AgreementId} not found",
+
+      "translation": "契約 ID {AgreementId} が見つかりません"
+    },
+    {
+
+      "id": "failed to marshal 'hzn agreement list' output: {Err}",
+
+      "translation": "「hzn agreement list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "deployment config {Dep} is not supported",
+
+      "translation": "デプロイメント構成 {Dep} はサポートされていません"
+    },
+    {
+
+      "id": "starting test mode is not supported for this project",
+
+      "translation": "このプロジェクトではテスト・モードの開始はサポートされていません"
+    },
+    {
+
+      "id": "Failed to get proper response from Horizon agent",
+
+      "translation": "Horizon エージェントから適切な応答を取得できませんでした"
+    },
+    {
+
+      "id": "Horizon CLI version: {HORIZONVERSION}",
+
+      "translation": "Horizon CLI のバージョン: {HORIZONVERSION}"
+    },
+    {
+
+      "id": "Horizon Agent version: {HorizonVersion}",
+
+      "translation": "Horizon エージェントのバージョン: {HorizonVersion}"
+    },
+    {
+
+      "id": "must specify exchange credentials to access the model management service.",
+
+      "translation": "モデル管理サービスにアクセスするには交換の資格情報を指定する必要があります。"
+    },
+    {
+
+      "id": "must specify object ID when requesting object details.",
+
+      "translation": "オブジェクトの詳細を要求するときは、オブジェクト ID を指定する必要があります。"
+    },
+    {
+
+      "id": "no objects type '{ObjType}' found in org {Org}",
+
+      "translation": "オブジェクト・タイプ「{ObjType}」は組織 {Org} 内で検出されませんでした"
+    },
+    {
+
+      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+
+      "translation": "タイプ「{ObjType}」のオブジェクト「{ObjId}」は組織 {Org} 内で検出されませんでした"
+    },
+    {
+
+      "id": "destination detail for object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+
+      "translation": "タイプ「{ObjType}」のオブジェクト「{ObjId}」の宛先詳細は、組織 {Org} 内で検出されませんでした"
+    },
+    {
+
+      "id": "Object status: {Stringresp}",
+
+      "translation": "オブジェクトの状況: {Stringresp}"
+    },
+    {
+
+      "id": "Required: A unique identifier of the object.",
+
+      "translation": "必須: オブジェクトの固有 ID。"
+    },
+    {
+
+      "id": "Required: The type of the object.",
+
+      "translation": "必須: オブジェクトのタイプ。"
+    },
+    {
+
+      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
+
+      "translation": "必須: オブジェクトの組織 ID (オブジェクトは正確に 1 つの組織に所属します)。"
+    },
+    {
+
+      "id": "The node id (without org prefix) where the object should be placed.",
+
+      "translation": "オブジェクトを配置すべき (組織プレフィックスなしの) ノード ID。"
+    },
+    {
+
+      "id": "If omitted the object is sent to all nodes the same destinationType.",
+
+      "translation": "省略すると、オブジェクトは同じ destinationType のすべてのノードに送信されます。"
+    },
+    {
+
+      "id": "Delete this field when you are using destinationPolicy.",
+
+      "translation": "destinationPolicy を使用する場合はこのフィールドを削除します。"
+    },
+    {
+
+      "id": "The pattern in use by nodes that should receive this object.",
+
+      "translation": "このオブジェクトを受信すべきノードによって使用されているパターン。"
+    },
+    {
+
+      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
+
+      "translation": "省略されている場合 (かつ destinationsList も省略されている場合)、オブジェクトはすべての既知ノードにブロードキャストされます。"
+    },
+    {
+
+      "id": "Delete this field when you are using policy.",
+
+      "translation": "ポリシーを使用する場合はこのフィールドを削除します。"
+    },
+    {
+
+      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
+
+      "translation": "pattern:nodeId ペアの配列として表記した、このオブジェクトを受信すべき宛先のリスト。"
+    },
+    {
+
+      "id": "If provided, destinationType and destinationID must be omitted.",
+
+      "translation": "指定された場合、destinationType と destinationID は省略する必要があります。"
+    },
+    {
+
+      "id": "The policy specification that should be used to distribute this object.",
+
+      "translation": "このオブジェクトを配布するために使用すべきポリシー仕様。"
+    },
+    {
+
+      "id": "Delete these fields if the target node is using a pattern.",
+
+      "translation": "ターゲット・ノードがパターンを使用している場合はこれらのフィールドを削除します。"
+    },
+    {
+
+      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
+
+      "translation": "有効な型は、string、bool、int、float、list of string (コンマ区切り)、version です。"
+    },
+    {
+
+      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
+
+      "translation": "値から型が識別できる場合は型を省略できます。例えば、引用符なしの TRUE はブールです。"
+    },
+    {
+
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
+
+      "translation": "<property name> <operator> <property value>　という形式の制約式を、ブール演算子 AND (&&) または OR (||)で分離したリスト。"
+    },
+    {
+
+      "id": "The service(s) that will use this object.",
+
+      "translation": "このオブジェクトを使用するサービス。"
+    },
+    {
+
+      "id": "Set to '*' to indcate services of any hardware architecture.",
+
+      "translation": "あらゆるハードウェア・アーキテクチャーのサービスを示すには、「*」に設定します。"
+    },
+    {
+
+      "id": "A version range.",
+
+      "translation": "バージョン範囲。"
+    },
+    {
+
+      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
+
+      "translation": "オブジェクトの有効期限を示すタイム・スタンプ/日付 (オブジェクトは自動的に削除されます)。タイム・スタンプは RFC3339 フォーマットで指定する必要があります。"
+    },
+    {
+
+      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
+
+      "translation": "任意のストリング値。値のセマンティックは解釈されません。モデル管理システムは、オブジェクトの複数バージョンを保持しません。"
+    },
+    {
+
+      "id": "An arbitrary description.",
+
+      "translation": "任意の説明。"
+    },
+    {
+
+      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
+
+      "translation": "このオブジェクトを自動的にアクティブにするタイム・スタンプ/日付。タイム・スタンプは RFC3339 フォーマットで指定する必要があります。"
+    },
+    {
+
+      "id": "must specify exchange credentials to access the model management service",
+
+      "translation": "モデル管理サービスにアクセスするには交換の資格情報を指定する必要があります"
+    },
+    {
+
+      "id": "must specify --type with --id",
+
+      "translation": "--type を --id と同時に指定する必要があります"
+    },
+    {
+
+      "id": "must specify --id with --type",
+
+      "translation": "--id を --type と同時に指定する必要があります"
+    },
+    {
+
+      "id": "cannot specify --id and --type with --def",
+
+      "translation": "--id と --type を --def と同時に指定することはできません"
+    },
+    {
+
+      "id": "must specify either --type and --id or --def",
+
+      "translation": "--type と --id、または --def のいずれかを指定する必要があります"
+    },
+    {
+
+      "id": "cannot specify --pattern with --def",
+
+      "translation": "--pattern を --def と同時に指定することはできません"
+    },
+    {
+
+      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
+
+      "translation": "定義ファイル {ObjMetadataFile} を読み取ることができません: {Err}"
+    },
+    {
+
+      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
+
+      "translation": "定義ファイル {ObjMetadataFile} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "unable to open object file {ObjFile}: {Err}",
+
+      "translation": "オブジェクト・ファイル {ObjFile} を開くことができません: {Err}"
+    },
+    {
+
+      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
+
+      "translation": "オブジェクト {ObjFile} はモデル管理サービス内の組織 {Org} にアップロードされました"
+    },
+    {
+
+      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
+
+      "translation": "オブジェクト {ObjectID} は、モデル管理サービス内の組織 {Org} に追加されました"
+    },
+    {
+
+      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
+
+      "translation": "オブジェクト {ObjId} は、モデル管理サービス内の組織 {Org} から削除されました"
+    },
+    {
+
+      "id": "health status API returned HTTP code {HttpCode}",
+
+      "translation": "ヘルス・ステータス API は、HTTP コード {HttpCode} を返しました"
+    },
+    {
+
+      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
+
+      "translation": "ファイル同期サービス用のネットワーク {NETWORKNAME} を作成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to start CSS, error {Err}",
+
+      "translation": "CSS を開始できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to load file objects into CSS, error {Err}",
+
+      "translation": "ファイル・オブジェクトを CSS にロードできません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to start ESS, error {Err}",
+
+      "translation": "ESS を開始できません、エラー {Err}"
+    },
+    {
+
+      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
+
+      "translation": "{MakeLabelNameESSNAME} を停止できません、エラー {Err}"
+    },
+    {
+
+      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
+
+      "translation": "ファイル同期サービス用のネットワーク {NETWORKNAME} を削除できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to list existing docker images, error {Err}",
+
+      "translation": "既存の Docker イメージをリストできません、エラー {Err}"
+    },
+    {
+
+      "id": "Found docker image {Name} locally.",
+
+      "translation": "ローカルで Docker イメージ {Name} が見つかりました。"
+    },
+    {
+
+      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
+
+      "translation": "イメージ {GetFSSFullImageName} を使用して CSS コンテナーをプルできません、エラー {Err}。別のイメージ・タグを使用するように環境変数 {DEVTOOLHZNFSSIMAGETAG} を設定してください。"
+    },
+    {
+
+      "id": "Pulled docker image {Name}.",
+
+      "translation": "Docker イメージ {Name} をプルしました。"
+    },
+    {
+
+      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
+
+      "translation": "イメージ {GetFSSImageName} を使用して CSS コンテナーを作成できません、エラー {Err}。別のイメージ・タグを使用するように環境変数 {DEVTOOLHZNFSSIMAGETAG} を設定してください。"
+    },
+    {
+
+      "id": "unable to start CSS container, error {Err}",
+
+      "translation": "CSS コンテナーを開始できません、エラー {Err}"
+    },
+    {
+
+      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
+
+      "translation": "{MakeLabelNameCSSNAME} コンテナーを作成しました。ホスト・ポート {GetCSSPort} を listen しています。"
+    },
+    {
+
+      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
+
+      "translation": "ファイル同期サービス・コンテナー {MakeLabelNameCSSNAME} は、ホスト・ポート {GetCSSPort} を listen しています"
+    },
+    {
+
+      "id": "unable to create SSL certificate for ESS, error {Err}",
+
+      "translation": "ESS の SSL 証明書を作成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+
+      "translation": "ESS の SSL 証明書ファイル {ESSSSLClientCertPath} を開くことができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+
+      "translation": "ESS の SSL 証明書ファイル {ESSSSLClientCertPath} を読み取ることができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+
+      "translation": "ESS の SSL 証明書鍵ファイル {ESSSSLCertKeyPath} を開くことができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+
+      "translation": "ESS の SSL 証明書鍵ファイル {ESSSSLCertKeyPath} を読み取ることができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to create ESS container, error {Err}",
+
+      "translation": "ESS コンテナーを作成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to start ESS container, error {Err}",
+
+      "translation": "ESS コンテナーを開始できません、エラー {Err}"
+    },
+    {
+
+      "id": "Created {MakeLabelNameESSNAME} container",
+
+      "translation": "{MakeLabelNameESSNAME} コンテナーを作成しました"
+    },
+    {
+
+      "id": "unable to list docker containers, error {Err}",
+
+      "translation": "Docker コンテナーをリストできません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to stop docker container {Name}, error {Err}",
+
+      "translation": "Docker コンテナー {Name} を停止できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to remove docker container {Name}, error {Err}",
+
+      "translation": "Docker コンテナー {Name} を削除できません、エラー {Err}"
+    },
+    {
+
+      "id": "Stopped {Name} container",
+
+      "translation": "{Name} コンテナーを停止しました"
+    },
+    {
+
+      "id": "Loading {FileName} into CSS",
+
+      "translation": "{FileName} を CSS にロード中"
+    },
+    {
+
+      "id": "unable to open file object {FileName}, error {Err}",
+
+      "translation": "ファイル・オブジェクト {FileName} を開くことができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to read file object {FileName}, error {Err}",
+
+      "translation": "ファイル・オブジェクト {FileName} を読み取ることができません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to add file {FileName} to the CSS, error {Err}",
+
+      "translation": "ファイル {FileName} を CSS に追加できません、エラー {Err}"
+    },
+    {
+
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+
+      "translation": "構成ファイル {FileObjects} をファイル同期サービスにロードしました。"
+    },
+    {
+
+      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
+
+      "translation": "{Metadata} の CSS ファイル PUT をマーシャルできません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
+
+      "translation": "{Metadata} の CSS ファイル PUT 要求を作成できません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
+
+      "translation": "{Metadata} の CSS ファイル PUT 要求を CSS に送信できません、エラー {Err}"
+    },
+    {
+
+      "id": "HTTP code: {StatusCode}",
+
+      "translation": "HTTP コード: {StatusCode}"
+    },
+    {
+
+      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
+
+      "translation": "ファイル {Metadata} を CSS に PUT できません、HTTP コード {StatusCode}"
+    },
+    {
+
+      "id": "Created network {Name}",
+
+      "translation": "ネットワーク {Name} を作成しました"
+    },
+    {
+
+      "id": "unable to list docker networks, error {Err}",
+
+      "translation": "Docker ネットワークをリストできません、エラー {Err}"
+    },
+    {
+
+      "id": "unable to remove docker network {Name}, error {Err}",
+
+      "translation": "Docker ネットワーク {Name} を削除できません、エラー {Err}"
+    },
+    {
+
+      "id": "Name, or Org is empty string.",
+
+      "translation": "Name または Org は空ストリングです。"
+    },
+    {
+
+      "id": "The serviceVersions array is empty.",
+
+      "translation": "serviceVersions 配列は空です。"
+    },
+    {
+
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+
+      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
+    },
+    {
+
+      "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
+
+      "translation": "ポリシー制約 {Remainder} を内部フォーマットに変換できません、エラー {Err}"
+    },
+    {
+
+      "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
+
+      "translation": "論理演算子 {NextLogicalOperator} は無効です。AND、OR、&&、|| を予期しています"
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
+
+      "translation": "{Lenpieces} トークンが見つかりました。式 {Expression} では 3 トークンを予期しています。予期される形式は <property> == <value> です"
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
+
+      "translation": "{Lenpieces} トークンが見つかりました。式 {Expression} では 3 トークンを予期しています。予期される形式は 3 トークンを含んだ式です: <property> <operator> <value> の制約式"
+    },
+    {
+
+      "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+
+      "translation": "式: {Expression} には有効な比較演算子を含める必要があります - 演算子 {Pieces1} は誤りです。許可される演算子: {Lessthan}、{Greaterthan}、{Equalto}、{Doubleequalto}、{Lessthaneq}、{Greaterthaneq}、{Notequalto}、{Inoperator}"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
+
+      "translation": "比較演算子: {CompOp} は数値: {Value} ではサポートされません"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
+
+      "translation": "比較演算子: {CompOp} はブール値: {Value} ではサポートされません"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
+
+      "translation": "比較演算子: {CompOp} はストリング・リスト値: {Value} ではサポートされません"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
+
+      "translation": "比較演算子: {CompOp} はストリング値: {Value} ではサポートされません"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
+
+      "translation": "比較演算子: {CompOp} はシングル・バージョン: {Value} ではサポートされません"
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
+
+      "translation": "比較演算子: {CompOp} はバージョン式: {Value} ではサポートされません"
+    },
+    {
+
+      "id": "Expression: {Expression} is not valid",
+
+      "translation": "式: {Expression} は無効です"
+    },
+    {
+
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+
+      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください。)\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介してリモート Horizon エージェントを使用することを円滑にすることができます。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために使用する URL をオーバーライドします。\n例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を問い合わせます。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。HZN_EXCHANGE_USER_AUTH を設定した時に org を省略した場合は、HZN_ORG_ID を設定できる\n\tことに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと通信するために使用する\n URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。(デフォルトで hzn は\n      Horizon エージェントに URL を問い合わせます。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
+    },
+    {
+
+      "id": "Verbose output.",
+
+      "translation": "詳細出力。"
+    },
+    {
+
+      "id": "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.",
+
+      "translation": "Horizon または Exchange API をコールするときは GET を使用し、PUT、POST、または DELETE は使用しないでください。"
+    },
+    {
+
+      "id": "Show the Horizon version.",
+
+      "translation": "Horizon バージョンを表示します。"
+    },
+    {
+
+      "id": "Show the architecture of this machine (as defined by Horizon and golang).",
+
+      "translation": "このマシンのアーキテクチャー (Horizon および golang によって定義されているとおり) を表示します。"
+    },
+    {
+
+      "id": "List and manage Horizon Exchange resources.",
+
+      "translation": "Horizon Exchange のリソースをリストおよび管理します。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
+
+      "translation": "Horizon Exchange の組織 ID。指定されていない場合、HZN_ORG_ID がデフォルトとして使用されます。"
+    },
+    {
+
+      "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
+
+      "translation": "交換のリソースを照会および作成するための Horizon Exchange ユーザー資格情報。指定されていない場合、HZN_EXCHANGE_USER_AUTH がデフォルトとして使用されます。ユーザーの組織を前に付加していない場合、-o の値が自動的に前に付加されます。-o を使用する代わりに、HZN_ORG_ID に Horizon Exchange 組織 ID を設定することも可能です。"
+    },
+    {
+
+      "id": "Display the version of the Horizon Exchange.",
+
+      "translation": "Horizon Exchange のバージョンを表示します。"
+    },
+    {
+
+      "id": "Display the status of the Horizon Exchange.",
+
+      "translation": "Horizon Exchange の状況を表示します。"
+    },
+    {
+
+      "id": "List and manage users in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange のユーザーをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
+
+      "translation": "Horizon Exchange からユーザー・リソースを表示します。(通常は、ユーザー自身のみを表示することができます。ユーザーが存在しない場合は、無効な資格情報のエラーになります。)"
+    },
+    {
+
+      "id": "List this one user. Default is your own user. Only admin users can list other users.",
+
+      "translation": "この 1 人のユーザーをリストします。デフォルトはユーザー自身です。管理ユーザーのみが他のユーザーをリストできます。"
+    },
+    {
+
+      "id": "List all users in the org. Will only do this if you are a user with admin privilege.",
+
+      "translation": "組織内のすべてのユーザーをリストします。管理権限を持つユーザーである場合にのみ実行されます。"
+    },
+    {
+
+      "id": "When listing all of the users, show only the usernames, instead of each entire resource.",
+
+      "translation": "すべてのユーザーをリストするときに、個々のリソース全体ではなく、ユーザー名のみを表示します。"
+    },
+    {
+
+      "id": "Create the user resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内にユーザー・リソースを作成します。"
+    },
+    {
+
+      "id": "Your username for this user account when creating it in the Horizon exchange.",
+
+      "translation": "Horizon Exchange 内にユーザー・アカウントを作成するとき、そのユーザー・アカウントのユーザー名。"
+    },
+    {
+
+      "id": "Your password for this user account when creating it in the Horizon exchange.",
+
+      "translation": "Horizon Exchange 内にユーザー・アカウントを作成するとき、そのユーザー・アカウントのパスワード。"
+    },
+    {
+
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
+
+      "translation": "Horizon Exchange 内にユーザー・アカウントを作成するとき、そのユーザー・アカウントに関連付けるべき E メール・アドレス。ユーザー名が E メール・アドレスの場合は、この引数を省略することができます。"
+    },
+    {
+
+      "id": "This user should be an administrator, capable of managing all resources in this org of the exchange.",
+
+      "translation": "このユーザーは、交換内でこの組織のすべてのリソースを管理できる管理者である必要があります。"
+    },
+    {
+
+      "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
+
+      "translation": "既存のユーザーを管理ユーザー (すなわち、そのユーザーの組織内の root) に変更するか、または管理ユーザーではなくなるように変更します。交換の root または別の管理ユーザーのみが実行することができます。"
+    },
+    {
+
+      "id": "The user to be modified.",
+
+      "translation": "変更するユーザー。"
+    },
+    {
+
+      "id": "True if they should be an admin user, otherwise false.",
+
+      "translation": "管理ユーザーであるべき場合は TRUE、それ以外の場合は FALSE。"
+    },
+    {
+
+      "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
+
+      "translation": "Horizon Exchange からユーザー・リソースを削除します。警告: これによって、このユーザーが所有する交換内のすべてのリソース (ノード、サービス、パターン、その他) も削除されます。"
+    },
+    {
+
+      "id": "The user to remove.",
+
+      "translation": "削除するユーザー。"
+    },
+    {
+
+      "id": "Skip the 'are you sure?' prompt.",
+
+      "translation": "再確認プロンプトをスキップします。"
+    },
+    {
+
+      "id": "List and manage nodes in the Horizon Exchange",
+
+      "translation": "Horizon Exchange のノードをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display the node resources from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からノード・リソースを表示します。"
+    },
+    {
+
+      "id": "List just this one node.",
+
+      "translation": "この 1 つのノードのみをリストします。"
+    },
+    {
+
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+
+      "translation": "-u フラグが指定されていない場合にノード・リソースを照会して変更するために資格情報として使用する Horizon Exchange ノード ID および トークン。-n のデフォルトとして HZN_EXCHANGE_NODE_AUTH が使用されます。ノードの組織を前に付加していない場合、-o の値が自動的に前に付加されます。"
+    },
+    {
+
+      "id": "When listing all of the nodes, show the entire resource of each node, instead of just the name.",
+
+      "translation": "すべてのノードをリストするときに、名前だけではなく個々のノードのリソース全体を表示します。"
+    },
+    {
+
+      "id": "Create the node resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内にノード・リソースを作成します。"
+    },
+    {
+
+      "id": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
+
+      "translation": "作成する Horizon Exchange ノード ID およびトークン。ノード ID は、組織内で固有である必要があります。"
+    },
+    {
+
+      "id": "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.",
+
+      "translation": "E メール・アドレス。次の場合にのみ指定する必要があります: -u フラグで指定したユーザーが存在せず、「public」組織を指定した場合。これらに該当する場合はユーザーが作成され、この値が E メール属性として含まれます。"
+    },
+    {
+
+      "id": "Your node architecture. If not specified, arch will leave blank.",
+
+      "translation": "ノードのアーキテクチャー。指定されていない場合、arch はブランクのままになります。"
+    },
+    {
+
+      "id": "The name of your node",
+
+      "translation": "ノードの名前"
+    },
+    {
+
+      "id": "The node to be created.",
+
+      "translation": "作成するノード。"
+    },
+    {
+
+      "id": "The token the new node should have.",
+
+      "translation": "新規ノードが持つべきトークン。"
+    },
+    {
+
+      "id": "Update an attribute of the node in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のノードの属性を更新します。"
+    },
+    {
+
+      "id": "The node to be updated.",
+
+      "translation": "更新するノード。"
+    },
+    {
+
+      "id": "The path to a json file containing the changed attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange で更新する変更済み属性を含む JSON ファイルへのパス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Change the token of a node resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のノード・リソースのトークンを変更します。"
+    },
+    {
+
+      "id": "The node to be changed.",
+
+      "translation": "変更するノード"
+    },
+    {
+
+      "id": "The new token for the node.",
+
+      "translation": "ノード用の新規トークン。"
+    },
+    {
+
+      "id": "Check to see if the specified node and token are valid in the Horizon Exchange.",
+
+      "translation": "指定されたノードおよびトークンが Horizon Exchange 内で有効であるかを確認します。"
+    },
+    {
+
+      "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
+
+      "translation": "確認する Horizon Exchange ノード ID およびトークン。指定されていない場合、HZN_EXCHANGE_NODE_AUTH がデフォルトとして使用されます。<node> および <token> 引数とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The node id to be checked. Mutually exclusive with -n flag.",
+
+      "translation": "確認するノード ID。-n フラグとは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The token for the node. Mutually exclusive with -n flag.",
+
+      "translation": "ノードのトークン。-n フラグとは同時に指定することはできません。"
+    },
+    {
+
+      "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
+
+      "translation": "Horizon Exchange からノード・リソースを削除します。エッジ・ノードがこのノード ID で登録されている場合は実行しないでください。"
+    },
+    {
+
+      "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
+
+      "translation": "-u フラグが指定されていない場合にノード・リソースを照会して変更するために資格情報として使用する Horizon Exchange ノード ID および トークン。-n のデフォルトとして HZN_EXCHANGE_NODE_AUTH が使用されます。ノードの組織を前に付加していない場合、-o の値が自動的に前に付加されます。"
+    },
+    {
+
+      "id": "The node to remove.",
+
+      "translation": "削除するノード。"
+    },
+    {
+
+      "id": "Display the node policy from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からノード・ポリシーを表示します。"
+    },
+    {
+
+      "id": "List policy for this node.",
+
+      "translation": "このノードのポリシーをリストします。"
+    },
+    {
+
+      "id": "Add or replace the node policy in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内でノード・ポリシーを追加または置換します。"
+    },
+    {
+
+      "id": "Add or replace policy for this node.",
+
+      "translation": "このノード用のポリシーを追加または置換します。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the node policy in the Horizon exchange. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange 内でノード・ポリシーを作成/更新するために必要なメタデータを含む JSON ファイルへのパス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Update an attribute of the policy for this node in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のこのノードのポリシー属性を更新します。"
+    },
+    {
+
+      "id": "Update the policy for this node.",
+
+      "translation": "このノード用のポリシーを更新します。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the attribute to be updated in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange で更新する属性を含む JSON ファイルへのパス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Remove the node policy in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からノード・ポリシーを削除します。"
+    },
+    {
+
+      "id": "Remove policy for this node.",
+
+      "translation": "このノード用のポリシーを削除します。"
+    },
+    {
+
+      "id": "List and manage agbots in the Horizon Exchange",
+
+      "translation": "Horizon Exchange の agbot をリストおよび管理します。"
+    },
+    {
+
+      "id": "Display the agbot resources from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange から agbot リソースを表示します。"
+    },
+    {
+
+      "id": "List just this one agbot.",
+
+      "translation": "この 1 つの agbot のみをリストします。"
+    },
+    {
+
+      "id": "When listing all of the agbots, show the entire resource of each agbots, instead of just the name.",
+
+      "translation": "すべての agbot をリストするときに、名前だけではなく個々の agbot のリソース全体を表示します。"
+    },
+    {
+
+      "id": "Display the patterns that this agbot is serving.",
+
+      "translation": "この agbot がサービス提供するパターンを表示します。"
+    },
+    {
+
+      "id": "The agbot to list the patterns for.",
+
+      "translation": "パターンをリストするときの対象となる agbot。"
+    },
+    {
+
+      "id": "The organization of the 1 pattern to list.",
+
+      "translation": "リストする 1 パターンの組織。"
+    },
+    {
+
+      "id": "The name of the 1 pattern to list.",
+
+      "translation": "リストする 1 パターンの名前。"
+    },
+    {
+
+      "id": "The organization of the nodes that should be searched. Defaults to patternorg.",
+
+      "translation": "検索すべきノードの組織。デフォルトは patternorg です。"
+    },
+    {
+
+      "id": "Add this pattern to the list of patterns this agbot is serving.",
+
+      "translation": "このパターンを agbot がサービス提供しているパターンのリストに追加します。"
+    },
+    {
+
+      "id": "The agbot to add the pattern to.",
+
+      "translation": "パターンを追加する対象の agbot。"
+    },
+    {
+
+      "id": "The organization of the pattern to add.",
+
+      "translation": "追加するパターンの組織。"
+    },
+    {
+
+      "id": "The name of the pattern to add.",
+
+      "translation": "追加するパターンの名前。"
+    },
+    {
+
+      "id": "Remove this pattern from the list of patterns this agbot is serving.",
+
+      "translation": "このパターンを agbot がサービス提供しているパターンのリストから削除します。"
+    },
+    {
+
+      "id": "The agbot to remove the pattern from.",
+
+      "translation": "パターンを削除する対象の agbot。"
+    },
+    {
+
+      "id": "The organization of the pattern to remove.",
+
+      "translation": "削除するパターンの組織。"
+    },
+    {
+
+      "id": "The name of the pattern to remove.",
+
+      "translation": "削除するパターンの名前。"
+    },
+    {
+
+      "id": "Display the business policies that this agbot is serving.",
+
+      "translation": "この agbot がサービス提供するビジネス・ポリシーを表示します。"
+    },
+    {
+
+      "id": "The agbot to list serving business policies for.",
+
+      "translation": "サービス提供ビジネス・ポリシーをリストするときの対象となる agbot。"
+    },
+    {
+
+      "id": "Add this business policy to the list of policies this agbot is serving. Currently only support adding all the business polycies from an organization.",
+
+      "translation": "このビジネス・ポリシーを agbot がサービス提供しているビジネス・ポリシーのリストに追加します。現在、組織のすべてのビジネス・ポリシーを追加することのみをサポートしています。"
+    },
+    {
+
+      "id": "The agbot to add the business policy to.",
+
+      "translation": "ビジネス・ポリシーを追加する対象の agbot。"
+    },
+    {
+
+      "id": "The organization of the business policy to add.",
+
+      "translation": "追加するビジネス・ポリシーの組織。"
+    },
+    {
+
+      "id": "Remove this business policy from the list of policies this agbot is serving. Currently only support removing all the business polycies from an organization.",
+
+      "translation": "このビジネス・ポリシーを agbot がサービス提供しているビジネス・ポリシーのリストから削除します。現在、組織のすべてのビジネス・ポリシーを削除することのみをサポートしています。"
+    },
+    {
+
+      "id": "The agbot to remove the business policy from.",
+
+      "translation": "ビジネス・ポリシーを削除する対象の agbot。"
+    },
+    {
+
+      "id": "The organization of the business policy to remove.",
+
+      "translation": "削除するビジネス・ポリシーの組織。"
+    },
+    {
+
+      "id": "List and manage patterns in the Horizon Exchange",
+
+      "translation": "Horizon Exchange のパターンをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display the pattern resources from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からパターン・リソースを表示します。"
+    },
+    {
+
+      "id": "List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.",
+
+      "translation": "この 1 つのパターンのみをリストします。別の組織のパブリック・パターンを指定するには <org>/<pat> を使用します。または、別の組織のすべてのパブリック・パターンをリストするには、<org>/ を使用します。"
+    },
+    {
+
+      "id": "When listing all of the patterns, show the entire resource of each pattern, instead of just the name.",
+
+      "translation": "すべてのパターンをリストするときに、名前だけではなく個々のパターンのリソース全体を表示します。"
+    },
+    {
+
+      "id": "Sign and create/update the pattern resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内でパターン・リソースを署名し、作成/更新します。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange 内でパターンを作成/更新するために必要なメタデータを含む JSON ファイルへのパス。/usr/horizon/samples/pattern.json を参照してください。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+
+      "translation": "パターンを署名するために使用する秘密鍵ファイルへのパス。指定されていない場合、環境変数 HZN_PRIVATE_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.private.key がデフォルトです。"
+    },
+    {
+
+      "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
+
+      "translation": "パターンと一緒に保存する (秘密鍵に対応した) 公開鍵ファイルへのパス。Horizon エージェントは署名を検査するためにこれを使用します。これが指定されておらず、-k フラグも指定されていない場合、環境変数 HZN_PUBLIC_KEY_FILE が使用されます。HZN_PUBLIC_KEY_FILE が設定されていない場合、~/.hzn/keys/service.public.pem がデフォルトです。-k が指定されていて、このフラグが指定されていない場合、公開鍵ファイルはパターンと一緒に保存されません。Horizon エージェントは署名を検査するために公開鍵をインポートする必要があります。"
+    },
+    {
+
+      "id": "The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.",
+
+      "translation": "Horizon Exchange でこのパターンに使用する名前。指定されていない場合、デフォルトは、-f で指定されたファイル・パスのベース名です。"
+    },
+    {
+
+      "id": "Verify the signatures of a pattern resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のパターン・リソースの署名を検査します。"
+    },
+    {
+
+      "id": "The pattern to verify.",
+
+      "translation": "検査するパターン。"
+    },
+    {
+
+      "id": "The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "パターンを検査するために使用する pem 公開鍵ファイルへのパス。指定されていない場合、環境変数 HZN_PUBLIC_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.public.pem がデフォルトです。"
+    },
+    {
+
+      "id": "Update an attribute of the pattern in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のパターンの属性を更新します。"
+    },
+    {
+
+      "id": "The name of the pattern in the Horizon Exchange to publish.",
+
+      "translation": "公開する Horizon Exchange 内のパターンの名前。"
+    },
+    {
+
+      "id": "The path to a json file containing the updated attribute of the pattern to be put in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange に置くパターンの更新済み属性を含む JSON ファイルへのパス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Remove a pattern resource from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からパターン・リソースを削除します。"
+    },
+    {
+
+      "id": "The pattern to remove.",
+
+      "translation": "削除するパターン。"
+    },
+    {
+
+      "id": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のパターン・リソースの署名用公開鍵/証明書をリストします。"
+    },
+    {
+
+      "id": "The existing pattern to list the keys for.",
+
+      "translation": "鍵をリストするときの対象となる既存パターン。"
+    },
+    {
+
+      "id": "The existing key name to see the contents of.",
+
+      "translation": "コンテンツを表示する対象の既存鍵の名前。"
+    },
+    {
+
+      "id": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のパターン・リソースの署名用公開鍵/証明書を削除します。"
+    },
+    {
+
+      "id": "The existing pattern to remove the key from.",
+
+      "translation": "鍵を削除する対象の既存パターン。"
+    },
+    {
+
+      "id": "The existing key name to remove.",
+
+      "translation": "削除する既存鍵名。"
+    },
+    {
+
+      "id": "List and manage services in the Horizon Exchange",
+
+      "translation": "Horizon Exchange のサービスをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display the service resources from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からサービス・リソースを表示します。"
+    },
+    {
+
+      "id": "List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.",
+
+      "translation": "この 1 つのサービスのみをリストします。別の組織のパブリック・サービスを指定するには <org>/<svc> を使用します。または、別の組織のすべてのパブリック・サービスをリストするには、<org>/ を使用します。"
+    },
+    {
+
+      "id": "When listing all of the services, show the entire resource of each services, instead of just the name.",
+
+      "translation": "すべてのサービスをリストするときに、名前だけではなく個々のサービスのリソース全体を表示します。"
+    },
+    {
+
+      "id": "Sign and create/update the service resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内でサービス・リソースを署名し、作成/更新します。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange 内でサービスを作成/更新するために必要なメタデータを含む JSON ファイルへのパス。/usr/horizon/samples/service.json を参照してください。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+
+      "translation": "サービスを署名するために使用する秘密鍵ファイルへのパス。指定されていない場合、環境変数 HZN_PRIVATE_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.private.key がデフォルトです。"
+    },
+    {
+
+      "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
+
+      "translation": "サービスと一緒に保存する (秘密鍵に対応した) 公開鍵ファイルへのパス。Horizon エージェントは署名を検査するためにこれを使用します。これが指定されておらず、-k フラグも指定されていない場合、環境変数 HZN_PUBLIC_KEY_FILE が使用されます。HZN_PUBLIC_KEY_FILE が設定されていない場合、~/.hzn/keys/service.public.pem がデフォルトです。-k が指定されていて、このフラグが指定されていない場合、公開鍵ファイルはサービスと一緒に保存されません。Horizon エージェントは署名を検査するために公開鍵をインポートする必要があります。"
+    },
+    {
+
+      "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
+
+      "translation": "deployment フィールドのイメージ・パスには正規タグが使用されており、sha256 ダイジェスト値に変更すべきではありません。イメージは、リポジトリーに自動的にアップロードされません。これは、新規バージョンを頻繁にテストする開発時にのみ使用してください。"
+    },
+    {
+
+      "id": "Use the image from the image repository. It will pull the image from the image repository and overwrite the local image if exists. This flag is mutually exclusive with -I.",
+
+      "translation": "イメージ・リポジトリーのイメージを使用します。イメージ・リポジトリーからイメージをプルして、存在する場合はローカル・イメージを上書きします。このフラグは、-I と同時に指定することはできません。"
+    },
+    {
+
+      "id": "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token",
+
+      "translation": "サービスと一緒に保存すべき Docker レジストリー・ドメインおよび認証。それによって、Horizon エッジ・ノードからサービスの Docker イメージにアクセスできるようにします。 このフラグは繰り返し指定できます。個々のフラグは次の形式にする必要があります: registry:user:token"
+    },
+    {
+
+      "id": "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.",
+
+      "translation": "交換内にサービスが存在する場合、既存のバージョンを上書きします。「上書きしますか?」プロンプトはスキップされます。"
+    },
+    {
+
+      "id": "The path of the service policy JSON file to be used for the service to be published. This flag is optional",
+
+      "translation": "公開するサービスに使用するサービス・ポリシー JSON ファイルへのパス。このフラグはオプションです"
+    },
+    {
+
+      "id": "Verify the signatures of a service resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のサービス・リソースの署名を検査します。"
+    },
+    {
+
+      "id": "The service to verify.",
+
+      "translation": "検査するサービス。"
+    },
+    {
+
+      "id": "The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "サービスを検査するために使用する pem 公開鍵ファイルへのパス。指定されていない場合、環境変数 HZN_PUBLIC_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.public.pem がデフォルトです。"
+    },
+    {
+
+      "id": "Remove a service resource from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からサービス・リソースを削除します。"
+    },
+    {
+
+      "id": "The service to remove.",
+
+      "translation": "削除するサービス。"
+    },
+    {
+
+      "id": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のサービス・リソースの署名用公開鍵/証明書をリストします。"
+    },
+    {
+
+      "id": "The existing service to list the keys for.",
+
+      "translation": "鍵をリストするときの対象となる既存サービス。"
+    },
+    {
+
+      "id": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のサービス・リソースの署名用公開鍵/証明書を削除します。"
+    },
+    {
+
+      "id": "The existing service to remove the key from.",
+
+      "translation": "鍵を削除する対象の既存サービス。"
+    },
+    {
+
+      "id": "List the docker auth tokens for this service resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のサービス・リソースの Docker 認証トークンをリストします。"
+    },
+    {
+
+      "id": "The existing service to list the docker auths for.",
+
+      "translation": "Docker 認証をリストするときの対象となる既存サービス。"
+    },
+    {
+
+      "id": "The existing docker auth id to see the contents of.",
+
+      "translation": "コンテンツを表示する対象の既存 Docker 認証 ID。"
+    },
+    {
+
+      "id": "Remove a docker auth token for this service resource in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内のサービス・リソースの Docker 認証トークンを削除します。"
+    },
+    {
+
+      "id": "The existing service to remove the docker auth from.",
+
+      "translation": "Docker 認証を削除する対象の既存サービス。"
+    },
+    {
+
+      "id": "The existing docker auth id to remove.",
+
+      "translation": "削除する既存 Docker 認証 ID。"
+    },
+    {
+
+      "id": "Display the service policy from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からサービス・ポリシーを表示します。"
+    },
+    {
+
+      "id": "The Horizon Exchange id and password of the user",
+
+      "translation": "ユーザーの Horizon Exchange ID およびパスワード"
+    },
+    {
+
+      "id": "List policy for this service.",
+
+      "translation": "このサービスのポリシーをリストします。"
+    },
+    {
+
+      "id": "Display an empty service policy template that can be filled in.",
+
+      "translation": "入力可能な空のサービス・ポリシー・テンプレートを表示します。"
+    },
+    {
+
+      "id": "Add or replace the service policy in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange 内でサービス・ポリシーを追加または置換します。"
+    },
+    {
+
+      "id": "The Horizon Exchange ID and password of the user",
+
+      "translation": "ユーザーの Horizon Exchange ID およびパスワード"
+    },
+    {
+
+      "id": "Add or replace policy for this service.",
+
+      "translation": "このサービス用のポリシーを追加または置換します。"
+    },
+    {
+
+      "id": "The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange 内でサービス・ポリシーを作成/更新するために必要なメタデータを含む JSON ファイルへのパス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Remove the service policy in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からサービス・ポリシーを削除します。"
+    },
+    {
+
+      "id": "Remove policy for this service.",
+
+      "translation": "このサービス用のポリシーを削除します。"
+    },
+    {
+
+      "id": "List and manage business policies in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange のビジネス・ポリシーをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display the business policies from the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からビジネス・ポリシーを表示します。"
+    },
+    {
+
+      "id": "The Horizon ID and password of the user.",
+
+      "translation": "ユーザーの Horizon ID およびパスワード。"
+    },
+    {
+
+      "id": "Display detailed output about the business policies.",
+
+      "translation": "ビジネス・ポリシーに関する詳細な出力を表示します。"
+    },
+    {
+
+      "id": "List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.",
+
+      "translation": "この 1 つのポリシーのみをリストします。別の組織のパブリック・ポリシーを指定するには <org>/<policy> を使用します。または、別の組織のすべてのパブリック・ポリシーをリストするには、<org>/ を使用します。"
+    },
+    {
+
+      "id": "Display an empty business policy template that can be filled in.",
+
+      "translation": "入力可能な空のビジネス・ポリシー・テンプレートを表示します。"
+    },
+    {
+
+      "id": "Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template.",
+
+      "translation": "Horizon Exchange 内でビジネス・ポリシーを追加または置換します。空のビジネス・ポリシー・テンプレートには、「hzn exchange business new」を使用します。"
+    },
+    {
+
+      "id": "The name of the policy to add or overwrite.",
+
+      "translation": "追加または上書きするポリシーの名前。"
+    },
+    {
+
+      "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.",
+
+      "translation": "Horizon Exchange 内の既存ポリシーの 1 つの属性を更新します。サポートされる属性は、コマンド「hzn exchange business new」で表示されるポリシー定義の最上位属性です。"
+    },
+    {
+
+      "id": "The name of the policy to be updated in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange で更新するポリシーの名前。"
+    },
+    {
+
+      "id": "The path to the json file containing the updated business policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
+
+      "translation": "Horizon Exchange で変更する更新済みビジネス・ポリシー属性を含む JSON ファイルへのパス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Remove the business policy in the Horizon Exchange.",
+
+      "translation": "Horizon Exchange からビジネス・ポリシーを削除します。"
+    },
+    {
+
+      "id": "The name of the business policy to be removed.",
+
+      "translation": "削除するビジネス・ポリシーの名前。"
+    },
+    {
+
+      "id": "List all public services/patterns in all orgs that have orgType: IBM.",
+
+      "translation": "orgType: IBM であるすべての組織のすべてのパブリック・サービス/パターンをリストします。"
+    },
+    {
+
+      "id": "Display all public services in all orgs that have orgType: IBM.",
+
+      "translation": "orgType: IBM であるすべての組織のすべてのパブリック・サービスを表示します。"
+    },
+    {
+
+      "id": "Only display org (IBM) and service names.",
+
+      "translation": "組織 (IBM) およびサービス名のみを表示します。"
+    },
+    {
+
+      "id": "Display detailed output about public services in all orgs that have orgType: IBM.",
+
+      "translation": "orgType: IBM であるすべての組織のパブリック・サービスに関する詳細出力を表示します。"
+    },
+    {
+
+      "id": "Display all public patterns in all orgs that have orgType: IBM.",
+
+      "translation": "orgType: IBM であるすべての組織のすべてのパブリック・パターンを表示します。"
+    },
+    {
+
+      "id": "Only display org (IBM) and pattern names.",
+
+      "translation": "組織 (IBM) およびパターン名のみを表示します。"
+    },
+    {
+
+      "id": "Display detailed output about public patterns in all orgs that have orgType: IBM.",
+
+      "translation": "orgType: IBM であるすべての組織のパブリック・パターンに関する詳細出力を表示します。"
+    },
+    {
+
+      "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
+
+      "translation": "(入力した後)「hzn register」コマンドで使用できるこのパターン用の入力ファイル・テンプレートを作成します。これは、指定されたパターンが使用するサービスを調査して、それらに必要なノード・オーナー入力を判別します。"
+    },
+    {
+
+      "id": "The Horizon exchange node ID and token (it must already exist).",
+
+      "translation": "Horizon Exchange ノード ID およびトークン (既に存在する必要があります)。"
+    },
+    {
+
+      "id": "The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.",
+
+      "translation": "作成すべき JSON 入力テンプレート・ファイル名。このファイルには、ユーザー入力の値を入力するためのプレースホルダーが含まれます。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID that the node will be registered in.",
+
+      "translation": "ノードを登録する先の Horizon Exchange 組織 ID。"
+    },
+    {
+
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
+
+      "translation": "このノードにデプロイすべきワークロードを示す Horizon Exchange パターン。パターンがノードとは異なる組織のものである場合は、「other_org/pattern」の形式を使用します。"
+    },
+    {
+
+      "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
+
+      "translation": "テンプレート・ファイルを書くときの対象となるアーキテクチャー。(Horizon は、ターゲット・システムとは異なるアーキテクチャーのパターンのサービスを無視します。) アーキテクチャーは、ターゲット・システム上で「hzn node list」によって返されるものである必要があります。"
+    },
+    {
+
+      "id": "Register this edge node with Horizon.",
+
+      "translation": "このエッジ・ノードを Horizon に登録します。"
+    },
+    {
+
+      "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
+
+      "translation": "Horizon Exchange ノード ID およびトークン。ノード ID は、組織内で固有である必要があります。指定されていない場合、HZN_EXCHANGE_NODE_AUTH がデフォルトとして使用されます。-n および HZN_EXCHANGE_NODE_AUTH のいずれも指定されていない場合、ノード ID は、Horizon によってマシンのシリアル番号または完全修飾ホスト名から作成されます。トークンが指定されていない場合、Horizon によってランダムなトークンが作成されます。ID およびトークンによって識別されたノード・リソースが交換内に存在しない場合は、-u フラグを指定してノード・リソースを作成できるようにする必要があります。"
+    },
+    {
+
+      "id": "The name of the node. If not specified, it will be the same as the node id.",
+
+      "translation": "ノードの名前。指定されていない場合、ノード ID と同じになります。"
+    },
+    {
+
+      "id": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
+
+      "translation": "Horizon Exchange 内にノード・リソースが存在しない場合、ノード・リソースを作成するためのユーザー資格情報。指定されていない場合、HZN_EXCHANGE_USER_AUTH がデフォルトとして使用されます。"
+    },
+    {
+
+      "id": "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.",
+
+      "translation": "E メール・アドレス。次の場合にのみ指定する必要があります: Horizon Exchange 内にノード・リソースがまだ存在せず、かつ -u フラグで指定したユーザーが存在せず、「 public 」組織を指定した場合。これらすべてに該当する場合はユーザーが作成され、この値が E メール属性として含まれます。"
+    },
+    {
+
+      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.",
+
+      "translation": "このパターンの一部であるノードおよびサービスで必要となる変数を設定またはオーバーライドする JSON ファイル。/usr/horizon/samples/input.json and /usr/horizon/samples/more-examples.json を参照してください。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
+
+      "translation": "ノードを登録する必要のある Horizon Exchange 組織 ID。デフォルトは HZN_ORG_ID 環境変数です。<nodeorg> および <pattern> 引数とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag.",
+
+      "translation": "このノードにデプロイすべきワークロードを示す Horizon Exchange パターン。パターンがノードとは異なる組織のものである場合は、「other_org/pattern」の形式を使用します。<nodeorg> および <pattern> 引数、--policy フラグとは同時に指定することはできません。"
+    },
+    {
+
+      "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.",
+
+      "translation": "ポリシー・ベースの契約交渉に使用するこのノード用のノード・ポリシーを設定またはオーバーライドする JSON ファイル。-p 引数とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
+
+      "translation": "ノードを登録する必要のある Horizon Exchange 組織 ID。-o および -p とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.",
+
+      "translation": "このノードにデプロイすべきワークロードを示す Horizon Exchange パターン。パターンがノードとは異なる組織のものである場合は、「other_org/pattern」の形式を使用します。-o、-p、および --policy とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "List and manage keys for signing and verifying services.",
+
+      "translation": "サービスの署名および検査に使用する鍵をリストおよび管理します。"
+    },
+    {
+
+      "id": "List the signing keys that have been imported into this Horizon agent.",
+
+      "translation": "この Horizon エージェントにインポート済みの署名鍵をリストします。"
+    },
+    {
+
+      "id": "The name of a specific key to show.",
+
+      "translation": "表示する特定の鍵の名前。"
+    },
+    {
+
+      "id": "List the names of all signing keys, even the older public keys not wrapped in a certificate.",
+
+      "translation": "証明書にラップされていない古い公開鍵を含む、すべての署名鍵の名前をリストします。"
+    },
+    {
+
+      "id": "Generate a signing key pair.",
+
+      "translation": "署名鍵ペアを生成します。"
+    },
+    {
+
+      "id": "x509 certificate Organization (O) field (preferably a company name or other organization's name).",
+
+      "translation": "x509 証明書の組織 (O) フィールド (できれば、会社名またはその他の組織名)。"
+    },
+    {
+
+      "id": "x509 certificate Common Name (CN) field (preferably an email address issued by x509org).",
+
+      "translation": "x509 証明書の共通名 (CN) フィールド (できれば、x509 組織によって発行された E メール・アドレス)。"
+    },
+    {
+
+      "id": "The directory to put the key pair files in. Mutually exclusive with -k and -K. The file names will be randomly generated.",
+
+      "translation": "鍵ペア・ファイルを保存するディレクトリー。-k および -K とは同時に指定することはできません。ファイル名はランダムに生成されます。"
+    },
+    {
+
+      "id": "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
+
+      "translation": "秘密鍵ファイルの絶対パス。-d とは同時に指定することはできません。指定されていない場合、環境変数 HZN_PRIVATE_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.private.key がデフォルトです。"
+    },
+    {
+
+      "id": "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "公開鍵ファイルの絶対パス。-d とは同時に指定することはできません。指定されていない場合、環境変数 HZN_PUBLIC_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.public.pem がデフォルトです。"
+    },
+    {
+
+      "id": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
+
+      "translation": "既存のファイルを上書きします。「上書きしますか?」プロンプトはスキップされます。"
+    },
+    {
+
+      "id": "The length of the key to create.",
+
+      "translation": "作成する鍵の長さ。"
+    },
+    {
+
+      "id": "x509 certificate validity (Validity > Not After) expressed in days from the day of generation.",
+
+      "translation": "x509 証明書の有効期間 (有効期間 > 次以降は無効) を生成日からの経過日数として表記。"
+    },
+    {
+
+      "id": "Automatically import the created public key into the local Horizon agent.",
+
+      "translation": "作成された公開鍵をローカルの Horizon エージェントに自動的にインポートします。"
+    },
+    {
+
+      "id": "Imports a signing public key into the Horizon agent.",
+
+      "translation": "署名公開鍵を Horizon エージェントにインポートします。"
+    },
+    {
+
+      "id": "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
+
+      "translation": "インポートする pem 公開鍵ファイルへのパス。パスのベース名は、Horizon エージェントで鍵名としても使用されます。指定されていない場合、環境変数 HZN_PUBLIC_KEY_FILE が使用されます。いずれも設定されていない場合、~/.hzn/keys/service.public.pem がデフォルトです。"
+    },
+    {
+
+      "id": "Remove the specified signing key from this Horizon agent.",
+
+      "translation": "指定された署名鍵をこの Horizon エージェントから削除します。"
+    },
+    {
+
+      "id": "The name of a specific key to remove.",
+
+      "translation": "削除する特定の鍵の名前。"
+    },
+    {
+
+      "id": "List and manage general information about this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに関する一般情報をリストおよび管理します。"
+    },
+    {
+
+      "id": "Display general information about this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに関する一般情報を表示します。"
+    },
+    {
+
+      "id": "List and manage policy for this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードのポリシーをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display this edge node's policy.",
+
+      "translation": "このエッジ・ノードのポリシーを表示します。"
+    },
+    {
+
+      "id": "Display an empty policy template that can be filled in.",
+
+      "translation": "入力可能な空のポリシー・テンプレートを表示します。"
+    },
+    {
+
+      "id": "Update the node's policy. The node's built-in properties will be automatically added if the input policy does not contain them.",
+
+      "translation": "ノードのポリシーを更新します。入力ポリシーに含まれていない場合、ノードの組み込みプロパティーが自動的に追加されます。"
+    },
+    {
+
+      "id": "The JSON input file name containing the node policy.",
+
+      "translation": "ノード・ポリシーを含んだ JSON 入力ファイルの名前。"
+    },
+    {
+
+      "id": "Add or update node policy properties or overwrite the node policy constraint expression.",
+
+      "translation": "ノード・ポリシーのプロパティーを追加または更新するか、またはノード・ポリシーの制約式を上書きします。"
+    },
+    {
+
+      "id": "The new constraints or properties in the format '{Constraintsconstraint_list}' or '{Propertiesproperty_list}'.",
+
+      "translation": "「{Constraintsconstraint_list}」または「{Propertiesproperty_list}」の形式の新規の制約またはプロパティー。"
+    },
+    {
+
+      "id": "Remove the node's policy.",
+
+      "translation": "ノードのポリシーを削除します。"
+    },
+    {
+
+      "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
+
+      "translation": "このエッジ・ノードで Horizon 契約 bot との間で締結されたアクティブな契約またはアーカイブ済み契約をリストまたは管理します。"
+    },
+    {
+
+      "id": "List the active or archived agreements this edge node has made with a Horizon agreement bot.",
+
+      "translation": "このエッジ・ノードで Horizon 契約 bot との間で締結されたアクティブな契約またはアーカイブ済み契約をリストします。"
+    },
+    {
+
+      "id": "Show the details of this active or archived agreement.",
+
+      "translation": "このアクティブな契約またはアーカイブ済み契約の詳細を表示します。"
+    },
+    {
+
+      "id": "List archived agreements instead of the active agreements.",
+
+      "translation": "アクティブな契約の代わりにアーカイブ済み契約をリストします。"
+    },
+    {
+
+      "id": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
+
+      "translation": "このエッジ・ノードで Horizon 契約 bot との間で締結された 1 つまたはすべてのアクティブな契約を解除します。通常、agbot は新規契約を即時に交渉します。すべての契約を解除し、かつこのエッジで新規契約を受け入れないようにするには、「hzn unregister」を実行します。"
+    },
+    {
+
+      "id": "Cancel all of the current agreements.",
+
+      "translation": "すべての現行契約を解除します。"
+    },
+    {
+
+      "id": "The active agreement to cancel.",
+
+      "translation": "解除するアクティブな契約。"
+    },
+    {
+
+      "id": "List or manage the metering (payment) information for the active or archived agreements.",
+
+      "translation": "アクティブな契約またはアーカイブ済み契約の課金 (支払) 情報をリストまたは管理します。"
+    },
+    {
+
+      "id": "List the metering (payment) information for the active or archived agreements.",
+
+      "translation": "アクティブな契約またはアーカイブ済み契約の課金 (支払) 情報をリストします。"
+    },
+    {
+
+      "id": "List archived agreement metering information instead of metering for the active agreements.",
+
+      "translation": "アクティブな契約の課金情報の代わりにアーカイブ済み契約の課金情報をリストします。"
+    },
+    {
+
+      "id": "List or manage the global attributes that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているグローバル属性をリストまたは管理します。"
+    },
+    {
+
+      "id": "List the global attributes that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているグローバル属性をリストします。"
+    },
+    {
+
+      "id": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているサービス利用者の入力をリストまたは管理します。"
+    },
+    {
+
+      "id": "List the service user inputs currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているサービス利用者の入力をリストします。"
+    },
+    {
+
+      "id": "Display an empty userinput template.",
+
+      "translation": "空のユーザー入力テンプレートを表示します。"
+    },
+    {
+
+      "id": "Add a new user input object or overwrite the current user input object for this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードで、新規のユーザー入力オブジェクトを追加するか、現行のユーザー入力オブジェクトを上書きします。"
+    },
+    {
+
+      "id": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
+
+      "translation": "ユーザー入力オブジェクトを含む JSON ファイルへのファイル・パス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Update an existing user input object for this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードの既存のユーザー入力オブジェクトを更新します。"
+    },
+    {
+
+      "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
+
+      "translation": "更新済みユーザー入力オブジェクトを含む JSON ファイルへのファイル・パス。標準入力から読み取るには、-f- を指定します。"
+    },
+    {
+
+      "id": "Remove the user inputs that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているユーザー入力を削除します。"
+    },
+    {
+
+      "id": "Skip the 'Are you sure?' prompt.",
+
+      "translation": "再確認プロンプトをスキップします。"
+    },
+    {
+
+      "id": "List or manage the services that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているサービスをリストまたは管理します。"
+    },
+    {
+
+      "id": "List the services variable configuration that has been done on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードで実行されたサービス変数の構成をリストします。"
+    },
+    {
+
+      "id": "List the services that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているサービスをリストします。"
+    },
+    {
+
+      "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているサービスの構成状態をリストまたは管理します。"
+    },
+    {
+
+      "id": "List the configuration state for the services that are currently registered on this Horizon edge node.",
+
+      "translation": "この Horizon エッジ・ノードに現在登録されているサービスの構成状態をリストします。"
+    },
+    {
+
+      "id": "Change the configuration state to 'suspend' for a service.",
+
+      "translation": "あるサービスの構成状態を「suspend」に変更します。"
+    },
+    {
+
+      "id": "Change the configuration state to 'active' for a service.",
+
+      "translation": "あるサービスの構成状態を「active」に変更します。"
+    },
+    {
+
+      "id": "Suspend all registerd services.",
+
+      "translation": "すべての登録済みサービスを中断します。"
+    },
+    {
+
+      "id": "The organization of the service that should be suspended.",
+
+      "translation": "中断すべきサービスの組織。"
+    },
+    {
+
+      "id": "The name of the service that should be suspended.",
+
+      "translation": "中断すべきサービスの名前。"
+    },
+    {
+
+      "id": "Resume all registerd services.",
+
+      "translation": "すべての登録済みサービスを再開します。"
+    },
+    {
+
+      "id": "The organization of the service that should be resumed.",
+
+      "translation": "再開すべきサービスの組織。"
+    },
+    {
+
+      "id": "The name of the service that should be resumed.",
+
+      "translation": "再開すべきサービスの名前。"
+    },
+    {
+
+      "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
+
+      "translation": "この Horizon エッジ・ノードを登録抹消し、再登録できるようにリセットします。警告: これによって、このエッジ・ノードで実行されているすべての Horizon サービスが停止され、Horizon エージェントが再始動されます。"
+    },
+    {
+
+      "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
+
+      "translation": "(Horizon でこのノードを使用しなくなるため、) Horizon Exchange からこのノード・リソースも削除します。"
+    },
+    {
+
+      "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
+
+      "translation": "過去の登録情報もすべて削除します。これは、「hzn unregister」コマンドが失敗した後にのみ使用してください。このフラグを使用する前に、「hzn eventlog list -a -l」コマンドを実行し、ログをキャプチャーしてください。"
+    },
+    {
+
+      "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
+
+      "translation": "登録抹消が完了するまで待機する分数。デフォルトはゼロであり、無限に待機します。"
+    },
+    {
+
+      "id": "Display the current horizon internal status for the node.",
+
+      "translation": "ノードの現在の Horizon 内部状況を表示します。"
+    },
+    {
+
+      "id": "Show detailed status",
+
+      "translation": "詳細な状況を表示します"
+    },
+    {
+
+      "id": "List the event logs for the current or all registrations.",
+
+      "translation": "現在の登録またはすべての登録のイベント・ログをリストします。"
+    },
+    {
+
+      "id": "List all the event logs including the previous registrations.",
+
+      "translation": "過去の登録を含むすべてのイベント・ログをリストします。"
+    },
+    {
+
+      "id": "List event logs with details.",
+
+      "translation": "イベント・ログの詳細をリストします。"
+    },
+    {
+
+      "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
+
+      "translation": "選択ストリング。このフラグは繰り返し指定でき、「AND」の意味になります。個々のフラグは、attribute=value、attribute~value、\"attribute>value\" または\"attribute<value\" の形式にする必要があります。ここで、「~」は「含む」を意味します。共通の属性名は、timestamp、severity、message、event_code、source_type、agreement_id、service_url 等です。すべての属性名を表示するには「-l」フラグを使用します。TWBTAG>"
+    },
+    {
+
+      "id": "Development tools for creation of services.",
+
+      "translation": "サービス作成用開発ツール。"
+    },
+    {
+
+      "id": "Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.",
+
+      "translation": "Horizon プロジェクトのメタデータが含まれているディレクトリー。省略した場合、現行ディレクトリーの下の「horizon」というサブディレクトリーが使用されます。"
+    },
+    {
+
+      "id": "For working with a service project.",
+
+      "translation": "サービス・プロジェクトを処理するためのもの。"
+    },
+    {
+
+      "id": "Create a new service project.",
+
+      "translation": "新規サービス・プロジェクトを作成します。"
+    },
+    {
+
+      "id": "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.",
+
+      "translation": "サービスが定義されている Org ID。このフラグが省略された場合、HZN_ORG_ID 環境変数が使用されます。"
+    },
+    {
+
+      "id": "The name of the service. If this flag and the -i flag are omitted, only the skeletal horizon metadata files will be generated.",
+
+      "translation": "サービスの名前。このフラグおよび -i フラグが省略された場合、骨組みの Horizon メタデータ・ファイルのみが生成されます。"
+    },
+    {
+
+      "id": "The version of the service. If this flag is omitted, '0.0.1' is used.",
+
+      "translation": "サービスのバージョン。このフラグが省略された場合、「0.0.1」が使用されます。"
+    },
+    {
+
+      "id": "The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.",
+
+      "translation": "サービス用の Docker コンテナー・イメージのベース名 (バージョン・タグ無し)。このコマンドは、ベース名にアーキテクチャーとバージョンを追加して、最終イメージ名を形成します。形式は、「basename_arch:serviceversion」です。このフラグは、「--noImageGen」フラグが指定されているときに、複数のイメージを指定するために繰り返し指定することができます。"
+    },
+    {
+
+      "id": "Indicates that the image is built somewhere else. No image sample code will be created by this command. If this flag is not specified, files for generating a simple service image will be created under current directory.",
+
+      "translation": "イメージが別の場所で作成されたことを示します。このコマンドによってイメージのサンプル・コードは作成されません。このフラグを指定していない場合、簡単なサービス・イメージを生成するためのファイルが現行ディレクトリーの下に作成されます。"
+    },
+    {
+
+      "id": "Indicates no pattern definition file will be created.",
+
+      "translation": "パターン定義ファイルが作成されないことを示します。"
+    },
+    {
+
+      "id": "Indicate no policy file will be created.",
+
+      "translation": "ポリシー・ファイルが作成されないことを示します。"
+    },
+    {
+
+      "id": "Indicates the type of deployment that will be used, e.g. native (the default), or helm.",
+
+      "translation": "使用されるデプロイメントのタイプ、例えばネイティブ (デフォルト) または helm を示します。"
+    },
+    {
+
+      "id": "Run a service in a mocked Horizon Agent environment.",
+
+      "translation": "サービスをモックの Horizon エージェント環境で実行します。"
+    },
+    {
+
+      "id": "File containing user input values for running a test. If omitted, the userinput file for the project will be used.",
+
+      "translation": "テストを実行するためのユーザー入力値が含まれたファイル。省略された場合、プロジェクトのユーザー入力ファイルが使用されます。"
+    },
+    {
+
+      "id": "File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.",
+
+      "translation": "同期サービス API を通して使用可能にするファイル。このフラグは、複数のファイルを取り込むために繰り返し指定することができます。"
+    },
+    {
+
+      "id": "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.",
+
+      "translation": "同期サービス API を通して使用可能にするファイルのタイプ。すべての構成ファイルは同一タイプであるとみなされます。このフラグは、いずれかの構成ファイルを指定した場合に必須となります。"
+    },
+    {
+
+      "id": "Do not bring up file sync service (FSS) containers. They are brought up by default.",
+
+      "translation": "ファイル同期サービス (FSS) のコンテナーは立ち上げないでください。これらはデフォルトで立ち上がります。"
+    },
+    {
+
+      "id": "Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+
+      "translation": "交換のリソースを照会するための Horizon Exchange ユーザー資格情報。欠落している依存サービスを交換から自動的にフェッチする場合に指定します。デフォルトは HZN_EXCHANGE_USER_AUTH 環境変数です。ユーザーの組織を前に付加していない場合、HZN_ORG_ID 環境変数の値が自動的に前に付加されます。"
+    },
+    {
+
+      "id": "Stop a service that is running in a mocked Horizon Agent environment.",
+
+      "translation": "モックの Horizon エージェント環境で実行中のサービスを停止します。"
+    },
+    {
+
+      "id": "Validate the project for completeness and schema compliance.",
+
+      "translation": "プロジェクトの完全性およびスキーマの準拠性を検証します。"
+    },
+    {
+
+      "id": "File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.",
+
+      "translation": "プロジェクトの検査のためのユーザー入力値が含まれたファイル。省略された場合、プロジェクトのユーザー入力ファイルが使用されます。"
+    },
+    {
+
+      "id": "For working with project dependencies.",
+
+      "translation": "プロジェクトの依存関係を処理するためのもの。"
+    },
+    {
+
+      "id": "The URL of the service dependency in the exchange. Mutually exclusive with -p and --url.",
+
+      "translation": "交換内のサービス依存の URL。-p および --url とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The URL of the service dependency in the exchange. Mutually exclusive with -p and --specRef.",
+
+      "translation": "交換内のサービス依存の URL。-p および --specRef とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "The Org of the service dependency in the exchange. Mutually exclusive with -p.",
+
+      "translation": "交換内のサービス依存の Org。-p とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "(optional) The Version of the service dependency in the exchange. Mutually exclusive with -p.",
+
+      "translation": "(オプション) 交換内のサービス依存のバージョン。-p とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "(optional) The hardware Architecture of the service dependency in the exchange. Mutually exclusive with -p.",
+
+      "translation": "(オプション) 交換内のサービス依存のハードウェア・アーキテクチャー。-p とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "Retrieving Horizon metadata for a new dependency.",
+
+      "translation": "新規依存関係用の Horizon メタデータの取得。"
+    },
+    {
+
+      "id": "Horizon project containing the definition of a dependency. Mutually exclusive with -s -o --ver -a and --url.",
+
+      "translation": "ある依存関係の定義が含まれた Horizon プロジェクト。-s、-o、--ver、-a、および --url とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "Horizon Exchange user credentials to query exchange resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.",
+
+      "translation": "交換のリソースを照会するための Horizon Exchange ユーザー資格情報。デフォルトは HZN_EXCHANGE_USER_AUTH 環境変数です。ユーザーの組織を前に付加していない場合、HZN_ORG_ID 環境変数の値が自動的に前に付加されます。"
+    },
+    {
+
+      "id": "File containing user input values for configuring the new dependency. If omitted, the userinput file in the dependency project will be used.",
+
+      "translation": "新規依存関係の構成のためのユーザー入力値が含まれたファイル。省略された場合、依存関係プロジェクトのユーザー入力ファイルが使用されます。"
+    },
+    {
+
+      "id": "List all dependencies.",
+
+      "translation": "すべての依存関係をリストします。"
+    },
+    {
+
+      "id": "Remove a project dependency.",
+
+      "translation": "プロジェクトの依存関係を削除します。"
+    },
+    {
+
+      "id": "List and manage Horizon agreement bot resources.",
+
+      "translation": "Horizon 契約 bot のリソースをリストおよび管理します。"
+    },
+    {
+
+      "id": "Display general information about this Horizon agbot node.",
+
+      "translation": "この Horizon agbot ノードに関する一般情報を表示します。"
+    },
+    {
+
+      "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
+
+      "translation": "Horizon 契約 bot がエッジ・ノードとの間で有するアクティブな契約またはアーカイブ済み契約をリストまたは管理します。"
+    },
+    {
+
+      "id": "List the active or archived agreements this Horizon agreement bot has with edge nodes.",
+
+      "translation": "Horizon 契約 bot がエッジ・ノードとの間で有するアクティブな契約またはアーカイブ済み契約をリストします。"
+    },
+    {
+
+      "id": "List just this one agreement.",
+
+      "translation": "この 1 つの契約のみをリストします。"
+    },
+    {
+
+      "id": "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement.",
+
+      "translation": "Horizon 契約 bot がエッジ・ノードとの間で有する 1 つまたはすべてのアクティブな契約を解除します。通常、agbot は新規契約を即時に交渉します。"
+    },
+    {
+
+      "id": "List the policies this Horizon agreement bot hosts.",
+
+      "translation": "この Horizon 契約 bot がホストするポリシーをリストします。"
+    },
+    {
+
+      "id": "List policies this Horizon agreement bot hosts.",
+
+      "translation": "この Horizon 契約 bot がホストするポリシーをリストします。"
+    },
+    {
+
+      "id": "The organization the policy belongs to.",
+
+      "translation": "ポリシーが属する組織。"
+    },
+    {
+
+      "id": "The policy name.",
+
+      "translation": "ポリシー名"
+    },
+    {
+
+      "id": "Display the current horizon internal status for the Horizon agreement bot.",
+
+      "translation": "Horizon 契約 bot の現在の Horizon 内部状況を表示します。"
+    },
+    {
+
+      "id": "Utility commands.",
+
+      "translation": "ユーティリティー・コマンド。"
+    },
+    {
+
+      "id": "Sign the text in stdin. The signature is sent to stdout.",
+
+      "translation": "標準入力のテキストを署名します。署名は標準出力に送信されます。"
+    },
+    {
+
+      "id": "The path of a private key file to be used to sign the stdin.",
+
+      "translation": "標準入力を署名するために使用する秘密鍵ファイルへのパス。"
+    },
+    {
+
+      "id": "Verify that the signature specified via -s is a valid signature for the text in stdin.",
+
+      "translation": "-s によって指定された署名が標準入力のテキストに対して有効な署名であることを検査します。"
+    },
+    {
+
+      "id": "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.",
+
+      "translation": "標準入力の署名を検査するために使用する (署名するために使用された秘密鍵に対応した) 公開鍵ファイルへのパス。"
+    },
+    {
+
+      "id": "The supposed signature of stdin.",
+
+      "translation": "想定される標準入力の署名。"
+    },
+    {
+
+      "id": "Convert the configuration file from JSON format to a shell script.",
+
+      "translation": "構成ファイルを JSON フォーマットからシェル・スクリプトに変換します。"
+    },
+    {
+
+      "id": "The path of a configuration file to be converted.",
+
+      "translation": "変換する構成ファイルへのパス。"
+    },
+    {
+
+      "id": "List and manage Horizon Model Management Service resources.",
+
+      "translation": "Horizon モデル管理サービスのリソースをリストおよび管理します。"
+    },
+    {
+
+      "id": "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.",
+
+      "translation": "Horizon 組織 ID。指定されていない場合、HZN_ORG_ID がデフォルトとして使用されます。"
+    },
+    {
+
+      "id": "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
+
+      "translation": "モデル管理サービスのリソースを照会および作成するための Horizon ユーザー資格情報。指定されていない場合、HZN_EXCHANGE_USER_AUTH がデフォルトとして使用されます。ユーザーの組織を前に付加していない場合、-o の値が自動的に前に付加されます。"
+    },
+    {
+
+      "id": "Display the status of the Horizon Model Management Service.",
+
+      "translation": "Horizon モデル管理サービスの状況を表示します。"
+    },
+    {
+
+      "id": "List and manage objects in the Horizon Model Management Service.",
+
+      "translation": "Horizon モデル管理サービスのオブジェクトをリストおよび管理します。"
+    },
+    {
+
+      "id": "List objects in the Horizon Model Management Service.",
+
+      "translation": "Horizon モデル管理サービスのオブジェクトをリストします。"
+    },
+    {
+
+      "id": "The type of the object to list.",
+
+      "translation": "リストするオブジェクトのタイプ。"
+    },
+    {
+
+      "id": "The id of the object to list. This flag is optional. Omit this flag to list all objects of a given object type.",
+
+      "translation": "リストするオブジェクトの ID。このフラグはオプションです。特定のオブジェクト・タイプのすべてのオブジェクトをリストするにはこのフラグを省略します。"
+    },
+    {
+
+      "id": "Provides additional detail about the deployment of the object on edge nodes. This flag is only used when --id is specified.",
+
+      "translation": "エッジ・ノード上のオブジェクトのデプロイメントに関する追加詳細を提供します。このフラグは、--id が指定されている場合にのみ使用されます。"
+    },
+    {
+
+      "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
+
+      "translation": "入力でき、「hzn mms object publish」コマンドの -m オプションとして渡すことが可能な空のオブジェクト・メタデータ・テンプレートを表示します。"
+    },
+    {
+
+      "id": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
+
+      "translation": "Horizon モデル管理サービスでオブジェクトを公開し、ノードにデプロイされているサービスで使用可能にします。"
+    },
+    {
+
+      "id": "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m",
+
+      "translation": "公開するオブジェクトのタイプ。このフラグは - i と同時に使用する必要があります。-m とは同時に使用することはできません。"
+    },
+    {
+
+      "id": "The id of the object to publish. This flag must be used with -t. It is mutually exclusive with -m",
+
+      "translation": "公開するオブジェクトのID。このフラグは - t と同時に使用する必要があります。-m とは同時に使用することはできません。"
+    },
+    {
+
+      "id": "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optional and can only be used with --type and --id. It is mutually exclusive with -m",
+
+      "translation": "特定のパターンを使用してオブジェクトをノードにデプロイする場合は、このフラグで指定します。このフラグはオプションであり、同時に使用できるのは --type および --id のみです。-m とは同時に使用することはできません。"
+    },
+    {
+
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
+
+      "translation": "公開するオブジェクトの定義。「hzn mss object new」コマンドによって空のテンプレートを取得できます。"
+    },
+    {
+
+      "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
+
+      "translation": "公開する (ファイル形式の) オブジェクト。このフラグはオプションであり、オブジェクトの定義のみ更新できます。"
+    },
+    {
+
+      "id": "The type of the object to delete.",
+
+      "translation": "削除するオブジェクトのタイプ。"
+    },
+    {
+
+      "id": "The id of the object to delete.",
+
+      "translation": "削除するオブジェクトのID。"
+    },
+    {
+
+      "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
+
+      "translation": "-o フラグまたは HZN_ORG_ID のいずれかで組織 ID を指定する必要があります。"
+    },
+    {
+
+      "id": "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH",
+
+      "translation": "-u フラグまたは HZN_EXCHANGE_USER_AUTH のいずれかで交換のユーザー認証を指定する必要があります。"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードのサポートされないケイパビリティーが含まれています。"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+
+      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーのサポートされないケイパビリティーが含まれています。"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードのサポートされないバインド {Arg_2} が含まれています。"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+
+      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} のサポートされないバインドが含まれています、{Arg_3}。"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+
+      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+
+      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
+    },
+    {
+
+      "id": "Error starting containers: {Arg_1}",
+
+      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
+    },
+    {
+
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+
+      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
+    },
+    {
+
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+
+      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
+    },
+    {
+
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+
+      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。エラー: {Arg_2}"
+    },
+    {
+
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+
+      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。{Arg_2}"
+    },
+    {
+
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+
+      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。{Arg_2}"
+    },
+    {
+
+      "id": "[verbose] {M}",
+
+      "translation": "[詳細] {M}"
+    },
+    {
+
+      "id": "Error: {Msg}",
+
+      "translation": "エラー: {Msg}"
+    },
+    {
+
+      "id": "Warning: {Msg}",
+
+      "translation": "警告: {Msg}"
+    },
+    {
+
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+
+      "translation": "{ErrMsg} のバイトのアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+
+      "translation": "{ErrMsg} のデータ・タイプのマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "problem testing api key match: {Err}",
+
+      "translation": "API 鍵マッチングのテストで問題が発生しました: {Err}"
+    },
+    {
+
+      "id": "Using API key",
+
+      "translation": "API 鍵の使用"
+    },
+    {
+
+      "id": "unable to create docker client: {Err}",
+
+      "translation": "Docker クライアントを作成できません: {Err}"
+    },
+    {
+
+      "id": "docker auth domainName: {DomainName}",
+
+      "translation": "Docker 認証ドメイン・ネーム: {DomainName}"
+    },
+    {
+
+      "id": "unable to find docker credentials for {Domain}",
+
+      "translation": "{Domain} 用の Docker 資格情報が見つかりませんでした"
+    },
+    {
+
+      "id": "Pushing {Repository}:{Tag}...",
+
+      "translation": "{Repository}:{Tag} のプッシュ中..."
+    },
+    {
+
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+
+      "translation": "~/.docker/config.json から Docker 資格情報 を取得できませんでした: {Err}。「docker login ...」を実行してイメージ・レジストリーの資格情報を入力する必要がある場合があります。"
+    },
+    {
+
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+
+      "translation": "Docker イメージ {Repository____tag} をプッシュできません: {Err}"
+    },
+    {
+
+      "id": "could not find the image digest in the docker push output",
+
+      "translation": "Docker プッシュ出力でイメージ・ダイジェストが見つかりませんでした"
+    },
+    {
+
+      "id": "Pulling {Repository}:{Tag}...",
+
+      "translation": "{Repository} のプル中:{Tag}..."
+    },
+    {
+
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+
+      "translation": "Docker イメージ {Repository____tag} をプルできません。Docker 資格情報が見つかりませんでした。専用のイメージ・レジストリーの場合は「docker login ...」を実行する必要がある場合があります。エラー: {Err}"
+    },
+    {
+
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+
+      "translation": "Docker イメージ {Repository____tag} をプルできません: {Err}"
+    },
+    {
+
+      "id": "the resource id can not contain more than 1 '/'",
+
+      "translation": "リソース ID には複数の「/」を含めることはできません"
+    },
+    {
+
+      "id": "reading stdin failed: {Err}",
+
+      "translation": "標準入力お読み取りに失敗しました: {Err}"
+    },
+    {
+
+      "id": "reading {FilePath} failed: {Err}",
+
+      "translation": "{FilePath} の読み取りに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+
+      "translation": "警告: 環境変数「{EnvVarName}」は入力ファイルで参照されていますが、環境で定義されていません。"
+    },
+    {
+
+      "id": "Error scanning input, error {Err}",
+
+      "translation": "入力のスキャンでエラーが発生しました、エラー {Err}"
+    },
+    {
+
+      "id": "Error reading HTTP response, error {Err}",
+
+      "translation": "HTTP 応答の読み取りでエラーが発生しました、エラー {Err}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+
+      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。「systemctl status horizon」を実行して Horizon エージェントが実行中であるか確認してください。または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。具体的なエラーは次のとおりです: {Err}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+
+      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。ポートに関連付けられている SSH トンネルが停止している可能性があります。または、トンネルの向こう側にあるリモート Horizon エージェントが停止している可能性があります。具体的なエラーは次のとおりです: {Err}"
+    },
+    {
+
+      "id": "{ApiMsg} new request failed: {Err}",
+
+      "translation": "{ApiMsg} 新規要求が失敗しました: {Err}"
+    },
+    {
+
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+
+      "translation": "{ApiMsg} からの誤った HTTP コード: {HttpCode}"
+    },
+    {
+
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+
+      "translation": "{ApiMsg} からの誤った HTTP コード: {HttpCode}"
+    },
+    {
+
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} のボディ応答の読み取りに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} のボディ応答の読み取りに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} のボディ応答のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} のボディ応答のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+
+      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}: {Body}"
+    },
+    {
+
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} のボディのマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "Failed to unmarshal bytes. {Err}",
+
+      "translation": "バイトのアンマーシャルに失敗しました。{Err}"
+    },
+    {
+
+      "id": "Error getting HZN_ICP_CA_CERT_PATH from {ANAXOVERWRITEFILE}: {Err}",
+
+      "translation": "{ANAXOVERWRITEFILE} から HZN_ICP_CA_CERT_PATH の取得中にエラーが発生しました: {Err}"
+    },
+    {
+
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+
+      "translation": "{ANAXOVERWRITEFILE} から HZN_EXCHANGE_URL の取得中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+
+      "translation": "{ANAXCONFIGFILE} から ExchangeUrl の取得中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+
+      "translation": "HZN_EXCHANGE_URL が設定されていません、ノードの Horizon エージェント構成から取得してください。"
+    },
+    {
+
+      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+
+      "translation": "環境変数 HZN_EXCHANGE_URL または Horizon エージェントから交換 URL を取得できませんでした"
+    },
+    {
+
+      "id": "The exchange url: {ExchUrl}",
+
+      "translation": "交換 URL: {ExchUrl}"
+    },
+    {
+
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+
+      "translation": "{ANAXOVERWRITEFILE} から HZN_FSS_CSSURL の取得中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+
+      "translation": "{ANAXCONFIGFILE} から モデル管理サービスの URL の取得中にエラーが発生しました。{Err}"
+    },
+    {
+
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+
+      "translation": "HZN_FSS_CSSURL が設定されていません、ノードの Horizon エージェント構成から取得してください。"
+    },
+    {
+
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+
+      "translation": "環境変数 HZN_FSS_CSSURL または Horizon エージェントからモデル管理サービスの URL を取得できませんでした"
+    },
+    {
+
+      "id": "The model management service url: {MmsUrl}",
+
+      "translation": "モデル管理サービス URL: {MmsUrl}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+
+      "translation": "{ApiMethod} を実行するために Horizon {HorizonService} REST API に接続できません。Horizon エージェントが現在構成されている 対象の {Article} {HorizonService_1} とは別のものを使用するには {ServiceEnvVarName} を設定します。具体的なエラーは次のとおりです: {Err}"
+    },
+    {
+
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+
+      "translation": "{ApiMethod} を実行するために Horizon {HorizonService} REST API に接続できません。{ServiceEnvVarName} の設定に誤りがある可能性があります。または、{ServiceEnvVarName_1} の設定を解除して、Horizon エージェントが構成されている対象の {HorizonService_1} を使用します。具体的なエラーは次のとおりです: {Err}"
+    },
+    {
+
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. Will retry.",
+
+      "translation": "HTTP エラーが発生しました: {Service} REST API {ApiMsg} のコール中に {Err} が発生しました。再試行します。"
+    },
+    {
+
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}",
+
+      "translation": "HTTP エラーが発生しました: {Service} REST API {ApiMsg} のコール中に {Err} が発生しました"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+
+      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}、出力: {StringbodyBytes}"
+    },
+    {
+
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} の交換ボディ応答のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} の交換出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} の交換ボディのマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+
+      "translation": "{ApiMsg} の交換ボディ応答の読み取りに失敗しました: {Err}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+
+      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}: {Code}、{Msg}"
+    },
+    {
+
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+
+      "translation": "{ApiMsg} からの誤った HTTP コード {HttpCode}"
+    },
+    {
+
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+
+      "translation": "交換認証は次のいずれかで指定する必要があります: -u フラグ、-n フラグ、HZN_EXCHANGE_USER_AUTH、または HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+
+      "translation": "ファイル {KeyFile} の絶対パスの取得に失敗しました。{Err}"
+    },
+    {
+
+      "id": "{Err}. Please create the signing key.",
+
+      "translation": "{Err}。署名鍵を作成してください。"
+    },
+    {
+
+      "id": "running: {CmdStr}",
+
+      "translation": "実行中: {CmdStr}"
+    },
+    {
+
+      "id": "did not get a command object",
+
+      "translation": "コマンド・オブジェクトを取得しませんでした"
+    },
+    {
+
+      "id": "Could not get Stdin pipe, error: {Err}",
+
+      "translation": "標準入力パイプを取得できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "could not retrieve output from command, error: {Err}",
+
+      "translation": "コマンドから出力を取得できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "could not retrieve stderr from command, error: {Err}",
+
+      "translation": "コマンドから標準エラー出力を取得できませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "Unable to start command, error: {Err}",
+
+      "translation": "コマンドを開始できません、エラー: {Err}"
+    },
+    {
+
+      "id": "Unable to write to stdin of command, error: {Err}",
+
+      "translation": "コマンドの標準入力に書き込むことができません、エラー: {Err}"
+    },
+    {
+
+      "id": "Unable to close stdin, error: {Err}",
+
+      "translation": "標準入力を閉じることができません、エラー: {Err}"
+    },
+    {
+
+      "id": "could not read stdout, error: {Err}",
+
+      "translation": "標準出力を読み取ることができませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "could not read stderr, error: {Err}",
+
+      "translation": "標準エラー出力を読み取ることができませんでした、エラー: {Err}"
+    },
+    {
+
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+
+      "translation": "コマンドが失敗しました: {Err}、標準エラー出力: {StringstderrBytes}"
+    },
+    {
+
+      "id": "Unable to marshal userinput object: {Err}",
+
+      "translation": "ユーザー入力オブジェクトをマーシャルできません: {Err}"
+    },
+    {
+
+      "id": "A list of objects, each one containing the user inputs required for a specified service.",
+
+      "translation": "オブジェクトのリスト。個々のオブジェクトは、指定されたサービスに必要なユーザー入力を含みます。"
+    },
+    {
+
+      "id": "The horizon org of the specified service.",
+
+      "translation": "指定されたサービスの Horizon 組織。"
+    },
+    {
+
+      "id": "The unique string used to identify the specified service.",
+
+      "translation": "指定されたサービスを識別するために使用する固有のストリング。"
+    },
+    {
+
+      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
+
+      "translation": "これらの入力を適用するサービス・アーキテクチャー。 すべてのアーキテクチャーを指定するには省略するか、空のままにします。"
+    },
+    {
+
+      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
+
+      "translation": "これらの入力を適用するサービス・バージョン。 すべてのバージョンを指定するには省略するか、\"[0.0.0,INFINITY)\" を指定します。"
+    },
+    {
+
+      "id": "A list of objects with the names and values for the user inputs used by this service.",
+
+      "translation": "このサービスで使用するユーザー入力の名前および値を示すオブジェクトのリスト。"
+    },
+    {
+
+      "id": "Error unmarshaling userInput json file: {Err}",
+
+      "translation": "ユーザー入力 JSON ファイルのアンマーシャル中にエラーが発生しました: {Err}"
+    },
+    {
+
+      "id": "Are you sure you want to remove the node user inputs?",
+
+      "translation": "ノードのユーザー入力を削除しますか?"
+    },
+    {
+
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+
+      "translation": "{Image} は次のとおり構文解析されました: domain={Domain}, path={Path}, tag={Tag}"
+    },
+    {
+
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+
+      "translation": "警告: イメージ・パス「{Image}」を構文解析できませんでした。Docker レジストリーにはプッシュせず、そのままの状態で「deployment」フィールドに含めます。"
+    },
+    {
+
+      "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
+
+      "translation": "「{Image}」の代わりに「{NewImage}」を「deployment」フィールドに使用します"
+    },
+    {
+
+      "id": "failed to marshal deployment string {Dep}, error {Err}",
+
+      "translation": "{Dep} deployment ストリングのマーシャルに失敗しました、エラー{Err}"
+    },
+    {
+
+      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
+
+      "translation": "deployment ストリングを {KeyFilePath} で署名する際に問題が発生しました: {Err}"
+    },
+    {
+
+      "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
+
+      "translation": "「deployment.services」の下に定義する個々のサービスは、(ストリングが鍵となる) JSON オブジェクトである必要があります"
+    },
+    {
+
+      "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
+
+      "translation": "「deployment.services」の下に定義されているサービス「{SvcName}」には、必須の「image」フィールドがありません。"
+    },
+    {
+
+      "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
+
+      "translation": "「deployment.services」の下に定義されているサービス「{SvcName}」には、認識されていないフィールド「{K}」があります。https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md を参照してください"
+    },
+    {
+
+      "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
+
+      "translation": "「deployment」フィールドには「services」フィールドを含める必要があり、「services」フィールドの値は (ストリングが鍵となる ) JSON オブジェクトである必要があります。"
+    },
+    {
+
+      "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
+
+      "translation": "「deployment」フィールドには、ネイティブの Horizon デプロイメント構成または Helm デプロイメント構成が含まれている必要があり、その値は (ストリングが鍵となる) JSON  オブジェクトである必要があります"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はファイル同期サービスを開始できません、{Sserr}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はサービス依存を取得できません、{Derr}"
+    },
+    {
+
+      "id": "Starting dependencies.",
+
+      "translation": "依存関係を開始中。"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はサービス依存を開始できません、{Perr}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はテスト用の agreementID を生成できません、{Aerr}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTOPCOMMAND}」はサービス依存を停止できません、{Err}"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はファイル同期サービスを停止できません、{Sserr}"
+    },
+    {
+
+      "id": "Stopped service.",
+
+      "translation": "サービスを停止しました。"
+    },
+    {
+
+      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
+
+      "translation": "「/service/config」の出力属性 {Attr} のマーシャルに失敗しました。{Err}"
+    },
+    {
+
+      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
+
+      "translation": "「/service/config」の出力属性 {Attr} を元のタイプに変換できませんでした。{Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn service list' output: {Err}",
+
+      "translation": "「hzn service list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn service registered' output: {Err}",
+
+      "translation": "「hzn service registered」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "failed to marshal 'hzn service configstate' output: {Err}",
+
+      "translation": "「hzn service configstate」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "all the registered services",
+
+      "translation": "すべての登録済みサービス"
+    },
+    {
+
+      "id": "service {ServiceOrg}/{ServiceUrl}",
+
+      "translation": "サービス {ServiceOrg}/{ServiceUrl}"
+    },
+    {
+
+      "id": "all the registered services from organization {ServiceOrg}",
+
+      "translation": "組織 {ServiceOrg} のすべての登録済みサービス"
+    },
+    {
+
+      "id": "Please specify the organization for service {ServiceUrl}.",
+
+      "translation": "サービス {ServiceUrl} の組織を指定してください。"
+    },
+    {
+
+      "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
+
+      "translation": "この Horizon ノードの {Msgpart} を中断しますか?"
+    },
+    {
+
+      "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
+
+      "translation": "{Msgpart} を中断中、関連する契約を解除中、関連するサービス・コンテナーを停止中..."
+    },
+    {
+
+      "id": "Resuming {Msgpart} ...",
+
+      "translation": "{Msgpart} を再開中..."
+    },
+    {
+
+      "id": "failed to marshal 'key list' output: {Err}",
+
+      "translation": "「key list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+
+      "id": "horizon api trust output did not include 'pem' key",
+
+      "translation": "Horizon API トラスト出力には「pem」鍵が含まれていませんでした"
+    },
+    {
+
+      "id": "failed to create a new key pair: {Err}",
+
+      "translation": "新規鍵ペアの作成に失敗しました: {Err}"
+    },
+    {
+
+      "id": "Move private key file from {PrivKeyName} to {PrivKeyFile}",
+
+      "translation": "秘密鍵ファイルを {PrivKeyName} から {PrivKeyFile} に移動します"
+    },
+    {
+
+      "id": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
+
+      "translation": "秘密鍵ファイルの {PrivKeyName} から {PrivKeyFile} への移動に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Move public key file from {PubKeyName} to {PubKeyFile}.",
+
+      "translation": "公開鍵ファイルを {PubKeyName} から {PubKeyFile} に移動します。"
+    },
+    {
+
+      "id": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
+
+      "translation": "公開鍵ファイルの {PubKeyName} から {PubKeyFile} への移動に失敗しました。{Err}"
+    },
+    {
+
+      "id": "Created keys:\n \t{PrivKeyFile}\n\t{PubKeyFile}",
+
+      "translation": "次の鍵を作成しました:\n \t{PrivKeyFile}\n\t{PubKeyFile}"
+    },
+    {
+
+      "id": "asked to import the created public key, but can not determine the name.",
+
+      "translation": "作成済みの公開鍵のインポートを要求されましたが、名前を判別できません。"
+    },
+    {
+
+      "id": "Importing public key file {PubKeyFile} to the Horizon agent.",
+
+      "translation": "公開鍵ファイル {PubKeyFile} を Horizon エージェントにインポートします。"
+    },
+    {
+
+      "id": "{PubKeyFile} imported to the Horizon agent",
+
+      "translation": "{PubKeyFile} が Horizon エージェントにインポートされました"
+    },
+    {
+
+      "id": "Public key '{KeyName}' removed from the Horizon agent.",
+
+      "translation": "公開鍵「{KeyName}」は Horizon エージェントから削除されました。"
+    },
+    {
+
+      "id": "-d is mutually exclusive with -k and -K",
+
+      "translation": "-d は、-k および -K とは同時に指定することはできません。"
+    },
+    {
+
+      "id": "Creating directory {OutputDirPub}.",
+
+      "translation": "ディレクトリー {OutputDirPub} を作成中。"
+    },
+    {
+
+      "id": "{PrivKeyFile} is a directory. Please specify a file name.",
+
+      "translation": "{PrivKeyFile} はディレクトリーです。ファイル名を指定してください。"
+    },
+    {
+
+      "id": "File {PrivKeyFile} and {PubKeyFile} exist, do you want to overwrite?",
+
+      "translation": "ファイル {PrivKeyFile} および {PubKeyFile} は存在します。上書きしますか?"
+    },
+    {
+
+      "id": "File {PrivKeyFile} exists, do you want to overwrite?",
+
+      "translation": "ファイル {PrivKeyFile} は存在します。上書きしますか?"
+    },
+    {
+
+      "id": "Deleting file {PrivKeyFile}.",
+
+      "translation": "ファイル {PrivKeyFile} を削除中。"
+    },
+    {
+
+      "id": "cleaned {String} resulted in an empty string.",
+
+      "translation": "{String} のクリーンアップの結果、空ストリングになりました。"
+    },
+    {
+
+      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
+
+      "translation": "プラグイン・コンテキストには、サービス定義ファイルの現行ディレクトリーとして「currentDir」を含める必要があります。"
+    },
+    {
+
+      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
+
+      "translation": "チャート・アーカイブ {Depchartarchive} を読み取ることができません、エラー {Err}"
+    },
+    {
+
+      "id": "chart_archive must have a string type value, has {C}",
+
+      "translation": "chart_archive の値はストリング型である必要がありますが、{C} です"
+    },
+    {
+
+      "id": "release_name must have a string type value, has {R}",
+
+      "translation": "release_name の値はストリング型である必要がありますが、{R} です"
+    },
+    {
+
+      "id": "chart_archive and release_name must be non-empty strings",
+
+      "translation": "chart_archive および release_name must は非空ストリングである必要があります"
+    },
+    {
+
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
+
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」は Helm デプロイメントではサポートされていません"
+    },
+    {
+
+      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
+
+      "translation": "標準入力を {PrivKeyFilePath} で署名する際に問題が発生しました: {Err}"
+    },
+    {
+
+      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
+
+      "translation": "構成ファイル {CofigFile} から変数の取得に失敗しました。エラー: {Err}"
+    }
+  ]
+}

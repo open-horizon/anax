@@ -1,0 +1,1170 @@
+// NLS_CHARSET=UTF-8
+{
+  "language": "de",
+  "messages": [
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+
+      "translation": "Bereitstellungskonfiguration {Arg_1} enthält nicht unterstützte Funktionalität für Workload."
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+
+      "translation": "Bereitstellungskonfiguration {Arg_1} enthält nicht unterstützte Funktionalität für Infrastrukturcontainer."
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+
+      "translation": "Bereitstellungskonfiguration {Arg_1} enthält nicht unterstützte Bindung für Workload {Arg_2}"
+    },
+    {
+
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+
+      "translation": "Bereitstellungskonfiguration {Arg_1} enthält nicht unterstützte Bindung für {Arg_2}, {Arg_3}."
+    },
+    {
+
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Unmarshalling der Bereitstellungszeichenfolge {Arg_1}; Fehler: {Arg_2}"
+    },
+    {
+
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+
+      "translation": "Fehler beim Unmarshalling der Überschreibungszeichenfolge {Arg_1} der Bereitstellung für Vereinbarung {Arg_2}; Fehler: {Arg_3}"
+    },
+    {
+
+      "id": "Error starting containers: {Arg_1}",
+
+      "translation": "Fehler beim Starten von Containern: {Arg_1}"
+    },
+    {
+
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+
+      "translation": "Fehler beim Starten von Containern für Vereinbarung {Arg_1}: {Arg_2}"
+    },
+    {
+
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+
+      "translation": "Fehler beim erneuten Starten von Containern für Vereinbarungen {Arg_1}: {Arg_2}"
+    },
+    {
+
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+
+      "translation": "Fehler beim Bereinigen alter Container vor dem Starten neuer Container für {Arg_1}. Fehler: {Arg_2}"
+    },
+    {
+
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+
+      "translation": "Abrufen einer Liste der übergeordneten Container für Servicewiederholung für {Arg_1} fehlgeschlagen. {Arg_2}"
+    },
+    {
+
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler beim Wiederherstellen der Netzverbindung mit übergeordneten Elementen für Service {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+
+      "translation": "Version_Expression: Leerzeichen sind in {Expr} nicht zulässig."
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+
+      "translation": "Version_Expression: {Verstring} ist keine gültige Versionszeichenfolge."
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression: {Verstring} beginnt nicht mit einer Einschluss- oder Ausschlussanweisung."
+    },
+    {
+
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+
+      "translation": "Version_Expression: {Verstring} endet nicht mit einer Einschluss- oder Ausschlussanweisung."
+    },
+    {
+
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+
+      "translation": "Version_Expression: Falsche Anzahl der Versionen in Ausdruck: {Expr}."
+    },
+    {
+
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+
+      "translation": "Eingabeversionszeichenfolge {V1} oder {V2} ist keine gültige einzelne Versionszeichenfolge."
+    },
+    {
+
+      "id": "properties contains an invalid property: {Err}",
+
+      "translation": "Eigenschaften enthalten ungültige Eigenschaft: {Err}"
+    },
+    {
+
+      "id": "Property must include a name and a value: {Property}",
+
+      "translation": "Die Eigenschaft muss einen Namen und einen Wert enthalten: {Property}"
+    },
+    {
+
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+
+      "translation": "Die Eigenschaft {Name} weist den ungültigen Eigenschaftstyp {DeclaredType} auf. Zulässige Eigenschaftstypen sind: 'version', 'string', 'int', 'boolean', 'float' und 'list of string'."
+    },
+    {
+
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+
+      "translation": "Der Eigenschaftswert weist den Typ {ActualType} auf, erwarteter Typ ist {DeclaredType}."
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not an integer type",
+
+      "translation": "Der Wert {Value} der Eigenschaft {Name} ist kein ganzzahliger Typ."
+    },
+    {
+
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+
+      "translation": "Der Wert {Value} der Eigenschaft {Name} ist keine gültige Zeichenfolge. Definieren Sie den Typ oder ändern Sie den Wert in eine Zeichenfolge."
+    },
+    {
+
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+
+      "translation": "Die Eigenschaft {Name} mit dem Wert {Value} ist keine gültige Versionszeichenfolge."
+    },
+    {
+
+      "id": "Property {Name} has invalid value type {ActualType}",
+
+      "translation": "Die Eigenschaft {Name} weist den ungültigen Werttyp {ActualType} auf."
+    },
+    {
+
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+
+      "translation": "Vereinbarung {Arg_1} ist bereits vorhanden, Vorschlag wird ignoriert: {Arg_2}"
+    },
+    {
+
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+
+      "translation": "Fehler beim Demarshalling von 'TsAndCs' für Vereinbarung {Arg_1}, {Arg_2}"
+    },
+    {
+
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+
+      "translation": "Knoten hat Vorschlagsnachricht unter Verwendung von Vereinbarung {Arg_1} für Service {Arg_2}/{Arg_3} von Agbot {Arg_4} erhalten."
+    },
+    {
+
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Vorschlag für Service {Arg_1}/{Arg_2} wurde vom Knoten abgelehnt."
+    },
+    {
+
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+
+      "translation": "Fehler beim Verarbeiten des Vorschlags für Service {Arg_1}/{Arg_2}. Fehler: {Arg_3}"
+    },
+    {
+
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+
+      "translation": "Lesen der Richtliniendatei {Arg_1} für Service {Arg_2} nicht möglich; Fehler: {Arg_3}"
+    },
+    {
+
+      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Start des Zugänglichmachens der Richtlinie mit Exchange für Service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+
+      "translation": "Zugänglichmachen der Richtlinien mit Exchange für Service {Arg_1}/{Arg_2} nicht möglich; Fehler: {Arg_3}"
+    },
+    {
+
+      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Zugänglichmachen der Richtlinie mit Exchange für Service {Arg_1}/{Arg_2} ausgeführt."
+    },
+    {
+
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+
+      "translation": "Heartbeat des Knotens für Knoten {Arg_1}/{Arg_2} fehlgeschlagen. Fehler: {Arg_3}"
+    },
+    {
+
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+
+      "translation": "Heartbeat des Knotens für Knoten {Arg_1}/{Arg_2} wiederhergestellt."
+    },
+    {
+
+      "id": "unable to read node policy from the local database. {Arg_1}",
+
+      "translation": "Knotenrichtlinie kann nicht in lokaler Datenbank gelesen werden. {Arg_1}"
+    },
+    {
+
+      "id": "Unable to read node object from the local database. {Arg_1}",
+
+      "translation": "Knotenobjekt kann nicht in lokaler Datenbank gelesen werden. {Arg_1}"
+    },
+    {
+
+      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+
+      "translation": "Die lokale Knotenrichtlinie kann nicht mit der Exchange-Kopie synchronisiert werden. Fehler: {Arg_1}"
+    },
+    {
+
+      "id": "Node policy updated with the exchange copy: {Arg_1}",
+
+      "translation": "Die Knotenrichtlinie wurde mit der Exchange-Kopie aktualisiert: {Arg_1}"
+    },
+    {
+
+      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+
+      "translation": "Die Benutzereingabe des lokalen Knotens kann nicht mit der Exchange-Kopie synchronisiert werden. Fehler: {Arg_1}"
+    },
+    {
+
+      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+
+      "translation": "Die Benutzereingabe des Knotens wurde mit der Exchange-Kopie aktualisiert. Die geänderten Benutzereingaben lauten: {Arg_1}"
+    },
+    {
+
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+
+      "translation": "Vom Knoten konnte die Vereinbarung {Arg_1} mit dem Nutzer nicht überprüft werden. Wird abgebrochen."
+    },
+    {
+
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+
+      "translation": "Der Knoten ist offline. Die Protokollierung von periodischen Offlinefehlernachrichten wird so lange eingeschränkt, bis die Verbindung wiederhergestellt ist."
+    },
+    {
+
+      "id": "Name, or Org is empty string.",
+
+      "translation": "Der Name oder die Organisation ist eine leere Zeichenfolge."
+    },
+    {
+
+      "id": "The serviceVersions array is empty.",
+
+      "translation": "Das Array für die Serviceversionen (serviceVersions) ist leer."
+    },
+    {
+
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+
+      "translation": "Der Bedingungsausdruck {Dconstraints} weist den Typ {Dconstraints_1} auf, erwartet wird jedoch ein Array aus Zeichenfolgen."
+    },
+    {
+
+      "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
+
+      "translation": "Richtlinienbedingung {Remainder} kann nicht in internes Format umgewandelt werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
+
+      "translation": "Der logischer Operator {NextLogicalOperator} ist nicht gültig; erwartet werden AND, OR, && oder ||."
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
+
+      "translation": "Gefunden wurden {Lenpieces} Token, erwartet wurden drei in einem Ausdruck {Expression}; das erwartete Format ist <property> == <value>."
+    },
+    {
+
+      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
+
+      "translation": "Es wurden {Lenpieces} Token gefunden, erwartet wurden drei in einem Ausdruck {Expression}; das erwartete Format ist ein Ausdruck mit den drei Token <property> <operator> und <value> in einem Bedingungsausdruck."
+    },
+    {
+
+      "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
+
+      "translation": "Ausdruck {Expression} muss einen gültigen Vergleichsoperator enthalten - falscher Operator {Pieces1}. Zulässige Operatoren: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto} und {Inoperator}."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
+
+      "translation": "Der Vergleichsoperator {CompOp} wird für den numerischen Wert {Value} nicht unterstützt."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
+
+      "translation": "Der Vergleichsoperator {CompOp} wird für den booleschen Wert {Value} nicht unterstützt."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
+
+      "translation": "Der Vergleichsoperator {CompOp} wird für den Zeichenfolgelistenwert {Value} nicht unterstützt."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
+
+      "translation": "Der Vergleichsoperator {CompOp} wird für den Zeichenfolgewert {Value} nicht unterstützt."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
+
+      "translation": "Der Vergleichsoperator {CompOp} wird für Einzelversion {Value} nicht unterstützt."
+    },
+    {
+
+      "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
+
+      "translation": "Der Vergleichsoperator {CompOp} wird für Versionsausdruck {Value} nicht unterstützt."
+    },
+    {
+
+      "id": "Expression: {Expression} is not valid",
+
+      "translation": "Ausdruck {Expression} ist nicht gültig."
+    },
+    {
+
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+
+      "translation": "Verzeichnis für selbst signiertes MMS-API-Zertifikat kann nicht erstellt werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+
+      "translation": "Die Zufallszahl für die Seriennummer des MMS-API-Zertifikats kann nicht generiert werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+
+      "translation": "Der private Schlüssel für das MMS-API-Zertifikat kann nicht generiert werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "unable to create MMS API certificate, error {Err}",
+
+      "translation": "Das MMS-API-Zertifikat kann nicht erstellt werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "Das MMS-API-Zertifikat kann nicht in die Datei {ServerCertificate} geschrieben werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+
+      "translation": "Das MMS-API-Zertifikat kann nicht in der Datei {ServerCertificate} verschlüsselt werden; Fehler: {Err}"
+    },
+    {
+
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+
+      "translation": "Die MMS-API-Zertifikatsdatei {ServerCertificate} kann nicht geschlossen werden; Fehler: {Err}."
+    },
+    {
+
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "Der private Schlüssel des MMS-API-Zertifikats kann nicht in Datei {ServerKey} geschrieben werden; Fehler: {Err}."
+    },
+    {
+
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+
+      "translation": "Der private Schlüssel des MMS-API-Zertifikats kann nicht in der Datei {ServerKey} verschlüsselt werden; Fehler: {Err}."
+    },
+    {
+
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+
+      "translation": "Die Datei für den privaten Schlüssel {ServerKey} des MMS-API-Zertifikats kann nicht geschlossen werden; Fehler: {Err}."
+    },
+    {
+
+      "id": "Error parsing the selections {Form}. {Err}",
+
+      "translation": "Fehler beim Parsing der Auswahlen {Form}. {Err}"
+    },
+    {
+
+      "id": "Error getting {Resource} for output, error {Err}",
+
+      "translation": "Fehler beim Abrufen von {Resource} für Ausgabe; Fehler: {Err}."
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für Knotenkonfiguration/-registrierung. Deserialisierung des Eingabehauptteils für Knotenobjekt {Arg_1} nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für Knotenkonfiguration/-registrierung. Deserialisierung des Eingabehauptteils für Konfigurationsstatusobjekt {Arg_1} nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für Knotenaktualisierung. Deserialisierung des Eingabehauptteils für Knotenobjekt {Arg_1} nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für Knotenrichtlinie. Deserialisierung des Eingabehauptteils als Richtlinienobjekt {Arg_1} nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für Knotenrichtlinienpatch. Deserialisierung des Eingabehauptteils in einen Bedingungsausdruck oder eine Eigenschaftsliste nicht möglich: {Arg_1}; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für Knotenrichtlinienpatch. Eingabehauptteil enthielt keinen Bedingungsausdruck oder keine Eigenschaftsliste: {Arg_1}; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+
+      "translation": "Fehler beim Parsing der Eingabe für die Knotenbenutzereingabe. Deserialisierung des Eingabehauptteils als Benutzereingabeobjekt {Arg_1} nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler in Knotenkonfiguration/-registrierung für Knoten {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler beim Aktualisieren von Knoten {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error in node unregistration. {Arg_1}",
+
+      "translation": "Fehler bei der Registrierung des Knotens. {Arg_1}"
+    },
+    {
+
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+
+      "translation": "Fehler beim Verifizieren der Exchange-Version. Fehler: {Arg_1}"
+    },
+    {
+
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+
+      "translation": "Fehler beim Erstellen oder Ersetzen der Knotenrichtlinie. {Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node policy. {Arg_1}",
+
+      "translation": "Fehler beim Anwenden eines Patch auf die Knotenrichtlinie. {Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node policy. {Arg_1}",
+
+      "translation": "Fehler beim Löschen der Knotenrichtlinie. {Arg_1}"
+    },
+    {
+
+      "id": "Error in updating node user input. {Arg_1}",
+
+      "translation": "Fehler beim Aktualisieren der Knotenbenutzereingabe. {Arg_1}"
+    },
+    {
+
+      "id": "Error in patching node user input. {Arg_1}",
+
+      "translation": "Fehler beim Anwenden eines Patch auf die Knotenbenutzereingabe. {Arg_1}"
+    },
+    {
+
+      "id": "Error in deleting node userinput. {Arg_1}",
+
+      "translation": "Fehler beim Löschen der Knotenbenutzereingabe. {Arg_1}"
+    },
+    {
+
+      "id": "Start node configuration/registration for node {Arg_1}.",
+
+      "translation": "Start der Knotenkonfiguration/-registrierung für Knoten {Arg_1}. "
+    },
+    {
+
+      "id": "Start updating node {Arg_1}.",
+
+      "translation": "Start der Aktualisierung von Knoten {Arg_1}. "
+    },
+    {
+
+      "id": "Complete node update for {Arg_1}.",
+
+      "translation": "Ausführung der Knotenaktualisierung für {Arg_1}."
+    },
+    {
+
+      "id": "Start node unregistration.",
+
+      "translation": "Start der Rücknahme der Registrierung des Knotens."
+    },
+    {
+
+      "id": "Node unregistration complete for node {Arg_1}.",
+
+      "translation": "Rücknahme der Knotenregistrierung für Knoten {Arg_1} abgeschlossen."
+    },
+    {
+
+      "id": "Error unregistring the node. The node is not found from the database.",
+
+      "translation": "Fehler bei der Rücknahme der Registrierung des Knotens. Der Knoten wird nicht in der Datenbank gefunden."
+    },
+    {
+
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+
+      "translation": "Fehler bei der Rücknahme der Registrierung des Knotens. Der Knoten muss sich im Status 'Konfiguriert' (configured) oder 'Wird konfiguriert' (configuring) befinden, damit er dekonfiguriert werden kann."
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+
+      "translation": "Eingabefehler für Rücknahme der Knotenregistrierung. {Arg_1} ist kein zulässiger Wert für 'removeNode'."
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+
+      "translation": "Eingabefehler für Rücknahme der Knotenregistrierung. {Arg_1} ist kein zulässiger Wert für 'deepClean'."
+    },
+    {
+
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+
+      "translation": "Eingabefehler für Rücknahme der Knotenregistrierung. {Arg_1} ist kein zulässiger Wert für 'block'."
+    },
+    {
+
+      "id": "Unable to read node object from database, error {Arg_1}",
+
+      "translation": "Knotenobjekt kann nicht in Datenbank gelesen werden; Fehler: {Arg_1}."
+    },
+    {
+
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+
+      "translation": "Fehler beim Speichern des neuen Knotenkonfigurationsstatus (Wird dekonfiguriert - unconfiguring) in der Datenbank: {Arg_1}."
+    },
+    {
+
+      "id": "Error in node configuration. The node is not found from the database.",
+
+      "translation": "Fehler in der Knotenkonfiguration. Der Knoten wird nicht in der Datenbank gefunden."
+    },
+    {
+
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+
+      "translation": "Fehler in der Knotenkonfiguration. Der Knoten muss sich im Status 'Konfiguriert' (configured) oder 'Wird konfiguriert' (configuring) befinden, damit sein Status in {Arg_1} geändert werden kann."
+    },
+    {
+
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+
+      "translation": "Der Knotenstatuswechsel von '{Arg_1}' zu '{Arg_2}' wird nicht unterstützt."
+    },
+    {
+
+      "id": "Failed get user input from local db. {Arg_1}",
+
+      "translation": "Das Abrufen der Benutzereingabe aus der lokalen Datenbank ist fehlgeschlagen. {Arg_1}"
+    },
+    {
+
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+
+      "translation": "Die Suche nach Vorgaben für Service {Arg_1}/{Arg_2} in der lokalen Benutzereingabe ist fehlgeschlagen; Fehler: {Arg_3}."
+    },
+    {
+
+      "id": "Error saving new node config state to database: {Arg_1}",
+
+      "translation": "Fehler beim Speichern des neuen Knotenkonfigurationsstatus in der Datenbank: {Arg_1}."
+    },
+    {
+
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+
+      "translation": "Die Knotenkonfiguration/-registrierung für Knoten {Arg_1} ist abgeschlossen."
+    },
+    {
+
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler in der Servicekonfiguration für {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler beim Abrufen der Servicereferenzen für Muster {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "New node policy: {Arg_1}",
+
+      "translation": "Neue Knotenrichtlinie: {Arg_1}"
+    },
+    {
+
+      "id": "Deleted node policy",
+
+      "translation": "Gelöschte Knotenrichtlinie"
+    },
+    {
+
+      "id": "New node user input: {Arg_1}",
+
+      "translation": "Neue Knotenbenutzereingabe: {Arg_1}"
+    },
+    {
+
+      "id": "No node user input to detele",
+
+      "translation": "Keine löschbare Knotenbenutzereingabe"
+    },
+    {
+
+      "id": "Deleted all node user input",
+
+      "translation": "Gesamte Knotenbenutzereingaben gelöscht"
+    },
+    {
+
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+
+      "translation": "Start der Servicekonfiguration mit Benutzereingabe für {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "Start der automatischen Konfiguration des Service für {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "Servicekonfiguration für {Arg_1}/{Arg_2} beendet."
+    },
+    {
+
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+
+      "translation": "Automatische Servicekonfiguration für {Arg_1}/{Arg_2} beendet."
+    },
+    {
+
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+
+      "translation": "Variable {Arg_1} fehlt in der Servicekonfiguration für {Arg_2}/{Arg_3}. Dies kann dazu führen, dass keine Vereinbarung erstellt wird, wenn die Geschäftsrichtlinie nicht die Einstellung für die fehlende Variable enthält."
+    },
+    {
+
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler beim Konfigurieren von Service {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+
+      "translation": "Fehler beim Ändern des Servicekonfigurationsstatus {Arg_1}; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "Start der Änderung des Servicekonfigurationsstatus in {Arg_1} für {Arg_2} für den Knoten."
+    },
+    {
+
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+
+      "translation": "Änderung des Servicekonfigurationsstatus in {Arg_1} für {Arg_2} für den Knoten abgeschlossen."
+    },
+    {
+
+      "id": "Error converting the selections into Selectors: {Err}",
+
+      "translation": "Fehler beim Umwandeln der Auswahlen in Selektoren: {Err}."
+    },
+    {
+
+      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
+
+      "translation": "Fehler beim Abrufen der Vereinbarung {Arg_1} aus der Datenbank; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
+
+      "translation": "Abrufen von Vereinbarung {Arg_1} aus Datenbank für Nachricht 'MeteringNotification' nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
+
+      "translation": "Abrufen von Vereinbarung {Arg_1} aus Datenbank für Nachricht 'Cancel' nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
+
+      "translation": "Abrufen von Vereinbarung {Arg_1} aus Datenbank für Nachricht 'ReplyAck' nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
+
+      "translation": "Abrufen von Vereinbarung {Arg_1} aus Datenbank für Nachricht 'DataReceived' nicht möglich; Fehler: {Arg_2}."
+    },
+    {
+
+      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
+
+      "translation": "Abrufen nicht archivierter Vereinbarung aus Datenbank nicht möglich. {Arg_1}"
+    },
+    {
+
+      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
+
+      "translation": "Fehler beim Markieren der Vereinbarung {Arg_1} in der Datenbank als 'beendet': {Arg_2}."
+    },
+    {
+
+      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
+
+      "translation": "Fehler beim Abrufen der Servicedefinitionen {Arg_1} aus der Datenbank. {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
+
+      "translation": "Fehler beim Abrufen aller Serviceinstanzen aus der Datenbank für {Arg_1}}/{Arg_2}, Version {Arg_3}, Schlüssel {Arg_4}. {Arg_5}"
+    },
+    {
+
+      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler beim Abrufen aller Serviceinstanzen aus der Datenbank für {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving all service instances from database, error: {Arg_1}",
+
+      "translation": "Fehler beim Abrufen aller Serviceinstanzen aus der Datenbank; Fehler: {Arg_1}"
+    },
+    {
+
+      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
+
+      "translation": "Fehler beim Abrufen von Serviceinstanz {Arg_1} aus der Datenbank. {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
+
+      "translation": "Fehler beim Abrufen übereinstimmender Vereinbarungen aus der Datenbank für Workloads {Arg_1}. Fehler: {Arg_2}"
+    },
+    {
+
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+
+      "translation": "Abrufen des Servicekonfigurationsstatus für Knotenressource {Arg_1} von Exchange nicht möglich; Fehler: {Arg_2}"
+    },
+    {
+
+      "id": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
+
+      "translation": "Fehler beim Abrufen von Knoten {Arg_1} von Exchange: {Arg_2}"
+    },
+    {
+
+      "id": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
+
+      "translation": "Fehler beim Aktualisieren von 'registeredServices' für Knoten {Arg_1} in Exchange: {Arg_2}"
+    },
+    {
+
+      "id": "Image loaded for {Arg_1}/{Arg_2}.",
+
+      "translation": "Image geladen für {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Image geladen für Service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Error loading image for {Arg_1}/{Arg_2}.",
+
+      "translation": "Fehler beim Laden des Image für {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
+
+      "translation": "Fehler beim Laden des Image für Service {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+
+      "translation": "Start der Beendigung der Vereinbarung für {Arg_1}. Beendigungsgrund: {Arg_2}"
+    },
+    {
+
+      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
+
+      "translation": "Vereinbarung für Service {Arg_1} erreicht. Die Vereinbarungs-ID ist {Arg_2}."
+    },
+    {
+
+      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
+
+      "translation": "Die Vereinbarung für {Arg_1} ist für Agbot nicht mehr gültig. Sie wird vom Knoten beendet."
+    },
+    {
+
+      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
+
+      "translation": "Die Workload-Service-Container für {Arg_1}/{Arg_2} sind betriebsbereit."
+    },
+    {
+
+      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+
+      "translation": "Die Beendigung der Vereinbarung für {Arg_1} ist abgeschlossen. Beendigungsgrund: {Arg_2}"
+    },
+    {
+
+      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
+
+      "translation": "Fehler beim Löschen der Vereinbarung für {Arg_1} in Exchange: {Arg_2}. Ein neuer Versuch wird gestartet."
+    },
+    {
+
+      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
+
+      "translation": "Fehler für 'AgreementVerification' für {Arg_1} mit Agbot aufgetreten; Fehler: {Arg_2}"
+    },
+    {
+
+      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
+
+      "translation": "Von 'ReplyAck' wird angegeben, dass die Fortsetzung der Vereinbarung für {Arg_1} von Agbot abgelehnt wurde. Die Vereinbarung wird vom Knoten beendet."
+    },
+    {
+
+      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
+
+      "translation": "Vom Knoten wurde die Nachricht 'Cancel' für {Arg_1}/{Arg_2} von Agbot {Arg_3} empfangen."
+    },
+    {
+
+      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'ReplyAck' für {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling ReplyAck message. {Arg_1}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'ReplyAck'. {Arg_1}"
+    },
+    {
+
+      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'DataReceived' für {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling DataReceived message. {Arg_1}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'DataReceived'. {Arg_1}"
+    },
+    {
+
+      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'MeterNotification' für {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling MeterNotification message. {Arg_1}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'MeterNotification'. {Arg_1}"
+    },
+    {
+
+      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'Cancel' für {Arg_1}. {Arg_2}"
+    },
+    {
+
+      "id": "Error handling Cancel message. {Arg_1}",
+
+      "translation": "Fehler bei der Verarbeitung der Nachricht 'Cancel'. {Arg_1}"
+    },
+    {
+
+      "id": "Start workload service for {Arg_1}/{Arg_2}.",
+
+      "translation": "Start des Workload-Service für {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Workload destroyed for {Arg_1}",
+
+      "translation": "Workload für {Arg_1} gelöscht."
+    },
+    {
+
+      "id": "Service containers for {Arg_1} started.",
+
+      "translation": "Service-Container für {Arg_1} gestartet."
+    },
+    {
+
+      "id": "Complete cleaning up the service instance {Arg_1}.",
+
+      "translation": "Bereinigung von Serviceinstanz {Arg_1} abgeschlossen."
+    },
+    {
+
+      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
+
+      "translation": "Start abhängiger Services für {Arg_1}/{Arg_2}."
+    },
+    {
+
+      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
+
+      "translation": "Fehler beim Starten abhängiger Services für {Arg_1}/{Arg_2} aufgetreten. {Arg_3}"
+    },
+    {
+
+      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
+
+      "translation": "Fehler beim Starten des abhängigen Service {Arg_1}/{Arg_2}, Version {Arg_3}, für Vereinbarung {Arg_4}. {Arg_5}"
+    },
+    {
+
+      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
+
+      "translation": "Start der Bereinigung von Service {Arg_1}, weil Vereinbarung {Arg_2} beendet ist."
+    },
+    {
+
+      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+
+      "translation": "Fehler beim Starten des Service {Arg_1}/{Arg_2}, Version {Arg_3}; Fehler: {Arg_4}. "
+    },
+    {
+
+      "id": "Error getting all the services from agreements: {Arg_1}",
+
+      "translation": "Fehler beim Abrufen aller Services von Vereinbarungen: {Arg_1}"
+    },
+    {
+
+      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
+
+      "translation": "Start von Service {Arg_1}/{Arg_2} ohne Vereinbarung."
+    },
+    {
+
+      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
+
+      "translation": "Start von Service {Arg_1}/{Arg_2} ohne Vereinbarungen und seiner Abhängigkeiten beendet."
+    },
+    {
+
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
+
+      "translation": "Start von Service {Arg_1}/{Arg_2} ohne Vereinbarung nicht möglich; Fehler: {Arg_3}"
+    },
+    {
+
+      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
+
+      "translation": "Start von Services ohne Vereinbarungen nicht möglich, Fehler beim Suchen nach Muster {Arg_1} in Exchange; Fehler: {Arg_2}"
+    },
+    {
+
+      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
+
+      "translation": "Start von Services ohne Vereinbarung nicht möglich, Muster {Arg_1} in Exchange nicht gefunden."
+    },
+    {
+
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
+
+      "translation": "Start von Service {Arg_1}/{Arg_2} ohne Vereinbarung nicht möglich; lokale Servicedefinition nicht gefunden."
+    },
+    {
+
+      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
+      "translation": "Start des Upgrades für Service {Arg_1}/{Arg_2} von Version {Arg_3} auf Version {Arg_4}."
+    },
+    {
+
+      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
+      "translation": "Upgrade von Service {Arg_1}/{Arg_2} von Version {Arg_3} auf Version {Arg_4} abgeschlossen."
+    },
+    {
+
+      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
+
+      "translation": "Upgrade von Service {Arg_1}/{Arg_2} von Version {Arg_3} auf Version {Arg_4} fehlgeschlagen; Fehler: {Arg_5}"
+    },
+    {
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
+
+      "translation": "Start der Durchführung eines Downgrades für Service {Arg_1}/{Arg_2}, Version {Arg_3}, weil Start des Service für Vereinbarung fehlgeschlagen ist."
+    },
+    {
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
+
+      "translation": "Start der Durchführung eines Downgrades für Service {Arg_1}/{Arg_2}, Version {Arg_3}, weil Start des Service fehlgeschlagen ist."
+    },
+    {
+
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
+
+      "translation": "Start der Durchführung eines Downgrades für Service {Arg_1}/{Arg_2}, Version {Arg_3}, weil Upgrade fehlgeschlagen ist."
+    },
+    {
+
+      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+
+      "translation": "Durchführung des Downgrades für Service {Arg_1}/{Arg_2}, Version {Arg_3}, fehlgeschlagen; Fehler: {Arg_4}."
+    },
+    {
+
+      "id": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+
+      "translation": "Durchführung des Downgrades für Service {Arg_1}/{Arg_2} von Version {Arg_3} auf Version {Arg_4} abgeschlossen."
+    },
+    {
+
+      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
+
+      "translation": "Fehler beim Suchen der neuen Servicedefinition zum Durchführen eines Downgrades für {Arg_1}}/{Arg_2}, Version {Arg_3}, Schlüssel {Arg_4}. Fehler: {Arg_5}"
+    },
+    {
+
+      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
+
+      "translation": "Niedrigere Version zum Durchführen eines Downgrades für {Arg_1}/{Arg_2}, Version {Arg_3}, konnte nicht gefunden werden."
+    },
+    {
+
+      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
+
+      "translation": "Fehler beim Durchführen eines Downgrades für Service {Arg_1}/{Arg_2} von Version {Arg_3} auf Version {Arg_4}. Fehler: {Arg_5}"
+    },
+    {
+
+      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
+
+      "translation": "Fehler beim Durchführen eines Downgrades für Service {Arg_1}/{Arg_2}, Version {Arg_3}. {Arg_4}"
+    },
+    {
+
+      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
+
+      "translation": "Start eines neuen Versuchs für Nummer {Arg_1} für abhängigen Service {Arg_2}, Version {Arg_3}, weil Service fehlgeschlagen ist."
+    },
+    {
+
+      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
+
+      "translation": "Neuer Versuch für Nummer {Arg_1} für abhängigen Service {Arg_2}, Version {Arg_3}, fehlgeschlagen."
+    },
+    {
+
+      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
+
+      "translation": "Abrufen des Servicewiederholungszählers für {Arg_1}, Version {Arg_2}, fehlgeschlagen. {Arg_3}"
+    },
+    {
+
+      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
+
+      "translation": "Fehler beim Aktualisieren des Status für Startwiederholungen für Serviceinstanz {Arg_1} in Datenbank. {Arg_2}"
+    }
+  ]
+}
