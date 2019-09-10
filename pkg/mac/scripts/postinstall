@@ -13,4 +13,9 @@ ln -sf $SRCDIR/horizon-cli/share/horizon $DESTDIR/share
 ln -sf $SRCDIR/horizon-cli/share/man/man1/hzn.1 $DESTDIR/share/man/man1
 mv $SRCDIR/horizon-cli/etc/horizon/hzn.json $DESTDIR/etc/horizon
 
+for loc in de es  fr  it  ja  ko  pt_BR  zh_CN  zh_TW; do
+	mkdir -p $DESTDIR/share/man/$loc/man1
+	ln -sf $SRCDIR/horizon-cli/share/man/$loc/man1/hzn.1 $DESTDIR/share/man/$loc/man1
+done
+
 exit 0
