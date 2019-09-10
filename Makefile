@@ -150,10 +150,12 @@ ifndef verbose
 .SILENT:
 endif
 
-all: deps i18n-catalog all-nodeps
+all: deps all-nodeps
 all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
-	
-noi18n: deps all-nodeps
+
+deps: pkgdeps i18n-catalog
+
+noi18n: pkgdeps all-nodeps
 
 $(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
@@ -450,7 +452,7 @@ ess-clean:
 	-docker rmi $(ESS_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_IMAGE_STG) 2> /dev/null || :
 
-deps: $(TMPGOPATH)/bin/govendor
+pkgdeps: $(TMPGOPATH)/bin/govendor
 	@echo "Fetching dependencies"
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
@@ -463,7 +465,7 @@ $(TMPGOPATH)/bin/govendor: gopathlinks
 			go get -u github.com/kardianos/govendor; \
 	fi
 
-i18n-catalog: deps $(TMPGOPATH)/bin/gotext
+i18n-catalog: pkgdeps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
