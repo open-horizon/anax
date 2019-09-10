@@ -205,6 +205,9 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	if patFile.Org != "" && patFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the org specified in the input file (%s) must match the org specified on the command line (%s)", patFile.Org, org))
 	}
+	if patFile.Org == "" {
+		patFile.Org = org
+	}
 	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput}
 
 	//issue 924: Patterns with no services are not allowed

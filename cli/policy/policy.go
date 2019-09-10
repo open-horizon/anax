@@ -29,7 +29,6 @@ func Update(fileName string) {
 	ep := new(externalpolicy.ExternalPolicy)
 	readInputFile(fileName, ep)
 	i18n.GetMessagePrinter().Println("Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.")
-	i18n.GetMessagePrinter().Println()
 	cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep)
 
 	i18n.GetMessagePrinter().Println("Horizon node policy updated.")
