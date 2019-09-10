@@ -1013,11 +1013,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			glog.Errorf("Error processing container setup: %v", container)
 		}
 
-		glog.Errorf("Failed to set up %v. Attempting to remove other resources in agreement (%v) before returning control to caller. Error: %v", name, agreementId, err)
+		glog.V(3).Infof("Failed to set up %v. Attempting to remove other resources in agreement (%v) before returning control to caller. Error: %v", name, agreementId, err)
 
 		rErr := b.ResourcesRemove([]string{agreementId})
 		if rErr != nil {
-			glog.Errorf("Following error setting up patterned deployment, failed to clean up other resources for agreement: %v. Error: %v", agreementId, rErr)
+			glog.V(3).Infof("Following error setting up patterned deployment, failed to clean up other resources for agreement: %v. Error: %v", agreementId, rErr)
 		}
 
 		return err
@@ -1200,7 +1200,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	// If the network we want already exists, just use it.
 	var agBridge *docker.Network
 	if networks, err := b.client.ListNetworks(); err != nil {
-		glog.Errorf("Unable to list networks: %v", err)
+		glog.V(3).Infof("Unable to list networks: %v", err)
 		return nil, err
 	} else {
 		for _, net := range networks {
