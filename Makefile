@@ -427,7 +427,7 @@ fss-package: ess-docker-image css-docker-image
 		echo "File sync service container $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
 
-clean: mostlyclean
+clean: mostlyclean i18n-clean
 	@echo "Clean"
 	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
 ifneq ($(TMPGOPATH),$(GOPATH))
@@ -435,7 +435,7 @@ ifneq ($(TMPGOPATH),$(GOPATH))
 endif
 	rm -rf ./contracts
 
-mostlyclean: css-clean ess-clean i18n-clean
+mostlyclean: css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
