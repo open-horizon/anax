@@ -2,9 +2,9 @@
   "language": "ko",
   "messages": [
     {
-      "id": "failed to unmarshal json input file {FilePath}: {Err}",
-      "message": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "JSON 입력 파일 {FilePath}을(를) 역마샬링하는 데 실패함: {Err}",
+      "id": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "message": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "translation": "JSON 입력 파일 {JsonFilePath}을(를) 역마샬링하는 데 실패함: {Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -4304,9 +4304,9 @@
       "fuzzy": true
     },
     {
-      "id": "agbot '{Agbot}' not found in org {Org}",
-      "message": "agbot '{Agbot}' not found in org {Org}",
-      "translation": "'{Agbot}' Agbot을 {Org} 조직에서 찾을 수 없음",
+      "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
+      "message": "agbot '{Agbot}' not found in org {AgbotOrg}",
+      "translation": "'{Agbot}' Agbot을 {AgbotOrg} 조직에서 찾을 수 없음",
       "placeholders": [
         {
           "id": "Agbot",
@@ -4550,9 +4550,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
-      "message": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
-      "translation": "비즈니스 정책 {Org}/{Policy}이(가) Horizon Exchange에서 업데이트됨",
+      "id": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
+      "message": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
+      "translation": "비즈니스 정책 {PolOrg}/{Policy}이(가) Horizon Exchange에서 업데이트됨",
       "placeholders": [
         {
           "id": "Org",
@@ -4574,9 +4574,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
-      "message": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
-      "translation": "비즈니스 정책 {Org}/{Policy}이(가) Horizon Exchange에 추가됨",
+      "id": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
+      "message": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
+      "translation": "비즈니스 정책 {PolOrg}/{Policy}이(가) Horizon Exchange에 추가됨",
       "placeholders": [
         {
           "id": "Org",
@@ -4622,9 +4622,9 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Horizon Exchange에서 {Org}/{PolicyName} 정책을 업데이트하고 이 비즈니스 정책을 기반으로 모든 계약을 재평가하는 중입니다. 기존 계약을 취소하고 재협상할 수 있습니다.",
+      "id": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "Horizon Exchange에서 {PolOrg}/{PolicyName} 정책을 업데이트하고 이 비즈니스 정책을 기반으로 모든 계약을 재평가하는 중입니다. 기존 계약을 취소하고 재협상할 수 있습니다.",
       "placeholders": [
         {
           "id": "Org",
@@ -4646,9 +4646,9 @@
       "fuzzy": true
     },
     {
-      "id": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
-      "message": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
-      "translation": "{Org}/{PolicyName} 정책이 Horizon Exchange에서 업데이트됨",
+      "id": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
+      "message": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
+      "translation": "{PolOrg}/{PolicyName} 정책이 Horizon Exchange에서 업데이트됨",
       "placeholders": [
         {
           "id": "Org",
@@ -4708,9 +4708,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
-      "translation": "Horizon Exchange에서 {Org} 조직의 비즈니스 정책 {Policy}을(를) 제거하시겠습니까?",
+      "id": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
+      "translation": "Horizon Exchange에서 {PolOrg} 조직의 비즈니스 정책 {Policy}을(를) 제거하시겠습니까?",
       "placeholders": [
         {
           "id": "Policy",
@@ -4732,9 +4732,9 @@
       "fuzzy": true
     },
     {
-      "id": "Policy {Org}/{Policy} not found in the Horizon Exchange",
-      "message": "Policy {Org}/{Policy} not found in the Horizon Exchange",
-      "translation": "{Org}/{Policy} 정책이 Horizon Exchange에 없음",
+      "id": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
+      "message": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
+      "translation": "{PolOrg}/{Policy} 정책이 Horizon Exchange에 없음",
       "placeholders": [
         {
           "id": "Org",
@@ -4756,9 +4756,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "message": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "translation": "비즈니스 정책 {Org}/{Policy}을(를) 제거하고 기본 제공 노드 정책을 기반으로 모든 계약을 재평가하는 중입니다. 기존 계약을 취소하고 재협상할 수 있습니다.",
+      "id": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "message": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "translation": "비즈니스 정책 {PolOrg}/{Policy}을(를) 제거하고 기본 제공 노드 정책을 기반으로 모든 계약을 재평가하는 중입니다. 기존 계약을 취소하고 재협상할 수 있습니다.",
       "placeholders": [
         {
           "id": "Org",
@@ -4780,9 +4780,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy {Org}/{Policy} removed",
-      "message": "Business policy {Org}/{Policy} removed",
-      "translation": "비즈니스 정책 {Org}/{Policy}이(가) 제거됨",
+      "id": "Business policy {PolOrg}/{Policy} removed",
+      "message": "Business policy {PolOrg}/{Policy} removed",
+      "translation": "비즈니스 정책 {PolOrg}/{Policy}이(가) 제거됨",
       "placeholders": [
         {
           "id": "Org",
@@ -4840,8 +4840,8 @@
       "fuzzy": true
     },
     {
-      "id": "A list of policy properties that describe the service being dployed.",
-      "message": "A list of policy properties that describe the service being dployed.",
+      "id": "A list of policy properties that describe the service being deployed.",
+      "message": "A list of policy properties that describe the service being deployed.",
       "translation": "배치되는 서비스를 설명하는 정책 특성의 목록입니다.",
       "fuzzy": true
     },
@@ -5064,9 +5064,9 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Node}' not found in org {Org}",
-      "message": "node '{Node}' not found in org {Org}",
-      "translation": "'{Node}' 노드를 {Org} 조직에서 찾을 수 없음",
+      "id": "node '{Node}' not found in org {NodeOrg}",
+      "message": "node '{Node}' not found in org {NodeOrg}",
+      "translation": "'{Node}' 노드를 {NodeOrg} 조직에서 찾을 수 없음",
       "placeholders": [
         {
           "id": "Node",
@@ -5194,9 +5194,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node {Org}/{Node} not found in the Horizon Exchange.",
-      "message": "Node {Org}/{Node} not found in the Horizon Exchange.",
-      "translation": "Horizon Exchange에서 {Org}/{Node} 노드를 찾을 수 없습니다.",
+      "id": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
+      "message": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
+      "translation": "Horizon Exchange에서 {NodeOrg}/{Node} 노드를 찾을 수 없습니다.",
       "placeholders": [
         {
           "id": "Org",
@@ -5246,9 +5246,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "message": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "Horizon Exchange에서 {Org}/{Node} 노드를 제거하시겠습니까(에지 노드가 이 노드 ID로 등록되어 있는 동안 수행되면 안됨)?",
+      "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "message": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "translation": "Horizon Exchange에서 {NodeOrg}/{Node} 노드를 제거하시겠습니까(에지 노드가 이 노드 ID로 등록되어 있는 동안 수행되면 안됨)?",
       "placeholders": [
         {
           "id": "Org",
@@ -5270,9 +5270,9 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Org}/{Node}' not found.",
-      "message": "node '{Org}/{Node}' not found.",
-      "translation": "'{Org}/{Node}' 노드를 찾을 수 없습니다.",
+      "id": "node '{NodeOrg}/{Node}' not found.",
+      "message": "node '{NodeOrg}/{Node}' not found.",
+      "translation": "'{NodeOrg}/{Node}' 노드를 찾을 수 없습니다.",
       "placeholders": [
         {
           "id": "Org",
@@ -5318,9 +5318,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node policy not found for node {Node}/{Org}",
-      "message": "Node policy not found for node {Node}/{Org}",
-      "translation": "{Node}/{Org} 노드에 대한 노드 정책을 찾을 수 없음",
+      "id": "Node policy not found for node {NodeOrg}/{Node}",
+      "message": "Node policy not found for node {NodeOrg}/{Node}",
+      "translation": "{NodeOrg}/{Node} 노드에 대한 노드 정책을 찾을 수 없음",
       "placeholders": [
         {
           "id": "Node",
@@ -5470,9 +5470,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
-      "translation": "Horizon Exchange에서 {Org}/{Node}의 노드 정책을 제거하시겠습니까?",
+      "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
+      "translation": "Horizon Exchange에서 {NodeOrg}/{Node}의 노드 정책을 제거하시겠습니까?",
       "placeholders": [
         {
           "id": "Org",
@@ -6124,9 +6124,9 @@
       "fuzzy": true
     },
     {
-      "id": "problem verifying deployment string with {KeyFilePath}: {Err}",
-      "message": "problem verifying deployment string with {KeyFilePath}: {Err}",
-      "translation": "{KeyFilePath}이(가) 포함된 배치 문자열을 확인하는 중에 문제점 발생: {Err}",
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "message": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "translation": "{PubKeyFilePath}이(가) 포함된 배치 문자열을 확인하는 중에 문제점 발생: {Err}",
       "placeholders": [
         {
           "id": "KeyFilePath",
@@ -6164,9 +6164,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
-      "translation": "Horizon Exchange에서 {Org}/{Service} 서비스를 제거하시겠습니까?",
+      "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
+      "translation": "Horizon Exchange에서 {Svcorg}/{Service} 서비스를 제거하시겠습니까?",
       "placeholders": [
         {
           "id": "Org",
@@ -6216,9 +6216,9 @@
       "fuzzy": true
     },
     {
-      "id": "service '{Org}/{Service}' not found.",
-      "message": "service '{Org}/{Service}' not found.",
-      "translation": "'{Org}/{Service}' 서비스를 찾을 수 없습니다.",
+      "id": "service '{Svcorg}/{Service}' not found.",
+      "message": "service '{Svcorg}/{Service}' not found.",
+      "translation": "'{Svcorg}/{Service}' 서비스를 찾을 수 없습니다.",
       "placeholders": [
         {
           "id": "Org",
@@ -6262,9 +6262,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
-      "translation": "Horizon Exchange에서 {Org}/{Service}의 서비스 정책을 제거하시겠습니까?",
+      "id": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
+      "translation": "Horizon Exchange에서 {Svcorg}/{Service}의 서비스 정책을 제거하시겠습니까?",
       "placeholders": [
         {
           "id": "Org",
@@ -9677,8 +9677,8 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "translation": "Horizon 에이전트의 명령행 인터페이스입니다. 대부분의 하위 명령은 기본 위치 http://localhost(이를 겹쳐쓰려면 환경 Environment Variables 섹션 참조)의 Horizon 에이전트 API를 사용합니다.\n\nEnvironment Variables:\n  HORIZON_URL:  hzn이 Horizon 에이전트 API에 접속하는 URL을 겹쳐씁니다.\n      이렇게 하면 ssh 터널을 통해 원격 Horizon 에이전트 사용이 용이하게 됩니다.\n  HZN_EXCHANGE_URL:  'hzn exchange' 하위 명령이 Horizon Exchange와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/api/v1. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n  HZN_ORG_ID:  'hzn exchange -o' 플래그의 기본값이며,\n      조직 ID를 지정합니다.\n  HZN_EXCHANGE_USER_AUTH:  'hzn exchange -u' 또는 'hzn\n\t  register -u' 플래그의 기본값이며, 양식은 '[org/]user:pw'입니다. HZN_EXCHANGE_USER_AUTH가 설정될 때 \n\t  조직이 생략되면 HZN_ORG_ID를 설정할 수 있습니다.\n  HZN_FSS_CSSURL:  'hzn mms' 하위 명령이 Horizon 모델 관리 서비스와 통신하는 데\n      사용하는 URL을 대체합니다. 예를 들어, 다음과 같습니다.\n      https://exchange.bluehorizon.network/css/. (기본적으로 hzn은 URL의\n      Horizon 에이전트를 요청합니다.)\n\n  이러한 모든 환경 변수와 명령 도움말에 언급된 변수를\n  사용자의 구성 파일 ~/.hzn/hzn.json에 JSON 형식으로 지정할 수 있습니다.\n  예:\n  {Com____}",
       "placeholders": [
         {
@@ -13206,9 +13206,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "{KeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}",
+      "id": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
+      "message": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
+      "translation": "{PrivKeyFile} 파일의 절대 경로를 가져오는 데 실패했습니다. {Err}",
       "placeholders": [
         {
           "id": "KeyFile",

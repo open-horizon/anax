@@ -92,6 +92,9 @@ ESS_UBI_IMAGE_PROD = $(ESS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 ESS_UBI_IMAGE_LATEST = $(ESS_UBI_IMAGE_NAME):latest$(BRANCH_NAME)
 
+# supported locales
+SUPPORTED_LOCALES ?= de  es  fr  it  ja  ko  pt_BR  zh_CN  zh_TW
+
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
@@ -170,6 +173,9 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	    envsubst < cli/cliconfig/hzn.json.tmpl > $(CLI_CONFIG_FILE)
 	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
 	  	mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
+		for loc in $(SUPPORTED_LOCALES) ; do \
+			HZN_LANG=$$loc $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
+		done && \
 	  	mkdir -p $(CLI_COMPLETION_DIR) && $(CLI_EXECUTABLE) --completion-script-bash > $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh; \
 	else \
 		echo "Producing $(CLI_TEMP_EXECUTABLE) under $(arch_local) for generating hzn man pages"; \
@@ -177,6 +183,9 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 	  	  export GOPATH=$(TMPGOPATH); \
 	    	$(COMPILE_ARGS_LOCAL) go build -o $(CLI_TEMP_EXECUTABLE) $(CLI_EXECUTABLE).go; \
 	  		mkdir -p $(CLI_MAN_DIR) && $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
+			for loc in $(SUPPORTED_LOCALES) ; do \
+				HZN_LANG=$$loc $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
+			done && \
 	  		rm $(CLI_TEMP_EXECUTABLE); \
 	fi		
 
@@ -251,6 +260,10 @@ $(MAC_PKG): temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
 	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
+	for loc in $(SUPPORTED_LOCALES) ; do \
+		mkdir -p pkg/mac/horizon-cli/share/man/$$loc/man1 && \
+		cp $(CLI_MAN_DIR)/hzn.1.$$loc pkg/mac/horizon-cli/share/man/$$loc/man1/hzn.1; \
+	done
 	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_CONFIG_FILE) pkg/mac/horizon-cli/etc/horizon
 	pkgbuild --sign "horizon-cli-installer" --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) $@

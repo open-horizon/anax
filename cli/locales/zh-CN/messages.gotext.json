@@ -2,9 +2,9 @@
   "language": "zh-CN",
   "messages": [
     {
-      "id": "failed to unmarshal json input file {FilePath}: {Err}",
-      "message": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "对 JSON 输入文件 {FilePath} 进行取消编组失败：{Err}",
+      "id": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "message": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "translation": "对 JSON 输入文件 {JsonFilePath} 进行取消编组失败：{Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -4304,9 +4304,9 @@
       "fuzzy": true
     },
     {
-      "id": "agbot '{Agbot}' not found in org {Org}",
-      "message": "agbot '{Agbot}' not found in org {Org}",
-      "translation": "在组织 {Org} 中找不到 agbot“{Agbot}”",
+      "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
+      "message": "agbot '{Agbot}' not found in org {AgbotOrg}",
+      "translation": "在组织 {AgbotOrg} 中找不到 agbot“{Agbot}”",
       "placeholders": [
         {
           "id": "Agbot",
@@ -4550,9 +4550,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
-      "message": "Business policy: {Org}/{Policy} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新业务策略：{Org}/{Policy}",
+      "id": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
+      "message": "Business policy: {PolOrg}/{Policy} updated in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中更新业务策略：{PolOrg}/{Policy}",
       "placeholders": [
         {
           "id": "Org",
@@ -4574,9 +4574,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
-      "message": "Business policy: {Org}/{Policy} added in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中添加业务策略：{Org}/{Policy}",
+      "id": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
+      "message": "Business policy: {PolOrg}/{Policy} added in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中添加业务策略：{PolOrg}/{Policy}",
       "placeholders": [
         {
           "id": "Org",
@@ -4622,9 +4622,9 @@
       "fuzzy": true
     },
     {
-      "id": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
-      "message": "Updating Policy {Org}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "正在 Horizon Exchange 中更新策略 {Org}/{PolicyName}，以及重新评估所有基于此业务策略的协议。现有协议可能已取消并重新协商。",
+      "id": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "message": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this Business policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "正在 Horizon Exchange 中更新策略 {PolOrg}/{PolicyName}，以及重新评估所有基于此业务策略的协议。现有协议可能已取消并重新协商。",
       "placeholders": [
         {
           "id": "Org",
@@ -4646,9 +4646,9 @@
       "fuzzy": true
     },
     {
-      "id": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
-      "message": "Policy {Org}/{PolicyName} updated in the Horizon Exchange",
-      "translation": "已在 Horizon Exchange 中更新策略 {Org}/{PolicyName}",
+      "id": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
+      "message": "Policy {PolOrg}/{PolicyName} updated in the Horizon Exchange",
+      "translation": "已在 Horizon Exchange 中更新策略 {PolOrg}/{PolicyName}",
       "placeholders": [
         {
           "id": "Org",
@@ -4708,9 +4708,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove business policy {Policy} for org {Org} from the Horizon Exchange?",
-      "translation": "确定要从 Horizon Exchange 中移除组织 {Org} 的业务策略 {Policy} 吗？",
+      "id": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除组织 {PolOrg} 的业务策略 {Policy} 吗？",
       "placeholders": [
         {
           "id": "Policy",
@@ -4732,9 +4732,9 @@
       "fuzzy": true
     },
     {
-      "id": "Policy {Org}/{Policy} not found in the Horizon Exchange",
-      "message": "Policy {Org}/{Policy} not found in the Horizon Exchange",
-      "translation": "在 Horizon Exchange 中找不到策略 {Org}/{Policy}",
+      "id": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
+      "message": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
+      "translation": "在 Horizon Exchange 中找不到策略 {PolOrg}/{Policy}",
       "placeholders": [
         {
           "id": "Org",
@@ -4756,9 +4756,9 @@
       "fuzzy": true
     },
     {
-      "id": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "message": "Removing Business policy {Org}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "translation": "正在移除业务策略 {Org}/{Policy}，以及重新评估所有仅基于内置节点策略的协议。现有协议可能已取消并重新协商",
+      "id": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "message": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
+      "translation": "正在移除业务策略 {PolOrg}/{Policy}，以及重新评估所有仅基于内置节点策略的协议。现有协议可能已取消并重新协商",
       "placeholders": [
         {
           "id": "Org",
@@ -4780,9 +4780,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy {Org}/{Policy} removed",
-      "message": "Business policy {Org}/{Policy} removed",
-      "translation": "已移除业务策略 {Org}/{Policy}",
+      "id": "Business policy {PolOrg}/{Policy} removed",
+      "message": "Business policy {PolOrg}/{Policy} removed",
+      "translation": "已移除业务策略 {PolOrg}/{Policy}",
       "placeholders": [
         {
           "id": "Org",
@@ -4840,8 +4840,8 @@
       "fuzzy": true
     },
     {
-      "id": "A list of policy properties that describe the service being dployed.",
-      "message": "A list of policy properties that describe the service being dployed.",
+      "id": "A list of policy properties that describe the service being deployed.",
+      "message": "A list of policy properties that describe the service being deployed.",
       "translation": "一列描述所要部署的服务的策略属性。",
       "fuzzy": true
     },
@@ -5064,9 +5064,9 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Node}' not found in org {Org}",
-      "message": "node '{Node}' not found in org {Org}",
-      "translation": "在组织 {Org} 中找不到节点“{Node}”",
+      "id": "node '{Node}' not found in org {NodeOrg}",
+      "message": "node '{Node}' not found in org {NodeOrg}",
+      "translation": "在组织 {NodeOrg} 中找不到节点“{Node}”",
       "placeholders": [
         {
           "id": "Node",
@@ -5194,9 +5194,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node {Org}/{Node} not found in the Horizon Exchange.",
-      "message": "Node {Org}/{Node} not found in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中找不到节点 {Org}/{Node}。",
+      "id": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
+      "message": "Node {NodeOrg}/{Node} not found in the Horizon Exchange.",
+      "translation": "在 Horizon Exchange 中找不到节点 {NodeOrg}/{Node}。",
       "placeholders": [
         {
           "id": "Org",
@@ -5246,9 +5246,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "message": "Are you sure you want to remove node {Org}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "确定要从 Horizon Exchange 中移除节点 {Org}/{Node} 吗（存在使用此节点标识注册的边缘节点时，不应执行移除）？",
+      "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "message": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
+      "translation": "确定要从 Horizon Exchange 中移除节点 {NodeOrg}/{Node} 吗（存在使用此节点标识注册的边缘节点时，不应执行移除）？",
       "placeholders": [
         {
           "id": "Org",
@@ -5270,9 +5270,9 @@
       "fuzzy": true
     },
     {
-      "id": "node '{Org}/{Node}' not found.",
-      "message": "node '{Org}/{Node}' not found.",
-      "translation": "找不到节点“{Org}/{Node}”。",
+      "id": "node '{NodeOrg}/{Node}' not found.",
+      "message": "node '{NodeOrg}/{Node}' not found.",
+      "translation": "找不到节点“{NodeOrg}/{Node}”。",
       "placeholders": [
         {
           "id": "Org",
@@ -5318,9 +5318,9 @@
       "fuzzy": true
     },
     {
-      "id": "Node policy not found for node {Node}/{Org}",
-      "message": "Node policy not found for node {Node}/{Org}",
-      "translation": "找不到节点 {Node}/{Org} 的节点策略",
+      "id": "Node policy not found for node {NodeOrg}/{Node}",
+      "message": "Node policy not found for node {NodeOrg}/{Node}",
+      "translation": "找不到节点 {NodeOrg}/{Node} 的节点策略",
       "placeholders": [
         {
           "id": "Node",
@@ -5470,9 +5470,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove node policy for {Org}/{Node} from the Horizon Exchange?",
-      "translation": "确定要从 Horizon Exchange 中移除 {Org}/{Node} 的节点策略吗？",
+      "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除 {NodeOrg}/{Node} 的节点策略吗？",
       "placeholders": [
         {
           "id": "Org",
@@ -6124,9 +6124,9 @@
       "fuzzy": true
     },
     {
-      "id": "problem verifying deployment string with {KeyFilePath}: {Err}",
-      "message": "problem verifying deployment string with {KeyFilePath}: {Err}",
-      "translation": "使用 {KeyFilePath} 验证部署字符串时遇到问题：{Err}",
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "message": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "translation": "使用 {PubKeyFilePath} 验证部署字符串时遇到问题：{Err}",
       "placeholders": [
         {
           "id": "KeyFilePath",
@@ -6164,9 +6164,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove service {Org}/{Service} from the Horizon Exchange?",
-      "translation": "确定要从 Horizon Exchange 中移除服务 {Org}/{Service} 吗？",
+      "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除服务 {Svcorg}/{Service} 吗？",
       "placeholders": [
         {
           "id": "Org",
@@ -6216,9 +6216,9 @@
       "fuzzy": true
     },
     {
-      "id": "service '{Org}/{Service}' not found.",
-      "message": "service '{Org}/{Service}' not found.",
-      "translation": "找不到服务“{Org}/{Service}”。",
+      "id": "service '{Svcorg}/{Service}' not found.",
+      "message": "service '{Svcorg}/{Service}' not found.",
+      "translation": "找不到服务“{Svcorg}/{Service}”。",
       "placeholders": [
         {
           "id": "Org",
@@ -6262,9 +6262,9 @@
       "fuzzy": true
     },
     {
-      "id": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
-      "message": "Are you sure you want to remove service policy for {Org}/{Service} from the Horizon Exchange?",
-      "translation": "确定要从 Horizon Exchange 中移除 {Org}/{Service} 的服务策略吗？",
+      "id": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
+      "message": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
+      "translation": "确定要从 Horizon Exchange 中移除 {Svcorg}/{Service} 的服务策略吗？",
       "placeholders": [
         {
           "id": "Org",
@@ -9677,8 +9677,8 @@
       "fuzzy": true
     },
     {
-      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set \n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
+      "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅“环境变量”一节以覆盖该位置）。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用来联系 Horizon 代理程序 API 的 URL。\n      这可以方便您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供“hzn exchange”子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。（缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID：“hzn exchange -o”标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH：“hzn exchange -u”或“hzn\n\t  register -u”标志的缺省值，其格式为“[org/]user:pw”。请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供“hzn mms”子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。（缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}",
       "placeholders": [
         {
@@ -13206,9 +13206,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "获取 {KeyFile} 文件的绝对路径失败。{Err}",
+      "id": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
+      "message": "Failed to get absolute path for file {PrivKeyFile}. {Err}",
+      "translation": "获取 {PrivKeyFile} 文件的绝对路径失败。{Err}",
       "placeholders": [
         {
           "id": "KeyFile",
