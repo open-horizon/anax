@@ -534,7 +534,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(0)
 
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodGet + " " + url
@@ -620,7 +620,7 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, quiet bool) (httpCode 
 	if IsDryRun() {
 		return 204, nil
 	}
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(0)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		if quiet {
@@ -666,7 +666,7 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	if IsDryRun() {
 		return 201, ""
 	}
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(0)
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -989,7 +989,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 
 	Verbose(apiMsg)
 
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -1062,7 +1062,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 		return 201
 	}
 
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
 	// Prepare body
 	var jsonBytes []byte
@@ -1151,7 +1151,7 @@ func ExchangePatch(service string, urlBase string, urlSuffix string, credentials
 		return 201
 	}
 
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
 	// Prepare body
 	var jsonBytes []byte
@@ -1228,17 +1228,17 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 		return 204
 	}
 
-	httpClient := GetHTTPClient()
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 	TrustIcpCert(httpClient)
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		printHorizonServiceRestError(service, apiMsg, err)
-	}
+
+	resp := invokeRestApi(httpClient, req, service, apiMsg)
+	defer resp.Body.Close()
+
 	// delete never returns a body
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
@@ -1454,7 +1454,7 @@ func DisplayAsJson(data interface{}) (string, error) {
 }
 
 // Common function for getting an HTTP client connection object.
-func GetHTTPClient() *http.Client {
+func GetHTTPClient(timeout int) *http.Client {
 
 	// This env var should only be used in our test environments or in an emergency when there is a problem with the SSL certificate of a horizon service.
 	skipSSL := false
@@ -1462,18 +1462,23 @@ func GetHTTPClient() *http.Client {
 		skipSSL = true
 	}
 
+	responseTimeout := 20
+	if timeout == 0 {
+		responseTimeout = 0
+	}
+
 	return &http.Client{
 		// remember that this timeout is for the whole request, including
 		// body reading. This means that you must set the timeout according
 		// to the total payload size you expect
-		Timeout: time.Second * time.Duration(config.HTTPRequestTimeoutS),
+		Timeout: time.Second * time.Duration(timeout),
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
 				Timeout:   20 * time.Second,
 				KeepAlive: 60 * time.Second,
 			}).Dial,
 			TLSHandshakeTimeout:   20 * time.Second,
-			ResponseHeaderTimeout: 20 * time.Second,
+			ResponseHeaderTimeout: time.Duration(responseTimeout) * time.Second,
 			ExpectContinueTimeout: 8 * time.Second,
 			MaxIdleConns:          config.MaxHTTPIdleConnections,
 			IdleConnTimeout:       config.HTTPIdleConnectionTimeoutS * time.Second,
