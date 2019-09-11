@@ -1313,7 +1313,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				overrideDD := new(containermessage.DeploymentDescription)
 				if err := json.Unmarshal([]byte(cmd.AgreementLaunchContext.Configure.Overrides), &overrideDD); err != nil {
 					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE, cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err),
+						persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE, cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err.Error()),
 						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 					glog.Errorf("Error Unmarshalling deployment override string %v for agreement %v, error: %v", cmd.AgreementLaunchContext.Configure.Overrides, agreementId, err)
 					return true
@@ -1328,7 +1328,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
 				if err := hasValidBindPermissions(service.Binds); err != nil {
 					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND, cmd.AgreementLaunchContext.Configure.Deployment, err),
+						persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND, cmd.AgreementLaunchContext.Configure.Deployment, err.Error()),
 						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
 					glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
 					b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
@@ -1352,7 +1352,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			// Create the docker configuration and launch the containers.
 			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err),
+					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err.Error()),
 					persistence.EC_ERROR_START_CONTAINER,
 					ags[0])
 				glog.Errorf("Error starting containers: %v", err)
@@ -1409,7 +1409,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			err := b.ResourcesRemove([]string{lc.Name})
 			if err != nil {
 				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_WARN,
-					persistence.NewMessageMeta(EL_CONT_CLEAN_OLD_CONTAINER_ERROR, lc.Name, err),
+					persistence.NewMessageMeta(EL_CONT_CLEAN_OLD_CONTAINER_ERROR, lc.Name, err.Error()),
 					persistence.EC_REMOVE_OLD_DEPENDENT_SERVICE_FAILED,
 					lc.Name, lc.Name, "", "", "", []string{})
 				glog.Errorf("Error cleaning up old containers before starting up new containers for %v. Error: %v", lc.Name, err)
@@ -1425,7 +1425,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		deploymentDesc := new(containermessage.DeploymentDescription)
 		if err := json.Unmarshal([]byte(lc.Configure.Deployment), &deploymentDesc); err != nil {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY, lc.Configure.Deployment, err),
+				persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY, lc.Configure.Deployment, err.Error()),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
 				"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", lc.Configure.Deployment, err)
@@ -1448,7 +1448,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
 			if err := hasValidBindPermissions(service.Binds); err != nil {
 				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err),
+					persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err.Error()),
 					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
 					"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 				glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
@@ -1502,7 +1502,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				log_str = EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG
 			}
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(log_str, fmt.Sprintf("%v", lc.AgreementIds), err),
+				persistence.NewMessageMeta(log_str, fmt.Sprintf("%v", lc.AgreementIds), err.Error()),
 				persistence.EC_ERROR_START_CONTAINER, "",
 				lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
 			glog.Errorf("Error starting containers: %v", err)
@@ -1515,14 +1515,14 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 				glog.V(5).Infof("Retrying process restoring the network connection with the parents for service %v.", lc.Name)
 				if ms_parents_containers, err := b.findParentContainersForService(lc.Name); err != nil {
 					eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC, lc.Name, err),
+						persistence.NewMessageMeta(EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC, lc.Name, err.Error()),
 						persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
 						lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 					glog.Errorf("Failed to get a list of parent containers for service retry for %v. %v", lc.Name, err)
 				} else {
 					if err := b.connectContainers(lc.Name, ms_parents_containers); err != nil {
 						eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-							persistence.NewMessageMeta(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT, lc.Name, err),
+							persistence.NewMessageMeta(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT, lc.Name, err.Error()),
 							persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
 							lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
 						glog.Errorf("Failed to restoring the network connection with the parents for service %v. %v", lc.Name, err)

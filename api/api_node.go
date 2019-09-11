@@ -52,7 +52,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &newDevice); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_REG, string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_REG, string(body), err.Error()),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
@@ -69,7 +69,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			if newDevice.Id != nil {
 				dev_id = *newDevice.Id
 			}
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_REG, dev_id, err), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_REG, dev_id, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, &newDevice)
 			return errorHandler(err)
 		}
 
@@ -92,7 +92,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &device); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE, body, err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE, body, err.Error()),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "device"))
 			return
@@ -103,7 +103,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 			if device.Id != nil {
 				dev_id = *device.Id
 			}
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UPDATE, dev_id, err),
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UPDATE, dev_id, err.Error()),
 				persistence.EC_ERROR_NODE_UPDATE, &device)
 			return errorHandler(err)
 		}
@@ -185,7 +185,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		// make sure current exchange version meet the requirement
 		if err := version.VerifyExchangeVersion(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetExchangeId(), a.GetExchangeToken(), false); err != nil {
 			eventlog.LogExchangeEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_IN_VERIFY_EXCH_VERSION, err),
+				persistence.NewMessageMeta(EL_API_ERR_IN_VERIFY_EXCH_VERSION, err.Error()),
 				persistence.EC_EXCHANGE_ERROR, a.GetExchangeURL())
 			errorHandler(NewSystemError(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			return
@@ -202,7 +202,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &configState); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG, string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG, string(body), err.Error()),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body couldn't be deserialized to %v object: %v, error: %v", resource, string(body), err), "configstate"))
 			return
@@ -268,14 +268,14 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodePolicy); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY, string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY, string(body), err.Error()),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 			return
 		}
 
 		update_node_policy_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_CREATE, err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_CREATE, err.Error()), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
 			return errorHandler(err)
 		}
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
@@ -308,14 +308,14 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 			err := json.Unmarshal(body, &propertyList)
 			if err != nil {
 				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH, string(body), err),
+					persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH, string(body), err.Error()),
 					persistence.EC_API_USER_INPUT_ERROR, nil)
 				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 				return
 			}
 			if _, ok := propertyList["properties"]; !ok {
 				LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR, string(body), err),
+					persistence.NewMessageMeta(EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR, string(body), err.Error()),
 					persistence.EC_API_USER_INPUT_ERROR, nil)
 				errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 				return
@@ -323,7 +323,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		}
 
 		patch_node_policy_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_PATCH, err), persistence.EC_ERROR_NODE_POLICY_PATCH, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_PATCH, err.Error()), persistence.EC_ERROR_NODE_POLICY_PATCH, device)
 			return errorHandler(err)
 		}
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
@@ -358,7 +358,7 @@ func (a *API) nodepolicy(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		delete_node_policy_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_DEL, err), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_POLICY_DEL, err.Error()), persistence.EC_ERROR_NODE_POLICY_UPDATE, device)
 			return errorHandler(err)
 		}
 		nodeGetPolicyHandler := exchange.GetHTTPNodePolicyHandler(a)
@@ -423,14 +423,14 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err.Error()),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 			return
 		}
 
 		update_node_userinput_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_UPDATE, err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_UPDATE, err.Error()), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
 			return errorHandler(err)
 		}
 		getDevice := exchange.GetHTTPDeviceHandler(a)
@@ -460,14 +460,14 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		body, _ := ioutil.ReadAll(r.Body)
 		if err := json.Unmarshal(body, &nodeUserInput); err != nil {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err),
+				persistence.NewMessageMeta(EL_API_ERR_PARSING_INPUT_FOR_NODE_UI, string(body), err.Error()),
 				persistence.EC_API_USER_INPUT_ERROR, nil)
 			errorHandler(NewAPIUserInputError(fmt.Sprintf("Input body could not be deserialized to %v object: %v, error: %v", resource, string(body), err), "body"))
 			return
 		}
 
 		patch_node_userinput_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_PATCH, err), persistence.EC_ERROR_NODE_USERINPUT_PATCH, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_PATCH, err.Error()), persistence.EC_ERROR_NODE_USERINPUT_PATCH, device)
 			return errorHandler(err)
 		}
 
@@ -495,7 +495,7 @@ func (a *API) nodeuserinput(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v", r.Method, resource)))
 
 		delete_node_userinput_error_handler := func(device interface{}, err error) bool {
-			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_DEL, err), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
+			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UI_DEL, err.Error()), persistence.EC_ERROR_NODE_USERINPUT_UPDATE, device)
 			return errorHandler(err)
 		}
 		getDevice := exchange.GetHTTPDeviceHandler(a)

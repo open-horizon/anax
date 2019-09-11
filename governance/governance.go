@@ -148,7 +148,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			if ags, err := persistence.FindEstablishedAgreements(w.db, lc.AgreementProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(lc.AgreementId)}); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", lc.AgreementId, err)))
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, lc.AgreementId, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, lc.AgreementId, err.Error()),
 					persistence.EC_DATABASE_ERROR)
 			} else if len(ags) != 1 {
 				glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database.", lc.AgreementId)))
@@ -375,7 +375,7 @@ func (w *GovernanceWorker) governAgreements() {
 					if recorded, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err),
+							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err.Error()),
 							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
 							ag)
 					} else {
@@ -570,7 +570,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 	if agreements, err := persistence.FindEstablishedAgreements(w.db, agreementProtocol, filters); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error getting agreement %v from db: %v.", agreementId, err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agreementId, err),
+			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agreementId, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 	} else if len(agreements) == 0 {
 		glog.Errorf(logString(fmt.Sprintf("no record found for agreement: %v in db.", agreementId)))
@@ -582,7 +582,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 			if _, err := persistence.AgreementStateTerminated(w.db, agreementId, uint64(reason), desc, agreementProtocol); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marking agreement %v terminated: %v.", agreementId, err)))
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_MARK_AG_TERMINATED_IN_DB, agreementId, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_MARK_AG_TERMINATED_IN_DB, agreementId, err.Error()),
 					persistence.EC_DATABASE_ERROR)
 			}
 		}
@@ -594,7 +594,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 				eventlog.LogAgreementEvent(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_DEL_AG_IN_EXCH, ag.RunningWorkload.URL, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_DEL_AG_IN_EXCH, ag.RunningWorkload.URL, err.Error()),
 					persistence.EC_ERROR_DELETE_AGREEMENT_IN_EXCHANGE,
 					*ag)
 
@@ -943,7 +943,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				if ags, err = persistence.FindEstablishedAgreements(w.db, msgProtocol, []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(canReceived.AgreementId())}); err != nil {
 					glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", canReceived.AgreementId(), err)))
 					eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_CANM, canReceived.AgreementId(), err),
+						persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB_FOR_CANM, canReceived.AgreementId(), err.Error()),
 						persistence.EC_DATABASE_ERROR)
 				} else if len(ags) != 1 {
 					glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, agreement not found", canReceived.AgreementId())))
@@ -1000,7 +1000,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 						eventlog.LogDatabaseEvent(
 							w.db,
 							persistence.SEVERITY_ERROR,
-							persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agid, err),
+							persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_AG_FROM_DB, agid, err.Error()),
 							persistence.EC_DATABASE_ERROR)
 					} else if len(ags) != 1 {
 						glog.Warningf(logString(fmt.Sprintf("unable to retrieve single agreement %v from database, error %v", agid, err)))
@@ -1447,7 +1447,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 			eventlog.LogAgreementEvent(
 				w.db,
 				persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err),
+				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err.Error()),
 				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
 				*ag)
 			return err
@@ -1494,7 +1494,7 @@ func (w *GovernanceWorker) processDependencies(dependencyPath []persistence.Serv
 		fullPath := append(dependencyPath, *persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version))
 		if err := w.startDependentService(fullPath, msdef, agreementId, protocol); err != nil {
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC_FOR_AG, msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err),
+				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC_FOR_AG, msdef.Org, msdef.SpecRef, msdef.Version, agreementId, err.Error()),
 				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
 				"", msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{agreementId})
 		}
@@ -1531,7 +1531,7 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 	patternDef, err := exchange.GetHTTPExchangePatternHandler(w)(pattern_org, pattern_name)
 	if err != nil {
 		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC_ERR_SEARCH_PATTERN, w.devicePattern, err),
+			persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC_ERR_SEARCH_PATTERN, w.devicePattern, err.Error()),
 			persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 			"", "", "", "", "", []string{})
 		glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less services, error searching for pattern %v in exchange, error: %v", w.devicePattern, err)))
@@ -1569,7 +1569,7 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 			// Find the microservice definition for this service.
 			if msdefs, err := persistence.FindUnarchivedMicroserviceDefs(w.db, service.ServiceURL, service.ServiceOrg); err != nil {
 				eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL, err),
+					persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL, err.Error()),
 					persistence.EC_DATABASE_ERROR)
 				glog.Errorf(logString(fmt.Sprintf("Unable to start agreement-less service %v/%v, error %v", service.ServiceOrg, service.ServiceURL, err)))
 				return
@@ -1587,7 +1587,7 @@ func (w *GovernanceWorker) startAgreementLessServices() {
 
 				if err := w.startDependentService(instancePath, &msdefs[0], "", policy.BasicProtocol); err != nil {
 					eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL, err),
+						persistence.NewMessageMeta(EL_GOV_ERR_START_AGLESS_SVC, service.ServiceOrg, service.ServiceURL, err.Error()),
 						persistence.EC_ERROR_START_AGREEMENTLESS_SERVICE,
 						"", service.ServiceURL, service.ServiceOrg, versions, service.ServiceArch, []string{})
 
@@ -1790,7 +1790,7 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 
 	if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB, err),
+			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 		return fmt.Errorf(logString(fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err)))
 	} else {
@@ -1808,7 +1808,7 @@ func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
 					if _, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
 						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err),
+							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err.Error()),
 							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
 							ag)
 						veryfication_failed = true

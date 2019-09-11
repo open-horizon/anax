@@ -69,7 +69,7 @@ func UpdateConfigstate(cfg *Configstate,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_READ_NODE_FROM_DB, err), persistence.EC_DATABASE_ERROR)
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_READ_NODE_FROM_DB, err.Error()), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err))), nil, nil
 	} else if pDevice == nil {
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_CONF_NOT_FOUND), persistence.EC_ERROR_NODE_CONFIG_REG, nil)
@@ -107,14 +107,14 @@ func UpdateConfigstate(cfg *Configstate,
 		common_apispec_list, pattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, true)
 
 		if err != nil {
-			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_GET_SREFS_FOR_PATTERN, pattern_name, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_GET_SREFS_FOR_PATTERN, pattern_name, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(err), nil, nil
 		}
 
 		// get node and pattern user input
 		nodeUserInput, err := persistence.FindNodeUserInput(db)
 		if err != nil {
-			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_GET_UI_FROM_DB, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_GET_UI_FROM_DB, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(fmt.Errorf("Failed get user input from local db. %v", err)), nil, nil
 		}
 
@@ -131,7 +131,7 @@ func UpdateConfigstate(cfg *Configstate,
 			// get the user input for this service
 			ui_merged, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
 			if err != nil {
-				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, apiSpec.Org, apiSpec.SpecRef, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, apiSpec.Org, apiSpec.SpecRef, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err)), nil, nil
 			}
 
@@ -155,7 +155,7 @@ func UpdateConfigstate(cfg *Configstate,
 			// get the user input for this service
 			ui_merged, err := policy.FindUserInput(service.ServiceURL, service.ServiceOrg, "", service.ServiceArch, mergedUserInput)
 			if err != nil {
-				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, service.ServiceOrg, service.ServiceURL, err), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, service.ServiceOrg, service.ServiceURL, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", service.ServiceOrg, service.ServiceURL, err)), nil, nil
 			}
 
@@ -172,7 +172,7 @@ func UpdateConfigstate(cfg *Configstate,
 	// Update the state in the local database
 	updatedDev, err := pDevice.SetConfigstate(db, pDevice.Id, *cfg.State)
 	if err != nil {
-		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SAVE_NODE_CONFSTATE, err), persistence.EC_DATABASE_ERROR)
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SAVE_NODE_CONFSTATE, err.Error()), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new config state: %v", err))), nil, nil
 	}
 
@@ -205,7 +205,7 @@ func configureService(service *Service,
 
 	create_service_error_handler := func(err error) bool {
 		if !strings.Contains(err.Error(), "Duplicate registration") {
-			LogServiceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SVC_CONF, *service.Url, err), persistence.EC_ERROR_SERVICE_CONFIG, service)
+			LogServiceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SVC_CONF, *service.Url, err.Error()), persistence.EC_ERROR_SERVICE_CONFIG, service)
 		}
 		return passthruHandler(err)
 	}
