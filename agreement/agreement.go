@@ -290,7 +290,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 		if newPolicy, err := policy.ReadPolicyFile(cmd.PolicyFile, w.Config.ArchSynonyms); err != nil {
 			eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_AG_UNABLE_READ_POL_FILE, cmd.PolicyFile, svcName, err),
+				persistence.NewMessageMeta(EL_AG_UNABLE_READ_POL_FILE, cmd.PolicyFile, svcName, err.Error()),
 				persistence.EC_ERROR_POLICY_ADVERTISING,
 				"", persistence.WorkloadInfo{}, []persistence.ServiceSpec{}, "", "")
 
@@ -311,7 +311,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			// Publish what we have for the world to see
 			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
 				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_AG_UNABLE_ADVERTISE_POL, newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef, err),
+					persistence.NewMessageMeta(EL_AG_UNABLE_ADVERTISE_POL, newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef, err.Error()),
 					persistence.EC_ERROR_POLICY_ADVERTISING,
 					"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 
@@ -486,7 +486,7 @@ func (w *AgreementWorker) heartBeat() int {
 
 				glog.Errorf(logString(fmt.Sprintf("node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err)))
 				eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_AG_NODE_HB_FAILED, nodeOrg, nodeId, err),
+					persistence.NewMessageMeta(EL_AG_NODE_HB_FAILED, nodeOrg, nodeId, err.Error()),
 					persistence.EC_NODE_HEARTBEAT_FAILED, nodeId, nodeOrg, "", "")
 
 				w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_FAILED, nodeOrg, nodeId)
@@ -529,7 +529,7 @@ func (w *AgreementWorker) NodePolicyUpdated() {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_POL_FROM_DB, err),
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_POL_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 		return
 	}
@@ -559,7 +559,7 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err),
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 		return 0
 	} else if pDevice == nil {
@@ -573,7 +573,7 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {
 			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH, err),
+				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH, err.Error()),
 				persistence.EC_ERROR_NODE_POLICY_UPDATE,
 				exchange.GetOrg(w.GetExchangeId()),
 				exchange.GetId(w.GetExchangeId()),
@@ -612,7 +612,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err),
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 		return 0
 	} else if pDevice == nil {
@@ -626,7 +626,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {
 			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH, err),
+				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH, err.Error()),
 				persistence.EC_ERROR_NODE_POLICY_UPDATE,
 				exchange.GetOrg(w.GetExchangeId()),
 				exchange.GetId(w.GetExchangeId()),

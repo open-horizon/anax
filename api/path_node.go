@@ -307,7 +307,7 @@ func DeleteHorizonDevice(removeNode string,
 	// to the HTTP response.
 	pDevice, err := persistence.FindExchangeDevice(db)
 	if err != nil {
-		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_READ_NODE_FROM_DB, err), persistence.EC_DATABASE_ERROR)
+		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_READ_NODE_FROM_DB, err.Error()), persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 	} else if pDevice == nil {
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_NOT_FOUND), persistence.EC_ERROR_NODE_UNREG, nil)
@@ -349,7 +349,7 @@ func DeleteHorizonDevice(removeNode string,
 	_, err = pDevice.SetConfigstate(db, pDevice.Id, persistence.CONFIGSTATE_UNCONFIGURING)
 	if err != nil {
 		eventlog.LogDatabaseEvent(db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_API_ERR_SAVE_NODE_CONF_TO_DB, err),
+			persistence.NewMessageMeta(EL_API_ERR_SAVE_NODE_CONF_TO_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting unconfiguring on node object: %v", err)))
 	}

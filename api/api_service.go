@@ -100,7 +100,7 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 			if service.Url != nil {
 				service_url = *service.Url
 			}
-			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_CONFIG_SVC, service_url, err), persistence.EC_ERROR_SERVICE_CONFIG, &service)
+			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_CONFIG_SVC, service_url, err.Error()), persistence.EC_ERROR_SERVICE_CONFIG, &service)
 			return errorhandler(err)
 		}
 
@@ -169,7 +169,7 @@ func (a *API) service_configstate(w http.ResponseWriter, r *http.Request) {
 
 		// error handler to save the event log and then pass the error to the default error handler.
 		service_configstate_error_handler := func(err error) bool {
-			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_CHANGE_SVC_CONFIGSTATE, resource, err), persistence.EC_ERROR_CHANGING_SERVICE_CONFIGSTATE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
+			LogServiceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_CHANGE_SVC_CONFIGSTATE, resource, err.Error()), persistence.EC_ERROR_CHANGING_SERVICE_CONFIGSTATE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))
 			return errorhandler(err)
 		}
 
