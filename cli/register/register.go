@@ -201,8 +201,20 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		if exchangePattern != "" && cliutils.AddOrg(org, pattern) != cliutils.AddOrg(org, exchangePattern) {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the exchange.", pattern, exchangePattern))
 		} else {
-			msgPrinter.Printf("Will proceeed with the given pattern %s.", pattern)
-			msgPrinter.Println()
+			var output exchange.GetPatternResponse
+			var patorg, patname string
+			patorg, patname = cliutils.TrimOrg(org, pattern)
+			httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+patorg+"/patterns"+cliutils.AddSlash(patname), cliutils.OrgAndCreds(patorg, userPw), []int{200, 404, 405}, &output)
+			if httpCode != 200 {
+				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s/%s' not found from the exchange.", patorg, patname))
+			}
+			pat := output.Patterns[patorg+"/"+patname]
+			if len(pat.Services) == 0 {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it does not include any services.", pattern))
+			} else {
+				msgPrinter.Printf("Will proceeed with the given pattern %s.", pattern)
+				msgPrinter.Println()
+			}
 		}
 	}
 
