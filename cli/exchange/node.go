@@ -13,6 +13,7 @@ import (
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 )
 
 // We only care about handling the node names, so the rest is left as interface{} and will be passed from the exchange to the display
@@ -123,8 +124,6 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 	var nodeOrg string
 	nodeOrg, node = cliutils.TrimOrg(org, node)
 
-	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
-
 	//check that the node exists
 	var nodeReq ExchangeNodes
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodeReq)
@@ -132,9 +131,27 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Node %s/%s not found in the Horizon Exchange.", nodeOrg, node))
 	}
 
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, attribute)
-	msgPrinter.Printf("Node %s updated in the Horizon Exchange.", node)
-	msgPrinter.Println()
+	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+
+	findPatchType := make(map[string]interface{})
+	json.Unmarshal([]byte(attribute), &findPatchType)
+
+	if _, ok := findPatchType["userInput"]; ok {
+
+		patch := make(map[string][]policy.UserInput)
+		err := json.Unmarshal([]byte(attribute), &patch)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+		}
+		msgPrinter.Printf("Updating Node %v/%v in the Horizon Exchange and re-evaluating all agreements based on this update. Existing agreements might be cancelled and re-negotiated.", nodeOrg, node)
+		msgPrinter.Println()
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, patch)
+		msgPrinter.Printf("Node %s/%s updated in the Horizon Exchange.", nodeOrg, node)
+		msgPrinter.Println()
+	} else {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node attribute to be updated is not found in the input file. Supported attributes are: userInput."))
+	}
+
 }
 
 type NodeExchangePatchToken struct {
