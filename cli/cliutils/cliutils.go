@@ -436,7 +436,8 @@ func ConfirmRemove(question string) {
 		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("Error scanning input, error %v", err))
 	}
 	if strings.TrimSpace(response) != "y" {
-		i18n.GetMessagePrinter().Println("Exiting.")
+		i18n.GetMessagePrinter().Printf("Exiting.")
+		i18n.GetMessagePrinter().Println()
 		os.Exit(0)
 	}
 }

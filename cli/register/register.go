@@ -153,7 +153,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		if err != nil {
 			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("could not create a random token"))
 		}
-		msgPrinter.Println("Generated random node token")
+		msgPrinter.Printf("Generated random node token")
+		msgPrinter.Println()
 	}
 	nodeIdTok = nodeId + ":" + nodeToken
 
@@ -208,12 +209,14 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	// Update node policy if specified
 	if nodepolicyFlag != "" {
-		msgPrinter.Println("Updating the node policy...")
+		msgPrinter.Printf("Updating the node policy...")
+		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId+"/policy", cliutils.OrgAndCreds(org, nodeIdTok), []int{201}, nodePol)
 	}
 
 	// Initialize the Horizon device (node)
-	msgPrinter.Println("Initializing the Horizon node...")
+	msgPrinter.Printf("Initializing the Horizon node...")
+	msgPrinter.Println()
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
 	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
@@ -230,7 +233,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
 		attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
 		if len(inputFileStruct.Global) > 0 {
-			msgPrinter.Println("Setting global variables...")
+			msgPrinter.Printf("Setting global variables...")
+			msgPrinter.Println()
 		}
 		for _, g := range inputFileStruct.Global {
 			attr.Type = &g.Type
@@ -251,7 +255,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		emptyStr := ""
 		service := api.Service{Name: &emptyStr} // we reuse this too
 		if len(inputFileStruct.Services) > 0 {
-			msgPrinter.Println("Setting service variables...")
+			msgPrinter.Printf("Setting service variables...")
+			msgPrinter.Println()
 		}
 		for _, m := range inputFileStruct.Services {
 			service.Org = &m.Org
@@ -271,11 +276,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	} else {
 		// Technically an input file is not required, but it is not the common case, so warn them
-		msgPrinter.Println("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
+		msgPrinter.Printf("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
+		msgPrinter.Println()
 	}
 
 	// Set the pattern and register the node
-	msgPrinter.Println("Changing Horizon state to configured to register this node with Horizon...")
+	msgPrinter.Printf("Changing Horizon state to configured to register this node with Horizon...")
+	msgPrinter.Println()
 	configuredStr := "configured"
 	configState := api.Configstate{State: &configuredStr}
 	httpCode, respBody := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState)
@@ -291,7 +298,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
 	}
 
-	msgPrinter.Println("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+	msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+	msgPrinter.Println()
 }
 
 func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string) (string, string) {

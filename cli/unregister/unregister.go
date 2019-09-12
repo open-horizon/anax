@@ -30,7 +30,8 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
 	if horDevice.Org == nil || *horDevice.Org == "" {
-		msgPrinter.Println("The node is not registered.")
+		msgPrinter.Printf("The node is not registered.")
+		msgPrinter.Println()
 
 		// still allow deep clean, just in case the node is in a strange state and the user really want to clean it up.
 		if deepClean {
@@ -40,7 +41,8 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 		}
 	} else {
 		// start unregistering the node
-		msgPrinter.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
+		msgPrinter.Printf("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
+		msgPrinter.Println()
 
 		//call horizon DELETE /node api, timeout in 3 minutes.
 		unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
@@ -62,7 +64,8 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 			if err := CheckNodeConfigState(180); err != nil {
 				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
 			} else {
-				msgPrinter.Println("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
+				msgPrinter.Printf("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
+				msgPrinter.Println()
 			}
 		}
 	}
@@ -129,20 +132,24 @@ func DeepClean() error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	msgPrinter.Println("Starting external deep clean ...")
+	msgPrinter.Printf("Starting external deep clean ...")
+	msgPrinter.Println()
 	cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
 	cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
 
-	msgPrinter.Println("Deleting local horizon DB...")
+	msgPrinter.Printf("Deleting local horizon DB...")
+	msgPrinter.Println()
 	cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
 	cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
 
-	msgPrinter.Println("Deleting service containers...")
+	msgPrinter.Printf("Deleting service containers...")
+	msgPrinter.Println()
 	if err := RemoveServiceContainers(); err != nil {
 		fmt.Printf(err.Error())
 	}
 
-	msgPrinter.Println("Starting horizon...")
+	msgPrinter.Printf("Starting horizon...")
+	msgPrinter.Println()
 	cliutils.RunCmd(nil, "systemctl", "start", "horizon.service")
 	return nil
 }
@@ -152,7 +159,8 @@ func CheckNodeConfigState(timeout uint64) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	msgPrinter.Println("Checking the node configuration state...")
+	msgPrinter.Printf("Checking the node configuration state...")
+	msgPrinter.Println()
 	now := uint64(time.Now().Unix())
 	for uint64(time.Now().Unix())-now < timeout {
 		horDevice := api.HorizonDevice{}

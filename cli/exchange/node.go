@@ -197,7 +197,8 @@ func NodeConfirm(org, node, token string, nodeIdTok string) {
 
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node, cliutils.OrgAndCreds(org, node+":"+token), []int{200}, nil)
 	if httpCode == 200 {
-		msgPrinter.Println("Node id and token are valid.")
+		msgPrinter.Printf("Node id and token are valid.")
+		msgPrinter.Println()
 	}
 	// else cliutils.ExchangeGet() already gave the error msg
 }
@@ -272,11 +273,12 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	}
 
 	// add/replce node policy
-	msgPrinter.Println("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
+	msgPrinter.Printf("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
-	msgPrinter.Println("Node policy updated.")
+	msgPrinter.Printf("Node policy updated.")
+	msgPrinter.Println()
 }
 
 func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
@@ -363,7 +365,8 @@ func NodeRemovePolicy(org, credToUse, node string, force bool) {
 	msgPrinter.Printf("Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
-	msgPrinter.Println("Node policy removed.")
+	msgPrinter.Printf("Node policy removed.")
+	msgPrinter.Println()
 
 }
 
