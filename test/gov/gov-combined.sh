@@ -589,6 +589,48 @@ else
   echo -e "Unconfig loop tests are disabled."
 fi
 
+# Clean up remote environment
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+  echo "Clean up remote environment"
+  echo "Delete e2edev@somecomp.com..."
+  DL8ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" -d '{"label":"E2EDev","description":"E2EDevTest","orgType":"IBM"}' "${EXCH_URL}/orgs/e2edev@somecomp.com" | jq -r '.msg')
+  echo "$DL8ORG"
+
+  echo "Delete userdev organization..."
+  DL8UORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
+  echo "$DL8UORG"
+
+  echo "Delete Customer1 organization..."
+  DL8C1ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
+  echo "$DL8C1ORG"
+
+  echo "Delete Customer2 organization..."
+  DL8C2ORG=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
+  echo "$DL8C2ORG"
+
+  # Delete an IBM admin user in the exchange
+  echo "Delete an admin user for IBM org..."
+  DL8IBM=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
+  echo "$DL8IBM"
+
+  # Delete agreement bot user in the exchange
+  echo "Delete Agbot user..."
+  DL8AGBOT=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -H "Authorization:Basic root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
+  echo "$DL8AGBOT"
+
+  echo "Delete network_1.5.0 user..."
+  DL150=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "$DL150"
+
+  echo "Delete network2_1.5.0 user..."
+  DL2150=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "$DL2150"
+
+  echo "Delete helm-service_1.0.0 user..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "$DLHELM100"
+fi
+
 if [ "$NOLOOP" == "1" ]; then
   if [ "$TESTFAIL" != "1" ]; then
     echo "All tests SUCCESSFUL"
