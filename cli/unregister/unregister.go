@@ -26,29 +26,44 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to unregister this Horizon node?"))
 	}
 
-	msgPrinter.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
+	// get the node
+	horDevice := api.HorizonDevice{}
+	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+	if horDevice.Org == nil || *horDevice.Org == "" {
+		msgPrinter.Println("The node is not registered.")
 
-	//call horizon DELETE /node api, timeout in 3 minutes.
-	unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
-	if unregErr != nil {
-		fmt.Println(unregErr.Error())
-	}
-
-	// deep clean if anax failed to do it
-	if deepClean && unregErr != nil {
-		if err := DeepClean(); err != nil {
-			fmt.Println(err.Error())
-		} else {
-			unregErr = nil
+		// still allow deep clean, just in case the node is in a strange state and the user really want to clean it up.
+		if deepClean {
+			if err := DeepClean(); err != nil {
+				fmt.Println(err.Error())
+			}
 		}
-	}
+	} else {
+		// start unregistering the node
+		msgPrinter.Println("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
 
-	// check the new node config state
-	if unregErr == nil {
-		if err := CheckNodeConfigState(180); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
-		} else {
-			msgPrinter.Println("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
+		//call horizon DELETE /node api, timeout in 3 minutes.
+		unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
+		if unregErr != nil {
+			fmt.Println(unregErr.Error())
+		}
+
+		// deep clean if anax failed to do it
+		if deepClean && unregErr != nil {
+			if err := DeepClean(); err != nil {
+				fmt.Println(err.Error())
+			} else {
+				unregErr = nil
+			}
+		}
+
+		// check the new node config state
+		if unregErr == nil {
+			if err := CheckNodeConfigState(180); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+			} else {
+				msgPrinter.Println("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
+			}
 		}
 	}
 }

@@ -647,11 +647,12 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, quiet bool) (httpCode 
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 	if !isGoodCode(httpCode, goodHttpCodes) {
+		err_msg := msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
 		if quiet {
-			retError = fmt.Errorf(msgPrinter.Sprintf("Failed to read body response from %s: %v", apiMsg, err))
+			retError = fmt.Errorf(err_msg)
 			return
 		} else {
-			Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body)))
+			Fatal(HTTP_ERROR, err_msg)
 		}
 	}
 	return
