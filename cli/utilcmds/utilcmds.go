@@ -28,10 +28,12 @@ func Verify(pubKeyFilePath, signature string) {
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem verifying deployment string with %s: %v", pubKeyFilePath, err))
 	} else if !verified {
-		msgPrinter.Println("This is not a valid signature for stdin.")
+		msgPrinter.Printf("This is not a valid signature for stdin.")
+		msgPrinter.Println()
 		os.Exit(cliutils.SIGNATURE_INVALID)
 	} else {
-		msgPrinter.Println("Signature is valid.")
+		msgPrinter.Printf("Signature is valid.")
+		msgPrinter.Println()
 	}
 }
 

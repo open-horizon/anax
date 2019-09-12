@@ -133,7 +133,8 @@ func AgreementCancel(agreementId string, allAgreements bool) {
 			agrIds = append(agrIds, a.CurrentAgreementId)
 		}
 		if len(agrIds) == 0 {
-			msgPrinter.Println("No active agreements to cancel.")
+			msgPrinter.Printf("No active agreements to cancel.")
+			msgPrinter.Println()
 		}
 	} else {
 		if agreementId == "" {

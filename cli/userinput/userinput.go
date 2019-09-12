@@ -62,7 +62,8 @@ func Add(filePath string) {
 	}
 
 	cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, inputs)
-	msgPrinter.Println("Horizon node user inputs updated.")
+	msgPrinter.Printf("Horizon node user inputs updated.")
+	msgPrinter.Println()
 }
 
 //Update the userinputs for this node
@@ -79,7 +80,8 @@ func Update(filePath string) {
 	}
 
 	cliutils.HorizonPutPost(http.MethodPatch, "node/userinput", []int{200, 201}, inputs)
-	msgPrinter.Println("Horizon node user inputs updated.")
+	msgPrinter.Printf("Horizon node user inputs updated.")
+	msgPrinter.Println()
 }
 
 //Remove the user inputs for this nose
@@ -93,5 +95,6 @@ func Remove(force bool) {
 
 	cliutils.HorizonDelete("node/userinput", []int{200, 204}, false)
 
-	msgPrinter.Println("Horizon user inputs removed.")
+	msgPrinter.Printf("Horizon user inputs removed.")
+	msgPrinter.Println()
 }

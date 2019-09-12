@@ -265,7 +265,8 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 
 		// Construct and sign the deployment string.
-		msgPrinter.Println("Signing service...")
+		msgPrinter.Printf("Signing service...")
+		msgPrinter.Println()
 
 		// Setup the Plugin context with variables that might be needed by 1 or more of the plugins.
 		ctx := plugin_registry.NewPluginContext()
@@ -358,7 +359,8 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		if imageList, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(sf.Deployment); err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get container images from deployment: %v", err))
 		} else if len(imageList) > 0 {
-			msgPrinter.Println("If you haven't already, push your docker images to the registry:")
+			msgPrinter.Printf("If you haven't already, push your docker images to the registry:")
+			msgPrinter.Println()
 			for _, image := range imageList {
 				fmt.Printf("  docker push %s\n", image)
 			}
@@ -406,7 +408,8 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 	if someInvalid {
 		os.Exit(cliutils.SIGNATURE_INVALID)
 	} else {
-		msgPrinter.Println("All signatures verified")
+		msgPrinter.Printf("All signatures verified")
+		msgPrinter.Println()
 	}
 }
 
@@ -573,8 +576,10 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	serviceArch := serviceFromExchange.Arch
 
 	// Set default built in properties before publishing to the exchange
-	msgPrinter.Println("Adding built-in property values...")
-	msgPrinter.Println("The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch")
+	msgPrinter.Printf("Adding built-in property values...")
+	msgPrinter.Println()
+	msgPrinter.Printf("The following property value will be overriden: service.url, service.name, service.org, service.version, service.arch")
+	msgPrinter.Println()
 
 	properties := policyFile.Properties
 	properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_URL, serviceName), true)
@@ -596,7 +601,8 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	msgPrinter.Println()
 	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
-	msgPrinter.Println("Service policy updated.")
+	msgPrinter.Printf("Service policy updated.")
+	msgPrinter.Println()
 }
 
 //ServiceRemovePolicy removes the service policy in the exchange
@@ -624,7 +630,8 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 	msgPrinter.Printf("Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
-	msgPrinter.Println("Service policy removed.")
+	msgPrinter.Printf("Service policy removed.")
+	msgPrinter.Println()
 }
 
 // Display an empty service policy template as an object.
