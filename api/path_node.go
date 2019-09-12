@@ -311,7 +311,7 @@ func DeleteHorizonDevice(removeNode string,
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to read node object, error %v", err)))
 	} else if pDevice == nil {
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_NOT_FOUND), persistence.EC_ERROR_NODE_UNREG, nil)
-		return errorhandler(NewNotFoundError("Exchange registration not recorded. Complete account and device registration with an exchange and then record device registration using this API.", "node"))
+		return errorhandler(NewNotFoundError("The node is not registered.", "node"))
 	} else if !pDevice.IsState(persistence.CONFIGSTATE_CONFIGURED) && !pDevice.IsState(persistence.CONFIGSTATE_CONFIGURING) {
 		LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_NODE_UNREG_NOT_IN_STATE), persistence.EC_ERROR_NODE_UNREG, pDevice)
 		return errorhandler(NewBadRequestError(fmt.Sprintf("The node must be in configured or configuring state in order to unconfigure it.")))
