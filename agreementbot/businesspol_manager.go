@@ -384,7 +384,7 @@ func (pm *BusinessPolicyManager) SetCurrentBusinessPolicies(servedPols map[strin
 	for org, _ := range pm.OrgPolicies {
 		if !pm.serveOrg(org) {
 			// delete org and all policy files in it.
-			glog.V(5).Infof("Deletinging the org %v from the policy manager because it is no longer hosted by the agbot.", org)
+			glog.V(5).Infof("Deleting the org %v from the policy manager because it is no longer hosted by the agbot.", org)
 			if err := pm.deleteOrg(org, polManager); err != nil {
 				return err
 			}
@@ -411,7 +411,7 @@ func (pm *BusinessPolicyManager) UpdatePolicies(org string, definedPolicies map[
 	// This is the case where business policy or the org has been deleted but the agbot still hosts the policy on the exchange.
 	if definedPolicies == nil || len(definedPolicies) == 0 {
 		// delete org and all policy files in it.
-		glog.V(5).Infof("Deletinging the org %v from the policy manager because it does not contain a business policy.", org)
+		glog.V(5).Infof("Deleting the org %v from the policy manager because it does not contain a business policy.", org)
 		return pm.deleteOrg(org, polManager)
 	}
 
@@ -429,7 +429,7 @@ func (pm *BusinessPolicyManager) UpdatePolicies(org string, definedPolicies map[
 		}
 
 		if need_delete {
-			glog.V(5).Infof("Deletinging business policy %v from the org %v from the policy manager because the policy no longer exists.", polName, org)
+			glog.V(5).Infof("Deleting business policy %v from the org %v from the policy manager because the policy no longer exists.", polName, org)
 			if err := pm.deleteBusinessPolicy(org, polName, polManager); err != nil {
 				glog.Errorf("Error deleting business policy %v from the org %v in the policy manager. Error: %v", polName, org, err)
 				continue
