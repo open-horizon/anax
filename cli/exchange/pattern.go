@@ -358,7 +358,8 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	if someInvalid {
 		os.Exit(cliutils.SIGNATURE_INVALID)
 	} else {
-		msgPrinter.Println("All signatures verified")
+		msgPrinter.Printf("All signatures verified")
+		msgPrinter.Println()
 	}
 }
 

@@ -455,7 +455,7 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 	}
 
 	defer resp.Body.Close()
-	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", resp.StatusCode))
+	cliutils.Verbose(msgPrinter.Sprintf("Received HTTP code: %d", resp.StatusCode))
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return errors.New(msgPrinter.Sprintf("unable to PUT file %v into CSS, HTTP code %v", *metadata, resp.StatusCode))

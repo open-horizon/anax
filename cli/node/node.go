@@ -102,7 +102,8 @@ func Version() {
 		if err != nil {
 			cliutils.Verbose(err.Error())
 		}
-		msgPrinter.Println("Horizon Agent version: failed to get.")
+		msgPrinter.Printf("Horizon Agent version: failed to get.")
+		msgPrinter.Println()
 	}
 }
 

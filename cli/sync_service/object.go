@@ -34,7 +34,7 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 	cliutils.SetWhetherUsingApiKey(userPw)
 
 	// If object ID is omitted, query all objects of the given type.
-	if objId == "" {
+	if !details {
 		objectList := new(exchange.ObjectDestinationPolicies)
 		urlPath := path.Join("api/v1/objects/", org, objType, "?all_objects=true")
 
@@ -44,10 +44,25 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("no objects type '%s' found in org %s", objType, org))
 		}
 
-		output := cliutils.MarshalIndent(objectList, "mms object list")
+		output := ""
+		if objId == "" {
+			output = cliutils.MarshalIndent(objectList, "mms object list")
+		} else {
+			// Find the specified object
+			for _, obj := range *objectList {
+				if obj.ObjectID == objId {
+					output = cliutils.MarshalIndent(obj, cliutils.JSON_INDENT)
+					break
+				}
+			}
+			if output == "" {
+				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Object %s type %s not found in org %s", objId, objType, org))
+			}
+		}
 		fmt.Println(output)
 
 	} else {
+		// If the user wants additional details, provide the destination information from the destination API.
 		// Display the full object metadata.
 		var objectMeta common.MetaData
 
@@ -64,24 +79,19 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 			Definition: objectMeta,
 		}
 
-		// If the user wants additional details, provide the destination information from the destination API.
-		if details {
+		// Display the full object metadata.
+		var objectDests []common.DestinationsStatus
 
-			// Display the full object metadata.
-			var objectDests []common.DestinationsStatus
+		// Construct the URL path the additional destination detail.
+		urlPath = path.Join("api/v1/objects/", org, objType, objId, "destinations")
 
-			// Construct the URL path the additional destination detail.
-			urlPath := path.Join("api/v1/objects/", org, objType, objId, "destinations")
-
-			// Call the MMS service over HTTP to get the object's destination status.
-			httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
-			if httpCode == 404 {
-				cliutils.Verbose(msgPrinter.Sprintf("destination detail for object '%s' of type '%s' not found in org %s", objId, objType, org))
-			}
-
-			mmsObjectInfo.Destinations = objectDests
-
+		// Call the MMS service over HTTP to get the object's destination status.
+		httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
+		if httpCode == 404 {
+			cliutils.Verbose(msgPrinter.Sprintf("destination detail for object '%s' of type '%s' not found in org %s", objId, objType, org))
 		}
+
+		mmsObjectInfo.Destinations = objectDests
 
 		output := cliutils.MarshalIndent(mmsObjectInfo, "mms object list")
 		fmt.Println(output)
