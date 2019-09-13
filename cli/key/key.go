@@ -174,10 +174,16 @@ func verifyAndPrepareKeyCreateInput(outputDir string, privKeyFile string, pubKey
 
 		// convert to absolute path
 		if privKeyFile, err = filepath.Abs(privKeyFile); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get absolute path for file %v. %v", privKeyFile, err))
+			// assign the value to a temporary variable for output string because the gloabalization does not take same string with different arguments.
+			kFileName := privKeyFile
+
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get absolute path for file %v. %v", kFileName, err))
 		}
 		if pubKeyFile, err = filepath.Abs(pubKeyFile); err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get absolute path for file %v. %v", pubKeyFile, err))
+			// assign the value to a temporary variable for output string because the gloabalization does not take same string with different arguments.
+			kFileName := pubKeyFile
+
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to get absolute path for file %v. %v", kFileName, err))
 		}
 
 		// confirm overwrite
