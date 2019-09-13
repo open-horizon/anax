@@ -1,6 +1,6 @@
 // NLS_CHARSET=UTF-8
 {
-  "language": "en",
+  "language": "pt-BR",
   "messages": [
     {
       "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
