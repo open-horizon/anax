@@ -1090,6 +1090,61 @@ func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 	}
 }
 
+func Test_DeepCopyPolicy(t *testing.T) {
+	pa := `{"header":{"name":"dep copy test","version": "2.0"},` +
+		`"patternId": "e2edev/pws1",` +
+		`"apiSpec":[{"specRef":"url.name","organization":"theOthg"}],` +
+		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
+		`"workloads":[{"priority":{"priority_value":3,"retries":1,"retry_durations":3600,"verified_durations":52},` +
+		`"workloadUrl":"https://bluehorizon.network/workloads/weather",` +
+		`"organization":"e2edev","version":"1.5.0","arch":"amd64"}],` +
+		`"valueExchange":{"type":"crypto-currency"},` +
+		`"dataVerification":{"enabled":true,"interval":240,"check_rate":15,"metering":{"tokens":1,"per_time_unit":"min","notification_interval":30}},` +
+		`"proposalRejection":{},` +
+		`"ha_group":{"partners":["p1","p2"]},` +
+		`"properties":[{"name":"pname","value":"pvalue"}],` +
+		`"constraints":["con1","con2"],` +
+		`"nodeHealth":{},` +
+		`"userInput":[{"serviceOrgid":"org1","serviceUrl":"url1","serviceArch":"amd64","serviceVersionRange":"1.0.0","inputs":[{"name":"iname","value":"123"}]}]}`
+
+	// Starting with a base policy, make a copy and then modify some of the deep inner fields
+	// and make sure those fields are not changed in the base.
+	basePolicy := create_Policy(pa, t)
+
+	copyPolicy := basePolicy.DeepCopy()
+
+	copyPolicy.APISpecs[0].Org = "foobar"
+	copyPolicy.AgreementProtocols[0].Name = "foobar"
+	copyPolicy.Workloads[0].Arch = "foobar"
+	copyPolicy.DataVerify.Metering.Tokens = 999
+	copyPolicy.Properties[0].Value = "foobar"
+	copyPolicy.Constraints[0] = "foobar"
+	copyPolicy.HAGroup.Partners[0] = "foobar"
+	copyPolicy.UserInput[0].ServiceOrgid = "foobar"
+	copyPolicy.UserInput[0].Inputs[0].Value = "foobar"
+
+	if copyPolicy.APISpecs[0].Org == basePolicy.APISpecs[0].Org {
+		t.Errorf("Error deep copy failed api spec test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.AgreementProtocols[0].Name == basePolicy.AgreementProtocols[0].Name {
+		t.Errorf("Error deep copy failed agp test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.Workloads[0].Arch == basePolicy.Workloads[0].Arch {
+		t.Errorf("Error deep copy failed arch test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.DataVerify.Metering.Tokens == basePolicy.DataVerify.Metering.Tokens {
+		t.Errorf("Error deep copy failed dataverify test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.Properties[0].Value == basePolicy.Properties[0].Value {
+		t.Errorf("Error deep copy failed property test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.Constraints[0] == basePolicy.Constraints[0] {
+		t.Errorf("Error deep copy failed constraint test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.HAGroup.Partners[0] == basePolicy.HAGroup.Partners[0] {
+		t.Errorf("Error deep copy failed hagroup test, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.UserInput[0].ServiceOrgid == basePolicy.UserInput[0].ServiceOrgid {
+		t.Errorf("Error deep copy failed userinput test 1, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.UserInput[0].Inputs[0].Value == basePolicy.UserInput[0].Inputs[0].Value {
+		t.Errorf("Error deep copy failed userinput test 2, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	}
+
+}
+
 // ================================================================================================================
 // Helper functions
 //

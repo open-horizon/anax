@@ -129,9 +129,12 @@ func (e MakeAgreementCommand) ShortString() string {
 }
 
 func NewMakeAgreementCommand(pPol policy.Policy, cPol policy.Policy, org string, polname string, dev exchange.SearchResultDevice, cachedServicePolicies map[string]externalpolicy.ExternalPolicy) *MakeAgreementCommand {
+
+	copiedConsumerPolicy := cPol.DeepCopy()
+
 	return &MakeAgreementCommand{
 		ProducerPolicy:     pPol,
-		ConsumerPolicy:     cPol,
+		ConsumerPolicy:     *copiedConsumerPolicy,
 		Org:                org,
 		ConsumerPolicyName: polname,
 		Device:             dev,

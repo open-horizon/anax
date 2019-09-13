@@ -88,9 +88,10 @@ func (w Workload) ShortString() string {
 		"Workload URL: %v, "+
 			"Version: %v, "+
 			"Org: %v, "+
+			"Arch: %v, "+
 			"Priority: %v, "+
 			"Deployment: %v",
-		w.WorkloadURL, w.Version, w.Org, w.Priority, w.Deployment)
+		w.WorkloadURL, w.Version, w.Org, w.Arch, w.Priority, w.Deployment)
 }
 
 // This function creates workload objects
