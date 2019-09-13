@@ -397,7 +397,7 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 
 	verified, err := verify.Input(keyFilePath, svc.DeploymentSignature, []byte(svc.Deployment))
 	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("problem verifying deployment string with %s: %v", keyFilePath, err))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("error verifying deployment string with %s: %v", keyFilePath, err))
 	} else if !verified {
 		msgPrinter.Printf("Deployment string was not signed with the private key associated with this public key %v.", keyFilePath)
 		msgPrinter.Println()
