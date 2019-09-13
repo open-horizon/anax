@@ -113,7 +113,7 @@ func ObjectNew(org string) {
 		`  "objectType": "",          /* ` + msgPrinter.Sprintf("Required: The type of the object.") + ` */`,
 		`  "destinationOrgID": "$HZN_ORG_ID", /* ` + msgPrinter.Sprintf("Required: The organization ID of the object (an object belongs to exactly one organization).") + ` */`,
 		`  "destinationID": "",       /* ` + msgPrinter.Sprintf("The node id (without org prefix) where the object should be placed.") + ` */`,
-		`                             /* ` + msgPrinter.Sprintf("If omitted the object is sent to all nodes the same destinationType.") + ` */`,
+		`                             /* ` + msgPrinter.Sprintf("If omitted the object is sent to all nodes with the same destinationType.") + ` */`,
 		`                             /* ` + msgPrinter.Sprintf("Delete this field when you are using destinationPolicy.") + ` */`,
 		`  "destinationType": "",     /* ` + msgPrinter.Sprintf("The pattern in use by nodes that should receive this object.") + ` */`,
 		`                             /* ` + msgPrinter.Sprintf("If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.") + ` */`,
