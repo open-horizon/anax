@@ -79,6 +79,46 @@ func Policy_Factory(name string) *Policy {
 	return p
 }
 
+func (self *Policy) DeepCopy() *Policy {
+	newPolicy := Policy_Factory(self.Header.Name)
+	newPolicy.PatternId = self.PatternId
+	newPolicy.APISpecs = make([]APISpecification, len(self.APISpecs))
+	copy(newPolicy.APISpecs, self.APISpecs)
+
+	newPolicy.AgreementProtocols = make([]AgreementProtocol, len(self.AgreementProtocols))
+	copy(newPolicy.AgreementProtocols, self.AgreementProtocols)
+
+	newPolicy.Workloads = make([]Workload, len(self.Workloads))
+	copy(newPolicy.Workloads, self.Workloads)
+
+	newPolicy.DeviceType = self.DeviceType
+	newPolicy.ValueEx = self.ValueEx
+	newPolicy.DataVerify = self.DataVerify
+	newPolicy.ProposalReject = self.ProposalReject
+	newPolicy.MaxAgreements = self.MaxAgreements
+
+	newPolicy.Properties = make([]externalpolicy.Property, len(self.Properties))
+	copy(newPolicy.Properties, self.Properties)
+
+	newPolicy.Constraints = make([]string, len(self.Constraints))
+	copy(newPolicy.Constraints, self.Constraints)
+
+	newPolicy.RequiredWorkload = self.RequiredWorkload
+
+	newPolicy.HAGroup = HighAvailabilityGroup{Partners: make([]string, len(self.HAGroup.Partners))}
+	copy(newPolicy.HAGroup.Partners, self.HAGroup.Partners)
+	newPolicy.NodeH = self.NodeH
+
+	for _, ui := range self.UserInput {
+		newUI := ui
+		newUI.Inputs = make([]Input, len(ui.Inputs))
+		copy(newUI.Inputs, ui.Inputs)
+		newPolicy.UserInput = append(newPolicy.UserInput, newUI)
+	}
+
+	return newPolicy
+}
+
 func (self *Policy) Add_API_Spec(spec *APISpecification) error {
 	if spec != nil {
 		return self.APISpecs.Add_API_Spec(spec)
