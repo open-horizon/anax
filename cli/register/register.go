@@ -205,7 +205,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			var output exchange.GetPatternResponse
 			var patorg, patname string
 			patorg, patname = cliutils.TrimOrg(org, pattern)
-			httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+patorg+"/patterns"+cliutils.AddSlash(patname), cliutils.OrgAndCreds(patorg, userPw), []int{200, 404, 405}, &output)
+			httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+patorg+"/patterns"+cliutils.AddSlash(patname), cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 404, 405}, &output)
 			if httpCode != 200 {
 				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s/%s' not found from the exchange.", patorg, patname))
 			}
