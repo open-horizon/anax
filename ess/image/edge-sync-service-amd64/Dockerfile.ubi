@@ -1,6 +1,8 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 
 # yum is not installed, use microdnf instead
+RUN microdnf update -y --nodocs && microdnf clean all
+
 RUN microdnf install -y --nodocs openssl ca-certificates \
 	&& microdnf clean all
 
