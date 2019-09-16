@@ -795,7 +795,7 @@ func TrustIcpCert(httpClient *http.Client) error {
 	if icpCertPath != "" {
 		icpCert, err := ioutil.ReadFile(icpCertPath)
 		if err != nil {
-			return fmt.Errorf("Encountered error reading ICP cert file %v: %v", icpCertPath, err)
+			Fatal(FILE_IO_ERROR, i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(icpCert)

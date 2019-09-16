@@ -34,7 +34,10 @@ func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErr
 			}
 		}
 
-		persistence.SaveSurfaceErrors(db, updatedExchLogs)
+		err = persistence.SaveSurfaceErrors(db, updatedExchLogs)
+		if err != nil {
+			glog.Errorf("Error saving surface errors to local db. %v", err)
+		}
 		return 0
 	}
 
@@ -52,7 +55,10 @@ func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErr
 		}
 	}
 
-	persistence.SaveSurfaceErrors(db, updatedExchLogs)
+	err = persistence.SaveSurfaceErrors(db, updatedExchLogs)
+	if err != nil {
+		glog.Errorf("Error saving surface errors to local db. %v", err)
+	}
 	PutExchangeSurfaceErrors(&pDevice, putErrors, updatedExchLogs)
 	return 0
 }
