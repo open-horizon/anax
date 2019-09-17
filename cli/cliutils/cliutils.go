@@ -1049,23 +1049,22 @@ func invokeRestApi(httpClient *http.Client, method string, url string, credentia
 			req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 		} // else it is an anonymous call
 
-		if resp, err := httpClient.Do(req); err != nil {
-			if exchange.IsTransportError(err) {
-				if retryCount <= 5 {
-					http_status := ""
-					if resp != nil {
-						http_status = resp.Status
-					}
-					Verbose(msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v. HTTP status: %v. Will retry.", err, service, apiMsg, http_status))
-					// retry for network tranport errors
-					time.Sleep(2 * time.Second)
-					continue
-				} else {
-					Fatal(HTTP_ERROR, msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v", err, service, apiMsg))
-				}
-			} else {
-				printHorizonServiceRestError(service, apiMsg, err)
+		resp, err := httpClient.Do(req)
+		if exchange.IsTransportError(resp, err) {
+			http_status := ""
+			if resp != nil {
+				http_status = resp.Status
 			}
+			if retryCount <= 5 {
+				Verbose(msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v. HTTP status: %v. Will retry.", err, service, apiMsg, http_status))
+				// retry for network tranport errors
+				time.Sleep(2 * time.Second)
+				continue
+			} else {
+				Fatal(HTTP_ERROR, msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v. HTTP status: %v.", err, service, apiMsg, http_status))
+			}
+		} else if err != nil {
+			printHorizonServiceRestError(service, apiMsg, err)
 		} else {
 			return resp
 		}
