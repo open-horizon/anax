@@ -57,6 +57,11 @@ const (
 	// default keys will be prepended with $HOME
 	DEFAULT_PRIVATE_KEY_FILE = ".hzn/keys/service.private.key"
 	DEFAULT_PUBLIC_KEY_FILE  = ".hzn/keys/service.public.pem"
+
+	// http request body types
+	HTTP_REQ_BODYTYPE_DEFAULT = 0
+	HTTP_REQ_BODYTYPE_BYTES   = 1
+	HTTP_REQ_BODYTYPE_FILE    = 2
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
@@ -955,21 +960,108 @@ func printHorizonServiceRestError(horizonService string, apiMethod string, err e
 
 }
 
+// creates an request body for http calls. Only PUT/PATCH/POST calls has request body.
+func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
+
+	bodyType := HTTP_REQ_BODYTYPE_DEFAULT
+
+	if body == nil {
+		return nil, 0, bodyType
+	}
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Prepare body
+	var jsonBytes []byte
+	bodyLen := 0
+
+	switch b := body.(type) {
+	// If the body is a byte array, we treat it like a file being uploaded (not multi-part)
+	case []byte:
+		jsonBytes = b
+		bodyType = HTTP_REQ_BODYTYPE_BYTES
+	case string:
+		jsonBytes = []byte(b)
+	case *os.File:
+		bodyType = HTTP_REQ_BODYTYPE_FILE
+	default:
+		var err error
+		jsonBytes, err = json.Marshal(body)
+		if err != nil {
+			Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal exchange body for %s: %v", apiMsg, err))
+		}
+	}
+
+	var requestBody io.Reader
+	if bodyType == HTTP_REQ_BODYTYPE_FILE {
+		requestBody = body.(*os.File)
+	} else {
+		requestBody = bytes.NewBuffer(jsonBytes)
+		bodyLen = len(jsonBytes)
+	}
+
+	return requestBody, bodyLen, bodyType
+}
+
 // invoke rest api call with retry
-func invokeRestApi(httpClient *http.Client, req *http.Request, service string, apiMsg string) *http.Response {
+func invokeRestApi(httpClient *http.Client, method string, url string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
+
 	TrustIcpCert(httpClient)
+
 	retryCount := 0
 	for {
 		retryCount++
+
+		// get message printer
+		msgPrinter := i18n.GetMessagePrinter()
+
+		// requestBody is nil if body is nil.
+		requestBody, bodyLen, bodyType := createRequestBody(body, apiMsg)
+
+		// Create the request and run it
+		req, err := http.NewRequest(method, url, requestBody)
+		if err != nil {
+			Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
+		}
+
+		req.Header.Add("Accept", "application/json")
+
+		// for PUT/PATCH/POST
+		if requestBody != nil {
+			if bodyType == HTTP_REQ_BODYTYPE_BYTES {
+				req.Header.Add("Content-Length", strconv.Itoa(bodyLen))
+			} else if bodyType == HTTP_REQ_BODYTYPE_FILE {
+				req.Header.Add("Content-Type", "application/octet-stream")
+			} else {
+				req.Header.Add("Content-Type", "application/json")
+			}
+		}
+
+		// add the language request to the http header
+		localeTag, err := i18n.GetLocale()
+		if err != nil {
+			localeTag = language.English
+		}
+		req.Header.Add("Accept-Language", localeTag.String())
+
+		if credentials != "" {
+			req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
+		} // else it is an anonymous call
+
 		if resp, err := httpClient.Do(req); err != nil {
 			if exchange.IsTransportError(err) {
 				if retryCount <= 5 {
-					Verbose(i18n.GetMessagePrinter().Sprintf("Encountered HTTP error: %v calling %v REST API %v. Will retry.", err, service, apiMsg))
+					http_status := ""
+					if resp != nil {
+						http_status = resp.Status
+					}
+					Verbose(msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v. HTTP status: %v. Will retry.", err, service, apiMsg, http_status))
 					// retry for network tranport errors
 					time.Sleep(2 * time.Second)
 					continue
 				} else {
-					Fatal(HTTP_ERROR, i18n.GetMessagePrinter().Sprintf("Encountered HTTP error: %v calling %v REST API %v", err, service, apiMsg))
+					Fatal(HTTP_ERROR, msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v", err, service, apiMsg))
 				}
 			} else {
 				printHorizonServiceRestError(service, apiMsg, err)
@@ -993,23 +1085,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
-	}
-	req.Header.Add("Accept", "application/json")
-	if credentials != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	}
-
-	// add the language request to the http header
-	localeTag, err := i18n.GetLocale()
-	if err != nil {
-		localeTag = language.English
-	}
-	req.Header.Add("Accept-Language", localeTag.String())
-
-	resp := invokeRestApi(httpClient, req, service, apiMsg)
+	resp := invokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -1049,7 +1125,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 	return
 }
 
-// ExchangePutPost runs a PUT or POST to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
+// ExchangePutPost runs a PUT, POST or PATCH to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
 // as json. Otherwise the struct will be marshaled to json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 func ExchangePutPost(service string, method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
@@ -1065,139 +1141,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	}
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
-
-	// Prepare body
-	var jsonBytes []byte
-	bodyIsBytes := false
-	bodyIsFile := false
-	switch b := body.(type) {
-	// If the body is a byte array, we treat it like a file being uploaded (not multi-part)
-	case []byte:
-		jsonBytes = b
-		bodyIsBytes = true
-	case string:
-		jsonBytes = []byte(b)
-	case *os.File:
-		bodyIsFile = true
-	default:
-		var err error
-		jsonBytes, err = json.Marshal(body)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal exchange body for %s: %v", apiMsg, err))
-		}
-	}
-
-	var requestBody io.Reader
-	if bodyIsFile {
-		requestBody = body.(*os.File)
-	} else {
-		requestBody = bytes.NewBuffer(jsonBytes)
-	}
-
-	// Create the request and run it
-	req, err := http.NewRequest(method, url, requestBody)
-	if err != nil {
-		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
-	}
-	req.Header.Add("Accept", "application/json")
-	if bodyIsBytes {
-		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
-	} else if bodyIsFile {
-		req.Header.Add("Content-Type", "application/octet-stream")
-	} else {
-		req.Header.Add("Content-Type", "application/json")
-	}
-
-	// add the language request to the http header
-	localeTag, err := i18n.GetLocale()
-	if err != nil {
-		localeTag = language.English
-	}
-	req.Header.Add("Accept-Language", localeTag.String())
-
-	if credentials != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	} // else it is an anonymous call
-
-	resp := invokeRestApi(httpClient, req, service, apiMsg)
-	defer resp.Body.Close()
-	httpCode = resp.StatusCode
-	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	if !isGoodCode(httpCode, goodHttpCodes) {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
-		}
-		respMsg := exchange.PostDeviceResponse{}
-		err = json.Unmarshal(bodyBytes, &respMsg)
-		if err != nil {
-			Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(bodyBytes)))
-		}
-		Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg))
-	}
-	return
-}
-
-// ExchangePatch runs a Patch to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
-// as json. Otherwise the struct will be marshaled to json.
-// If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangePatch(service string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
-	url := urlBase + "/" + urlSuffix
-	apiMsg := http.MethodPatch + " " + url
-
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	Verbose(apiMsg)
-	if IsDryRun() {
-		return 201
-	}
-
-	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
-
-	// Prepare body
-	var jsonBytes []byte
-	bodyIsBytes := false
-	switch b := body.(type) {
-	// If the body is a byte array, we treat it like a file being uploaded (not multi-part)
-	case []byte:
-		jsonBytes = b
-		bodyIsBytes = true
-	case string:
-		jsonBytes = []byte(b)
-	default:
-		var err error
-		jsonBytes, err = json.Marshal(body)
-		if err != nil {
-			Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal exchange body for %s: %v", apiMsg, err))
-		}
-	}
-	requestBody := bytes.NewBuffer(jsonBytes)
-
-	// Create the request and run it
-	req, err := http.NewRequest(http.MethodPatch, url, requestBody)
-	if err != nil {
-		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
-	}
-	req.Header.Add("Accept", "application/json")
-	if bodyIsBytes {
-		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
-	} else {
-		req.Header.Add("Content-Type", "application/json")
-	}
-
-	// add the language request to the http header
-	localeTag, err := i18n.GetLocale()
-	if err != nil {
-		localeTag = language.English
-	}
-	req.Header.Add("Accept-Language", localeTag.String())
-
-	if credentials != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
-	} // else it is an anonymous call
-
-	resp := invokeRestApi(httpClient, req, service, apiMsg)
+	resp := invokeRestApi(httpClient, method, url, credentials, body, service, apiMsg)
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
@@ -1231,14 +1175,8 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 	}
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
-	TrustIcpCert(httpClient)
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(credentials))))
 
-	resp := invokeRestApi(httpClient, req, service, apiMsg)
+	resp := invokeRestApi(httpClient, http.MethodDelete, url, credentials, nil, service, apiMsg)
 	defer resp.Body.Close()
 
 	// delete never returns a body
