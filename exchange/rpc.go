@@ -697,24 +697,23 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 		}
 
 		// If the exchange is down, this call will return an error.
-		if httpResp, err := httpClient.Do(req); err != nil {
-			if IsTransportError(err) {
-				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
-			} else {
-				return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
+		httpResp, err := httpClient.Do(req)
+		if IsTransportError(httpResp, err) {
+			status := ""
+			if httpResp != nil {
+				status = httpResp.Status
 			}
+			return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v, HTTP Status: %v", method, url, requestBody, err, status))
+		} else if err != nil {
+			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
 		} else {
 			defer httpResp.Body.Close()
 
 			var outBytes []byte
 			var readErr error
 			if httpResp.Body != nil {
-				if outBytes, readErr = ioutil.ReadAll(httpResp.Body); err != nil {
-					if IsTransportError(err) {
-						return nil, errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr))
-					} else {
-						return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.StatusCode, readErr)), nil
-					}
+				if outBytes, readErr = ioutil.ReadAll(httpResp.Body); readErr != nil {
+					return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.Status, readErr)), nil
 				}
 			}
 
@@ -837,12 +836,29 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 	}
 }
 
-func IsTransportError(err error) bool {
-	l_error_string := strings.ToLower(err.Error())
-	if strings.Contains(l_error_string, "time") && strings.Contains(l_error_string, "out") {
-		return true
-	} else if strings.Contains(l_error_string, "connection") && (strings.Contains(l_error_string, "refused") || strings.Contains(l_error_string, "reset")) {
-		return true
+func IsTransportError(pResp *http.Response, err error) bool {
+	if err != nil {
+		l_error_string := strings.ToLower(err.Error())
+		if strings.Contains(l_error_string, "time") && strings.Contains(l_error_string, "out") {
+			return true
+		} else if strings.Contains(l_error_string, "connection") && (strings.Contains(l_error_string, "refused") || strings.Contains(l_error_string, "reset")) {
+			return true
+		}
+	}
+
+	if pResp != nil {
+		if pResp.StatusCode == http.StatusBadGateway {
+			// 502: bad gateway error
+			return true
+		} else if pResp.StatusCode == http.StatusGatewayTimeout {
+			// 504: gateway timeout
+			return true
+		} else if pResp.StatusCode == http.StatusServiceUnavailable {
+			//503: service unavailable
+			if _, ok := pResp.Header["Retry-After"]; ok {
+				return true
+			}
+		}
 	}
 	return false
 }

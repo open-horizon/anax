@@ -5,6 +5,7 @@ package exchange
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 )
 
@@ -247,20 +248,45 @@ func Test_IsTraportError(t *testing.T) {
 	error3 := fmt.Errorf("connection reset by the peer")
 	error4 := fmt.Errorf("something is wrong")
 
-	if !IsTransportError(error1) {
+	pResp1 := &http.Response{
+		StatusCode: 502,
+	}
+
+	pResp2 := &http.Response{
+		StatusCode: 503,
+		Header:     map[string][]string{"Retry-After": []string{"120"}},
+	}
+
+	pResp3 := &http.Response{
+		StatusCode: 504,
+	}
+
+	if !IsTransportError(nil, error1) {
 		t.Errorf("Error: expection IsTransportError return true for %v but got false", error1)
 	}
 
-	if !IsTransportError(error2) {
+	if !IsTransportError(nil, error2) {
 		t.Errorf("Error: expection IsTransportError return true for %v but got false", error2)
 	}
 
-	if !IsTransportError(error3) {
+	if !IsTransportError(nil, error3) {
 		t.Errorf("Error: expection IsTransportError return true for %v but got false", error3)
 	}
 
-	if IsTransportError(error4) {
+	if IsTransportError(nil, error4) {
 		t.Errorf("Error: expection IsTransportError return false for %v but got true", error4)
+	}
+
+	if !IsTransportError(pResp1, fmt.Errorf("blah")) {
+		t.Errorf("Error: expection IsTransportError return false for %v but got true", pResp1)
+	}
+
+	if !IsTransportError(pResp2, fmt.Errorf("blah")) {
+		t.Errorf("Error: expection IsTransportError return false for %v but got true", pResp2)
+	}
+
+	if !IsTransportError(pResp3, fmt.Errorf("blah")) {
+		t.Errorf("Error: expection IsTransportError return false for %v but got true", pResp3)
 	}
 
 }
