@@ -21,4 +21,6 @@ Note for translating "*.out.gotext.json" files:
    They are variables that will be replaced by the code. 
    Please keep the text within {} and with leading $ sign as is. 
    You can change the order but please do not translate them.
+4. Please do not the translate the following keywords:
+   Exchange, Agbot, Horizon. 
 
