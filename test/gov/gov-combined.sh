@@ -573,8 +573,11 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-./verify_surfaced_error.sh
-if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
+if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]
+then
+  ./verify_surfaced_error.sh
+  if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
+fi
 
 # Start the node unconfigure tests if they have been enabled.
 echo -e "Node unconfig setting is $UNCONFIG"

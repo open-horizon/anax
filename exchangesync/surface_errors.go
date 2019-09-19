@@ -41,17 +41,30 @@ func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErr
 		return 0
 	}
 
+	updated := false
 	for _, dbError := range dbErrors {
 		fullDbError := persistence.GetEventLogObject(db, nil, dbError.Record_id)
 		if errorTimeout == 0 || time.Since(time.Unix(int64(persistence.GetEventLogObject(db, nil, dbError.Record_id).Timestamp), 0)).Seconds() < float64(errorTimeout) {
 			if !HasPersistentAgreement(db, serviceResolverHandler, pDevice, nil, dbError, agreementPersistentTime) {
+				match_found := false
 				for _, exchError := range exchErrors {
 					if persistence.MatchWorkload(fullDbError, persistence.GetEventLogObject(db, nil, exchError.Record_id)) && dbError.Event_code == dbError.Event_code {
 						dbError.Hidden = exchError.Hidden
+						if dbError.Record_id != exchError.Record_id {
+							updated = true
+						}
+						match_found = true
 					}
 				}
+				if !match_found {
+					updated = true
+				}
 				updatedExchLogs = append(updatedExchLogs, dbError)
+			} else {
+				updated = true
 			}
+		} else {
+			updated = true
 		}
 	}
 
@@ -59,7 +72,9 @@ func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, getErr
 	if err != nil {
 		glog.Errorf("Error saving surface errors to local db. %v", err)
 	}
-	PutExchangeSurfaceErrors(&pDevice, putErrors, updatedExchLogs)
+	if updated {
+		PutExchangeSurfaceErrors(&pDevice, putErrors, updatedExchLogs)
+	}
 	return 0
 }
 
