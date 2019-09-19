@@ -5,12 +5,13 @@ import (
 )
 
 type PostgresqlConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	Host               string
+	Port               string
+	User               string
+	Password           string
+	DBName             string
+	SSLMode            string
+	MaxOpenConnections int
 }
 
 func (p PostgresqlConfig) MakeConnectionString() (string, string) {
@@ -33,5 +34,5 @@ func (p PostgresqlConfig) MakeConnectionString() (string, string) {
 }
 
 func (p PostgresqlConfig) String() string {
-	return fmt.Sprintf("Host: %v, Port: %v, User: %v, Password: %v, DBName: %v, SSLMode: %v", p.Host, p.Port, p.User, "******", p.DBName, p.SSLMode)
+	return fmt.Sprintf("Host: %v, Port: %v, User: %v, Password: %v, DBName: %v, SSLMode: %v MaxOpenConnections: %v", p.Host, p.Port, p.User, "******", p.DBName, p.SSLMode, p.MaxOpenConnections)
 }
