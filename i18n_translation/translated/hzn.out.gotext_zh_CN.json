@@ -1,4 +1,4 @@
-// NLS_CHARSET=UTF-8
+﻿// NLS_CHARSET=UTF-8
 {
   "language": "zh-CN",
   "messages": [
@@ -1236,7 +1236,7 @@
     },
     {
       "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
-      "translation": "在该交换中找不到模式“{Patorg}/{Patname}”。"
+      "translation": "在该 Exchange 中找不到模式“{Patorg}/{Patname}”。"
     },
     {
       "id": "Cannot proceed with the given pattern {Pattern} because it does not include any services.",

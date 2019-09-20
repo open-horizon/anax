@@ -216,7 +216,7 @@
     },
     {
       "id": "Edge $SERVICE_NAME Service Pattern for $ARCH",
-      "translation": "Padrão de serviço de ponta $SERVICE_NAME para $ARCH"
+      "translation": "Padrão de serviço de borda $SERVICE_NAME para $ARCH"
     },
     {
       "id": "Pattern for $SERVICE_NAME for $ARCH",
@@ -224,7 +224,7 @@
     },
     {
       "id": "Edge $SERVICE_NAME Service Pattern for all architectures",
-      "translation": "Padrão de serviço de ponta $SERVICE_NAME para todas as arquiteturas"
+      "translation": "Padrão de serviço de borda $SERVICE_NAME para todas as arquiteturas"
     },
     {
       "id": "Pattern for $SERVICE_NAME",
@@ -2832,7 +2832,7 @@
     },
     {
       "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
-      "translation": "Remover um recurso de nó do Horizon Exchange. NÃO faça isso quando um nó de ponta estiver registrado com este ID de nó."
+      "translation": "Remover um recurso de nó do Horizon Exchange. NÃO faça isso quando um nó de borda estiver registrado com este ID de nó."
     },
     {
       "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
@@ -3128,7 +3128,7 @@
     },
     {
       "id": "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token",
-      "translation": "O domínio de registro do Docker e a autenticação que devem ser armazenados com o serviço, para permitir que o nó de ponta do Horizon acesse as imagens do Docker do serviço. Essa sinalização pode ser repetida e cada sinalização deve estar no formato: registry:user:token"
+      "translation": "O domínio de registro do Docker e a autenticação que devem ser armazenados com o serviço, para permitir que o nó de borda do Horizon acesse as imagens do Docker do serviço. Essa sinalização pode ser repetida e cada sinalização deve estar no formato: registry:user:token"
     },
     {
       "id": "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.",
@@ -3344,7 +3344,7 @@
     },
     {
       "id": "Register this edge node with Horizon.",
-      "translation": "Registrar este nó de ponta com o Horizon."
+      "translation": "Registrar este nó de borda com o Horizon."
     },
     {
       "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
@@ -3460,19 +3460,19 @@
     },
     {
       "id": "List and manage general information about this Horizon edge node.",
-      "translation": "Listar e gerenciar informações gerais sobre este nó de ponta do Horizon."
+      "translation": "Listar e gerenciar informações gerais sobre este nó de borda do Horizon."
     },
     {
       "id": "Display general information about this Horizon edge node.",
-      "translation": "Exibir informações gerais sobre este nó de ponta do Horizon."
+      "translation": "Exibir informações gerais sobre este nó de borda do Horizon."
     },
     {
       "id": "List and manage policy for this Horizon edge node.",
-      "translation": "Listar e gerenciar a política para este nó de ponta do Horizon."
+      "translation": "Listar e gerenciar a política para este nó de borda do Horizon."
     },
     {
       "id": "Display this edge node's policy.",
-      "translation": "Exibir a política deste nó de ponta."
+      "translation": "Exibir a política deste nó de borda."
     },
     {
       "id": "Display an empty policy template that can be filled in.",
@@ -3500,11 +3500,11 @@
     },
     {
       "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
-      "translation": "Listar ou gerenciar os contratos ativos ou arquivados que este nó de ponta fez com um robô de contrato do Horizon."
+      "translation": "Listar ou gerenciar os contratos ativos ou arquivados que este nó de borda fez com um robô de contrato do Horizon."
     },
     {
       "id": "List the active or archived agreements this edge node has made with a Horizon agreement bot.",
-      "translation": "Listar os contratos ativos ou arquivados que este nó de ponta fez com um robô de contrato do Horizon."
+      "translation": "Listar os contratos ativos ou arquivados que este nó de borda fez com um robô de contrato do Horizon."
     },
     {
       "id": "Show the details of this active or archived agreement.",
@@ -3516,7 +3516,7 @@
     },
     {
       "id": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
-      "translation": "Cancelar 1 ou cancelar todos os contratos ativos que este nó de ponta fez com um robô de contrato do Horizon. Normalmente, um agbot negociará um novo contrato imediatamente. Se quiser cancelar todos os contratos e fazer com que esse nó de ponta não aceite novos contratos, execute 'hzn unregister'."
+      "translation": "Cancelar 1 ou cancelar todos os contratos ativos que este nó de borda fez com um robô de contrato do Horizon. Normalmente, um agbot negociará um novo contrato imediatamente. Se quiser cancelar todos os contratos e fazer com que esse nó de borda não aceite novos contratos, execute 'hzn unregister'."
     },
     {
       "id": "Cancel all of the current agreements.",
@@ -3540,19 +3540,19 @@
     },
     {
       "id": "List or manage the global attributes that are currently registered on this Horizon edge node.",
-      "translation": "Listar ou gerenciar os atributos globais que estão atualmente registrados neste nó de ponta do Horizon."
+      "translation": "Listar ou gerenciar os atributos globais que estão atualmente registrados neste nó de borda do Horizon."
     },
     {
       "id": "List the global attributes that are currently registered on this Horizon edge node.",
-      "translation": "Listar os atributos globais que estão atualmente registrados neste nó de ponta do Horizon."
+      "translation": "Listar os atributos globais que estão atualmente registrados neste nó de borda do Horizon."
     },
     {
       "id": "List or manage the service user inputs that are currently registered on this Horizon edge node.",
-      "translation": "Listar ou gerenciar as entradas do usuário de serviço que estão atualmente registradas neste nó de ponta do Horizon."
+      "translation": "Listar ou gerenciar as entradas do usuário de serviço que estão atualmente registradas neste nó de borda do Horizon."
     },
     {
       "id": "List the service user inputs currently registered on this Horizon edge node.",
-      "translation": "Listar as entradas do usuário de serviço que estão atualmente registradas neste nó de ponta do Horizon."
+      "translation": "Listar as entradas do usuário de serviço que estão atualmente registradas neste nó de borda do Horizon."
     },
     {
       "id": "Display an empty userinput template.",
@@ -3560,7 +3560,7 @@
     },
     {
       "id": "Add a new user input object or overwrite the current user input object for this Horizon edge node.",
-      "translation": "Incluir um novo objeto de entrada do usuário ou sobrescrever o objeto de entrada do usuário atual para este nó de ponta do Horizon."
+      "translation": "Incluir um novo objeto de entrada do usuário ou sobrescrever o objeto de entrada do usuário atual para este nó de borda do Horizon."
     },
     {
       "id": "The file path to the json file with the user input object. Specify -f- to read from stdin.",
@@ -3568,7 +3568,7 @@
     },
     {
       "id": "Update an existing user input object for this Horizon edge node.",
-      "translation": "Atualizar um objeto de entrada do usuário existente para este nó de ponta do Horizon."
+      "translation": "Atualizar um objeto de entrada do usuário existente para este nó de borda do Horizon."
     },
     {
       "id": "The file path to the json file with the updated user input object. Specify -f- to read from stdin.",
@@ -3576,7 +3576,7 @@
     },
     {
       "id": "Remove the user inputs that are currently registered on this Horizon edge node.",
-      "translation": "Remover as entradas do usuário que estão atualmente registradas neste nó de ponta do Horizon."
+      "translation": "Remover as entradas do usuário que estão atualmente registradas neste nó de borda do Horizon."
     },
     {
       "id": "Skip the 'Are you sure?' prompt.",
@@ -3584,23 +3584,23 @@
     },
     {
       "id": "List or manage the services that are currently registered on this Horizon edge node.",
-      "translation": "Listar ou gerenciar os serviços que estão atualmente registrados neste nó de ponta do Horizon."
+      "translation": "Listar ou gerenciar os serviços que estão atualmente registrados neste nó de borda do Horizon."
     },
     {
       "id": "List the services variable configuration that has been done on this Horizon edge node.",
-      "translation": "Listar a configuração da variável de serviços feita neste nó de ponta do Horizon."
+      "translation": "Listar a configuração da variável de serviços feita neste nó de borda do Horizon."
     },
     {
       "id": "List the services that are currently registered on this Horizon edge node.",
-      "translation": "Listar os serviços que estão atualmente registrados neste nó de ponta do Horizon."
+      "translation": "Listar os serviços que estão atualmente registrados neste nó de borda do Horizon."
     },
     {
       "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "Listar ou gerenciar o estado de configuração dos serviços que estão atualmente registrados neste nó de ponta do Horizon."
+      "translation": "Listar ou gerenciar o estado de configuração dos serviços que estão atualmente registrados neste nó de borda do Horizon."
     },
     {
       "id": "List the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "Listar o estado de configuração dos serviços que estão atualmente registrados neste nó de ponta do Horizon."
+      "translation": "Listar o estado de configuração dos serviços que estão atualmente registrados neste nó de borda do Horizon."
     },
     {
       "id": "Change the configuration state to 'suspend' for a service.",
@@ -3636,7 +3636,7 @@
     },
     {
       "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
-      "translation": "Cancelar o registro e reconfigurar este nó de ponta do Horizon para que ele fique pronto para ser registrado novamente. Aviso: isso interromperá todos os serviços do Horizon em execução neste nó de ponta e reiniciará o Horizon Agent."
+      "translation": "Cancelar o registro e reconfigurar este nó de borda do Horizon para que ele fique pronto para ser registrado novamente. Aviso: isso interromperá todos os serviços do Horizon em execução neste nó de borda e reiniciará o Horizon Agent."
     },
     {
       "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
@@ -3824,11 +3824,11 @@
     },
     {
       "id": "List or manage the active or archived agreements this Horizon agreement bot has with edge nodes.",
-      "translation": "Listar ou gerenciar os contratos ativos ou arquivados que este robô de contrato do Horizon possui com nós de ponta."
+      "translation": "Listar ou gerenciar os contratos ativos ou arquivados que este robô de contrato do Horizon possui com nós de borda."
     },
     {
       "id": "List the active or archived agreements this Horizon agreement bot has with edge nodes.",
-      "translation": "Listar os contratos ativos ou arquivados que este robô de contrato do Horizon possui com nós de ponta."
+      "translation": "Listar os contratos ativos ou arquivados que este robô de contrato do Horizon possui com nós de borda."
     },
     {
       "id": "List just this one agreement.",
@@ -3836,7 +3836,7 @@
     },
     {
       "id": "Cancel 1 or all of the active agreements this Horizon agreement bot has with edge nodes. Usually an agbot will immediately negotiated a new agreement.",
-      "translation": "Cancelar 1 ou todos os contratos ativos que este robô de contrato do Horizon possui com nós de ponta. Normalmente, um agbot negociará um novo contrato imediatamente."
+      "translation": "Cancelar 1 ou todos os contratos ativos que este robô de contrato do Horizon possui com nós de borda. Normalmente, um agbot negociará um novo contrato imediatamente."
     },
     {
       "id": "List the policies this Horizon agreement bot hosts.",
@@ -3924,7 +3924,7 @@
     },
     {
       "id": "Provides additional detail about the deployment of the object on edge nodes. This flag is only used when --id is specified.",
-      "translation": "Fornece detalhes adicionais sobre a implementação do objeto em nós de ponta. Essa sinalização é usada apenas quando --id é especificado."
+      "translation": "Fornece detalhes adicionais sobre a implementação do objeto em nós de borda. Essa sinalização é usada apenas quando --id é especificado."
     },
     {
       "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",

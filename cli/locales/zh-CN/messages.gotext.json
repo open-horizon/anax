@@ -6003,7 +6003,7 @@
     {
       "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
       "message": "pattern '{Patorg}/{Patname}' not found from the exchange.",
-      "translation": "在该交换中找不到模式“{Patorg}/{Patname}”。",
+      "translation": "在该 Exchange 中找不到模式“{Patorg}/{Patname}”。",
       "placeholders": [
         {
           "id": "Patorg",

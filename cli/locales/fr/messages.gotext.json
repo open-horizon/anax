@@ -5845,13 +5845,13 @@
     {
       "id": "Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable.",
       "message": "Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable.",
-      "translation": "Veuillez indiquer l'ID de noeud et le jeton à l'aide de l'indicateur -n ou de la variable d'environnement HZN_EXCHANGE_NODE_AUTH.",
+      "translation": "Veuillez indiquer l'ID noeud et le jeton à l'aide de l'indicateur -n ou de la variable d'environnement HZN_EXCHANGE_NODE_AUTH.",
       "fuzzy": true
     },
     {
       "id": "Using node ID '{NodeId}' from the Horizon agent",
       "message": "Using node ID '{NodeId}' from the Horizon agent",
-      "translation": "Utilisation de l'ID de noeud '{NodeId}' à partir de l'agent Horizon",
+      "translation": "Utilisation de l'ID noeud '{NodeId}' à partir de l'agent Horizon",
       "placeholders": [
         {
           "id": "NodeId",
@@ -7485,13 +7485,13 @@
     {
       "id": "Node id and token are valid.",
       "message": "Node id and token are valid.",
-      "translation": "L'ID de noeud et le jeton sont valides.",
+      "translation": "L'ID noeud et le jeton sont valides.",
       "fuzzy": true
     },
     {
       "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
       "message": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "Etes-vous sûr de vouloir supprimer le noeud {NodeOrg}/{Node} d'Horizon Exchange (à ne pas faire si un noeud de périphérie est enregistré avec cet ID de noeud) ?",
+      "translation": "Etes-vous sûr de vouloir supprimer le noeud {NodeOrg}/{Node} d'Horizon Exchange (à ne pas faire si un noeud de périphérie est enregistré avec cet ID noeud) ?",
       "placeholders": [
         {
           "id": "NodeOrg",
@@ -9057,7 +9057,7 @@
     {
       "id": "The node id (without org prefix) where the object should be placed.",
       "message": "The node id (without org prefix) where the object should be placed.",
-      "translation": "ID de noeud (sans préfixe d'organisation) où doit être placé l'objet.",
+      "translation": "ID noeud (sans préfixe d'organisation) où doit être placé l'objet.",
       "fuzzy": true
     },
     {
@@ -11932,7 +11932,7 @@
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the exchange.",
       "message": "This user should be an administrator, capable of managing all resources in this org of the exchange.",
-      "translation": "Cet utilisateur doit être un administrateur, capable de gérer l'ensemble des ressources de cet organisation dans Exchange.",
+      "translation": "Cet utilisateur doit être un administrateur, capable de gérer l'ensemble des ressources de cette organisation dans Exchange.",
       "fuzzy": true
     },
     {
@@ -11992,7 +11992,7 @@
     {
       "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
       "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "ID de noeud et jeton Horizon Exchange à utiliser comme données d'identification pour interroger et modifier les ressources du noeud si l'indicateur -u n'est pas spécifié. La variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut pour -n. Si vous n'ajoutez pas l'organisation du noeud en préfixe, elle sera automatiquement ajoutée avec la valeur -o.",
+      "translation": "ID noeud et jeton Horizon Exchange à utiliser comme données d'identification pour interroger et modifier les ressources du noeud si l'indicateur -u n'est pas spécifié. La variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut pour -n. Si vous n'ajoutez pas l'organisation du noeud en préfixe, elle sera automatiquement ajoutée avec la valeur -o.",
       "fuzzy": true
     },
     {
@@ -12010,7 +12010,7 @@
     {
       "id": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
       "message": "The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.",
-      "translation": "ID de noeud et jeton Horizon Exchange à créer. L'ID de noeud doit être unique au sein de l'organisation.",
+      "translation": "ID noeud et jeton Horizon Exchange à créer. L'ID noeud doit être unique au sein de l'organisation.",
       "fuzzy": true
     },
     {
@@ -12088,13 +12088,13 @@
     {
       "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
       "message": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
-      "translation": "L'ID de noeud et le jeton Horizon à vérifier. S'ils ne sont pas spécifiés, la variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut. Cet indicateur est mutuellement exclusif avec les arguments <node> et <token>.",
+      "translation": "L'ID noeud et le jeton Horizon Exchange à vérifier. S'ils ne sont pas spécifiés, la variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut. Cet indicateur est mutuellement exclusif avec les arguments <node> et <token>.",
       "fuzzy": true
     },
     {
       "id": "The node id to be checked. Mutually exclusive with -n flag.",
       "message": "The node id to be checked. Mutually exclusive with -n flag.",
-      "translation": "ID de noeud à vérifier. Cet indicateur est mutuellement exclusif avec -n.",
+      "translation": "ID noeud à vérifier. Cet indicateur est mutuellement exclusif avec -n.",
       "fuzzy": true
     },
     {
@@ -12106,13 +12106,13 @@
     {
       "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
       "message": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
-      "translation": "Supprimer une ressource de noeud d'Horizon Exchange. A ne PAS faire lorsqu'un noeud de périphérie est enregistré avec cet ID de noeud.",
+      "translation": "Supprimer une ressource de noeud d'Horizon Exchange. A ne PAS faire lorsqu'un noeud de périphérie est enregistré avec cet ID noeud.",
       "fuzzy": true
     },
     {
       "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
       "message": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "ID de noeud et jeton Horizon Exchange à utiliser comme données d'identification pour interroger et modifier les ressources de noeud si l'indicateur -u n'est pas spécifié. La variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut pour -n. Si vous n'ajoutez pas l'organisation du noeud en préfixe, elle sera automatiquement ajoutée avec la valeur -o.",
+      "translation": "ID noeud et jeton Horizon Exchange à utiliser comme données d'identification pour interroger et modifier les ressources de noeud si l'indicateur -u n'est pas spécifié. La variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut pour -n. Si vous n'ajoutez pas l'organisation du noeud en préfixe, elle sera automatiquement ajoutée avec la valeur -o.",
       "fuzzy": true
     },
     {
@@ -12358,7 +12358,7 @@
     {
       "id": "Display the pattern resources from the Horizon Exchange.",
       "message": "Display the pattern resources from the Horizon Exchange.",
-      "translation": "Afficher les ressources du pattern dans Horizon Exchange.",
+      "translation": "Afficher les ressources du pattern provenant de Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -12496,7 +12496,7 @@
     {
       "id": "Display the service resources from the Horizon Exchange.",
       "message": "Display the service resources from the Horizon Exchange.",
-      "translation": "Afficher les ressources du service dans Horizon Exchange.",
+      "translation": "Afficher les ressources du service depuis Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -12844,7 +12844,7 @@
     {
       "id": "The Horizon exchange node ID and token (it must already exist).",
       "message": "The Horizon exchange node ID and token (it must already exist).",
-      "translation": "ID de noeud et jeton Horizon (doit déjà exister).",
+      "translation": "ID noeud et jeton Horizon Exchange (doit déjà exister).",
       "fuzzy": true
     },
     {
@@ -12856,7 +12856,7 @@
     {
       "id": "The Horizon exchange organization ID that the node will be registered in.",
       "message": "The Horizon exchange organization ID that the node will be registered in.",
-      "translation": "ID d'organisation Horizon dans lequel sera enregistré le noeud.",
+      "translation": "ID d'organisation Horizon Exchange dans lequel sera enregistré le noeud.",
       "fuzzy": true
     },
     {
@@ -12880,13 +12880,13 @@
     {
       "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
       "message": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
-      "translation": "ID de noeud et jeton Horizon Exchange. L'ID de noeud doit être unique au sein de l'organisation. S'ils ne sont pas spécifiés, la variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut. Si -n et HZN_EXCHANGE_NODE_AUTH ne sont pas spécifiés, l'ID de noeud sera créé par Horizon à partir du numéro de série de la machine ou du nom d'hôte complet. Si le jeton n'est pas spécifié, Horizon créera un jeton aléatoire. Si la ressource de noeud dans Exchange identifiée par l'ID et le jeton n'existe pas, vous devez en plus spécifier l'indicateur -u pour pouvoir le créer.",
+      "translation": "ID noeud et jeton Horizon Exchange. L'ID noeud doit être unique au sein de l'organisation. S'ils ne sont pas spécifiés, la variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut. Si -n et HZN_EXCHANGE_NODE_AUTH ne sont pas spécifiés, l'ID noeud sera créé par Horizon à partir du numéro de série de la machine ou du nom d'hôte complet. Si le jeton n'est pas spécifié, Horizon créera un jeton aléatoire. Si la ressource de noeud dans Exchange identifiée par l'ID et le jeton n'existe pas, vous devez en plus spécifier l'indicateur -u pour pouvoir le créer.",
       "fuzzy": true
     },
     {
       "id": "The name of the node. If not specified, it will be the same as the node id.",
       "message": "The name of the node. If not specified, it will be the same as the node id.",
-      "translation": "Nom du noeud. S'il n'est pas spécifié, il sera identique à l'ID de noeud.",
+      "translation": "Nom du noeud. S'il n'est pas spécifié, il sera identique à l'ID noeud.",
       "fuzzy": true
     },
     {
@@ -13732,7 +13732,7 @@
     {
       "id": "Display the status of the Horizon Model Management Service.",
       "message": "Display the status of the Horizon Model Management Service.",
-      "translation": "Affiche le statut du service de gestion des modèles.",
+      "translation": "Affiche le statut du service de gestion des modèles Horizon.",
       "fuzzy": true
     },
     {
@@ -13744,7 +13744,7 @@
     {
       "id": "List objects in the Horizon Model Management Service.",
       "message": "List objects in the Horizon Model Management Service.",
-      "translation": "Affiche des objets dans le service de gestion des modèles.",
+      "translation": "Affiche des objets dans le service de gestion des modèles Horizon.",
       "fuzzy": true
     },
     {
@@ -13774,7 +13774,7 @@
     {
       "id": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
       "message": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
-      "translation": "Publie un objet dans le service de gestion des modèles dans le service de gestion des modèles, afin de le rendre disponible pour les services déployés sur les noeuds.",
+      "translation": "Publie un objet dans le service de gestion des modèles Horizon afin de le rendre disponible pour les services déployés sur les noeuds.",
       "fuzzy": true
     },
     {
