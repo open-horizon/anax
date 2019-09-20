@@ -198,19 +198,19 @@
 
       "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
 
-      "translation": "Iniciar la publicidad de políticas con el intercambio para el servicio {Arg_1}/{Arg_2}."
+      "translation": "Iniciar la publicidad de políticas con Exchange para el servicio {Arg_1}/{Arg_2}."
     },
     {
 
       "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
 
-      "translation": "No se han podido publicitar las políticas con el intercambio para este servicio {Arg_1}/{Arg_2}, error: {Arg_3}"
+      "translation": "No se han podido publicitar las políticas con Exchange para este servicio {Arg_1}/{Arg_2}, error: {Arg_3}"
     },
     {
 
       "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
 
-      "translation": "Completar la publicidad de políticas con el intercambio para el servicio {Arg_1}/{Arg_2}."
+      "translation": "Completar la publicidad de políticas con Exchange para el servicio {Arg_1}/{Arg_2}."
     },
     {
 
@@ -240,25 +240,25 @@
 
       "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
 
-      "translation": "No se ha podido sincronizar la política de nodo local con la copia de intercambio. Error: {Arg_1}"
+      "translation": "No se ha podido sincronizar la política de nodo local con la copia de Exchange. Error: {Arg_1}"
     },
     {
 
       "id": "Node policy updated with the exchange copy: {Arg_1}",
 
-      "translation": "Se ha actualizado la política de nodo con la copia de intercambio: {Arg_1}"
+      "translation": "Se ha actualizado la política de nodo con la copia de Exchange: {Arg_1}"
     },
     {
 
       "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
 
-      "translation": "No se ha podido sincronizar la entrada de usuario de nodo local con la copia de intercambio. Error: {Arg_1}"
+      "translation": "No se ha podido sincronizar la entrada de usuario de nodo local con la copia de Exchange. Error: {Arg_1}"
     },
     {
 
       "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
 
-      "translation": "La entrada de usuario de nodo se ha actualizado con la copia de intercambio. Las entradas de usuario cambiadas son: {Arg_1}"
+      "translation": "La entrada de usuario de nodo se ha actualizado con la copia de Exchange. Las entradas de usuario cambiadas son: {Arg_1}"
     },
     {
 
@@ -498,7 +498,7 @@
 
       "id": "Error verifiying exchange version. error: {Arg_1}",
 
-      "translation": "Se ha producido un error al verificar la versión de intercambio. error: {Arg_1}"
+      "translation": "Se ha producido un error al verificar la versión de Exchange. error: {Arg_1}"
     },
     {
 
@@ -834,19 +834,19 @@
 
       "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
 
-      "translation": "No se ha podido recuperar el estado de configuración de servicio para el recurso de nodo {Arg_1} del intercambio, error {Arg_2}"
+      "translation": "No se ha podido recuperar el estado de configuración de servicio para el recurso de nodo {Arg_1} de Exchange, error {Arg_2}"
     },
     {
 
       "id": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
 
-      "translation": "Se ha producido un error al recuperar el nodo {Arg_1} del intercambio: {Arg_2}"
+      "translation": "Se ha producido un error al recuperar el nodo {Arg_1} de Exchange: {Arg_2}"
     },
     {
 
       "id": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
 
-      "translation": "Se ha producido un error al actualizar registeredServices para el nodo {Arg_1} en el intercambio: {Arg_2}"
+      "translation": "Se ha producido un error al actualizar registeredServices para el nodo {Arg_1} en Exchange: {Arg_2}"
     },
     {
 
@@ -906,7 +906,7 @@
 
       "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
 
-      "translation": "Se ha producido un error al suprimir el acuerdo para {Arg_1} en el intercambio: {Arg_2}. Se volverá a intentar."
+      "translation": "Se ha producido un error al suprimir el acuerdo para {Arg_1} en Exchange: {Arg_2}. Se volverá a intentar."
     },
     {
 
@@ -1056,13 +1056,13 @@
 
       "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
 
-      "translation": "No se han podido iniciar los servicios sin acuerdo, se ha producido un error al buscar el patrón {Arg_1} en el intercambio, error: {Arg_2}"
+      "translation": "No se han podido iniciar los servicios sin acuerdo, se ha producido un error al buscar el patrón {Arg_1} en Exchange, error: {Arg_2}"
     },
     {
 
       "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
 
-      "translation": "No se han podido iniciar los servicios sin acuerdo, el patrón {Arg_1} no se ha encontrado en el intercambio"
+      "translation": "No se han podido iniciar los servicios sin acuerdo, el patrón {Arg_1} no se ha encontrado en Exchange"
     },
     {
 
@@ -1122,7 +1122,7 @@
 
       "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
 
-      "translation": "Se ha producido un error al buscar la definición de servicio nueva a la que degradadar para {Arg_1}/{Arg_2} versión {Arg_3} clave {Arg_4}. error: {Arg_5}"
+      "translation": "Se ha producido un error al buscar la definición de servicio nueva a la que degradar para {Arg_1}/{Arg_2} versión {Arg_3} clave {Arg_4}. error: {Arg_5}"
     },
     {
 
