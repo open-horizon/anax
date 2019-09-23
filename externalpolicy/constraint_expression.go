@@ -138,6 +138,7 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 	}
 
 	for _, remainder = range constraints {
+		remainder := strings.Replace(remainder, "\a", " ", -1)
 
 		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
 		// to drop expressions into the structure as they come in through the GetNextExpression function.
