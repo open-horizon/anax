@@ -67,9 +67,9 @@ func Test_simple_conversion(t *testing.T) {
 
 func Test_succeed_IsSatisfiedBy(t *testing.T) {
 	ce := new(ConstraintExpression)
-	(*ce) = append((*ce), "prop == true && prop2 == value2")
+	(*ce) = append((*ce), "prop == true && prop2 == \"a b\"")
 	props := new([]Property)
-	(*props) = append((*props), *(Property_Factory("prop", true)), *(Property_Factory("prop2", "value2")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", "value5")))
+	(*props) = append((*props), *(Property_Factory("prop", true)), *(Property_Factory("prop2", "a b")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", "value5")))
 	if err := ce.IsSatisfiedBy(*props); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	}
