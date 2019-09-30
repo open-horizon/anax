@@ -1019,6 +1019,16 @@ func invokeRestApi(httpClient *http.Client, method string, url string, credentia
 		// requestBody is nil if body is nil.
 		requestBody, bodyLen, bodyType := createRequestBody(body, apiMsg)
 
+		// If we're retrying with an os.File body, then re-open it.
+		if retryCount > 1 {
+			file := body.(*os.File)
+			if rb, err := os.Open(file.Name()); err != nil {
+				Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", file.Name(), err))
+			} else {
+				requestBody = rb
+			}
+		}
+
 		// Create the request and run it
 		req, err := http.NewRequest(method, url, requestBody)
 		if err != nil {
@@ -1401,24 +1411,39 @@ func GetHTTPClient(timeout int) *http.Client {
 		skipSSL = true
 	}
 
-	responseTimeout := 20
-	if timeout == 0 {
-		responseTimeout = 0
+	// Set request timeout based on environment variables and input values. The environment variable always overrides the
+	// input parameter. The other timeouts are subject to the timeout setting also.
+	requestTimeout := timeout
+
+	if envTimeout := os.Getenv(config.HTTPRequestTimeoutOverride); envTimeout != "" {
+		if t, err := strconv.Atoi(envTimeout); err == nil {
+			requestTimeout = t
+		} else {
+			Warning(i18n.GetMessagePrinter().Sprintf("Unable to use %v to set the request timeout, the value is not a valid number: %v", config.HTTPRequestTimeoutOverride, envTimeout))
+		}
 	}
+
+	responseTimeout := int(float64(requestTimeout)*0.8)
+	dialTimeout := int(float64(requestTimeout)*0.5)
+	keepAlive := requestTimeout*2
+	TLSHandshake := dialTimeout
+	expectContinue := int(float64(requestTimeout)*0.5)
+
+	Verbose(i18n.GetMessagePrinter().Sprintf("HTTP request timeout set to %v seconds", requestTimeout))
 
 	return &http.Client{
 		// remember that this timeout is for the whole request, including
 		// body reading. This means that you must set the timeout according
 		// to the total payload size you expect
-		Timeout: time.Second * time.Duration(timeout),
+		Timeout: time.Second * time.Duration(requestTimeout),
 		Transport: &http.Transport{
 			Dial: (&net.Dialer{
-				Timeout:   20 * time.Second,
-				KeepAlive: 60 * time.Second,
+				Timeout:   time.Duration(dialTimeout) * time.Second,
+				KeepAlive: time.Duration(keepAlive) * time.Second,
 			}).Dial,
-			TLSHandshakeTimeout:   20 * time.Second,
+			TLSHandshakeTimeout:   time.Duration(TLSHandshake) * time.Second,
 			ResponseHeaderTimeout: time.Duration(responseTimeout) * time.Second,
-			ExpectContinueTimeout: 8 * time.Second,
+			ExpectContinueTimeout: time.Duration(expectContinue) * time.Second,
 			MaxIdleConns:          config.MaxHTTPIdleConnections,
 			IdleConnTimeout:       config.HTTPIdleConnectionTimeoutS * time.Second,
 			TLSClientConfig: &tls.Config{
