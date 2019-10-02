@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
@@ -10,7 +11,11 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"io"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
 type APIServices struct {
@@ -74,6 +79,29 @@ func List() {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn service list' output: %v", err))
 	}
 	fmt.Printf("%s\n", jsonBytes)
+}
+
+func Log(ServiceName string) {
+	msgPrinter := i18n.GetMessagePrinter()
+	file, err := os.Open("/var/log/syslog")
+	if err != nil {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist", err))
+	}
+	defer file.Close()
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				time.Sleep(1 * time.Second)
+			} else {
+				break
+			}
+		}
+		if strings.Contains(line, ServiceName) {
+			fmt.Print(string(line))
+		}
+	}
 }
 
 func Registered() {
@@ -156,7 +184,6 @@ func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl str
 func Resume(applyAll bool, serviceOrg string, serviceUrl string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
-
 	msg_part := msgPrinter.Sprintf("all the registered services")
 	if !applyAll {
 		if serviceOrg != "" {
