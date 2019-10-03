@@ -9,10 +9,12 @@ echo -e "${PREFIX} starting"
 function verifyAgreements {
         # Wait until there are agreements
         TARGET_NUM_AG=1
-        if [ "${PATTERN}" == "sall" ]; then
-            TARGET_NUM_AG=6
-        elif [ "${PATTERN}" == "" ]; then
-            TARGET_NUM_AG=5
+        if [ "${HZN_REG_TEST}" != "1" ]; then
+            if [ "${PATTERN}" == "sall" ]; then
+                TARGET_NUM_AG=6
+            elif [ "${PATTERN}" == "" ]; then
+                TARGET_NUM_AG=5
+            fi
         fi
 
         # Look for agreements to appear.
@@ -89,7 +91,7 @@ function agreementsReached {
 # Keep an eye on the agreements to make sure they dont go away. This function
 # assumes that MONITOR_AGS has been previously set.
 function monitorAgreements {
-        NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
+    NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
 	NOT_YET=0
         while :
         do
