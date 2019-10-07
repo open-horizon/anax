@@ -83,23 +83,53 @@ func List() {
 
 func Log(ServiceName string) {
 	msgPrinter := i18n.GetMessagePrinter()
-	file, err := os.Open("/var/log/syslog")
-	if err != nil {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist", err))
-	}
-	defer file.Close()
-	reader := bufio.NewReader(file)
 	for {
-		line, err := reader.ReadString('\n')
+		// Open syslog
+		file, err := os.Open("/var/log/syslog")
 		if err != nil {
-			if err == io.EOF {
-				time.Sleep(1 * time.Second)
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist", err))
+		}
+		// Check file stats - size of file
+		fi, err := file.Stat()
+		if err != nil {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not get stats", err))
+		}
+		file_size := fi.Size()
+		defer file.Close()
+		reader := bufio.NewReader(file)
+		for {
+			// open file again to re-check stats in case it was logrotated
+			new_file, err := os.Open("/var/log/syslog")
+			if err != nil {
+				continue
+			}
+			fi, err := new_file.Stat()
+			if err != nil {
+				continue
+			}
+			new_file_size := fi.Size()
+			// if new_file_size is smaller than previous measured size,
+			// log was logrotated
+			if new_file_size >= file_size {
+				file_size = new_file_size
 			} else {
+				// new file detected
+				fmt.Printf("\nNew File Detected\n")
 				break
 			}
-		}
-		if strings.Contains(line, ServiceName) {
-			fmt.Print(string(line))
+			// read line from file
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					time.Sleep(1 * time.Second)
+				} else {
+					break
+				}
+			}
+			// if keyword matches part of line, print to consol.
+			if strings.Contains(line, ServiceName) {
+				fmt.Print(string(line))
+			}
 		}
 	}
 }
