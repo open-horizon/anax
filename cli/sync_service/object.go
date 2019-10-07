@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
@@ -232,9 +233,21 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		}
 		defer file.Close()
 
+		// Establish the HTTP request override because the upload could take some time.
+		setHTTPOverride := false
+		if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
+			setHTTPOverride = true
+			os.Setenv(config.HTTPRequestTimeoutOverride, "0")
+		}
+
 		// Stream the file to the MMS (CSS).
 		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "data")
 		cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file)
+
+		// Restore HTTP request override if necessary.
+		if setHTTPOverride {
+			os.Setenv(config.HTTPRequestTimeoutOverride, "")
+		}
 
 		cliutils.Verbose(msgPrinter.Sprintf("Object %v uploaded to org %v in the Model Management Service", objFile, org))
 	}

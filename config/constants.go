@@ -11,8 +11,11 @@ const MICROSERVICE_EXEC_TIMEOUT = 180
 // MaxHTTPIdleConnections see https://golang.org/pkg/net/http/
 const MaxHTTPIdleConnections = 20
 
-// HTTPIdleConnectionTimeoutS see https://golang.org/pkg/net/http/
+// HTTPRequestTimeoutS see https://golang.org/pkg/net/http/
 const HTTPRequestTimeoutS = 30
+
+// HTTPRequestTimeoutOverride environment variable
+const HTTPRequestTimeoutOverride = "HZN_HTTP_TIMEOUT"
 
 // HTTPIdleConnectionTimeoutS see https://golang.org/pkg/net/http/
 const HTTPIdleConnectionTimeoutS = 120
