@@ -29,7 +29,6 @@ import (
 
 // for identifying the subworkers used by this worker
 const HEARTBEAT = "HeartBeat"
-const EDGENODE = "EdgeNode"
 const NODEPOLICY = "NodePolicy"
 const NODEUSERINPUT = "NodeUserInput"
 const SURFACEERRORS = "SurfaceExchErrors"
@@ -50,7 +49,6 @@ const (
 	EL_AG_NODE_UI_SYNCED_WITH_EXCH       = "Node user input updated with the exchange copy. The changed user inputs are: %v"
 	EL_AG_NODE_CANNOT_VERIFY_AG          = "Node could not verify the agreement %v with the consumer. Will cancel it"
 	EL_AG_NODE_IS_OFFLINE                = "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
-	EL_AG_UNABLE_SYNC_NODE_WITH_EXCH     = "Unable to sync the node with the exchange copy. Error: %v"
 )
 
 // This is does nothing useful at run time.
@@ -75,7 +73,6 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_AG_NODE_UI_SYNCED_WITH_EXCH)
 	msgPrinter.Sprintf(EL_AG_NODE_CANNOT_VERIFY_AG)
 	msgPrinter.Sprintf(EL_AG_NODE_IS_OFFLINE)
-	msgPrinter.Sprintf(EL_AG_UNABLE_SYNC_NODE_WITH_EXCH)
 }
 
 // must be safely-constructed!!
@@ -261,7 +258,6 @@ func (w *AgreementWorker) Initialize() bool {
 		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
 		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 		w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
-		w.DispatchSubworker(EDGENODE, w.checkNodeChanges, w.BaseWorker.Manager.Config.Edge.NodeCheckIntervalS, false)
 	}
 
 	// Publish what we have for the world to see
@@ -450,9 +446,6 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	// start checking for issues closed by agreements and putting updated surface errors in the exchange
 	w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
-
-	// start checking exchange node changes periodically
-	w.DispatchSubworker(EDGENODE, w.checkNodeChanges, w.BaseWorker.Manager.Config.Edge.NodeCheckIntervalS, false)
 }
 
 // Heartbeat to the exchange. This function is called by the heartbeat subworker.
@@ -556,44 +549,6 @@ func (w *AgreementWorker) NodePolicyDeleted() {
 	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
 }
 
-// Check node changes on the exchange and save it on local node
-func (w *AgreementWorker) checkNodeChanges() int {
-	glog.V(5).Infof(logString(fmt.Sprintf("checking the exchange node changes.")))
-
-	// get the node
-	pDevice, err := persistence.FindExchangeDevice(w.db)
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
-		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
-			persistence.EC_DATABASE_ERROR)
-		return 0
-	} else if pDevice == nil {
-		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
-		return 0
-	}
-
-	// save a local copy of the exchange node
-	err = exchangesync.SyncNodeWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w))
-	if err != nil {
-		if !w.hznOffline {
-			glog.Errorf(logString(fmt.Sprintf("Unable to sync the node with the exchange copy. Error: %v", err)))
-			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_WITH_EXCH, err.Error()),
-				persistence.EC_ERROR_NODE_SYNC,
-				exchange.GetOrg(w.GetExchangeId()),
-				exchange.GetId(w.GetExchangeId()),
-				w.devicePattern, "")
-			w.isOffline()
-		}
-	} else {
-		w.hznOffline = false
-	}
-
-	glog.V(5).Infof(logString(fmt.Sprintf("Done checking exchange node changes.")))
-	return 0
-}
-
 // Check the node user input changes on the exchange and sync up with
 // the local copy. THe exchange is the master
 func (w *AgreementWorker) checkNodeUserInputChanges() int {
@@ -613,13 +568,13 @@ func (w *AgreementWorker) checkNodeUserInputChanges() int {
 	}
 
 	// exchange is the master
-	updated, changedSvcSpecs, err := exchangesync.SyncLocalUserInputWithExchange(w.db, pDevice, nil)
+	updated, changedSvcSpecs, err := exchangesync.SyncLocalUserInputWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {
 			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH, err.Error()),
-				persistence.EC_ERROR_NODE_USERINPUT_UPDATE,
+				persistence.EC_ERROR_NODE_POLICY_UPDATE,
 				exchange.GetOrg(w.GetExchangeId()),
 				exchange.GetId(w.GetExchangeId()),
 				w.devicePattern, "")
@@ -707,14 +662,9 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
 
-	// get the exchange node and save it locally
-	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w)); err != nil {
-		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v", err)))
-	}
-
 	// setup the user input. exchange is the master.
 	// However, if the exchange does not have user input, convert the old UserInputAttributes into UserInput format
-	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
+	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
 		return errors.New(logString(fmt.Sprintf("Failed to initially set up node user input. %v", err)))
 	}
 
@@ -1223,7 +1173,7 @@ func (w *AgreementWorker) isOffline() {
 	}
 	eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
 		persistence.NewMessageMeta(EL_AG_NODE_IS_OFFLINE),
-		persistence.EC_ERROR_NODE_IS_OFFLINE,
+		persistence.EC_ERROR_NODE_POLICY_UPDATE,
 		exchange.GetOrg(w.GetExchangeId()),
 		exchange.GetId(w.GetExchangeId()),
 		w.devicePattern, "")

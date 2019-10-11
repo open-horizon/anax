@@ -9,7 +9,6 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -832,30 +831,13 @@ func (w *GovernanceWorker) governServiceConfigState() int {
 	// go govern
 	glog.V(4).Infof(logString(fmt.Sprintf("governing the service configuration state")))
 
-	// get the exchange node from the local memory copy
-	exchDevice, err := exchangesync.GetExchangeNode()
-	if err != nil || exchDevice == nil {
+	service_cs, err := exchange.GetServicesConfigState(w.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve service configuration state from the exchange, error %v", err)))
 		eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
 			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH, w.GetExchangeId(), err.Error()),
 			persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())
 	} else {
-		// get the service configuration states from the node
-		service_cs := []exchange.ServiceConfigState{}
-		for _, service := range exchDevice.RegisteredServices {
-			// service.Url is in the form of org/url
-			org, url := cutil.SplitOrgSpecUrl(service.Url)
-
-			// set to default if empty
-			config_state := service.ConfigState
-			if config_state == "" {
-				config_state = exchange.SERVICE_CONFIGSTATE_ACTIVE
-			}
-
-			mcs := exchange.NewServiceConfigState(url, org, config_state)
-			service_cs = append(service_cs, *mcs)
-		}
-
 		// get the services that has been changed to suspended state
 		suspended_services := []events.ServiceConfigState{}
 

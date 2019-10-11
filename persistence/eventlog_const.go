@@ -73,9 +73,6 @@ const (
 	EC_RECEIVED_CANCEL_AGREEMENT_MESSAGE         = "received_cancel_agreement_message"
 	EC_ERROR_PROCESSING_CANCEL_AGREEMENT_MESSAGE = "error_processing_cancel_agreement_message"
 
-	EC_ERROR_NODE_IS_OFFLINE = "error_node_is_offline"
-	EC_ERROR_NODE_SYNC       = "error_node_sync"
-
 	EC_NODE_POLICY_UPDATED         = "update_node_policy"
 	EC_NODE_POLICY_DELETED         = "delete_node_policy"
 	EC_ERROR_NODE_POLICY_UPDATE    = "error_policy_update"

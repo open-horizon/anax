@@ -1423,11 +1423,11 @@ func GetHTTPClient(timeout int) *http.Client {
 		}
 	}
 
-	responseTimeout := int(float64(requestTimeout) * 0.8)
-	dialTimeout := int(float64(requestTimeout) * 0.5)
-	keepAlive := requestTimeout * 2
+	responseTimeout := int(float64(requestTimeout)*0.8)
+	dialTimeout := int(float64(requestTimeout)*0.5)
+	keepAlive := requestTimeout*2
 	TLSHandshake := dialTimeout
-	expectContinue := int(float64(requestTimeout) * 0.5)
+	expectContinue := int(float64(requestTimeout)*0.5)
 
 	Verbose(i18n.GetMessagePrinter().Sprintf("HTTP request timeout set to %v seconds", requestTimeout))
 

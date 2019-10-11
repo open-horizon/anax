@@ -56,7 +56,6 @@ type Config struct {
 	DefaultServiceRetryDuration      uint64    // the default retry duration in seconds. The next retry cycle occurs after the duration. The default value is 600
 	ServiceConfigStateCheckIntervalS int       // the service configuration state check interval. The default is 30 seconds.
 	DefaultNodePolicyFile            string    // the default node policy file name.
-	NodeCheckIntervalS               int       // the node check interval. The default is 15 seconds.
 	NodePolicyCheckIntervalS         int       // the node policy check interval. The default is 15 seconds.
 	NodeUserInputCheckIntervalS      int       // the node user input check interval. The default is 15 seconds.
 	FileSyncService                  FSSConfig // The config for the embedded ESS sync service.
@@ -220,10 +219,6 @@ func Read(file string) (*HorizonConfig, error) {
 
 		if config.Edge.ServiceConfigStateCheckIntervalS == 0 {
 			config.Edge.ServiceConfigStateCheckIntervalS = 30
-		}
-
-		if config.Edge.NodeCheckIntervalS == 0 {
-			config.Edge.NodeCheckIntervalS = 15
 		}
 
 		if config.Edge.NodePolicyCheckIntervalS == 0 {
