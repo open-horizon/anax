@@ -192,6 +192,8 @@ func (c *BasicProtocolHandler) GetTerminationCode(reason string) uint {
 		return basicprotocol.CANCEL_SERVICE_SUSPENDED
 	case TERM_REASON_NODE_USERINPUT_CHANGED:
 		return basicprotocol.CANCEL_NODE_USERINPUT_CHANGED
+	case TERM_REASON_NODE_PATTERN_CHANGED:
+		return basicprotocol.CANCEL_NODE_PATTERN_CHANGED
 	default:
 		return 999
 	}

@@ -35,6 +35,16 @@ const (
 	EC_NODE_UPDATE_COMPLETE = "node_update_complete"
 	EC_ERROR_NODE_UPDATE    = "error_node_update"
 
+	// node pattern
+	EC_NODE_PATTERN_CHANGED            = "node_pattern_changed"
+	EC_NODE_PATTERN_CHANGED_AGAIN      = "node_pattern_changed_again"
+	EC_START_REREG_NODE_PATTERN_CHANGE = "start_rereg_node_pattern_change"
+	EC_END_REREG_NODE_PATTERN_CHANGE   = "end_rereg_node_pattern_change"
+	EC_ERROR_REG_NODE_WITH_NEW_PATTERN = "error_reg_node_with_new_pattern"
+	EC_ERROR_VALIDATE_NEW_PATTERN      = "error_validate_new_pattern"
+	EC_NODE_KEEP_OLD_PATTERN           = "node_keep_old_pattern"
+	EC_NEW_PATTERN_VERIFIED            = "new_pattern_verified"
+
 	// node unreggistratin
 	EC_START_NODE_UNREG    = "start_node_unregistration"
 	EC_NODE_UNREG_COMPLETE = "node_unregistration_complete"
@@ -72,6 +82,9 @@ const (
 
 	EC_RECEIVED_CANCEL_AGREEMENT_MESSAGE         = "received_cancel_agreement_message"
 	EC_ERROR_PROCESSING_CANCEL_AGREEMENT_MESSAGE = "error_processing_cancel_agreement_message"
+
+	EC_ERROR_NODE_IS_OFFLINE = "error_node_is_offline"
+	EC_ERROR_NODE_SYNC       = "error_node_sync"
 
 	EC_NODE_POLICY_UPDATED         = "update_node_policy"
 	EC_NODE_POLICY_DELETED         = "delete_node_policy"

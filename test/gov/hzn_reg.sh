@@ -226,7 +226,7 @@ fi
 
 ## register pattern sns, node will be created by this command
 unreg_node
-hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f
+hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f 
 
 echo -e "${PREFIX} Testing 'hzn register' with pattern sns."
 cmd="hzn register -u e2edevadmin:e2edevadminpw -n an12345:abcdefg -f /tmp/reg_userinput.json -o e2edev@somecomp.com -p e2edev@somecomp.com/sns"

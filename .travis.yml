@@ -17,4 +17,4 @@ before_script:
   - docker ps
 
 script:
-  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall APPSTORE=1"; else make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall" && make test -C test TEST_VARS="NOLOOP=1"; fi'
+  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall APPSTORE=1"; else make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall" && make stop -C test && make test -C test TEST_VARS="NOLOOP=1"; fi'

@@ -136,6 +136,17 @@ func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state stri
 	})
 }
 
+func (e *ExchangeDevice) SetPattern(db *bolt.DB, deviceId string, pattern string) (*ExchangeDevice, error) {
+	if deviceId == "" {
+		return nil, errors.New("Argument null and mustn't be")
+	}
+
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.Pattern = pattern
+		return &d
+	})
+}
+
 func (e *ExchangeDevice) IsState(state string) bool {
 	return e.Config.State == state
 }
@@ -185,6 +196,12 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 				mod.Config.State = update.Config.State
 				mod.Config.LastUpdateTime = update.Config.LastUpdateTime
 			}
+
+			// Update the pattern
+			if mod.Pattern != update.Pattern {
+				mod.Pattern = update.Pattern
+			}
+
 			// note: DEVICES is used as the key b/c we only want to store one value in this bucket
 
 			if serialized, err := json.Marshal(mod); err != nil {

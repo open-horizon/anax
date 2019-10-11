@@ -300,7 +300,7 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wV
 
 }
 
-// This function returns the referenced microservices from a given pattern.
+// This function returns the referenced dependent services from a given pattern.
 // If the checkWorkloadConfig is true, it will check if the user has given the correct input for the workload/top-level service already.
 func getSpecRefsForPattern(patName string,
 	patOrg string,
@@ -336,7 +336,7 @@ func getSpecRefsForPattern(patName string,
 
 	// This parameter is nil if the caller is configuring a workload based pattern.
 	if resolveService == nil {
-		return nil, nil, NewAPIUserInputError(fmt.Sprintf("cannot configure a microservice on a node that is using a service based pattern: %v", patId), "microservice")
+		return nil, nil, NewAPIUserInputError(fmt.Sprintf("cannot configure a dependent service on a node that is using a service based pattern: %v", patId), "microservice")
 	}
 
 	for _, service := range patternDef.Services {

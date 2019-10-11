@@ -52,8 +52,12 @@ Here is a full description of all the variables you can use to setup the test th
 - NOLOOP=1 - turns off the loop that cancels agreements on the device and agbot (alternating), every 10 mins. Usually you want to specify NOLOOP=1 when actively iterating code.
 - NOCANCEL=1 - when set with NOLOOP=1, skips the single round of cancellation tests for less log clutter and time when just interested in agreement formation.
 - UNCONFIG=1 - turns on the unconfig/reconfig loop tests.
-- NOHZNREG=1 - turns off the tests for registering/unregistering nodes with `hzn` commands.
 - PATTERN=name - specify the name of a configured pattern that you want the device to use. Builtin patterns are spws, sns, sloc, sgps, sall, cpu2msghub etc. If you specify PATTERN, but turn off one of the dependent services that the top service needs, the system will not work correctly. If you dont specify a PATTERN, the manually managed policy files will be used to run the workloads (unless you turn them off).
+- NOHZNREG=1 - turns off the tests for registering/unregistering nodes with `hzn` commands.
+- NORETRY=1 - turns off the service retry test.
+- NOSVC_CONFIGSTATE=1 - turns off the service config state test.
+- NOSURFERR=1 - turns off the node surface error test.
+- NOPATTERNCHANGE=1 - turns off the node pattern change test.
 - NONS=1 - dont register the netspeed service.
 - NOGPS=1 - dont register the gpstest service.
 - NOLOC=1 - dont register the location service.

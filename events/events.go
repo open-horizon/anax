@@ -76,14 +76,16 @@ const (
 	WORKLOAD_UPGRADE         EventId = "WORKLOAD_UPGRADE"
 
 	// Node related
-	START_UNCONFIGURE       EventId = "UNCONFIGURE_NODE"
-	UNCONFIGURE_COMPLETE    EventId = "UNCONFIGURE_COMPLETE"
-	WORKER_STOP             EventId = "WORKER_STOP"
-	START_AGBOT_QUIESCE     EventId = "AGBOT_QUIESCE"
-	AGBOT_QUIESCE_COMPLETE  EventId = "AGBOT_QUIESCE_COMPLETE"
-	NODE_HEARTBEAT_FAILED   EventId = "HEARTBEAT_FAILED"
-	NODE_HEARTBEAT_RESTORED EventId = "HEARTBEAT_RESTORED"
-	UPDATE_NODE_USERINPUT   EventId = "UPDATE_USER_INPUT"
+	START_UNCONFIGURE            EventId = "UNCONFIGURE_NODE"
+	UNCONFIGURE_COMPLETE         EventId = "UNCONFIGURE_COMPLETE"
+	WORKER_STOP                  EventId = "WORKER_STOP"
+	START_AGBOT_QUIESCE          EventId = "AGBOT_QUIESCE"
+	AGBOT_QUIESCE_COMPLETE       EventId = "AGBOT_QUIESCE_COMPLETE"
+	NODE_HEARTBEAT_FAILED        EventId = "HEARTBEAT_FAILED"
+	NODE_HEARTBEAT_RESTORED      EventId = "HEARTBEAT_RESTORED"
+	UPDATE_NODE_USERINPUT        EventId = "UPDATE_USER_INPUT"
+	NODE_PATTERN_CHANGE_SHUTDOWN EventId = "NODE_PATTERN_CHANGE_SHUTDOWN"
+	NODE_PATTERN_CHANGE_REREG    EventId = "NODE_PATTERN_CHANGE_REREG"
 
 	// Service related
 	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
@@ -319,6 +321,34 @@ func NewNodeUserInputMessage(id EventId, svcSpecs persistence.ServiceSpecs) *Nod
 			Id: id,
 		},
 		ServiceSpecs: svcSpecs,
+	}
+}
+
+// This event indicates that something happened with node pattern.
+type NodePatternMessage struct {
+	event   Event
+	Pattern string
+}
+
+func (e NodePatternMessage) String() string {
+	return fmt.Sprintf("event: %v, Pattern: %v", e.event, e.Pattern)
+}
+
+func (e NodePatternMessage) ShortString() string {
+	return e.String()
+}
+
+func (e NodePatternMessage) Event() Event {
+	return e.event
+}
+
+func NewNodePatternMessage(id EventId, pattern string) *NodePatternMessage {
+
+	return &NodePatternMessage{
+		event: Event{
+			Id: id,
+		},
+		Pattern: pattern,
 	}
 }
 

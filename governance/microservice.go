@@ -825,44 +825,6 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 	}
 }
 
-// get the service configuration state from the exchange, check if any of them are suspended.
-// if a service is suspended, cancel the agreements and remove the containers associated with it.
-func (w *GovernanceWorker) governServiceConfigState() int {
-	// go govern
-	glog.V(4).Infof(logString(fmt.Sprintf("governing the service configuration state")))
-
-	service_cs, err := exchange.GetServicesConfigState(w.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve service configuration state from the exchange, error %v", err)))
-		eventlog.LogExchangeEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH, w.GetExchangeId(), err.Error()),
-			persistence.EC_EXCHANGE_ERROR, w.GetExchangeURL())
-	} else {
-		// get the services that has been changed to suspended state
-		suspended_services := []events.ServiceConfigState{}
-
-		if service_cs != nil {
-			for _, scs_exchange := range service_cs {
-				// all suspended services will be handled even the ones that was in the suspended state from last check.
-				// this will make sure there is no leak between the checking intervals, for example the un-arrived agreements
-				// from last check.
-				if scs_exchange.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-					suspended_services = append(suspended_services, *(events.NewServiceConfigState(scs_exchange.Url, scs_exchange.Org, scs_exchange.ConfigState)))
-				}
-			}
-		}
-
-		glog.V(5).Infof(logString(fmt.Sprintf("Suspended services to handle are %v", suspended_services)))
-
-		// fire event to handle the suspended services if any
-		if len(suspended_services) != 0 {
-			// we only handle the suspended services for the configstate change now
-			w.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_SUSPENDED, suspended_services)
-		}
-	}
-	return 0
-}
-
 // For the given suspended services, cancel all the related agreements and hence remove all the related containers.
 func (w *GovernanceWorker) handleServiceSuspended(service_cs []events.ServiceConfigState) error {
 	if service_cs == nil || len(service_cs) == 0 {

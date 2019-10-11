@@ -216,10 +216,9 @@ func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHa
 			inputNameNotDefinedInService = append(inputNameNotDefinedInService, policyInputName)
 		} else {
 			if err := cutil.VerifyWorkloadVarTypes(policyInputValue, serviceInput.Type); err != nil {
-				return false, err
+				return false, fmt.Errorf("Error validating user input %v for service %v/%v. Error: %v", policyInputName, serviceOrg, serviceUrl, err)
 			}
 		}
-
 	}
 
 	if len(inputNameNotDefinedInService) != 0 {
