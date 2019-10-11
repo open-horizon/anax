@@ -26,8 +26,14 @@ func SyncLocalUserInputWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDe
 	defer nodeUserInputUpdateLock.Unlock()
 
 	// get the node user input from the exchange
-	exchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
-	if err != nil {
+	var exchDevice *exchange.Device
+	var err error
+	if getDevice == nil {
+		exchDevice, err = GetExchangeNode()
+	} else {
+		exchDevice, err = getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
+	}
+	if err != nil || exchDevice == nil {
 		return false, nil, fmt.Errorf("Failed to get the device %v/%v from the exchange. %v", pDevice.Org, pDevice.Id, err)
 	}
 
@@ -92,7 +98,6 @@ func HashUserInput(ui []policy.UserInput) ([]byte, error) {
 // All UserInputAttributes will be removed.
 // Exchange is the master.
 func NodeUserInputInitalSetup(db *bolt.DB,
-	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler) error {
 
 	glog.V(3).Infof("Node user input initial setup.")
@@ -106,8 +111,8 @@ func NodeUserInputInitalSetup(db *bolt.DB,
 	}
 
 	// get exchange node user input
-	exchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
-	if err != nil {
+	exchDevice, err := GetExchangeNode()
+	if err != nil || exchDevice == nil {
 		return fmt.Errorf("Failed to get the device %v/%v from the exchange. %v", pDevice.Org, pDevice.Id, err)
 	}
 
@@ -133,7 +138,7 @@ func NodeUserInputInitalSetup(db *bolt.DB,
 	}
 
 	// now exchange is the master
-	if _, _, err := SyncLocalUserInputWithExchange(db, pDevice, getDevice); err != nil {
+	if _, _, err := SyncLocalUserInputWithExchange(db, pDevice, nil); err != nil {
 		return fmt.Errorf("Failed to sync the local user input with the exchange for node %v/%v. %v", pDevice.Org, pDevice.Id, err)
 	}
 
@@ -149,8 +154,14 @@ func NodeUserInputInitalSetup(db *bolt.DB,
 func ExchangeNodeUserInputChanged(pDevice *persistence.ExchangeDevice, db *bolt.DB, getDevice exchange.DeviceHandler) (bool, []policy.UserInput, error) {
 
 	// get the node user input from the exchange
-	exchDevice, err := getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
-	if err != nil {
+	var exchDevice *exchange.Device
+	var err error
+	if getDevice == nil {
+		exchDevice, err = GetExchangeNode()
+	} else {
+		exchDevice, err = getDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token)
+	}
+	if err != nil || exchDevice == nil {
 		return false, nil, fmt.Errorf("Failed to get the device %v/%v from the exchange. %v", pDevice.Org, pDevice.Id, err)
 	}
 
