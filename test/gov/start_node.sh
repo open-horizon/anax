@@ -13,22 +13,7 @@
 # This env var can be changed to whatever pattern you want to run.
 # export PATTERN="sall"
 
-if [ "$OLDANAX" == "1" ]
-then
-    echo "Starting OLD Anax1 to run workloads."
-    if [ ${CERT_LOC} -eq "1" ]; then
-      /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
-    else
-      /usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
-    fi
-else
-    echo "Starting Anax1 to run workloads."
-    if [ ${CERT_LOC} -eq "1" ]; then
-      /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
-    else
-      /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
-    fi
-fi
+nohup ./start_anax_loop.sh &>/dev/null &
 
 sleep 5
 

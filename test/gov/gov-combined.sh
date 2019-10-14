@@ -579,6 +579,20 @@ then
   if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
 fi
 
+if [ "$TEST_PATTERNS" == "sall" ]; then
+  if [ "$NOHZNREG" != "1" ]
+  then
+    echo "Sleeping 15 seconds..."
+    sleep 15
+    
+    ./hzn_reg.sh 
+    if [ $? -ne 0 ]; then 
+      echo "Failed registering and unregitering tests with hzn commands."
+      exit 1
+    fi
+  fi
+fi
+
 # Start the node unconfigure tests if they have been enabled.
 echo -e "Node unconfig setting is $UNCONFIG"
 if [ "$UNCONFIG" == "1" ] && [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
