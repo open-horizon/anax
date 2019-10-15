@@ -374,6 +374,9 @@ Environment Variables:
 	userinputRemoveForce := userinputRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'Are you sure?' prompt.")).Short('f').Bool()
 
 	serviceCmd := app.Command("service", msgPrinter.Sprintf("List or manage the services that are currently registered on this Horizon edge node."))
+	serviceLogCmd := serviceCmd.Command("log", msgPrinter.Sprintf("Show the service container logs."))
+	logServiceName := serviceLogCmd.Arg("service", msgPrinter.Sprintf("List the service name.")).String()
+	logServiceNameTail := serviceLogCmd.Flag("service", msgPrinter.Sprintf("List the service name. Supports lograted syslog.")).Short('f').String()
 	serviceListCmd := serviceCmd.Command("list", msgPrinter.Sprintf("List the services variable configuration that has been done on this Horizon edge node."))
 	serviceRegisteredCmd := serviceCmd.Command("registered", msgPrinter.Sprintf("List the services that are currently registered on this Horizon edge node."))
 	serviceConfigStateCmd := serviceCmd.Command("configstate", msgPrinter.Sprintf("List or manage the configuration state for the services that are currently registered on this Horizon edge node."))
@@ -754,6 +757,8 @@ Environment Variables:
 		userinput.Remove(*userinputRemoveForce)
 	case serviceListCmd.FullCommand():
 		service.List()
+	case serviceLogCmd.FullCommand():
+		service.Log(*logServiceName, *logServiceNameTail)
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
 	case serviceConfigStateListCmd.FullCommand():

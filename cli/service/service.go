@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
@@ -10,7 +11,11 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"io"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
 type APIServices struct {
@@ -74,6 +79,87 @@ func List() {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn service list' output: %v", err))
 	}
 	fmt.Printf("%s\n", jsonBytes)
+}
+
+func Log(ServiceName string, ServiceNameTail string) {
+	msgPrinter := i18n.GetMessagePrinter()
+	RefURL := ServiceName
+	if ServiceNameTail != "" {
+		RefURL = ServiceNameTail
+	}
+	var inputs api.AllServices
+	cliutils.HorizonGet("service", []int{200}, &inputs, false)
+	id_found := 0
+	var instance_id string
+	for i := 0; i < len(inputs.Instances["active"]); i++ {
+		a, err := json.Marshal(inputs.Instances["active"][i])
+		if err != nil {
+			fmt.Println("error:", err)
+		}
+		var id api.MicroserviceInstanceOutput
+		json.Unmarshal((a), &id)
+		if strings.Contains(id.SpecRef, RefURL) {
+			instance_id = id.InstanceId
+			fmt.Println(instance_id)
+			id_found = 1
+			break
+		}
+	}
+	if id_found == 0 {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("Unable to retreive service ID"))
+	}
+	for {
+		// Open syslog
+		file, err := os.Open("/var/log/syslog")
+		if err != nil {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist", err))
+		}
+		// Check file stats - size of file
+		fi, err := file.Stat()
+		if err != nil {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not get stats", err))
+		}
+		file_size := fi.Size()
+		defer file.Close()
+		reader := bufio.NewReader(file)
+		for {
+			// open file again to re-check stats in case it was logrotated
+			new_file, err := os.Open("/var/log/syslog")
+			if err != nil {
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			fi, err := new_file.Stat()
+			if err != nil {
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			new_file_size := fi.Size()
+			// check if file was logrotated
+			if new_file_size >= file_size {
+				file_size = new_file_size
+			} else {
+				// new file detected
+				if ServiceNameTail != "" {
+					break
+				}
+				time.Sleep(30 * time.Second)
+			}
+			// read line from file
+			line, err := reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					time.Sleep(1 * time.Second)
+				} else {
+					break
+				}
+			}
+			// if keyword matches part of line, print to consol.
+			if strings.Contains(line, instance_id) {
+				fmt.Print(string(line))
+			}
+		}
+	}
 }
 
 func Registered() {

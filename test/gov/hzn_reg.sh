@@ -142,7 +142,7 @@ function reg_node {
   cmd=$1
   echo -e "$cmd"
   ${cmd}
-  if [ $? -ne 0 ]; then 
+  if [ $? -ne 0 ]; then
     echo -e "${PREFIX} Failed to register node with hzn register"
     exit 1
   fi
@@ -161,7 +161,7 @@ function unreg_node {
 # make sure agreements are up and running
 function verify_agreements {
   HZN_REG_TEST=1 ./verify_agreements.sh
-  if [ $? -ne 0 ]; then 
+  if [ $? -ne 0 ]; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
@@ -226,7 +226,7 @@ fi
 
 ## register pattern sns, node will be created by this command
 unreg_node
-hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345
+hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an12345 -f
 
 echo -e "${PREFIX} Testing 'hzn register' with pattern sns."
 cmd="hzn register -u e2edevadmin:e2edevadminpw -n an12345:abcdefg -f /tmp/reg_userinput.json -o e2edev@somecomp.com -p e2edev@somecomp.com/sns"
@@ -263,11 +263,10 @@ cmd="hzn register -n an12345:abcdefg -f /tmp/reg_userinput_all.json -p sall"
 reg_node "$cmd"
 
 ./verify_agreements.sh
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed to verify agreement."
   exit 1
 fi
 unset HZN_ORG_ID
 
 echo -e "${PREFIX} Done"
-
