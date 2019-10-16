@@ -437,9 +437,15 @@ func ConfirmRemove(question string) {
 	// Prompt the user to make sure he/she wants to do this
 	fmt.Print(question + " [y/N]: ")
 	var response string
-	if _, err := fmt.Scanln(&response); err != nil {
-		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("Error scanning input, error %v", err))
+
+	reader := bufio.NewReader(os.Stdin)
+	response, err := reader.ReadString('\n')
+	if err != nil {
+		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("Error reading input, error %v", err))
 	}
+	response = strings.TrimSuffix(response, "\n")
+	response = strings.ToLower(response)
+
 	if strings.TrimSpace(response) != "y" {
 		i18n.GetMessagePrinter().Printf("Exiting.")
 		i18n.GetMessagePrinter().Println()
