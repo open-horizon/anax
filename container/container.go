@@ -1693,7 +1693,7 @@ func (b *ContainerWorker) syncupResources() {
 	// for multiple anax instances case, do nothing because we do not want to remove containers that
 	// belong to other anax instances
 	if b.Config.Edge.MultipleAnaxInstances {
-		glog.V(3).Infof("ContainerWorke: multiple anax instances enabled. will not cleanup left over containers.")
+		glog.V(3).Infof("ContainerWorker: multiple anax instances enabled. will not cleanup left over containers.")
 		b.Messages() <- events.NewDeviceContainersSyncedMessage(events.DEVICE_CONTAINERS_SYNCED, true)
 		return
 	}

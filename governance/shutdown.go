@@ -38,8 +38,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredServices
 	// will prevent the exchange from finding the node and thereby prevent agobts from trying to make new agreements.
 	if err := w.clearNodePatternAndMS(); err != nil {
-		w.completedWithError(logString(err.Error()))
-		return
+		w.continueWithError(logString(err.Error()))
 	}
 
 	// Cancel all agreements, all workload containers and networks will automatically terminate.
@@ -50,8 +49,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	// Remove the node’s messaging public key from the node’s exchange resource and delete the node’s message key pair from the filesystem.
 	if err := w.patchNodeKey(); err != nil {
-		w.completedWithError(logString(err.Error()))
-		return
+		w.continueWithError(logString(err.Error()))
 	}
 
 	// Tell the blockchain workers to terminate blockchain containers. We will do this by telling the producer protocol handlers to shutdown.
@@ -79,8 +77,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 	// Remove the node's exchange resource.
 	if cmd.Msg.RemoveNode() {
 		if err := w.deleteNode(); err != nil {
-			w.completedWithError(logString(err.Error()))
-			return
+			w.continueWithError(logString(err.Error()))
 		}
 	}
 
@@ -367,4 +364,11 @@ func (w *GovernanceWorker) completedWithError(e string) {
 		glog.Errorf(logString(fmt.Sprintf("node shutdown terminating with error: %v", e)))
 	}
 	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, e)
+}
+
+// Log the error but continue shutdown process
+func (w *GovernanceWorker) continueWithError(e string) {
+	if e != "" {
+		glog.Errorf(logString(fmt.Sprintf("node shutdown continuing after encountering error: %v", e)))
+	}
 }
