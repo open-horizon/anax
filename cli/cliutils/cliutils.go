@@ -1236,6 +1236,21 @@ func GetExchangeAuth(userPw string, nodeIdTok string) string {
 	return credToUse
 }
 
+// Find correct credentials to use. Use -u first.
+// If empty, use HZN_EXCHANGE_USER_AUTH 
+// but do not show an error if credentials are empty
+func GetExchangeAuthVersion(userPw string) string {
+	credToUse := ""
+	if userPw != "" {
+		credToUse = userPw
+	} else {
+		if tmpU := WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_USER_AUTH"); *tmpU != "" {
+			credToUse = *tmpU
+		}
+	}
+	return credToUse
+}
+
 // set env variable ARCH if it is not set
 func SetDefaultArch() {
 	arch := os.Getenv("ARCH")
@@ -1429,11 +1444,11 @@ func GetHTTPClient(timeout int) *http.Client {
 		}
 	}
 
-	responseTimeout := int(float64(requestTimeout)*0.8)
-	dialTimeout := int(float64(requestTimeout)*0.5)
-	keepAlive := requestTimeout*2
+	responseTimeout := int(float64(requestTimeout) * 0.8)
+	dialTimeout := int(float64(requestTimeout) * 0.5)
+	keepAlive := requestTimeout * 2
 	TLSHandshake := dialTimeout
-	expectContinue := int(float64(requestTimeout)*0.5)
+	expectContinue := int(float64(requestTimeout) * 0.5)
 
 	Verbose(i18n.GetMessagePrinter().Sprintf("HTTP request timeout set to %v seconds", requestTimeout))
 
