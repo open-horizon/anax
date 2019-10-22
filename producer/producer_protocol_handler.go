@@ -229,13 +229,22 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			glog.Errorf(BPPHlogString(w.Name(), "pattern name matching failed, ignoring proposal"))
 			err_log_event = "Pattern name matching failed, ignoring proposal"
 			handled = true
-		} else if found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {
+		} else if ag, found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {	
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)))
 			err_log_event = fmt.Sprintf("Error finding agreement with TsAndCs (Terms And Conditions) name '%v', error %v", tcPolicy.Header.Name, err)
 			handled = true
 		} else if found {
 			glog.Warningf(BPPHlogString(w.Name(), fmt.Sprintf("agreement with TsAndCs name '%v' exists, ignoring proposal: %v", tcPolicy.Header.Name, proposal.ShortString())))
-			err_log_event = "Agreement with TsAndCs (Terms And Conditions) name exists, ignoring proposal."
+			eventlog.LogAgreementEvent2(
+				w.db,
+				persistence.SEVERITY_WARN,
+				persistence.NewMessageMeta(EL_PROD_AG_EXISTS_IGNORE_PROPOSAL, ag.CurrentAgreementId, wls),
+				persistence.EC_IGNORE_PROPOSAL,
+				proposal.AgreementId(),
+				persistence.WorkloadInfo{URL: wls, Org: worg, Version: wversion, Arch: warch},
+				ConvertToServiceSpecs(tcPolicy.APISpecs),
+				proposal.ConsumerId(),
+				proposal.Protocol())
 			handled = true
 		} else if messageTarget, err := exchange.CreateMessageTarget(exchangeMsg.AgbotId, nil, exchangeMsg.AgbotPubKey, ""); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating message target: %v", err)))
@@ -356,7 +365,7 @@ func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy) (boo
 }
 
 // Check if there are current unarchived agreements that have the same workload.
-func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractprotocol.ProtocolHandler, tcpol_name string) (bool, error) {
+func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractprotocol.ProtocolHandler, tcpol_name string) (*persistence.EstablishedAgreement, bool, error) {
 
 	notTerminated := func() persistence.EAFilter {
 		return func(a persistence.EstablishedAgreement) bool {
@@ -365,20 +374,20 @@ func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractp
 	}
 
 	if ags, err := persistence.FindEstablishedAgreements(w.db, w.Name(), []persistence.EAFilter{notTerminated(), persistence.UnarchivedEAFilter()}); err != nil {
-		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving unarchived agreements from db: %v", err)))
+		return nil, false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving unarchived agreements from db: %v", err)))
 	} else {
 		for _, ag := range ags {
 			if proposal, err := ph.DemarshalProposal(ag.Proposal); err != nil {
-				return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag, err)))
+				return nil, false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v proposal: %v", ag, err)))
 			} else if tcPolicy, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
-				return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
+				return nil, false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error demarshalling agreement %v Producer Policy: %v", ag.CurrentAgreementId, err)))
 			} else if tcPolicy.Header.Name == tcpol_name {
-				return true, nil
+				return &ag, true, nil
 			}
 		}
 	}
 
-	return false, nil
+	return nil, false, nil
 }
 
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
