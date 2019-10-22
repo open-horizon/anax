@@ -530,7 +530,8 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 			// First get my own keys
 			_, myPrivKey, _ := exchange.GetKeys(w.Config.AgreementBot.MessageKeyPath)
 
-			// Deconstruct and decrypt the message. Then process it.
+			// Deconstruct and decrypt the message. If there is a problem with the message, it will be deleted.
+			deleteMessage := true
 			if protocolMessage, receivedPubKey, err := exchange.DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
 				glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to deconstruct exchange message %v, error %v", msg, err))
 			} else if serializedPubKey, err := exchange.MarshalPublicKey(receivedPubKey); err != nil {
@@ -541,8 +542,13 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 				glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to extract agreement protocol name from message %v", protocolMessage))
 			} else if _, ok := w.consumerPH[msgProtocol]; !ok {
 				glog.Infof(fmt.Sprintf("AgreementBotWorker unable to direct exchange message %v to a protocol handler, deleting it.", protocolMessage))
+				deleteMessage = false
 				DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
 			} else {
+				// The message seems to be good, so don't delete it yet, the protocol worker that handles the message will delete it.
+				deleteMessage = false
+
+				// Send the message to a protocol worker.
 				cmd := NewNewProtocolMessageCommand(protocolMessage, msg.MsgId, msg.DeviceId, msg.DevicePubKey)
 				if !w.consumerPH[msgProtocol].AcceptCommand(cmd) {
 					glog.Infof(fmt.Sprintf("AgreementBotWorker protocol handler for %v not accepting exchange messages, deleting msg.", msgProtocol))
@@ -551,6 +557,13 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 					DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
 				}
 			}
+
+			// If anything went wrong trying to decrypt the message or verify its origin, etc, just delete it. These errors aren't
+			// expected to be retryable.
+			if deleteMessage {
+				DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
+			}
+
 		}
 	}
 	glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))

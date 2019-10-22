@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -151,7 +152,8 @@ func (w *ExchangeMessageWorker) NoWorkHandler() {
 			// First get my own keys
 			_, myPrivKey, _ := GetKeys("")
 
-			// Deconstruct and decrypt the message.
+			// Deconstruct and decrypt the message. If there is a problem with the message, it will be deleted.
+			deleteMessage := true
 			if protocolMessage, receivedPubKey, err := DeconstructExchangeMessage(msg.Message, myPrivKey); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("unable to deconstruct exchange message %v, error %v", msg, err)))
 			} else if serializedPubKey, err := MarshalPublicKey(receivedPubKey); err != nil {
@@ -161,9 +163,20 @@ func (w *ExchangeMessageWorker) NoWorkHandler() {
 			} else if mBytes, err := json.Marshal(msg); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error marshalling message %v, error: %v", msg, err)))
 			} else {
+				// The message seems to be good, so don't delete it yet, the worker that handles the message will delete it.
+				deleteMessage = false
+
+				// Send the message to all workers.
 				em := events.NewExchangeDeviceMessage(events.RECEIVED_EXCHANGE_DEV_MSG, msg.AgbotId, mBytes, string(protocolMessage))
 				w.Messages() <- em
 			}
+
+			// If anything went wrong trying to decrypt the message or verify its origin, etc, just delete it. These errors aren't
+			// expected to be retryable.
+			if deleteMessage {
+				w.deleteMessage(&msg)
+			}
+
 		}
 	}
 
@@ -180,16 +193,35 @@ func (w *ExchangeMessageWorker) getMessages() ([]DeviceMessage, error) {
 	targetURL := w.Manager.Config.Edge.ExchangeURL + "orgs/" + GetOrg(w.GetExchangeId()) + "/nodes/" + GetId(w.GetExchangeId()) + "/msgs"
 	for {
 		if err, tpErr := InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
-			glog.Errorf(err.Error())
+			glog.Errorf(logString(err.Error()))
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
+			glog.Warningf(logString(tpErr.Error()))
 			time.Sleep(10 * time.Second)
 			continue
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("retrieved %v messages", len(resp.(*GetDeviceMessageResponse).Messages))))
 			msgs := resp.(*GetDeviceMessageResponse).Messages
 			return msgs, nil
+		}
+	}
+}
+
+func (w *ExchangeMessageWorker) deleteMessage(msg *DeviceMessage) error {
+	var resp interface{}
+	resp = new(PostDeviceResponse)
+	targetURL := w.GetExchangeURL() + "orgs/" + GetOrg(w.GetExchangeId()) + "/nodes/" + GetId(w.GetExchangeId()) + "/msgs/" + strconv.Itoa(msg.MsgId)
+	for {
+		if err, tpErr := InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(logString(err.Error()))
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(logString(tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("deleted message %v because it was not usable.", msg.MsgId)))
+			return nil
 		}
 	}
 }
