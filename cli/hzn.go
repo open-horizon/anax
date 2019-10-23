@@ -374,6 +374,9 @@ Environment Variables:
 	userinputRemoveForce := userinputRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'Are you sure?' prompt.")).Short('f').Bool()
 
 	serviceCmd := app.Command("service", msgPrinter.Sprintf("List or manage the services that are currently registered on this Horizon edge node."))
+	serviceLogCmd := serviceCmd.Command("log", msgPrinter.Sprintf("Show the container logs for a service."))
+	logServiceName := serviceLogCmd.Arg("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .")).Required().String()
+	logTail := serviceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	serviceListCmd := serviceCmd.Command("list", msgPrinter.Sprintf("List the services variable configuration that has been done on this Horizon edge node."))
 	serviceRegisteredCmd := serviceCmd.Command("registered", msgPrinter.Sprintf("List the services that are currently registered on this Horizon edge node."))
 	serviceConfigStateCmd := serviceCmd.Command("configstate", msgPrinter.Sprintf("List or manage the configuration state for the services that are currently registered on this Horizon edge node."))
@@ -566,8 +569,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok)
 		case "business removepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok)
-		case "version": 
-			credToUse  = cliutils.GetExchangeAuthVersion(*exUserPw)
+		case "version":
+			credToUse = cliutils.GetExchangeAuthVersion(*exUserPw)
 		default:
 			// get HZN_EXCHANGE_USER_AUTH as default if exUserPw is empty
 			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
@@ -756,6 +759,8 @@ Environment Variables:
 		userinput.Remove(*userinputRemoveForce)
 	case serviceListCmd.FullCommand():
 		service.List()
+	case serviceLogCmd.FullCommand():
+		service.Log(*logServiceName, *logTail)
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
 	case serviceConfigStateListCmd.FullCommand():
