@@ -566,8 +566,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok)
 		case "business removepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok)
-		case "version": 
-			credToUse  = cliutils.GetExchangeAuthVersion(*exUserPw)
+		case "version":
+			credToUse = cliutils.GetExchangeAuthVersion(*exUserPw)
 		default:
 			// get HZN_EXCHANGE_USER_AUTH as default if exUserPw is empty
 			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))

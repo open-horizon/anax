@@ -1237,7 +1237,7 @@ func GetExchangeAuth(userPw string, nodeIdTok string) string {
 }
 
 // Find correct credentials to use. Use -u first.
-// If empty, use HZN_EXCHANGE_USER_AUTH 
+// If empty, use HZN_EXCHANGE_USER_AUTH
 // but do not show an error if credentials are empty
 func GetExchangeAuthVersion(userPw string) string {
 	credToUse := ""
