@@ -275,18 +275,19 @@ func (p PutAgreementState) String() string {
 type SoftwareVersion map[string]string
 
 type PutDeviceRequest struct {
-	Token              string          `json:"token"`
-	Name               string          `json:"name"`
-	Pattern            string          `json:"pattern"`
-	RegisteredServices []Microservice  `json:"registeredServices"`
-	MsgEndPoint        string          `json:"msgEndPoint"`
-	SoftwareVersions   SoftwareVersion `json:"softwareVersions"`
-	PublicKey          []byte          `json:"publicKey"`
-	Arch               string          `json:"arch"`
+	Token              string             `json:"token"`
+	Name               string             `json:"name"`
+	Pattern            string             `json:"pattern"`
+	RegisteredServices []Microservice     `json:"registeredServices"`
+	MsgEndPoint        string             `json:"msgEndPoint"`
+	SoftwareVersions   SoftwareVersion    `json:"softwareVersions"`
+	PublicKey          []byte             `json:"publicKey"`
+	Arch               string             `json:"arch"`
+	UserInput          []policy.UserInput `json:"userInput"`
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v", "*****", p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch)
+	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
 }
 
 func (p PutDeviceRequest) ShortString() string {

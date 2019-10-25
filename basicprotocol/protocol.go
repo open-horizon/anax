@@ -348,6 +348,7 @@ const CANCEL_MS_IMAGE_FETCH_FAILURE = 117
 const CANCEL_MS_DOWNGRADE_REQUIRED = 118
 const CANCEL_SERVICE_SUSPENDED = 119
 const CANCEL_NODE_USERINPUT_CHANGED = 120
+const CANCEL_NODE_PATTERN_CHANGED = 121
 
 // These constants represent consumer cancellation reason codes
 // const AB_CANCEL_NOT_FINALIZED_TIMEOUT = 200  // xc8
@@ -385,6 +386,7 @@ func DecodeReasonCode(code uint64) string {
 		CANCEL_NODE_SHUTDOWN:            "node was unconfigured",
 		CANCEL_SERVICE_SUSPENDED:        "service suspended",
 		CANCEL_NODE_USERINPUT_CHANGED:   "node user input changed",
+		CANCEL_NODE_PATTERN_CHANGED:     "node pattern changed",
 		// AB_CANCEL_NOT_FINALIZED_TIMEOUT: "agreement bot never detected agreement on the blockchain",
 		AB_CANCEL_NO_REPLY:         "agreement bot never received reply to proposal",
 		AB_CANCEL_NEGATIVE_REPLY:   "agreement bot received negative reply",

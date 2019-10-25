@@ -17,11 +17,9 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
-	"github.com/open-horizon/anax/version"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -29,26 +27,29 @@ import (
 
 // for identifying the subworkers used by this worker
 const HEARTBEAT = "HeartBeat"
+const EDGENODE = "EdgeNode"
 const NODEPOLICY = "NodePolicy"
-const NODEUSERINPUT = "NodeUserInput"
-const SURFACEERRORS = "SurfaceExchErrors"
 
 // messages for eventlog
 const (
-	EL_AG_UNABLE_READ_POL_FILE           = "Unable to read policy file %v for service %v, error: %v"
-	EL_AG_START_ADVERTISE_POL            = "Start policy advertising with the exchange for service %v/%v."
-	EL_AG_UNABLE_ADVERTISE_POL           = "Unable to advertise policies with exchange for service %v/%v, error: %v"
-	EL_AG_COMPLETE_ADVERTISE_POL         = "Complete policy advertising with the exchange for service %v/%v."
-	EL_AG_NODE_HB_FAILED                 = "Node heartbeat failed for node %v/%v. Error: %v"
-	EL_AG_NODE_HB_RESTORED               = "Node heartbeat restored for node %v/%v."
-	EL_AG_UNABLE_READ_NODE_POL_FROM_DB   = "unable to read node policy from the local database. %v"
-	EL_AG_UNABLE_READ_NODE_FROM_DB       = "Unable to read node object from the local database. %v"
-	EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH = "Unable to sync the local node policy with the exchange copy. Error: %v"
-	EL_AG_NODE_POL_SYNCED_WITH_EXCH      = "Node policy updated with the exchange copy: %v"
-	EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH  = "Unable to sync the local node user input with the exchange copy. Error: %v"
-	EL_AG_NODE_UI_SYNCED_WITH_EXCH       = "Node user input updated with the exchange copy. The changed user inputs are: %v"
-	EL_AG_NODE_CANNOT_VERIFY_AG          = "Node could not verify the agreement %v with the consumer. Will cancel it"
-	EL_AG_NODE_IS_OFFLINE                = "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+	EL_AG_UNABLE_READ_POL_FILE                   = "Unable to read policy file %v for service %v, error: %v"
+	EL_AG_START_ADVERTISE_POL                    = "Start policy advertising with the exchange for service %v/%v."
+	EL_AG_UNABLE_ADVERTISE_POL                   = "Unable to advertise policies with exchange for service %v/%v, error: %v"
+	EL_AG_COMPLETE_ADVERTISE_POL                 = "Complete policy advertising with the exchange for service %v/%v."
+	EL_AG_NODE_HB_FAILED                         = "Node heartbeat failed for node %v/%v. Error: %v"
+	EL_AG_NODE_HB_RESTORED                       = "Node heartbeat restored for node %v/%v."
+	EL_AG_UNABLE_READ_NODE_POL_FROM_DB           = "unable to read node policy from the local database. %v"
+	EL_AG_UNABLE_READ_NODE_FROM_DB               = "Unable to read node object from the local database. %v"
+	EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH         = "Unable to sync the local node policy with the exchange copy. Error: %v"
+	EL_AG_NODE_POL_SYNCED_WITH_EXCH              = "Node policy updated with the exchange copy: %v"
+	EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH          = "Unable to sync the local node user input with the exchange copy. Error: %v"
+	EL_AG_NODE_UI_SYNCED_WITH_EXCH               = "Node user input updated with the exchange copy. The changed user inputs are: %v"
+	EL_AG_NODE_CANNOT_VERIFY_AG                  = "Node could not verify the agreement %v with the consumer. Will cancel it"
+	EL_AG_NODE_IS_OFFLINE                        = "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+	EL_AG_UNABLE_SYNC_NODE_WITH_EXCH             = "Unable to sync the node with the exchange copy. Error: %v"
+	EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH = "Unable to retrieve the service configuration state for node resource %v from the exchange, error %v"
+	EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB  = "Unable to retrieve the saved node exchange pattern from the local database. %v"
+	EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB   = "Unable to save the new node exchange pattern %v to the local database. Error: %v"
 )
 
 // This is does nothing useful at run time.
@@ -73,6 +74,10 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_AG_NODE_UI_SYNCED_WITH_EXCH)
 	msgPrinter.Sprintf(EL_AG_NODE_CANNOT_VERIFY_AG)
 	msgPrinter.Sprintf(EL_AG_NODE_IS_OFFLINE)
+	msgPrinter.Sprintf(EL_AG_UNABLE_SYNC_NODE_WITH_EXCH)
+	msgPrinter.Sprintf(EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH)
+	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB)
+	msgPrinter.Sprintf(EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB)
 }
 
 // must be safely-constructed!!
@@ -254,10 +259,9 @@ func (w *AgreementWorker) Initialize() bool {
 		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
 		// start heartbeating when the registration event comes in.
 		w.heartBeatFailed = false
-		w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS, false)
+		w.DispatchSubworker(EDGENODE, w.checkNodeChanges, w.BaseWorker.Manager.Config.Edge.NodeCheckIntervalS, false)
 		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
 		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
-		w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
 	}
 
 	// Publish what we have for the world to see
@@ -434,8 +438,8 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 		glog.Errorf(logString(fmt.Sprintf("error during sync up of agreements, error: %v", err)))
 	}
 
-	// start checking userinput changes periodically
-	w.DispatchSubworker(NODEUSERINPUT, w.checkNodeUserInputChanges, w.BaseWorker.Manager.Config.Edge.NodeUserInputCheckIntervalS, false)
+	// start checking exchange node changes periodically
+	w.DispatchSubworker(EDGENODE, w.checkNodeChanges, w.BaseWorker.Manager.Config.Edge.NodeCheckIntervalS, false)
 
 	// start checking node policy changes periodically
 	w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
@@ -444,213 +448,6 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	w.heartBeatFailed = false
 	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 
-	// start checking for issues closed by agreements and putting updated surface errors in the exchange
-	w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
-}
-
-// Heartbeat to the exchange. This function is called by the heartbeat subworker.
-func (w *AgreementWorker) heartBeat() int {
-
-	if w.Config.Edge.ExchangeVersionCheckIntervalM > 0 {
-		// get the exchange version check interval and change to seconds
-		check_interval := w.Config.Edge.ExchangeVersionCheckIntervalM * 60
-
-		// check the exchange version when time is right
-		time_now := time.Now().Unix()
-		if w.lastExchVerCheck == 0 || time_now-w.lastExchVerCheck >= int64(check_interval) {
-			w.lastExchVerCheck = time_now
-
-			// log error if the current exchange version does not meet the requirement
-			if err := version.VerifyExchangeVersion(w.GetHTTPFactory(), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-			}
-		}
-	}
-
-	// now do the hearbeat
-	nodeOrg := exchange.GetOrg(w.GetExchangeId())
-	nodeId := exchange.GetId(w.GetExchangeId())
-
-	targetURL := w.GetExchangeURL() + "orgs/" + nodeOrg + "/nodes/" + nodeId + "/heartbeat"
-	err := exchange.Heartbeat(w.GetHTTPFactory().NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
-
-	if err != nil {
-		if strings.Contains(err.Error(), "status: 401") {
-			// If the heartbeat fails because the node entry is gone then initiate a full node quiesce
-			w.Messages() <- events.NewNodeShutdownMessage(events.START_UNCONFIGURE, false, false)
-		} else {
-			// let other workers know that the heartbeat failed.
-			// the message is sent out only when the heartbeat state changes from success to failed.
-			if !w.heartBeatFailed {
-				w.heartBeatFailed = true
-
-				glog.Errorf(logString(fmt.Sprintf("node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err)))
-				eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_AG_NODE_HB_FAILED, nodeOrg, nodeId, err.Error()),
-					persistence.EC_NODE_HEARTBEAT_FAILED, nodeId, nodeOrg, "", "")
-
-				w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_FAILED, nodeOrg, nodeId)
-			}
-		}
-	} else {
-		if w.heartBeatFailed {
-			// let other workers know that the heartbeat restored
-			// the message is sent out only when the heartbeat state changes from faild to success.
-			w.heartBeatFailed = false
-
-			glog.Infof(logString(fmt.Sprintf("node heartbeat restored for node %v/%v.", nodeOrg, nodeId)))
-			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-				persistence.NewMessageMeta(EL_AG_NODE_HB_RESTORED, nodeOrg, nodeId),
-				persistence.EC_NODE_HEARTBEAT_RESTORED, nodeId, nodeOrg, "", "")
-
-			w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_RESTORED, nodeOrg, nodeId)
-		}
-	}
-
-	return 0
-}
-
-func (w *AgreementWorker) surfaceErrors() int {
-	pDevice, err := persistence.FindExchangeDevice(w.db)
-	if err != nil {
-		glog.V(3).Infof("Error getting persistence device. %v", err)
-	}
-	errorsHandler := exchange.GetHTTPSurfaceErrorsHandler(w)
-	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w)
-	serviceResolverHandler := exchange.GetHTTPServiceResolverHandler(w)
-	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, errorsHandler, putErrorsHandler, serviceResolverHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
-}
-
-// handles the node policy UPDATE_POLICY event
-func (w *AgreementWorker) NodePolicyUpdated() {
-	glog.V(5).Infof(logString("handling node policy updated."))
-	// get the node policy
-	nodePolicy, err := persistence.FindNodePolicy(w.db)
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
-		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_POL_FROM_DB, err.Error()),
-			persistence.EC_DATABASE_ERROR)
-		return
-	}
-
-	// add the node policy to the policy manager
-	newPol, err := policy.GenPolicyFromExternalPolicy(nodePolicy, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
-		return
-	}
-	w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPol)
-}
-
-// handles the node policy DELETE_POLICY event
-func (w *AgreementWorker) NodePolicyDeleted() {
-	glog.V(5).Infof(logString("handling node policy deleted."))
-	w.pm.DeletePolicyByName(exchange.GetOrg(w.GetExchangeId()), policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))
-}
-
-// Check the node user input changes on the exchange and sync up with
-// the local copy. THe exchange is the master
-func (w *AgreementWorker) checkNodeUserInputChanges() int {
-	glog.V(5).Infof(logString(fmt.Sprintf("checking the node user input changes.")))
-
-	// get the node
-	pDevice, err := persistence.FindExchangeDevice(w.db)
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
-		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
-			persistence.EC_DATABASE_ERROR)
-		return 0
-	} else if pDevice == nil {
-		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
-		return 0
-	}
-
-	// exchange is the master
-	updated, changedSvcSpecs, err := exchangesync.SyncLocalUserInputWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w))
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node user input with the exchange copy. Error: %v", err)))
-		if !w.hznOffline {
-			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH, err.Error()),
-				persistence.EC_ERROR_NODE_POLICY_UPDATE,
-				exchange.GetOrg(w.GetExchangeId()),
-				exchange.GetId(w.GetExchangeId()),
-				w.devicePattern, "")
-			w.isOffline()
-		}
-	} else if updated {
-		w.hznOffline = false
-		glog.V(3).Infof(logString(fmt.Sprintf("Node user input updated with the exchange copy. The changed user inputs are: %v", changedSvcSpecs)))
-		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-			persistence.NewMessageMeta(EL_AG_NODE_UI_SYNCED_WITH_EXCH, changedSvcSpecs),
-			persistence.EC_NODE_POLICY_UPDATED,
-			exchange.GetOrg(w.GetExchangeId()),
-			exchange.GetId(w.GetExchangeId()),
-			w.devicePattern, "")
-
-		// only inform the user input changes when the node is configured.
-		if pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
-			w.Messages() <- events.NewNodeUserInputMessage(events.UPDATE_NODE_USERINPUT, changedSvcSpecs)
-		}
-	} else {
-		w.hznOffline = false
-	}
-
-	glog.V(5).Infof(logString(fmt.Sprintf("Done checking the user input changes.")))
-	return 0
-}
-
-// Check the node policy changes on the exchange and sync up with
-// the local copy. THe exchange is the master
-func (w *AgreementWorker) checkNodePolicyChanges() int {
-	glog.V(5).Infof(logString(fmt.Sprintf("checking the node policy changes.")))
-
-	// get the node
-	pDevice, err := persistence.FindExchangeDevice(w.db)
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
-		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
-			persistence.EC_DATABASE_ERROR)
-		return 0
-	} else if pDevice == nil {
-		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
-		return 0
-	}
-
-	// exchange is the master
-	updated, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
-		if !w.hznOffline {
-			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH, err.Error()),
-				persistence.EC_ERROR_NODE_POLICY_UPDATE,
-				exchange.GetOrg(w.GetExchangeId()),
-				exchange.GetId(w.GetExchangeId()),
-				w.devicePattern, "")
-			w.isOffline()
-		}
-	} else if updated {
-		w.hznOffline = false
-		glog.V(3).Infof(logString(fmt.Sprintf("Node policy updated with the exchange copy: %v", newNodePolicy)))
-		eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-			persistence.NewMessageMeta(EL_AG_NODE_POL_SYNCED_WITH_EXCH, newNodePolicy),
-			persistence.EC_NODE_POLICY_UPDATED,
-			exchange.GetOrg(w.GetExchangeId()),
-			exchange.GetId(w.GetExchangeId()),
-			w.devicePattern, "")
-
-		if pDevice.Pattern == "" {
-			w.Messages() <- events.NewNodePolicyMessage(events.UPDATE_POLICY)
-		}
-	} else {
-		w.hznOffline = false
-	}
-	glog.V(5).Infof(logString(fmt.Sprint("Done checking the node policy changes.")))
-	return 0
 }
 
 // This function is only called when anax device side initializes. The agbot has it's own initialization checking.
@@ -662,9 +459,14 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
 
+	// get the exchange node and save it locally
+	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w)); err != nil {
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v", err)))
+	}
+
 	// setup the user input. exchange is the master.
 	// However, if the exchange does not have user input, convert the old UserInputAttributes into UserInput format
-	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
+	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
 		return errors.New(logString(fmt.Sprintf("Failed to initially set up node user input. %v", err)))
 	}
 
@@ -679,6 +481,16 @@ func (w *AgreementWorker) syncOnInit() error {
 			return errors.New(logString(fmt.Sprintf("Failed to convert node policy to policy file format: %v", err)))
 		}
 		w.pm.UpdatePolicy(exchange.GetOrg(w.GetExchangeId()), newPolicy)
+	}
+
+	// check if this is the pattern change case
+	new_pattern, err := persistence.FindSavedNodeExchPattern(w.db)
+	if err != nil {
+		return errors.New(logString(fmt.Sprintf("received error reading node exchange pattern from local database: %v", err)))
+	} else if new_pattern != "" {
+		// send a message to re-reg the node wiht the new pattern
+		glog.V(3).Infof(logString(fmt.Sprintf("the device is brought up to handle pattern change. THe new pattern is %v.", new_pattern)))
+		w.Messages() <- events.NewNodePatternMessage(events.NODE_PATTERN_CHANGE_REREG, new_pattern)
 	}
 
 	// Reconcile the set of agreements recorded in the exchange for this device with the agreements in the local DB.
@@ -1150,32 +962,4 @@ func (w *AgreementWorker) messageInExchange(msgId int) (bool, error) {
 
 var logString = func(v interface{}) string {
 	return fmt.Sprintf("AgreementWorker %v", v)
-}
-
-func (w *AgreementWorker) isOffline() {
-	msgPrinter := i18n.GetMessagePrinterWithLocale("en")
-	eventLogs, err := eventlog.GetEventLogs(w.db, false, nil, msgPrinter)
-	if err != nil {
-		glog.V(2).Infof("Error getting event logs: %v", err)
-		return
-	}
-	sort.Sort(eventlog.EventLogByTimestamp(eventLogs))
-	var lastThree []persistence.EventLog
-	lastThree = eventLogs
-	if len(eventLogs) > 4 {
-		lastThree = eventLogs[len(eventLogs)-4:]
-	}
-	for _, log := range lastThree {
-		if !(strings.Contains(log.Message, "network") || strings.Contains(log.Message, "connection") || strings.Contains(log.Message, "time out") || strings.Contains(log.Message, "server")) {
-			w.hznOffline = false
-			return
-		}
-	}
-	eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-		persistence.NewMessageMeta(EL_AG_NODE_IS_OFFLINE),
-		persistence.EC_ERROR_NODE_POLICY_UPDATE,
-		exchange.GetOrg(w.GetExchangeId()),
-		exchange.GetId(w.GetExchangeId()),
-		w.devicePattern, "")
-	w.hznOffline = true
 }

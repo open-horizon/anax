@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -321,4 +322,15 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *DeviceStatus) er
 			return nil
 		}
 	}
+}
+
+func (w *GovernanceWorker) surfaceErrors() int {
+	pDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.V(3).Infof(logString(fmt.Sprintf("Error getting persistence device. %v", err)))
+	}
+	errorsHandler := exchange.GetHTTPSurfaceErrorsHandler(w)
+	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w)
+	serviceResolverHandler := exchange.GetHTTPServiceResolverHandler(w)
+	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, errorsHandler, putErrorsHandler, serviceResolverHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
 }

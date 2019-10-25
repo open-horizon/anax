@@ -20,11 +20,13 @@ const (
 	EL_GOV_ERR_RETRIEVE_SINSTS_FROM_DB        = "Error retrieving all service instances from database, error: %v"
 	EL_GOV_ERR_RETRIEVE_SINST_FROM_DB         = "Error getting service instance %v from db. %v"
 	EL_GOV_ERR_RETRIEVE_MATCH_AGS_FROM_DB     = "Error retrieving matching agreements from database for workloads %v. Error: %v"
+	EL_GOV_ERR_SAVE_NODE_CONFIGSTATE_TO_DB    = "Error perisisting node config state in database to %v. Error: %v"
+	EL_GOV_ERR_RETRIEVE_DEVICE_FROM_DB        = "Error retrieving device from database. Error: %v"
+	EL_GOV_DEL_NODE_EXCH_PATTERN_FROM_DB      = "Error deleting node exchange pattern from the local database. %v"
 
 	// exchange
-	EL_GOV_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH = "Unable to retrieve the service configuration state for node resource %v from the exchange, error %v"
-	EL_GOV_ERR_RETRIEVE_NODE_FROM_EXCH            = "Error retrieving node %v from the exchange: %v"
-	EL_GOV_ERR_UPDATE_REGSVCS_IN_EXCH             = "Error updating registeredServices for node %v in the exchange: %v"
+	EL_GOV_ERR_RETRIEVE_NODE_FROM_EXCH = "Error retrieving node %v from the exchange: %v"
+	EL_GOV_ERR_UPDATE_REGSVCS_IN_EXCH  = "Error updating registeredServices for node %v in the exchange: %v"
 
 	// image
 	EL_GOV_IMAGE_LOADED            = "Image loaded for %v/%v."
@@ -94,6 +96,16 @@ const (
 	EL_GOV_FAILED_SVC_RETRY           = "Failed retrying number %v for dependent service %v version %v."
 	EL_GOV_ERR_GET_SVC_RETRY_CNT      = "Failed to get the service retry count for %v version %v. %v"
 	EL_GOV_ERR_UPDATE_SVC_RETRY_STATE = "Error updating retry start state for service instance %v in dadabase. %v"
+
+	// pattern change
+	EL_GOV_EXCH_NODE_PATTERN_CHANGED       = "Node pattern changed on the exchange from %v to %v."
+	EL_GOV_ERR_REG_NODE_WITH_NEW_PATTERN   = "Encountered error while re-registering node with new pattern %v. %v"
+	EL_GOV_START_REREG_NODE_PATTERN_CHANGE = "Start re-registering node after pattern changed to %v."
+	EL_GOV_END_REREG_NODE_PATTERN_CHANGE   = "Complete re-registering node after pattern changed to %v."
+	EL_GOV_PATTERN_CHANGED_AGAIN           = "Node pattern changed again on the exchange. Will register the node with the new pattern: %v"
+	EL_GOV_ERR_VALIDATE_NEW_PATTERN        = "Error validating new node pattern %v: %v"
+	EL_GOV_NODE_KEEP_OLD_PATTERN           = "The node will keep using the old pattern %v"
+	EL_GOV_NEW_PATTERN_VERIFIED            = "New pattern %v is verified. Will cancel agreements and re-register the node with the new pattern."
 )
 
 // This is does nothing useful at run time.
@@ -118,9 +130,11 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINSTS_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SINST_FROM_DB)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_MATCH_AGS_FROM_DB)
+	msgPrinter.Sprintf(EL_GOV_ERR_SAVE_NODE_CONFIGSTATE_TO_DB)
+	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_DEVICE_FROM_DB)
+	msgPrinter.Sprintf(EL_GOV_DEL_NODE_EXCH_PATTERN_FROM_DB)
 
 	// exchange
-	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH)
 	msgPrinter.Sprintf(EL_GOV_ERR_RETRIEVE_NODE_FROM_EXCH)
 	msgPrinter.Sprintf(EL_GOV_ERR_UPDATE_REGSVCS_IN_EXCH)
 
@@ -192,4 +206,14 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_GOV_FAILED_SVC_RETRY)
 	msgPrinter.Sprintf(EL_GOV_ERR_GET_SVC_RETRY_CNT)
 	msgPrinter.Sprintf(EL_GOV_ERR_UPDATE_SVC_RETRY_STATE)
+
+	// pattern change
+	msgPrinter.Sprintf(EL_GOV_EXCH_NODE_PATTERN_CHANGED)
+	msgPrinter.Sprintf(EL_GOV_ERR_REG_NODE_WITH_NEW_PATTERN)
+	msgPrinter.Sprintf(EL_GOV_START_REREG_NODE_PATTERN_CHANGE)
+	msgPrinter.Sprintf(EL_GOV_END_REREG_NODE_PATTERN_CHANGE)
+	msgPrinter.Sprintf(EL_GOV_PATTERN_CHANGED_AGAIN)
+	msgPrinter.Sprintf(EL_GOV_ERR_VALIDATE_NEW_PATTERN)
+	msgPrinter.Sprintf(EL_GOV_NODE_KEEP_OLD_PATTERN)
+	msgPrinter.Sprintf(EL_GOV_NEW_PATTERN_VERIFIED)
 }

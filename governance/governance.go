@@ -43,7 +43,7 @@ const STATUS_AG_PROTOCOL_TERMINATED = 501
 const CONTAINER_GOVERNOR = "ContainerGovernor"
 const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
-const SERVICE_CONFIGSTATE_GOVERNOR = "ServiceConfigStateGovernor"
+const SURFACEERRORS = "SurfaceExchErrors"
 
 type GovernanceWorker struct {
 	worker.BaseWorker   // embedded field
@@ -54,6 +54,7 @@ type GovernanceWorker struct {
 	deviceStatus        *DeviceStatus
 	ShuttingDownCmd     *NodeShutdownCommand
 	lastSvcUpgradeCheck int64
+	patternChange       ChangePattern
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -325,6 +326,13 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.UPDATE_NODE_USERINPUT:
 			w.Commands <- NewNodeUserInputChangedCommand(msg)
+		}
+
+	case *events.NodePatternMessage:
+		msg, _ := incoming.(*events.NodePatternMessage)
+		switch msg.Event().Id {
+		case events.NODE_PATTERN_CHANGE_SHUTDOWN, events.NODE_PATTERN_CHANGE_REREG:
+			w.Commands <- NewNodePatternChangedCommand(msg)
 		}
 
 	default: //nothing
@@ -685,6 +693,9 @@ func (w *GovernanceWorker) Initialize() bool {
 	// report the device status to the exchange
 	w.ReportDeviceStatus()
 
+	// start checking for issues closed by agreements and putting updated surface errors in the exchange
+	w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
+
 	// Fire up the container governor
 	w.DispatchSubworker(CONTAINER_GOVERNOR, w.governContainers, 60, false)
 
@@ -693,11 +704,6 @@ func (w *GovernanceWorker) Initialize() bool {
 
 	// Fire up the microservice governor
 	w.DispatchSubworker(MICROSERVICE_GOVERNOR, w.governMicroservices, 60, false)
-
-	// Fire up the service configuration state governer. Only support pattern case for now.
-	if w.devicePattern != "" {
-		w.DispatchSubworker(SERVICE_CONFIGSTATE_GOVERNOR, w.governServiceConfigState, w.Config.Edge.ServiceConfigStateCheckIntervalS, false)
-	}
 
 	// for the policy case update the exchange with the latest registeredServices
 	if w.devicePattern == "" {
@@ -1287,6 +1293,15 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		w.handleNodeUserInputUpdated(cmd.Msg.ServiceSpecs)
 
+	case *NodePatternChangedCommand:
+		cmd, _ := command.(*NodePatternChangedCommand)
+		glog.V(5).Infof(logString(fmt.Sprintf("%v", cmd)))
+		if cmd.Msg.Event().Id == events.NODE_PATTERN_CHANGE_SHUTDOWN {
+			w.handleNodeExchPatternChanged(true, cmd.Msg.Pattern)
+		} else if cmd.Msg.Event().Id == events.NODE_PATTERN_CHANGE_REREG {
+			w.handleNodeExchPatternChanged(false, cmd.Msg.Pattern)
+		}
+
 	default:
 		return false
 	}
@@ -1781,99 +1796,6 @@ func (w *GovernanceWorker) FindEstablishedAgreementsWithIds(agreementIds []strin
 	filters = append(filters, persistence.UnarchivedEAFilter())
 	filters = append(filters, multiIdFilter(agreementIds))
 	return persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), filters)
-}
-
-// This is called after the node heartneat is restored. For the basic protocol, it will contact the agbot to check if the current agreements are
-// still needed by the agbot.
-func (w *GovernanceWorker) handleNodeHeartbeatRestored() error {
-	glog.V(5).Infof(logString(fmt.Sprintf("handling agreements after node heartbeat restored.")))
-
-	if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
-		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
-			persistence.NewMessageMeta(EL_GOV_ERR_RETRIEVE_UNARCHIVED_AG_FROM_DB, err.Error()),
-			persistence.EC_DATABASE_ERROR)
-		return fmt.Errorf(logString(fmt.Sprintf("Unable to retrieve unarchived agreements from database. %v", err)))
-	} else {
-		veryfication_failed := false
-		for _, ag := range ags {
-			if ag.AgreementTerminatedTime == 0 {
-				bcType, bcName, bcOrg := w.producerPH[ag.AgreementProtocol].GetKnownBlockchain(&ag)
-
-				// Check to see if the agreement is valid. For agreement on the blockchain, we check the blockchain directly. This call to the blockchain
-				// should be very fast if the client is up and running. For other agreements, send a message to the agbot to get the agbot's opinion
-				// on the agreement.
-				// Remember, the device might have been down for some time and/or restarted, causing it to miss events on the blockchain.
-				if w.producerPH[ag.AgreementProtocol].IsBlockchainClientAvailable(bcType, bcName, bcOrg) && w.producerPH[ag.AgreementProtocol].IsAgreementVerifiable(&ag) {
-
-					if _, err := w.producerPH[ag.AgreementProtocol].VerifyAgreement(&ag); err != nil {
-						glog.Errorf(logString(fmt.Sprintf("encountered error verifying agreement %v, error %v", ag.CurrentAgreementId, err)))
-						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_ERROR,
-							persistence.NewMessageMeta(EL_GOV_ERR_AG_VERIFICATION, ag.RunningWorkload.URL, err.Error()),
-							persistence.EC_ERROR_AGREEMENT_VERIFICATION,
-							ag)
-						veryfication_failed = true
-					}
-				}
-			}
-		}
-
-		// put it to the deferred queue and retry
-		if veryfication_failed {
-			w.AddDeferredCommand(w.NewNodeHeartbeatRestoredCommand())
-		}
-	}
-	return nil
-}
-
-// User input has been changes. Go through all the agreement to see if it has dependencies on the given
-// services. If it does, cancel it.
-func (w *GovernanceWorker) handleNodeUserInputUpdated(svcSpecs persistence.ServiceSpecs) {
-
-	glog.V(5).Infof(logString(fmt.Sprintf("handling node user input changes")))
-
-	if svcSpecs == nil || len(svcSpecs) == 0 {
-		return
-	}
-
-	// get all the unarchived agreements
-	agreements, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
-	if err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Unable to retrieve all the  from the database, error %v", err)))
-		return
-	}
-
-	// cancel the agreement if needed
-	for _, ag := range agreements {
-		agreementId := ag.CurrentAgreementId
-		if ag.AgreementTerminatedTime != 0 && ag.AgreementForceTerminatedTime == 0 {
-			glog.V(3).Infof(logString(fmt.Sprintf("skip agreement %v, it is already terminating", agreementId)))
-		} else {
-			bCancel, err := w.agreementRequiresService(ag, svcSpecs)
-			if err != nil {
-				glog.Errorf(fmt.Sprintf("%v", err))
-			}
-
-			if bCancel {
-				glog.V(3).Infof(logString(fmt.Sprintf("ending the agreement: %v", agreementId)))
-
-				reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NODE_USERINPUT_CHANGED)
-
-				eventlog.LogAgreementEvent(
-					w.db,
-					persistence.SEVERITY_INFO,
-					persistence.NewMessageMeta(EL_GOV_START_TERM_AG_WITH_REASON, ag.RunningWorkload.URL, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason)),
-					persistence.EC_CANCEL_AGREEMENT,
-					ag)
-
-				w.cancelAgreement(agreementId, ag.AgreementProtocol, reason, w.producerPH[ag.AgreementProtocol].GetTerminationReason(reason))
-
-				// send the event to the container in case it has started the workloads.
-				w.Messages() <- events.NewGovernanceWorkloadCancelationMessage(events.AGREEMENT_ENDED, events.AG_TERMINATED, ag.AgreementProtocol, agreementId, ag.GetDeploymentConfig())
-				// clean up microservice instances if needed
-				w.handleMicroserviceInstForAgEnded(agreementId, false)
-			}
-		}
-	}
 }
 
 // Check if the agreement uses any of the given services

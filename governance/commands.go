@@ -261,3 +261,19 @@ func NewNodeUserInputChangedCommand(msg *events.NodeUserInputMessage) *NodeUserI
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+// Update node pattern changed
+type NodePatternChangedCommand struct {
+	Msg *events.NodePatternMessage
+}
+
+func (d NodePatternChangedCommand) ShortString() string {
+	return fmt.Sprintf("%v", d)
+}
+
+func NewNodePatternChangedCommand(msg *events.NodePatternMessage) *NodePatternChangedCommand {
+	return &NodePatternChangedCommand{
+		Msg: msg,
+	}
+}

@@ -22,6 +22,7 @@ import (
 // There are other workers responsible for other functions, which will also so some cleanup when the Node Shutdown Message
 // arrives. For example, the node heartbeat function is stopped by the Agreement worker.
 func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
+
 	glog.V(3).Infof(logString(fmt.Sprintf("begin node shutdown process.")))
 
 	// Get the node's registration info from the local DB.
@@ -34,15 +35,24 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
+	new_pattern, err := persistence.FindSavedNodeExchPattern(w.db)
+	if err != nil {
+		w.completedWithError(logString(fmt.Sprintf("received error reading node exchange pattern from local database: %v", err)))
+		return
+	} else if new_pattern != "" {
+		w.nodeShutDownForPattenChanged(dev, new_pattern)
+		return
+	}
+
 	// Clear the Pattern and RegisteredServices array in the node’s exchange resource. We have to leave the
 	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredServices
 	// will prevent the exchange from finding the node and thereby prevent agobts from trying to make new agreements.
-	if err := w.clearNodePatternAndMS(); err != nil {
+	if err := w.clearNodePatternAndMS(false); err != nil {
 		w.continueWithError(logString(err.Error()))
 	}
 
 	// Cancel all agreements, all workload containers and networks will automatically terminate.
-	if err := w.terminateAllAgreements(); err != nil {
+	if err := w.terminateAllAgreements(producer.TERM_REASON_NODE_SHUTDOWN); err != nil {
 		w.completedWithError(logString(err.Error()))
 		return
 	}
@@ -118,8 +128,72 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 	glog.V(3).Infof(logString(fmt.Sprintf("node shutdown process complete.")))
 }
 
+// This function is called due to the node pattern change on the exchange while
+// the device is registered with a different pattern.
+// It will remove the agreements, workloads etc, cleanup the exchange node and
+// local device so that the node can be registered again.
+func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.ExchangeDevice, new_pattern string) {
+
+	glog.V(3).Infof(logString(fmt.Sprintf("begin node shutdown process for pattern change.")))
+
+	// Clear the Pattern and RegisteredServices array in the node’s exchange resource. We have to leave the
+	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredServices
+	// will prevent the exchange from finding the node and thereby prevent agobts from trying to make new agreements.
+	// It will keep the user input.
+	if err := w.clearNodePatternAndMS(true); err != nil {
+		w.continueWithError(logString(err.Error()))
+	}
+
+	// Cancel all agreements, all workload containers and networks will automatically terminate.
+	if err := w.terminateAllAgreements(producer.TERM_REASON_NODE_PATTERN_CHANGED); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// Remove the node’s messaging public key from the node’s exchange resource and delete the node’s message key pair from the filesystem.
+	if err := w.patchNodeKey(); err != nil {
+		w.continueWithError(logString(err.Error()))
+	}
+
+	// Add the new pattern name back to the node for the pattern change case, It is safe to add it back because the public keys are cleared
+	// from the node
+	if err := w.patchNodePattern(new_pattern); err != nil {
+		w.continueWithError(logString(err.Error()))
+		return
+	}
+
+	// Tell the blockchain workers to terminate blockchain containers. We will do this by telling the producer protocol handlers to shutdown.
+	// Any protocol handlers that are using a blockchain will tell the blockchain worker to terminate.
+	w.Messages() <- events.NewAllBlockchainShutdownMessage(events.ALL_STOP)
+
+	// Tell running microservices to terminate.
+	if err := w.terminateMicroservices(); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// Remove any policy files from the filesystem.
+	if err := w.deletePolicyFiles(); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// change the device node pattern
+	if err := w.updateHorizonDevice(dev, new_pattern); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// Tell the system that node quiesce is complete without error. The API worker might be waiting for this message.
+	// All the workers in the system will start quiescing as a result of this message.
+	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, "")
+
+	glog.V(3).Infof(logString(fmt.Sprintf("node shutdown process for pattern change complete.")))
+}
+
 // Clear out the registered microservices/services and the configured pattern for the node.
-func (w *GovernanceWorker) clearNodePatternAndMS() error {
+// It also clears the userinput if keepUI is false.
+func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 
 	// If the node entry has already been removed form the exchange, skip this step.
 	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
@@ -137,6 +211,10 @@ func (w *GovernanceWorker) clearNodePatternAndMS() error {
 	}
 	pdr.SoftwareVersions = exDev.SoftwareVersions
 	pdr.MsgEndPoint = exDev.MsgEndPoint
+
+	if keepUI {
+		pdr.UserInput = exDev.UserInput
+	}
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
@@ -159,7 +237,7 @@ func (w *GovernanceWorker) clearNodePatternAndMS() error {
 }
 
 // Terminate all active agreements and wait until they are all archived.
-func (w *GovernanceWorker) terminateAllAgreements() error {
+func (w *GovernanceWorker) terminateAllAgreements(reason string) error {
 	// Create a new filter for active, unterminated agreements
 	notYetFinalFilter := func() persistence.EAFilter {
 		return func(a persistence.EstablishedAgreement) bool {
@@ -177,7 +255,7 @@ func (w *GovernanceWorker) terminateAllAgreements() error {
 
 		glog.V(3).Infof(logString(fmt.Sprintf("ending agreement: %v", ag.CurrentAgreementId)))
 		pph := w.producerPH[ag.AgreementProtocol]
-		reasonCode := pph.GetTerminationCode(producer.TERM_REASON_NODE_SHUTDOWN)
+		reasonCode := pph.GetTerminationCode(reason)
 		w.cancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, reasonCode, pph.GetTerminationReason(reasonCode))
 
 		// send the event to the container worker in case it has started workload containers.
@@ -291,6 +369,38 @@ func (w *GovernanceWorker) patchNodeKey() error {
 
 }
 
+// Update the node pattern.
+func (w *GovernanceWorker) patchNodePattern(pattern string) error {
+
+	pdr := exchange.PatchDeviceRequest{}
+	pdr.Pattern = pattern
+
+	var resp interface{}
+	resp = new(exchange.PutDeviceResponse)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
+
+	glog.V(3).Infof(logString(fmt.Sprintf("patch pattern in node entry: %v at %v", pdr, targetURL)))
+
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
+			if strings.Contains(err.Error(), "status: 401") {
+				break
+			} else {
+				return err
+			}
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			glog.V(3).Infof(logString(fmt.Sprintf("parched pattern for device %v in exchange: %v", w.GetExchangeId(), resp)))
+			break
+		}
+	}
+
+	return nil
+}
+
 // Remove all attributes from the DB.
 func (w *GovernanceWorker) deleteAttributes() error {
 	// Retrieve all attributes in the DB.
@@ -330,6 +440,22 @@ func (w *GovernanceWorker) deleteHorizonDevice() error {
 		return errors.New(fmt.Sprintf("unable to delete horizon device, error: %v", err))
 	}
 	glog.V(3).Infof(logString(fmt.Sprintf("deleted horizon device object")))
+	return nil
+}
+
+// Update the config state and the pattern for the horizon device
+func (w *GovernanceWorker) updateHorizonDevice(device *persistence.ExchangeDevice, pattern string) error {
+	if _, err := device.SetConfigstate(w.db, device.Id, persistence.CONFIGSTATE_UNCONFIGURED); err != nil {
+		return errors.New(fmt.Sprintf("unable to update the config state for horizon device, error: %v", err))
+	} else {
+		device.Config.State = persistence.CONFIGSTATE_UNCONFIGURED
+	}
+	if _, err := device.SetPattern(w.db, device.Id, pattern); err != nil {
+		return errors.New(fmt.Sprintf("unable to update the pattern to %v for horizon device, error: %v", pattern, err))
+	} else {
+		device.Pattern = pattern
+	}
+	glog.V(3).Infof(logString(fmt.Sprintf("updated horizon device object")))
 	return nil
 }
 

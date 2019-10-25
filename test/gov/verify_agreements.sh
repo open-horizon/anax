@@ -236,7 +236,8 @@ function verifyServices {
         do
                 INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
                 REFURL=$(echo ${INST} | jq -r '.ref_url')
-                echo -e "${PREFIX} working on service ${ix}, ${REFURL}: ${INST}"
+                # echo -e "${PREFIX} working on service ${ix}, ${REFURL}: ${INST}"
+                echo -e "${PREFIX} working on service ${ix}, ${REFURL}"
 
                 if [ "${REFURL}" == "https://bluehorizon.network/services/location" ]; then
                         handleLocation "${INST}"

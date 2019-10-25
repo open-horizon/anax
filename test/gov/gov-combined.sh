@@ -536,20 +536,24 @@ elif [ "$TESTFAIL" != "1" ]; then
       break
     fi
 
-    ./service_retry_test.sh
-    if [ $? -ne 0 ]
-    then
-      echo "Service retry failure."
-      TESTFAIL="1"
-      break
+    if [ "$NORETRY" != "1" ]; then
+      ./service_retry_test.sh
+      if [ $? -ne 0 ]
+      then
+        echo "Service retry failure."
+        TESTFAIL="1"
+        break
+      fi
     fi
 
-    ./service_configstate_test.sh
-    if [ $? -ne 0 ]
-    then
-      echo "Service configstate test failure."
-      TESTFAIL="1"
-      break
+    if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
+      ./service_configstate_test.sh
+      if [ $? -ne 0 ]
+      then
+        echo "Service configstate test failure."
+        TESTFAIL="1"
+        break
+      fi
     fi
 
     echo -e "Done testing pattern $PATTERN"
@@ -573,21 +577,32 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]
-then
-  ./verify_surfaced_error.sh
-  if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
+
+if [ "$NOSURFERR" != "1" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]; then
+    ./verify_surfaced_error.sh
+    if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
+  fi
 fi
 
-if [ "$TEST_PATTERNS" == "sall" ]; then
-  if [ "$NOHZNREG" != "1" ]
-  then
+if [ "$NOHZNREG" != "1" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
     
     ./hzn_reg.sh 
     if [ $? -ne 0 ]; then 
       echo "Failed registering and unregitering tests with hzn commands."
+      exit 1
+    fi
+  fi
+fi
+
+if [ "$NOPATTERNCHANGE" != "1" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ]; then
+    ./pattern_change.sh 
+    if [ $? -ne 0 ]; then 
+      echo "Failed node pattern change tests."
       exit 1
     fi
   fi
