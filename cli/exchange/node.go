@@ -136,22 +136,64 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 	findPatchType := make(map[string]interface{})
 	json.Unmarshal([]byte(attribute), &findPatchType)
 
-	if _, ok := findPatchType["userInput"]; ok {
-
-		patch := make(map[string][]policy.UserInput)
-		err := json.Unmarshal([]byte(attribute), &patch)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+	// check invalid attributes
+	for k, _ := range findPatchType {
+		if k != "userInput" && k != "pattern" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot update attribute %v. Supported attributes are: userInput, pattern.", k))
 		}
-		msgPrinter.Printf("Updating Node %v/%v in the Horizon Exchange and re-evaluating all agreements based on this update. Existing agreements might be cancelled and re-negotiated.", nodeOrg, node)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, patch)
-		msgPrinter.Printf("Node %s/%s updated in the Horizon Exchange.", nodeOrg, node)
-		msgPrinter.Println()
-	} else {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node attribute to be updated is not found in the input file. Supported attributes are: userInput."))
 	}
 
+	updated := false
+	for k, v := range findPatchType {
+		bytes, err := json.Marshal(v)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal attribute input %s: %v", v, err))
+		}
+		patch := make(map[string]interface{})
+		if k == "userInput" {
+			ui := []policy.UserInput{}
+			if err := json.Unmarshal(bytes, &ui); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", v, err))
+			} else {
+				patch[k] = ui
+			}
+		} else if k == "pattern" {
+			pattern := ""
+			if err := json.Unmarshal(bytes, &pattern); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", v, err))
+			} else {
+				patch[k] = pattern
+			}
+		}
+
+		msgPrinter.Printf("Updating %v for node %v/%v in the Horizon Exchange.", k, nodeOrg, node)
+		msgPrinter.Println()
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, patch)
+		msgPrinter.Printf("Attribute %v updated.", k)
+		msgPrinter.Println()
+
+		updated = true
+	}
+
+	// Tell user that the device will re-evaluating the agreements based on the node update
+	if updated {
+		for _, v := range nodeReq.Nodes {
+			var exchNode exchange.Device
+			bytes, err := json.Marshal(v)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal attribute input %s: %v", v, err))
+			}
+			if err := json.Unmarshal(bytes, &exchNode); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal exchange node %s: %v", v, err))
+			}
+			// the exchange node is registered with a device, then give user more info.
+			if exchNode.PublicKey != nil && len(exchNode.PublicKey) != 0 {
+				msgPrinter.Printf("Device will re-evaluate all agreements based on the update. Existing agreements might be cancelled and re-negotiated.")
+				msgPrinter.Println()
+			}
+			break
+		}
+	}
 }
 
 type NodeExchangePatchToken struct {

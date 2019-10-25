@@ -229,7 +229,7 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			glog.Errorf(BPPHlogString(w.Name(), "pattern name matching failed, ignoring proposal"))
 			err_log_event = "Pattern name matching failed, ignoring proposal"
 			handled = true
-		} else if ag, found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {	
+		} else if ag, found, err := w.FindAgreementWithSameWorkload(ph, tcPolicy.Header.Name); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error finding agreement with TsAndCs name '%v', error %v", tcPolicy.Header.Name, err)))
 			err_log_event = fmt.Sprintf("Error finding agreement with TsAndCs (Terms And Conditions) name '%v', error %v", tcPolicy.Header.Name, err)
 			handled = true
