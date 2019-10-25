@@ -246,6 +246,10 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
 func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwrite bool) {
+
+	//check for ExchangeUrl early on
+	var exchUrl = cliutils.GetExchangeUrl()
+
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -300,7 +304,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	// Create or update resource in the exchange
 	exchId := cliutils.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
 	var output string
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
 		// check if the service exists with the same version, ask user if -O is not specified.
 		if promptForOverwrite {
@@ -309,12 +313,12 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		// Service exists, update it
 		msgPrinter.Printf("Updating %s in the exchange...", exchId)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	} else {
 		// Service not there, create it
 		msgPrinter.Printf("Creating %s in the exchange...", exchId)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	}
 
 	// Store the public key in the exchange, if they gave it to us
@@ -323,7 +327,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		baseName := filepath.Base(pubKeyFilePath)
 		msgPrinter.Printf("Storing %s with the service in the exchange...", baseName)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
 
 	// Store registry auth tokens in the exchange, if they gave us some
@@ -346,7 +350,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 		msgPrinter.Printf("Storing %s with the service in the exchange...", regTok)
 		msgPrinter.Println()
 		regTokExch := ServiceDockAuthExch{Registry: regstry, UserName: username, Token: token}
-		cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
 	}
 
 	// If necessary, tell the user to push the container images to the docker registry. Get the list of images they need to manually push
@@ -541,6 +545,10 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 
 //ServiceAddPolicy adds a policy or replaces an existing policy for the service in the Horizon Exchange
 func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath string) {
+
+	//check for ExchangeUrl early on
+	var exchUrl = cliutils.GetExchangeUrl()
+
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -565,7 +573,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 
 	// Check that the service exists
 	var services GetServicesResponse
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
 	}
@@ -599,7 +607,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	// add/replace service policy
 	msgPrinter.Printf("Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	msgPrinter.Printf("Service policy updated.")
 	msgPrinter.Println()
