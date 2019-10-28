@@ -166,18 +166,22 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
 		}
 	case json.Number:
-		strNum := varValue.(json.Number).String()
-		if expectedType != "int" && expectedType != "float" {
+		if expectedType != "int" && !strings.Contains(expectedType, "float") {
 			return errors.New(fmt.Sprintf("type json.Number, expecting %v.", expectedType))
-		} else if strings.Contains(strNum, ".") && expectedType == "int" {
+		}
+		numVal, err := varValue.(json.Number).Float64()
+		if err != nil {
+			return errors.New(fmt.Sprintf("type json.Number could not be parsed to float"))
+		}
+		if float64(int(numVal)) != numVal && expectedType == "int" {
 			return errors.New(fmt.Sprintf("type float, expecting int."))
 		}
-	case float64:
-		varNum := varValue.(float64)
-		strNum := strconv.FormatFloat(varNum, 'E', -1, 64)
-		if expectedType != "int" && expectedType != "float" {
+	case float64, float32:
+		if expectedType != "int" && !strings.Contains(expectedType, "float") {
 			return errors.New(fmt.Sprintf("type number, expecting %v.", expectedType))
-		} else if strings.Contains(strNum, ".") && expectedType == "int" {
+		}
+		numVal := varValue.(float64)
+		if float64(int(numVal)) != numVal && expectedType == "int" {
 			return errors.New(fmt.Sprintf("type float64, expecting int."))
 		}
 	case []interface{}:
