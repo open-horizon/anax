@@ -1,6 +1,7 @@
 package service
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/api"
@@ -10,7 +11,11 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"io"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
 type APIServices struct {
@@ -74,6 +79,108 @@ func List() {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn service list' output: %v", err))
 	}
 	fmt.Printf("%s\n", jsonBytes)
+}
+
+func Log(serviceName string, tailing bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+	refUrl := serviceName
+	// Get the list of running services from the agent.
+	type AllServices struct {
+		Instances map[string][]api.MicroserviceInstanceOutput `json:"instances"` // The service instances that are running
+	}
+	var runningServices AllServices
+	cliutils.HorizonGet("service", []int{200}, &runningServices, false)
+	// Search the list of services to find one that matches the input service name. The service's instance Id
+	// is what appears in the syslog, so we need to save that.
+	serviceFound := false
+	var instanceId string
+	for _, serviceInstance := range runningServices.Instances["active"] {
+		if strings.Contains(serviceInstance.SpecRef, refUrl) {
+			instanceId = serviceInstance.InstanceId
+			serviceFound = true
+			msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
+			msgPrinter.Println()
+			if tailing {
+				msgPrinter.Printf("Use ctrl-C to terminate this command.")
+				msgPrinter.Println()
+			}
+			break
+		}
+	}
+	if !serviceFound {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
+	}
+	// The requested service is running, so grab the records from syslog for this service.
+	file, err := os.Open("/var/log/syslog")
+	if err != nil {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist: %v", err))
+	}
+	defer file.Close()
+	// Check file stats and capture the current size of the file if we will be tailing it.
+	var file_size int64
+	if tailing {
+		fi, err := file.Stat()
+		if err != nil {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not get stats: %v", err))
+		}
+		file_size = fi.Size()
+	}
+	// Setup a file reader
+	reader := bufio.NewReader(file)
+	// Start reading records. The syslog could be rotated while we're tailing it. Log rotation occurs when
+	// the current syslog file reaches its maximum size. When this happens, the current syslog is copied
+	// to another file and a new (empty) syslog file is created. The only way we can tell that a log
+	// rotation happened is when the size of the file gets smaller as we are reading it.
+	for {
+		// Get a record (delimited by EOL) from syslog.
+		if line, err := reader.ReadString('\n'); err != nil {
+			// Any error we get back, even EOF, is treated the same if we are not tailing. Just return to the caller.
+			if !tailing {
+				return
+			}
+			// When we're tailing and we hit EOF, briefly sleep to allow more records to appear in syslog.
+			if err == io.EOF {
+				time.Sleep(1 * time.Second)
+			} else {
+				// If the error is not EOF then we assume the error is due to log rotation so we silently
+				// ignore the error and keep trying.
+				cliutils.Verbose(msgPrinter.Sprintf("Error reading from /var/log/syslog: %v", err))
+			}
+		} else if strings.Contains(line, instanceId) {
+			// If the requested service id is in the current syslog record, display it.
+			fmt.Print(string(line))
+		}
+		// Re-check syslog file size via stats in case syslog was logrotated.
+		// If were tailing and there was a non-EOF error, we will always come here.
+		if tailing {
+			fi_new, err := os.Stat("/var/log/syslog")
+			if err != nil {
+				cliutils.Verbose(msgPrinter.Sprintf("Unable to state /var/log/syslog: %v", err))
+				time.Sleep(1 * time.Second)
+				continue
+			}
+			new_file_size := fi_new.Size()
+			// If syslog is smaller than the last time we checked, then a log rotation has occurred.
+			if new_file_size >= file_size {
+				file_size = new_file_size
+			} else {
+				// Log rotation has occurred. Re-open the new syslog file and capture the current size.
+				file.Close()
+				file, err = os.Open("/var/log/syslog")
+				if err != nil {
+					cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist: %v", err))
+				}
+				defer file.Close()
+				// Setup a new reader on the new file.
+				reader = bufio.NewReader(file)
+				fi, err := file.Stat()
+				if err != nil {
+					cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not get stats: %v", err))
+				}
+				file_size = fi.Size()
+			}
+		}
+	}
 }
 
 func Registered() {

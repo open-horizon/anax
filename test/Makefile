@@ -97,6 +97,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-v /tmp/ess-auth/:/tmp/ess-auth/:rw \
 		-v /tmp/hzndev/:/tmp/hzndev/ \
 		-v $(AGBOT_TEMPFS)/certs:/certs \
+		-v /var/log/:/var/log/ \
 		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
 		-e "HZN_SSL_SKIP_VERIFY=1" \
