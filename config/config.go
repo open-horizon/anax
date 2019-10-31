@@ -96,6 +96,10 @@ type AGConfig struct {
 	MessageKeyCheck               int              // The interval (in seconds) indicating how often the agbot checks its own object in the exchange to ensure that the message key is still available.
 	DefaultWorkloadPW             string           // The default workload password if none is specified in the policy file
 	APIListen                     string           // Host and port for the API to listen on
+	SecureAPIListenHost           string           // The host for the secure API to listen on
+	SecureAPIListenPort           string           // The port for the secure API to listen on
+	SecureAPIServerCert           string           // The path to the certificate file for the secure api
+	SecureAPIServerKey            string           // The path to the server key file for the secure api
 	PurgeArchivedAgreementHours   int              // Number of hours to leave an archived agreement in the database before automatically deleting it
 	CheckUpdatedPolicyS           int              // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
 	CSSURL                        string           // The URL used to access the CSS.
@@ -358,6 +362,10 @@ func (agc *AGConfig) String() string {
 		", MessageKeyPath: %v"+
 		", DefaultWorkloadPW: %v"+
 		", APIListen: %v"+
+		", SecureAPIListenHost: %v"+
+		", SecureAPIListenPort: %v"+
+		", SecureAPIServerCert: %v"+
+		", SecureAPIServerkey: %v"+
 		", PurgeArchivedAgreementHours: %v"+
 		", CheckUpdatedPolicyS: %v"+
 		", CSSURL: %v"+
@@ -367,5 +375,6 @@ func (agc *AGConfig) String() string {
 		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
 		agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeVersionCheckIntervalM, agc.ExchangeId,
 		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
+		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
 		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert)
 }
