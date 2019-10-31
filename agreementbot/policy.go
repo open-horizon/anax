@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
@@ -244,21 +245,25 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 				internalObjPol.Constraints = newPolicy.DestinationPolicy.Constraints
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy converted new object policy to: %v", internalObjPol)))
 
-				nodePolicy, err := GetNodePolicy(w, agreement.DeviceId)
-
-				// temporary fix - eliminate node constraints so that models can be deployed without repeating business policy
-				// properties plus service policy properties in the model policy properties.
-				nodePolicy.Constraints = []string{}
+				nodePolicy, err := compcheck.GetNodePolicy(w, agreement.DeviceId)
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-				} else if err := policy.Are_Compatible(nodePolicy, internalObjPol); err != nil {
-					// This agreement's node is no longer compatible, remove it from the destination list of the object.
-					if err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-					}
+				} else if nodePolicy == nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Errorf("No node policy found for %v", agreement.DeviceId)))
 				} else {
-					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy node %v is still compatible with object %v with type %v", agreement.DeviceId, newPolicy.ObjectID, newPolicy.ObjectType)))
+					// temporary fix - eliminate node constraints so that models can be deployed without repeating business policy
+					// properties plus service policy properties in the model policy properties.
+					nodePolicy.Constraints = []string{}
+
+					if err := policy.Are_Compatible(nodePolicy, internalObjPol); err != nil {
+						// This agreement's node is no longer compatible, remove it from the destination list of the object.
+						if err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+						}
+					} else {
+						glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy node %v is still compatible with object %v with type %v", agreement.DeviceId, newPolicy.ObjectID, newPolicy.ObjectType)))
+					}
 				}
 			}
 
@@ -282,16 +287,20 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 						continue
 					} else if found {
 						// Add the node to the object destination if eligible.
-						nodePolicy, err := GetNodePolicy(w, agreement.DeviceId)
-
-						// temporary fix - eliminate node constraints so that models can be deployed without repeating business policy
-						// properties plus service policy properties in the model policy properties.
-						nodePolicy.Constraints = []string{}
+						nodePolicy, err := compcheck.GetNodePolicy(w, agreement.DeviceId)
 
 						if err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
-						} else if err := AssignObjectToNode(w, objPolicies, agreement.DeviceId, nodePolicy); err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
+						} else if nodePolicy == nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Errorf("No node policy found for %v", agreement.DeviceId)))
+						} else {
+							// temporary fix - eliminate node constraints so that models can be deployed without repeating business policy
+							// properties plus service policy properties in the model policy properties.
+							nodePolicy.Constraints = []string{}
+
+							if err := AssignObjectToNode(w, objPolicies, agreement.DeviceId, nodePolicy); err != nil {
+								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
+							}
 						}
 
 						// As long as the node is running at least 1 service from the agreement, then place the object on the node.
@@ -370,27 +379,6 @@ func SupportsVersion(objPolServiceID *common.ServiceID, serviceVersion string) (
 	} else {
 		return ok, nil
 	}
-}
-
-// Get node policy
-func GetNodePolicy(ec exchange.ExchangeContext, deviceId string) (*policy.Policy, error) {
-
-	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
-	nodePolicy, err := nodePolicyHandler(deviceId)
-	if err != nil {
-		return nil, fmt.Errorf("error trying to query node policy for %v: %v", deviceId, err)
-	}
-	if nodePolicy == nil {
-		return nil, fmt.Errorf("no node policy found for %v", deviceId)
-	}
-
-	extPolicy := nodePolicy.GetExternalPolicy()
-
-	pPolicy, err := policy.GenPolicyFromExternalPolicy(&extPolicy, policy.MakeExternalPolicyHeaderName(deviceId))
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert node policy to internal policy format for node %v: %v", deviceId, err)
-	}
-	return pPolicy, nil
 }
 
 // =============================================================================================================

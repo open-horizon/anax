@@ -58,6 +58,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOSVC_CONFIGSTATE=1 - turns off the service config state test.
 - NOSURFERR=1 - turns off the node surface error test.
 - NOPATTERNCHANGE=1 - turns off the node pattern change test.
+- NOAGBOTAPI=1 - turns off the agbot api test.
 - NONS=1 - dont register the netspeed service.
 - NOGPS=1 - dont register the gpstest service.
 - NOLOC=1 - dont register the location service.
@@ -94,8 +95,10 @@ Here is a full description of all the variables you can use to setup the test th
 -`export CSS_URL="CSS's URL"`
 -`export EXCH_ROOTPW="Exchange Root PW"`
 -`export AGBOT_NAME="Agbot Name"`
+-`export AGBOT_SAPI_URL="Agbot Secure API URL"`
 -`export CERT_LOC=1` 1 for if cert is used. 0 if cert is not being used.
 -put css.crt file in test directory if using cert with ICP or DEV
+-put agbotapi.crt file in test directory
 -`cd /anax`
 -`make`
 -`cd /test`

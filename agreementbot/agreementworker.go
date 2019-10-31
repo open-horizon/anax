@@ -7,13 +7,13 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
-	"github.com/open-horizon/anax/semanticversion"
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
 	"net/http"
@@ -253,7 +253,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	var workload, lastWorkload *policy.Workload
 	svcIds := []string{} // stores the service ids for all the services, top level and dependent services
 	found := true        // if the service policy can be found from the businesspol_manager
-	var sPol *externalpolicy.ExternalPolicy
+	var servicePol *externalpolicy.ExternalPolicy
 
 	for !foundWorkload {
 
@@ -269,7 +269,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		// If we chose the same workload 2 times in a row through this loop, then we need to exit out of here
-		if lastWorkload == workload {
+		// Added second comparison in case the workload pointer got changed by the policy merger
+		if (lastWorkload == workload) || (lastWorkload != nil && workload != nil && lastWorkload.IsSame(*workload)) {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to find supported workload for %v within %v", wi.Device.Id, wi.ConsumerPolicy.Workloads)))
 
 			// If we created a workload usage record during this process, get rid of it.
@@ -370,7 +371,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 		} else {
 			// non patten case
-			nodePolicy, err := GetNodePolicy(b, wi.Device.Id)
+			// get node policy
+			nodePolicy, err := compcheck.GetNodePolicy(b, wi.Device.Id)
 			if err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				return
@@ -380,34 +382,33 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			} else {
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
 				wi.ProducerPolicy = *nodePolicy
+			}
 
-				// merge the business policy with the top level service policy + service built-in policy
-				builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
-
-				servicePolTemp, foundTemp := wi.ServicePolicies[sIds[0]]
-				var servicePol *externalpolicy.ExternalPolicy
-				if !foundTemp {
-					servicePol = nil
-				} else {
-					servicePol = &servicePolTemp
-				}
-				found = foundTemp
-
-				mergedConsumerPol, sPolTemp, err := b.MergeServicePolicyToConsumerPolicy(&wi.ConsumerPolicy, builtInSvcPol, servicePol, sIds[0])
-				if err != nil {
-					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error merging service policy into consumer policy. %v.", err)))
+			// get service policy
+			servicePolTemp, foundTemp := wi.ServicePolicies[sIds[0]]
+			if !foundTemp {
+				var errTemp error
+				servicePol, errTemp = compcheck.GetServicePolicyWithId(b, sIds[0])
+				if errTemp != nil {
+					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error getting service policy for service %v. %v", sIds[0], errTemp)))
 					return
-				} else if mergedConsumerPol != nil {
-					wi.ConsumerPolicy = *mergedConsumerPol
 				}
-				sPol = sPolTemp
+			} else {
+				servicePol = &servicePolTemp
+			}
+			found = foundTemp
 
-				// check if producer and comsumer polices match
-				if err := policy.Are_Compatible(&wi.ProducerPolicy, &wi.ConsumerPolicy); err != nil {
-					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("error matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, err)))
-				} else {
+			// compatibility check
+			if compOutput, err := compcheck.PolicyCompatible_Pols(b, nodePolicy, &wi.ConsumerPolicy, servicePol); err != nil {
+				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
+				return
+			} else {
+				if compOutput.Compatible {
+					wi.ConsumerPolicy = *compOutput.ConsumerPolicy
 					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
 					policy_match = true
+				} else {
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, compOutput.Reason)))
 				}
 			}
 		}
@@ -415,12 +416,14 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// Make sure the user inputs are all there
 		userInput_match := true
 		if policy_match {
-			if err := b.VerifyUserInputForServiceDef(workloadDetails, workload.Org, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
+			if err := compcheck.VerifyUserInputForServiceDef(workloadDetails, workload.Org, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Failed to validate the user input: %v", err)))
 				userInput_match = false
 			} else {
 				for _, apiSpec := range *asl {
-					if err := b.VerifyUserInputForService(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
+					svcSpec := compcheck.NewServiceSpec(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
+					getService := exchange.GetHTTPServiceHandler(b)
+					if err := compcheck.VerifyUserInputForService(svcSpec, getService, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
 						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Failed to validate the user input: %v", err)))
 						userInput_match = false
 						break
@@ -457,15 +460,15 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// if this service policy is not from the policy manager cache, then send a message to pass the service policy back
 			// so that the business policy manager will save it.
 			if !found {
-				if sPol == nil {
+				if servicePol == nil {
 					// An empty policy means that the service does not have a policy.
 					// An empty polcy is also tracked in the business policy manager, this way we know if there is
 					// new service policy added later.
 					// The business policy manager does not track all the service policies referenced by a business policy.
 					// It only tracks the ones that have agreements with the nodes.
-					sPol = new(externalpolicy.ExternalPolicy)
+					servicePol = new(externalpolicy.ExternalPolicy)
 				}
-				polString, err := json.Marshal(sPol)
+				polString, err := json.Marshal(servicePol)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sIds[0], err)))
 					return
@@ -558,134 +561,6 @@ func (b *BaseAgreementWorker) GetMergedProducerPolicyForPattern(deviceId string,
 		}
 	}
 	return mergedProducer, nil
-}
-
-// This function merge the given business policy with the given built-in properties of the service and the given service policy
-// from the top level service, if any.
-// If the service policy is nil, then this function featches the service policy from the exchange and returned it back
-// in order to let the policy manager to cache it.
-func (b *BaseAgreementWorker) MergeServicePolicyToConsumerPolicy(businessPol *policy.Policy, builtInSvcPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, sId string) (*policy.Policy, *externalpolicy.ExternalPolicy, error) {
-	if businessPol == nil {
-		return nil, nil, nil
-	}
-
-	// get the service policy.
-	// If it cannot be found in the cache, go to the exchange to get one
-	if servicePol == nil {
-		if sp, err := b.GetServicePolicy(sId); err != nil {
-			return nil, nil, fmt.Errorf("error getting service policy for service %v. %v", sId, err)
-		} else {
-			servicePol = sp
-		}
-	}
-
-	// add built-in service properties to the service policy
-	var merged_pol1 externalpolicy.ExternalPolicy
-	if servicePol != nil {
-		merged_pol1 = externalpolicy.ExternalPolicy(*servicePol)
-		if builtInSvcPol != nil {
-			(&merged_pol1).MergeWith(builtInSvcPol, false)
-		}
-	} else {
-		if builtInSvcPol != nil {
-			merged_pol1 = externalpolicy.ExternalPolicy(*builtInSvcPol)
-		}
-	}
-
-	//merge service policy
-	if merged_pol2, err := policy.MergePolicyWithExternalPolicy(businessPol, &merged_pol1); err != nil {
-		return nil, nil, fmt.Errorf("error merging business policy with service policy for service %v. %v", sId, err)
-	} else {
-		return merged_pol2, servicePol, nil
-	}
-}
-
-// Get service policy
-func (b *BaseAgreementWorker) GetServicePolicy(svcId string) (*externalpolicy.ExternalPolicy, error) {
-
-	servicePolicyHandler := exchange.GetHTTPServicePolicyWithIdHandler(b)
-	servicePolicy, err := servicePolicyHandler(svcId)
-	if err != nil {
-		return nil, fmt.Errorf("error trying to query service policy for %v: %v", svcId, err)
-	} else if servicePolicy == nil {
-		return nil, nil
-	} else {
-		extPolicy := servicePolicy.GetExternalPolicy()
-		if err := extPolicy.Validate(); err != nil {
-			return nil, fmt.Errorf("Failed to validate the service policy %v. %v", svcId, err)
-		}
-		return &extPolicy, nil
-	}
-}
-
-// Verfiy that all userInput variables are correctly typed and that non-defaulted userInput variables are specified.
-// Returns nil if the
-func (b *BaseAgreementWorker) VerifyUserInputForService(svcName, svcOrg, svcVersion, svcArch string, default_input []policy.UserInput, userInput []policy.UserInput) error {
-
-	// get the service from the exchange
-	getService := exchange.GetHTTPServiceHandler(b)
-
-	vExp, _ := semanticversion.Version_Expression_Factory(svcVersion)
-
-	sdef, _, err := getService(svcName, svcOrg, vExp.Get_expression(), svcArch)
-	if err != nil {
-		return fmt.Errorf("Failed to get the service %v/%v %v %v from the exchange. %v", err, svcOrg, svcName, svcVersion, svcArch)
-	} else if sdef == nil {
-		return fmt.Errorf("Servcie %v/%v %v %v does not exist on the exchange.", svcOrg, svcName, svcVersion, svcArch)
-	}
-
-	return b.VerifyUserInputForServiceDef(sdef, svcOrg, default_input, userInput)
-}
-
-// Verfiy that all userInput variables are correctly typed and that non-defaulted userInput variables are specified.
-// Returns nil if the
-func (b *BaseAgreementWorker) VerifyUserInputForServiceDef(sdef *exchange.ServiceDefinition, svcOrg string, default_input []policy.UserInput, userInput []policy.UserInput) error {
-	// service does not need user input
-	if !sdef.NeedsUserInput() {
-		return nil
-	}
-
-	// service needs user input, find the correct elements in the array
-	var mergedUI *policy.UserInput
-	ui1, err := policy.FindUserInput(sdef.URL, svcOrg, sdef.Version, sdef.Arch, default_input)
-	if err != nil {
-		return err
-	}
-	ui2, err := policy.FindUserInput(sdef.URL, svcOrg, sdef.Version, sdef.Arch, userInput)
-	if err != nil {
-		return err
-	}
-
-	if ui1 == nil && ui2 == nil {
-		return fmt.Errorf("Cannot find user input for service %v/%v %v %v.", svcOrg, sdef.URL, sdef.Version, sdef.Arch)
-	}
-
-	if ui1 != nil && ui2 != nil {
-		mergedUI, _ = policy.MergeUserInput(*ui1, *ui2, false)
-	} else if ui1 != nil {
-		mergedUI = ui1
-	} else {
-		mergedUI = ui2
-	}
-
-	// Verify that non-default variables are present.
-	for _, ui := range sdef.UserInputs {
-		found := false
-		for _, mui := range mergedUI.Inputs {
-			if ui.Name == mui.Name {
-				found = true
-				//if err := cutil.VerifyWorkloadVarTypes(mui.Value, ui.Type); err != nil {
-				//	return fmt.Errorf("Failed to validate the user input type for variable %v for service %v/%v %v %v. %v",  ui.Name, svcOrg, sdef.URL, sdef.Version, sdef.Arch, err)
-				//}
-			}
-		}
-
-		if !found && ui.DefaultValue == "" {
-			return fmt.Errorf("A required user input value is missing for variable %v for service %v/%v %v %v", ui.Name, svcOrg, sdef.URL, sdef.Version, sdef.Arch)
-		}
-	}
-
-	return nil
 }
 
 func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {
@@ -796,7 +671,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			if b.GetCSSURL() != "" && agreement.Pattern == "" {
 
 				// Retrieve the node policy.
-				nodePolicy, err := GetNodePolicy(b, agreement.DeviceId)
+				nodePolicy, err := compcheck.GetNodePolicy(b, agreement.DeviceId)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				} else if nodePolicy == nil {
