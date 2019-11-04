@@ -8,6 +8,15 @@ import (
 	"testing"
 )
 
+func Test_MachineSerial(t *testing.T) {
+	s, err := GetMachineSerial("./test/cpuinfo")
+	if err != nil {
+		t.Errorf("error getting host adapaters: %v", err)
+	} else if s != "0000000022e1b59c" {
+		t.Errorf("received wrong result, was %v", s)
+	}
+}
+
 func Test_ParseDockerImagePath_Tags(t *testing.T) {
 
 	var image_name, domain, path, tag, digest string

@@ -48,3 +48,6 @@ cache_alignment	: 64
 address sizes	: 46 bits physical, 48 bits virtual
 power management:
 
+Hardware		: BCM2835
+Revision		: a02082
+Serial			: 0000000022e1b59c
