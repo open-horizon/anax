@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
 	"net/http"
 	"os"
 	"path"
+	"strings"
+	"time"
 )
 
 type MMSObjectInfo struct {
@@ -18,8 +19,13 @@ type MMSObjectInfo struct {
 	Destinations []common.DestinationsStatus `json:"destinations,omitempty"`
 }
 
+type MMSObjectSimpleInfo struct {
+	ObjectID   string `json:"objectID"`
+	ObjectType string `json:"objectType"`
+}
+
 // Display the object metadata for a given object in the MMS.
-func ObjectList(org string, userPw string, objType string, objId string, details bool) {
+func ObjectList(org string, userPw string, objType string, objId string, details bool, destPolicy string, dpService string, dpPropertyName string, dpUpdateTimeSince string, destType string, destId string, noData string, expirationTimeBefore string, long bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -36,31 +42,83 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 
 	// If object ID is omitted, query all objects of the given type.
 	if !details {
-		objectList := new(exchange.ObjectDestinationPolicies)
-		urlPath := path.Join("api/v1/objects/", org, objType, "?all_objects=true")
+
+		fmt.Println("start new code")
+		fmt.Println("destinationPolicy: " + destPolicy + ", noData: " + noData)
+		// objectList := new(exchange.ObjectDestinationPolicies)
+		var objectsMeta []common.MetaData
+
+		// validate params
+		if strings.ToLower(destPolicy) != "true" && strings.ToLower(destPolicy) != "false" {
+			destPolicy = ""
+		} else {
+			destPolicy = strings.ToLower(destPolicy)
+		}
+
+		if strings.ToLower(noData) != "true" && strings.ToLower(noData) != "false" {
+			noData = ""
+		} else {
+			noData = strings.ToLower(noData)
+		}
+
+		if destPolicy != "true" {
+			if dpService != "" || dpPropertyName != "" || dpUpdateTimeSince != "" {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify destinationPolicy to true when filter by dpService, dpPropertyName, or dpUpdateTimeSince"))
+			}
+		} else {
+			if !dpServiceIsValid(dpService) {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("dpService should be in format serviceOrg/serviceName"))
+			}
+			if !timeIsValid(dpUpdateTimeSince) {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("dpUpdateTimeSince should be in RC3339 format: yyyy-MM-dd'T'HH:mm:ssZ"))
+			}
+		}
+
+		if objType == "" && objId != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify objectType if set objectId"))
+		}
+
+		if destType == "" && destId != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify destinationType if set destinationId"))
+		}
+
+		if !timeIsValid(expirationTimeBefore) {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("expirationTimeBefore should be in RC3339 format: yyyy-MM-dd'T'HH:mm:ssZ"))
+		}
+
+		filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destiationID=%s&noData=%s&expirationTimeBefore=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore)
+		msgPrinter.Println("CHECK filterUrlPath: %s", filterURLPath)
+
+		//urlPath := path.Join("api/v1/objects/", org, "?filter=true")
+		urlPath := "api/v1/objects/" + org + "?filters=true"
+		fullPath := urlPath + filterURLPath
+		msgPrinter.Println("CHECK full path: %s", fullPath)
 
 		// Call the MMS service over HTTP to get the basic object metadata.
-		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, objectList)
+		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectsMeta)
 		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("no objects type '%s' found in org %s", objType, org))
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("no objects found in org %s", org))
 		}
 
 		output := ""
-		if objId == "" {
-			output = cliutils.MarshalIndent(objectList, "mms object list")
+		if long {
+			output = cliutils.MarshalIndent(objectsMeta, "mms object list long info")
 		} else {
-			// Find the specified object
-			for _, obj := range *objectList {
-				if obj.ObjectID == objId {
-					output = cliutils.MarshalIndent(obj, cliutils.JSON_INDENT)
-					break
+			simpleInfoObjects := make([]MMSObjectSimpleInfo, 0)
+			for _, obj := range objectsMeta {
+				mmsObjectSimpleInfo := MMSObjectSimpleInfo{
+					ObjectID:   obj.ObjectID,
+					ObjectType: obj.ObjectType,
 				}
+				simpleInfoObjects = append(simpleInfoObjects, mmsObjectSimpleInfo)
 			}
-			if output == "" {
-				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Object %s type %s not found in org %s", objId, objType, org))
-			}
+			output = cliutils.MarshalIndent(simpleInfoObjects, "mms object list short info")
+
 		}
+
 		fmt.Println(output)
+
+
 	} else {
 		// If the user wants additional details, provide the destination information from the destination API.
 		// Display the full object metadata.
@@ -288,4 +346,26 @@ func ObjectDelete(org string, userPw string, objType string, objId string) {
 	msgPrinter.Printf("Object %v deleted from org %v in the Model Management Service", objId, org)
 	msgPrinter.Println()
 
+}
+
+func dpServiceIsValid(dpService string) bool {
+	trimString := strings.TrimSpace(dpService)
+	if trimString != "" {
+		parts := strings.Split(trimString, "/")
+		if len(parts) != 2 {
+			return false
+		}
+	}
+	return true
+}
+
+func timeIsValid(timestamp string) bool {
+	trimString := strings.TrimSpace(timestamp)
+	if trimString != "" {
+		_, err := time.Parse(time.RFC3339, trimString)
+		if err != nil {
+			return false
+		}
+	}
+	return true
 }
