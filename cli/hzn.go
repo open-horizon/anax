@@ -478,9 +478,19 @@ Environment Variables:
 	mmsStatusCmd := mmsCmd.Command("status", msgPrinter.Sprintf("Display the status of the Horizon Model Management Service."))
 	mmsObjectCmd := mmsCmd.Command("object", msgPrinter.Sprintf("List and manage objects in the Horizon Model Management Service."))
 	mmsObjectListCmd := mmsObjectCmd.Command("list", msgPrinter.Sprintf("List objects in the Horizon Model Management Service."))
-	mmsObjectListType := mmsObjectListCmd.Flag("type", msgPrinter.Sprintf("The type of the object to list.")).Short('t').Required().String()
-	mmsObjectListId := mmsObjectListCmd.Flag("id", msgPrinter.Sprintf("The id of the object to list. This flag is optional. Omit this flag to list all objects of a given object type.")).Short('i').String()
-	mmsObjectListDetail := mmsObjectListCmd.Flag("detail", msgPrinter.Sprintf("Provides additional detail about the deployment of the object on edge nodes. This flag is only used when --id is specified.")).Short('d').Bool()
+	mmsObjectListType := mmsObjectListCmd.Flag("objectType", msgPrinter.Sprintf("The type of the object to list.")).Short('t').String()
+	mmsObjectListId := mmsObjectListCmd.Flag("objectId", msgPrinter.Sprintf("The id of the object to list. This flag is optional. Omit this flag to list all objects of a given object type.")).Short('i').String()
+	mmsObjectListDestinationPolicy := mmsObjectListCmd.Flag("policy", msgPrinter.Sprintf("Specify true to show only objects using policy. Specify false to show only objects not using policy. If this flag is omitted, both kinds of objects are shown.")).Short('p').String()
+	mmsObjectListDPService := mmsObjectListCmd.Flag("service", msgPrinter.Sprintf("List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.")).Short('s').String()
+	mmsObjectListDPProperty := mmsObjectListCmd.Flag("property", msgPrinter.Sprintf("List mms objects using policy that reference the given property name.")).String()
+	mmsObjectListDPUpdateTime := mmsObjectListCmd.Flag("updateTime", msgPrinter.Sprintf("List mms objects using policy that has been updated since the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. The time of day may be omitted.")).String()
+	mmsObjectListDestinationType := mmsObjectListCmd.Flag("destinationType", msgPrinter.Sprintf("List mms objects with given destination type")).String()
+	mmsObjectListDestinationId := mmsObjectListCmd.Flag("destinationId", msgPrinter.Sprintf("List mms objects with given destination id. Must specify --destinationType to use this flag")).String()
+	mmsObjectListWithData := mmsObjectListCmd.Flag("data", msgPrinter.Sprintf("Specify true to show objects that have data. Specify false to show objects that have no data. If this flag is omitted, both kinds of objects are shown.")).String()
+	mmsObjectListExpirationTime := mmsObjectListCmd.Flag("expirationTime", msgPrinter.Sprintf("List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.")).Short('e').String()
+	mmsObjectListLong := mmsObjectListCmd.Flag("long", msgPrinter.Sprintf("Show detailed object metadata information")).Short('l').Bool()
+	mmsObjectListDetail := mmsObjectListCmd.Flag("detail", msgPrinter.Sprintf("Provides additional detail about the deployment of the object on edge nodes.")).Short('d').Bool()
+
 	mmsObjectNewCmd := mmsObjectCmd.Command("new", msgPrinter.Sprintf("Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command."))
 	mmsObjectPublishCmd := mmsObjectCmd.Command("publish", msgPrinter.Sprintf("Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes."))
 	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", msgPrinter.Sprintf("The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m")).Short('t').String()
@@ -810,7 +820,7 @@ Environment Variables:
 	case mmsStatusCmd.FullCommand():
 		sync_service.Status(*mmsOrg, *mmsUserPw)
 	case mmsObjectListCmd.FullCommand():
-		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId, *mmsObjectListDetail)
+		sync_service.ObjectList(*mmsOrg, *mmsUserPw, *mmsObjectListType, *mmsObjectListId, *mmsObjectListDestinationPolicy, *mmsObjectListDPService, *mmsObjectListDPProperty, *mmsObjectListDPUpdateTime, *mmsObjectListDestinationType, *mmsObjectListDestinationId, *mmsObjectListWithData, *mmsObjectListExpirationTime, *mmsObjectListLong, *mmsObjectListDetail)
 	case mmsObjectNewCmd.FullCommand():
 		sync_service.ObjectNew(*mmsOrg)
 	case mmsObjectPublishCmd.FullCommand():
