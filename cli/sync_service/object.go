@@ -43,9 +43,6 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 	// If object ID is omitted, query all objects of the given type.
 	if !details {
 
-		fmt.Println("start new code")
-		fmt.Println("destinationPolicy: " + destPolicy + ", noData: " + noData)
-		// objectList := new(exchange.ObjectDestinationPolicies)
 		var objectsMeta []common.MetaData
 
 		// validate params
@@ -86,13 +83,10 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("expirationTimeBefore should be in RC3339 format: yyyy-MM-dd'T'HH:mm:ssZ"))
 		}
 
-		filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destiationID=%s&noData=%s&expirationTimeBefore=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore)
-		msgPrinter.Println("CHECK filterUrlPath: %s", filterURLPath)
+		filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destinationID=%s&noData=%s&expirationTimeBefore=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore)
 
-		//urlPath := path.Join("api/v1/objects/", org, "?filter=true")
 		urlPath := "api/v1/objects/" + org + "?filters=true"
 		fullPath := urlPath + filterURLPath
-		msgPrinter.Println("CHECK full path: %s", fullPath)
 
 		// Call the MMS service over HTTP to get the basic object metadata.
 		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectsMeta)
@@ -159,7 +153,6 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 		var resp []byte
 		cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
 		msgPrinter.Printf("Object status: %v", string(resp))
-		msgPrinter.Println()
 	}
 }
 
