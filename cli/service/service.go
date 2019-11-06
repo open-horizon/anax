@@ -125,7 +125,7 @@ func Log(serviceName string, tailing bool) {
 			cliutils.Fatal(cliutils.EXEC_CMD_ERROR, msgPrinter.Sprintf("Error creating StdoutPipe for command: %v", err))
 		}
 		// Assign a single pipe to Command.Stdout and Command.Stderr
-    cmd.Stderr = cmd.Stdout
+                cmd.Stderr = cmd.Stdout
 		scanner := bufio.NewScanner(cmdReader)
 		// Goroutine to print Stdout and Stderr while Docker logs command is running
 		go func() {
