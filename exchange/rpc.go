@@ -544,6 +544,18 @@ func GetOrganization(httpClientFactory *config.HTTPClientFactory, org string, ex
 
 }
 
+type UserDefinition struct {
+	Password    string `json:"password"`
+	Admin       bool   `json:"admin"`
+	Email       string `json:"email"`
+	LastUpdated string `json:"lastUpdated"`
+}
+
+type GetUsersResponse struct {
+	Users     map[string]UserDefinition `json:"users"`
+	LastIndex int                       `json:"lastIndex"`
+}
+
 // This section is for types related to querying the exchange for node health
 
 type AgreementObject struct {
@@ -793,6 +805,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *GetOrganizationResponse:
+						return nil, nil
+
+					case *GetUsersResponse:
 						return nil, nil
 
 					case *GetPatternResponse:

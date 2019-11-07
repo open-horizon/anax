@@ -433,7 +433,14 @@ then
     su - agbotuser -c "mkdir -p /home/agbotuser/policy.d"
     su - agbotuser -c "mkdir -p /home/agbotuser/policy2.d"
     su - agbotuser -c "mkdir -p /home/agbotuser/.colonus"
+    su - agbotuser -c "mkdir -p /home/agbotuser/keys"
     export HZN_VAR_BASE=/home/agbotuser
+
+    # create cert and key for the agbot secure api
+    openssl req -newkey rsa:4096 -nodes -sha256 -x509 -keyout /home/agbotuser/keys/sapiserver.key -days 365 \
+      -out /home/agbotuser/keys/sapiserver.cert \
+      -subj "/C=US/ST=NY/L=New York/O=e2edev@somecomp.com/CN=localhost"
+    chmod +r /home/agbotuser/keys/sapiserver.key
 
     if [ "$OLDAGBOT" == "1" ]
     then
@@ -460,7 +467,7 @@ then
     fi
 
     if [ "$MULTIAGBOT" == "1" ]; then
-      if ! curl -sSL http://localhost:8083/agreement > /dev/null; then
+      if ! curl -sSL http://localhost:8084/agreement > /dev/null; then
         echo "Agreement Bot 2 startup failure."
         TESTFAIL="1"
         exit 1
