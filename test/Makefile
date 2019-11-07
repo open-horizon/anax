@@ -111,6 +111,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "HZN_AGBOT_API=http://localhost:81" \
 		-e "HZN_DEV_HOST_IP=$(E2EDEV_HOST_IP)" \
 		-e "HZN_DEV_FSS_IMAGE_TAG"="testing$(BRANCH_NAME)" \
+		-e "HZN_MGMT_HUB_CERT_PATH"="/certs/css.crt" \
 		-t $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG)
 	docker cp $(AGBOT_TEMPFS)/. $(DOCKER_AGBOT_CNAME):/
 
