@@ -447,10 +447,14 @@ i18n-clean:
 css-clean:
 	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
 	-docker rmi $(CSS_IMAGE_STG) 2> /dev/null || :
+	-docker rmi $(CSS_UBI_IMAGE) 2> /dev/null || :
+	-docker rmi $(CSS_UBI_IMAGE_STG) 2> /dev/null || :
 
 ess-clean:
 	-docker rmi $(ESS_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_IMAGE_STG) 2> /dev/null || :
+	-docker rmi $(ESS_UBI_IMAGE) 2> /dev/null || :
+	-docker rmi $(ESS_UBI_IMAGE_STG) 2> /dev/null || :
 
 pkgdeps: $(TMPGOPATH)/bin/govendor
 	@echo "Fetching dependencies"

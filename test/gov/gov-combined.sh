@@ -14,6 +14,7 @@ function set_exports {
 
     export ANAX_API="http://localhost"
     export EXCH="${EXCH_APP_HOST}"
+    export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
 
     if [[ $TEST_DIFF_ORG -eq 1 ]]; then
       export USER=useranax1
@@ -343,6 +344,7 @@ then
   export ANAX_API="http://localhost"
   export EXCH="${EXCH_APP_HOST}"
   export TOKEN="abcdefg"
+  export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
   if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     export USER=useranax1
     export PASS=useranax1pw

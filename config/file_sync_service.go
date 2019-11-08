@@ -5,6 +5,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"os"
 )
 
 // Configuration for the File Sync Service, which is implemented by the embedded ESS.
@@ -95,7 +96,15 @@ func (c *HorizonConfig) GetCSSURL() string {
 }
 
 func (c *HorizonConfig) GetCSSSSLCert() string {
-	return c.Edge.FileSyncService.CSSSSLCert
+	if c.Edge.FileSyncService.CSSSSLCert == "" {
+		if cp := os.Getenv(OldMgmtHubCertPath); cp != "" {
+			return cp
+		} else {
+			return os.Getenv(ManagementHubCertPath)
+		}
+	} else {
+		return c.Edge.FileSyncService.CSSSSLCert
+	}
 }
 
 func (c *HorizonConfig) GetESSSSLClientCertPath() string {
