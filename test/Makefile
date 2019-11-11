@@ -51,6 +51,7 @@ DOCKER_CSS_INAME := openhorizon/amd64_cloud-sync-service
 DOCKER_CSS_TAG := testing$(BRANCH_NAME)
 DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
+AGBOT_SAPI_URL ?= https://localhost:8083
 
 ifndef verbose
 .SILENT:
@@ -107,6 +108,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "CERT_LOC=$(CERT_LOC)" \
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "AGBOT_NAME=$(AGBOT_NAME)" \
+		-e "AGBOT_SAPI_URL=$(AGBOT_SAPI_URL)" \
 		-e "DOCKER_REG_CNAME=$(DOCKER_REG_CNAME)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
@@ -271,12 +273,13 @@ test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css appstore-star
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
-test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot css-cert
+test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot copy-cert
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
-css-cert:
-	cp css.crt $(AGBOT_TEMPFS)/certs/css.crt;
+copy-cert:
+	cp css.crt $(AGBOT_TEMPFS)/certs/css.crt
+	cp agbotapi.crt $(AGBOT_TEMPFS)/certs/agbotapi.crt
 
 minikube-setup:
 	@echo "Setting up minikube"
@@ -351,5 +354,5 @@ appstore-stop:
 	-@docker stop app-store-ui 2>/dev/null || true
 	-@docker stop app-store 2>/dev/null || true
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop css-mongo-db-image run-mongo-db run-css css-cert
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop css-mongo-db-image run-mongo-db run-css copy-cert
 #.SILENT: clean

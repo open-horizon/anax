@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
-	"os"
 )
 
 // Configuration for the File Sync Service, which is implemented by the embedded ESS.

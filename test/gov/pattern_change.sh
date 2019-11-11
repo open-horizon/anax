@@ -3,7 +3,7 @@
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
-PREFIX="pattern change test:"
+PREFIX="Pattern Change Test:"
 
 unset HZN_ORG_ID
 
