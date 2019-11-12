@@ -7,7 +7,7 @@ PREFIX="Agbot API Test:"
 
 
 echo ""
-echo -e "${PREFIX} start test"
+echo -e "${PREFIX} Start testing policy compatibility"
 
 COMP_RESULT=""
 
@@ -54,7 +54,7 @@ function check_comp_results {
 
   if [ "$comp" != "$1" ]; then
     echo "Expexted compatible be $1 but got $comp."
-    return 2
+    exit 2
   fi
 
   if [ ! -z "$2" ]; then

@@ -64,7 +64,7 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid --data value: %s, --data should be true or false", withData))
 		} else {
 			withDataBool, _ := strconv.ParseBool(strings.ToLower(withData))
-                        noData = strconv.FormatBool(!withDataBool)
+			noData = strconv.FormatBool(!withDataBool)
 		}
 	}
 
