@@ -1,5 +1,11 @@
 {
-  "properties": [],
+  "properties": [
+    {
+      "name": "prop_name1",
+      "value": "prop_value1",
+      "type": "string"
+    }
+  ],
   "constraints": [],
   "services": [
     {
