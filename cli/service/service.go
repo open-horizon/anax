@@ -14,6 +14,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -110,6 +112,52 @@ func Log(serviceName string, tailing bool) {
 	if !serviceFound {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
 	}
+	if runtime.GOOS == "darwin" {
+		LogMac(instanceId, tailing)
+	} else {
+		LogLinux(instanceId, tailing)
+	}
+	return
+}
+
+func LogMac(instanceId string, tailing bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+	dockerCommand := "docker logs $(docker ps -q --filter name=" + instanceId + ")"
+	if tailing {
+		dockerCommand = "docker logs -f $(docker ps -q --filter name=" + instanceId + ")"
+	}
+	fmt.Print(dockerCommand)
+	fmt.Print("\n")
+	cmd := exec.Command("/bin/sh", "-c", dockerCommand)
+	cmdReader, err := cmd.StdoutPipe()
+	if err != nil {
+		cliutils.Fatal(cliutils.EXEC_CMD_ERROR, msgPrinter.Sprintf("Error creating StdoutPipe for command: %v", err))
+	}
+	// Assign a single pipe to Command.Stdout and Command.Stderr
+	cmd.Stderr = cmd.Stdout
+	// Combine stdout and stderr to single reader to be able to print messages in correct order.
+	scanner := bufio.NewScanner(cmdReader)
+	// Goroutine to print Stdout and Stderr while Docker logs command is running
+	go func() {
+		// scanner.Scan() == scanner.EOF go func() will end.
+		for scanner.Scan() {
+			msg := scanner.Text()
+			fmt.Println(msg)
+		}
+	}()
+	err = cmd.Start()
+	if err != nil {
+		cliutils.Fatal(cliutils.EXEC_CMD_ERROR, msgPrinter.Sprintf("Error starting command: %v", err))
+	}
+	err = cmd.Wait()
+	if err != nil {
+		cliutils.Fatal(cliutils.EXEC_CMD_ERROR, msgPrinter.Sprintf("Error waiting for command: %v", err))
+	}
+	return
+}
+
+func LogLinux(instanceId string, tailing bool) {
+	msgPrinter := i18n.GetMessagePrinter()
 	// The requested service is running, so grab the records from syslog for this service.
 	file, err := os.Open("/var/log/syslog")
 	if err != nil {
