@@ -654,12 +654,13 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.Abs
 
 func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
 
-	if IsServiceProject(homeDirectory) {
-		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds)
+	if ex, err := ServiceDefinitionExists(homeDirectory); !ex || err != nil {
+		return nil, errors.New(i18n.GetMessagePrinter().Sprintf("no service definition config file found in project"))
+	} else if ex, err := DependenciesExists(homeDirectory, true); !ex || err != nil {
+		return nil, errors.New(i18n.GetMessagePrinter().Sprintf("no dependency directory found in project"))
 	} else {
-		return nil, errors.New(i18n.GetMessagePrinter().Sprintf("unsupported project type"))
+		return getServiceDefinition(homeDirectory, surl, org, version, arch, userCreds)
 	}
-
 }
 
 func UpdateDependencyFile(homeDirectory string, sDef cliexchange.AbstractServiceFile) error {
