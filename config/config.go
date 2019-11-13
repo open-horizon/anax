@@ -12,6 +12,8 @@ import (
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
 const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
 const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
+const OldMgmtHubCertPath = "HZN_ICP_CA_CERT_PATH"
+const ManagementHubCertPath = "HZN_MGMT_HUB_CERT_PATH"
 
 type HorizonConfig struct {
 	Edge          Config

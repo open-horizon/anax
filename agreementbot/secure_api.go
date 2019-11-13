@@ -1,16 +1,19 @@
 package agreementbot
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
+	//"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -22,7 +25,6 @@ type SecureAPI struct {
 	name           string
 	db             persistence.AgbotDatabase
 	httpClient     *http.Client // a shared HTTP client instance for this worker
-	pm             *policy.PolicyManager
 	EC             *worker.BaseExchangeContext
 	em             *events.EventStateManager
 	shutdownError  string
@@ -133,6 +135,16 @@ func (a *SecureAPI) GetHTTPFactory() *config.HTTPClientFactory {
 	}
 }
 
+func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) *UserExchangeContext {
+	return &UserExchangeContext{
+		UserId:      userId,
+		Password:    passwd,
+		URL:         a.GetExchangeURL(),
+		CSSURL:      a.GetCSSURL(),
+		HTTPFactory: a.GetHTTPFactory(),
+	}
+}
+
 // This function sets up the agbot secure http server
 func (a *SecureAPI) listen() {
 	glog.Info("Starting AgreementBot SecureAPI server")
@@ -202,14 +214,34 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 		userId, userPasswd, ok := r.BasicAuth()
 		if !ok {
 			glog.Errorf(APIlogString(fmt.Sprintf("/policycompatible is called without exchange authentication.")))
-			writeResponse(w, "Unauthorized. No exchange user id is supplied.", http.StatusForbidden)
+			writeResponse(w, "Unauthorized. No exchange user id is supplied.", http.StatusUnauthorized)
 		} else if err := a.authenticateWithExchange(userId, userPasswd); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
-			writeResponse(w, fmt.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusForbidden)
+			writeResponse(w, fmt.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
 		} else {
-			// write good output
-			ret := map[string]string{"status": "everything is ok."}
-			writeResponse(w, ret, http.StatusOK)
+			var input compcheck.PolicyCompInput
+			err := json.NewDecoder(r.Body).Decode(&input)
+			if err == io.EOF {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, fmt.Sprintf("No input found."), http.StatusBadRequest)
+			} else if err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to PolicyCompInput object. %v", err)))
+				writeResponse(w, fmt.Sprintf("Input body couldn't be deserialized to PolicyCompInput object. %v", err), http.StatusBadRequest)
+			} else {
+				// do policy compatibility check
+				user_ec := a.createUserExchangeContext(userId, userPasswd)
+				output, err := compcheck.PolicyCompatible(user_ec, &input)
+
+				// nil out the policies in the output if 'long' is not set in the request
+				long := r.URL.Query().Get("long")
+				if long == "" && output != nil {
+					output.ProducerPolicy = nil
+					output.ConsumerPolicy = nil
+				}
+
+				// write the output
+				writePolicyCheckResponse(w, output, err)
+			}
 		}
 
 	case "OPTIONS":
@@ -278,4 +310,69 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string) err
 	}
 
 	return nil
+}
+
+// exchange context using user credential
+type UserExchangeContext struct {
+	UserId      string
+	Password    string
+	URL         string
+	CSSURL      string
+	HTTPFactory *config.HTTPClientFactory
+}
+
+func (u *UserExchangeContext) GetExchangeId() string {
+	return u.UserId
+}
+
+func (u *UserExchangeContext) GetExchangeToken() string {
+	return u.Password
+}
+
+func (u *UserExchangeContext) GetExchangeURL() string {
+	return u.URL
+}
+
+func (u *UserExchangeContext) GetCSSURL() string {
+	return u.CSSURL
+}
+
+func (u *UserExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
+	return u.HTTPFactory
+}
+
+// write the PolicyCompOutput response
+func writePolicyCheckResponse(w http.ResponseWriter, output *compcheck.PolicyCompOutput, err error) {
+	if err != nil {
+		switch err.(type) {
+		case *compcheck.CompCheckError:
+			httpCode := getHTTPStatusCode(err.(*compcheck.CompCheckError).ErrCode)
+			writeResponse(w, err.Error(), httpCode)
+		default:
+			writeResponse(w, err.Error(), http.StatusInternalServerError)
+		}
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if output != nil {
+			if serial, errWritten := serializeResponse(w, output); !errWritten {
+				if _, err := w.Write(serial); err != nil {
+					glog.Error(APIlogString(err))
+					http.Error(w, "Internal server error", http.StatusInternalServerError)
+				}
+			}
+		}
+	}
+}
+
+// convert the policy check error code to http status code
+func getHTTPStatusCode(code int) int {
+	var httpCode int
+	switch code {
+	case compcheck.COMPCHECK_INPUT_ERROR, compcheck.COMPCHECK_VALIDATION_ERROR:
+		httpCode = http.StatusBadRequest
+	default:
+		httpCode = http.StatusInternalServerError
+	}
+	return httpCode
 }

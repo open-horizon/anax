@@ -790,10 +790,20 @@ func GetAnaxConfig(configFile string) (*config.HorizonConfig, error) {
 	}
 }
 
-//GetIcpCertPath gets the 'HZN_ICP_CERT_PATH' from '/etc/default/horizon'. If the field is not found it will return an empty string
+// GetIcpCertPath gets the path of the certificate for the exchange and CSS (collectively referred to as the
+// management hub). The variable name changed, so it could be the old one or the new one from the '/etc/default/horizon' file.
+// If the env var is not set or the field is not found an empty string is returned.
 func GetIcpCertPath() string {
-	if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_ICP_CA_CERT_PATH"); err != nil {
-		Verbose(i18n.GetMessagePrinter().Sprintf("Error getting HZN_ICP_CA_CERT_PATH from %v: %v", ANAX_OVERWRITE_FILE, err))
+	if value := os.Getenv(config.OldMgmtHubCertPath); value != "" {
+		return value
+	} else if value := os.Getenv(config.ManagementHubCertPath); value != "" {
+		return value
+	} else if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, config.OldMgmtHubCertPath); err != nil {
+		Verbose(i18n.GetMessagePrinter().Sprintf("Error getting %v from %v: %v", config.OldMgmtHubCertPath, ANAX_OVERWRITE_FILE, err))
+	} else if value != "" {
+		return value
+	} else if value, err := GetEnvVarFromFile(ANAX_OVERWRITE_FILE, config.ManagementHubCertPath); err != nil {
+		Verbose(i18n.GetMessagePrinter().Sprintf("Error getting %v from %v: %v", config.ManagementHubCertPath, ANAX_OVERWRITE_FILE, err))
 	} else {
 		return value
 	}

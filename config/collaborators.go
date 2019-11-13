@@ -68,6 +68,7 @@ func (f *HTTPClientFactory) WrappedNewHTTPClient() func(*uint) *http.Client {
 // TODO: use a pool of clients instead of creating them forevar
 func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	var caBytes []byte
+	var mgmtHubBytes []byte
 	var cssCaBytes []byte
 
 	if hConfig.Edge.CACertsPath != "" {
@@ -79,13 +80,32 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.Edge.CACertsPath)
 	}
 
+	// A custom TLS certificate can be set in the /var/default/horizon file. Anax sees this value as
+	// an environment variable when it is started. If the Horizon management hub (Exchange, CSS, etc) is
+	// using a self signed cert or a cert from an unknown authority, it can be set here so that anax
+	// will use it. This means the node owner doesnt have to add the cert to the trust store of the node's
+	// operating system.
+	mhCertPath := os.Getenv(OldMgmtHubCertPath)
+	if mhCertPath == "" {
+		mhCertPath = os.Getenv(ManagementHubCertPath)
+	}
+
+	if mhCertPath != "" {
+		var err error
+		mgmtHubBytes, err = ioutil.ReadFile(mhCertPath)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read Cert File: %v", mhCertPath)
+		}
+		glog.V(4).Infof("Read Management Hub cert from provided file %v", mhCertPath)
+	}
+
 	if hConfig.AgreementBot.CSSSSLCert != "" {
 		var err error
 		cssCaBytes, err = ioutil.ReadFile(hConfig.AgreementBot.CSSSSLCert)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to read Agbot CSS SSL Cert File: %v", hConfig.AgreementBot.CSSSSLCert)
 		}
-		glog.V(4).Infof("Read CA certs from provided file %v", hConfig.AgreementBot.CSSSSLCert)
+		glog.V(4).Infof("Read CSS cert from provided file %v", hConfig.AgreementBot.CSSSSLCert)
 	}
 
 	var tlsConf tls.Config
@@ -110,9 +130,13 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 	if len(caBytes) != 0 {
 		certPool.AppendCertsFromPEM(caBytes)
 	}
+	if len(mgmtHubBytes) != 0 {
+		certPool.AppendCertsFromPEM(mgmtHubBytes)
+	}
 	if len(cssCaBytes) != 0 {
 		certPool.AppendCertsFromPEM(cssCaBytes)
 	}
+
 	tlsConf.RootCAs = certPool
 
 	tlsConf.BuildNameToCertificate()

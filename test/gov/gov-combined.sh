@@ -1,6 +1,7 @@
 #!/bin/bash
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
+TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 function set_exports {
   if [ "$NOANAX" != "1" ]
@@ -14,6 +15,7 @@ function set_exports {
 
     export ANAX_API="http://localhost"
     export EXCH="${EXCH_APP_HOST}"
+    export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
 
     if [[ $TEST_DIFF_ORG -eq 1 ]]; then
       export USER=useranax1
@@ -343,6 +345,7 @@ then
   export ANAX_API="http://localhost"
   export EXCH="${EXCH_APP_HOST}"
   export TOKEN="abcdefg"
+  export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
   if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     export USER=useranax1
     export PASS=useranax1pw
@@ -436,11 +439,11 @@ then
     su - agbotuser -c "mkdir -p /home/agbotuser/keys"
     export HZN_VAR_BASE=/home/agbotuser
 
-    # create cert and key for the agbot secure api
-    openssl req -newkey rsa:4096 -nodes -sha256 -x509 -keyout /home/agbotuser/keys/sapiserver.key -days 365 \
-      -out /home/agbotuser/keys/sapiserver.cert \
+    # create cert and key for the local agbot secure api
+    openssl req -newkey rsa:4096 -nodes -sha256 -x509 -keyout /home/agbotuser/keys/agbotapi.key -days 365 \
+      -out /home/agbotuser/keys/agbotapi.crt \
       -subj "/C=US/ST=NY/L=New York/O=e2edev@somecomp.com/CN=localhost"
-    chmod +r /home/agbotuser/keys/sapiserver.key
+    chmod +r /home/agbotuser/keys/agbotapi.key
 
     if [ "$OLDAGBOT" == "1" ]
     then
@@ -477,15 +480,6 @@ then
 else
   echo -e "Agbot is disabled"
 fi
-
-# echo "Starting Agbot API tests"
-# ./agbot_upgrade_test.sh
-# if [ $? -ne 0 ]
-# then
-#     echo "Agbot API Test failure."
-#     exit -1
-# fi
-# echo "Agbot API tests completed."
 
 echo "TEST_PATTERNS=${TEST_PATTERNS}"
 
@@ -584,6 +578,14 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
+if [ "$NOAGBOTAPI" != "1" ]; then
+   ./agbot_apitest.sh
+  if [ $? -ne 0 ]
+  then
+    echo "Agbot API Test failure."
+    exit 1
+  fi
+fi
 
 if [ "$NOSURFERR" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]; then

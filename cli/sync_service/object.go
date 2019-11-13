@@ -10,22 +10,24 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
 
+const BatchSize = 50
+
 type MMSObjectInfo struct {
-	Definition   common.MetaData             `json:"definition"`
+	ObjectID     string                      `json:"objectID,omitempty"`
+	ObjectType   string                      `json:"objectType,omitempty"`
+	Definition   *common.MetaData            `json:"definition,omitempty"`
 	Destinations []common.DestinationsStatus `json:"destinations,omitempty"`
+	ObjectStatus string                      `json:"objectStatus,omitempty"`
 }
 
-type MMSObjectSimpleInfo struct {
-	ObjectID   string `json:"objectID"`
-	ObjectType string `json:"objectType"`
-}
-
-// Display the object metadata for a given object in the MMS.
-func ObjectList(org string, userPw string, objType string, objId string, details bool, destPolicy string, dpService string, dpPropertyName string, dpUpdateTimeSince string, destType string, destId string, noData string, expirationTimeBefore string, long bool) {
+// Display the object metadata for given flags in the MMS.
+func ObjectList(org string, userPw string, objType string, objId string, destPolicy string, dpService string, dpPropertyName string, dpUpdateTimeSince string, destType string, destId string, withData string, expirationTimeBefore string, long bool, details bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -33,127 +35,170 @@ func ObjectList(org string, userPw string, objType string, objId string, details
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify exchange credentials to access the model management service."))
 	}
 
-	if details && objId == "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify object ID when requesting object details."))
-	}
-
 	// Set the API key env var if that's what we're using.
 	cliutils.SetWhetherUsingApiKey(userPw)
 
-	// If object ID is omitted, query all objects of the given type.
-	if !details {
+	var objectsMeta []common.MetaData
 
-		var objectsMeta []common.MetaData
-
-		// validate params
+	// validate params:
+	// 1. if --policy is not omitted, must set value to true or false
+	//    1a. must omit --policy or set it to true when use --service, --property, or --updateTime
+	//    1b. service should be in format: service-org/service-name
+	//    1c. service exists
+	//    1d. updateTime in RC3339 format or just use yyyy-MM-dd
+	// 2. if --data is not omitted, must set value to true or false
+	// 3. must set --objectType if use --objectId
+	// 4. must set --destinationType if use --destinationId
+	// 5. expiration in RC3339 format or use "now"
+	if destPolicy != "" {
 		if strings.ToLower(destPolicy) != "true" && strings.ToLower(destPolicy) != "false" {
-			destPolicy = ""
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid --policy/-p value: %s, --policy/-p should be true or false", destPolicy))
 		} else {
 			destPolicy = strings.ToLower(destPolicy)
 		}
+	}
 
-		if strings.ToLower(noData) != "true" && strings.ToLower(noData) != "false" {
-			noData = ""
+	noData := ""
+	if withData != "" {
+		if strings.ToLower(withData) != "true" && strings.ToLower(withData) != "false" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid --data value: %s, --data should be true or false", withData))
 		} else {
-			noData = strings.ToLower(noData)
+			withDataBool, _ := strconv.ParseBool(strings.ToLower(withData))
+			noData = strconv.FormatBool(!withDataBool)
+		}
+	}
+
+	if dpService != "" || dpPropertyName != "" || dpUpdateTimeSince != "" {
+		if destPolicy == "false" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must omit --policy or set it to true when filtering by --service, --property, or --updateTime"))
 		}
 
-		if destPolicy != "true" {
-			if dpService != "" || dpPropertyName != "" || dpUpdateTimeSince != "" {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify destinationPolicy to true when filter by dpService, dpPropertyName, or dpUpdateTimeSince"))
-			}
+		if !dpServiceIsValid(dpService) {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("service should be in format service-org/service-name"))
+		}
+
+		timeValidated, convTimeStamp := timeIsValid(dpUpdateTimeSince)
+		if !timeValidated {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd"))
 		} else {
-			if !dpServiceIsValid(dpService) {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("dpService should be in format serviceOrg/serviceName"))
-			}
-			if !timeIsValid(dpUpdateTimeSince) {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("dpUpdateTimeSince should be in RC3339 format: yyyy-MM-dd'T'HH:mm:ssZ"))
+			if convTimeStamp != "" {
+				dpUpdateTimeSince = convTimeStamp
 			}
 		}
 
-		if objType == "" && objId != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify objectType if set objectId"))
+		destPolicy = "true"
+
+	}
+
+	if objType == "" && objId != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify objectType if set objectId"))
+	}
+
+	if destType == "" && destId != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify destinationType if set destinationId"))
+	}
+
+	if strings.ToLower(expirationTimeBefore) == "now" {
+		expirationTimeBefore = time.Now().Format(time.RFC3339)
+	} else {
+		if timeValidated, _ := timeIsValid(expirationTimeBefore); !timeValidated {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ"))
+		}
+	}
+
+	filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destinationID=%s&noData=%s&expirationTimeBefore=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore)
+
+	urlPath := "api/v1/objects/" + org + "?filters=true"
+	fullPath := urlPath + filterURLPath
+
+	// Call the MMS service over HTTP to get the basic object metadata.
+	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectsMeta)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("no objects found in org %s", org))
+	}
+
+	output := ""
+
+	if details {
+		// Cut the objectsMeta into batches of size 50. For each batch, process the API call concurrently. Use batches strategy to 1) reduce the processing time, 2) avoid overwhelming API calls sent to CSS server at one time
+		batchSize := BatchSize
+		var batches [][]common.MetaData
+		for batchSize < len(objectsMeta) {
+			objectsMeta, batches = objectsMeta[batchSize:], append(batches, objectsMeta[0:batchSize:batchSize])
+		}
+		batches = append(batches, objectsMeta)
+
+		mmsObjects := make([]MMSObjectInfo, 0)
+		c := make(chan MMSObjectInfo)
+		input_chan := make(chan common.MetaData)
+
+		for i := 0; i < len(batches); i++ {
+			for _, _ = range batches[i] {
+				go func() {
+					obj := <-input_chan
+					//1. call destination API
+					mmsObjectInfo := MMSObjectInfo{}
+					var objectDests []common.DestinationsStatus
+					urlPath = path.Join("api/v1/objects/", org, obj.ObjectType, obj.ObjectID, "destinations")
+
+					httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
+					if httpCode == 404 {
+						cliutils.Verbose(msgPrinter.Sprintf("destination detail for object '%s' of type '%s' not found in org %s", obj.ObjectID, obj.ObjectType, org))
+					}
+					mmsObjectInfo.Destinations = objectDests
+
+					//2. call status API
+					urlPath = path.Join("api/v1/objects/", org, obj.ObjectType, obj.ObjectID, "status")
+					var resp []byte
+					cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
+					mmsObjectInfo.ObjectStatus = string(resp)
+
+					//3. write the response data to channel c <- mmsObjectInfo
+					c <- mmsObjectInfo
+				}()
+
+			}
+
+			for j := 0; j < len(batches[i]); j++ {
+				input_chan <- batches[i][j]
+			}
+
+			for _, obj := range batches[i] {
+				select {
+				case mmsObjectInfo := <-c:
+					if !long {
+						mmsObjectInfo.ObjectID = obj.ObjectID
+						mmsObjectInfo.ObjectType = obj.ObjectType
+					} else {
+						objMeta := obj
+						mmsObjectInfo.Definition = &objMeta
+					}
+					mmsObjects = append(mmsObjects, mmsObjectInfo)
+				}
+			}
 		}
 
-		if destType == "" && destId != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify destinationType if set destinationId"))
-		}
-
-		if !timeIsValid(expirationTimeBefore) {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("expirationTimeBefore should be in RC3339 format: yyyy-MM-dd'T'HH:mm:ssZ"))
-		}
-
-		filterURLPath := fmt.Sprintf("&objectType=%s&objectID=%s&destinationPolicy=%s&dpService=%s&dpPropertyName=%s&since=%s&destinationType=%s&destinationID=%s&noData=%s&expirationTimeBefore=%s", objType, objId, destPolicy, dpService, dpPropertyName, dpUpdateTimeSince, destType, destId, noData, expirationTimeBefore)
-
-		urlPath := "api/v1/objects/" + org + "?filters=true"
-		fullPath := urlPath + filterURLPath
-
-		// Call the MMS service over HTTP to get the basic object metadata.
-		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), fullPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectsMeta)
-		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("no objects found in org %s", org))
-		}
-
-		output := ""
-		if long {
-			output = cliutils.MarshalIndent(objectsMeta, "mms object list long info")
-		} else {
-			simpleInfoObjects := make([]MMSObjectSimpleInfo, 0)
+		output = cliutils.MarshalIndent(mmsObjects, "mms object list")
+	} else {
+		if !long {
+			mmsObjects := make([]MMSObjectInfo, 0)
 			for _, obj := range objectsMeta {
-				mmsObjectSimpleInfo := MMSObjectSimpleInfo{
+				mmsObjectInfo := MMSObjectInfo{
 					ObjectID:   obj.ObjectID,
 					ObjectType: obj.ObjectType,
 				}
-				simpleInfoObjects = append(simpleInfoObjects, mmsObjectSimpleInfo)
+				mmsObjects = append(mmsObjects, mmsObjectInfo)
 			}
-			output = cliutils.MarshalIndent(simpleInfoObjects, "mms object list short info")
-
+			output = cliutils.MarshalIndent(mmsObjects, "mms object list")
+		} else {
+			output = cliutils.MarshalIndent(objectsMeta, "mms object list")
 		}
 
-		fmt.Println(output)
-
-
-	} else {
-		// If the user wants additional details, provide the destination information from the destination API.
-		// Display the full object metadata.
-		var objectMeta common.MetaData
-
-		// Construct the URL path from the input pieces. They are required inputs so we know they are at least non-null.
-		urlPath := path.Join("api/v1/objects/", org, objType, objId)
-
-		// Call the MMS service over HTTP to get the basic object metadata.
-		httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
-		if httpCode == 404 {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
-		}
-
-		mmsObjectInfo := MMSObjectInfo{
-			Definition: objectMeta,
-		}
-
-		// Display the full object metadata.
-		var objectDests []common.DestinationsStatus
-
-		// Construct the URL path the additional destination detail.
-		urlPath = path.Join("api/v1/objects/", org, objType, objId, "destinations")
-
-		// Call the MMS service over HTTP to get the object's destination status.
-		httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
-		if httpCode == 404 {
-			cliutils.Verbose(msgPrinter.Sprintf("destination detail for object '%s' of type '%s' not found in org %s", objId, objType, org))
-		}
-
-		mmsObjectInfo.Destinations = objectDests
-
-		output := cliutils.MarshalIndent(mmsObjectInfo, "mms object list")
-		fmt.Println(output)
-
-		// Grab the object status and display it.
-		urlPath = path.Join("api/v1/objects/", org, objType, objId, "status")
-		var resp []byte
-		cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200}, &resp)
-		msgPrinter.Printf("Object status: %v", string(resp))
 	}
+
+	msgPrinter.Printf("Listing objects in org %v:", org)
+	msgPrinter.Println()
+	fmt.Println(output)
 }
 
 func ObjectNew(org string) {
@@ -352,13 +397,19 @@ func dpServiceIsValid(dpService string) bool {
 	return true
 }
 
-func timeIsValid(timestamp string) bool {
+func timeIsValid(timestamp string) (bool, string) {
 	trimString := strings.TrimSpace(timestamp)
 	if trimString != "" {
 		_, err := time.Parse(time.RFC3339, trimString)
 		if err != nil {
-			return false
+			regex := *regexp.MustCompile(`(\d{4})-(\d{2})-(\d{2})`)
+			if res := regex.FindStringSubmatch(trimString); res != nil {
+				convTimeStamp := fmt.Sprintf("%sT00:00:00Z", res[0])
+				return true, convTimeStamp
+			}
+
+			return false, ""
 		}
 	}
-	return true
+	return true, ""
 }
