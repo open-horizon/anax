@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
 
 # yum is not installed, use microdnf instead
 RUN microdnf update -y --nodocs && microdnf clean all
