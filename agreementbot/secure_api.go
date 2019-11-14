@@ -308,8 +308,6 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string) err
 			return nil
 		}
 	}
-
-	return nil
 }
 
 // exchange context using user credential

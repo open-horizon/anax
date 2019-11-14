@@ -330,6 +330,12 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
+		// Do not make proposals for services without a deployment configuration.
+		if workloadDetails.GetDeployment() == "" {
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for service %v/%v %v because it has no deployment configuration.", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version)))
+			return
+		}
+
 		// Canonicalize the arch field in the API spec list
 		for ix, apiSpec := range *asl {
 			if apiSpec.Arch != "" && b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != "" {
