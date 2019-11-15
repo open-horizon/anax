@@ -245,7 +245,8 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 				internalObjPol.Constraints = newPolicy.DestinationPolicy.Constraints
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy converted new object policy to: %v", internalObjPol)))
 
-				nodePolicy, err := compcheck.GetNodePolicy(w, agreement.DeviceId)
+				nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(w)
+				_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId)
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
@@ -287,7 +288,8 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 						continue
 					} else if found {
 						// Add the node to the object destination if eligible.
-						nodePolicy, err := compcheck.GetNodePolicy(w, agreement.DeviceId)
+						nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(w)
+						_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId)
 
 						if err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))

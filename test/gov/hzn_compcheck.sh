@@ -86,6 +86,27 @@ cat <<EOF > /tmp/node_policy.json
 }
 EOF
 
+# has specific service version requirement
+cat <<EOF > /tmp/node_policy2.json
+{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "network-testing"
+    },
+    {
+      "name": "group",
+      "value": "bluenode"
+    }
+  ],
+  "constraints": [
+    "iame2edev == true",
+    "NONS==false || NOGPS == false || NOLOC == false || NOPWS == false || NOHELLO == false",
+    "openhorizon.service.version != 2.0.6"
+  ]
+}
+EOF
+
 cat <<EOF > /tmp/business_policy.json
 {
     "label": "business policy for gpstest",
@@ -94,6 +115,51 @@ cat <<EOF > /tmp/business_policy.json
       "name": "https://bluehorizon.network/services/gpstest",
       "org": "e2edev@somecomp.com",
       "arch": "amd64",
+      "serviceVersions": [
+        {
+          "version": "1.0.0",
+          "priority": {},
+          "upgradePolicy": {}
+        }
+      ],
+      "nodeHealth": {
+        "missing_heartbeat_interval": 1800,
+        "check_agreement_status": 1800
+      }
+    },
+    "properties": [
+      {
+        "name": "iame2edev",
+        "value": "true"
+      },
+      {
+        "name": "NOGPS",
+        "value": false
+      },
+      {
+        "name": "number",
+        "value": 24
+      },
+      {
+        "name": "gpsvar",
+        "value": "gpsval"
+      }
+    ],
+    "constraints": [
+      "purpose == network-testing"
+    ]
+}
+EOF
+
+# different arch
+cat <<EOF > /tmp/business_policy2.json
+{
+    "label": "business policy for gpstest",
+    "description": "for gpstest",
+    "service": {
+      "name": "https://bluehorizon.network/services/gpstest",
+      "org": "e2edev@somecomp.com",
+      "arch": "arm64",
       "serviceVersions": [
         {
           "version": "1.0.0",
@@ -148,6 +214,7 @@ cat <<EOF > /tmp/service_policy.json
 }
 EOF
 
+# diffrent constraint
 cat <<EOF > /tmp/service_policy2.json
 {
   "properties": [
@@ -200,7 +267,7 @@ echo -e "\n${PREFIX} test input: wrong node id"
 CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345xxx -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "No node policy found for this node"
+results "$RES" "Error getting node"
 
 echo -e "\n${PREFIX} test input: wrong business policy id"
 CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstestxxx"
@@ -212,7 +279,7 @@ echo -e "\n${PREFIX} test input: wrong org id"
 CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n xxxuserdev/an12345 -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "Error trying to query node policy for xxxuserdev/an12345" "403"
+results "$RES" "Error getting node xxxuserdev/an12345 from the exchange" "403"
 
 echo -e "\n${PREFIX} test input: node org and business org missing, they pick up org from the user cred."
 CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n an12345 -b bp_gpstest"
@@ -221,7 +288,7 @@ RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: business policy id only. Use current node policy"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -b bp_gpstest"
+CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -b bp_netspeed"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "Neither node id nor node policy is not specified. Getting node policy from the local node" "\"compatible\": true"
@@ -238,8 +305,19 @@ echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
-echo -e "\n${PREFIX} test input: node policy, business policy and service policy. not compatible"
+echo -e "\n${PREFIX} test input: node policy, business policy and service policy. wrong arch"
+CMD="hzn policy compatible -a arm64 --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy.json"
+echo "$CMD"
+RES=$($CMD 2>&1)
+check_comp_results "$RES" "false" "Service with 'arch' arm64 cannot be found in the business policy"
 
+echo -e "\n${PREFIX} test input: node id, business policy. wrong arch"
+CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n an12345 --business-pol /tmp/business_policy2.json"
+echo "$CMD"
+RES=$($CMD 2>&1)
+check_comp_results "$RES" "false" "Service with 'arch' amd64 cannot be found in the business policy"
+
+echo -e "\n${PREFIX} test input: node policy, business policy and service policy. not compatible"
 CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
@@ -250,6 +328,33 @@ CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH  -n an12345 --business-pol /tm
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Compatibility Error"
+
+# bp_location has 2 services. one is compatible, the other one is not with /tmp/node_policy2.json
+echo -e "\n${PREFIX} test input: mixed. node pol, business policy id. compatible, miltible output."
+CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH  -b userdev/bp_location --node-pol /tmp/node_policy2.json -c"
+echo "$CMD"
+RES=$($CMD 2>&1)
+c=$(echo $RES | jq '.compatible')
+if [ "$c" != "true" ]; then 
+  echo "It should return compatible but not."
+  exit 2
+fi
+l=$(echo $RES | jq '.reason | length')
+if [ "$l" != "2" ]; then 
+  echo "It should return 2 service result but got $l."
+  exit 2
+fi
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q incompatible 
+if [ $? -ne 0 ]; then
+  echo "Service bluehorizon.network-services-location_2.0.6_amd64 should be incompatible but not."
+  exit 2
+fi
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q incompatible 
+if [ $? -eq 0 ]; then
+  echo "Service bluehorizon.network-services-location_2.0.7_amd64 should be compatible but not."
+  exit 2
+fi
+echo "Compatibility result expected."
 
 echo -e "\n${PREFIX} complete test\n"
 

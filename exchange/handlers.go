@@ -69,14 +69,18 @@ type DeviceHandler func(id string, token string) (*Device, error)
 
 func GetHTTPDeviceHandler(ec ExchangeContext) DeviceHandler {
 	return func(id string, token string) (*Device, error) {
-		return GetExchangeDevice(ec.GetHTTPFactory(), id, token, ec.GetExchangeURL())
+		if token != "" {
+			return GetExchangeDevice(ec.GetHTTPFactory(), id, id, token, ec.GetExchangeURL())
+		} else {
+			return GetExchangeDevice(ec.GetHTTPFactory(), id, ec.GetExchangeId(), ec.GetExchangeToken(), ec.GetExchangeURL())
+		}
 	}
 }
 
 // this is used when ExchangeContext is not set up yet.
 func GetHTTPDeviceHandler2(cfg *config.HorizonConfig) DeviceHandler {
 	return func(id string, token string) (*Device, error) {
-		return GetExchangeDevice(cfg.Collaborators.HTTPClientFactory, id, token, cfg.Edge.ExchangeURL)
+		return GetExchangeDevice(cfg.Collaborators.HTTPClientFactory, id, id, token, cfg.Edge.ExchangeURL)
 	}
 }
 
@@ -138,6 +142,15 @@ type ServiceHandler func(wUrl string, wOrg string, wVersion string, wArch string
 func GetHTTPServiceHandler(ec ExchangeContext) ServiceHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (*ServiceDefinition, string, error) {
 		return GetService(ec, wUrl, wOrg, wVersion, wArch)
+	}
+}
+
+// A handler for getting service metadata from the exchange. version can be a selection string, arch can be empty to mean all arches
+type SelectedServicesHandler func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]ServiceDefinition, error)
+
+func GetHTTPSelectedServicesHandler(ec ExchangeContext) SelectedServicesHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]ServiceDefinition, error) {
+		return GetSelectedServices(ec, wUrl, wOrg, wVersion, wArch)
 	}
 }
 

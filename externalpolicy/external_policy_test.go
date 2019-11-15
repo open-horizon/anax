@@ -57,9 +57,9 @@ func ExternalPolicy_Test_MergeWith(t *testing.T) {
 
 	pol1.MergeWith(pol2, false)
 	if len(pol1.Properties) != 4 {
-		t.Errorf("Error: Properties %v should have 4 element but got %v", pol1.Properties, len(pol1.Properties))
+		t.Errorf("Error: Properties %v should have 4 elements but got %v", pol1.Properties, len(pol1.Properties))
 	}
 	if len(pol1.Constraints) != 5 {
-		t.Errorf("Error: Properties %v should have 5 element but got %v", pol1.Constraints, len(pol1.Constraints))
+		t.Errorf("Error: Properties %v should have 5 elements but got %v", pol1.Constraints, len(pol1.Constraints))
 	}
 }

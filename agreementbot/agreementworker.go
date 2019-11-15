@@ -378,7 +378,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		} else {
 			// non patten case
 			// get node policy
-			nodePolicy, err := compcheck.GetNodePolicy(b, wi.Device.Id)
+			nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
+			_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, wi.Device.Id)
 			if err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				return
@@ -394,7 +395,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			servicePolTemp, foundTemp := wi.ServicePolicies[sIds[0]]
 			if !foundTemp {
 				var errTemp error
-				servicePol, errTemp = compcheck.GetServicePolicyWithId(b, sIds[0])
+				serviceIdPolicyHandler := exchange.GetHTTPServicePolicyWithIdHandler(b)
+				servicePol, errTemp = compcheck.GetServicePolicyWithId(serviceIdPolicyHandler, sIds[0])
 				if errTemp != nil {
 					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error getting service policy for service %v. %v", sIds[0], errTemp)))
 					return
@@ -404,17 +406,23 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 			found = foundTemp
 
-			// compatibility check
-			if compOutput, err := compcheck.PolicyCompatible_Pols(b, nodePolicy, &wi.ConsumerPolicy, servicePol); err != nil {
+			//merge the service policy with the built-in service policy
+			builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+			// add built-in service properties to the service policy
+			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol)
+
+			if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, &wi.ConsumerPolicy, mergedServicePol, ""); err != nil {
 				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
 				return
 			} else {
-				if compOutput.Compatible {
-					wi.ConsumerPolicy = *compOutput.ConsumerPolicy
+				if compatible {
+					if consumPol != nil {
+						wi.ConsumerPolicy = *consumPol
+					}
 					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
 					policy_match = true
 				} else {
-					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, compOutput.Reason)))
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, reason)))
 				}
 			}
 		}
@@ -677,7 +685,8 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 			if b.GetCSSURL() != "" && agreement.Pattern == "" {
 
 				// Retrieve the node policy.
-				nodePolicy, err := compcheck.GetNodePolicy(b, agreement.DeviceId)
+				nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
+				_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				} else if nodePolicy == nil {

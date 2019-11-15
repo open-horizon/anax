@@ -231,7 +231,7 @@ func ObjectNew(org string) {
 		`    "properties": [          /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
 		`      {`,
 		`        "name": "",`,
-		`        "value": nil,`,
+		`        "value": null,`,
 		`        "type": ""           /* ` + msgPrinter.Sprintf("Valid types are string, bool, int, float, list of string (comma separated), version.") + ` */`,
 		`                             /* ` + msgPrinter.Sprintf("Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.") + ` */`,
 		`      }`,

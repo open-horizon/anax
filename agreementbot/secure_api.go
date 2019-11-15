@@ -219,6 +219,9 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
 			writeResponse(w, fmt.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
 		} else {
+			// if checkAll is set, then check all the services defined in the business policy for compatibility.
+			checkAll := r.URL.Query().Get("checkAll")
+
 			var input compcheck.PolicyCompInput
 			err := json.NewDecoder(r.Body).Decode(&input)
 			if err == io.EOF {
@@ -230,13 +233,12 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 			} else {
 				// do policy compatibility check
 				user_ec := a.createUserExchangeContext(userId, userPasswd)
-				output, err := compcheck.PolicyCompatible(user_ec, &input)
+				output, err := compcheck.PolicyCompatible(user_ec, &input, (checkAll != ""))
 
 				// nil out the policies in the output if 'long' is not set in the request
 				long := r.URL.Query().Get("long")
 				if long == "" && output != nil {
-					output.ProducerPolicy = nil
-					output.ConsumerPolicy = nil
+					output.Input = nil
 				}
 
 				// write the output

@@ -155,7 +155,7 @@ type GetDevicesResponse struct {
 	LastIndex int               `json:"lastIndex"`
 }
 
-func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string) (*Device, error) {
+func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, credId string, credPasswd string, exchangeUrl string) (*Device, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
 
@@ -163,7 +163,7 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	resp = new(GetDevicesResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
 	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, credId, credPasswd, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return nil, err
 		} else if tpErr != nil {

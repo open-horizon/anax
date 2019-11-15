@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"net/http"
@@ -85,13 +86,13 @@ func New() {
 		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
 		`    {`,
 		`       "name": "",`,
-		`       "value": nil`,
+		`       "value": null`,
 		`      }`,
 		`  ],`,
 		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
 		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
 		`       "" `,
-		`  ], `,
+		`  ] `,
 		`}`,
 	}
 
@@ -101,26 +102,22 @@ func New() {
 }
 
 // check if the policies are compatible
-func Compatible(org string, userPw string, nodeId string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, showDetail bool) {
+func Compatible(org string, userPw string, nodeId string, nodeArch string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, checkAllSvcs bool, showDetail bool) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
 	userOrg, credToUse, nId, useNodeId, useBPolId := verifyCompatibleParamters(org, userPw, nodeId, nodePolFile, businessPolId, businessPolFile, servicePolFile)
-	cliutils.Verbose(msgPrinter.Sprintf("Exchange credentials to use: %v, organizationnode id: %v", credToUse, userOrg))
 
 	policyCheckInput := compcheck.PolicyCompInput{}
+	policyCheckInput.NodeArch = nodeArch
 
 	// formalize node id or get node policy
-	nodeOrg := userOrg
 	if useNodeId {
 		// add credentials'org to node id if the node id does not have an org
 		nId = cliutils.AddOrg(userOrg, nId)
 
-		policyCheckInput.SetNodeId(nId)
-
-		// get node org for later use
-		nodeOrg, _ = cliutils.TrimOrg(nodeOrg, nId)
+		policyCheckInput.NodeId = nId
 	} else if nodePolFile == "" {
 		msgPrinter.Printf("Neither node id nor node policy is not specified. Getting node policy from the local node.")
 		msgPrinter.Println()
@@ -128,28 +125,37 @@ func Compatible(org string, userPw string, nodeId string, nodePolFile string, bu
 		var np externalpolicy.ExternalPolicy
 		cliutils.HorizonGet("node/policy", []int{200}, &np, false)
 
-		policyCheckInput.SetNodePolicy(&np)
+		policyCheckInput.NodePolicy = &np
 
-		// get node org for later use
+		// get id
 		horDevice := api.HorizonDevice{}
 		cliutils.HorizonGet("node", []int{200}, &horDevice, false)
-		if horDevice.Org != nil {
-			nodeOrg = *horDevice.Org
+		if horDevice.Org != nil && horDevice.Id != nil {
+			policyCheckInput.NodeId = cliutils.AddOrg(*horDevice.Org, *horDevice.Id)
+
+			// check node architecture
+			if nodeArch != "" {
+				if nodeArch != cutil.ArchString() {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node architecture %v specified by -a does not match the architecture of the local node %v.", nodeArch, cutil.ArchString()))
+				}
+			} else {
+				policyCheckInput.NodeArch = cutil.ArchString()
+			}
 		}
 	} else {
 		// read the node policy from file
 		var np externalpolicy.ExternalPolicy
 		readInputFile(nodePolFile, &np)
 
-		policyCheckInput.SetNodePolicy(&np)
+		policyCheckInput.NodePolicy = &np
 	}
 
 	// formalize business policy id or get business policy
 	if useBPolId {
 		// add node id org to the business policy id if the id does not have an org
-		businessPolId = cliutils.AddOrg(nodeOrg, businessPolId)
+		businessPolId = cliutils.AddOrg(userOrg, businessPolId)
 
-		policyCheckInput.SetBusinessPolId(businessPolId)
+		policyCheckInput.BusinessPolId = businessPolId
 	} else {
 		// get business policy from file
 		var bp businesspolicy.BusinessPolicy
@@ -158,7 +164,7 @@ func Compatible(org string, userPw string, nodeId string, nodePolFile string, bu
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", businessPolFile, err))
 		}
 
-		policyCheckInput.SetBusinessPolicy(&bp)
+		policyCheckInput.BusinessPolicy = &bp
 	}
 
 	if servicePolFile != "" {
@@ -166,7 +172,7 @@ func Compatible(org string, userPw string, nodeId string, nodePolFile string, bu
 		var sp externalpolicy.ExternalPolicy
 		readInputFile(servicePolFile, &sp)
 
-		policyCheckInput.SetServicePolicy(&sp)
+		policyCheckInput.ServicePolicy = &sp
 	}
 
 	cliutils.Verbose(msgPrinter.Sprintf("Using compatibility checking input: %v", policyCheckInput))
@@ -190,13 +196,12 @@ func Compatible(org string, userPw string, nodeId string, nodePolFile string, bu
 
 	// now we can call the real code to check if the policies are compatible.
 	// the policy validation are done wthin the calling function.
-	compOutput, err := compcheck.PolicyCompatible(ec, &policyCheckInput)
+	compOutput, err := compcheck.PolicyCompatible(ec, &policyCheckInput, checkAllSvcs)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
 	} else {
 		if !showDetail {
-			compOutput.ProducerPolicy = nil
-			compOutput.ConsumerPolicy = nil
+			compOutput.Input = nil
 		}
 
 		// display the output

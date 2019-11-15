@@ -196,7 +196,7 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 
 	// If the node entry has already been removed form the exchange, skip this step.
-	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
 	if err != nil && strings.Contains(err.Error(), "status: 401") {
 		return nil
 	} else if err != nil {
