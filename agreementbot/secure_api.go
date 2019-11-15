@@ -135,8 +135,8 @@ func (a *SecureAPI) GetHTTPFactory() *config.HTTPClientFactory {
 	}
 }
 
-func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) *UserExchangeContext {
-	return &UserExchangeContext{
+func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) *compcheck.UserExchangeContext {
+	return &compcheck.UserExchangeContext{
 		UserId:      userId,
 		Password:    passwd,
 		URL:         a.GetExchangeURL(),
@@ -308,35 +308,6 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string) err
 			return nil
 		}
 	}
-}
-
-// exchange context using user credential
-type UserExchangeContext struct {
-	UserId      string
-	Password    string
-	URL         string
-	CSSURL      string
-	HTTPFactory *config.HTTPClientFactory
-}
-
-func (u *UserExchangeContext) GetExchangeId() string {
-	return u.UserId
-}
-
-func (u *UserExchangeContext) GetExchangeToken() string {
-	return u.Password
-}
-
-func (u *UserExchangeContext) GetExchangeURL() string {
-	return u.URL
-}
-
-func (u *UserExchangeContext) GetCSSURL() string {
-	return u.CSSURL
-}
-
-func (u *UserExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
-	return u.HTTPFactory
 }
 
 // write the PolicyCompOutput response

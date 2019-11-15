@@ -347,6 +347,15 @@ Environment Variables:
 	policyPatchInput := policyPatchCmd.Arg("patch", msgPrinter.Sprintf("The new constraints or properties in the format '%s' or '%s'.", "{\"constraints\":[<constraint list>]}", "{\"properties\":[<property list>]}")).Required().String()
 	policyRemoveCmd := policyCmd.Command("remove", msgPrinter.Sprintf("Remove the node's policy."))
 	policyRemoveForce := policyRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	policyCompCmd := policyCmd.Command("compatible", msgPrinter.Sprintf("Check policy compatibility"))
+	policyCompOrg := policyCompCmd.Flag("org", msgPrinter.Sprintf("The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	policyCompUserPw := policyCompCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
+	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
+	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n.")).String()
+	policyCompBPolId := policyCompCmd.Flag("business_pol_id", msgPrinter.Sprintf("The Horizon exchange business policy ID. Mutually exclusive with --business-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
+	policyCompBPolFile := policyCompCmd.Flag("business-pol", msgPrinter.Sprintf("The JSON input file name containing the business policy. Mutually exclusive with -b.")).String()
+	policyCompSPolFile := policyCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.")).String()
+	policyCompLong := policyCompCmd.Flag("long", msgPrinter.Sprintf("Show detailed policy compatibility checking output.")).Short('l').Bool()
 
 	agreementCmd := app.Command("agreement", msgPrinter.Sprintf("List or manage the active or archived agreements this edge node has made with a Horizon agreement bot."))
 	agreementListCmd := agreementCmd.Command("list", msgPrinter.Sprintf("List the active or archived agreements this edge node has made with a Horizon agreement bot."))
@@ -595,6 +604,14 @@ Environment Variables:
 		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
 	}
 
+	if strings.HasPrefix(fullCmd, "policy") {
+		subCmd := strings.TrimPrefix(fullCmd, "policy ")
+		if subCmd == "compatible" {
+			policyCompOrg = cliutils.WithDefaultEnvVar(policyCompOrg, "HZN_ORG_ID")
+			policyCompUserPw = cliutils.WithDefaultEnvVar(policyCompUserPw, "HZN_EXCHANGE_USER_AUTH")
+		}
+	}
+
 	// For the mms command family, make sure that org and exchange credentials are specified in some way.
 	if strings.HasPrefix(fullCmd, "mms") {
 		mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
@@ -749,6 +766,8 @@ Environment Variables:
 		policy.Patch(*policyPatchInput)
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
+	case policyCompCmd.FullCommand():
+		policy.Compatible(*policyCompOrg, *policyCompUserPw, *policyCompNodeId, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompLong)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():
