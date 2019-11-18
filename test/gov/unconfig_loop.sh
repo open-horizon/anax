@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#set -x
-
 # The purpose of this test is to verify that the DELETE /node API works correctly in a full
 # runtime context. Some parts of this test simulate the fact that anax is configured to auto-restart
 # when it terminates.
@@ -20,7 +18,7 @@ do
   # The node is already running, so start with the blocking form of the unconfig API. The API should always be
   # successful and should always be empty.
   echo "Unconfig node, blocking"
-  DEL=$(curl -sSLX DELETE http://localhost/node)
+  DEL=$(curl -sSLX DELETE $ANAX_API/node)
   if [ $? -ne 0 ]
   then
     echo -e "Error return from DELETE: $?"
@@ -56,50 +54,19 @@ do
   while :
   do
     # Wait for the "connection refused" message
-    GET=$(curl -sSL 'http://localhost/node')
+    GET=$(curl -sSL "$ANAX_API/node")
     if [ $? -eq 7 ]; then
       break
     else
-      echo -e "Is anax still up: $GET"
-
-      # Since anax is still up, verify that a POST to /node will return the correct error.
-      pat=$PATTERN
-      if [[ "$PATTERN" != "" ]]; then
-        pat="e2edev@somecomp.com/$PATTERN"
+      echo -e "Is anax up yet: $GET"
+      CS=$(echo "$GET" | jq -r '.configstate.state')
+      if [ "$CS" == "unconfigured" ]; then
+        break
       fi
-      read -d '' newhzndevice <<EOF
-{
-  "id": "$DEVICE_ID",
-  "token": "$TOKEN",
-  "name": "$DEVICE_NAME",
-  "organization": "$DEVICE_ORG",
-  "pattern": "$pat"
-}
-EOF
-      HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
-
-      # We only want to look at the response if it's a json document. Everything else we can ignore because anax could have terminated
-      # between the GET call above and this POST call.
-      if [ $? -eq 0 ] && [ "$HDS" != "null" ] && [ "${HDS:0:1}" == "{" ]
-      then
-        ERR=$(echo $HDS | jq -r '.error')
-        if [ "${ERR:0:19}" != "Node is restarting," ]
-        then
-          echo -e "node object has the wrong state: $HDS"
-          exit 2
-        fi
-      fi
-
     fi
 
-    # This is the loop/timeout control. Exit the test in error after 2 mins without an anax termination.
-    if [ "$COUNT" == "24" ]
-    then
-      echo -e "Error, anax is taking too long to terminate."
-      exit 2
-    fi
     sleep 5
-    COUNT=COUNT+1
+
   done
 
   # Save off the existing log file, in case the next test fails and we need to look back to see how this
@@ -108,9 +75,12 @@ EOF
 
   # Simulate the auto-restart of anax and reconfig of the node.
   echo "Node unconfigured. Restart and reconfig node."
-  ./start_node.sh > /tmp/start_node.log
+
+  ./apireg.sh
   if [ $? -ne 0 ]
   then
+    echo "Node reconfig failed."
+    TESTFAIL="1"
     exit 2
   fi
 
@@ -122,18 +92,18 @@ EOF
 
   # Log the current state of agreements and previous agreements before we unconfigure again.
   echo -e "Current agreements"
-  ACT=$(curl -sSL http://localhost/agreement | jq -r '.agreements.active' | grep "current_agreement_id")
+  ACT=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active' | grep "current_agreement_id")
   echo $ACT
 
   echo -e "Previous terminations"
-  ARC=$(curl -sSL http://localhost/agreement | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
+  ARC=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
   echo $ARC
 
   # =======================================================================================================================
   # This is phase 2 of the main test loop. The node is already running, so this time use the non-blocking form of the
   # unconfig API. This form requires that we poll GET /node to figure out when unconfiguration is complete.
   echo "Unconfig node, non-blocking"
-  DEL=$(curl -sSLX DELETE 'http://localhost/node?block=false')
+  DEL=$(curl -sSLX DELETE "$ANAX_API/node?block=false")
   if [ $? -ne 0 ]
   then
     echo -e "Error return from DELETE: $?"
@@ -151,49 +121,20 @@ EOF
   COUNT=1
   while :
   do
-    GET=$(curl -sSL 'http://localhost/node')
+    GET=$(curl -sSL "$ANAX_API/node")
     if [ $? -eq 7 ]; then
       break
     else
       echo -e "Is anax still up: $GET"
 
-      # Since anax is still up, verify that a POST to /node will return the correct error.
-      pat=$PATTERN
-      if [[ "$PATTERN" != "" ]]; then
-        pat="e2edev@somecomp.com/$PATTERN"
-      fi
-      read -d '' newhzndevice <<EOF
-{
-  "id": "$DEVICE_ID",
-  "token": "$TOKEN",
-  "name": "$DEVICE_NAME",
-  "organization": "$DEVICE_ORG",
-  "pattern": "$pat"
-}
-EOF
-      HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
-
-      # We only want to look at the response if it's a json document. Everything else we can ignore because anax could have terminated
-      # between the GET call above and this POST call.
-      if [ $? -eq 0 ] && [ "$HDS" != "null" ] && [ "${HDS:0:1}" == "{" ]
-      then
-        ERR=$(echo $HDS | jq -r '.error')
-        if [ "${ERR:0:19}" != "Node is restarting," ]
-        then
-          echo -e "node object has the wrong state: $HDS"
-          exit 2
-        fi
+      CS=$(echo "$GET" | jq -r '.configstate.state')
+      if [ "$CS" == "unconfigured" ]; then
+        break
       fi
     fi
 
-    # This is the loop/timeout control. Exit the test in error after 4 mins without an anax termination.
-    if [ "$COUNT" == "48" ]
-    then
-      echo -e "Error, anax is taking too long to terminate."
-      exit 2
-    fi
     sleep 5
-    COUNT=COUNT+1
+
   done
 
   # Following the API call, the node's entry in the exchange should have some changes in it. The messaging key should be empty,
@@ -219,9 +160,12 @@ EOF
 
   # Simulate the auto-restart of anax and reconfig of the node.
   echo "Node unconfigured. Restart and reconfig node."
-  ./start_node.sh > /tmp/start_node.log
+
+  ./apireg.sh
   if [ $? -ne 0 ]
   then
+    echo "Node reconfig failed."
+    TESTFAIL="1"
     exit 2
   fi
 
@@ -233,11 +177,11 @@ EOF
 
   # Log the current state of agreements and previous agreements before we unconfigure again.
   echo -e "Current agreements"
-  ACT=$(curl -sSL http://localhost/agreement | jq -r '.agreements.active' | grep "current_agreement_id")
+  ACT=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active' | grep "current_agreement_id")
   echo $ACT
 
   echo -e "Previous terminations"
-  ARC=$(curl -sSL http://localhost/agreement | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
+  ARC=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.archived' | grep "terminated_description" | awk '{print $0,"\n"}')
   echo $ARC
 
 done

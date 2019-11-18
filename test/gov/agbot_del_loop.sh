@@ -52,7 +52,7 @@ do
       sleep 180
 
       echo -e "Current workload usages\n"
-      curl -sS http://localhost:81/workloadusage | jq -r '.'
+      curl -sS http://localhost:8082/workloadusage | jq -r '.'
       sleep 420
    fi
 done

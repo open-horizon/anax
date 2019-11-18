@@ -31,7 +31,7 @@ echo -e "Polling anax API for completion of device unconfigure."
 COUNT=1
 while :
 do
-  GET=$(curl -sSL 'http://localhost/node')
+  GET=$(curl -sSL '$ANAX_API/node')
   if [ $? -eq 7 ]; then
     break
   else
@@ -51,7 +51,7 @@ do
   "pattern": "$pat"
 }
 EOF
-    HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/node")
+    HDS=$(echo "$newhzndevice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/node")
 
     rc=$?
 

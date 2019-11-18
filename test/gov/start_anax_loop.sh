@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export HZN_AGENT_PORT=8510
+
 while (true) do
   if [ "$OLDANAX" == "1" ]
   then
