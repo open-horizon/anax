@@ -580,13 +580,21 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$NOAGBOTAPI" != "1" ]; then
+if [ "$NOCOMPCHECK" != "1" ]; then
    ./agbot_apitest.sh
   if [ $? -ne 0 ]
   then
-    echo "Agbot API Test failure."
+    echo "Policy compatibility test using Agbot API failure."
     exit 1
   fi
+
+  ./hzn_compcheck.sh
+  if [ $? -ne 0 ]
+  then
+    echo "Policy compatibility test using hzn command failure."
+    exit 1
+  fi
+
 fi
 
 if [ "$NOSURFERR" != "1" ]; then

@@ -58,7 +58,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOSVC_CONFIGSTATE=1 - turns off the service config state test.
 - NOSURFERR=1 - turns off the node surface error test.
 - NOPATTERNCHANGE=1 - turns off the node pattern change test.
-- NOAGBOTAPI=1 - turns off the agbot api test.
+- NOCOMPCHECK=1 - turns off the policy compatibility test.
 - NONS=1 - dont register the netspeed service.
 - NOGPS=1 - dont register the gpstest service.
 - NOLOC=1 - dont register the location service.

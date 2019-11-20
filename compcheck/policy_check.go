@@ -3,6 +3,7 @@ package compcheck
 import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
@@ -30,7 +31,7 @@ func (e *CompCheckError) Error() string {
 	if e == nil {
 		return ""
 	} else {
-		return fmt.Sprintf("Error: %v", e.Err)
+		return fmt.Sprintf("%v", e.Err)
 	}
 }
 
@@ -81,10 +82,59 @@ type PolicyCompInput struct {
 	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
 }
 
-func (p *PolicyCompInput) String() string {
+func (p PolicyCompInput) String() string {
 	return fmt.Sprintf("NodeId: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v",
 		p.NodeId, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy)
 
+}
+
+func (p *PolicyCompInput) SetNodeId(nId string) {
+	p.NodeId = nId
+}
+
+func (p *PolicyCompInput) SetNodePolicy(nodePolicy *externalpolicy.ExternalPolicy) {
+	p.NodePolicy = nodePolicy
+}
+
+func (p *PolicyCompInput) SetBusinessPolId(bId string) {
+	p.BusinessPolId = bId
+}
+
+func (p *PolicyCompInput) SetBusinessPolicy(businessPolicy *businesspolicy.BusinessPolicy) {
+	p.BusinessPolicy = businessPolicy
+}
+
+func (p *PolicyCompInput) SetServicePolicy(servicePolicy *externalpolicy.ExternalPolicy) {
+	p.ServicePolicy = servicePolicy
+}
+
+// exchange context using user credential
+type UserExchangeContext struct {
+	UserId      string
+	Password    string
+	URL         string
+	CSSURL      string
+	HTTPFactory *config.HTTPClientFactory
+}
+
+func (u *UserExchangeContext) GetExchangeId() string {
+	return u.UserId
+}
+
+func (u *UserExchangeContext) GetExchangeToken() string {
+	return u.Password
+}
+
+func (u *UserExchangeContext) GetExchangeURL() string {
+	return u.URL
+}
+
+func (u *UserExchangeContext) GetCSSURL() string {
+	return u.CSSURL
+}
+
+func (u *UserExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
+	return u.HTTPFactory
 }
 
 // Given the PolicyCompInput, check if the policies are compatible.
