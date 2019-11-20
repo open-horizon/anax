@@ -71,7 +71,13 @@ Command line flags override the corresponding environment variables or config fi
 
 `-p <pattern>` - pattern name to register this node with. Default: register the node
 
+`-n <path>` - path to a node policy file
+
 `-s` - skip node registration
+
+`-v` - show version
+
+`-l` - logging verbosity level (0-5, 5 is verbose; default is 3.)
 
 ## Package Tree
 
