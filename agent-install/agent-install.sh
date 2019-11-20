@@ -439,8 +439,23 @@ function install_linux(){
     sudo cp "$CERTIFICATE" /usr/local/share/ca-certificates && sudo update-ca-certificates
     set +x
 
-    ANAX_PORT=80
-	log_info "Checking if the ${ANAX_PORT} is free..."
+    ANAX_PORT=8510
+
+    if [[ "$OS" == "linux" ]]; then
+        if [ -f /etc/default/horizon ]; then
+            log_info "Getting agent port from /etc/default/horizon file..."
+            anaxPort=$(grep HZN_AGENT_PORT /etc/default/horizon |cut -d'=' -f2)
+            if [[ "$anaxPort" == "" ]]; then
+                log_info "Cannot detect agent port as /etc/default/horizon does not contain HZN_AGENT_PORT, using ${ANAX_PORT} instead"
+            else
+                ANAX_PORT=$anaxPort
+            fi
+        else
+            log_info "Cannot detect agent port as /etc/default/horizon cannot be found, using ${ANAX_PORT} instead"
+        fi
+    fi
+
+	log_info "Checking if the agent port ${ANAX_PORT} is free..."
 	if [ ! -z "$(netstat -nlp | grep :$ANAX_PORT)" ]; then
 		log_info "Something is running on ${ANAX_PORT}..."
 		if [ -z "$(netstat -nlp | grep :$ANAX_PORT | grep anax)" ]; then

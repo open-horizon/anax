@@ -28,7 +28,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -69,7 +69,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -110,7 +110,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -152,7 +152,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -194,7 +194,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -237,7 +237,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -280,7 +280,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -323,7 +323,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -366,7 +366,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"

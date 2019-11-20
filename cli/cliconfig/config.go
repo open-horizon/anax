@@ -36,7 +36,7 @@ type HorizonCliConfig struct {
 	// the locale that the hzn cli will run under, for example pt-BR, es, fr, de, it, ja, ko, zh-CN, zh-TW.
 	HZN_LANG string `json:"HZN_LANG,omitempty"`
 
-	// the url to the horizon agent, the default is "http://localhost" for linux and "http://localhost:8081" for mac
+	// the url to the horizon agent, the default is "http://localhost:8510" for linux and "http://localhost:8081" for mac
 	HORIZON_URL string `json:"HORIZON_URL,omitempty"`
 
 	// exchange url, the default is shipped with the horizon-cli package

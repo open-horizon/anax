@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	HZN_API             = "http://localhost"
+	HZN_API             = "http://localhost:" + config.AnaxAPIPortDefault
 	HZN_API_MAC         = "http://localhost:8081"
 	JSON_INDENT         = "  "
 	MUST_REGISTER_FIRST = "this command can not be run before running 'hzn register'"

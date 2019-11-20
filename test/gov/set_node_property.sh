@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ANAX_API=http://localhost
+ANAX_API=http://localhost:8510
 PROP_NAME=$1
 PROP_VALUE=$2
 

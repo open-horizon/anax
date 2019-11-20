@@ -18,7 +18,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -51,7 +51,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -84,7 +84,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -117,7 +117,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -154,7 +154,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -191,7 +191,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -228,7 +228,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -270,7 +270,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -312,7 +312,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -354,7 +354,7 @@ echo -e "\n\n[D] agreement protocol payload: $agreementprotocolattribute"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/attribute")
+RES=$(echo "$agreementprotocolattribute" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/attribute")
 if [ "$RES" == "" ]
 then
   echo -e "$agreementprotocolattribute \nresulted in empty response"
@@ -396,7 +396,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -437,7 +437,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -478,7 +478,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -519,7 +519,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -564,7 +564,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -609,7 +609,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -654,7 +654,7 @@ echo -e "\n\n[D] netspeedservice payload: $netspeedservice"
 
 echo "Registering netspeed service"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -704,7 +704,7 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -754,7 +754,7 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -804,7 +804,7 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
@@ -853,7 +853,7 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$netspeedservice" | curl -sS -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" != "201" ]
 then
   echo -e "$netspeedservice \nresulted in $RES response"
@@ -892,7 +892,7 @@ echo -e "\n\n[D] agreement protocol payload: $netspeedservice"
 
 echo "Setting workload independent agreement protocol attribute"
 
-RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "http://localhost/${SERVICE_MODE}/config")
+RES=$(echo "$netspeedservice" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/${SERVICE_MODE}/config")
 if [ "$RES" == "" ]
 then
   echo -e "$netspeedservice \nresulted in empty response"
