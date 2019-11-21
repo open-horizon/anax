@@ -194,7 +194,7 @@ func LogLinux(instanceId string, tailing bool) {
 				// ignore the error and keep trying.
 				cliutils.Verbose(msgPrinter.Sprintf("Error reading from /var/log/syslog: %v", err))
 			}
-		} else if strings.Contains(line, instanceId) {
+		} else if strings.Contains(line, "workload-"+instanceId) {
 			// If the requested service id is in the current syslog record, display it.
 			fmt.Print(string(line))
 		}
