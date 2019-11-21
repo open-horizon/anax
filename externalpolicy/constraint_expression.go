@@ -1,7 +1,6 @@
 package externalpolicy
 
 import (
-	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
 	"strings"
@@ -121,96 +120,98 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 	const OP_OR = "or"
 	const OP_NOT = "not"
 
-	var err error
-	var nextExpression, remainder, controlOp string
-	var handler plugin_registry.ConstraintLanguagePlugin
-
 	allPropArray := make([]interface{}, 0)
 	allRP := RequiredProperty_Factory()
+
+	var handler plugin_registry.ConstraintLanguagePlugin
+	var err error
 
 	if extConstraint == nil || len(*extConstraint) == 0 {
 		return allRP, nil
 	}
 
-	constraints, verr := extConstraint.Validate()
-	if verr != nil {
-		return nil, verr
-	}
-
-	for _, remainder = range constraints {
+	for _, remainder := range *extConstraint {
 		remainder := strings.Replace(remainder, "\a", " ", -1)
-
-		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
-		// to drop expressions into the structure as they come in through the GetNextExpression function.
-
-		andArray := make([]interface{}, 0) // An array of PropertyExpression.
-		orArray := make([]interface{}, 0)  // An array of "and" structures, each with an array of PropertyExpression.
 
 		// Get a handle to the specific language handler we will be using.
 		handler, err = extConstraint.GetLanguageHandler()
 		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to obtain policy constraint language handler, error %v", err))
+			return nil, fmt.Errorf("unable to obtain policy constraint language handler, error %v", err)
 		}
 
-		// Loop until there are no more property expressions to consume.
-		for {
+		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
+		// to drop expressions into the structure as they come in through the GetNextExpression function.
 
-			// Get a property expression from the constraint expression. If there is no expression returned, then it's the
-			// end of the expression.
-			nextExpression, remainder, err = handler.GetNextExpression(remainder)
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
-			} else if nextExpression == "" {
-				break
-			}
-
-			// Convert the expression string into JSON and add it into the RequiredProperty object that we're building.
-			pieces := strings.Split(nextExpression, " ")
-			fullValue := pieces[2]
-			if len(pieces) > 3 {
-				for _, piece := range pieces[3:] {
-					fullValue = fmt.Sprintf("%s %s", fullValue, piece)
-				}
-			}
-			pe := PropertyExpression_Factory(pieces[0], fullValue, pieces[1])
-			andArray = append(andArray, *pe)
-
-			// Get control operator. If no control operator is returned, then it's the end of the expression.
-			controlOp, remainder, err = handler.GetNextOperator(remainder)
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
-			} else if controlOp == "" {
-				break
-			}
-
-			// Based on the control operator expression that we get back, add the current list of ANDed expressions into the structure.
-			if strings.Contains(controlOp, "&&") || strings.Contains(strings.ToUpper(controlOp), "AND") {
-				// Just consume the operator and keep going.
-
-			} else {
-				// OR means we need a new element in the "or" array.
-				innerAnd := map[string]interface{}{
-					OP_AND: andArray,
-				}
-				orArray = append(orArray, innerAnd)
-				andArray = make([]interface{}, 0)
-
-			}
-
+		allPropArray, _, err = parseConstraintExpression(remainder, allPropArray, handler)
+		if err != nil {
+			return nil, err
 		}
 
-		// Done with the expression, so close up the current and array initialize the RequiredProperty, and return it.
-		innerAnd := map[string]interface{}{
-			OP_AND: andArray,
-		}
-		orArray = append(orArray, innerAnd)
-
-		newRP := map[string]interface{}{OP_OR: orArray}
-		allPropArray = append(allPropArray, newRP)
+		allRP.Initialize(&map[string]interface{}{
+			OP_AND: allPropArray,
+		})
 	}
-	allRP.Initialize(&map[string]interface{}{
-		OP_AND: allPropArray,
-	})
-
 	return allRP, nil
+}
+
+// parse a single constraint expression. This function is called recursively to handle parenthetical expressions
+func parseConstraintExpression(constraint string, allPropArray []interface{}, handler plugin_registry.ConstraintLanguagePlugin) ([]interface{}, string, error) {
+	andArray := make([]interface{}, 0)
+	orArray := make([]interface{}, 0)
+
+	var err error
+	var nextProp string
+	var ctrlOp string
+	var subExpr []interface{}
+
+	for err == nil {
+		// Start of property expression. This case will consume the entire expression.
+		nextProp, constraint, err = handler.GetNextExpression(constraint)
+		if err != nil {
+			return nil, constraint, err
+		}
+		if strings.TrimSpace(nextProp) != "" {
+			prop := strings.Split(nextProp, "\a")
+			andArray = append(andArray, *PropertyExpression_Factory(prop[0], strings.TrimSpace(prop[2]), strings.TrimSpace(prop[1])))
+		}
+
+		ctrlOp, constraint, err = handler.GetNextOperator(constraint)
+		if err != nil {
+			return nil, constraint, err
+		}
+
+		if ctrlOp == "(" {
+			// handle a parenthetical expression as a seperate constraint expression
+			subExpr, constraint, err = parseConstraintExpression(constraint, allPropArray, handler)
+			if err != nil {
+				return nil, constraint, err
+			}
+
+			for _, elem := range subExpr {
+				andArray = append(andArray, elem)
+			}
+			ctrlOp, constraint, err = handler.GetNextOperator(constraint)
+			if err != nil {
+				return nil, constraint, err
+			}
+		}
+		if ctrlOp == "||" || ctrlOp == "OR" {
+			innerAnd := map[string]interface{}{
+				OP_AND: andArray,
+			}
+			orArray = append(orArray, innerAnd)
+			andArray = make([]interface{}, 0)
+		} else if ctrlOp == ")" || ctrlOp == "" {
+			// end or expression. append andArray to orArray and append the result to allPropArray
+			innerAnd := map[string]interface{}{
+				OP_AND: andArray,
+			}
+			orArray = append(orArray, innerAnd)
+			newRP := map[string]interface{}{OP_OR: orArray}
+			allPropArray = append(allPropArray, newRP)
+			return allPropArray, constraint, nil
+		}
+	}
+
+	return nil, constraint, err
 }

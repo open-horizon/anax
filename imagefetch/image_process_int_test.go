@@ -279,8 +279,8 @@ func Test_ImageFetch_Event_Suite(suite *testing.T) {
 	images := []string{
 		"summit.hovitos.engineering/amd64/neo4j:3.3.1",               // 189MB
 		"summit.hovitos.engineering/amd64/clojure:boot-2.7.2-alpine", // 147MB
-		"ubuntu:yakkety", // 107MB
-		"registry.ng.bluemix.net/glendarling/x86/cpu:1.2.1", // 9MB
+		"ubuntu:yakkety",                                             // 107MB
+		"registry.ng.bluemix.net/glendarling/x86/cpu:1.2.1",          // 9MB
 	}
 
 	var buf bytes.Buffer

@@ -48,7 +48,7 @@ func Test_Validate_Failed1(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Comparison operator: == is not supported for string list value: \"USDA,Organic\"" {
+	} else if err.Error() != "Error finding an expression in eggs == \"truck load\" || certification == \"USDA, Organic\". Error was: Property type list of string can only use operator 'in'." {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 
@@ -61,7 +61,7 @@ func Test_Validate_Failed1(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Comparison operator: == is not supported for string list value: \"'hi\aworld','test'\"" {
+	} else if err.Error() != "Error finding an expression in hello == \"'hi world', 'test'\". Error was: Property type list of string can only use operator 'in'." {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -81,7 +81,7 @@ func Test_Validate_Failed2(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Comparison operator: < is not supported for boolean value: true" {
+	} else if err.Error() != "Error finding an expression in iame2edev < true && cpu == 3 || memory <= 32. Error was: Cannot use numerical comparison operator  <  with value true." {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -101,7 +101,7 @@ func Test_Validate_Failed3(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Logical operator load is not valid, expecting AND, OR, &&, ||" {
+	} else if err.Error() != "Error finding a control operator in eggs == truck load && certification == USDA. Error was: No control operator found. Expecting one of AND,&&,OR,||. Found:  load && certification == USDA" {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -121,7 +121,27 @@ func Test_Validate_Failed4(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Logical operator abcdefg is not valid, expecting AND, OR, &&, ||" {
+	} else if err.Error() != "Error finding a control operator in version == 1.1.1 abcdefg USDA == true. Error was: No control operator found. Expecting one of AND,&&,OR,||. Found:  abcdefg USDA == true" {
+		t.Errorf("Error message: %v is not the expected error message", err)
+	}
+}
+
+func Test_Validate_Failed5(t *testing.T) {
+
+	// invalid logical operator 'abcdefg'
+	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
+	constraintStrings := []string{"(version == 1.1.1 && USDA == true"}
+	ce := constraintStrings
+
+	var validated bool
+	var err error
+
+	validated, _, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
+	if validated == true {
+		t.Errorf("Validation should fail but did not, err: %v", err)
+	} else if err == nil {
+		t.Errorf("Validation should fail and return err, but didn't")
+	} else if err.Error() != "The constraint expression contains unmatched parentheses." {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }
@@ -185,6 +205,42 @@ func Test_Validate_Succeed5(t *testing.T) {
 	// no whitespace between prop, operator and value.
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	constraintStrings := []string{"version> 1 OR version <1 OR version >=0 AND version<= 0 OR USDA ==true OR USDA= false", "version =1.1.1 AND xyz !=123"}
+	ce := constraintStrings
+
+	var validated bool
+	var err error
+
+	validated, _, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
+	if validated == false {
+		t.Errorf("Validation failed but should not, err: %v", err)
+	} else if err != nil {
+		t.Errorf("Validation succeeded but also returned an error: %v", err)
+	}
+}
+
+func Test_Validate_Succeed6(t *testing.T) {
+
+	// no whitespace between prop, operator and value.
+	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
+	constraintStrings := []string{"(version> 1 OR version <1 OR version >=0) AND (version<= 0 OR (USDA ==true OR USDA= false))", "version =1.1.1 AND xyz !=123"}
+	ce := constraintStrings
+
+	var validated bool
+	var err error
+
+	validated, _, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
+	if validated == false {
+		t.Errorf("Validation failed but should not, err: %v", err)
+	} else if err != nil {
+		t.Errorf("Validation succeeded but also returned an error: %v", err)
+	}
+}
+
+func Test_Validate_Succeed7(t *testing.T) {
+
+	// no whitespace between prop, operator and value.
+	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
+	constraintStrings := []string{"version> 1 OR version <1 OR version >=0 AND version<= 0", "num => 5 OR num =< 22 OR num==10.32 OR num =6"}
 	ce := constraintStrings
 
 	var validated bool

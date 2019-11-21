@@ -3,14 +3,13 @@ package text_language
 import (
 	"errors"
 	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
-
-	"github.com/golang/glog"
+	"github.com/alecthomas/participle/lexer"
+	"github.com/alecthomas/participle/lexer/ebnf"
 	"github.com/open-horizon/anax/externalpolicy/plugin_registry"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
+	"strconv"
+	"strings"
 )
 
 func init() {
@@ -28,8 +27,7 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 	var err error
 	var constraints []string
-	var nextExpression, nextLogicalOperator, remainder, constraint string
-	var validated bool
+	var constraint string
 
 	// get message printer because this function is called by CLI
 	msgPrinter := i18n.GetMessagePrinter()
@@ -45,35 +43,35 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 
 	for _, constraint = range constraints {
 		// 1 constraint inside constraint list
-		// handles space inside quote and inside string list
-		constraint = preprocessConstraintExpression(constraint)
-		remainder = constraint
+		parenCount := 0
+		var exp string
+		var ctrlOp string
+		fullConstr := constraint
 
-		for {
-			nextExpression, remainder, err = p.GetNextExpression(remainder)
+		for len(constraint) > 0 {
+			exp, constraint, err = p.GetNextExpression(constraint)
 			if err != nil {
-				return false, validConstraints, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
-			} else if nextExpression == "" {
-				break
+				return false, nil, fmt.Errorf("Error finding an expression in %s. Error was: %v", fullConstr, err)
 			}
+			foundOp := false
 
-			validated, err = validateOneConstraintExpression(nextExpression)
-			if !validated {
-				return false, validConstraints, err
+			for !foundOp {
+				ctrlOp, constraint, err = p.GetNextOperator(constraint)
+				if err != nil && exp != "" {
+					return false, nil, fmt.Errorf("Error finding a control operator in %s. Error was: %v", fullConstr, err)
+				}
+
+				if ctrlOp == ")" {
+					parenCount--
+				} else if ctrlOp == "(" {
+					parenCount++
+				} else {
+					foundOp = true
+				}
 			}
-
-			nextLogicalOperator, remainder, err = p.GetNextOperator(remainder)
-			if err != nil {
-				return false, validConstraints, errors.New(msgPrinter.Sprintf("unable to convert policy constraint %v into internal format, error %v", remainder, err))
-			} else if nextLogicalOperator == "" {
-				break
-			}
-
-			// verify logical operators
-			if !isAllowedLogicalOpType(nextLogicalOperator) {
-				return false, validConstraints, errors.New(msgPrinter.Sprintf("Logical operator %v is not valid, expecting AND, OR, &&, ||", nextLogicalOperator))
-			}
-
+		}
+		if err == nil && parenCount != 0 {
+			return false, nil, fmt.Errorf(msgPrinter.Sprintf("The constraint expression contains unmatched parentheses."))
 		}
 		validConstraints = append(validConstraints, constraint)
 
@@ -85,213 +83,107 @@ func (p *TextConstraintLanguagePlugin) Validate(dconstraints interface{}) (bool,
 // This function parses out the next property expression and returns it along with the remainder of the expression.
 // It returns, the parsed out expression, and the remainder of the full expression, or an error.
 func (p *TextConstraintLanguagePlugin) GetNextExpression(expression string) (string, string, error) {
-
 	// The input expression string should begin with an expression that can be captured and returned, or it is empty.
 	// This should be true because the full expression should have been validated before calling this function.
-
-	if len(expression) == 0 {
+	if strings.TrimSpace(expression) == "" {
 		return "", "", nil
 	}
 
-	// Split the expression based on whitespace in the string.
-	pieces := strings.Split(expression, " ")
-	if len(pieces) < 3 {
-		return "", "", errors.New(i18n.GetMessagePrinter().Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is <property> == <value>", len(pieces), expression))
+	lexDef := getLexer()
+	def := getLexer().Symbols()
+	lex, err := lexDef.Lex(strings.NewReader(expression))
+	if err != nil {
+		return "", expression, err
 	}
-	quote := "\""
-	value := pieces[2]
-	remainder := strings.Join(pieces[3:], " ")
-	if strings.Count(pieces[2], quote)%2 == 1 {
-		for i, piece := range pieces[3:] {
-			value = fmt.Sprintf("%s %s", value, piece)
-			//fmt.Println(value)
-			if strings.Contains(piece, quote) {
-				remainder = strings.Join(pieces[i+4:], " ")
-				break
+	nextToken, err := lex.Next()
+	if err != nil {
+		return "", expression, err
+	}
+	nextRune := nextToken.Type
+	// Start of property expression. This case will consume the entire expression.
+	if nextRune == def["Str"] {
+		name := nextToken.Value
+		var opType rune
+		var valType rune
+		op := ""
+		val := ""
+		nextToken, err = lex.Next()
+		if err != nil {
+			return "", expression, fmt.Errorf("Unrecognized token found: %v", err)
+		}
+
+		nextRune = nextToken.Type
+		if nextRune != def["OpEq"] && nextRune != def["OpComp"] && nextRune != def["OpIn"] {
+			if len(name) > 3 && name[len(name)-2:] == "in" {
+				op = "in"
+				opType = def["in"]
+				name = name[:len(name)-2]
+				val = nextToken.Value
+				valType = nextRune
+			} else {
+				return "", expression, fmt.Errorf("Non-operator token proceeding property name token. \"%s%s\"", name, nextToken.Value)
 			}
 		}
-	}
-	// Reform the expression and return the remainder of the expression.
-	exp := fmt.Sprintf("%v %v %v", pieces[0], pieces[1], value)
-	return exp, remainder, nil
+		if op == "" {
+			op = nextToken.Value
+			opType = nextRune
+			nextToken, err = lex.Next()
+			if err != nil {
+				return "", expression, fmt.Errorf("Unrecognized token found: %v", err)
+			}
+			nextRune = nextToken.Type
+		}
 
+		if nextRune != def["Str"] && nextRune != def["QuoteStr"] && nextRune != def["ListStr"] && nextRune != def["Vers"] && nextRune != def["VersRange"] && nextRune != def["Num"] {
+			return "", expression, fmt.Errorf("Invalid property value. %v%v%v", name, op, nextToken.Value)
+		}
+		if val == "" {
+			val = nextToken.Value
+			valType = nextRune
+		}
+		if err = validOpValuePair(name, op, opType, val, valType, def); err != nil {
+			return "", expression, err
+		}
+		return fmt.Sprintf("%v\a%v\a%v", name, strings.TrimSpace(op), strings.TrimSpace(val)), strings.Replace(expression, fmt.Sprintf(("%v%v%v"), name, op, val), "", 1), nil
+	}
+	if nextRune == def["OpenParen"] || nextRune == def["CloseParen"] {
+		return "", expression, nil
+	}
+	return "", expression, fmt.Errorf("Next expression not found: %v", expression)
 }
 
 func (p *TextConstraintLanguagePlugin) GetNextOperator(expression string) (string, string, error) {
 	// The input expression string should begin with an operator (i.e. AND, OR), or it is empty.
 	// This should be true because the full expression should have been validated before calling this function. The
 	// preceding expression has alreday been removed.
-
-	if len(expression) == 0 {
+	if strings.TrimSpace(expression) == "" {
 		return "", "", nil
 	}
 
-	// Split the expression based on whitespace in the string.
-	pieces := strings.Split(expression, " ")
-	if len(pieces) < 4 {
-		return "", "", errors.New(fmt.Sprintf("found %v token(s), expecting 4 with an operator plus an expression %v, expected form is <operator> <property> == <value>", len(pieces), expression))
+	lexDef := getLexer()
+	def := getLexer().Symbols()
+	lex, err := lexDef.Lex(strings.NewReader(expression))
+	if err != nil {
+		return "", expression, err
+	}
+	nextToken, err := lex.Next()
+	if err != nil {
+		return "", expression, err
+	}
+	nextRune := nextToken.Type
+
+	if nextRune == def["CloseParen"] || nextRune == lexer.EOF {
+		return ")", strings.Replace(expression, nextToken.Value, "", 1), nil
 	}
 
-	// Reform the expression and return the remainder of the expression.
-	//fmt.Printf("full exp: %v op: %v rem: %v\n", expression, pieces[0], strings.Join(pieces[1:], " "))
-	return pieces[0], strings.Join(pieces[1:], " "), nil
-}
+	// Append the next element to the correct array depending on the proceeding control operator
+	// For AND: append the next element to the andArray and continue
 
-func isConstraintExpression(x interface{}) bool {
-	switch x.(type) {
-	case []string:
-		return true
-	default:
-		return false
+	if nextRune == def["AndOp"] || nextRune == def["OrOp"] || nextRune == def["OpenParen"] {
+		op := nextToken.Value
+		return strings.TrimSpace(op), strings.Replace(expression, op, "", 1), nil
 	}
-}
-
-func isString(x interface{}) bool {
-	switch x.(type) {
-	case string:
-		return true
-	default:
-		return false
-	}
-}
-
-func isCommaSeparatedStringList(x string) bool {
-	if len(x) == 0 {
-		return false
-	}
-
-	if !canParseToString(x) {
-		return false
-	}
-
-	if !strings.Contains(x, ",") {
-		return false
-	}
-
-	return true
-}
-
-func canParseToInteger(s string) bool {
-	_, err := strconv.Atoi(s)
-	if err == nil {
-		return true
-	}
-	return false
-}
-
-func canParseToFloat(s string) bool {
-	_, err := strconv.ParseFloat(s, 64)
-	if err == nil {
-		return true
-	}
-	return false
-}
-
-func canParseToBoolean(s string) bool {
-	_, err := strconv.ParseBool(s)
-	if err == nil {
-		return true
-	}
-	return false
-}
-
-func canParseToStringList(s interface{}) bool {
-	switch s.(type) {
-	case []string:
-		return true
-	default:
-		return false
-	}
-}
-
-func canParseToString(s string) bool {
-	if len(s) > 0 && s[0] == '"' && s[len(s)-1] == '"' {
-		content := strings.Trim(s, "\"")
-		glog.V(5).Infof(formatLogString(fmt.Sprintf("content after removing quote: %v", content)))
-	}
-
-	if strings.Contains(s, " ") {
-		glog.V(5).Infof("word with space not quoted: %v", s)
-		return false
-	}
-
-	return true
-}
-
-func isAllowedType(s string) bool {
-	if canParseToString(s) || canParseToBoolean(s) || canParseToInteger(s) || canParseToFloat(s) || canParseToStringList(s) || semanticversion.IsVersionString(s) || semanticversion.IsVersionExpression(s) {
-		return true
-	}
-	return false
-}
-
-// These are the comparison operators that are supported (get from conter_party_properties.go)
-const lessthan = "<"
-const greaterthan = ">"
-const equalto = "="
-const doubleequalto = "=="
-const lessthaneq = "<="
-const greaterthaneq = ">="
-const notequalto = "!="
-const inoperator = "in"
-
-func isAllowedComparisonOpType(s string) bool {
-	if strings.Compare(s, lessthan) == 0 || strings.Compare(s, greaterthan) == 0 || strings.Compare(s, equalto) == 0 || strings.Compare(s, doubleequalto) == 0 || strings.Compare(s, lessthaneq) == 0 || strings.Compare(s, greaterthaneq) == 0 || strings.Compare(s, notequalto) == 0 || strings.Compare(s, inoperator) == 0 {
-		return true
-	}
-	return false
-}
-
-const andsymbol = "&&"
-const orsymbol = "||"
-const and = "AND"
-const or = "OR"
-
-func isAllowedLogicalOpType(s string) bool {
-	if strings.Compare(s, andsymbol) == 0 || strings.Compare(s, orsymbol) == 0 || strings.Compare(s, and) == 0 || strings.Compare(s, or) == 0 {
-		return true
-	}
-	return false
-}
-
-func tokenContainsOperator(token string) string {
-
-	ops := fmt.Sprintf("%v %v %v %v %v %v %v", doubleequalto, lessthaneq, lessthan, greaterthaneq, greaterthan, notequalto, equalto)
-	allOps := strings.Split(ops, " ")
-	for _, op := range allOps {
-		if token == op {
-			return ""
-		} else if strings.Contains(token, op) {
-			return op
-		}
-	}
-	return ""
-}
-
-func preprocessConstraintExpression(str string) string {
-	re := regexp.MustCompile(`(?m)"(.*?)"(?m)`)
-
-	// remove space inside string list separate by ", "
-	space := regexp.MustCompile(`,\s+`)
-	s := space.ReplaceAllString(str, ",")
-
-	for _, match := range re.FindAllString(s, -1) {
-		// if find "a b", replace space inside quote with invisible charactor \a
-		newStr := strings.Replace(match, " ", "\a", -1)
-		s = strings.Replace(s, match, newStr, -1)
-	}
-
-	// Insert whitespace if needed. White space could be completely missing from a comparison expression or it might be missing from only
-	// one side of the operator. White space is inserted to canonicalize the expression, making it easier to parse.
-	pieces := strings.Split(s, " ")
-	for _, token := range pieces {
-		if operator := tokenContainsOperator(token); operator != "" {
-			newToken := strings.Trim(strings.Replace(token, operator, fmt.Sprintf(" %v ", operator), -1), " ")
-			s = strings.Replace(s, token, newToken, -1)
-		}
-	}
-
-	return s
+	return "", expression, fmt.Errorf("No control operator found. Expecting one of AND,&&,OR,||. Found: %v", expression)
 }
 
 // 1. == is supported for all types except list of string, which would use 'in'.
@@ -301,71 +193,79 @@ func preprocessConstraintExpression(str string) string {
 // 5. string values that contain spaces must be quoted
 // 6. for the version type, supported values are a single version or a range of versions in the semantic version format (the same as used for service verions). The == operator implies that the value is a single version. The 'in' operator treats the value as a version range. As with service versions, the version 1.0.0 when treated as a version range is equivalent to the explicit range [1.0.0,INFINITY).
 
-func validateOneConstraintExpression(expression string) (bool, error) {
-	if len(expression) == 0 {
-		return true, nil
-	}
+// This function checks that the operator is valid for the specified value and validates version ranges with the semanticversion Factory function
+// Returns a property expression struct with numerical values as float64
+// Returns an empty property expression and an error if the property expression does not validate
+func validOpValuePair(name string, op string, opType rune, val interface{}, valType rune, lexMap map[string]rune) error {
+	var err error
 
-	// get message printer because this function is called by CLI
-	msgPrinter := i18n.GetMessagePrinter()
-
-	pieces := strings.Split(expression, " ")
-	if len(pieces) < 3 {
-		return false, errors.New(msgPrinter.Sprintf("found %v token(s), expecting 3 in an expression %v, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression", len(pieces), expression))
-	}
-
-	compOp := pieces[1]
-	value := pieces[2]
-
-	// if will failed on case when string values that contain spaces but not quoted (starting from 2nd interation)
-	if !isAllowedComparisonOpType(pieces[1]) {
-		return false, errors.New(msgPrinter.Sprintf("Expression: %v should contain valid comparison operator - wrong operator %v. Allowed operators: %v, %v, %v, %v, %v, %v, %v, %v", expression, pieces[1], lessthan, greaterthan, equalto, doubleequalto, lessthaneq, greaterthaneq, notequalto, inoperator))
-	}
-
-	if canParseToFloat(value) || canParseToInteger(value) {
-		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, notequalto) == 0 || strings.Compare(compOp, lessthan) == 0 || strings.Compare(compOp, greaterthan) == 0 || strings.Compare(compOp, lessthaneq) == 0 || strings.Compare(compOp, greaterthaneq) == 0 {
-			return true, nil
+	if lexMap["OpEq"] == opType {
+		if lexMap["VersRange"] == valType {
+			return fmt.Errorf("Version range can only use operator 'in'.")
 		}
-		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for numeric value: %v", compOp, value))
-	}
-
-	if canParseToBoolean(value) {
-		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
-			return true, nil
+		if lexMap["ListStr"] == valType {
+			return fmt.Errorf("Property type list of string can only use operator 'in'.")
 		}
-		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for boolean value: %v", compOp, value))
 	}
-
-	if isCommaSeparatedStringList(value) {
-		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
-			return true, nil
+	if lexMap["OpComp"] == opType {
+		if _, err := strconv.ParseFloat(val.(string), 64); err != nil {
+			return fmt.Errorf("Cannot use numerical comparison operator %s with value %v.", op, val)
 		}
-		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for string list value: %v", compOp, value))
 	}
-
-	if canParseToString(value) {
-		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 || strings.Compare(compOp, notequalto) == 0 {
-			return true, nil
+	if lexMap["OpIn"] == opType {
+		if lexMap["ListStr"] != valType && lexMap["QuoteStr"] != valType && lexMap["VersRange"] != valType && lexMap["Vers"] != valType {
+			return fmt.Errorf("The 'in' operator can only be used for types version and list of string")
 		}
-		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for string value: %v", compOp, value))
-	}
-
-	if semanticversion.IsVersionString(value) {
-		if strings.Compare(compOp, doubleequalto) == 0 || strings.Compare(compOp, equalto) == 0 {
-			return true, nil
+		if lexMap["VersRange"] == valType {
+			// Using the factory function to validate version ranges
+			_, err = semanticversion.Version_Expression_Factory(val.(string))
+			if err != nil {
+				return err
+			}
 		}
-		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for single version: %v", compOp, value))
 	}
 
-	if semanticversion.IsVersionExpression(value) {
-		if strings.Compare(strings.ToLower(compOp), inoperator) == 0 {
-			return true, nil
-		}
-		return false, errors.New(msgPrinter.Sprintf("Comparison operator: %v is not supported for version expression: %v", compOp, value))
+	return nil
+}
+
+func getLexer() lexer.Definition {
+	return lexer.Must(ebnf.New(`
+	  alphanumeric = digit | alpha .
+
+	  vers = {digit} "." {digit} "." {digit} .
+	  digit = "0"…"9" .
+	  alpha = "a"…"z" | "A"…"Z" .
+
+	  AndOp = whitespace ("AND" | "&&") whitespace .
+	  OrOp = whitespace ("OR" | "||") whitespace .
+
+		OpComp =  [whitespace] ( ["="] (">" | "<") ["="] ) [whitespace] .
+		OpIn =  [whitespace] "in" [whitespace] .
+	  OpEq =  [whitespace]  ( "!=" | "="["="] )  [whitespace] .
+
+	  VersRange = [whitespace]  ( "(" | "[" )  vers [whitespace]  "," [whitespace]  (vers | "INFINITY")  ("]" | ")").
+		Vers = [whitespace]  vers .
+	  Num = [whitespace] ["-"] digit {digit} ["." {digit}] .
+	  whitespace = "\n" | "\r" | "\t" | " " .
+	  OpenParen = "(" .
+	  CloseParen = ")" .
+
+
+	  Str =  [whitespace] (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .
+	  QuoteStr = [whitespace] "\x22" (alphanumeric  | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | " " | "\t") {alphanumeric | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | " " | "\t" } "\x22" .
+		ListStr = [whitespace] "\x22" (alphanumeric  | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | "," | " " | "\t") {alphanumeric | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | "," | " " | "\t" } "\x22" .
+
+
+	  Unused = digit .`))
+}
+
+func isConstraintExpression(x interface{}) bool {
+	switch x.(type) {
+	case []string:
+		return true
+	default:
+		return false
 	}
-
-	return false, errors.New(msgPrinter.Sprintf("Expression: %v is not valid", expression))
-
 }
 
 func formatLogString(v interface{}) string {
