@@ -83,11 +83,11 @@ run-agbot: agbot-docker-prereqs test-network
 	docker/docker_run.bash "$(DOCKER_AGBOT_CNAME)" \
 		docker run -d \
 		--privileged \
-		-p 127.0.0.1:80:8510 \
-		-p 127.0.0.1:81:8511 \
-		-p 127.0.0.1:83:8083 \
-		-p 127.0.0.1:84:8084 \
-		-p 127.0.0.1:85:8085 \
+		-p 127.0.0.1:8510:8510 \
+		-p 127.0.0.1:8511:8511 \
+		-p 127.0.0.1:8083:8083 \
+		-p 127.0.0.1:8084:8084 \
+		-p 127.0.0.1:8085:8085 \
 		--name "$(DOCKER_AGBOT_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
