@@ -7,7 +7,7 @@ unset HZN_ORG_ID
 unset HZN_EXCHANGE_NODE_AUTH
 unset HZN_EXCHANGE_USER_AUTH
 
-PREFIX="HZN policy compatibility test:"
+PREFIX="HZN deployment compatibility test:"
 
 
 echo ""
@@ -234,104 +234,104 @@ cat <<EOF > /tmp/service_policy2.json
 EOF
 
 echo -e "\n${PREFIX} test without user cred."
-CMD="hzn policy compatible -n userdev/an12345 -b userdev/bp_gpstest"
+CMD="hzn deploycheck policy -n userdev/an12345 -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "Please specify the exchange credential with -u"
 
 echo -e "\n${PREFIX} test with unauthorized user."
-CMD="hzn policy compatible -u myorg/me:passwd -n userdev/an12345 -b userdev/bp_gpstest"
+CMD="hzn deploycheck policy -u myorg/me:passwd -n userdev/an12345 -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "invalid-credentials" "401"
 
 echo -e "\n${PREFIX} test conflict."
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345 --node-pol /tmp/nodepol.json -b userdev/bp_gpstest"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 --node-pol /tmp/nodepol.json -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "\-n and \-\-node-pol are mutually exclusive"
 
 echo -e "\n${PREFIX} test conflict2."
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest --business-pol /tmp/businesspol.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest --business-pol /tmp/businesspol.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "\-b and \-\-business-pol are mutually exclusive"
 
 echo -e "\n${PREFIX} test input with node id and business policy id."
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: wrong node id"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345xxx -b userdev/bp_gpstest"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345xxx -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "Error getting node"
 
 echo -e "\n${PREFIX} test input: wrong business policy id"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstestxxx"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstestxxx"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "No business policy found for this id"
 
 echo -e "\n${PREFIX} test input: wrong org id"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n xxxuserdev/an12345 -b userdev/bp_gpstest"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n xxxuserdev/an12345 -b userdev/bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "Error getting node xxxuserdev/an12345 from the exchange" "403"
 
 echo -e "\n${PREFIX} test input: node org and business org missing, they pick up org from the user cred."
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n an12345 -b bp_gpstest"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n an12345 -b bp_gpstest"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: business policy id only. Use current node policy"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -b bp_netspeed"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -b bp_netspeed"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "Neither node id nor node policy is not specified. Getting node policy from the local node" "\"compatible\": true"
 
 echo -e "\n${PREFIX} test input: node policy and business policy"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. No user cred needed"
-CMD="hzn policy compatible --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy.json"
+CMD="hzn deploycheck policy --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. wrong arch"
-CMD="hzn policy compatible -a arm64 --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy.json"
+CMD="hzn deploycheck policy -a arm64 --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Service with 'arch' arm64 cannot be found in the business policy"
 
 echo -e "\n${PREFIX} test input: node id, business policy. wrong arch"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH -n an12345 --business-pol /tmp/business_policy2.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n an12345 --business-pol /tmp/business_policy2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Service with 'arch' amd64 cannot be found in the business policy"
 
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. not compatible"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy2.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Compatibility Error"
 
 echo -e "\n${PREFIX} test input: mixed. node id, business policy. not compatible"
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH  -n an12345 --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy2.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH  -n an12345 --business-pol /tmp/business_policy.json --service-pol /tmp/service_policy2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Compatibility Error"
 
 # bp_location has 2 services. one is compatible, the other one is not with /tmp/node_policy2.json
-echo -e "\n${PREFIX} test input: mixed. node pol, business policy id. compatible, miltible output."
-CMD="hzn policy compatible -u $USERDEV_ADMIN_AUTH  -b userdev/bp_location --node-pol /tmp/node_policy2.json -c"
+echo -e "\n${PREFIX} test input: mixed. node pol, business policy id. compatible, multible output."
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH  -b userdev/bp_location --node-pol /tmp/node_policy2.json -c"
 echo "$CMD"
 RES=$($CMD 2>&1)
 c=$(echo $RES | jq '.compatible')
@@ -344,12 +344,12 @@ if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q incompatible 
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible 
 if [ $? -ne 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.6_amd64 should be incompatible but not."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q incompatible 
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible 
 if [ $? -eq 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.7_amd64 should be compatible but not."
   exit 2

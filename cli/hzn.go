@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cli/attribute"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/deploycheck"
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/eventlog"
 	"github.com/open-horizon/anax/cli/exchange"
@@ -347,9 +348,11 @@ Environment Variables:
 	policyPatchInput := policyPatchCmd.Arg("patch", msgPrinter.Sprintf("The new constraints or properties in the format '%s' or '%s'.", "{\"constraints\":[<constraint list>]}", "{\"properties\":[<property list>]}")).Required().String()
 	policyRemoveCmd := policyCmd.Command("remove", msgPrinter.Sprintf("Remove the node's policy."))
 	policyRemoveForce := policyRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
-	policyCompCmd := policyCmd.Command("compatible", msgPrinter.Sprintf("Check policy compatibility"))
-	policyCompOrg := policyCompCmd.Flag("org", msgPrinter.Sprintf("The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
-	policyCompUserPw := policyCompCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
+
+	deploycheckCmd := app.Command("deploycheck", msgPrinter.Sprintf("Check deployment compatibility."))
+	deploycheckOrg := deploycheckCmd.Flag("org", msgPrinter.Sprintf("The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	deploycheckUserPw := deploycheckCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
+	policyCompCmd := deploycheckCmd.Command("policy", msgPrinter.Sprintf("Check policy compatibility."))
 	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when --node-pol is specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.")).Short('a').String()
 	policyCompBPolId := policyCompCmd.Flag("business-pol-id", msgPrinter.Sprintf("The Horizon exchange business policy ID. Mutually exclusive with --business-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
@@ -358,6 +361,8 @@ Environment Variables:
 	policyCompSPolFile := policyCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.")).String()
 	policyCompCheckAll := policyCompCmd.Flag("check-all", msgPrinter.Sprintf("Show the compatibility status of all the service versions referenced in the business policy.")).Short('c').Bool()
 	policyCompLong := policyCompCmd.Flag("long", msgPrinter.Sprintf("Show policies used for the compatibility checking.")).Short('l').Bool()
+	//userinputCompCmd := deploycheckCmd.Command("userinput", msgPrinter.Sprintf("Check user input compatibility."))
+	//allCompCmd := deploycheckCmd.Command("all", msgPrinter.Sprintf("Check all compatibilities for a deployment."))
 
 	agreementCmd := app.Command("agreement", msgPrinter.Sprintf("List or manage the active or archived agreements this edge node has made with a Horizon agreement bot."))
 	agreementListCmd := agreementCmd.Command("list", msgPrinter.Sprintf("List the active or archived agreements this edge node has made with a Horizon agreement bot."))
@@ -606,12 +611,9 @@ Environment Variables:
 		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
 	}
 
-	if strings.HasPrefix(fullCmd, "policy") {
-		subCmd := strings.TrimPrefix(fullCmd, "policy ")
-		if subCmd == "compatible" {
-			policyCompOrg = cliutils.WithDefaultEnvVar(policyCompOrg, "HZN_ORG_ID")
-			policyCompUserPw = cliutils.WithDefaultEnvVar(policyCompUserPw, "HZN_EXCHANGE_USER_AUTH")
-		}
+	if strings.HasPrefix(fullCmd, "deploycheck") {
+		deploycheckOrg = cliutils.WithDefaultEnvVar(deploycheckOrg, "HZN_ORG_ID")
+		deploycheckUserPw = cliutils.WithDefaultEnvVar(deploycheckUserPw, "HZN_EXCHANGE_USER_AUTH")
 	}
 
 	// For the mms command family, make sure that org and exchange credentials are specified in some way.
@@ -769,7 +771,7 @@ Environment Variables:
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
 	case policyCompCmd.FullCommand():
-		policy.Compatible(*policyCompOrg, *policyCompUserPw, *policyCompNodeId, *policyCompNodeArch, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompCheckAll, *policyCompLong)
+		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompNodeArch, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompCheckAll, *policyCompLong)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():

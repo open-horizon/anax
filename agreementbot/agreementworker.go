@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"math/rand"
@@ -249,6 +250,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// services/microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
 	// each workload and whether or not this workload has been tried before. Also, iterate the loop more than once if we choose
 	// a workload entry that turns out to be unsupportable by the device.
+	msgPrinter := i18n.GetMessagePrinter()
 	foundWorkload := false
 	var workload, lastWorkload *policy.Workload
 	svcIds := []string{} // stores the service ids for all the services, top level and dependent services
@@ -379,7 +381,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// non patten case
 			// get node policy
 			nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-			_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, wi.Device.Id)
+			_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, wi.Device.Id, msgPrinter)
 			if err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				return
@@ -396,7 +398,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			if !foundTemp {
 				var errTemp error
 				serviceIdPolicyHandler := exchange.GetHTTPServicePolicyWithIdHandler(b)
-				servicePol, errTemp = compcheck.GetServicePolicyWithId(serviceIdPolicyHandler, sIds[0])
+				servicePol, errTemp = compcheck.GetServicePolicyWithId(serviceIdPolicyHandler, sIds[0], msgPrinter)
 				if errTemp != nil {
 					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error getting service policy for service %v. %v", sIds[0], errTemp)))
 					return
@@ -411,7 +413,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// add built-in service properties to the service policy
 			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol)
 
-			if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, &wi.ConsumerPolicy, mergedServicePol, ""); err != nil {
+			if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
 				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
 				return
 			} else {
@@ -686,7 +688,8 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 				// Retrieve the node policy.
 				nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-				_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId)
+				msgPrinter := i18n.GetMessagePrinter()
+				_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
 				} else if nodePolicy == nil {

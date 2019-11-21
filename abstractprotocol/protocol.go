@@ -314,7 +314,7 @@ func DecideOnProposal(p ProtocolHandler,
 
 			// Now check to make sure that the merged policy is acceptable. The policy is not acceptable if the terms and conditions are not
 			// compatible with the producer's policy.
-		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions); err != nil {
+		} else if err := policy.Are_Compatible(producerPolicy, termsAndConditions, nil); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error, T and C policy is not compatible, rejecting proposal: %v", p.Name(), err))
 		} else if err := p.PolicyManager().FinalAgreement(policies, proposal.AgreementId(), myOrg); err != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error, unable to record agreement state in PM: %v", p.Name(), err))

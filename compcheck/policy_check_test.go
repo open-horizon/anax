@@ -9,12 +9,16 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
+	"github.com/open-horizon/anax/i18n"
 	"strings"
 	"testing"
 )
 
 // test starts here
 func Test_policyCompatible_with_IDs(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
+
 	input := PolicyCompInput{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
@@ -46,7 +50,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input, true); err != nil {
+		&input, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -64,7 +68,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input, false); err != nil {
+		&input, false, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -88,7 +92,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input_wrong_arch, true); err == nil {
+		&input_wrong_arch, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil error.")
 	} else if !strings.Contains(err.Error(), "The input node architecture arm64 does not match") {
 		t.Errorf("policyCompatible should have returned error that contains 'input node architecture arm64 does not match' but got: %v", err)
@@ -108,7 +112,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input2, true); err != nil {
+		&input2, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned incompatible but got: %v", compOutput)
@@ -157,7 +161,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		getBusinessPolicyHandler(service2, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(services),
-		&input3, true); err != nil {
+		&input3, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -171,6 +175,8 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 }
 
 func Test_policyCompatible_with_Pols(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
 
 	svcUrl := "weather"
 	svcOrg := "myorg"
@@ -211,7 +217,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil),
-		&input, true); err != nil {
+		&input, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -238,7 +244,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil),
-		&input2, true); err != nil {
+		&input2, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned incompatible but got: %v", compOutput)
@@ -286,7 +292,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		getBusinessPolicyHandler(service2, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(services),
-		&input3, true); err != nil {
+		&input3, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -315,7 +321,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		getBusinessPolicyHandler(service2, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(services),
-		&input4, true); err != nil {
+		&input4, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -329,6 +335,9 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 }
 
 func Test_policyCompatible_Error(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
+
 	input := PolicyCompInput{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
@@ -356,7 +365,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input, true); err == nil {
+		&input, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil")
 	} else if !strings.Contains(err.Error(), "Error trying to query node policy") {
 		t.Errorf("policyCompatible should have returned 'Error trying to query node policy' error but got: %v", err)
@@ -368,7 +377,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler_Error(),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input, true); err == nil {
+		&input, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil")
 	} else if !strings.Contains(err.Error(), "Unable to get business policy") {
 		t.Errorf("policyCompatible should have returned 'Unable to get business policy' error but got: %v", err)
@@ -380,7 +389,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler_Error(),
 		getSelectedServicesHandler(nil),
-		&input, true); err == nil {
+		&input, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil")
 	} else if !strings.Contains(err.Error(), "Error trying to query service policy") {
 		t.Errorf("policyCompatible should have returned 'Error trying to query service policy' error but got: %v", err)
@@ -407,7 +416,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler(service2, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler_Error(),
-		&input2, true); err == nil {
+		&input2, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil, %v", compOutput)
 	} else if !strings.Contains(err.Error(), "Failed to get services for all archetctures for") {
 		t.Errorf("policyCompatible should have returned 'Failed to get services for all archetctures for' error but got: %v", err)
@@ -427,7 +436,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 !&& \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input3, true); err == nil {
+		&input3, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil for error")
 	} else if !strings.Contains(err.Error(), "Failed to validate the node policy") {
 		t.Errorf("policyCompatible should have returned 'Failed to validate the node policy' error but got: %v", err)
@@ -446,7 +455,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 !&& \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input4, true); err == nil {
+		&input4, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil for error")
 	} else if !strings.Contains(err.Error(), "Failed to validate the business policy") {
 		t.Errorf("policyCompatible should have returned 'Failed to validate the business policy' error but got: %v", err)
@@ -465,7 +474,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}),
 		getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 &&%% \"some value\""}),
 		getSelectedServicesHandler(nil),
-		&input5, true); err == nil {
+		&input5, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil for error")
 	} else if !strings.Contains(err.Error(), "Failed to validate the service policy") {
 		t.Errorf("policyCompatible should have returned 'Failed to validate the service policy' error but got: %v", err)
@@ -473,6 +482,8 @@ func Test_policyCompatible_Error(t *testing.T) {
 }
 
 func Test_CheckPolicyCompatiblility(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
 
 	svcUrl := "weather"
 	svcOrg := "myorg"
@@ -485,30 +496,30 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion}},
 	}
 
-	_, intBPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp")
+	_, intBPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", msgPrinter)
 	if err != nil {
 		t.Errorf("GetBusinessPolicy should have returned nil error but got: %v", err)
 	}
 
-	_, intNPol, err := GetNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode")
+	_, intNPol, err := GetNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", msgPrinter)
 	if err != nil {
 		t.Errorf("GetNodePolicy should have returned nil error but got: %v", err)
 	}
 
-	mergedSPol, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch)
+	mergedSPol, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter)
 	if err != nil {
 		t.Errorf("GetServicePolicyWithDefaultProperties should have returned nil error but got: %v", err)
 	}
 
 	// compatible, node arch is "" -- this is the case when agbot calls it
-	if compatible, reason, producerPolicy, consumerPolicy, err := CheckPolicyCompatiblility(intNPol, intBPol, mergedSPol, ""); err != nil {
+	if compatible, reason, producerPolicy, consumerPolicy, err := CheckPolicyCompatiblility(intNPol, intBPol, mergedSPol, "", msgPrinter); err != nil {
 		t.Errorf("CheckPolicyCompatiblility should have returned nil error but got: %v", err)
 	} else if !compatible {
 		t.Errorf("CheckPolicyCompatiblility should have returned compatible but got: %v", reason)
 	} else if producerPolicy == nil {
-		t.Errorf("producerPolicy should not be nil")
+		t.Errorf("producerPolicy should not be null")
 	} else if consumerPolicy == nil {
-		t.Errorf("consumerPolicy should not be nil")
+		t.Errorf("consumerPolicy should not be null")
 	} else if len(producerPolicy.Properties) != 2 {
 		t.Errorf("The producerPolicy should not have 2 properties but got %v", len(producerPolicy.Properties))
 	} else if len(producerPolicy.Constraints) != 2 {
@@ -519,19 +530,19 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		t.Errorf("The consumerPolicy should not have 2 constraints but got %v", len(consumerPolicy.Constraints))
 	}
 
-	_, intNPol1, err := GetNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode")
+	_, intNPol1, err := GetNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", msgPrinter)
 	if err != nil {
 		t.Errorf("GetNodePolicy should have returned nil error but got: %v", err)
 	}
 	// not compatible,
-	if compatible, _, producerPolicy, consumerPolicy, err := CheckPolicyCompatiblility(intNPol1, intBPol, mergedSPol, ""); err != nil {
+	if compatible, _, producerPolicy, consumerPolicy, err := CheckPolicyCompatiblility(intNPol1, intBPol, mergedSPol, "", msgPrinter); err != nil {
 		t.Errorf("CheckPolicyCompatiblility should have returned nil error but got: %v", err)
 	} else if compatible {
 		t.Errorf("CheckPolicyCompatiblility should have returned not compatible but not")
 	} else if producerPolicy == nil {
-		t.Errorf("producerPolicy should not be nil")
+		t.Errorf("producerPolicy should not be null")
 	} else if consumerPolicy == nil {
-		t.Errorf("consumerPolicy should not be nil")
+		t.Errorf("consumerPolicy should not be null")
 	} else if len(producerPolicy.Properties) != 2 {
 		t.Errorf("The producerPolicy should not have 2 properties but got %v", len(producerPolicy.Properties))
 	} else if len(producerPolicy.Constraints) != 2 {
@@ -543,35 +554,37 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 	}
 
 	// compatible, node arch is not empty -- this is the case when this function is called from policyCompatible_Pols
-	if compatible, reason, producerPolicy, _, err := CheckPolicyCompatiblility(intNPol, intBPol, mergedSPol, "amd64"); err != nil {
+	if compatible, reason, producerPolicy, _, err := CheckPolicyCompatiblility(intNPol, intBPol, mergedSPol, "amd64", msgPrinter); err != nil {
 		t.Errorf("CheckPolicyCompatiblility should have returned nil error but got: %v", err)
 	} else if !compatible {
 		t.Errorf("CheckPolicyCompatiblility should have returned compatible error but got: %v", reason)
 	} else if producerPolicy == nil {
-		t.Errorf("producerPolicy should not be nil")
+		t.Errorf("producerPolicy should not be null")
 	} else if len(producerPolicy.Properties) != 3 {
 		t.Errorf("The producerPolicy should not have 3 properties but got %v", len(producerPolicy.Properties))
 	}
 
 	// error cases
-	if _, _, _, _, err := CheckPolicyCompatiblility(nil, intBPol, mergedSPol, "arm64"); err == nil {
+	if _, _, _, _, err := CheckPolicyCompatiblility(nil, intBPol, mergedSPol, "arm64", msgPrinter); err == nil {
 		t.Errorf("CheckPolicyCompatiblility should not have returned nil error")
-	} else if err.Error() != "Node policy cannot be nil." {
-		t.Errorf("CheckPolicyCompatiblility should return 'Node policy cannot be nil.' error but got: %v", err)
+	} else if err.Error() != "Node policy cannot be null." {
+		t.Errorf("CheckPolicyCompatiblility should return 'Node policy cannot be null.' error but got: %v", err)
 	}
-	if _, _, _, _, err := CheckPolicyCompatiblility(intNPol, nil, mergedSPol, "arm64"); err == nil {
+	if _, _, _, _, err := CheckPolicyCompatiblility(intNPol, nil, mergedSPol, "arm64", msgPrinter); err == nil {
 		t.Errorf("CheckPolicyCompatiblility should not have returned nil error")
-	} else if err.Error() != "Business policy cannot be nil." {
-		t.Errorf("CheckPolicyCompatiblility should return 'Business policy cannot be nil.' error but got: %v", err)
+	} else if err.Error() != "Business policy cannot be null." {
+		t.Errorf("CheckPolicyCompatiblility should return 'Business policy cannot be null.' error but got: %v", err)
 	}
-	if _, _, _, _, err := CheckPolicyCompatiblility(intNPol, intBPol, nil, "arm64"); err == nil {
+	if _, _, _, _, err := CheckPolicyCompatiblility(intNPol, intBPol, nil, "arm64", msgPrinter); err == nil {
 		t.Errorf("CheckPolicyCompatiblility should not have returned nil error")
-	} else if err.Error() != "Merged service policy cannot be nil." {
-		t.Errorf("CheckPolicyCompatiblility should return 'Merged service policy cannot be nil.' error but got: %v", err)
+	} else if err.Error() != "Merged service policy cannot be null." {
+		t.Errorf("CheckPolicyCompatiblility should return 'Merged service policy cannot be null.' error but got: %v", err)
 	}
 }
 
 func Test_addNodeArchToPolicy(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
 
 	service := businesspolicy.ServiceRef{
 		Name:            "cpu",
@@ -580,11 +593,11 @@ func Test_addNodeArchToPolicy(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: "1.0.1"}},
 	}
 
-	bPol, intPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp")
+	bPol, intPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", msgPrinter)
 	if err != nil {
 		t.Errorf("GetBusinessPolicy should have returned nil error but got: %v", err)
 	} else if bPol == nil {
-		t.Errorf("The returned business policy should not be nil")
+		t.Errorf("The returned business policy should not be null")
 	} else if len(bPol.Properties) != 2 {
 		t.Errorf("The business policy should not have 2 properties but got %v", len(bPol.Properties))
 	} else if len(bPol.Constraints) != 2 {
@@ -595,7 +608,7 @@ func Test_addNodeArchToPolicy(t *testing.T) {
 		t.Errorf("The internal policy should not have 2 constraints but got %v", len(bPol.Constraints))
 	}
 
-	if pol, err := addNodeArchToPolicy(intPol, "amd64"); err != nil {
+	if pol, err := addNodeArchToPolicy(intPol, "amd64", msgPrinter); err != nil {
 		t.Errorf("addNodeArchToPolicy should have returned nil error but got: %v", err)
 	} else if len(pol.Properties) != 3 {
 		t.Errorf("The policy should not have 3 properties but got %v", len(pol.Properties))
@@ -613,13 +626,13 @@ func Test_addNodeArchToPolicy(t *testing.T) {
 		}
 	}
 
-	if pol, err := addNodeArchToPolicy(nil, "amd64"); err != nil {
+	if pol, err := addNodeArchToPolicy(nil, "amd64", msgPrinter); err != nil {
 		t.Errorf("addNodeArchToPolicy should have returned nil error but got: %v", err)
 	} else if pol != nil {
 		t.Errorf("addNodeArchToPolicy should have returned nil policy but got: %v", pol)
 	}
 
-	if pol, err := addNodeArchToPolicy(intPol, ""); err != nil {
+	if pol, err := addNodeArchToPolicy(intPol, "", msgPrinter); err != nil {
 		t.Errorf("addNodeArchToPolicy should have returned nil error but got: %v", err)
 	} else if pol != intPol {
 		t.Errorf("addNodeArchToPolicy should have return the same policy when arch is empty, but not")
@@ -627,6 +640,9 @@ func Test_addNodeArchToPolicy(t *testing.T) {
 }
 
 func Test_GetServicePolicy(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
+
 	svcUrl := "weather"
 	svcOrg := "myorg"
 	svcVersion := "1.0.1"
@@ -635,36 +651,39 @@ func Test_GetServicePolicy(t *testing.T) {
 	sId1 := cliutils.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
 
-	if sPol, sId, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch); err != nil {
+	if sPol, sId, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err != nil {
 		t.Errorf("GetServicePolicy should have returned nil error but got: %v", err)
 	} else if sId != sId1 {
 		t.Errorf("The servicd id should be %v but got: %v", sId1, sId)
 	} else if sPol == nil {
-		t.Errorf("The returned service policy should not be nil")
+		t.Errorf("The returned service policy should not be null")
 	} else if len(sPol.Properties) != 2 {
 		t.Errorf("The service policy hould not have 2 properties but got %v", len(sPol.Properties))
 	} else if len(sPol.Constraints) != 2 {
 		t.Errorf("The service policy hould not have 2 constraints but got %v", len(sPol.Constraints))
 	}
 
-	if _, _, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), "", svcOrg, svcVersion, svcArch); err == nil {
+	if _, _, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), "", svcOrg, svcVersion, svcArch, msgPrinter); err == nil {
 		t.Errorf("GetServicePolicy should not have returned nil error but it has.")
 	} else if err.Error() != "Service name is empty." {
 		t.Errorf("GetServicePolicy should have return error string 'Service name is empty.' but got: %v", err)
 	}
 
-	if _, _, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), svcUrl, "", svcVersion, svcArch); err == nil {
+	if _, _, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), svcUrl, "", svcVersion, svcArch, msgPrinter); err == nil {
 		t.Errorf("GetServicePolicy should not have returned nil error but it has.")
 	} else if err.Error() != "Service organization is empty." {
 		t.Errorf("GetServicePolicy should have return error string 'Service name is empty.' but got: %v", err)
 	}
 
-	if _, _, err := GetServicePolicy(getServicePolicyHandler_Error(), svcUrl, svcOrg, svcVersion, svcArch); err == nil {
+	if _, _, err := GetServicePolicy(getServicePolicyHandler_Error(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err == nil {
 		t.Errorf("GetServicePolicy should have returned error but got nil")
 	}
 }
 
 func Test_GetServicePolicyWithDefaultProperties(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
+
 	svcUrl := "weather"
 	svcOrg := "myorg"
 	svcVersion := "1.0.1"
@@ -673,25 +692,25 @@ func Test_GetServicePolicyWithDefaultProperties(t *testing.T) {
 	sId1 := cliutils.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
 
-	if mergedPol, sPol, sId, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch); err != nil {
+	if mergedPol, sPol, sId, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err != nil {
 		t.Errorf("GetServicePolicyWithDefaultProperties should have returned nil error but got: %v", err)
 	} else if sId != sId1 {
 		t.Errorf("The servicd id should be %v but got: %v", sId1, sId)
 	} else if mergedPol == nil {
-		t.Errorf("The returned merged service policy should not be nil")
+		t.Errorf("The returned merged service policy should not be null")
 	} else if len(mergedPol.Properties) != 7 {
 		t.Errorf("The merged service policy hould not have 7 properties but got %v", len(sPol.Properties))
 	} else if len(mergedPol.Constraints) != 1 {
 		t.Errorf("The merged service policy hould not have 1 constraints but got %v", len(sPol.Constraints))
 	} else if sPol == nil {
-		t.Errorf("The returned service policy should not be nil")
+		t.Errorf("The returned service policy should not be null")
 	} else if len(sPol.Properties) != 2 {
 		t.Errorf("The service policy hould not have 7 properties but got %v", len(sPol.Properties))
 	} else if len(sPol.Constraints) != 1 {
 		t.Errorf("The service policy hould not have 1 constraints but got %v", len(sPol.Constraints))
 	}
 
-	if _, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler_Error(), svcUrl, svcOrg, svcVersion, svcArch); err == nil {
+	if _, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler_Error(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err == nil {
 		t.Errorf("GetServicePolicyWithDefaultProperties should have returned error but got nil")
 	}
 }
@@ -741,7 +760,7 @@ func Test_AddDefaultPropertiesToServicePolicy(t *testing.T) {
 
 	// normal case
 	if mergedPol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol); mergedPol == nil {
-		t.Errorf("The merged policy should not be nil.")
+		t.Errorf("The merged policy should not be null.")
 	} else if len(mergedPol.Properties) != 7 {
 		t.Errorf("The merged policy hould not have 7 properties but got %v", len(mergedPol.Properties))
 	} else if len(mergedPol.Constraints) != 1 {
@@ -750,6 +769,8 @@ func Test_AddDefaultPropertiesToServicePolicy(t *testing.T) {
 }
 
 func Test_MergeFullServicePolicyToBusinessPolicy(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
 
 	propList1 := new(externalpolicy.PropertyList)
 	propList1.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
@@ -790,24 +811,24 @@ func Test_MergeFullServicePolicyToBusinessPolicy(t *testing.T) {
 	}
 
 	// if businessPol is nil, it should return error
-	if _, err := MergeFullServicePolicyToBusinessPolicy(nil, servicePol); err == nil {
+	if _, err := MergeFullServicePolicyToBusinessPolicy(nil, servicePol, msgPrinter); err == nil {
 		t.Errorf("MergeFullServicePolicyToBusinessPolicy should have returned error but got nil")
 	}
 
 	// if service policy is nil, it should return the business policy
-	if outPol, err := MergeFullServicePolicyToBusinessPolicy(businessPol, nil); err != nil {
+	if outPol, err := MergeFullServicePolicyToBusinessPolicy(businessPol, nil, msgPrinter); err != nil {
 		t.Errorf("MergeFullServicePolicyToBusinessPolicy should have returned error but got: %v", err)
 	} else if outPol == nil {
-		t.Errorf("The merged policy should not be nil.")
+		t.Errorf("The merged policy should not be null.")
 	} else if outPol != businessPol {
 		t.Errorf("The merged policy should be the same as the business policy but got: %v", outPol)
 	}
 
 	// normal case
-	if outPol, err := MergeFullServicePolicyToBusinessPolicy(businessPol, servicePol); err != nil {
+	if outPol, err := MergeFullServicePolicyToBusinessPolicy(businessPol, servicePol, msgPrinter); err != nil {
 		t.Errorf("MergeFullServicePolicyToBusinessPolicy should not have returned error but got: %v", err)
 	} else if outPol == nil {
-		t.Errorf("The merged policy should not be nil.")
+		t.Errorf("The merged policy should not be null.")
 	} else if len(outPol.Properties) != 8 {
 		t.Errorf("The merged policy hould not have 8 properties but got %v", len(outPol.Properties))
 	} else if len(outPol.Constraints) != 2 {
@@ -816,6 +837,8 @@ func Test_MergeFullServicePolicyToBusinessPolicy(t *testing.T) {
 }
 
 func Test_MergeServicePolicyToBusinessPolicy(t *testing.T) {
+
+	msgPrinter := i18n.GetMessagePrinter()
 
 	propList1 := new(externalpolicy.PropertyList)
 	propList1.Add_Property(externalpolicy.Property_Factory("prop1", "val1"), false)
@@ -862,15 +885,15 @@ func Test_MergeServicePolicyToBusinessPolicy(t *testing.T) {
 	}
 
 	// if businessPol is nil, it should return error
-	if _, err := MergeServicePolicyToBusinessPolicy(nil, builtInSvcPol, servicePol); err == nil {
+	if _, err := MergeServicePolicyToBusinessPolicy(nil, builtInSvcPol, servicePol, msgPrinter); err == nil {
 		t.Errorf("MergeServicePolicyToBusinessPolicy should have returned error but got nil")
 	}
 
 	// normal case
-	if outPol, err := MergeServicePolicyToBusinessPolicy(businessPol, builtInSvcPol, servicePol); err != nil {
+	if outPol, err := MergeServicePolicyToBusinessPolicy(businessPol, builtInSvcPol, servicePol, msgPrinter); err != nil {
 		t.Errorf("MergeServicePolicyToBusinessPolicy should not have returned error but got: %v", err)
 	} else if outPol == nil {
-		t.Errorf("The merged policy should not be nil.")
+		t.Errorf("The merged policy should not be null.")
 	} else if len(outPol.Properties) != 8 {
 		t.Errorf("The merged policy hould not have 8 properties but got %v", len(outPol.Properties))
 	} else if len(outPol.Constraints) != 2 {

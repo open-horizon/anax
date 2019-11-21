@@ -457,7 +457,7 @@ func (w *GovernanceWorker) governAgreements() {
 						glog.Errorf(logString(fmt.Sprintf("for %v, merged policy was based on %v, but results in a nil merged policy", ag.CurrentAgreementId, policies)))
 						continue
 
-					} else if err := policy.Are_Compatible(mergedPolicy, tcPolicy); err != nil {
+					} else if err := policy.Are_Compatible(mergedPolicy, tcPolicy, nil); err != nil {
 
 						glog.V(5).Infof(logString(fmt.Sprintf("TsAndCs: %v", tcPolicy.ShortString())))
 						glog.V(5).Infof(logString(fmt.Sprintf("Merged Policy: %v", mergedPolicy.ShortString())))
