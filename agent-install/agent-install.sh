@@ -599,7 +599,7 @@ function install_linux(){
     
     start_anax_service_check=`date +%s`
 
-   	while [ -z "$(curl -sm 10 http://localhost/status | jq -r .configuration.exchange_version)" ] ; do
+    while [ -z "$(curl -sm 10 http://localhost:$ANAX_PORT/status | jq -r .configuration.exchange_version)" ] ; do
    		current_anax_service_check=`date +%s`
 		log_notify "the service is not ready, will retry in 1 second"
 		if (( current_anax_service_check - start_anax_service_check > 60 )); then
@@ -642,7 +642,7 @@ function start_horizon_service(){
 
 		   	start_horizon_container_check=`date +%s`
 		    
-		    while [ -z "$(docker exec -ti horizon1 curl http://localhost/status | jq -r .configuration.exchange_version)" ] ; do
+		    while [ -z "$(docker exec -ti horizon1 curl http://localhost:8510/status | jq -r .configuration.exchange_version)" ] ; do
 		    	current_horizon_container_check=`date +%s`
 				log_info "the horizon-container with anax is not ready, retry in 10 seconds"
 				if (( current_horizon_container_check - start_horizon_container_check > 300 )); then
@@ -791,6 +791,9 @@ function create_node(){
             if [ -f /etc/default/horizon ]; then
                 log_info "Getting node id from /etc/default/horizon file..."
                 NODE_ID=$(grep HZN_DEVICE_ID /etc/default/horizon |cut -d'=' -f2)
+                if [[ "$NODE_ID" == "" ]]; then
+                    NODE_ID=$HOSTNAME
+                fi
             else
                 log_info "Cannot detect node id as /etc/default/horizon cannot be found, using ${NODE_NAME} hostname instead"
                 NODE_ID=$NODE_NAME
