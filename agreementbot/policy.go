@@ -53,7 +53,7 @@ func AssignObjectToNode(ec exchange.ExchangeContext, objPolicies *exchange.Objec
 		nodePolicy.Constraints = []string{}
 
 		// Check if node and model polices are compatible. Incompatible policies are not necessarily an error so just log a warning and return.
-		if err := policy.Are_Compatible(nodePolicy, internalObjPol); err != nil {
+		if err := policy.Are_Compatible(nodePolicy, internalObjPol, nil); err != nil {
 			glog.Warningf(opLogstring(fmt.Sprintf("error matching node policy %v and object policy %v, error: %v", nodePolicy, internalObjPol, err)))
 			return nil
 		} else {
@@ -245,7 +245,8 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 				internalObjPol.Constraints = newPolicy.DestinationPolicy.Constraints
 				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy converted new object policy to: %v", internalObjPol)))
 
-				nodePolicy, err := compcheck.GetNodePolicy(w, agreement.DeviceId)
+				nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(w)
+				_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, nil)
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
@@ -256,7 +257,7 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 					// properties plus service policy properties in the model policy properties.
 					nodePolicy.Constraints = []string{}
 
-					if err := policy.Are_Compatible(nodePolicy, internalObjPol); err != nil {
+					if err := policy.Are_Compatible(nodePolicy, internalObjPol, nil); err != nil {
 						// This agreement's node is no longer compatible, remove it from the destination list of the object.
 						if err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId); err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
@@ -287,7 +288,8 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 						continue
 					} else if found {
 						// Add the node to the object destination if eligible.
-						nodePolicy, err := compcheck.GetNodePolicy(w, agreement.DeviceId)
+						nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(w)
+						_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, nil)
 
 						if err != nil {
 							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))

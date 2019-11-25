@@ -11,9 +11,10 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/worker"
-	//"io/ioutil"
-	"io"
+	"golang.org/x/text/message"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -211,36 +212,44 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/policycompatible called.")))
 
+		// get message printer with the language passed in from the header
+		lan := r.Header.Get("Accept-Language")
+		if lan == "" {
+			lan = i18n.DEFAULT_LANGUAGE
+		}
+		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
+
+		// check user cred
 		userId, userPasswd, ok := r.BasicAuth()
 		if !ok {
 			glog.Errorf(APIlogString(fmt.Sprintf("/policycompatible is called without exchange authentication.")))
-			writeResponse(w, "Unauthorized. No exchange user id is supplied.", http.StatusUnauthorized)
-		} else if err := a.authenticateWithExchange(userId, userPasswd); err != nil {
+			writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
+		} else if err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
-			writeResponse(w, fmt.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
+			writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
 		} else {
-			var input compcheck.PolicyCompInput
-			err := json.NewDecoder(r.Body).Decode(&input)
-			if err == io.EOF {
+			// if checkAll is set, then check all the services defined in the business policy for compatibility.
+			checkAll := r.URL.Query().Get("checkAll")
+
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
-				writeResponse(w, fmt.Sprintf("No input found."), http.StatusBadRequest)
-			} else if err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to PolicyCompInput object. %v", err)))
-				writeResponse(w, fmt.Sprintf("Input body couldn't be deserialized to PolicyCompInput object. %v", err), http.StatusBadRequest)
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodeCompCheckInputBody(body, msgPrinter); err != nil {
+				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
 				// do policy compatibility check
 				user_ec := a.createUserExchangeContext(userId, userPasswd)
-				output, err := compcheck.PolicyCompatible(user_ec, &input)
+				output, err := compcheck.PolicyCompatible(user_ec, input, (checkAll != ""), msgPrinter)
 
 				// nil out the policies in the output if 'long' is not set in the request
 				long := r.URL.Query().Get("long")
 				if long == "" && output != nil {
-					output.ProducerPolicy = nil
-					output.ConsumerPolicy = nil
+					output.Input = nil
 				}
 
 				// write the output
-				writePolicyCheckResponse(w, output, err)
+				a.writePolicyCheckResponse(w, output, err, msgPrinter)
 			}
 		}
 
@@ -265,18 +274,38 @@ func fileExists(filename string) bool {
 	return true
 }
 
+// Verify the comcheck input body fron the /policycompatible api and convert it to compcheck.PolicyCompInput
+// It will give meaningful error as much as possible
+func (a *SecureAPI) decodeCompCheckInputBody(body []byte, msgPrinter *message.Printer) (*compcheck.PolicyCompInput, error) {
+
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input compcheck.PolicyCompInput
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to PolicyCompInput object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to PolicyCompInput object. %v", err))
+		} else {
+			// verification of the input is done in the compcheck component, no need to validate the policies here.
+			return &input, nil
+		}
+	}
+}
+
 // This function verifies the given exchange user name and password.
 // The user must be in the format of orgId/userId.
-func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string) error {
+func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msgPrinter *message.Printer) error {
 	glog.V(5).Infof(APIlogString(fmt.Sprintf("authenticateWithExchange called with user %v", user)))
 
 	orgId, userId := cutil.SplitOrgSpecUrl(user)
 	if userId == "" {
-		return fmt.Errorf("No exchange user id is supplied.")
+		return fmt.Errorf(msgPrinter.Sprintf("No exchange user id is supplied."))
 	} else if orgId == "" {
-		return fmt.Errorf("No exchange user organization id is supplied.")
+		return fmt.Errorf(msgPrinter.Sprintf("No exchange user organization id is supplied."))
 	} else if userPasswd == "" {
-		return fmt.Errorf("No exchange user password or api key is supplied.")
+		return fmt.Errorf(msgPrinter.Sprintf("No exchange user password or api key is supplied."))
 	}
 
 	// Invoke the exchange API to verify the user.
@@ -292,7 +321,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string) err
 			glog.Errorf(APIlogString(err.Error()))
 
 			if strings.Contains(err.Error(), "401") {
-				return fmt.Errorf("User not found.")
+				return fmt.Errorf(msgPrinter.Sprintf("User not found."))
 			} else {
 				return err
 			}
@@ -311,7 +340,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string) err
 }
 
 // write the PolicyCompOutput response
-func writePolicyCheckResponse(w http.ResponseWriter, output *compcheck.PolicyCompOutput, err error) {
+func (a *SecureAPI) writePolicyCheckResponse(w http.ResponseWriter, output *compcheck.PolicyCompOutput, err error, msgPrinter *message.Printer) {
 	if err != nil {
 		switch err.(type) {
 		case *compcheck.CompCheckError:
@@ -327,7 +356,7 @@ func writePolicyCheckResponse(w http.ResponseWriter, output *compcheck.PolicyCom
 			if serial, errWritten := serializeResponse(w, output); !errWritten {
 				if _, err := w.Write(serial); err != nil {
 					glog.Error(APIlogString(err))
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
+					http.Error(w, msgPrinter.Sprintf("Internal server error"), http.StatusInternalServerError)
 				}
 			}
 		}

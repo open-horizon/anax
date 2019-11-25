@@ -8,6 +8,8 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/externalpolicy"
+	"github.com/open-horizon/anax/i18n"
+	"golang.org/x/text/message"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -205,18 +207,23 @@ func (self *Policy) Add_NodeHealth(nh *NodeHealth) error {
 // 3) the Producer is offering enough resources for the Consumer's workload.
 //
 
-func Are_Compatible(producer_policy *Policy, consumer_policy *Policy) error {
+func Are_Compatible(producer_policy *Policy, consumer_policy *Policy, msgPrinter *message.Printer) error {
+
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
 
 	if !consumer_policy.Is_Version(producer_policy.Header.Version) {
-		return errors.New(fmt.Sprintf("Compatibility Error: Schema versions are not the same, Consumer policy: %v, Producer policy %v", consumer_policy.Header.Version, producer_policy.Header.Version))
+		return errors.New(msgPrinter.Sprintf("Compatibility Error: Schema versions are not the same, Consumer policy: %v, Producer policy %v", consumer_policy.Header.Version, producer_policy.Header.Version))
 	} else if err := (&consumer_policy.Constraints).IsSatisfiedBy(producer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Node properties %v do not satisfy constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
+		return errors.New(msgPrinter.Sprintf("Compatibility Error: Node properties %v do not satisfy constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
 	} else if err := (&producer_policy.Constraints).IsSatisfiedBy(consumer_policy.Properties); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: Properties %v do not satisfy Node constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
+		return errors.New(msgPrinter.Sprintf("Compatibility Error: Properties %v do not satisfy Node constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
-		return errors.New(fmt.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
+		return errors.New(msgPrinter.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
 	} else if !producer_policy.DataVerify.IsCompatibleWith(consumer_policy.DataVerify) {
-		return errors.New(fmt.Sprintf("Compatibility Error: Data verification must be compatible, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify))
+		return errors.New(msgPrinter.Sprintf("Compatibility Error: Data verification must be compatible, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify))
 	}
 
 	return nil
@@ -287,7 +294,7 @@ func Are_Compatible_Producers(producer_policy1 *Policy, producer_policy2 *Policy
 func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Policy, workload *Workload, agreementId string, defaultPW string, defaultNoData uint64, agreementProtocolVersion int) (*Policy, error) {
 
 	// Make sure the policies are compatible. If not an error will be returned.
-	if err := Are_Compatible(producer_policy, consumer_policy); err != nil {
+	if err := Are_Compatible(producer_policy, consumer_policy, nil); err != nil {
 		return nil, err
 	} else {
 		// Start making a new merged policy

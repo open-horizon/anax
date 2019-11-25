@@ -275,7 +275,7 @@ func Test_Policy_Compatible(t *testing.T) {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfcompat1/testorg/agbot.policy", make(map[string]string)); err != nil {
 		t.Error(err)
-	} else if err := Are_Compatible(pf_prod, pf_con); err != nil {
+	} else if err := Are_Compatible(pf_prod, pf_con, nil); err != nil {
 		t.Error(err)
 	}
 }
@@ -287,7 +287,7 @@ func Test_Policy_Incompatible(t *testing.T) {
 		t.Error(err)
 	} else if pf_con, err := ReadPolicyFile("./test/pfincompat1/agbot.policy", make(map[string]string)); err != nil {
 		t.Error(err)
-	} else if err := Are_Compatible(pf_prod, pf_con); err == nil {
+	} else if err := Are_Compatible(pf_prod, pf_con, nil); err == nil {
 		t.Errorf("Error: %v is not compatible with %v\n", pf_prod, pf_con)
 	}
 }
@@ -743,7 +743,7 @@ func Test_Merge_EmptyProducer_and_Create_TsAndCs1(t *testing.T) {
 		t.Errorf("Error: returned %v, should have returned %v\n", p1, pa)
 	} else if p2 := create_Policy(pb, t); p2 == nil {
 		t.Errorf("Error: returned %v, should have returned %v\n", p2, pb)
-	} else if err := Are_Compatible(p1, p2); err != nil {
+	} else if err := Are_Compatible(p1, p2, nil); err != nil {
 		t.Errorf(err.Error())
 	} else if mergedPF, err := Create_Terms_And_Conditions(p1, p2, &p2.Workloads[0], "agreementId", "defaultPW", 300, 1); err != nil {
 		t.Errorf(err.Error())

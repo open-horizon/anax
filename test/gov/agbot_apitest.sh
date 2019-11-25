@@ -129,7 +129,7 @@ read -d '' comp_input <<EOF
   "business_policy_id": "userdev/bp_gpstest"
 }
 EOF
-run_and_check "$comp_input" "400" "No node policy found"
+run_and_check "$comp_input" "500" "Error getting node"
 
 
 echo -e "\n${PREFIX} test /policycompatible. Input: wrong business policy id"

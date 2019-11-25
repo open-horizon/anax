@@ -391,6 +391,91 @@ func GetHighestVersion(msMetadata map[string]ServiceDefinition, vRange *semantic
 	return highest, resSDef, resSId, nil
 }
 
+// Retrieve service definition metadata from the exchange, by specific version/arch or for all versions/arches
+func GetSelectedServices(ec ExchangeContext, mURL string, mOrg string, mVersion string, mArch string) (map[string]ServiceDefinition, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service definition %v %v %v %v", mURL, mOrg, mVersion, mArch)))
+
+	var resp interface{}
+	resp = new(GetServicesResponse)
+
+	// Figure out which version to filter the search with. Could be "".
+	searchVersion, err := getSearchVersion(mVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	// Search the exchange for the service definition
+	targetURL := fmt.Sprintf("%vorgs/%v/services?url=%v", ec.GetExchangeURL(), mOrg, mURL)
+	if searchVersion != "" {
+		targetURL = fmt.Sprintf("%vorgs/%v/services?url=%v&version=%v", ec.GetExchangeURL(), mOrg, mURL, searchVersion)
+	}
+	if mArch != "" {
+		targetURL = fmt.Sprintf("%v&arch=%v", targetURL, mArch)
+	}
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			return processGetSelectedServicesResponse(mURL, mOrg, mVersion, mArch, searchVersion, resp.(*GetServicesResponse))
+		}
+	}
+}
+
+// When we get a non-error response from the exchange, process the response to return
+// all the services that are within the version range
+func processGetSelectedServicesResponse(mURL string, mOrg string, mVersion string, mArch string, searchVersion string, resp interface{}) (map[string]ServiceDefinition, error) {
+
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("found services %v.", resp.(*GetServicesResponse).ShortString())))
+
+	services := resp.(*GetServicesResponse)
+	services.SupportVersionRange()
+	msMetadata := services.Services
+
+	ret := map[string]ServiceDefinition{}
+
+	// If the caller wanted a specific version, check for 1 result.
+	if searchVersion != "" {
+		if len(msMetadata) != 1 {
+			glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 service %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
+			return ret, errors.New(fmt.Sprintf("expecting 1 service %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
+		} else {
+			for msId, msDef := range msMetadata {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v", msDef.ShortString())))
+				ret[msId] = msDef
+				return ret, nil
+			}
+			return ret, errors.New("should not get here")
+		}
+
+	} else {
+		// get the services that are within the range
+		vRange, _ := semanticversion.Version_Expression_Factory("0.0.0")
+		var err error
+		if mVersion != "" {
+			if vRange, err = semanticversion.Version_Expression_Factory(mVersion); err != nil {
+				return nil, errors.New(fmt.Sprintf("version range %v in error: %v", mVersion, err))
+			}
+		}
+
+		for sId, sDef := range msMetadata {
+			if inRange, err := vRange.Is_within_range(sDef.Version); err != nil {
+				return nil, errors.New(fmt.Sprintf("unable to verify that %v is within %v, error %v", sDef.Version, vRange, err))
+			} else if inRange {
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("found service version %v within acceptable range", sDef.Version)))
+				ret[sId] = sDef
+			}
+		}
+		return ret, nil
+	}
+}
+
 // The purpose of this function is to verify that a given service URL, version and architecture, is defined in the exchange
 // as well as all of its required services. This function also returns the dependencies converted into policy types so that the caller
 // can use those types to do policy compatibility checks if they want to.
@@ -533,7 +618,7 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 func GetServicesConfigState(httpClientFactory *config.HTTPClientFactory, dev_id string, dev_token string, exchangeUrl string) ([]ServiceConfigState, error) {
 	service_cs := []ServiceConfigState{}
 
-	pDevice, err := GetExchangeDevice(httpClientFactory, dev_id, dev_token, exchangeUrl)
+	pDevice, err := GetExchangeDevice(httpClientFactory, dev_id, dev_id, dev_token, exchangeUrl)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", dev_id, err))
 	}
