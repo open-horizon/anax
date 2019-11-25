@@ -859,6 +859,8 @@ func IsTransportError(pResp *http.Response, err error) bool {
 			return true
 		} else if strings.Contains(l_error_string, "connection") && (strings.Contains(l_error_string, "refused") || strings.Contains(l_error_string, "reset")) {
 			return true
+		} else if strings.Contains(l_error_string, ": EOF") {
+			return true
 		}
 	}
 
