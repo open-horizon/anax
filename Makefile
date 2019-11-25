@@ -100,8 +100,8 @@ export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
-export EXCHANGE_URL ?= https://alpha.edge-fabric.com/v1/
-export FSS_CSS_URL ?= https://alpha.edge-fabric.com/css/
+export EXCHANGE_URL ?=
+export FSS_CSS_URL ?=
 
 # we use a script that will give us the debian arch version since that's what the packaging system inputs
 arch ?= $(shell tools/arch-tag)
