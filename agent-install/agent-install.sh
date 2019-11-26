@@ -642,7 +642,7 @@ function start_horizon_service(){
 
 		   	start_horizon_container_check=`date +%s`
 		    
-		    while [ -z "$(docker exec -ti horizon1 curl http://localhost:8510/status | jq -r .configuration.exchange_version)" ] ; do
+		    while [ -z "$(docker exec -ti horizon1 curl http://localhost:8510/status | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ] ; do
 		    	current_horizon_container_check=`date +%s`
 				log_info "the horizon-container with anax is not ready, retry in 10 seconds"
 				if (( current_horizon_container_check - start_horizon_container_check > 300 )); then

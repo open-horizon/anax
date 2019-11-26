@@ -165,11 +165,11 @@ start() {
 	# Get the latest horizon image
 	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
 	dockerTag='latest'
+	# $HC_DOCKER_TAG is an intentionally undocumented env var that allows us to test the staging version of the docker image
+	if [[ -n "$HC_DOCKER_TAG" ]]; then
+		dockerTag="$HC_DOCKER_TAG"
+	fi
 	if [[ -z "$HC_DONT_PULL" ]]; then
-		# $HC_DOCKER_TAG is an intentionally undocumented env var that allows us to test the staging version of the docker image
-		if [[ -n "$HC_DOCKER_TAG" ]]; then
-			dockerTag="$HC_DOCKER_TAG"
-		fi
 		docker pull openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker pull openhorizon/amd64_anax:$dockerTag"
 	fi

@@ -84,7 +84,7 @@ The horizon-container script handles all of the details of invoking the Horizon 
 ```
 docker pull openhorizon/amd64_anax
 # Note the slightly different container name and port number in the next 2 cmds:
-docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:80 -v /var/run/docker.sock:/var/run/docker.sock -v /var/tmp/horizon:/var/tmp/horizon openhorizon/amd64_anax
+docker run -d -t --name amd64_anax --privileged -p 127.0.0.1:8081:8510 -v /var/run/docker.sock:/var/run/docker.sock -v /var/tmp/horizon:/var/tmp/horizon openhorizon/amd64_anax
 export HORIZON_URL='http://localhost:8081'    # to point the hzn cmd to the container
 hzn node list   # ensure you are talking to the right container, and it is talking to the right exchange
 hzn register -n $EXCHANGE_NODEAUTH -f ~/examples/edge/msghub/cpu2msghub/horizon/userinput.json $HZN_ORG_ID $HZN_PATTERN
