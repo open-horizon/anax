@@ -48,30 +48,6 @@ type ServiceFile struct {
 	DeploymentSignature string                       `json:"deploymentSignature,omitempty"`
 }
 
-type GetServicesResponse struct {
-	Services  map[string]ServiceExch `json:"services"`
-	LastIndex int                    `json:"lastIndex"`
-}
-
-// This is used as the input/output to the exchange to create/read the service. The main differences are: no org, deployment is an escaped string, and optional owner and last updated
-type ServiceExch struct {
-	Owner               string                       `json:"owner,omitempty"`
-	Label               string                       `json:"label"`
-	Description         string                       `json:"description"`
-	Public              bool                         `json:"public"`
-	Documentation       string                       `json:"documentation"`
-	URL                 string                       `json:"url"`
-	Version             string                       `json:"version"`
-	Arch                string                       `json:"arch"`
-	Sharable            string                       `json:"sharable"`
-	MatchHardware       map[string]interface{}       `json:"matchHardware"`
-	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
-	UserInputs          []exchange.UserInput         `json:"userInput"`
-	Deployment          string                       `json:"deployment"`
-	DeploymentSignature string                       `json:"deploymentSignature"`
-	LastUpdated         string                       `json:"lastUpdated,omitempty"`
-}
-
 type ServiceDockAuthExch struct {
 	Registry string `json:"registry"`
 	UserName string `json:"username"`
@@ -179,7 +155,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 	}
 	if namesOnly && service == "" {
 		// Only display the names
-		var resp GetServicesResponse
+		var resp exchange.GetServicesResponse
 		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &resp)
 		services := []string{}
 
@@ -193,7 +169,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		var services GetServicesResponse
+		var services exchange.GetServicesResponse
 
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(credOrg, userPw), []int{200, 404}, &services)
 		if httpCode == 404 && service != "" {
@@ -253,7 +229,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	svcInput := ServiceExch{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
+	svcInput := exchange.ServiceDefinition{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
 	switch dep := sf.Deployment.(type) {
@@ -383,7 +359,7 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 	var svcorg string
 	svcorg, service = cliutils.TrimOrg(org, service)
 	// Get service resource from exchange
-	var output GetServicesResponse
+	var output exchange.GetServicesResponse
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, svcorg))
@@ -524,7 +500,7 @@ func ServiceListPolicy(org string, credToUse string, service string) {
 	svcorg, service = cliutils.TrimOrg(org, service)
 
 	// Check that the service exists
-	var services ServiceExch
+	var services exchange.ServiceDefinition
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
@@ -572,7 +548,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	}
 
 	// Check that the service exists
-	var services GetServicesResponse
+	var services exchange.GetServicesResponse
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))
@@ -628,7 +604,7 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 	}
 
 	// Check that the service exists
-	var services ServiceExch
+	var services exchange.ServiceDefinition
 	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services"+cliutils.AddSlash(service), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &services)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%v/%v' not found.", svcorg, service))

@@ -12,67 +12,21 @@ import (
 	"golang.org/x/text/message"
 )
 
-// **** Note: All the errors returned by the functions in this file are of type *CompCheckError,
-// You can cast it by err.(*compcheck.CompCheckError) if you want to get the error code.
-
-// error code for compatibility check error: CompCheckError
-const (
-	COMPCHECK_INPUT_ERROR      = 10
-	COMPCHECK_VALIDATION_ERROR = 11
-	COMPCHECK_CONVERTION_ERROR = 12
-	COMPCHECK_MERGING_ERROR    = 13
-	COMPCHECK_EXCHANGE_ERROR   = 14
-)
-
-const (
-	COMPATIBLE   = "Compatible"
-	INCOMPATIBLE = "Incompatible"
-)
-
-// Error for policy compatibility check
-type CompCheckError struct {
-	Err     string `json:"error"`
-	ErrCode int    `json:"error_code,omitempty"`
-}
-
-func (e *CompCheckError) Error() string {
-	if e == nil {
-		return ""
-	} else {
-		return fmt.Sprintf("%v", e.Err)
-	}
-}
-
-func (e *CompCheckError) String() string {
-	if e == nil {
-		return ""
-	} else {
-		return fmt.Sprintf("ErrCode: %v, Error: %v", e.ErrCode, e.Err)
-	}
-}
-
-func NewCompCheckError(err error, errCode int) *CompCheckError {
-	return &CompCheckError{
-		Err:     err.Error(),
-		ErrCode: errCode,
-	}
-}
-
 // The output format for the policy check
-type PolicyCompOutput struct {
+type PolicyCheckOutput struct {
 	Compatible bool              `json:"compatible"`
 	Reason     map[string]string `json:"reason"` // set when not compatible
-	Input      *PolicyCompInput  `json:"input,omitempty"`
+	Input      *PolicyCheck      `json:"input,omitempty"`
 }
 
-func (p *PolicyCompOutput) String() string {
+func (p *PolicyCheckOutput) String() string {
 	return fmt.Sprintf("Compatible: %v, Reason: %v, Input: %v",
 		p.Compatible, p.Reason, p.Input)
 
 }
 
-func NewPolicyCompOutput(compatible bool, reason map[string]string, input *PolicyCompInput) *PolicyCompOutput {
-	return &PolicyCompOutput{
+func NewPolicyCheckOutput(compatible bool, reason map[string]string, input *PolicyCheck) *PolicyCheckOutput {
+	return &PolicyCheckOutput{
 		Compatible: compatible,
 		Reason:     reason,
 		Input:      input,
@@ -80,7 +34,7 @@ func NewPolicyCompOutput(compatible bool, reason map[string]string, input *Polic
 }
 
 // The input format for the policy check
-type PolicyCompInput struct {
+type PolicyCheck struct {
 	NodeId         string                         `json:"node_id,omitempty"`
 	NodeArch       string                         `json:"node_arch,omitempty"`
 	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
@@ -89,7 +43,7 @@ type PolicyCompInput struct {
 	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
 }
 
-func (p PolicyCompInput) String() string {
+func (p PolicyCheck) String() string {
 	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v,",
 		p.NodeId, p.NodeArch, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy)
 
@@ -125,14 +79,14 @@ func (u *UserExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
 }
 
 // This is the function that HZN and the agbot secure API calls.
-// Given the PolicyCompInput, check if the policies are compatible.
-// The required fields in PolicyCompInput are:
+// Given the PolicyCheck input, check if the policies are compatible.
+// The required fields in PolicyCheck are:
 //  (NodeId or NodePolicy) and (BusinessPolId or BusinessPolicy)
 //
 // When checking whether the policies are compatible or not, we devide policies into two side:
 //    Edge side: node policy (including the node built-in policy)
 //    Agbot side: business policy + service policy + service built-in properties
-func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCompInput, checkAllSvcs bool, msgPrinter *message.Printer) (*PolicyCompOutput, error) {
+func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*PolicyCheckOutput, error) {
 
 	getDeviceHandler := exchange.GetHTTPDeviceHandler(ec)
 	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
@@ -149,7 +103,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	getBusinessPolicies exchange.BusinessPoliciesHandler,
 	servicePolicyHandler exchange.ServicePolicyHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
-	pcInput *PolicyCompInput, checkAllSvcs bool, msgPrinter *message.Printer) (*PolicyCompOutput, error) {
+	pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*PolicyCheckOutput, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -157,87 +111,44 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	if pcInput == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input cannot be null")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The PolicyCheck input cannot be null")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// make a copy of the input because the process will change it. The pointer to policies will stay the same.
-	input_temp := PolicyCompInput(*pcInput)
+	input_temp := PolicyCheck(*pcInput)
 	input := &input_temp
 
-	// validate node policy and convert it to internal policy
-	var nPolicy *policy.Policy
 	nodeId := input.NodeId
-	if input.NodePolicy != nil {
-		if err := input.NodePolicy.Validate(); err != nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the node policy. %v", err)), COMPCHECK_VALIDATION_ERROR)
-		} else {
-			// give nodeId a default if it is empty
-			if nodeId == "" {
-				nodeId = "TempNodePolicyId"
-			}
-
-			var err1 error
-			nPolicy, err1 = policy.GenPolicyFromExternalPolicy(input.NodePolicy, policy.MakeExternalPolicyHeaderName(nodeId))
-			if err1 != nil {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy format for node %v: %v", nodeId, err1)), COMPCHECK_CONVERTION_ERROR)
-			}
-		}
-	} else if nodeId != "" {
+	if nodeId != "" {
 		if node, err := GetExchangeNode(getDeviceHandler, nodeId, msgPrinter); err != nil {
 			return nil, err
-		} else if node == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No node found for this node id %v.", nodeId)), COMPCHECK_INPUT_ERROR)
 		} else if input.NodeArch != "" {
 			if node.Arch != "" && node.Arch != input.NodeArch {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the node architecture %v for %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
 			}
 		} else {
 			input.NodeArch = node.Arch
 		}
+	}
 
-		var err1 error
-		input.NodePolicy, nPolicy, err1 = GetNodePolicy(nodePolicyHandler, nodeId, msgPrinter)
-		if err1 != nil {
-			return nil, err1
-		} else if nPolicy == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No node policy found for this node %v.", nodeId)), COMPCHECK_INPUT_ERROR)
-		}
-	} else {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither node policy nor node id is specified.")), COMPCHECK_INPUT_ERROR)
+	// validate node policy and convert it to internal policy
+	var nPolicy *policy.Policy
+	var err1 error
+	input.NodePolicy, nPolicy, err1 = processNodePolicy(nodePolicyHandler, nodeId, input.NodePolicy, msgPrinter)
+	if err1 != nil {
+		return nil, err1
 	}
 
 	// validate and convert the business policy to internal policy
 	var bPolicy *policy.Policy
 	bpId := input.BusinessPolId
-	if input.BusinessPolicy != nil {
-		// give bpId a default value if it is empty
-		if bpId == "" {
-			bpId = "TempBusinessPolicyId"
-		}
-		//convert busineess policy to internal policy, the validate is done in this function
-		var err1 error
-		bPolicy, err1 = input.BusinessPolicy.GenPolicyFromBusinessPolicy(bpId)
-		if err1 != nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy: %v", bpId, err1)), COMPCHECK_CONVERTION_ERROR)
-		}
-	} else if bpId != "" {
-		var err1 error
-		input.BusinessPolicy, bPolicy, err1 = GetBusinessPolicy(getBusinessPolicies, bpId, msgPrinter)
-		if err1 != nil {
-			return nil, err1
-		} else if bPolicy == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No business policy found for this id %v.", bpId)), COMPCHECK_INPUT_ERROR)
-		}
-	} else {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither business policy nor business policy id is specified.")), COMPCHECK_INPUT_ERROR)
+	input.BusinessPolicy, bPolicy, err1 = processBusinessPolicy(getBusinessPolicies, bpId, input.BusinessPolicy, true, msgPrinter)
+	if err1 != nil {
+		return nil, err1
 	}
 
-	if bPolicy.Workloads == nil || len(bPolicy.Workloads) == 0 {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the business policy %v.", bPolicy.Header.Name)), COMPCHECK_VALIDATION_ERROR)
-	}
-
-	msg_incompatible := msgPrinter.Sprintf(INCOMPATIBLE)
-	msg_compatible := msgPrinter.Sprintf(COMPATIBLE)
+	msg_incompatible := msgPrinter.Sprintf("Policy Incompatible")
+	msg_compatible := msgPrinter.Sprintf("Compatible")
 
 	// go through all the workloads and check if compatible or not
 	messages := map[string]string{}
@@ -279,7 +190,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 							messages[sId] = msg_compatible
 						} else {
 							input.ServicePolicy = sPol
-							return NewPolicyCompOutput(true, map[string]string{sId: msg_compatible}, input), nil
+							return NewPolicyCheckOutput(true, map[string]string{sId: msg_compatible}, input), nil
 						}
 					} else {
 						servicePol_incomp = sPol
@@ -306,7 +217,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 									messages[sId] = msg_compatible
 								} else {
 									input.ServicePolicy = sPol
-									return NewPolicyCompOutput(true, map[string]string{sId: msg_compatible}, input), nil
+									return NewPolicyCheckOutput(true, map[string]string{sId: msg_compatible}, input), nil
 								}
 							} else {
 								servicePol_incomp = sPol
@@ -336,7 +247,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 				if checkAllSvcs {
 					messages[sId] = msg_compatible
 				} else {
-					return NewPolicyCompOutput(true, map[string]string{sId: msg_compatible}, input), nil
+					return NewPolicyCheckOutput(true, map[string]string{sId: msg_compatible}, input), nil
 				}
 			} else {
 				messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
@@ -351,15 +262,15 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		} else {
 			input.ServicePolicy = servicePol_incomp
 		}
-		return NewPolicyCompOutput(overall_compatible, messages, input), nil
+		return NewPolicyCheckOutput(overall_compatible, messages, input), nil
 	} else {
 		if input.NodeArch != "" {
 			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the business policy.", input.NodeArch))
 		} else {
-			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the bussiness policy."))
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the business policy."))
 		}
 
-		return NewPolicyCompOutput(false, messages, input), nil
+		return NewPolicyCheckOutput(false, messages, input), nil
 	}
 }
 
@@ -377,7 +288,7 @@ func CheckPolicyCompatiblility(nodePolicy *policy.Policy, businessPolicy *policy
 		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Node policy cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
-	// check bussiness policy
+	// check business policy
 	if businessPolicy == nil {
 		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Business policy cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
@@ -439,27 +350,42 @@ func addNodeArchToPolicy(nodePolicy *policy.Policy, nodeArch string, msgPrinter 
 
 }
 
-// Get the exchange device
-func GetExchangeNode(getDeviceHandler exchange.DeviceHandler, nodeId string, msgPrinter *message.Printer) (*exchange.Device, error) {
+// If inputNP is given, validate it and generate internal policy from it.
+// If not, user node id to get the node policy from the exchange and generate internal policy from it.
+func processNodePolicy(nodePolicyHandler exchange.NodePolicyHandler,
+	nodeId string, inputNP *externalpolicy.ExternalPolicy,
+	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *policy.Policy, error) {
+
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
 	}
 
-	// check input
-	if nodeId == "" {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The given node id is empty.")), COMPCHECK_INPUT_ERROR)
-	} else {
-		nodeOrg := exchange.GetOrg(nodeId)
-		if nodeOrg == "" {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Organization is not specified in the given node id: %v.", nodeId)), COMPCHECK_INPUT_ERROR)
-		}
-	}
+	if inputNP != nil {
+		if err := inputNP.Validate(); err != nil {
+			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the node policy. %v", err)), COMPCHECK_VALIDATION_ERROR)
+		} else {
+			// give nodeId a default if it is empty
+			if nodeId == "" {
+				nodeId = "TempNodePolicyId"
+			}
 
-	if node, err := getDeviceHandler(nodeId, ""); err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting node %v from the exchange. %v", nodeId, err)), COMPCHECK_EXCHANGE_ERROR)
+			if nPolicy, err := policy.GenPolicyFromExternalPolicy(inputNP, policy.MakeExternalPolicyHeaderName(nodeId)); err != nil {
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy format for node %v: %v", nodeId, err)), COMPCHECK_CONVERTION_ERROR)
+			} else {
+				return inputNP, nPolicy, nil
+			}
+		}
+	} else if nodeId != "" {
+		if extNPolicy, nPolicy, err := GetNodePolicy(nodePolicyHandler, nodeId, msgPrinter); err != nil {
+			return nil, nil, err
+		} else if nPolicy == nil {
+			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No node policy found for this node %v.", nodeId)), COMPCHECK_INPUT_ERROR)
+		} else {
+			return extNPolicy, nPolicy, nil
+		}
 	} else {
-		return node, err
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither node policy nor node id is specified.")), COMPCHECK_INPUT_ERROR)
 	}
 }
 
@@ -505,8 +431,56 @@ func GetNodePolicy(nodePolicyHandler exchange.NodePolicyHandler, nodeId string, 
 	return &extPolicy, pPolicy, nil
 }
 
-// Get business policy from the exchange the convert it to internal policy
-func GetBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpId string, msgPrinter *message.Printer) (*businesspolicy.BusinessPolicy, *policy.Policy, error) {
+// If the inputBP is given, then validate it and convert it to internal policy.
+// If not, get business policy from the exchange the convert it to internal policy
+func processBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpId string, inputBP *businesspolicy.BusinessPolicy, convert bool, msgPrinter *message.Printer) (*businesspolicy.BusinessPolicy, *policy.Policy, error) {
+	// get default message printer if nil
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
+
+	var pPolicy *policy.Policy
+	var bPolicy *businesspolicy.BusinessPolicy
+	if inputBP != nil {
+		// give bpId a default value if it is empty
+		if bpId == "" {
+			bpId = "TempBusinessPolicyId"
+		}
+		if convert {
+			//convert busineess policy to internal policy, the validate is done in this function
+			var err1 error
+			pPolicy, err1 = inputBP.GenPolicyFromBusinessPolicy(bpId)
+			if err1 != nil {
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy: %v", bpId, err1)), COMPCHECK_CONVERTION_ERROR)
+			}
+			return inputBP, pPolicy, nil
+		} else {
+			// validate the input policy
+			if err := inputBP.Validate(); err != nil {
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Validation failure for business policy %v. %v", bpId, err)), COMPCHECK_VALIDATION_ERROR)
+			}
+			if inputBP.Service.ServiceVersions == nil || len(inputBP.Service.ServiceVersions) == 0 {
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the given business policy %v.", bpId)), COMPCHECK_VALIDATION_ERROR)
+			}
+			return inputBP, nil, nil
+		}
+	} else if bpId != "" {
+		var err1 error
+		bPolicy, pPolicy, err1 = GetBusinessPolicy(getBusinessPolicies, bpId, convert, msgPrinter)
+		if err1 != nil {
+			return nil, nil, err1
+		}
+		if bPolicy.Service.ServiceVersions == nil || len(bPolicy.Service.ServiceVersions) == 0 {
+			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the business policy %v.", pPolicy.Header.Name)), COMPCHECK_VALIDATION_ERROR)
+		}
+		return bPolicy, pPolicy, nil
+	} else {
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither business policy nor business policy id is specified.")), COMPCHECK_INPUT_ERROR)
+	}
+}
+
+// get business policy from the exchange.
+func GetBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpId string, convert bool, msgPrinter *message.Printer) (*businesspolicy.BusinessPolicy, *policy.Policy, error) {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -528,18 +502,22 @@ func GetBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpI
 		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to get business policy for %v, %v", bpId, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 	if exchPols == nil || len(exchPols) == 0 {
-		return nil, nil, nil
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No business policy found for this id %v.", bpId)), COMPCHECK_INPUT_ERROR)
 	}
 
 	// convert the business policy to internal policy format
 	for polId, exchPol := range exchPols {
 		bPol := exchPol.GetBusinessPolicy()
 
-		pPolicy, err := bPol.GenPolicyFromBusinessPolicy(polId)
-		if err != nil {
-			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy format: %v", bpId, err)), COMPCHECK_CONVERTION_ERROR)
+		if convert {
+			pPolicy, err := bPol.GenPolicyFromBusinessPolicy(polId)
+			if err != nil {
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy format: %v", bpId, err)), COMPCHECK_CONVERTION_ERROR)
+			}
+			return &bPol, pPolicy, nil
+		} else {
+			return &bPol, nil, nil
 		}
-		return &bPol, pPolicy, nil
 	}
 
 	return nil, nil, nil

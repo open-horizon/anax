@@ -748,6 +748,27 @@ func TestServiceResolver1(t *testing.T) {
 
 }
 
+func TestServiceDefResolver1(t *testing.T) {
+
+	myURL := "http://service1"
+	myOrg := "test"
+	myVersion := "2.0.0"
+	myArch := "amd64"
+
+	sh := getVariableServiceHandler([]UserInput{}, []ServiceDependency{})
+	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+
+	if err != nil {
+		t.Errorf("received unexpected error: %v", err)
+	} else if sd == nil {
+		t.Errorf("received no service definition")
+	} else if len(service_map) != 0 {
+		t.Errorf("should have received empty service map: %v", service_map)
+	} else if sd.HasDependencies() {
+		t.Errorf("should not have dependencies: %v", sd.RequiredServices)
+	}
+}
+
 // Resolve a service with 1 dependency
 func TestServiceResolver2(t *testing.T) {
 
@@ -778,6 +799,41 @@ func TestServiceResolver2(t *testing.T) {
 		t.Errorf("received no service definition")
 	} else if len(*apiSpecList) == 0 {
 		t.Errorf("should not have received empty api spec list")
+	} else if !sd.HasDependencies() {
+		t.Errorf("should have dependencies")
+	}
+
+}
+
+func TestServiceDefResolver2(t *testing.T) {
+
+	myURL := "http://service1"
+	myOrg := "test"
+	myVersion := "2.0.0"
+	myArch := "amd64"
+
+	sDep := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms1",
+			Org:     "otherOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Establish service dependencies that the mock service handler will provide.
+	sdMap := make(map[string][]ServiceDependency)
+	sdMap[myURL] = sDep
+
+	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+
+	if err != nil {
+		t.Errorf("received unexpected error: %v", err)
+	} else if sd == nil {
+		t.Errorf("received no service definition")
+	} else if len(service_map) == 0 {
+		t.Errorf("should not have received empty service map.")
 	} else if !sd.HasDependencies() {
 		t.Errorf("should have dependencies")
 	}
@@ -841,6 +897,55 @@ func Test_RecursiveServiceResolver_1level(t *testing.T) {
 		t.Errorf("http://my.com/ms/ms1 should be in the service id array but not")
 	} else if !s_contains(sIds, "http://my.com/ms/ms2") {
 		t.Errorf("http://my.com/ms/ms2 should be in the service id array but not")
+	}
+}
+
+func Test_RecursiveServiceDefResolver_1level(t *testing.T) {
+
+	flag.Set("alsologtostderr", "true")
+	flag.Set("v", "7")
+
+	myURL := "http://service1"
+	myOrg := "test"
+	myVersion := "1.0.0"
+	myArch := "amd64"
+
+	sDep := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms1",
+			Org:     "otherOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms2",
+			Org:     "thirdOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Establish service dependencies that the mock service handler will provide.
+	sdMap := make(map[string][]ServiceDependency)
+	sdMap[myURL] = sDep
+
+	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+
+	// Test the resolver API
+	service_map, sd, sId, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+
+	if err != nil {
+		t.Errorf("should not have returned err: %v", err)
+	} else if len(service_map) != len(sDep) {
+		t.Errorf("there should be api specs returned")
+	} else if sd == nil {
+		t.Errorf("should have returned a service def")
+	} else if sId != myURL {
+		t.Errorf("The first element of the service ids should be %v but got %v", myURL, sId)
+	} else if _, ok := service_map["http://my.com/ms/ms1"]; !ok {
+		t.Errorf("http://my.com/ms/ms1 should be in the service map but not")
+	} else if _, ok := service_map["http://my.com/ms/ms2"]; !ok {
+		t.Errorf("http://my.com/ms/ms2 should be in the service map but not")
 	}
 }
 
@@ -924,6 +1029,87 @@ func Test_RecursiveServiceResolver_2level(t *testing.T) {
 		t.Errorf("should have returned a service def")
 	}
 
+}
+
+func Test_RecursiveServiceDefResolver_2level(t *testing.T) {
+
+	flag.Set("alsologtostderr", "true")
+	flag.Set("v", "7")
+
+	myURL := "http://service1"
+	myOrg := "test"
+	myVersion := "1.0.0"
+	myArch := "amd64"
+
+	// Dependencies of top level service
+	sDep1 := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms1",
+			Org:     "otherOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/ms2",
+			Org:     "thirdOrg",
+			Version: "1.5.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Dependencies of top level dependency: ms1
+	sDep21 := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/msa",
+			Org:     "otherOrg",
+			Version: "2.7.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/msb",
+			Org:     "otherOrg",
+			Version: "1.0.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Dependencies of top level dependency: ms2
+	sDep22 := []ServiceDependency{
+		ServiceDependency{
+			URL:     "http://my.com/ms/msx",
+			Org:     "thirdOrg",
+			Version: "2.7.0",
+			Arch:    "amd64",
+		},
+		ServiceDependency{
+			URL:     "http://my.com/ms/msa",
+			Org:     "otherOrg",
+			Version: "2.0.0",
+			Arch:    "amd64",
+		},
+	}
+
+	// Establish service dependencies that the mock service handler will provide.
+	sdMap := make(map[string][]ServiceDependency)
+	sdMap[myURL] = sDep1
+	sdMap[sDep1[0].URL] = sDep21
+	sdMap[sDep1[1].URL] = sDep22
+
+	sh := getRecursiveVariableServiceHandler([]UserInput{}, sdMap)
+
+	// Test the resolver API
+	service_map, sd, _, err := ServiceDefResolver(myURL, myOrg, myVersion, myArch, sh)
+
+	//number of unique API specs returned. -1 is applied because there is a dup ms1->msa and ms2->msa.
+	num := len(sDep1) + len(sDep21) + len(sDep22) - 1
+
+	if err != nil {
+		t.Errorf("should not have returned err: %v", err)
+	} else if len(service_map) != num {
+		t.Errorf("there should %v api specs returned", num)
+	} else if sd == nil {
+		t.Errorf("should have returned a service def")
+	}
 }
 
 func getRecursiveVariableServiceHandler(mUserInput []UserInput, mRequiredServices map[string][]ServiceDependency) ServiceHandler {

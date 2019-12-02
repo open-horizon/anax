@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 )
 
@@ -29,7 +30,7 @@ func CatalogServiceList(credOrg string, userPw string, displayShort bool, displa
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flags -s and -l are mutually exclusive."))
 	}
 
-	var resp GetServicesResponse
+	var resp exchange.GetServicesResponse
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "catalog/services?orgtype="+orgType, cliutils.OrgAndCreds(credOrg, userPw), []int{200}, &resp)
 
 	if displayLong {
