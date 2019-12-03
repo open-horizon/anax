@@ -706,7 +706,7 @@ function process_node(){
 			# with a pattern currently
 			log_notify "The node currently has workload(s) (check them with hzn agreement list)"
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
-				log_info "Neither a pattern nor node policy has not been specified"
+				log_info "Neither a pattern nor node policy has been specified"
 				if [ ! "$OVERWRITE" = true ] ; then
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
 					read RESPONSE
@@ -903,8 +903,19 @@ function add_autocomplete() {
 	
 	SHELL_FILE="${SHELL##*/}"
 	
-	grep -q '^source /usr/local/share/horizon/hzn_bash_autocomplete.sh' ~/.${SHELL_FILE}rc || \
-		echo 'source /usr/local/share/horizon/hzn_bash_autocomplete.sh' >> ~/.${SHELL_FILE}rc
+    if [ -f "/etc/bash_completion.d/hzn_bash_autocomplete.sh" ]; then
+        AUTOCOMPLETE="/etc/bash_completion.d/hzn_bash_autocomplete.sh"
+    elif [ -f "/usr/local/share/horizon/hzn_bash_autocomplete.sh" ]; then
+        # backward compatibility support
+        AUTOCOMPLETE="/usr/local/share/horizon/hzn_bash_autocomplete.sh"
+    fi
+
+    if [[ ! -z "$AUTOCOMPLETE" ]]; then
+        grep -q "^source ${AUTOCOMPLETE}" ~/.${SHELL_FILE}rc || \
+            echo "source ${AUTOCOMPLETE}" >> ~/.${SHELL_FILE}rc
+    else
+        log_info "Found no autocomplete script expected, skipping it..."
+    fi
 	
 	log_debug "add_autocomplete() end"
 }
