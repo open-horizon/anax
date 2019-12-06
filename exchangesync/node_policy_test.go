@@ -21,7 +21,7 @@ import (
 var ExchangeNodePolicyLastUpdated = ""
 var ExchangeNodePolicy *externalpolicy.ExternalPolicy
 
-const NUM_BUILT_INS = 3
+const NUM_BUILT_INS = 4
 
 // Verify that a Node Policy Object can be created and saved the first time.
 func Test_UpdateNodePolicy(t *testing.T) {

@@ -455,7 +455,7 @@ func CreateService(service *Service,
 	}
 
 	// add node built-in properties
-	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false, false)
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {
 			if ele.Name == externalpolicy.PROP_NODE_CPU {

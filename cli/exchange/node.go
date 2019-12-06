@@ -195,7 +195,6 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 						patternUserInputsMap[mapKey] = u
 					}
 
-
 					// if there are userinput with no default value, and value is not defined in pattern userinput, userinput from command line cannot be empty
 					_, err := getUserInputWithEmptyDefaultValue(cliutils.OrgAndCreds(org, credToUse), topLevelServices, patternUserInputsMap, userInputWithEmptyDefaultValueMap)
 					if err == nil && len(userInputWithEmptyDefaultValueMap) != 0 {
@@ -206,7 +205,6 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("%v", err))
 					}
 				}
-
 
 				if len(ui) != 0 {
 					// make a map
@@ -660,7 +658,6 @@ func ValidateUserInput(org string, credToUse string, userInput policy.UserInput,
 		}
 	}
 
-
 	return true, warningMessage, nil
 
 }
@@ -690,7 +687,7 @@ func checkDependentServices(creds string, serviceOrg string, serviceUrl string, 
 		dependentServiceVersionExp, _ := semanticversion.Version_Expression_Factory(dependentServiceVersionRange)
 		dependentServiceVersion := dependentServiceVersionExp.Get_expression()
 		dependentServiceSearchVersion, _ := getSearchVersion(dependentServiceVersion)
-		
+
 		dsdef, err := getService(creds, dependentService.Org, dependentService.URL, dependentService.Arch, dependentServiceVersion, dependentServiceSearchVersion)
 		if dsdef == nil || err != nil {
 			return false, true, errors.New(msgPrinter.Sprintf("service does not exist %v, %v, %v, %v, %v", dependentService.Org, dependentService.URL, dependentService.Arch, dependentServiceVersion, dependentServiceSearchVersion))
@@ -829,7 +826,6 @@ func compareUserInput(sdefUserInputs []exchange.UserInput, cmdUserInputs []polic
 	var serviceInputName string
 	var serviceInput exchange.UserInput
 	var errorString string
-
 
 	for _, serviceInput = range sdefUserInputs {
 		serviceInputName = serviceInput.Name

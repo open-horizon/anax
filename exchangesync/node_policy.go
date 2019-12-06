@@ -87,7 +87,9 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 		return nil, fmt.Errorf("Unable to retrieve the node policy from the exchange. Error: %v", err)
 	}
 
-	builtinPolicy := externalpolicy.CreateNodeBuiltInPolicy(false)
+	hasHwId := exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)
+
+	builtinPolicy := externalpolicy.CreateNodeBuiltInPolicy(false, !hasHwId)
 
 	var mergedPol *externalpolicy.ExternalPolicy
 	if exchangeNodePolicy == nil {
@@ -148,7 +150,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	glog.V(3).Infof("Setting up the default node policy.")
 
 	nodePolicy := new(externalpolicy.ExternalPolicy)
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, true)
 
 	// get the default node policy file name from the config and set it up in local and exchange
 	policyFile := config.Edge.DefaultNodePolicyFile
@@ -330,8 +332,10 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 		return fmt.Errorf("Node policy does not validate. %v", err)
 	}
 
+	hasHwId := nodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)
+
 	// add node's built-in properties
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, hasHwId)
 	if builtinNodePol != nil {
 		nodePolicy.MergeWith(builtinNodePol, true)
 	}
