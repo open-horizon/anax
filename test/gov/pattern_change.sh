@@ -67,6 +67,10 @@ cat <<EOF > /tmp/userinput_for_sall.json
         {
           "name": "var3",
           "value": 20.2
+        },
+	{
+          "name": "var4",
+          "value": ["node_String1", "node_String2", "node_String3"]
         }
       ]
     },
@@ -87,6 +91,10 @@ cat <<EOF > /tmp/userinput_for_sall.json
         {
           "name": "var3",
           "value": 21.2
+        },
+	{
+          "name": "var4",
+          "value": ["node_String1", "node_String2", "node_String3"]
         }
       ]
     },
@@ -149,6 +157,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "IBM",
       "serviceUrl": "https://bluehorizon.network/service-gps",
+      "serviceArch": "amd64",
       "serviceVersionRange": "2.0.3",
       "inputs": [
         {
@@ -172,6 +181,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "amd64",
       "serviceVersionRange": "1.5.0",
       "inputs": [
         {

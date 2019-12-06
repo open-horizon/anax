@@ -7,7 +7,7 @@ PREFIX="Agbot API Test:"
 
 
 echo ""
-echo -e "${PREFIX} start test"
+echo -e "${PREFIX} Start testing policy compatibility"
 
 COMP_RESULT=""
 
@@ -54,7 +54,7 @@ function check_comp_results {
 
   if [ "$comp" != "$1" ]; then
     echo "Expexted compatible be $1 but got $comp."
-    return 2
+    exit 2
   fi
 
   if [ ! -z "$2" ]; then
@@ -129,7 +129,7 @@ read -d '' comp_input <<EOF
   "business_policy_id": "userdev/bp_gpstest"
 }
 EOF
-run_and_check "$comp_input" "400" "No node policy found"
+run_and_check "$comp_input" "500" "Error getting node"
 
 
 echo -e "\n${PREFIX} test /policycompatible. Input: wrong business policy id"

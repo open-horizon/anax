@@ -7,7 +7,7 @@
 # export DEVICE_ID="an12345"
 # export DEVICE_ORG="e2edev@somecomp.com"
 # export DEVICE_NAME="anaxdev1"
-# export ANAX_API="http://localhost"
+# export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
 # export EXCH="${EXCH_APP_HOST}"
 # export TOKEN="abcdefg"
 # This env var can be changed to whatever pattern you want to run.
@@ -18,7 +18,7 @@ nohup ./start_anax_loop.sh &>/dev/null &
 sleep 5
 
 # Make sure org is null
-DST=$(curl -sSL http://localhost/node | jq -r '.')
+DST=$(curl -sSL $ANAX_API/node | jq -r '.')
 THEORG=$(echo "$DST" | jq -r '.organization')
 if [ "$THEORG" != "null" ]
 then
@@ -44,7 +44,8 @@ then
         echo "Starting Anax2."
         export DEVICE_ID="an54321"
         export DEVICE_NAME="anaxdev2"
-        export ANAX_API="http://localhost:82"
+        export HZN_AGENT_PORT=8511
+        export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
         export PARTNERID="an54321"
 
         if [ "$OLDANAX" == "1" ]

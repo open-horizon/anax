@@ -23,7 +23,7 @@ function verifyAgreements {
         do
                 echo -e "${PREFIX} waiting for ${TARGET_NUM_AG} agreement(s)"
 
-                AGS=$(curl -sSL http://localhost/agreement | jq -r '.agreements.active')
+                AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
                 NUM_AGS=$(echo ${AGS} | jq -r '. | length')
                 if [ "${TARGET_NUM_AG}" == "${NUM_AGS}" ]; then
                         # Make an array of agreement ids that we should be tracking
@@ -47,7 +47,7 @@ function agreementExists {
         STILL_EXIST=$(echo $1 | jq -r '.[] | select (.current_agreement_id == "'$2'")')
         if [ "${STILL_EXIST}" == "" ]; then
                 echo -e "${PREFIX} agreement $2 no longer exists"
-                AAGS=$(curl -sSL http://localhost/agreement | jq -r '.agreements.archived')
+                AAGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.archived')
                 echo -e "${PREFIX} agreement archive contains: ${AAGS}"
                 exit 1
         fi
@@ -63,7 +63,7 @@ function agreementsReached {
         do
                 echo -e "${PREFIX} waiting for agreement(s) to have $1 set"
 
-                AGS=$(curl -sSL http://localhost/agreement | jq -r '.agreements.active')
+                AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
                 NOT_YET=0
                 for (( ix=0; ix<$NUM_AGS; ix++ ))
                 do
@@ -95,7 +95,7 @@ function monitorAgreements {
 	NOT_YET=0
         while :
         do
-                AGS=$(curl -sSL http://localhost/agreement | jq -r '.agreements.active')
+                AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
                 for (( ix=0; ix<$NUM_AGS; ix++ ))
                 do
                         AG=$(echo ${MONITOR_AGS} | jq -r '.['${ix}']')
@@ -227,7 +227,7 @@ function handleCPU {
 
 # Verify the service instances that should be running
 function verifyServices {
-        ALLSERV=$(curl -sSL http://localhost/service | jq -r '.instances.active')
+        ALLSERV=$(curl -sSL $ANAX_API/service | jq -r '.instances.active')
         NUMSERV=$(echo ${ALLSERV} | jq -r '. | length')
 
         echo -e "There are ${NUMSERV} active services running"
@@ -269,7 +269,7 @@ function handleMsghubDataVerification {
 
 # Data verification
 function verifyData {
-    ALLSERV=$(curl -sSL http://localhost/service | jq -r '.instances.active')
+    ALLSERV=$(curl -sSL $ANAX_API/service | jq -r '.instances.active')
     NUMSERV=$(echo ${ALLSERV} | jq -r '. | length')
 
     for (( ix=0; ix<$NUMSERV; ix++ ))

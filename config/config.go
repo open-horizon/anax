@@ -14,6 +14,7 @@ const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
 const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
 const OldMgmtHubCertPath = "HZN_ICP_CA_CERT_PATH"
 const ManagementHubCertPath = "HZN_MGMT_HUB_CERT_PATH"
+const AnaxAPIPort = "HZN_AGENT_PORT"
 
 type HorizonConfig struct {
 	Edge          Config
@@ -159,9 +160,6 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 	if exchangeURL := os.Getenv(ExchangeURLEnvvarName); exchangeURL != "" {
 		config.Edge.ExchangeURL = exchangeURL
 		config.AgreementBot.ExchangeURL = exchangeURL
-	} else {
-		// TODO: Enable this once we require the envvar to be set. For now, we don't return the error
-		// return fmt.Errorf("Unspecified but required envvar: %s", ExchangeURLEnvvarName)
 	}
 
 	if fssCSSURL := os.Getenv(FileSyncServiceCSSURLEnvvarName); fssCSSURL != "" {
@@ -170,6 +168,23 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 
 	if noDynamicPoll := os.Getenv(ExchangeMessageNoDynamicPollEnvvarName); noDynamicPoll != "" {
 		config.Edge.ExchangeMessageDynamicPoll = false
+	}
+
+	if apiPort := os.Getenv(AnaxAPIPort); apiPort != "" {
+		if config.Edge.APIListen != "" {
+			listen := strings.Split(config.Edge.APIListen, ":")
+			if len(listen) == 2 {
+				config.Edge.APIListen = fmt.Sprintf("%v:%v", listen[0], apiPort)
+			} else {
+				config.Edge.APIListen = fmt.Sprintf("127.0.0.1:%v", apiPort)
+			}
+		} else {
+			config.Edge.APIListen = fmt.Sprintf("127.0.0.1:%v", apiPort)
+		}
+	} else {
+		if config.Edge.APIListen == "" {
+			config.Edge.APIListen = fmt.Sprintf("127.0.0.1:%v", AnaxAPIPortDefault)
+		}
 	}
 
 	return nil

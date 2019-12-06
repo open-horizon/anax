@@ -49,7 +49,7 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         exit 2
     fi
 
-    cpu_inst_before=$(curl -s http://localhost/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
+    cpu_inst_before=$(curl -s $ANAX_API/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get cpu service instace. ${cpu_inst_before}"
         exit 2
@@ -70,7 +70,7 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         exit 1
     fi
 
-    cpu_inst_after=$(curl -s http://localhost/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
+    cpu_inst_after=$(curl -s $ANAX_API/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get cpu service instace. ${cpu_inst_after}"
         exit 2

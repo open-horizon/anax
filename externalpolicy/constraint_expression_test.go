@@ -114,6 +114,43 @@ func Test_succeed_IsSatisfiedBy(t *testing.T) {
 	if err := ce.IsSatisfiedBy(*props); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"purpose==network-testing")
+	prop_list = `[{"name":"purpose", "value":"network-testing"},{"name":"group", "value":"bluenode"},{"name":"openhorizon.cpu", "value":"1"},{"name":"openhorizon.arch", "value":"amd64"},{"name":"openhorizon.memory", "value":"3918"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"iame2edev == true",
+		"NONS==false || NOGPS == true || NOLOC == false || NOPWS == false || NOHELLO == false")
+	prop_list = `[{"name":"iame2edev", "value":"true"},{"name":"NONS", "value":"false"},{"name":"number", "value":"12"},{"name":"foo", "value":"bar"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"color == gray || (colour =\"grey\" && countryin\"england,australia,canada\")")
+	prop_list = `[{"name":"color", "value":"gray"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"(species == t-rex && ((feathers =hopefully && scales=maybe || (talonsin\"sharp,very sharp\" || teeth =1.3.8))))")
+	prop_list = `[{"name":"species", "value":"t-rex"},{"name":"feathers", "value": "hopefully"},{"name":"talons", "value": "sharp    "}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
 }
 
 func Test_fail_IsSatisfiedBy(t *testing.T) {
@@ -121,6 +158,105 @@ func Test_fail_IsSatisfiedBy(t *testing.T) {
 	(*ce) = append((*ce), "prop == true && prop2 == \"value2, value3, value4\"")
 	props := new([]Property)
 	(*props) = append((*props), *(Property_Factory("prop", true)), *(Property_Factory("prop2", "value3")), *(Property_Factory("prop3", "value3")), *(Property_Factory("prop4", "value4")), *(Property_Factory("prop5", "value5")))
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"((versionin[1.3.1,3.1.2) && server=false) || (os!=windows && foo !=bar) )")
+	prop_list := `[{"name":"version", "value":"2.3.4"},{"name":"foo", "value": "chunk"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		" (sasquatch=real && locationin\"British Columbia,Alberta,Montana\") OR (nessie  ==   real && location=\"Scotland\")")
+	prop_list = `[{"name":"sasquatch", "value":"real"},{"name":"location", "value": "Scotland"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		" purpose == testing AND ( nodenum > 4 || nodenum <= 2)")
+	prop_list = `[{"name":"purpose", "value":"testing"},{"name":"nodenum", "value": "3"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		" purpose == testing AND ( nodenum > 4 || nodenum <= 2 || (test2 in \"a,b,c\" && openhorizon.cpu ==2) || propx = false)")
+	prop_list = `[{"name":"purpose", "value":"testing"},{"name":"nodenum", "value": "3"},{"name":"test2", "value": "b"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"( purpose == testing) AND ( nodenum > 4 || nodenum <= 2 || (test2 in \"a,b,c\" && openhorizon.cpu ==2) || propx = false)")
+	prop_list = `[{"name":"openhorizon.cpu", "value":"2"},{"name":"nodenum", "value": "3"},{"name":"test2", "value": "b"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"device=kiosk && (station=kyoto OR station=hunai)")
+	prop_list = `[{"name":"device", "value":"kiosk"},{"name":"station", "value": "tokyo"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"device=kiosk && (station=kyoto OR station=hunai) && stationtype=\"train\"")
+	prop_list = `[{"name":"device", "value":"kiosk"},{"name":"station", "value": "kyoto"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"device=kiosk && station=kyoto  && stationtype=\"train\" AND schedule=on-time")
+	prop_list = `[{"name":"device", "value":"kiosk"},{"name":"schedule", "value": "on-time"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"device=kiosk || station=kyoto  || stationtype=\"train\" OR schedule=on-time")
+	prop_list = `[{"name":"device", "value":"scanner"},{"name":"schedule", "value": "delayed"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"((device=kiosk || station=macau) && (station=kyoto OR station=hunai))")
+	prop_list = `[{"name":"device", "value":"kiosk"},{"name":"station", "value": "tokyo"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err == nil {
+		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
+	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"purpose == network-testing1", "group == bluenode")
+	prop_list = `[{"name":"purpose", "value":"network-testing"},{"name":"group", "value": "bluenode"}]`
+	props = create_property_list(prop_list, t)
 	if err := ce.IsSatisfiedBy(*props); err == nil {
 		t.Errorf("Error: constraints not satisfied but no error occured %v %v", ce, props)
 	}

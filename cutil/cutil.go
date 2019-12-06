@@ -64,6 +64,17 @@ func GenerateAgreementId() (string, error) {
 	return agreementIdString, err
 }
 
+func GenerateRandomNodeId() (string, error) {
+
+	bytes := make([]byte, 20, 20)
+	nodeIdString := ""
+	_, err := rand.Read(bytes)
+	if err == nil {
+		nodeIdString = hex.EncodeToString(bytes)
+	}
+	return nodeIdString, err
+}
+
 func ArchString() string {
 	return runtime.GOARCH
 }
@@ -546,6 +557,49 @@ func GetCPUCount(cpuinfo_file string) (int, error) {
 		}
 		return cpu_count, nil
 	}
+}
+
+// Get the machine serial number. If cpuInfoFile is an empty string,
+// this function will use /proc/cpuinfo for Linux. For mac OS, nothing will
+// be returned.
+func GetMachineSerial(cpuInfoFile string) (string, error) {
+	if cpuInfoFile == "" {
+		// does not support
+		if runtime.GOOS == "darwin" {
+			return "", fmt.Errorf("Does not support mac os for getting machine serial number.")
+		} else {
+			cpuInfoFile = "/proc/cpuinfo"
+		}
+	}
+
+	// Linux case
+	if _, err := os.Stat(cpuInfoFile); err != nil {
+		return "", err
+	}
+
+	fh, err := os.Open(cpuInfoFile)
+	if err != nil {
+		return "", err
+	}
+	defer fh.Close()
+
+	scanner := bufio.NewScanner(fh)
+	r, _ := regexp.Compile("Serial([ \t]*):")
+	for scanner.Scan() {
+		line := string(scanner.Bytes())
+		if r.MatchString(line) {
+			serialParts := strings.Split(line, " ")
+			if len(serialParts) > 1 {
+				return serialParts[1], nil
+			}
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		glog.Errorf(fmt.Sprintf("Error scanning %v, error: %v", cpuInfoFile, err))
+		return "", nil
+	}
+	return "", nil
+
 }
 
 // Get the total memory size and available memory size in MegaBytes

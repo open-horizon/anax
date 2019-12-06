@@ -54,7 +54,7 @@ FSS_REGISTRY ?= "dockerhub"
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.0.15$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.0.16$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -75,7 +75,7 @@ CSS_UBI_IMAGE_LATEST = $(CSS_UBI_IMAGE_NAME):latest$(BRANCH_NAME)
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.0.13$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.0.14$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -100,8 +100,8 @@ export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
 
-export EXCHANGE_URL ?= https://alpha.edge-fabric.com/v1/
-export FSS_CSS_URL ?= https://alpha.edge-fabric.com/css/
+export EXCHANGE_URL ?=
+export FSS_CSS_URL ?=
 
 # we use a script that will give us the debian arch version since that's what the packaging system inputs
 arch ?= $(shell tools/arch-tag)

@@ -155,7 +155,7 @@ type GetDevicesResponse struct {
 	LastIndex int               `json:"lastIndex"`
 }
 
-func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, deviceToken string, exchangeUrl string) (*Device, error) {
+func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId string, credId string, credPasswd string, exchangeUrl string) (*Device, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
 
@@ -163,7 +163,7 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	resp = new(GetDevicesResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
 	for {
-		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, deviceToken, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, credId, credPasswd, nil, &resp); err != nil {
 			glog.Errorf(err.Error())
 			return nil, err
 		} else if tpErr != nil {
@@ -858,6 +858,8 @@ func IsTransportError(pResp *http.Response, err error) bool {
 		if strings.Contains(l_error_string, "time") && strings.Contains(l_error_string, "out") {
 			return true
 		} else if strings.Contains(l_error_string, "connection") && (strings.Contains(l_error_string, "refused") || strings.Contains(l_error_string, "reset")) {
+			return true
+		} else if strings.Contains(l_error_string, ": EOF") {
 			return true
 		}
 	}

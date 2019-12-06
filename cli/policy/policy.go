@@ -79,13 +79,13 @@ func New() {
 		`  "properties": [   /* ` + msgPrinter.Sprintf("A list of policy properties that describe the object.") + ` */`,
 		`    {`,
 		`       "name": "",`,
-		`       "value": nil`,
+		`       "value": null`,
 		`      }`,
 		`  ],`,
 		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
 		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
 		`       "" `,
-		`  ], `,
+		`  ] `,
 		`}`,
 	}
 

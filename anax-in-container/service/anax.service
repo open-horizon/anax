@@ -52,8 +52,8 @@ defaultEnv() {
 	cp $anaxJsonFile $anaxJsonFile.orig
 	checkrc $? "back up anax.json"
 
-	# Anax must be listening on port 80 of all interfaces for it to be published to the host by docker (we will only publish it to 127.0.0.1 on the host)
-	anaxJson=$(jq ".Edge.APIListen = \"0.0.0.0:80\" " <<< $anaxJson)
+	# Anax must be listening on port 8510 of all interfaces for it to be published to the host by docker (we will only publish it to 127.0.0.1 on the host)
+	anaxJson=$(jq ".Edge.APIListen = \"0.0.0.0:8510\" " <<< $anaxJson)
 	checkrc $? "change APIListen"
 
 	# Since they are running anax in a container, assume they could run multiple anax containers

@@ -13,7 +13,8 @@ function set_exports {
     export DEVICE_ORG="e2edev@somecomp.com"
     export TOKEN="abcdefg"
 
-    export ANAX_API="http://localhost"
+    export HZN_AGENT_PORT=8510
+    export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
     export EXCH="${EXCH_APP_HOST}"
     export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
 
@@ -342,7 +343,8 @@ then
   export DEVICE_ID="an12345"
   export DEVICE_NAME="an12345"
   export DEVICE_ORG="e2edev@somecomp.com"
-  export ANAX_API="http://localhost"
+  export HZN_AGENT_PORT=8510
+  export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
   export EXCH="${EXCH_APP_HOST}"
   export TOKEN="abcdefg"
   export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
@@ -578,13 +580,21 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$NOAGBOTAPI" != "1" ]; then
+if [ "$NOCOMPCHECK" != "1" ]; then
    ./agbot_apitest.sh
   if [ $? -ne 0 ]
   then
-    echo "Agbot API Test failure."
+    echo "Policy compatibility test using Agbot API failure."
     exit 1
   fi
+
+  ./hzn_compcheck.sh
+  if [ $? -ne 0 ]
+  then
+    echo "Policy compatibility test using hzn command failure."
+    exit 1
+  fi
+
 fi
 
 if [ "$NOSURFERR" != "1" ]; then
