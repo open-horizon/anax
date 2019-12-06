@@ -26,13 +26,16 @@ func Register(name string, p ConstraintLanguagePlugin) {
 // until one of them claims ownership of the constraint language field. If no error is
 // returned, then one of the plugins has validated the constraint expression.
 func (d ConstraintLanguageRegistry) ValidatedByOne(constraints interface{}) ([]string, error) {
+	errs := ""
 	for _, p := range d {
 		if owned, constraints, err := p.Validate(constraints); owned {
 			return constraints, err
+		} else if err != nil {
+			errs = fmt.Sprintf("%v %v\n", errs, err)
 		}
 	}
 
-	return nil, errors.New(fmt.Sprintf("constraint language %v is not supported", constraints))
+	return nil, errors.New(fmt.Sprintf("constraint language %v is not supported. %v", constraints, errs))
 }
 
 // Ask each plugin to claim the input constraint language. Plugins are called

@@ -45,6 +45,24 @@
 			"revisionTime": "2018-02-25T01:54:01Z"
 		},
 		{
+			"checksumSHA1": "Eb9pAB8dToYRPL4OPteICbbDGic=",
+			"path": "github.com/alecthomas/participle/lexer",
+			"revision": "729a7c1de92a95b65b43767b5d76e0904a57a4ea",
+			"revisionTime": "2019-10-20T03:39:16Z"
+		},
+		{
+			"checksumSHA1": "xxTwQ0IIsf3CgcpaaYMLm8a4Y44=",
+			"path": "github.com/alecthomas/participle/lexer/ebnf",
+			"revision": "729a7c1de92a95b65b43767b5d76e0904a57a4ea",
+			"revisionTime": "2019-10-20T03:39:16Z"
+		},
+		{
+			"checksumSHA1": "kCK5VgWW9ocoiKvwqBTXR14g5eM=",
+			"path": "github.com/alecthomas/participle/lexer/ebnf/internal",
+			"revision": "729a7c1de92a95b65b43767b5d76e0904a57a4ea",
+			"revisionTime": "2019-10-20T03:39:16Z"
+		},
+		{
 			"checksumSHA1": "KmjnydoAbofMieIWm+it5OWERaM=",
 			"path": "github.com/alecthomas/template",
 			"revision": "a0175ee3bccc567396460bf5acd36800cb10c49c",
