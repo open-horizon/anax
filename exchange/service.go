@@ -68,6 +68,7 @@ type ServiceDefinition struct {
 	Owner               string              `json:"owner"`
 	Label               string              `json:"label"`
 	Description         string              `json:"description"`
+	Documentation       string              `json:"documentation"`
 	Public              bool                `json:"public"`
 	URL                 string              `json:"url"`
 	Version             string              `json:"version"`
@@ -560,6 +561,57 @@ func ServiceResolver(wURL string, wOrg string, wVersion string, wArch string, se
 
 	}
 
+}
+
+// The purpose of this function is to get the service definitions of all the dependents for the given service.
+// The returned map is keyed by the service id and its element is the ServiceDefinition for that service.
+func ServiceDefResolver(wURL string, wOrg string, wVersion string, wArch string, serviceHandler ServiceHandler) (map[string]ServiceDefinition, *ServiceDefinition, string, error) {
+
+	resolveRequiredServices := true
+
+	glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving service definition for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
+
+	service_map := map[string]ServiceDefinition{}
+
+	// Get a version specific service definition.
+	tlService, sId, werr := serviceHandler(wURL, wOrg, wVersion, wArch)
+	if werr != nil {
+		return nil, nil, "", werr
+	} else if tlService == nil {
+		return nil, nil, "", errors.New(fmt.Sprintf("unable to find service %v %v %v %v on the exchange.", wURL, wOrg, wVersion, wArch))
+	} else {
+
+		// We found the service definition. Required services are referred to within a service definition by URL, org, architecture,
+		// and version range. Service definitions in the exchange arent queryable by version range, so we will have to do the version
+		// filtering.  We're looking for the highest version service definition that is within the range defined by the service.
+		// See ./policy/version.go for an explanation of version syntax and version ranges. The GetService() function is smart enough
+		// to return the service we're looking for as long as we give it a range to search within.
+
+		if resolveRequiredServices {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolving required services for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
+			for _, sDep := range tlService.RequiredServices {
+
+				// Make sure the required service has the same arch as the service.
+				// Convert version to a version range expression (if it's not already an expression) so that the underlying GetService
+				// will return us something in the range required by the service.
+				if sDep.Arch != wArch {
+					return nil, nil, "", errors.New(fmt.Sprintf("service %v has a different architecture than the top level service.", sDep))
+				} else if vExp, err := semanticversion.Version_Expression_Factory(sDep.Version); err != nil {
+					return nil, nil, "", errors.New(fmt.Sprintf("unable to create version expression from %v, error %v", sDep.Version, err))
+				} else if s_map, s_def, s_id, err := ServiceDefResolver(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch, serviceHandler); err != nil {
+					return nil, nil, "", err
+				} else {
+					service_map[s_id] = *s_def
+					for id, s := range s_map {
+						service_map[id] = s
+					}
+				}
+			}
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved required service definition for %v %v %v %v", wURL, wOrg, wVersion, wArch)))
+		}
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("resolved service definition for %v %v %v %v.", wURL, wOrg, wVersion, wArch)))
+		return service_map, tlService, sId, nil
+	}
 }
 
 // This function gets the image docker auths for a service.

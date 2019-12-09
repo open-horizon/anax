@@ -273,7 +273,7 @@ echo -e "\n${PREFIX} test input: wrong business policy id"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstestxxx"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "No business policy found for this id"
+results "$RES" "Business policy not found for"
 
 echo -e "\n${PREFIX} test input: wrong org id"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n xxxuserdev/an12345 -b userdev/bp_gpstest"

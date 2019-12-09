@@ -432,15 +432,22 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// Make sure the user inputs are all there
 		userInput_match := true
 		if policy_match {
-			if err := compcheck.VerifyUserInputForServiceDef(workloadDetails, workload.Org, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
-				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Failed to validate the user input: %v", err)))
+			if compatible, reason, _, err := compcheck.VerifyUserInputForSingleServiceDef(workloadDetails, workload.Org, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput, nil); err != nil {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Error validating the user input for service %v/%v %v %v: %v", workload.Org, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, err)))
+				userInput_match = false
+			} else if !compatible {
+				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("User input does not meet the requirement for service %v/%v %v %v: %v", workload.Org, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, reason)))
 				userInput_match = false
 			} else {
 				for _, apiSpec := range *asl {
 					svcSpec := compcheck.NewServiceSpec(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.Arch)
 					getService := exchange.GetHTTPServiceHandler(b)
-					if err := compcheck.VerifyUserInputForService(svcSpec, getService, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput); err != nil {
-						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Failed to validate the user input: %v", err)))
+					if compatible, reason, _, err := compcheck.VerifyUserInputForSingleService(svcSpec, getService, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput, nil); err != nil {
+						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Error validating the user input for dependent service %v/%v %v %v. %v", apiSpec.Org, apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch, err)))
+						userInput_match = false
+						break
+					} else if !compatible {
+						glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("User input does not meet the requirement for dependent service %v/%v %v %v. %v", apiSpec.Org, apiSpec.SpecRef, apiSpec.Version, apiSpec.Arch, reason)))
 						userInput_match = false
 						break
 					}
