@@ -137,7 +137,28 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		nodeId = *horDevice.Id
 
 		if nodeId == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the node id and token using -n flag or HZN_EXCHANGE_NODE_AUTH environment variable."))
+			// Generate a node id using the machine's serial number, if available.
+			var msErr error
+			nodeId, msErr = cutil.GetMachineSerial("")
+			if msErr != nil {
+				cliutils.Verbose(msgPrinter.Sprintf("Unable to read machine serial number, error: %v. Continuing device registration.", msErr))
+			}
+			if nodeId != "" {
+				msgPrinter.Printf("Node ID not specified, using machine serial number %v as node ID.", nodeId)
+				msgPrinter.Println()
+			} else {
+				cliutils.Verbose(msgPrinter.Sprintf("Node ID not specified, and machine serial number not found, generating random node ID."))
+
+				// Generate a random string of 40 characters, consisting of numbers and letters.
+				var err error
+				if nodeId, err = cutil.GenerateRandomNodeId(); err != nil {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to generate random node id, error: %v", err))
+				} else {
+					msgPrinter.Printf("Generated random node ID: %v.", nodeId)
+					msgPrinter.Println()
+				}
+			}
+
 		} else {
 			msgPrinter.Printf("Using node ID '%s' from the Horizon agent", nodeId)
 			msgPrinter.Println()

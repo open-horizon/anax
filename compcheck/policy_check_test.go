@@ -14,12 +14,206 @@ import (
 	"testing"
 )
 
+const (
+	COMPATIBLE   = "Compatible"
+	INCOMPATIBLE = "Incompatible"
+)
+
 // test starts here
+func Test_processBusinessPolicy(t *testing.T) {
+	svcUrl := "weather"
+	svcOrg := "myorg"
+	svcVersion := "1.0.1"
+	svcArch := "amd64"
+	service := businesspolicy.ServiceRef{
+		Name:            svcUrl,
+		Org:             svcOrg,
+		Arch:            svcArch,
+		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion}},
+	}
+
+	svcUrl1 := "fake"
+	svcOrg1 := "fake org"
+	svcArch1 := "fake arch"
+	service1 := businesspolicy.ServiceRef{
+		Name:            svcUrl1,
+		Org:             svcOrg1,
+		Arch:            svcArch1,
+		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion}},
+	}
+
+	bHandler := getBusinessPolicyHandler(service1, map[string]string{}, []string{})
+	bHandler1 := getBusinessPolicyHandler(service1, map[string]string{"prop11": "val11"}, []string{"prop31 == val31"})
+	businessPolicy := createBusinessPolicy(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""})
+
+	// test pol with no convertion
+	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler, "", businessPolicy, false, nil); err != nil {
+		t.Errorf("processBusinessPolicy should not have returned error but got: %v", err)
+	} else if pPolicy != nil {
+		t.Errorf("processBusinessPolicy should not have converted the policy but did: %v", pPolicy)
+	} else if bPolicy == nil {
+		t.Errorf("processBusinessPolicy should have return a business policy but not.")
+	} else if bPolicy.Service.Name != svcUrl || bPolicy.Service.Org != svcOrg || bPolicy.Service.Arch != svcArch {
+		t.Errorf("processBusinessPolicy have converted a wrong policy: %v", bPolicy)
+	}
+
+	// test pol with convertion
+	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler, "", businessPolicy, true, nil); err != nil {
+		t.Errorf("processBusinessPolicy should not have returned error but got: %v", err)
+	} else if pPolicy == nil {
+		t.Errorf("processBusinessPolicy should have converted the internal policy but did not")
+	} else if bPolicy == nil {
+		t.Errorf("processBusinessPolicy should have return a business policy but not.")
+	} else if bPolicy.Service.Name != svcUrl || bPolicy.Service.Org != svcOrg || bPolicy.Service.Arch != svcArch {
+		t.Errorf("processBusinessPolicy have converted a wrong policy: %v", bPolicy)
+	} else if len(pPolicy.Workloads) != 1 {
+		t.Errorf("Internal policy have 1 workload but got %v", len(pPolicy.Workloads))
+	} else if pPolicy.Workloads[0].WorkloadURL != svcUrl || pPolicy.Workloads[0].Org != svcOrg || pPolicy.Workloads[0].Arch != svcArch || pPolicy.Workloads[0].Version != svcVersion {
+		t.Errorf("processBusinessPolicy has returned a wrong internal policy: %v", pPolicy)
+	}
+
+	// test no id, no pol
+	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler, "", nil, true, nil); err == nil {
+		t.Errorf("processBusinessPolicy should have returned error but not")
+	} else if !strings.Contains(err.Error(), "Neither business policy nor business policy id is specified.") {
+		t.Errorf("processBusinessPolicy returned wrong error message: %v", err)
+	} else if bPolicy != nil {
+		t.Errorf("processBusinessPolicy have returned nul business policy but got: %v", bPolicy)
+	} else if pPolicy != nil {
+		t.Errorf("processBusinessPolicy have returned nul internal policy but got: %v", pPolicy)
+	}
+	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler, "", nil, false, nil); err == nil {
+		t.Errorf("processBusinessPolicy should have returned error but not")
+	} else if !strings.Contains(err.Error(), "Neither business policy nor business policy id is specified.") {
+		t.Errorf("processBusinessPolicy returned wrong error message: %v", err)
+	} else if bPolicy != nil {
+		t.Errorf("processBusinessPolicy have returned nul business policy but got: %v", bPolicy)
+	} else if pPolicy != nil {
+		t.Errorf("processBusinessPolicy have returned nul internal policy but got: %v", pPolicy)
+	}
+
+	// test id with no convertion
+	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler1, "myorg/mybp", nil, false, nil); err != nil {
+		t.Errorf("processBusinessPolicy should not have returned error but got: %v", err)
+	} else if pPolicy != nil {
+		t.Errorf("processBusinessPolicy should not have converted the policy but did: %v", pPolicy)
+	} else if bPolicy == nil {
+		t.Errorf("processBusinessPolicy should have return a business policy but not.")
+	} else if bPolicy.Service.Name != svcUrl1 || bPolicy.Service.Org != svcOrg1 || bPolicy.Service.Arch != svcArch1 {
+		t.Errorf("processBusinessPolicy have converted a wrong policy: %v", bPolicy)
+	} else if len(bPolicy.Properties) != 1 {
+		t.Errorf("There should be 1 property in business policy but got: %v", len(bPolicy.Properties))
+	} else if len(bPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in business policy but got: %v", len(bPolicy.Constraints))
+	}
+
+	// test id with convertion
+	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler1, "myorg/mybp", nil, true, nil); err != nil {
+		t.Errorf("processBusinessPolicy should not have returned error but got: %v", err)
+	} else if pPolicy == nil {
+		t.Errorf("processBusinessPolicy should have converted the internal policy but did not")
+	} else if bPolicy == nil {
+		t.Errorf("processBusinessPolicy should have return a business policy but not.")
+	} else if bPolicy.Service.Name != svcUrl1 || bPolicy.Service.Org != svcOrg1 || bPolicy.Service.Arch != svcArch1 {
+		t.Errorf("processBusinessPolicy have converted a wrong policy: %v", bPolicy)
+	} else if len(pPolicy.Workloads) != 1 {
+		t.Errorf("Internal policy have 1 workload but got %v", len(pPolicy.Workloads))
+	} else if pPolicy.Workloads[0].WorkloadURL != svcUrl1 || pPolicy.Workloads[0].Org != svcOrg1 || pPolicy.Workloads[0].Arch != svcArch1 || pPolicy.Workloads[0].Version != svcVersion {
+		t.Errorf("processBusinessPolicy has returned a wrong internal policy: %v", pPolicy)
+	} else if len(bPolicy.Properties) != 1 {
+		t.Errorf("There should be 1 property in business policy but got: %v", len(bPolicy.Properties))
+	} else if len(bPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in business policy but got: %v", len(bPolicy.Constraints))
+	} else if len(pPolicy.Properties) != 1 {
+		t.Errorf("There should be 1 property in internal policy but got: %v", len(pPolicy.Properties))
+	} else if len(pPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in internal policy but got: %v", len(pPolicy.Constraints))
+	}
+
+	// test id with convertion, bad handler
+	if bPolicy, pPolicy, err := processBusinessPolicy(getBusinessPolicyHandler_Error(), "myorg/mybp", nil, true, nil); err == nil {
+		t.Errorf("processBusinessPolicy should have returned error but not")
+	} else if !strings.Contains(err.Error(), "error getting business policy for myorg/mybp") {
+		t.Errorf("processBusinessPolicy returned wrong error message: %v", err)
+	} else if bPolicy != nil {
+		t.Errorf("processBusinessPolicy have returned nul business policy but got: %v", bPolicy)
+	} else if pPolicy != nil {
+		t.Errorf("processBusinessPolicy have returned nul internal policy but got: %v", pPolicy)
+	}
+}
+
+func Test_processNodePolicy(t *testing.T) {
+	// test with id
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", nil, nil); err != nil {
+		t.Errorf("processNodePolicy should not have returned error but got: %v", err)
+	} else if pPolicy == nil {
+		t.Errorf("processNodePolicy should have converted the internal policy but did not")
+	} else if nPolicy == nil {
+		t.Errorf("processNodePolicy should have return a node policy but not.")
+	} else if len(nPolicy.Properties) != 2 {
+		t.Errorf("There should be 2 property in node policy but got: %v", len(nPolicy.Properties))
+	} else if len(nPolicy.Constraints) != 2 {
+		t.Errorf("There should be 2 contraints in node policy but got: %v", len(nPolicy.Constraints))
+	} else if len(pPolicy.Properties) != 2 {
+		t.Errorf("There should be 2 property in internal policy but got: %v", len(pPolicy.Properties))
+	} else if len(pPolicy.Constraints) != 2 {
+		t.Errorf("There should be 2 contraints in internal policy but got: %v", len(pPolicy.Constraints))
+	}
+
+	// test with pol
+	nodePolicy := createExternalPolicy(map[string]string{"prop3": "val3", "prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""})
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "", nodePolicy, nil); err != nil {
+		t.Errorf("processNodePolicy should not have returned error but got: %v", err)
+	} else if pPolicy == nil {
+		t.Errorf("processNodePolicy should have converted the internal policy but did not")
+	} else if nPolicy == nil {
+		t.Errorf("processNodePolicy should have return a node policy but not.")
+	} else if len(nPolicy.Properties) != 3 {
+		t.Errorf("There should be 3 property in node policy but got: %v", len(nPolicy.Properties))
+	} else if len(nPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in node policy but got: %v", len(nPolicy.Constraints))
+	} else if len(pPolicy.Properties) != 3 {
+		t.Errorf("There should be 3 property in internal policy but got: %v", len(pPolicy.Properties))
+	} else if len(pPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in internal policy but got: %v", len(pPolicy.Constraints))
+	}
+
+	// test no id, no pol.
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "", nil, nil); err == nil {
+		t.Errorf("processNodePolicy should have returned error but not")
+	} else if !strings.Contains(err.Error(), "Neither node policy nor node id is specified.") {
+		t.Errorf("processNodePolicy returned wrong error message: %v", err)
+	} else if nPolicy != nil {
+		t.Errorf("processNodePolicy have returned nul business policy but got: %v", nPolicy)
+	} else if pPolicy != nil {
+		t.Errorf("processNodePolicy have returned nul internal policy but got: %v", pPolicy)
+	}
+
+	// test with id and pol
+	if nPolicy, pPolicy, err := processNodePolicy(getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}), "myorg/mynode", nodePolicy, nil); err != nil {
+		t.Errorf("processNodePolicy should not have returned error but got: %v", err)
+	} else if pPolicy == nil {
+		t.Errorf("processNodePolicy should have converted the internal policy but did not")
+	} else if nPolicy == nil {
+		t.Errorf("processNodePolicy should have return a node policy but not.")
+	} else if len(nPolicy.Properties) != 3 {
+		t.Errorf("There should be 3 property in node policy but got: %v", len(nPolicy.Properties))
+	} else if len(nPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in node policy but got: %v", len(nPolicy.Constraints))
+	} else if len(pPolicy.Properties) != 3 {
+		t.Errorf("There should be 3 property in internal policy but got: %v", len(pPolicy.Properties))
+	} else if len(pPolicy.Constraints) != 1 {
+		t.Errorf("There should be 1 contraints in internal policy but got: %v", len(pPolicy.Constraints))
+	} else if pPolicy.Header.Name != "Policy for myorg/mynode" {
+		t.Errorf("The internal policy header name should be myorg/mynode but got: %v", pPolicy.Header.Name)
+	}
+}
+
 func Test_policyCompatible_with_IDs(t *testing.T) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
-	input := PolicyCompInput{
+	input := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -79,7 +273,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 	}
 
 	// node arch on the exchange does not agree with the input node arch
-	input_wrong_arch := PolicyCompInput{
+	input_wrong_arch := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "arm64",
 		NodePolicy:     nil,
@@ -99,7 +293,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 	}
 
 	// node arch on the exchange does not agree with the service arch
-	input2 := PolicyCompInput{
+	input2 := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -135,7 +329,7 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		Arch:            "*",
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion1}, businesspolicy.WorkloadChoice{Version: svcVersion2}},
 	}
-	input3 := PolicyCompInput{
+	input3 := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -196,7 +390,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	servicePolicy := createExternalPolicy(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""})
 	businessPolicy := createBusinessPolicy(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""})
 
-	input := PolicyCompInput{
+	input := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
 		NodePolicy:     nodePolicy,
@@ -231,7 +425,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 
 	// in compatible
 	nodePolicy2 := createExternalPolicy(map[string]string{"prop3": "val3", "prop4": "some other value"}, []string{"prop1 == val1", "prop5 == val5"})
-	input2 := PolicyCompInput{
+	input2 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
 		NodePolicy:     nodePolicy2,
@@ -264,7 +458,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion1}, businesspolicy.WorkloadChoice{Version: svcVersion2}},
 	}
 	businessPolicy2 := createBusinessPolicy(service2, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""})
-	input3 := PolicyCompInput{
+	input3 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
 		NodePolicy:     nodePolicy,
@@ -308,7 +502,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		t.Errorf("The reason for service %v shoud be %v, but got: %v", sId2, COMPATIBLE, compOutput.Reason[sId2])
 	}
 
-	input4 := PolicyCompInput{
+	input4 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "amd64",
 		NodePolicy:     nodePolicy,
@@ -338,7 +532,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
-	input := PolicyCompInput{
+	input := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -403,7 +597,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		Arch:            "*",
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion1}, businesspolicy.WorkloadChoice{Version: svcVersion2}},
 	}
-	input2 := PolicyCompInput{
+	input2 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
 		NodePolicy:     nodePolicy,
@@ -423,7 +617,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 	}
 
 	// validation error
-	input3 := PolicyCompInput{
+	input3 := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -442,7 +636,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		t.Errorf("policyCompatible should have returned 'Failed to validate the node policy' error but got: %v", err)
 	}
 
-	input4 := PolicyCompInput{
+	input4 := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -461,7 +655,7 @@ func Test_policyCompatible_Error(t *testing.T) {
 		t.Errorf("policyCompatible should have returned 'Failed to validate the business policy' error but got: %v", err)
 	}
 
-	input5 := PolicyCompInput{
+	input5 := PolicyCheck{
 		NodeId:         "myorg/mynode",
 		NodeArch:       "",
 		NodePolicy:     nil,
@@ -496,7 +690,7 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion}},
 	}
 
-	_, intBPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", msgPrinter)
+	_, intBPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", true, msgPrinter)
 	if err != nil {
 		t.Errorf("GetBusinessPolicy should have returned nil error but got: %v", err)
 	}
@@ -593,7 +787,7 @@ func Test_addNodeArchToPolicy(t *testing.T) {
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: "1.0.1"}},
 	}
 
-	bPol, intPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", msgPrinter)
+	bPol, intPol, err := GetBusinessPolicy(getBusinessPolicyHandler(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), "myorg/mybp", true, msgPrinter)
 	if err != nil {
 		t.Errorf("GetBusinessPolicy should have returned nil error but got: %v", err)
 	} else if bPol == nil {

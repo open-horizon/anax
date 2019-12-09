@@ -136,6 +136,15 @@ func GetHTTPServiceResolverHandler(ec ExchangeContext) ServiceResolverHandler {
 	}
 }
 
+// A handler for resolving service refrences in the exchange. It returns the service definitions in stead of APISpecList.
+type ServiceDefResolverHandler func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]ServiceDefinition, *ServiceDefinition, string, error)
+
+func GetHTTPServiceDefResolverHandler(ec ExchangeContext) ServiceDefResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]ServiceDefinition, *ServiceDefinition, string, error) {
+		return ServiceDefResolver(wUrl, wOrg, wVersion, wArch, GetHTTPServiceHandler(ec))
+	}
+}
+
 // A handler for getting service metadata from the exchange.
 type ServiceHandler func(wUrl string, wOrg string, wVersion string, wArch string) (*ServiceDefinition, string, error)
 
