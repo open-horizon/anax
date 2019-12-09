@@ -116,38 +116,12 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// There is no existing device registration in the database, so proceed to verifying the input device object.
 	if device.Id == nil || *device.Id == "" {
-		// There is no device object in the local database yet, so the id of the device is
-		// not known. The id could have been set in /etc/default/horizon using the HZN_DEVICE_ID
-		// env var, so we should look at the env var first. If the env var is not set, then
-		// generate a node id based on machine serial number or generated a random node ID.
 		device_id := os.Getenv("HZN_DEVICE_ID")
 		if device_id == "" {
-
-			// Use the machine's serial number, if available.
-			var msErr error
-			device_id, msErr = cutil.GetMachineSerial("")
-			if device_id != "" {
-				glog.V(3).Infof(apiLogString(fmt.Sprintf("using machine serial number %v as node ID.", device_id)))
-			} else {
-				if msErr != nil {
-					glog.Errorf(apiLogString(fmt.Sprintf("unable to read machine serial number, error: %v, generating node ID.", msErr)))
-				} else {
-					glog.V(3).Infof(apiLogString(fmt.Sprintf("machine serial number not found, generating node ID.")))
-				}
-
-				// Generate a random string of 40 characters, consisting of numbers and letters.
-				var err error
-				if device_id, err = cutil.GenerateRandomNodeId(); err != nil {
-					return errorhandler(NewAPIUserInputError(fmt.Sprintf("Unable to generate random node id, error: %v", err), "node")), nil, nil
-				} else {
-					glog.V(3).Infof(apiLogString(fmt.Sprintf("generated random node ID: %v.", device_id)))
-				}
-			}
-
-		} else {
-			glog.V(3).Infof(apiLogString(fmt.Sprintf("using HZN_DEVICE_ID=%v as node ID.", device_id)))
+			return errorhandler(NewAPIUserInputError("Either setup HZN_DEVICE_ID environmental variable or specify device.id.", "device.id")), nil, nil
 		}
 
+		glog.V(3).Infof(apiLogString(fmt.Sprintf("using HZN_DEVICE_ID=%v as node ID.", device_id)))
 		device.Id = &device_id
 	}
 
