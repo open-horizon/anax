@@ -20,6 +20,7 @@ type UserInputCheck struct {
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
 	Service        []exchange.ServiceDefinition   `json:"service,omitempty"`
+	ServiceToCheck []string                       `json:"service_to_check,omitempty"` // for internal use for performance. only check the service with the ids. If empty, check all.
 }
 
 func (p UserInputCheck) String() string {
@@ -166,10 +167,12 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	inServices := input.Service
 	if inServices != nil && len(inServices) != 0 {
 		for _, svc := range inServices {
-			if err := validateServiceWithBPolicy(&svc, bPolicy, msgPrinter); err != nil {
-				sId := cliutils.FormExchangeIdForService(svc.URL, svc.Version, svc.Arch)
-				sId = fmt.Sprintf("%v/%v", bPolicy.Service.Org, sId)
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Validation failure for input service %v. %v", sId, err)), COMPCHECK_VALIDATION_ERROR)
+			sId := cliutils.FormExchangeIdForService(svc.URL, svc.Version, svc.Arch)
+			sId = fmt.Sprintf("%v/%v", bPolicy.Service.Org, sId)
+			if needHandleService(sId, input.ServiceToCheck) {
+				if err := validateServiceWithBPolicy(&svc, bPolicy, msgPrinter); err != nil {
+					return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Validation failure for input service %v. %v", sId, err)), COMPCHECK_VALIDATION_ERROR)
+				}
 			}
 		}
 	}
@@ -183,12 +186,15 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		// get service + dependen services and then compare the user inputs
 		if inServices == nil || len(inServices) == 0 {
 			if sArch != "*" && sArch != "" {
+				sId := cliutils.FormExchangeIdForService(bPolicy.Service.Name, workload.Version, sArch)
+				sId = fmt.Sprintf("%v/%v", bPolicy.Service.Org, sId)
+				if !needHandleService(sId, input.ServiceToCheck) {
+					continue
+				}
 				sSpec := NewServiceSpec(bPolicy.Service.Name, bPolicy.Service.Org, workload.Version, sArch)
 				if compatible, reason, sDef, err := VerifyUserInputForService(sSpec, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, msgPrinter); err != nil {
 					return nil, err
 				} else {
-					sId := cliutils.FormExchangeIdForService(bPolicy.Service.Name, workload.Version, sArch)
-					sId = fmt.Sprintf("%v/%v", bPolicy.Service.Org, sId)
 					if compatible {
 						overall_compatible = true
 						if checkAllSvcs {
@@ -209,6 +215,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 					return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting services for all archetctures for %v/%v version %v. %v", bPolicy.Service.Org, bPolicy.Service.Name, workload.Version, err)), COMPCHECK_EXCHANGE_ERROR)
 				} else {
 					for sId, svc := range svcMeta {
+						if !needHandleService(sId, input.ServiceToCheck) {
+							continue
+						}
 						if compatible, reason, _, err := VerifyUserInputForServiceDef(&svc, bPolicy.Service.Org, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, msgPrinter); err != nil {
 							return nil, err
 						} else {
@@ -242,6 +251,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 
 			sId := cliutils.FormExchangeIdForService(bPolicy.Service.Name, workload.Version, sArch)
 			sId = fmt.Sprintf("%v/%v", bPolicy.Service.Org, sId)
+			if !needHandleService(sId, input.ServiceToCheck) {
+				continue
+			}
 			if !found {
 				messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service definition not found in the input."))
 			} else {
@@ -525,4 +537,21 @@ func validateServiceWithBPolicy(service *exchange.ServiceDefinition, bPolicy *bu
 		}
 	}
 	return nil
+}
+
+// This function checks if the given service id will be processed. The second argument
+// contains the service id's that will be process. If it is empty, it means all services
+// will be processed.
+func needHandleService(sId string, services []string) bool {
+	if services == nil || len(services) == 0 {
+		return true
+	}
+
+	for _, id := range services {
+		if id == sId {
+			return true
+		}
+	}
+
+	return false
 }

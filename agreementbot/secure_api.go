@@ -198,6 +198,7 @@ func (a *SecureAPI) listen() {
 
 		router.HandleFunc("/policycompatible", a.policy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 		if err := http.ListenAndServeTLS(apiListen, certFile, keyFile, nocache(router)); err != nil {
@@ -213,25 +214,8 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/policycompatible called.")))
 
-		// get message printer with the language passed in from the header
-		lan := r.Header.Get("Accept-Language")
-		if lan == "" {
-			lan = i18n.DEFAULT_LANGUAGE
-		}
-		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
-
 		// check user cred
-		userId, userPasswd, ok := r.BasicAuth()
-		if !ok {
-			glog.Errorf(APIlogString(fmt.Sprintf("/policycompatible is called without exchange authentication.")))
-			writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
-		} else if err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
-			writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
-		} else {
-			// if checkAll is set, then check all the services defined in the business policy for compatibility.
-			checkAll := r.URL.Query().Get("checkAll")
-
+		if user_ec, msgPrinter, ok := a.processUserCred(w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -239,8 +223,10 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 			} else if input, err := a.decodePolicyCheckBody(body, msgPrinter); err != nil {
 				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
+				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				checkAll := r.URL.Query().Get("checkAll")
+
 				// do policy compatibility check
-				user_ec := a.createUserExchangeContext(userId, userPasswd)
 				output, err := compcheck.PolicyCompatible(user_ec, input, (checkAll != ""), msgPrinter)
 
 				// nil out the policies in the output if 'long' is not set in the request
@@ -269,25 +255,7 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/userinputcompatible called.")))
 
-		// get message printer with the language passed in from the header
-		lan := r.Header.Get("Accept-Language")
-		if lan == "" {
-			lan = i18n.DEFAULT_LANGUAGE
-		}
-		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
-
-		// check user cred
-		userId, userPasswd, ok := r.BasicAuth()
-		if !ok {
-			glog.Errorf(APIlogString(fmt.Sprintf("/userinputcompatible is called without exchange authentication.")))
-			writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
-		} else if err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
-			writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
-		} else {
-			// if checkAll is set, then check all the services defined in the business policy for compatibility.
-			checkAll := r.URL.Query().Get("checkAll")
-
+		if user_ec, msgPrinter, ok := a.processUserCred(w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -295,8 +263,10 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 			} else if input, err := a.decodeUserInputCheckBody(body, msgPrinter); err != nil {
 				writeResponse(w, err.Error(), http.StatusBadRequest)
 			} else {
+				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				checkAll := r.URL.Query().Get("checkAll")
+
 				// do user input compatibility check
-				user_ec := a.createUserExchangeContext(userId, userPasswd)
 				output, err := compcheck.UserInputCompatible(user_ec, input, (checkAll != ""), msgPrinter)
 
 				// nil out the details in the output if 'long' is not set in the request
@@ -315,6 +285,72 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// This function does policy and userinput compatibility check.
+func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
+
+	switch r.Method {
+	case "GET":
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycompatible called.")))
+
+		if user_ec, msgPrinter, ok := a.processUserCred(w, r); ok {
+			body, _ := ioutil.ReadAll(r.Body)
+			if len(body) == 0 {
+				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
+				writeResponse(w, msgPrinter.Sprintf("No input found."), http.StatusBadRequest)
+			} else if input, err := a.decodeCompCheckBody(body, msgPrinter); err != nil {
+				writeResponse(w, err.Error(), http.StatusBadRequest)
+			} else {
+				// if checkAll is set, then check all the services defined in the business policy for compatibility.
+				checkAll := r.URL.Query().Get("checkAll")
+
+				// do user input compatibility check
+				output, err := compcheck.DeployCompatible(user_ec, input, (checkAll != ""), msgPrinter)
+
+				// nil out the details in the output if 'long' is not set in the request
+				long := r.URL.Query().Get("long")
+				if long == "" && output != nil {
+					output.Input = nil
+				}
+
+				// write the output
+				a.writeCompCheckResponse(w, output, err, msgPrinter)
+			}
+		}
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// This function checks user cred and writes corrsponding response. It also creates a message printer with given language from the http request.
+func (a *SecureAPI) processUserCred(w http.ResponseWriter, r *http.Request) (*compcheck.UserExchangeContext, *message.Printer, bool) {
+
+	// get message printer with the language passed in from the header
+	lan := r.Header.Get("Accept-Language")
+	if lan == "" {
+		lan = i18n.DEFAULT_LANGUAGE
+	}
+	msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
+
+	// check user cred
+	userId, userPasswd, ok := r.BasicAuth()
+	if !ok {
+		glog.Errorf(APIlogString(fmt.Sprintf("/deploycompatible is called without exchange authentication.")))
+		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
+		return nil, nil, false
+	} else if err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
+		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
+		return nil, nil, false
+	} else {
+		user_ec := a.createUserExchangeContext(userId, userPasswd)
+		return user_ec, msgPrinter, true
 	}
 }
 
@@ -371,6 +407,26 @@ func (a *SecureAPI) decodeUserInputCheckBody(body []byte, msgPrinter *message.Pr
 	}
 }
 
+// Verify the comcheck input body from the /userinputcompatible api and convert it to compcheck.UserInputCheck
+// It will give meaningful error as much as possible
+func (a *SecureAPI) decodeCompCheckBody(body []byte, msgPrinter *message.Printer) (*compcheck.CompCheck, error) {
+
+	var js map[string]interface{}
+	if err := json.Unmarshal(body, &js); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to JSON object. %v", err)))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to JSON object. %v", err))
+	} else {
+		var input compcheck.CompCheck
+		if err := json.Unmarshal(body, &input); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Input body couldn't be deserialized to CompCheck object. %v", err)))
+			return nil, fmt.Errorf(msgPrinter.Sprintf("Input body couldn't be deserialized to CompCheck object. %v", err))
+		} else {
+			// verification of the input is done in the compcheck component, no need to validate the policies here.
+			return &input, nil
+		}
+	}
+}
+
 // This function verifies the given exchange user name and password.
 // The user must be in the format of orgId/userId.
 func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msgPrinter *message.Printer) error {
@@ -398,7 +454,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 			glog.Errorf(APIlogString(err.Error()))
 
 			if strings.Contains(err.Error(), "401") {
-				return fmt.Errorf(msgPrinter.Sprintf("User not found."))
+				return fmt.Errorf(msgPrinter.Sprintf("Wrong organization id, user id or password."))
 			} else {
 				return err
 			}

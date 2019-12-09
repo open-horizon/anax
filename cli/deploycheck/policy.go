@@ -36,19 +36,16 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 	if useNodeId {
 		// add credentials'org to node id if the node id does not have an org
 		nId = cliutils.AddOrg(userOrg, nId)
-
 		policyCheckInput.NodeId = nId
 	} else if nodePolFile != "" {
 		// read the node policy from file
 		var np externalpolicy.ExternalPolicy
 		readExternalPolicyFile(nodePolFile, &np)
-
 		policyCheckInput.NodePolicy = &np
 	} else {
-		msgPrinter.Printf("Neither node id nor node policy is not specified. Getting node policy from the local node.")
+		msgPrinter.Printf("Neither node id nor node policy is specified. Getting node policy from the local node.")
 		msgPrinter.Println()
 		bUseLocalNode = true
-
 	}
 
 	if bUseLocalNode {
@@ -105,7 +102,8 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 
 // make sure -n and --node-pol, -b and --business-pol, pairs are mutually compatible.
 // get default credential, node id and org if they are not set.
-func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string) (string, string, string, bool) {
+func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, nodePolFile string,
+	businessPolId string, businessPolFile string, servicePolFile string) (string, string, string, bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -115,7 +113,7 @@ func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, n
 		if nodePolFile == "" {
 			// true means will use exchange call
 			useNodeId = true
-		} else if nodeId != "" {
+		} else {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-n and --node-pol are mutually exclusive."))
 		}
 	} else {

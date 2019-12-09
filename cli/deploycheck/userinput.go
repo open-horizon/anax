@@ -56,7 +56,7 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 		readUserInputFile(nodeUIFile, &node_ui)
 		uiCheckInput.NodeUserInput = node_ui
 	} else {
-		msgPrinter.Printf("Neither node id nor node user input file is not specified. Getting node user input from the local node.")
+		msgPrinter.Printf("Neither node id nor node user input file is specified. Getting node user input from the local node.")
 		msgPrinter.Println()
 		bUseLocalNode = true
 	}
@@ -81,7 +81,7 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 	// get exchange context
 	ec := getUserExchangeContext(userOrg, credToUse)
 
-	// compcheck.PolicyCompatible function calls the exchange package that calls glog.
+	// compcheck.UserInputCompatible function calls the exchange package that calls glog.
 	// set the glog stderrthreshold to 3 (fatal) in order for glog error messages not showing up in the output
 	flag.Set("stderrthreshold", "3")
 	flag.Parse()
@@ -125,9 +125,11 @@ func validateService(service *cliexchange.ServiceFile) error {
 	return nil
 }
 
-// make sure -n and --node-pol, -b and --business-pol pairs are mutually compatible.
+// make sure -n and --node-pol, -b and --business-pol pairs are mutually exclusive.
 // get default credential, node id and org if they are not set.
-func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string, nodeUIFile string, businessPolId string, businessPolFile string, svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, []exchange.ServiceDefinition) {
+func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string, nodeUIFile string,
+	businessPolId string, businessPolFile string, svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, []exchange.ServiceDefinition) {
+
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -137,7 +139,7 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 		if nodeUIFile == "" {
 			// true means will use exchange call
 			useNodeId = true
-		} else if nodeId != "" {
+		} else {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-n and --node-ui are mutually exclusive."))
 		}
 	} else {
@@ -167,35 +169,7 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 		}
 	}
 
-	useSId := false
-	serviceDefs := []exchange.ServiceDefinition{}
-	svc_orgs := []string{}
-	if svcDefFiles == nil || len(svcDefFiles) == 0 {
-		// true means will use exchange call
-		useSId = true
-	} else {
-		// check if the service has dependent services, if it does, then the code needs to
-		// access the exchange
-		for _, s_file := range svcDefFiles {
-			var service cliexchange.ServiceFile
-			readServiceFile(s_file, &service)
-			if err := validateService(&service); err != nil {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Error in service file %v. %v", s_file, err))
-			}
-
-			// save the service orgs for latet checkups because the org will be lost in the conversion
-			svc_orgs = append(svc_orgs, service.Org)
-
-			// convert ServiceFile to exchange.ServiceDefinition
-			svcInput := exchange.ServiceDefinition{Label: service.Label, Description: service.Description, Public: service.Public, Documentation: service.Documentation, URL: service.URL, Version: service.Version, Arch: service.Arch, Sharable: service.Sharable, MatchHardware: service.MatchHardware, RequiredServices: service.RequiredServices, UserInputs: service.UserInputs}
-			serviceDefs = append(serviceDefs, svcInput)
-
-			if service.HasDependencies() {
-				// true means will use exchange call
-				useSId = true
-			}
-		}
-	}
+	useSId, serviceDefs, svc_orgs := useExchangeForServiceDef(svcDefFiles)
 
 	// if user credential is not given, then use the node auth env HZN_EXCHANGE_NODE_AUTH if it is defined.
 	credToUse := cliutils.WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_NODE_AUTH")
@@ -233,4 +207,43 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 	}
 
 	return orgToUse, *credToUse, nodeId, useNodeId, bp, serviceDefs
+}
+
+// Given a service definition files, check if the exchange call will be needed to get all the dependent services.
+// It also returns the service definitions from the files and an array of service orgs.
+func useExchangeForServiceDef(svcDefFiles []string) (bool, []exchange.ServiceDefinition, []string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	useSId := false
+	serviceDefs := []exchange.ServiceDefinition{}
+	svc_orgs := []string{}
+	if svcDefFiles == nil || len(svcDefFiles) == 0 {
+		// true means will use exchange call
+		useSId = true
+	} else {
+		// check if the service has dependent services, if it does, then the code needs to
+		// access the exchange
+		for _, s_file := range svcDefFiles {
+			var service cliexchange.ServiceFile
+			readServiceFile(s_file, &service)
+			if err := validateService(&service); err != nil {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Error in service file %v. %v", s_file, err))
+			}
+
+			// save the service orgs for latet checkups because the org will be lost in the conversion
+			svc_orgs = append(svc_orgs, service.Org)
+
+			// convert ServiceFile to exchange.ServiceDefinition
+			svcInput := exchange.ServiceDefinition{Label: service.Label, Description: service.Description, Public: service.Public, Documentation: service.Documentation, URL: service.URL, Version: service.Version, Arch: service.Arch, Sharable: service.Sharable, MatchHardware: service.MatchHardware, RequiredServices: service.RequiredServices, UserInputs: service.UserInputs}
+			serviceDefs = append(serviceDefs, svcInput)
+
+			if service.HasDependencies() {
+				// true means will use exchange call
+				useSId = true
+			}
+		}
+	}
+
+	return useSId, serviceDefs, svc_orgs
 }
