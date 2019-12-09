@@ -68,6 +68,7 @@ distclean: realclean
 DOCKER_AGBOT_CNAME := agbot
 DOCKER_EXCH ?= http://exchange-api:8080/v1
 CSS_URL ?= https://css-api:9443
+API_KEY ?= 0
 CERT_LOC ?= 1
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCHDB_CNAME := exchange-db
@@ -106,6 +107,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
 		-e "HZN_SSL_SKIP_VERIFY=1" \
 		-e "CSS_URL=$(CSS_URL)" \
+		-e "API_KEY=$(API_KEY)" \
 		-e "CERT_LOC=$(CERT_LOC)" \
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "AGBOT_NAME=$(AGBOT_NAME)" \
