@@ -128,8 +128,6 @@ else
   CERT_VAR=""
 fi
 
-sleep 20
-
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   # Clean up the exchange DB to make sure we start out clean
   echo "Drop and recreate the exchange DB."
@@ -292,6 +290,17 @@ if [ $? -ne 0 ]
 then
   echo -e "Resource registration failure."
   exit -1
+fi
+
+# Start the API Key tests if it has been set
+if [ ${API_KEY} != "0" ]; then
+  echo -e "Starting API Key test."
+  ./api_key.sh
+  if [ $? -ne 0 ]
+  then
+    echo -e "API Key test failure."
+    exit -1
+  fi
 fi
 
 # test the CSS API
@@ -608,9 +617,9 @@ if [ "$NOHZNREG" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
-    
-    ./hzn_reg.sh 
-    if [ $? -ne 0 ]; then 
+
+    ./hzn_reg.sh
+    if [ $? -ne 0 ]; then
       echo "Failed registering and unregitering tests with hzn commands."
       exit 1
     fi
@@ -619,8 +628,8 @@ fi
 
 if [ "$NOPATTERNCHANGE" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
-    ./pattern_change.sh 
-    if [ $? -ne 0 ]; then 
+    ./pattern_change.sh
+    if [ $? -ne 0 ]; then
       echo "Failed node pattern change tests."
       exit 1
     fi
