@@ -607,7 +607,7 @@ if [ "$NOCOMPCHECK" != "1" ]; then
 fi
 
 if [ "$NOSURFERR" != "1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]; then
     ./verify_surfaced_error.sh
     if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
   fi
