@@ -34,7 +34,7 @@ function help() {
      cat << EndOfMessage
 $(basename "$0") <options> -- installing Horizon software
 where:
-    \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, \$HZN_EXCHANGE_USER_AUTH variables must be defined either in a config file or environment, 
+    \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, \$HZN_EXCHANGE_USER_AUTH variables must be defined either in a config file or environment,
 
     -c          - path to a certificate file
     -k          - path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
@@ -46,7 +46,7 @@ where:
     -l          - logging verbosity level (0-5, 5 is verbose)
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
-	
+
 EndOfMessage
 
 quit 1
@@ -119,7 +119,7 @@ function log() {
 # if the env variable is defined uses it, if not checks it in the config file
 function get_variable() {
 	log_debug "get_variable() begin"
-	
+
 	if ! [ -z "${!1}" ]; then
 		# if env/command line variable is defined, using it
 		if [[ $1 == *"AUTH"* ]]; then
@@ -284,14 +284,14 @@ function version_gt() {
 
 function install_macos() {
     log_debug "install_macos() begin"
-    
+
     log_notify "Installing agent on ${OS}..."
-    
+
     log_info "Checking ${OS} specific prerequisites..."
     check_installed "socat" "socat"
     check_installed "docker" "Docker"
     check_installed "jq" "jq"
-    
+
     # Setting up a certificate
     log_info "Importing the horizon-cli package certificate into Mac OS keychain..."
     set -x
@@ -358,9 +358,9 @@ function install_macos() {
         			set +x
 				fi
 			fi
-		fi		
+		fi
 	else
-        log_notify "hzn not found, installing it..." 
+        log_notify "hzn not found, installing it..."
         set -x
         sudo installer -pkg ${PACKAGES}/horizon-cli-*.pkg -target /
         set +x
@@ -433,7 +433,7 @@ function install_linux(){
     log_debug "install_linux() begin"
     log_notify "Installing agent on ${DISTRO}, version ${CODENAME}, architecture ${ARCH}"
 
-    # Configure certificates 
+    # Configure certificates
     log_info "Configuring an edge node to trust the certificate..."
     set -x
     sudo cp "$CERTIFICATE" /usr/local/share/ca-certificates && sudo update-ca-certificates
@@ -469,7 +469,7 @@ function install_linux(){
 	else
 		log_info "Anax port ${ANAX_PORT} is free, continuing..."
 	fi
-    
+
     log_info "Updating OS..."
     set -x
     apt update
@@ -478,7 +478,7 @@ function install_linux(){
     if command -v curl >/dev/null 2>&1; then
 		log_info "curl found"
 	else
-        log_info "curl not found, installing it..." 
+        log_info "curl not found, installing it..."
         set -x
         apt install -y curl
         set +x
@@ -499,7 +499,7 @@ function install_linux(){
     if command -v docker >/dev/null 2>&1; then
 		log_info "Docker found"
 	else
-        log_info "Docker not found, installing it..." 
+        log_info "Docker not found, installing it..."
         set -x
         curl -fsSL get.docker.com | sh
         set +x
@@ -567,7 +567,7 @@ function install_linux(){
 			fi
 		fi
 	else
-        log_notify "hzn not found, installing it..." 
+        log_notify "hzn not found, installing it..."
         set -x
         set +e
         dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
@@ -578,7 +578,7 @@ function install_linux(){
         apt update && apt-get install -y -f
         set +x
 	fi
-   
+
     process_node
 
     check_exist f "/etc/default/horizon" "horizon configuration"
@@ -596,7 +596,7 @@ function install_linux(){
     set -x
     systemctl restart horizon.service
     set +x
-    
+
     start_anax_service_check=`date +%s`
 
     while [ -z "$(curl -sm 10 http://localhost:$ANAX_PORT/status | jq -r .configuration.exchange_version)" ] ; do
@@ -608,7 +608,7 @@ function install_linux(){
 		fi
 		sleep 1
 	done
-    
+
     log_notify "The service is ready"
 
     create_node
@@ -641,7 +641,7 @@ function start_horizon_service(){
 			fi
 
 		   	start_horizon_container_check=`date +%s`
-		    
+
 		    while [ -z "$(docker exec -ti horizon1 curl http://localhost:8510/status | jq -r .configuration.preferred_exchange_version 2>/dev/null)" ] ; do
 		    	current_horizon_container_check=`date +%s`
 				log_info "the horizon-container with anax is not ready, retry in 10 seconds"
@@ -657,7 +657,7 @@ function start_horizon_service(){
 			log_info "The horizon-container is running already..."
 		fi
 	else
-        log_notify "horizon-container not found, hzn is not installed or its installation is broken, exiting..." 
+        log_notify "horizon-container not found, hzn is not installed or its installation is broken, exiting..."
         exit 1
 	fi
 
@@ -677,9 +677,9 @@ function stop_horizon_service(){
 			set -x
             horizon-container stop
             set +x
-        fi       
+        fi
 	else
-        log_notify "horizon-container not found, hzn is not installed or its installation is broken, exiting..." 
+        log_notify "horizon-container not found, hzn is not installed or its installation is broken, exiting..."
         exit 1
 	fi
 
@@ -688,6 +688,9 @@ function stop_horizon_service(){
 
 function process_node(){
 	log_debug "process_node() begin"
+  if [ -z "$OVERWRITE_NODE" ]; then
+    OVERWRITE_NODE=$OVERWRITE
+  fi
 
 	# Checking node state
 	NODE_STATE=$(hzn node list | jq -r .configstate.state)
@@ -722,7 +725,7 @@ function process_node(){
 			log_notify "The node currently has workload(s) (check them with hzn agreement list)"
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has been specified"
-				if [ ! "$OVERWRITE" = true ] ; then
+				if [ ! "$OVERWRITE_NODE" = true ] ; then
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
 					read RESPONSE
 					if [ ! "$RESPONSE" == 'y' ]; then
@@ -738,7 +741,7 @@ function process_node(){
 				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
-				if [ ! "$OVERWRITE" = true ] ; then
+				if [ ! "$OVERWRITE_NODE" = true ] ; then
 					if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
@@ -918,9 +921,9 @@ function add_autocomplete() {
 	log_debug "add_autocomplete() begin"
 
 	log_info "Enabling autocomplete for the CLI commands..."
-	
+
 	SHELL_FILE="${SHELL##*/}"
-	
+
     if [ -f "/etc/bash_completion.d/hzn_bash_autocomplete.sh" ]; then
         AUTOCOMPLETE="/etc/bash_completion.d/hzn_bash_autocomplete.sh"
     elif [ -f "/usr/local/share/horizon/hzn_bash_autocomplete.sh" ]; then
@@ -934,11 +937,11 @@ function add_autocomplete() {
     else
         log_info "There's no an autocomplete script expected, skipping it..."
     fi
-	
+
 	log_debug "add_autocomplete() end"
 }
 
-# detects operating system. 
+# detects operating system.
 function detect_os() {
     log_debug "detect_os() begin"
 
@@ -984,7 +987,7 @@ function detect_distro() {
     fi
 
     log_info "Detected distributive is ${DISTRO}, verison is ${VER}, codename is ${CODENAME}"
-         
+
     log_debug "detect_distro() end"
 }
 
@@ -1015,9 +1018,9 @@ function detect_arch() {
 # checks if OS/distributive/codename/arch is supported
 function check_support() {
     log_debug "check_support() begin"
-    
+
     # checks if OS, distro or arch is supported
-    
+
     if [[ ! "${1}" = *"${2}"* ]]; then
         echo "Supported components are: "
         for i in "${1}"; do echo -n "${i} "; done
@@ -1027,16 +1030,16 @@ function check_support() {
     else
         log_info "The detected ${2} is supported"
     fi
-    
+
     log_debug "check_support() end"
 }
 
 # checks if requirements are met
 function check_requirements() {
     log_debug "check_requirements() begin"
-    
+
     detect_os
-    
+
     log_info "Checking support of detected OS..."
     check_support "${SUPPORTED_OS[*]}" "$OS"
 
@@ -1049,9 +1052,9 @@ function check_requirements() {
         detect_arch
         log_info "Checking support of detected architecture..."
         check_support "${SUPPORTED_ARCH[*]}" "$ARCH"
-        
+
         log_info "Checking the path with packages..."
-        
+
         if [ "$PKG_TREE_IGNORE" = true ] ; then
         	# ignoring the package tree, checking the current dir
         	PACKAGES="${PKG_PATH}"
@@ -1064,14 +1067,14 @@ function check_requirements() {
         check_exist w "${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb" "Linux installation"
 
         if [ $(id -u) -ne 0 ]; then
-	        log_notify "Please run script with the root priveledges by running 'sudo -s' command first"
+	        log_notify "Please run script with the root priveleges by running 'sudo -s' command first"
             quit 1
         fi
-        
+
     elif [ "$OS" = "macos" ]; then
-    	
+
     	log_info "Checking the path with packages..."
-    	
+
     	if [ "$PKG_TREE_IGNORE" = true ] ; then
         	# ignoring the package tree, checking the current dir
         	PACKAGES="${PKG_PATH}"
@@ -1097,11 +1100,11 @@ function check_node_state() {
 
 		if [ "$NODE_STATE" = "configured" ]; then
 			# node is configured need to ask what to do
-			log_notify "You node is registered"
+			log_notify "Your node is registered"
 			echo "Do you want to overwrite the current node configuration?[y/N]:"
 			read RESPONSE
 			if [ "$RESPONSE" == 'y' ]; then
-				OVERWRITE=true
+				OVERWRITE_NODE=true
 				log_notify "The configuration will be overwritten..."
 			else
 				log_notify "You might be asked for overwrite confirmations later..."
@@ -1132,7 +1135,7 @@ while getopts "c:i:p:k:hvl:n:s" opt; do
 		;;
 		v) version
         ;;
-        l) validate_number_int "$OPTARG"; VERBOSITY="$OPTARG"	  
+        l) validate_number_int "$OPTARG"; VERBOSITY="$OPTARG"
         ;;
         n) HZN_NODE_POLICY="$OPTARG"
 		;;
@@ -1163,4 +1166,3 @@ elif [[ "$OS" == "macos" ]]; then
 fi
 
 add_autocomplete
-
