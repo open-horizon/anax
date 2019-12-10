@@ -47,6 +47,7 @@ func (c *Collaborators) String() string {
 
 type HTTPClientFactory struct {
 	NewHTTPClient func(overrideTimeoutS *uint) *http.Client
+	RetryCount    int // number of retries for tranport error. The retries are 10 seconds apart.
 }
 
 type KeyFileNamesFetcher struct {

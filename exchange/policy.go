@@ -97,14 +97,23 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 	resp = new(ExchangePolicy)
 
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	retryCount := ec.GetHTTPFactory().RetryCount
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-			time.Sleep(10 * time.Second)
-			continue
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				continue
+			} else if retryCount == 0 {
+				return nil, tpErr
+			} else {
+				retryCount--
+				time.Sleep(10 * time.Second)
+				continue
+			}
 		} else {
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning node policy %v for %v.", resp, deviceId)))
 			nodePolicy := resp.(*ExchangePolicy)
@@ -125,13 +134,21 @@ func PutNodePolicy(ec ExchangeContext, deviceId string, ep *ExchangePolicy) (*Pu
 	resp = new(PutDeviceResponse)
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
 
+	retryCount := ec.GetHTTPFactory().RetryCount
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), ep, &resp); err != nil {
 			return nil, err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				continue
+			} else if retryCount == 0 {
+				return nil, tpErr
+			} else {
+				retryCount--
+				time.Sleep(10 * time.Second)
+				continue
+			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device policy for %v to exchange %v", deviceId, ep)))
 			return resp.(*PutDeviceResponse), nil
@@ -147,13 +164,21 @@ func DeleteNodePolicy(ec ExchangeContext, deviceId string) error {
 	resp = new(PostDeviceResponse)
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
 
+	retryCount := ec.GetHTTPFactory().RetryCount
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
 			return err
 		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				continue
+			} else if retryCount == 0 {
+				return tpErr
+			} else {
+				retryCount--
+				time.Sleep(10 * time.Second)
+				continue
+			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("deleted device policy for %v from the exchange.", deviceId)))
 			return nil
@@ -181,14 +206,22 @@ func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[
 		targetURL = fmt.Sprintf("%vorgs/%v/business/policies/%v", ec.GetExchangeURL(), org, policy_id)
 	}
 
+	retryCount := ec.GetHTTPFactory().RetryCount
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-			time.Sleep(10 * time.Second)
-			continue
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				continue
+			} else if retryCount == 0 {
+				return nil, tpErr
+			} else {
+				retryCount--
+				time.Sleep(10 * time.Second)
+				continue
+			}
 		} else {
 			pols := resp.(*GetBusinessPolicyResponse).BusinessPolicy
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("found business policy for %v, %v", org, pols)))

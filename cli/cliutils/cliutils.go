@@ -1036,12 +1036,15 @@ func invokeRestApi(httpClient *http.Client, method string, url string, credentia
 		requestBody, bodyLen, bodyType := createRequestBody(body, apiMsg)
 
 		// If we're retrying with an os.File body, then re-open it.
-		if retryCount > 1 {
-			file := body.(*os.File)
-			if rb, err := os.Open(file.Name()); err != nil {
-				Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", file.Name(), err))
-			} else {
-				requestBody = rb
+		if retryCount > 1 && body != nil {
+			switch body.(type) {
+			case *os.File:
+				file := body.(*os.File)
+				if rb, err := os.Open(file.Name()); err != nil {
+					Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", file.Name(), err))
+				} else {
+					requestBody = rb
+				}
 			}
 		}
 

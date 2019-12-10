@@ -4,13 +4,28 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/text/message"
 )
+
+// The input format for the policy check
+type PolicyCheck struct {
+	NodeId         string                         `json:"node_id,omitempty"`
+	NodeArch       string                         `json:"node_arch,omitempty"`
+	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
+	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
+	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
+	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
+}
+
+func (p PolicyCheck) String() string {
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v,",
+		p.NodeId, p.NodeArch, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy)
+
+}
 
 // The output format for the policy check
 type PolicyCheckOutput struct {
@@ -31,51 +46,6 @@ func NewPolicyCheckOutput(compatible bool, reason map[string]string, input *Poli
 		Reason:     reason,
 		Input:      input,
 	}
-}
-
-// The input format for the policy check
-type PolicyCheck struct {
-	NodeId         string                         `json:"node_id,omitempty"`
-	NodeArch       string                         `json:"node_arch,omitempty"`
-	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
-	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
-	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
-	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
-}
-
-func (p PolicyCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v,",
-		p.NodeId, p.NodeArch, p.NodePolicy, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy)
-
-}
-
-// exchange context using user credential
-type UserExchangeContext struct {
-	UserId      string
-	Password    string
-	URL         string
-	CSSURL      string
-	HTTPFactory *config.HTTPClientFactory
-}
-
-func (u *UserExchangeContext) GetExchangeId() string {
-	return u.UserId
-}
-
-func (u *UserExchangeContext) GetExchangeToken() string {
-	return u.Password
-}
-
-func (u *UserExchangeContext) GetExchangeURL() string {
-	return u.URL
-}
-
-func (u *UserExchangeContext) GetCSSURL() string {
-	return u.CSSURL
-}
-
-func (u *UserExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
-	return u.HTTPFactory
 }
 
 // This is the function that HZN and the agbot secure API calls.

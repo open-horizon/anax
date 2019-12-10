@@ -136,7 +136,7 @@ func Test_CreateHorizonDevice_NoDeviceid(t *testing.T) {
 		t.Errorf("expected error")
 	} else if apiErr, ok := myError.(*APIUserInputError); !ok {
 		t.Errorf("myError has the wrong type (%T)", myError)
-	} else if apiErr.Input != "device.pattern" {
+	} else if apiErr.Input != "device.id" {
 		t.Errorf("wrong error input field %v", *apiErr)
 	} else if device != nil {
 		t.Errorf("device should not be returned")

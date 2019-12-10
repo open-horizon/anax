@@ -291,7 +291,7 @@ echo -e "\n${PREFIX} test input: business policy id only. Use current node polic
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -b bp_netspeed"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "Neither node id nor node policy is not specified. Getting node policy from the local node" "\"compatible\": true"
+results "$RES" "Neither node id nor node policy is specified. Getting node policy from the local node" "\"compatible\": true"
 
 echo -e "\n${PREFIX} test input: node policy and business policy"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH --node-pol /tmp/node_policy.json --business-pol /tmp/business_policy.json"
