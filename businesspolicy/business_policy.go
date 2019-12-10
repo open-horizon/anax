@@ -8,7 +8,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 )
 
-const DEFAULT_MAX_AGREEMENT = 5
+const DEFAULT_MAX_AGREEMENT = 0
 
 // the business policy
 type BusinessPolicy struct {
