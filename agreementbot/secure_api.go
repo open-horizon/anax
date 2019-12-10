@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -132,7 +133,24 @@ func (a *SecureAPI) GetHTTPFactory() *config.HTTPClientFactory {
 	if a.EC != nil {
 		return a.EC.HTTPFactory
 	} else {
-		return a.Config.Collaborators.HTTPClientFactory
+		return a.newHTTPClientFactory()
+	}
+}
+
+func (a *SecureAPI) newHTTPClientFactory() *config.HTTPClientFactory {
+	clientFunc := func(overrideTimeoutS *uint) *http.Client {
+		var timeoutS uint
+		if overrideTimeoutS != nil {
+			timeoutS = *overrideTimeoutS
+		} else {
+			timeoutS = config.HTTPRequestTimeoutS
+		}
+
+		return cliutils.GetHTTPClient(int(timeoutS))
+	}
+	return &config.HTTPClientFactory{
+		NewHTTPClient: clientFunc,
+		RetryCount:    3,
 	}
 }
 

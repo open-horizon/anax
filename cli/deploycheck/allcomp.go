@@ -264,6 +264,7 @@ func newHTTPClientFactory() *config.HTTPClientFactory {
 	}
 	return &config.HTTPClientFactory{
 		NewHTTPClient: clientFunc,
+		RetryCount:    3,
 	}
 }
 
