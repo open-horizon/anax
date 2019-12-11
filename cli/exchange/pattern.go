@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
@@ -291,7 +292,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		exchId = strings.TrimSuffix(exchId, filepath.Ext(exchId)) // strip suffix if there
 	}
 	// replace the unwanted charactors from the id with '-'
-	exchId = cliutils.FormExchangeId(exchId)
+	exchId = cutil.FormExchangeId(exchId)
 
 	var output string
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)

@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
@@ -278,7 +279,7 @@ func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pu
 	}
 
 	// Create or update resource in the exchange
-	exchId := cliutils.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
+	exchId := cutil.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
 	var output string
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {

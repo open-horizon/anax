@@ -73,7 +73,7 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 	cliutils.Verbose(msgPrinter.Sprintf("Using compatibility checking input: %v", policyCheckInput))
 
 	// get exchange context
-	ec := getUserExchangeContext(userOrg, credToUse)
+	ec := cliutils.GetUserExchangeContext(userOrg, credToUse)
 
 	// compcheck.PolicyCompatible function calls the exchange package that calls glog.
 	// set the glog stderrthreshold to 3 (fatal) in order for glog error messages not showing up in the output
@@ -100,7 +100,7 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 	}
 }
 
-// make sure -n and --node-pol, -b and --business-pol, pairs are mutually compatible.
+// make sure -n and --node-pol, -b and -B, pairs are mutually compatible.
 // get default credential, node id and org if they are not set.
 func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, nodePolFile string,
 	businessPolId string, businessPolFile string, servicePolFile string) (string, string, string, bool) {
@@ -135,11 +135,11 @@ func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, n
 			// true means will use exchange call
 			useBPolId = true
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-b and --business-pol are mutually exclusive."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-b and -B are mutually exclusive."))
 		}
 	} else {
 		if businessPolFile == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Either -b or --business-pol must be specified."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Either -b or -B must be specified."))
 		}
 	}
 

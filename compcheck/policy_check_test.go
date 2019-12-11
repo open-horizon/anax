@@ -5,7 +5,7 @@ package compcheck
 import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
-	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
@@ -233,9 +233,9 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		Arch:            svcArch,
 		ServiceVersions: []businesspolicy.WorkloadChoice{businesspolicy.WorkloadChoice{Version: svcVersion1}, businesspolicy.WorkloadChoice{Version: svcVersion2}},
 	}
-	sId1 := cliutils.FormExchangeIdForService(svcUrl, svcVersion1, svcArch)
+	sId1 := cutil.FormExchangeIdForService(svcUrl, svcVersion1, svcArch)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
-	sId2 := cliutils.FormExchangeIdForService(svcUrl, svcVersion2, svcArch)
+	sId2 := cutil.FormExchangeIdForService(svcUrl, svcVersion2, svcArch)
 	sId2 = fmt.Sprintf("%v/%v", svcOrg, sId2)
 
 	// if checkAll is true, it returns compaitble entry for each service versions defined in ap for the output reason map.
@@ -346,9 +346,9 @@ func Test_policyCompatible_with_IDs(t *testing.T) {
 		"myorg/weather_3.0.1_arm64": exchange.ServiceDefinition{URL: svcUrl, Version: "3.0.1", Arch: "arm64"},
 	}
 
-	sId4 := cliutils.FormExchangeIdForService(svcUrl, "1.0.1", "arm64")
+	sId4 := cutil.FormExchangeIdForService(svcUrl, "1.0.1", "arm64")
 	sId4 = fmt.Sprintf("%v/%v", svcOrg, sId4)
-	sId5 := cliutils.FormExchangeIdForService(svcUrl, "2.0.1", "arm64")
+	sId5 := cutil.FormExchangeIdForService(svcUrl, "2.0.1", "arm64")
 	sId5 = fmt.Sprintf("%v/%v", svcOrg, sId5)
 	if compOutput, err := policyCompatible(getDeviceHandler("amd64"),
 		getNodePolicyHandler(map[string]string{"prop3": "val3", "prop4": "some value"}, []string{"prop1 == val1", "prop5 == val5"}),
@@ -398,11 +398,11 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		BusinessPolicy: businessPolicy,
 		ServicePolicy:  servicePolicy,
 	}
-	sId1 := cliutils.FormExchangeIdForService(svcUrl, svcVersion1, svcArch1)
+	sId1 := cutil.FormExchangeIdForService(svcUrl, svcVersion1, svcArch1)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
-	sId2 := cliutils.FormExchangeIdForService(svcUrl, svcVersion2, svcArch1)
+	sId2 := cutil.FormExchangeIdForService(svcUrl, svcVersion2, svcArch1)
 	sId2 = fmt.Sprintf("%v/%v", svcOrg, sId2)
-	sId3 := cliutils.FormExchangeIdForService(svcUrl, svcVersion3, svcArch1)
+	sId3 := cutil.FormExchangeIdForService(svcUrl, svcVersion3, svcArch1)
 	sId3 = fmt.Sprintf("%v/%v", svcOrg, sId3)
 
 	// compatible
@@ -475,11 +475,11 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		"myorg/weather_3.0.1_arm64": exchange.ServiceDefinition{URL: svcUrl, Version: "3.0.1", Arch: "arm64"},
 	}
 
-	sId4 := cliutils.FormExchangeIdForService(svcUrl, svcVersion1, svcArch2)
+	sId4 := cutil.FormExchangeIdForService(svcUrl, svcVersion1, svcArch2)
 	sId4 = fmt.Sprintf("%v/%v", svcOrg, sId4)
-	sId5 := cliutils.FormExchangeIdForService(svcUrl, svcVersion2, svcArch2)
+	sId5 := cutil.FormExchangeIdForService(svcUrl, svcVersion2, svcArch2)
 	sId5 = fmt.Sprintf("%v/%v", svcOrg, sId5)
-	sId6 := cliutils.FormExchangeIdForService(svcUrl, svcVersion3, svcArch2)
+	sId6 := cutil.FormExchangeIdForService(svcUrl, svcVersion3, svcArch2)
 	sId6 = fmt.Sprintf("%v/%v", svcOrg, sId6)
 	if compOutput, err := policyCompatible(getDeviceHandler(""),
 		getNodePolicyHandler(map[string]string{}, []string{}),
@@ -842,7 +842,7 @@ func Test_GetServicePolicy(t *testing.T) {
 	svcVersion := "1.0.1"
 	svcArch := "amd64"
 
-	sId1 := cliutils.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
+	sId1 := cutil.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
 
 	if sPol, sId, err := GetServicePolicy(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err != nil {
@@ -883,7 +883,7 @@ func Test_GetServicePolicyWithDefaultProperties(t *testing.T) {
 	svcVersion := "1.0.1"
 	svcArch := "amd64"
 
-	sId1 := cliutils.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
+	sId1 := cutil.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
 
 	if mergedPol, sPol, sId, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err != nil {
@@ -1203,7 +1203,7 @@ func getServicePolicyHandler(p map[string]string, c []string) exchange.ServicePo
 	return func(sUrl string, sOrg string, sVersion string, sArch string) (*exchange.ExchangePolicy, string, error) {
 		servicePol := createExternalPolicy(p, c)
 
-		sId := cliutils.FormExchangeIdForService(sUrl, sVersion, sArch)
+		sId := cutil.FormExchangeIdForService(sUrl, sVersion, sArch)
 		sId = fmt.Sprintf("%v/%v", sOrg, sId)
 		return &exchange.ExchangePolicy{*servicePol, "11-14-2019:03:45"}, sId, nil
 	}

@@ -9,56 +9,63 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/compcheck"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"net/http"
 	"os"
 )
 
 // check if the policies are compatible
-func AllCompatible(org string, userPw string, nodeId string, nodeArch string, nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
+func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
+	nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string,
+	patternId string, patternFile string, servicePolFile string, svcDefFiles []string,
+	checkAllSvcs bool, showDetail bool) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
-	userOrg, credToUse, nId, useNodeId, bp, serviceDefs := verifyCompCheckParamters(org, userPw, nodeId, nodePolFile, nodeUIFile, businessPolId, businessPolFile, servicePolFile, svcDefFiles)
+	userOrg, credToUse, nId, useNodeId, bp, pattern, serviceDefs := verifyCompCheckParamters(
+		org, userPw, nodeId, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
+		patternId, patternFile, servicePolFile, svcDefFiles)
 
 	compCheckInput := compcheck.CompCheck{}
 	compCheckInput.NodeArch = nodeArch
 	compCheckInput.BusinessPolicy = bp
+	compCheckInput.Pattern = pattern
 
-	// formalize node id or get node policy
-	bUseLocalNode := false
 	if useNodeId {
 		// add credentials'org to node id if the node id does not have an org
 		nId = cliutils.AddOrg(userOrg, nId)
 		compCheckInput.NodeId = nId
-	} else if nodePolFile != "" {
-		// read the node policy from file
-		var np externalpolicy.ExternalPolicy
-		readExternalPolicyFile(nodePolFile, &np)
-		compCheckInput.NodePolicy = &np
-	} else {
-		bUseLocalNode = true
 	}
 
-	// get node user input
+	// formalize node id or get node policy
+	bUseLocalNodeForPolicy := false
+	bUseLocalNodeForUI := false
+	if bp != nil {
+		if nodePolFile != "" {
+			// read the node policy from file
+			var np externalpolicy.ExternalPolicy
+			readExternalPolicyFile(nodePolFile, &np)
+			compCheckInput.NodePolicy = &np
+		} else if !useNodeId {
+			bUseLocalNodeForPolicy = true
+		}
+	}
+
 	if nodeUIFile != "" {
 		// read the node userinput from file
 		var node_ui []policy.UserInput
 		readUserInputFile(nodeUIFile, &node_ui)
 		compCheckInput.NodeUserInput = node_ui
-	} else {
-		// empty user input
-		compCheckInput.NodeUserInput = []policy.UserInput{}
+	} else if !useNodeId {
+		bUseLocalNodeForUI = true
 	}
 
-	if bUseLocalNode {
+	if bUseLocalNodeForPolicy {
 		msgPrinter.Printf("Neither node id nor node policy is specified. Getting node policy from the local node.")
 		msgPrinter.Println()
 
@@ -69,23 +76,21 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 		var np externalpolicy.ExternalPolicy
 		cliutils.HorizonGet("node/policy", []int{200}, &np, false)
 		compCheckInput.NodePolicy = &np
-
-		if nodeUIFile == "" {
-			msgPrinter.Printf("Neither node id nor node user input file is specified. Getting node user input from the local node.")
-			msgPrinter.Println()
-			// get node user input from local node
-			var node_ui []policy.UserInput
-			cliutils.HorizonGet("node/userinput", []int{200}, &node_ui, false)
-			compCheckInput.NodeUserInput = node_ui
-		}
-	} else {
-		if nodeUIFile == "" {
-			msgPrinter.Printf("Node user input file is not specified with --node-ui flag, assuming no user input.")
-			msgPrinter.Println()
-		}
 	}
 
-	// read the service policy from file
+	if bUseLocalNodeForUI {
+		msgPrinter.Printf("Neither node id nor node user input file is specified. Getting node user input from the local node.")
+		msgPrinter.Println()
+		// get node user input from local node
+		var node_ui []policy.UserInput
+		cliutils.HorizonGet("node/userinput", []int{200}, &node_ui, false)
+		compCheckInput.NodeUserInput = node_ui
+	} else if nodeUIFile == "" {
+		msgPrinter.Printf("Node user input file is not specified with --node-ui flag, assuming no user input.")
+		msgPrinter.Println()
+	}
+
+	// read the service policy from file for the policy case
 	if servicePolFile != "" {
 		var sp externalpolicy.ExternalPolicy
 		readExternalPolicyFile(servicePolFile, &sp)
@@ -100,7 +105,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	cliutils.Verbose(msgPrinter.Sprintf("Using compatibility checking input: %v", compCheckInput))
 
 	// get exchange context
-	ec := getUserExchangeContext(userOrg, credToUse)
+	ec := cliutils.GetUserExchangeContext(userOrg, credToUse)
 
 	// compcheck.Compatible function calls the exchange package that calls glog.
 	// set the glog stderrthreshold to 3 (fatal) in order for glog error messages not showing up in the output
@@ -127,19 +132,44 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	}
 }
 
-// make sure -n and --node-pol, -b and --business-pol, -n and --node-ui pairs are mutually exclusive.
-// get default credential, node id and org if they are not set.
-func verifyCompCheckParamters(org string, userPw string,
-	nodeId string, nodePolFile string, nodeUIFile string,
-	businessPolId string, businessPolFile string,
-	servicePolFile string, svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, []exchange.ServiceDefinition) {
+// Make sure -n and --node-pol, -b and -B pairs
+// and -p and -P pairs are mutually exclusive.
+// Business policy and pattern are mutually exclusive.
+// Get default credential, node id and org if they are not set.
+func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolFile string, nodeUIFile string,
+	businessPolId string, businessPolFile string, patternId string, patternFile string, servicePolFile string,
+	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *exchange.Pattern, []compcheck.ServiceDefinition) {
+
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure only specify one: business policy or pattern
+	useBPol := false
+	if businessPolId != "" || businessPolFile != "" {
+		useBPol = true
+		if patternId != "" || patternFile != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify either bussiness policy or pattern."))
+		}
+	} else {
+		if patternId == "" && patternFile == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified."))
+		}
+	}
+
+	// make sure no node and service policy files are specified for the pattern case.
+	if !useBPol {
+		if nodePolFile != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--node-pol, -p and -P are mutually exclusive."))
+		}
+		if servicePolFile != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--service-pol, -p and -P are mutually exclusive."))
+		}
+	}
 
 	useNodeId := false
 	nodeIdToUse := nodeId
 	if nodeId != "" {
-		if nodePolFile == "" || nodeUIFile == "" {
+		if (useBPol && nodePolFile == "") || (!useBPol && nodeUIFile == "") {
 			// true means will use exchange call
 			useNodeId = true
 		}
@@ -150,7 +180,7 @@ func verifyCompCheckParamters(org string, userPw string,
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-n and --node-ui are mutually exclusive."))
 		}
 	} else {
-		if nodePolFile == "" {
+		if (useBPol && nodePolFile == "") || (!useBPol && nodeUIFile == "") {
 			// get node id from HZN_EXCHANGE_NODE_AUTH
 			if nodeIdTok := os.Getenv("HZN_EXCHANGE_NODE_AUTH"); nodeIdTok != "" {
 				nodeIdToUse, _ = cliutils.SplitIdToken(nodeIdTok)
@@ -163,16 +193,24 @@ func verifyCompCheckParamters(org string, userPw string,
 	}
 
 	useBPolId := false
-	if businessPolId != "" {
-		if businessPolFile == "" {
-			// true means will use exchange call
-			useBPolId = true
-		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-b and --business-pol are mutually exclusive."))
+	usePatternId := false
+	if useBPol {
+		if businessPolId != "" {
+			if businessPolFile == "" {
+				// true means will use exchange call
+				useBPolId = true
+			} else {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-b and -B are mutually exclusive."))
+			}
 		}
 	} else {
-		if businessPolFile == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Either -b or --business-pol must be specified."))
+		if patternId != "" {
+			if patternFile == "" {
+				// true means will use exchange call
+				usePatternId = true
+			} else {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-p and -P are mutually exclusive."))
+			}
 		}
 	}
 
@@ -182,12 +220,12 @@ func verifyCompCheckParamters(org string, userPw string,
 		useSPolId = true
 	}
 
-	useSId, serviceDefs, svc_orgs := useExchangeForServiceDef(svcDefFiles)
+	useSId, serviceDefs := useExchangeForServiceDef(svcDefFiles)
 
 	// if user credential is not given, then use the node auth env HZN_EXCHANGE_NODE_AUTH if it is defined.
 	credToUse := cliutils.WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_NODE_AUTH")
 	orgToUse := org
-	if useNodeId || useBPolId || useSPolId || useSId {
+	if useNodeId || useBPolId || useSPolId || usePatternId || useSId {
 		if *credToUse == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, business policy and service policy."))
 		} else {
@@ -204,69 +242,28 @@ func verifyCompCheckParamters(org string, userPw string,
 		}
 	}
 
-	// get business policy from file or exchange
-	bp := getBusinessPolicy(orgToUse, *credToUse, businessPolId, businessPolFile)
-	// the compcheck package does not need to get it again from the exchange.
-	useBPolId = false
+	if useBPol {
+		// get business policy from file or exchange
+		bp := getBusinessPolicy(orgToUse, *credToUse, businessPolId, businessPolFile)
+		// the compcheck package does not need to get it again from the exchange.
+		useBPolId = false
 
-	// check if the orgs in the given service files matche the service in the business policy since the org info will be lost during the convertion.
-	// Other parts will be checked later by the compcheck package.
-	if svcDefFiles != nil && len(svcDefFiles) != 0 {
-		for i, s_org := range svc_orgs {
-			if s_org != "" && bp.Service.Org != s_org {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service organization %v from service file %v does not match the service organization %v from business policy file %v.", s_org, svcDefFiles[i], bp.Service.Org, businessPolFile))
-			}
-		}
-	}
+		// check if the given service files specify correct services.
+		// Other parts will be checked later by the compcheck package.
+		checkServiceDefsForBPol(bp, serviceDefs, svcDefFiles)
 
-	return orgToUse, *credToUse, nodeId, useNodeId, bp, serviceDefs
-}
-
-// create the exchange context with the given user credentail
-func getUserExchangeContext(userOrg string, credToUse string) exchange.ExchangeContext {
-	var ec exchange.ExchangeContext
-	if credToUse != "" {
-		cred, token := cliutils.SplitIdToken(credToUse)
-		if userOrg != "" {
-			cred = cliutils.AddOrg(userOrg, cred)
-		}
-		ec = createUserExchangeContext(cred, token)
+		return orgToUse, *credToUse, nodeId, useNodeId, bp, nil, serviceDefs
 	} else {
-		ec = createUserExchangeContext("", "")
-	}
+		// get pattern from file or exchange
+		pattern := getPattern(orgToUse, *credToUse, patternId, patternFile)
 
-	return ec
-}
 
-// create an exchange context based on the user Id and password.
-func createUserExchangeContext(userId string, passwd string) exchange.ExchangeContext {
-	// GetExchangeUrl trims the last slash, we need to add it back for the exchange API calls.
-	exchUrl := cliutils.GetExchangeUrl() + "/"
-	return exchange.NewCustomExchangeContext(userId, passwd, exchUrl, "", newHTTPClientFactory())
-}
+		// check if the specified the services are the ones that the pattern needs.
+		// only check if the given services are valid or not.
+		// Not checking the missing ones becaused it will be checked by the compcheck package.
+		checkServiceDefsForPattern(pattern, serviceDefs, svcDefFiles)
 
-func newHTTPClientFactory() *config.HTTPClientFactory {
-	clientFunc := func(overrideTimeoutS *uint) *http.Client {
-		var timeoutS uint
-		if overrideTimeoutS != nil {
-			timeoutS = *overrideTimeoutS
-		} else {
-			timeoutS = config.HTTPRequestTimeoutS
-		}
-
-		return cliutils.GetHTTPClient(int(timeoutS))
-	}
-
-	// get retry count and retry interval from env
-	maxRetries, retryInterval, err := cliutils.GetHttpRetryParameters(5, 2)
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
-	}
-
-	return &config.HTTPClientFactory{
-		NewHTTPClient: clientFunc,
-		RetryCount:    maxRetries,
-		RetryInterval: retryInterval,
+		return orgToUse, *credToUse, nodeId, useNodeId, nil, pattern, serviceDefs
 	}
 }
 

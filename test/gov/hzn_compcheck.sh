@@ -252,10 +252,10 @@ RES=$($CMD 2>&1)
 results "$RES" "\-n and \-\-node-pol are mutually exclusive"
 
 echo -e "\n${PREFIX} test conflict2."
-CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest --business-pol /tmp/businesspol.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest -B /tmp/businesspol.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "\-b and \-\-business-pol are mutually exclusive"
+results "$RES" "\-b and \-B are mutually exclusive"
 
 echo -e "\n${PREFIX} test input with node id and business policy id."
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest"

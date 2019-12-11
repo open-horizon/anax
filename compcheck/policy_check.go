@@ -3,7 +3,7 @@ package compcheck
 import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
-	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -135,7 +135,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 				workload.Arch = input.NodeArch
 			} else if input.NodeArch != workload.Arch {
 				if checkAllSvcs {
-					sId := cliutils.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
+					sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
 					sId = fmt.Sprintf("%v/%v", workload.Org, sId)
 					messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Architecture does not match."))
 				}
@@ -208,7 +208,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			// add built-in service properties to the service policy
 			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol)
 			// compatibility check
-			sId := cliutils.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
+			sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
 			sId = fmt.Sprintf("%v/%v", workload.Org, sId)
 			if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, input.NodeArch, msgPrinter); err != nil {
 				return nil, err

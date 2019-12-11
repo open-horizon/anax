@@ -27,7 +27,6 @@ type SecureAPI struct {
 	name           string
 	db             persistence.AgbotDatabase
 	httpClient     *http.Client // a shared HTTP client instance for this worker
-	EC             *worker.BaseExchangeContext
 	em             *events.EventStateManager
 	shutdownError  string
 }
@@ -40,10 +39,9 @@ func NewSecureAPIListener(name string, config *config.HorizonConfig, db persiste
 			Config:   config,
 			Messages: messages,
 		},
-		httpClient: config.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		httpClient: newHTTPClientFactory().NewHTTPClient(nil),
 		name:       name,
 		db:         db,
-		EC:         worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
 		em:         events.NewEventStateManager(),
 	}
 
@@ -96,63 +94,8 @@ func (a *SecureAPI) GetName() string {
 	return a.name
 }
 
-// A local implementation of the ExchangeContext interface because the API object is not an anax worker.
-func (a *SecureAPI) GetExchangeId() string {
-	if a.EC != nil {
-		return a.EC.Id
-	} else {
-		return ""
-	}
-}
-
-func (a *SecureAPI) GetExchangeToken() string {
-	if a.EC != nil {
-		return a.EC.Token
-	} else {
-		return ""
-	}
-}
-
-func (a *SecureAPI) GetExchangeURL() string {
-	if a.EC != nil {
-		return a.EC.URL
-	} else {
-		return ""
-	}
-}
-
-func (a *SecureAPI) GetCSSURL() string {
-	if a.EC != nil {
-		return a.EC.CSSURL
-	} else {
-		return ""
-	}
-}
-
-func (a *SecureAPI) GetHTTPFactory() *config.HTTPClientFactory {
-	if a.EC != nil {
-		return a.EC.HTTPFactory
-	} else {
-		return a.newHTTPClientFactory()
-	}
-}
-
-func (a *SecureAPI) newHTTPClientFactory() *config.HTTPClientFactory {
-	clientFunc := func(overrideTimeoutS *uint) *http.Client {
-		var timeoutS uint
-		if overrideTimeoutS != nil {
-			timeoutS = *overrideTimeoutS
-		} else {
-			timeoutS = config.HTTPRequestTimeoutS
-		}
-
-		return cliutils.GetHTTPClient(int(timeoutS))
-	}
-	return &config.HTTPClientFactory{
-		NewHTTPClient: clientFunc,
-		RetryCount:    5,
-		RetryInterval: 2,
-	}
+func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) exchange.ExchangeContext {
+	return exchange.NewCustomExchangeContext(userId, passwd, a.Config.AgreementBot.ExchangeURL, a.Config.GetAgbotCSSURL(), newHTTPClientFactory())
 }
 
 // This function sets up the agbot secure http server
@@ -224,7 +167,7 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/policycompatible called.")))
 
 		// check user cred
-		if user_ec, msgPrinter, ok := a.processUserCred(w, r); ok {
+		if user_ec, msgPrinter, ok := a.processUserCred("/policycompatible", w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -264,7 +207,7 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/userinputcompatible called.")))
 
-		if user_ec, msgPrinter, ok := a.processUserCred(w, r); ok {
+		if user_ec, msgPrinter, ok := a.processUserCred("/userinputcompatible", w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -304,7 +247,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycompatible called.")))
 
-		if user_ec, msgPrinter, ok := a.processUserCred(w, r); ok {
+		if user_ec, msgPrinter, ok := a.processUserCred("/deploycompatible", w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -338,7 +281,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 }
 
 // This function checks user cred and writes corrsponding response. It also creates a message printer with given language from the http request.
-func (a *SecureAPI) processUserCred(w http.ResponseWriter, r *http.Request) (exchange.ExchangeContext, *message.Printer, bool) {
+func (a *SecureAPI) processUserCred(resource string, w http.ResponseWriter, r *http.Request) (exchange.ExchangeContext, *message.Printer, bool) {
 
 	// get message printer with the language passed in from the header
 	lan := r.Header.Get("Accept-Language")
@@ -350,15 +293,14 @@ func (a *SecureAPI) processUserCred(w http.ResponseWriter, r *http.Request) (exc
 	// check user cred
 	userId, userPasswd, ok := r.BasicAuth()
 	if !ok {
-		glog.Errorf(APIlogString(fmt.Sprintf("/deploycompatible is called without exchange authentication.")))
+		glog.Errorf(APIlogString(fmt.Sprintf("%v is called without exchange authentication.", resource)))
 		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
 		return nil, nil, false
-	} else if err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
+	} else if user_ec, err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
 		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
 		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
 		return nil, nil, false
 	} else {
-		user_ec := exchange.NewCustomExchangeContext(userId, userPasswd, a.GetExchangeURL(), a.GetCSSURL(), a.GetHTTPFactory())
 		return user_ec, msgPrinter, true
 	}
 }
@@ -438,45 +380,48 @@ func (a *SecureAPI) decodeCompCheckBody(body []byte, msgPrinter *message.Printer
 
 // This function verifies the given exchange user name and password.
 // The user must be in the format of orgId/userId.
-func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msgPrinter *message.Printer) error {
+func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msgPrinter *message.Printer) (exchange.ExchangeContext, error) {
 	glog.V(5).Infof(APIlogString(fmt.Sprintf("authenticateWithExchange called with user %v", user)))
 
 	orgId, userId := cutil.SplitOrgSpecUrl(user)
 	if userId == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("No exchange user id is supplied."))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("No exchange user id is supplied."))
 	} else if orgId == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("No exchange user organization id is supplied."))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("No exchange user organization id is supplied."))
 	} else if userPasswd == "" {
-		return fmt.Errorf(msgPrinter.Sprintf("No exchange user password or api key is supplied."))
+		return nil, fmt.Errorf(msgPrinter.Sprintf("No exchange user password or api key is supplied."))
 	}
 
+	user_ec := a.createUserExchangeContext(user, userPasswd)
+
 	// Invoke the exchange API to verify the user.
-	retryCount := 5
+	retryCount := user_ec.GetHTTPFactory().RetryCount
+	retryInterval := user_ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		retryCount = retryCount - 1
 
 		var resp interface{}
 		resp = new(exchange.GetUsersResponse)
-		targetURL := fmt.Sprintf("%vorgs/%v/users/%v", a.GetExchangeURL(), orgId, userId)
+		targetURL := fmt.Sprintf("%vorgs/%v/users/%v", user_ec.GetExchangeURL(), orgId, userId)
 
 		if err, tpErr := exchange.InvokeExchange(a.httpClient, "GET", targetURL, user, userPasswd, nil, &resp); err != nil {
 			glog.Errorf(APIlogString(err.Error()))
 
 			if strings.Contains(err.Error(), "401") {
-				return fmt.Errorf(msgPrinter.Sprintf("Wrong organization id, user id or password."))
+				return nil, fmt.Errorf(msgPrinter.Sprintf("Wrong organization id, user id or password."))
 			} else {
-				return err
+				return nil, err
 			}
 		} else if tpErr != nil {
 			glog.Warningf(APIlogString(tpErr.Error()))
 
-			if retryCount == 0 {
-				return fmt.Errorf("Exceeded %v retries for error: %v", retryCount, tpErr)
+			if retryCount <= 0 {
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", user_ec.GetHTTPFactory().RetryCount, tpErr)
 			}
-			time.Sleep(2 * time.Second)
+			time.Sleep(time.Duration(retryInterval) * time.Second)
 			continue
 		} else {
-			return nil
+			return user_ec, nil
 		}
 	}
 }
@@ -515,4 +460,22 @@ func getHTTPStatusCode(code int) int {
 		httpCode = http.StatusInternalServerError
 	}
 	return httpCode
+}
+
+func newHTTPClientFactory() *config.HTTPClientFactory {
+	clientFunc := func(overrideTimeoutS *uint) *http.Client {
+		var timeoutS uint
+		if overrideTimeoutS != nil {
+			timeoutS = *overrideTimeoutS
+		} else {
+			timeoutS = config.HTTPRequestTimeoutS
+		}
+
+		return cliutils.GetHTTPClient(int(timeoutS))
+	}
+	return &config.HTTPClientFactory{
+		NewHTTPClient: clientFunc,
+		RetryCount:    5,
+		RetryInterval: 2,
+	}
 }
