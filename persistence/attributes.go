@@ -311,7 +311,7 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string, org string) ([]Att
 
 // This function is used to convert the persistent attributes for a service to an env var map.
 // This will include *all* values for which HostOnly is false, include those marked to not publish.
-func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64) (map[string]string, error) {
+func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64, nodePol *externalpolicy.ExternalPolicy) (map[string]string, error) {
 
 	pf := func(str string, prefix string) string {
 		return fmt.Sprintf("%v%v", prefix, str)
@@ -336,7 +336,7 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 	writePrefix("ARCH", cutil.ArchString())
 
 	// Override with the built-in properties
-	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {
 			if ele.Name == externalpolicy.PROP_NODE_CPU {
@@ -345,6 +345,8 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 				writePrefix("RAM", strconv.FormatFloat(ele.Value.(float64), 'f', -1, 64))
 			} else if ele.Name == externalpolicy.PROP_NODE_ARCH {
 				writePrefix("ARCH", ele.Value.(string))
+			} else if ele.Name == externalpolicy.PROP_NODE_HARDWAREID {
+				writePrefix("HARDWAREID", ele.Value.(string))
 			}
 		}
 	}

@@ -21,7 +21,7 @@ import (
 var ExchangeNodePolicyLastUpdated = ""
 var ExchangeNodePolicy *externalpolicy.ExternalPolicy
 
-const NUM_BUILT_INS = 3
+const NUM_BUILT_INS = 4
 
 // Verify that a Node Policy Object can be created and saved the first time.
 func Test_UpdateNodePolicy(t *testing.T) {
@@ -277,7 +277,8 @@ func Test_NodePolicyInitalSetup(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	} else if fnp, err := persistence.FindNodePolicy(db); err != nil {
 		t.Errorf("failed to find node policy in db, error %v", err)
-	} else if len(fnp.Properties) != 1+NUM_BUILT_INS {
+	} else if len(fnp.Properties) != 1+NUM_BUILT_INS && len(fnp.Properties) != NUM_BUILT_INS {
+		// openhorizon.hardwareId will be present only if the device serial number can be read
 		t.Errorf("incorrect node policy, there should be %v property defined, found: %v", 1+NUM_BUILT_INS, *fnp)
 	} else if fnp.Properties[0].Name != propName {
 		t.Errorf("expected property %v, but received %v", propName, fnp.Properties[0].Name)

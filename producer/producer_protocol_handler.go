@@ -251,7 +251,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			err_log_event = fmt.Sprintf("Error creating message target: %v", err)
 		} else {
 			handled = true
-			if r, err := ph.DecideOnProposal(proposal, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), runningBCs, messageTarget, w.sendMessage); err != nil {
+			producerPol, err := persistence.FindNodePolicy(w.db)
+			if err != nil {
+				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("Error getting node policy from db: %v", err)))
+			}
+			if r, err := ph.DecideOnProposal(proposal, producerPol, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), runningBCs, messageTarget, w.sendMessage); err != nil {
 				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 				err_log_event = fmt.Sprintf("Respond to proposal with error: %v", err)
 			} else {

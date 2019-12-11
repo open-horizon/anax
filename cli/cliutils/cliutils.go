@@ -539,7 +539,7 @@ func printHorizonRestError(apiMethod string, err error) {
 // HorizonGet runs a GET on the anax api and fills in the specified structure with the json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
 // Only if the actual code matches the 1st element in goodHttpCodes, will it parse the body into the specified structure.
-// If quiet if true, then the error will be returned, the function returns back to the caller instead of exiting out.
+// If quiet is true, then the error will be returned, the function returns back to the caller instead of exiting out.
 func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, quiet bool) (httpCode int, retError error) {
 	retError = nil
 

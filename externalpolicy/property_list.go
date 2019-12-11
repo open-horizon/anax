@@ -182,6 +182,15 @@ func (self PropertyList) HasProperty(name string) bool {
 	return false
 }
 
+func (self PropertyList) GetProperty(name string) (Property, error) {
+	for _, ele := range self {
+		if ele.Name == name {
+			return ele, nil
+		}
+	}
+	return Property{}, fmt.Errorf("Error: property %s not found in list %v.", name, self)
+}
+
 // Validate will return an error if any property in the list has an invalid format or a value that does not match a declared type
 func (self *PropertyList) Validate() error {
 	// get message printer because this function is called by CLI

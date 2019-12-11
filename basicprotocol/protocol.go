@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/metering"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
@@ -116,13 +117,14 @@ func (p *ProtocolHandler) InitiateAgreement(agreementId string,
 
 // This is an implementation of the Decide on proposal API, it has no extensions.
 func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
+	nodePol *externalpolicy.ExternalPolicy,
 	myId string,
 	myOrg string,
 	ignore []map[string]string,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
-	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, myId, myOrg)
+	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, nodePol, myId, myOrg)
 
 	// Always respond to the Proposer
 	return abstractprotocol.SendResponse(p, proposal, reply, myOrg, replyErr, messageTarget, sendMessage)

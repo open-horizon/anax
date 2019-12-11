@@ -25,7 +25,7 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 	defer nodePolicyUpdateLock.Unlock()
 
 	// get the node policy from the exchange
-	exchangeNodePolicy, err := GetProcessedExchangeNodePolicy(pDevice, getExchangeNodePolicy, putExchangeNodePolicy)
+	exchangeNodePolicy, err := GetProcessedExchangeNodePolicy(pDevice, getExchangeNodePolicy, putExchangeNodePolicy, db)
 	if err != nil {
 		return false, nil, err
 	}
@@ -78,16 +78,21 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 	return false, nil, nil
 }
 
-// This function retrievs the node's policy from the exchange, adds the node built-in properties if needed. Then it saves the new
+// This function retrieves the node's policy from the exchange, adds the node built-in properties if needed. Then it saves the new
 // node policy to the exchange again and then returns the new node policy. If the exchange node policy already has the built-in properties,
 // it just returns the one from the exchange.
-func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler) (*exchange.ExchangePolicy, error) {
+func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler, db *bolt.DB) (*exchange.ExchangePolicy, error) {
 	exchangeNodePolicy, err := getExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id))
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve the node policy from the exchange. Error: %v", err)
 	}
 
-	builtinPolicy := externalpolicy.CreateNodeBuiltInPolicy(false)
+	existingPol, err := persistence.FindNodePolicy(db)
+	if err != nil {
+		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
+	}
+
+	builtinPolicy := externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
 
 	var mergedPol *externalpolicy.ExternalPolicy
 	if exchangeNodePolicy == nil {
@@ -148,7 +153,11 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	glog.V(3).Infof("Setting up the default node policy.")
 
 	nodePolicy := new(externalpolicy.ExternalPolicy)
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	existingPol, err := persistence.FindNodePolicy(db)
+	if err != nil {
+		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
+	}
+	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
 
 	// get the default node policy file name from the config and set it up in local and exchange
 	policyFile := config.Edge.DefaultNodePolicyFile
@@ -157,7 +166,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 		if err := persistence.DeleteNodePolicyLastUpdated_Exch(db); err != nil {
 			return nil, fmt.Errorf("Exchange node policy last update string could not be deleted from the local database, error %v", err)
 		}
-		glog.Infof("No default node policy file in the anac configuration file. Use node's default built-in properties.")
+		glog.Infof("No default node policy file in the anax configuration file. Use node's default built-in properties.")
 		if builtinNodePol != nil {
 			nodePolicy = builtinNodePol
 		}
@@ -194,7 +203,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	}
 
 	// upload the node policy on the exchange
-	_, err := putExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *nodePolicy})
+	_, err = putExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *nodePolicy})
 	if err != nil {
 		return nil, fmt.Errorf("Unable to save node policy in exchange. %v", err)
 	}
@@ -331,7 +340,12 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 	}
 
 	// add node's built-in properties
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	existingPol, err := persistence.FindNodePolicy(db)
+	if err != nil {
+		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
+	}
+	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+
 	if builtinNodePol != nil {
 		nodePolicy.MergeWith(builtinNodePol, true)
 	}

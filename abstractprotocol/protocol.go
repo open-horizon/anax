@@ -106,6 +106,7 @@ type ProtocolHandler interface {
 	DemarshalProposal(proposal string) (Proposal, error)
 
 	DecideOnProposal(proposal Proposal,
+		nodeProposal *externalpolicy.ExternalPolicy,
 		myId string,
 		myOrg string,
 		runningBlockchains []map[string]string,
@@ -253,6 +254,7 @@ func SendProposal(p ProtocolHandler,
 // Decide to accept or reject a proposal based on whether the proposal is acceptable and agreement limits have not been hit.
 func DecideOnProposal(p ProtocolHandler,
 	proposal Proposal,
+	nodePolicy *externalpolicy.ExternalPolicy,
 	myId string,
 	myOrg string) (*BaseProposalReply, error) {
 
@@ -277,7 +279,7 @@ func DecideOnProposal(p ProtocolHandler,
 
 		// now add the node's built-in properties to the producer policy
 		var err1 error
-		producerPolicy, err1 = addNodeBuiltInProps(producerPolicy)
+		producerPolicy, err1 = addNodeBuiltInProps(producerPolicy, nodePolicy)
 		if err1 != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error adding node built-in policy to the producer policy, %v", p.Name(), err))
 		}
@@ -567,15 +569,15 @@ func DemarshalProposal(proposal string) (Proposal, error) {
 // Adds node built-in properties to the producer policy.
 // It will get node's CPU count, available memory and arch and add them to
 // the producer policy that was used to make the proposal on agbot.
-func addNodeBuiltInProps(pol *policy.Policy) (*policy.Policy, error) {
+func addNodeBuiltInProps(pol *policy.Policy, nodePol *externalpolicy.ExternalPolicy) (*policy.Policy, error) {
 	if pol == nil {
 		return nil, nil
 	}
 
 	// get built-in node properties and replace the ones in the policy,
 	// the memory will be the available memory instead of total memory -- not yet,
-	//still use total memory, change to true if you want available memory
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	// still use total memory, change first parameter to true if you want available memory
+	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
 	for _, prop := range builtinNodePol.Properties {
 		if err := pol.Add_Property(&prop, true); err != nil {
 			return nil, err
