@@ -150,7 +150,8 @@ func (a *SecureAPI) newHTTPClientFactory() *config.HTTPClientFactory {
 	}
 	return &config.HTTPClientFactory{
 		NewHTTPClient: clientFunc,
-		RetryCount:    3,
+		RetryCount:    5,
+		RetryInterval: 2,
 	}
 }
 
@@ -460,7 +461,7 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 	}
 
 	// Invoke the exchange API to verify the user.
-	retryCount := 2
+	retryCount := 5
 	for {
 		retryCount = retryCount - 1
 
@@ -480,9 +481,9 @@ func (a *SecureAPI) authenticateWithExchange(user string, userPasswd string, msg
 			glog.Warningf(APIlogString(tpErr.Error()))
 
 			if retryCount == 0 {
-				return tpErr
+				return fmt.Errorf("Exceeded %v retries for error: %v", retryCount, tpErr)
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(2 * time.Second)
 			continue
 		} else {
 			return nil

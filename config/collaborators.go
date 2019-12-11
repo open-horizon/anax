@@ -47,7 +47,17 @@ func (c *Collaborators) String() string {
 
 type HTTPClientFactory struct {
 	NewHTTPClient func(overrideTimeoutS *uint) *http.Client
-	RetryCount    int // number of retries for tranport error. The retries are 10 seconds apart.
+	RetryCount    int // number of retries for tranport error.
+	RetryInterval int // retry interval in second for tranport error. The default is 10 seconds.
+}
+
+// default retry interval is 10 seconds
+func (h *HTTPClientFactory) GetRetryInterval() int {
+	if h.RetryInterval == 0 {
+		return 10
+	} else {
+		return h.RetryInterval
+	}
 }
 
 type KeyFileNamesFetcher struct {
@@ -173,6 +183,8 @@ func newHTTPClientFactory(hConfig HorizonConfig) (*HTTPClientFactory, error) {
 
 	return &HTTPClientFactory{
 		NewHTTPClient: clientFunc,
+		RetryCount:    0,
+		RetryInterval: 10,
 	}, nil
 }
 

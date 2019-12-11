@@ -74,6 +74,7 @@ func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*Obj
 	url = ec.GetCSSURL() + url + fmt.Sprintf("?destination_policy=true&service=%v", serviceId)
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -81,12 +82,13 @@ func GetObjectsByService(ec ExchangeContext, org string, serviceId string) (*Obj
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -113,6 +115,7 @@ func GetUpdatedObjects(ec ExchangeContext, org string, since int64) (*ObjectDest
 	}
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -120,12 +123,13 @@ func GetUpdatedObjects(ec ExchangeContext, org string, since int64) (*ObjectDest
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -146,6 +150,7 @@ func UpdateObjectDestinationList(ec ExchangeContext, org string, objPol *ObjectD
 	url = ec.GetCSSURL() + url
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", url, ec.GetExchangeId(), ec.GetExchangeToken(), dests, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -153,12 +158,13 @@ func UpdateObjectDestinationList(ec ExchangeContext, org string, objPol *ObjectD
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return tpErr
+				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -179,6 +185,7 @@ func GetObject(ec ExchangeContext, org string, objID string, objType string) (*c
 	url = ec.GetCSSURL() + url
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -186,12 +193,13 @@ func GetObject(ec ExchangeContext, org string, objID string, objType string) (*c
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -217,6 +225,7 @@ func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType
 	url = ec.GetCSSURL() + url
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -224,12 +233,13 @@ func GetObjectDestinations(ec ExchangeContext, org string, objID string, objType
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -255,6 +265,7 @@ func SetPolicyReceived(ec ExchangeContext, objPol *ObjectDestinationPolicy) erro
 	url = ec.GetCSSURL() + url
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", url, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -262,12 +273,13 @@ func SetPolicyReceived(ec ExchangeContext, objPol *ObjectDestinationPolicy) erro
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return tpErr
+				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {

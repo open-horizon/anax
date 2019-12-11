@@ -42,6 +42,10 @@ type HorizonCliConfig struct {
 	// exchange url, the default is shipped with the horizon-cli package
 	HZN_EXCHANGE_URL string `json:"HZN_EXCHANGE_URL,omitempty"`
 
+	// http max retries and retry interval (in second) when transport error occurs.
+	HZN_HTTP_RETRIES        string `json:"HZN_HTTP_RETRIES,omitempty"`
+	HZN_HTTP_RETRY_INTERVAL string `json:"HZN_HTTP_RETRY_INTERVAL,omitempty"`
+
 	// the CSS url, the default is shipped with the horizon-cli package
 	HZN_FSS_CSSURL string `json:"HZN_FSS_CSSURL,omitempty"`
 

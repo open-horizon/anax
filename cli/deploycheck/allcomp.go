@@ -262,9 +262,17 @@ func newHTTPClientFactory() *config.HTTPClientFactory {
 
 		return cliutils.GetHTTPClient(int(timeoutS))
 	}
+
+	// get retry count and retry interval from env
+	maxRetries, retryInterval, err := cliutils.GetHttpRetryParameters(5, 2)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+	}
+
 	return &config.HTTPClientFactory{
 		NewHTTPClient: clientFunc,
-		RetryCount:    3,
+		RetryCount:    maxRetries,
+		RetryInterval: retryInterval,
 	}
 }
 
