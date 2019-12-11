@@ -99,6 +99,7 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -106,12 +107,13 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -135,18 +137,20 @@ func PutNodePolicy(ec ExchangeContext, deviceId string, ep *ExchangePolicy) (*Pu
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), ep, &resp); err != nil {
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -165,18 +169,20 @@ func DeleteNodePolicy(ec ExchangeContext, deviceId string) error {
 	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/policy", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return tpErr
+				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -207,6 +213,7 @@ func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[
 	}
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -214,12 +221,13 @@ func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {

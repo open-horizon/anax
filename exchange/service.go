@@ -288,6 +288,7 @@ func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, m
 	}
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -295,12 +296,13 @@ func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, m
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, "", tpErr
+				return nil, "", fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -424,6 +426,7 @@ func GetSelectedServices(ec ExchangeContext, mURL string, mOrg string, mVersion 
 	}
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -431,12 +434,13 @@ func GetSelectedServices(ec ExchangeContext, mURL string, mOrg string, mVersion 
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -663,6 +667,7 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/dockauths", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp_DockAuths); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -670,12 +675,13 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -746,18 +752,20 @@ func PostDeviceServicesConfigState(httpClientFactory *config.HTTPClientFactory, 
 	resp = ""
 
 	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "POST", targetURL, deviceId, deviceToken, svcs_configstate, &resp); err != nil {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return tpErr
+				return fmt.Errorf("Exceeded %v retries for error: %v", httpClientFactory.RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -801,6 +809,7 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
@@ -808,12 +817,13 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -856,18 +866,20 @@ func PutServicePolicyWithId(ec ExchangeContext, service_id string, ep *ExchangeP
 	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), ep, &resp); err != nil {
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return nil, tpErr
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
@@ -907,18 +919,20 @@ func DeleteServicePolicyWithId(ec ExchangeContext, service_id string) error {
 	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
 
 	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
 	for {
 		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
 			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			} else if retryCount == 0 {
-				return tpErr
+				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
 			} else {
 				retryCount--
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(retryInterval) * time.Second)
 				continue
 			}
 		} else {
