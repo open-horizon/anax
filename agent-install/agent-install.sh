@@ -456,15 +456,15 @@ function install_linux(){
     fi
 
 	log_info "Checking if the agent port ${ANAX_PORT} is free..."
-	if [ ! -z "$(netstat -nlp | grep :$ANAX_PORT)" ]; then
+	if [ ! -z "$(netstat -nlp | grep \":$ANAX_PORT \")" ]; then
 		log_info "Something is running on ${ANAX_PORT}..."
-		if [ -z "$(netstat -nlp | grep :$ANAX_PORT | grep anax)" ]; then
+		if [ -z "$(netstat -nlp | grep \":$ANAX_PORT \" | grep anax)" ]; then
 			log_notify "It's not anax, please free the port in order to install horizon, exiting..."
-			netstat -nlp | grep :$ANAX_PORT
+			netstat -nlp | grep \":$ANAX_PORT \"
 			exit 1
 		else
 			log_info "It's anax, continuing..."
-			netstat -nlp | grep :$ANAX_PORT
+			netstat -nlp | grep \":$ANAX_PORT \"
 		fi
 	else
 		log_info "Anax port ${ANAX_PORT} is free, continuing..."
