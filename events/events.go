@@ -86,6 +86,7 @@ const (
 	UPDATE_NODE_USERINPUT        EventId = "UPDATE_USER_INPUT"
 	NODE_PATTERN_CHANGE_SHUTDOWN EventId = "NODE_PATTERN_CHANGE_SHUTDOWN"
 	NODE_PATTERN_CHANGE_REREG    EventId = "NODE_PATTERN_CHANGE_REREG"
+	MESSAGE_STOP                 EventId = "MESSAGE_STOP"
 
 	// Service related
 	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
@@ -1712,6 +1713,30 @@ func (w *AllBlockchainShutdownMessage) ShortString() string {
 
 func NewAllBlockchainShutdownMessage(id EventId) *AllBlockchainShutdownMessage {
 	return &AllBlockchainShutdownMessage{
+		event: Event{
+			Id: id,
+		},
+	}
+}
+
+type MessagingShutdownMessage struct {
+	event Event
+}
+
+func (w *MessagingShutdownMessage) Event() Event {
+	return w.event
+}
+
+func (w *MessagingShutdownMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *MessagingShutdownMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v", w.event)
+}
+
+func NewMessagingShutdownMessage(id EventId) *MessagingShutdownMessage {
+	return &MessagingShutdownMessage{
 		event: Event{
 			Id: id,
 		},

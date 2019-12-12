@@ -161,7 +161,7 @@ func main() {
 		workers.Add(api.NewAPIListener("API", cfg, db, pm))
 		workers.Add(agreement.NewAgreementWorker("Agreement", cfg, db, pm))
 		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
-		workers.Add(exchange.NewExchangeMessageWorker("Exchange", cfg, db))
+		workers.Add(exchange.NewExchangeMessageWorker("ExchangeMessages", cfg, db))
 		workers.Add(container.NewContainerWorker("Container", cfg, db, authm))
 		workers.Add(imagefetch.NewImageFetchWorker("ImageFetch", cfg, db))
 		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
