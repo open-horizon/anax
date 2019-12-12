@@ -79,6 +79,13 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewResetIntervalCommand()
 		}
 
+	case *events.MessagingShutdownMessage:
+		msg, _ := incoming.(*events.MessagingShutdownMessage)
+		switch msg.Event().Id {
+		case events.MESSAGE_STOP:
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		}
+
 	case *events.NodeShutdownCompleteMessage:
 		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
 		switch msg.Event().Id {
@@ -197,8 +204,7 @@ func (w *ExchangeMessageWorker) getMessages() ([]DeviceMessage, error) {
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(logString(tpErr.Error()))
-			time.Sleep(10 * time.Second)
-			continue
+			return nil, nil
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("retrieved %v messages", len(resp.(*GetDeviceMessageResponse).Messages))))
 			msgs := resp.(*GetDeviceMessageResponse).Messages

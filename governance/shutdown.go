@@ -138,7 +138,7 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 
 	// Clear the Pattern and RegisteredServices array in the node’s exchange resource. We have to leave the
 	// public key so that the node can send messages to an agbot. Removing the pattern and RegisteredServices
-	// will prevent the exchange from finding the node and thereby prevent agobts from trying to make new agreements.
+	// will prevent the exchange from finding the node and thereby prevent agbots from trying to make new agreements.
 	// It will keep the user input.
 	if err := w.clearNodePatternAndMS(true); err != nil {
 		w.continueWithError(logString(err.Error()))
@@ -364,6 +364,9 @@ func (w *GovernanceWorker) patchNodeKey() error {
 	}
 
 	glog.V(3).Infof(logString(fmt.Sprintf("deleted messaging keys from the node")))
+
+	// Tell the messaging worker it can terminate now.
+	w.Messages() <- events.NewMessagingShutdownMessage(events.MESSAGE_STOP)
 
 	return nil
 
