@@ -6,9 +6,9 @@ import (
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/dev"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/cli/sync_service"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
@@ -98,7 +98,11 @@ func (p *NativeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool
 		return owned, imageList, err
 	}
 
-	depConfig := cliexchange.ConvertToDeploymentConfig(dep)
+	depConfig, err := common.ConvertToDeploymentConfig(dep)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+	}
+
 	for _, svc := range depConfig.Services {
 		imageList = append(imageList, svc.Image)
 	}
@@ -141,7 +145,11 @@ func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
 	} else if services, ok := s.(map[string]interface{}); !ok {
 		return false, nil
 	} else {
-		depConfig := cliexchange.ConvertToDeploymentConfig(dep)
+		depConfig, err1 := common.ConvertToDeploymentConfig(dep)
+		if err1 != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err1.Error())
+		}
+
 		if err := depConfig.CanStartStop(); err != nil {
 			return true, err
 		}

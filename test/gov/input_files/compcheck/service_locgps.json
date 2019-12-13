@@ -1,0 +1,76 @@
+{
+  "org": "e2edev@somecomp.com",
+  "label": "GPS for Location for x86_64",
+  "description": "GPS service for loc service",
+  "documentation": "",
+  "public": true,
+  "url": "https://bluehorizon.network/services/locgps",
+  "version": "2.0.4",
+  "arch": "amd64",
+  "sharable": "single",
+  "matchHardware": {
+    "devFiles": "/dev/ttyUSB*,/dev/ttyACM*",
+    "usbDeviceIds": "1546:01a7"
+  },
+  "requiredServices": [
+    {
+      "url": "https://bluehorizon.network/service-cpu",
+      "org": "IBM",
+      "version": "1.0.0",
+      "versionRange": "1.0.0",
+      "arch": "amd64"
+    },
+    {
+      "url": "https://bluehorizon.network/services/network2",
+      "org": "IBM",
+      "version": "1.0.0",
+      "versionRange": "1.0.0",
+      "arch": "amd64"
+    }
+  ],
+  "userInput": [
+    {
+      "name": "test",
+      "label": "",
+      "type": "string",
+      "defaultValue": ""
+    },
+    {
+      "name": "testdefault",
+      "label": "",
+      "type": "string",
+      "defaultValue": "default"
+    },
+    {
+      "name": "HZN_LAT",
+      "label": "",
+      "type": "float",
+      "defaultValue": ""
+    },
+    {
+      "name": "HZN_LON",
+      "label": "",
+      "type": "float",
+      "defaultValue": ""
+    },
+    {
+      "name": "HZN_LOCATION_ACCURACY_KM",
+      "label": "",
+      "type": "float",
+      "defaultValue": ""
+    },
+    {
+      "name": "HZN_USE_GPS",
+      "label": "",
+      "type": "bool",
+      "defaultValue": ""
+    }
+  ],
+  "deployment": {
+    "services": {
+      "locgps2": {
+        "image": "openhorizon/amd64_cpu:1.2.2"
+      }
+    }
+  }
+}

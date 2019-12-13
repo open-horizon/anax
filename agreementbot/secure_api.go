@@ -282,7 +282,6 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 
 // This function checks user cred and writes corrsponding response. It also creates a message printer with given language from the http request.
 func (a *SecureAPI) processUserCred(resource string, w http.ResponseWriter, r *http.Request) (exchange.ExchangeContext, *message.Printer, bool) {
-
 	// get message printer with the language passed in from the header
 	lan := r.Header.Get("Accept-Language")
 	if lan == "" {

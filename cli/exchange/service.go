@@ -3,13 +3,12 @@ package exchange
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/cli/policy"
-	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -23,32 +22,6 @@ import (
 	"strings"
 )
 
-type AbstractServiceFile interface {
-	GetOrg() string
-	GetURL() string
-	GetVersion() string
-	GetArch() string
-	GetUserInputs() []exchange.UserInput
-}
-
-// This is used when reading json file the user gives us as input to create the service struct
-type ServiceFile struct {
-	Org                 string                       `json:"org"` // optional
-	Label               string                       `json:"label"`
-	Description         string                       `json:"description"`
-	Public              bool                         `json:"public"`
-	Documentation       string                       `json:"documentation"`
-	URL                 string                       `json:"url"`
-	Version             string                       `json:"version"`
-	Arch                string                       `json:"arch"`
-	Sharable            string                       `json:"sharable"`
-	MatchHardware       map[string]interface{}       `json:"matchHardware,omitempty"`
-	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
-	UserInputs          []exchange.UserInput         `json:"userInput"`
-	Deployment          interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
-	DeploymentSignature string                       `json:"deploymentSignature,omitempty"`
-}
-
 type ServiceDockAuthExch struct {
 	Registry string `json:"registry"`
 	UserName string `json:"username"`
@@ -58,88 +31,6 @@ type ServiceDockAuthExch struct {
 type ServicePolicyFile struct {
 	Properties  externalpolicy.PropertyList         `json:"properties"`
 	Constraints externalpolicy.ConstraintExpression `json:"constraints"`
-}
-
-func (sf *ServiceFile) GetOrg() string {
-	return sf.Org
-}
-
-func (sf *ServiceFile) GetURL() string {
-	return sf.URL
-}
-
-func (sf *ServiceFile) GetVersion() string {
-	return sf.Version
-}
-
-func (sf *ServiceFile) GetArch() string {
-	return sf.Arch
-}
-
-func (sf *ServiceFile) GetUserInputs() []exchange.UserInput {
-	return sf.UserInputs
-}
-
-// Returns true if the service definition userinputs define the variable.
-func (sf *ServiceFile) DefinesVariable(name string) string {
-	for _, ui := range sf.UserInputs {
-		if ui.Name == name && ui.Type != "" {
-			return ui.Type
-		}
-	}
-	return ""
-}
-
-// Returns true if the service definition has required services.
-func (sf *ServiceFile) HasDependencies() bool {
-	if len(sf.RequiredServices) == 0 {
-		return false
-	}
-	return true
-}
-
-// Return true if the service definition is a dependency in the input list of service references.
-func (sf *ServiceFile) IsDependent(deps []exchange.ServiceDependency) bool {
-	for _, dep := range deps {
-		if sf.URL == dep.URL && sf.Org == dep.Org {
-			return true
-		}
-	}
-	return false
-}
-
-// Convert the Deployment Configuration to a full Deployment Description.
-func (sf *ServiceFile) ConvertToDeploymentDescription(agreementService bool) (*DeploymentConfig, *containermessage.DeploymentDescription, error) {
-	depConfig := ConvertToDeploymentConfig(sf.Deployment)
-	infra := !agreementService
-	return depConfig, &containermessage.DeploymentDescription{
-		Services: depConfig.Services,
-		ServicePattern: containermessage.Pattern{
-			Shared: map[string][]string{},
-		},
-		Infrastructure: infra,
-		Overrides:      map[string]*containermessage.Service{},
-	}, nil
-}
-
-// Verify that non default user inputs are set in the input map.
-func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
-	for _, ui := range sf.UserInputs {
-		if ui.DefaultValue == "" && ui.Name != "" {
-			if _, ok := setVars[ui.Name]; !ok {
-				return errors.New(i18n.GetMessagePrinter().Sprintf("user input %v has no default value and is not set", ui.Name))
-			}
-		}
-	}
-	return nil
-}
-
-func (sf *ServiceFile) SupportVersionRange() {
-	for ix, sdep := range sf.RequiredServices {
-		if sdep.VersionRange == "" {
-			sf.RequiredServices[ix].VersionRange = sf.RequiredServices[ix].Version
-		}
-	}
 }
 
 // List the the service resources for the given org.
@@ -196,7 +87,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 
 	// Read in the service metadata
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(jsonFilePath)
-	var svcFile ServiceFile
+	var svcFile common.ServiceFile
 	err := json.Unmarshal(newBytes, &svcFile)
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", jsonFilePath, err))
@@ -208,7 +99,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	// Compensate for old service definition files
 	svcFile.SupportVersionRange()
 
-	svcFile.SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage, registryTokens, !overwrite)
+	SignAndPublish(&svcFile, org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage, registryTokens, !overwrite)
 
 	// create service policy if servicePolicyFilePath is defined
 	if servicePolicyFilePath != "" {
@@ -222,7 +113,7 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 }
 
 // Sign and publish the service definition. This is a function that is reusable across different hzn commands.
-func (sf *ServiceFile) SignAndPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwrite bool) {
+func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, promptForOverwrite bool) {
 
 	//check for ExchangeUrl early on
 	var exchUrl = cliutils.GetExchangeUrl()

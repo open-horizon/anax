@@ -1452,7 +1452,7 @@ func GetHTTPClient(timeout int) *http.Client {
 	TLSHandshake := dialTimeout
 	expectContinue := int(float64(requestTimeout) * 0.5)
 
-	//Verbose(i18n.GetMessagePrinter().Sprintf("HTTP request timeout set to %v seconds", requestTimeout))
+	Verbose(i18n.GetMessagePrinter().Sprintf("HTTP request timeout set to %v seconds", requestTimeout))
 
 	return &http.Client{
 		// remember that this timeout is for the whole request, including

@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
@@ -34,6 +35,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
 	compCheckInput := compcheck.CompCheck{}
 	compCheckInput.NodeArch = nodeArch
 	compCheckInput.BusinessPolicy = bp
+	compCheckInput.PatternId = patternId
 	compCheckInput.Pattern = pattern
 
 	if useNodeId {
@@ -85,9 +87,6 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
 		var node_ui []policy.UserInput
 		cliutils.HorizonGet("node/userinput", []int{200}, &node_ui, false)
 		compCheckInput.NodeUserInput = node_ui
-	} else if nodeUIFile == "" {
-		msgPrinter.Printf("Node user input file is not specified with --node-ui flag, assuming no user input.")
-		msgPrinter.Println()
 	}
 
 	// read the service policy from file for the policy case
@@ -138,7 +137,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
 // Get default credential, node id and org if they are not set.
 func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolFile string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string, servicePolFile string,
-	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *exchange.Pattern, []compcheck.ServiceDefinition) {
+	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *common.PatternFile, []common.ServiceFile) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -255,7 +254,7 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 		return orgToUse, *credToUse, nodeId, useNodeId, bp, nil, serviceDefs
 	} else {
 		// get pattern from file or exchange
-		pattern := getPattern(orgToUse, *credToUse, patternId, patternFile)
+		pattern, pf := getPattern(orgToUse, *credToUse, patternId, patternFile)
 
 
 		// check if the specified the services are the ones that the pattern needs.
@@ -263,7 +262,7 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 		// Not checking the missing ones becaused it will be checked by the compcheck package.
 		checkServiceDefsForPattern(pattern, serviceDefs, svcDefFiles)
 
-		return orgToUse, *credToUse, nodeId, useNodeId, nil, pattern, serviceDefs
+		return orgToUse, *credToUse, nodeId, useNodeId, nil, pf, serviceDefs
 	}
 }
 
