@@ -397,7 +397,7 @@ func (w *GovernanceWorker) UpgradeMicroservice(msdef *persistence.MicroserviceDe
 
 	if unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to remove service policy for service def %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, unregError)))
-	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w), msdef.SpecRef, msdef.Org, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
+	} else if unregError = microservice.UnregisterMicroserviceExchange(exchange.GetHTTPDeviceHandler(w), exchange.GetHTTPPatchDeviceHandler(w.limitedRetryEC), msdef.SpecRef, msdef.Org, w.GetExchangeId(), w.GetExchangeToken(), w.db); unregError != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to unregister service from the exchange for service def %v/%v. %v", msdef.Org, msdef.SpecRef, unregError)))
 	}
 
@@ -786,7 +786,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 		glog.Errorf(logString(fmt.Sprintf("error getting service definitions %v from db. %v", msdef_id, err)))
 	} else if microservice.MicroserviceReadyForUpgrade(msdef, w.db) {
 		// find the new ms def to upgrade to
-		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(exchange.GetHTTPServiceResolverHandler(w), msdef, w.db); err != nil {
+		if new_msdef, err := microservice.GetUpgradeMicroserviceDef(exchange.GetHTTPServiceResolverHandler(w.limitedRetryEC), msdef, w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Error finding the new service definition to upgrade to for %v/%v version %v. %v", msdef.Org, msdef.SpecRef, msdef.Version, err)))
 		} else if new_msdef == nil {
 			glog.V(5).Infof(logString(fmt.Sprintf("No changes for service definition %v/%v, no need to upgrade.", msdef.Org, msdef.SpecRef)))

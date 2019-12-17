@@ -55,15 +55,18 @@ type GovernanceWorker struct {
 	ShuttingDownCmd     *NodeShutdownCommand
 	lastSvcUpgradeCheck int64
 	patternChange       ChangePattern
+	limitedRetryEC      exchange.ExchangeContext
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
 
 	var ec *worker.BaseExchangeContext
+	var lrec exchange.ExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
+		lrec = newLimitedRetryExchangeContext(ec)
 	}
 
 	worker := &GovernanceWorker{
@@ -75,11 +78,22 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		deviceStatus:        NewDeviceStatus(),
 		ShuttingDownCmd:     nil,
 		lastSvcUpgradeCheck: time.Now().Unix(),
+		limitedRetryEC:      lrec,
 	}
 
 	// Start the worker and set the no work interval to 10 seconds.
 	worker.Start(worker, 10)
 	return worker
+}
+
+func newLimitedRetryExchangeContext(baseEC *worker.BaseExchangeContext) exchange.ExchangeContext {
+	limitedRetryHTTPFactory := &config.HTTPClientFactory{
+		NewHTTPClient: baseEC.HTTPFactory.NewHTTPClient,
+		RetryCount:    1,
+		RetryInterval: 5,
+	}
+
+	return exchange.NewCustomExchangeContext(baseEC.Id, baseEC.Token, baseEC.URL, baseEC.CSSURL, limitedRetryHTTPFactory)
 }
 
 func (w *GovernanceWorker) Messages() chan events.Message {
@@ -93,6 +107,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
 		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 		w.devicePattern = msg.Pattern()
+		w.limitedRetryEC = newLimitedRetryExchangeContext(w.EC)
 
 	case *events.EdgeConfigCompleteMessage:
 		// Start any services that run without needing an agreement.
@@ -293,6 +308,11 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		case events.NODE_HEARTBEAT_RESTORED:
 			cmd := w.NewNodeHeartbeatRestoredCommand()
 			w.Commands <- cmd
+
+			// Make sure device status is up to date since heartbeating is now restored. It means connectivity to
+			// the exchange has been out but is now working again.
+			cmd2 := w.NewReportDeviceStatusCommand()
+			w.Commands <- cmd2
 		}
 
 	case *events.ServiceConfigStateChangeMessage:
@@ -597,7 +617,7 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 
 		// update the exchange
 		if ag.AgreementAcceptedTime != 0 {
-			if err := deleteProducerAgreement(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), agreementId); err != nil {
+			if err := w.deleteProducerAgreement(w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), agreementId); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("error deleting agreement %v in exchange: %v. Will retry.", agreementId, err)))
 				eventlog.LogAgreementEvent(
 					w.db,
@@ -607,8 +627,10 @@ func (w *GovernanceWorker) cancelAgreement(agreementId string, agreementProtocol
 					*ag)
 
 				// create deferred agreement cancelation command
-				w.AddDeferredCommand(NewCancelAgreementCommand(agreementId, agreementProtocol, reason, desc))
-				return
+				if !w.IsWorkerShuttingDown() {
+					w.AddDeferredCommand(NewCancelAgreementCommand(agreementId, agreementProtocol, reason, desc))
+					return
+				}
 			}
 		}
 
@@ -1236,20 +1258,26 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		glog.V(5).Infof(logString(fmt.Sprintf("Upgrade service if needed. %v", cmd)))
 
-		w.handleMicroserviceUpgrade(cmd.MsDefId)
+		if !w.IsWorkerShuttingDown() {
+			w.handleMicroserviceUpgrade(cmd.MsDefId)
+		}
 
 	case *ReportDeviceStatusCommand:
 		cmd, _ := command.(*ReportDeviceStatusCommand)
 
 		glog.V(5).Infof(logString(fmt.Sprintf("Report device status command %v", cmd)))
-		w.ReportDeviceStatus()
+		if !w.IsWorkerShuttingDown() {
+			w.ReportDeviceStatus()
+		}
 
 	case *NodeShutdownCommand:
 		cmd, _ := command.(*NodeShutdownCommand)
 		glog.V(5).Infof(logString(fmt.Sprintf("Node shutdown command %v", cmd)))
 
 		// Remember the command until we need it again.
-		w.SetWorkerShuttingDown()
+		shutdownHTTPRetries := 1
+		shutdownHTTPInterval := 5
+		w.SetWorkerShuttingDown(shutdownHTTPRetries, shutdownHTTPInterval)
 		w.ShuttingDownCmd = cmd
 
 		// Shutdown the governance subworkers. We do this to ensure that none of them wake up to do
@@ -1703,21 +1731,33 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 
 }
 
-func deleteProducerAgreement(httpClient *http.Client, url string, deviceId string, token string, agreementId string) error {
+func (w *GovernanceWorker) deleteProducerAgreement(url string, deviceId string, token string, agreementId string) error {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
+
+	httpClientFactory := w.GetHTTPFactory()
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
 	for {
-		if err, tpErr := exchange.InvokeExchange(httpClient, "DELETE", targetURL, deviceId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
+		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "DELETE", targetURL, deviceId, token, nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(logString(tpErr.Error()))
-			time.Sleep(10 * time.Second)
-			continue
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return errors.New(fmt.Sprintf("exceeded %v retries trying to delete node for %v", httpClientFactory.RetryCount, tpErr))
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
 		} else {
 			glog.V(5).Infof(logString(fmt.Sprintf("deleted agreement %v from exchange", agreementId)))
 			return nil

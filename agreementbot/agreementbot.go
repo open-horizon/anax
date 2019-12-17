@@ -605,7 +605,7 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 
 			glog.V(5).Infof("AgreementBotWorker shutdown beginning")
 
-			w.SetWorkerShuttingDown()
+			w.SetWorkerShuttingDown(0, 0)
 
 			// Shutdown the protocol specific agreement workers for each supported protocol.
 			for _, cph := range w.consumerPH {
@@ -1467,7 +1467,7 @@ func (w *AgreementBotWorker) heartBeat() int {
 
 	// now do the hearbeat
 	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/heartbeat"
-	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
+	exchange.Heartbeat(w.Config.Collaborators.HTTPClientFactory, targetURL, w.GetExchangeId(), w.GetExchangeToken())
 
 	return 0
 }

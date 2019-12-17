@@ -30,7 +30,7 @@ func (w *AgreementWorker) heartBeat() int {
 			w.lastExchVerCheck = time_now
 
 			// log error if the current exchange version does not meet the requirement
-			if err := version.VerifyExchangeVersion(w.GetHTTPFactory(), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
+			if err := version.VerifyExchangeVersion(w.limitedRetryEC.GetHTTPFactory(), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
 				glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
 			}
 		}
@@ -41,7 +41,7 @@ func (w *AgreementWorker) heartBeat() int {
 	nodeId := exchange.GetId(w.GetExchangeId())
 
 	targetURL := w.GetExchangeURL() + "orgs/" + nodeOrg + "/nodes/" + nodeId + "/heartbeat"
-	err := exchange.Heartbeat(w.GetHTTPFactory().NewHTTPClient(nil), targetURL, w.GetExchangeId(), w.GetExchangeToken())
+	err := exchange.Heartbeat(w.limitedRetryEC.GetHTTPFactory(), targetURL, w.GetExchangeId(), w.GetExchangeToken())
 
 	if err != nil {
 		if strings.Contains(err.Error(), "status: 401") {
@@ -125,7 +125,7 @@ func (w *AgreementWorker) checkNodeChanges() int {
 	}
 
 	// save a local copy of the exchange node
-	exchNode, err := exchangesync.SyncNodeWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w))
+	exchNode, err := exchangesync.SyncNodeWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w.limitedRetryEC))
 	if err != nil {
 		if !w.hznOffline {
 			glog.Errorf(logString(fmt.Sprintf("Unable to sync the node with the exchange copy. Error: %v", err)))
@@ -285,7 +285,7 @@ func (w *AgreementWorker) checkServiceConfigStateChanges(exchDevice *exchange.De
 }
 
 // Check the node policy changes on the exchange and sync up with
-// the local copy. THe exchange is the master
+// the local copy. The exchange is the master
 func (w *AgreementWorker) checkNodePolicyChanges() int {
 	glog.V(5).Infof(logString(fmt.Sprintf("checking the node policy changes.")))
 
@@ -303,7 +303,7 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	}
 
 	// exchange is the master
-	updated, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w))
+	updated, newNodePolicy, err := exchangesync.SyncNodePolicyWithExchange(w.db, pDevice, exchange.GetHTTPNodePolicyHandler(w.limitedRetryEC), exchange.GetHTTPPutNodePolicyHandler(w.limitedRetryEC))
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Unable to sync the local node policy with the exchange copy. Error: %v", err)))
 		if !w.hznOffline {

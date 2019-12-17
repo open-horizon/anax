@@ -306,17 +306,28 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *DeviceStatus) er
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
 
-	httpClient := w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil)
 	targetURL := w.Config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/status"
 
+	httpClientFactory := w.limitedRetryEC.GetHTTPFactory()
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
+
 	for {
-		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), device_status, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), device_status, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return fmt.Errorf(logString(fmt.Sprintf("exceeded %v retries trying to write node status for %v", httpClientFactory.RetryCount, tpErr)))
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
 		} else {
 			glog.V(5).Infof(logString(fmt.Sprintf("saved device status to the exchange")))
 			return nil
@@ -329,8 +340,8 @@ func (w *GovernanceWorker) surfaceErrors() int {
 	if err != nil {
 		glog.V(3).Infof(logString(fmt.Sprintf("Error getting persistence device. %v", err)))
 	}
-	errorsHandler := exchange.GetHTTPSurfaceErrorsHandler(w)
-	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w)
-	serviceResolverHandler := exchange.GetHTTPServiceResolverHandler(w)
+	errorsHandler := exchange.GetHTTPSurfaceErrorsHandler(w.limitedRetryEC)
+	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w.limitedRetryEC)
+	serviceResolverHandler := exchange.GetHTTPServiceResolverHandler(w.limitedRetryEC)
 	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, errorsHandler, putErrorsHandler, serviceResolverHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
 }

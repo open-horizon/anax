@@ -151,6 +151,6 @@ func AgreementCancel(agreementId string, allAgreements bool) {
 	for _, id := range agrIds {
 		msgPrinter.Printf("Canceling agreement %s ...", id)
 		msgPrinter.Println()
-		cliutils.HorizonDelete("agreement/"+id, []int{200, 204}, false)
+		cliutils.HorizonDelete("agreement/"+id, []int{200, 204}, []int{}, false)
 	}
 }

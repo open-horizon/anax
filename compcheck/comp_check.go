@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
-	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -92,35 +91,6 @@ func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCh
 		Reason:     reason,
 		Input:      input,
 	}
-}
-
-// exchange context using user credential
-type UserExchangeContext struct {
-	UserId      string
-	Password    string
-	URL         string
-	CSSURL      string
-	HTTPFactory *config.HTTPClientFactory
-}
-
-func (u *UserExchangeContext) GetExchangeId() string {
-	return u.UserId
-}
-
-func (u *UserExchangeContext) GetExchangeToken() string {
-	return u.Password
-}
-
-func (u *UserExchangeContext) GetExchangeURL() string {
-	return u.URL
-}
-
-func (u *UserExchangeContext) GetCSSURL() string {
-	return u.CSSURL
-}
-
-func (u *UserExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
-	return u.HTTPFactory
 }
 
 func DeployCompatible(ec exchange.ExchangeContext, ccInput *CompCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {

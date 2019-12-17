@@ -207,8 +207,14 @@ func (w *BaseWorker) GetName() string {
 	return w.Name
 }
 
-func (w *BaseWorker) SetWorkerShuttingDown() {
+func (w *BaseWorker) SetWorkerShuttingDown(retries int, interval int) {
 	w.ShuttingDown = true
+	if retries != 0 {
+		w.EC.HTTPFactory.RetryCount = retries
+	}
+	if interval != 0 {
+		w.EC.HTTPFactory.RetryInterval = interval
+	}
 }
 
 func (w *BaseWorker) IsWorkerShuttingDown() bool {
@@ -384,7 +390,7 @@ func (w *BaseWorker) NoWorkHandler() {}
 
 // Subworker framework functions
 func (w *BaseWorker) AddSubworker(name string) chan bool {
-	rc := make(chan bool)
+	rc := make(chan bool, 2)
 	w.SubWorkers[name] = &SubWorker{
 		TermChan:   rc,
 		Terminated: false,

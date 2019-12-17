@@ -28,7 +28,13 @@ type Info struct {
 
 func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token string) *Info {
 
-	exch_version, err := exchange.GetExchangeVersion(httpClientFactory, exchangeUrl, id, token)
+	customHTTPClientFactory := &config.HTTPClientFactory{
+		NewHTTPClient: httpClientFactory.NewHTTPClient,
+		RetryCount:    5,
+		RetryInterval: 2,
+	}
+
+	exch_version, err := exchange.GetExchangeVersion(customHTTPClientFactory, exchangeUrl, id, token)
 	if err != nil {
 		glog.Errorf("Failed to get exchange version: %v", err)
 	}

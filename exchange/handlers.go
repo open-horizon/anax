@@ -17,6 +17,48 @@ type ExchangeContext interface {
 	GetHTTPFactory() *config.HTTPClientFactory
 }
 
+// This is a custom exchange context that con be configured for special usage scenarios. Normally, an anax worker
+// should be used as the ExchangeContext because it is automatically configured. However, there are times when
+// special behavior is needed.
+
+type CustomExchangeContext struct {
+	userId      string
+	password    string
+	exchangeURL string
+	cssURL      string
+	httpFactory *config.HTTPClientFactory
+}
+
+func (c *CustomExchangeContext) GetExchangeId() string {
+	return c.userId
+}
+
+func (c *CustomExchangeContext) GetExchangeToken() string {
+	return c.password
+}
+
+func (c *CustomExchangeContext) GetExchangeURL() string {
+	return c.exchangeURL
+}
+
+func (c *CustomExchangeContext) GetCSSURL() string {
+	return c.cssURL
+}
+
+func (c *CustomExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
+	return c.httpFactory
+}
+
+func NewCustomExchangeContext(userId string, passwd string, exchangeURL string, cssURL string, httpFactory *config.HTTPClientFactory) *CustomExchangeContext {
+	return &CustomExchangeContext{
+		userId:      userId,
+		password:    passwd,
+		exchangeURL: exchangeURL,
+		cssURL:      cssURL,
+		httpFactory: httpFactory,
+	}
+}
+
 // A handler for querying the exchange for an organization.
 type OrgHandler func(org string) (*Organization, error)
 
