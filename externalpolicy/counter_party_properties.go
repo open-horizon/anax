@@ -475,8 +475,8 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 					}
 					return stringListContains(pValue, propexpValue)
 				} else {
-					if p.Type == LIST_TYPE {
-						return stringListContains(propexpValue, pValue)
+					if stringListContains(propexpValue, pValue) {
+						return true
 					}
 					return pValue == propexpValue
 				}
