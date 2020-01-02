@@ -2,1078 +2,39 @@
   "language": "zh-CN",
   "messages": [
     {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
-        "Deployment config {Arg_1} contains unsupported capability for a workload"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的功能",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
+      "id": "The given node id is empty.",
+      "message": "The given node id is empty.",
+      "translation": "给定的节点标识为空。",
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
-        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "部署配置 {Arg_1} 包含基础结构容器所不支持的功能。",
+      "id": "Organization is not specified in the given node id: {NodeId}.",
+      "message": "Organization is not specified in the given node id: {NodeId}.",
+      "translation": "未在标识为 {NodeId} 的节点中指定组织。",
       "placeholders": [
         {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
-        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的绑定，{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
-        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "部署配置 {Arg_1} 包含{Arg_2} 所不支持的绑定，{Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
-        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "将部署字符串 {Arg_1} 反序列化时出错，错误：{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
-        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "将用于协议 {Arg_2} 的部署覆盖字符串 {Arg_1} 反序列化时出错，错误：{Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR",
-        "Error starting containers: {Arg_1}"
-      ],
-      "message": "Error starting containers: {Arg_1}",
-      "translation": "启动容器时出错：{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
-        "Error starting containers for agreement {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "启动用于协议 {Arg_1} 的容器时出错：{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
-        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "重新启动用于协议 {Arg_1} 的容器时出错：{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
-        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-      ],
-      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "在启动用于 {Arg_1} 的新容器之前，清除旧容器时出错。错误：{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
-        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "获取用于为 {Arg_1} 进行服务重试的一列父容器失败。{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
-        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "针对服务 {Arg_1}，复原与父代的网络连接失败。{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "版本表达式：在 {Expr} 中不允许有空格。",
-      "placeholders": [
-        {
-          "id": "Expr",
+          "id": "NodeId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "expr"
+          "expr": "nodeId"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "message": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。",
+      "id": "Error getting node {NodeId} from the exchange. {Err}",
+      "message": "Error getting node {NodeId} from the exchange. {Err}",
+      "translation": "从 Exchange 获取节点 {NodeId} 出错。{Err}",
       "placeholders": [
         {
-          "id": "Verstring",
+          "id": "NodeId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。",
-      "placeholders": [
-        {
-          "id": "Expr",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "message": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "输入版本字符串 {V1} 或 {V2} 不是有效的单版本字符串。",
-      "placeholders": [
-        {
-          "id": "V1",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "v1"
-        },
-        {
-          "id": "V2",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "v2"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "message": "properties contains an invalid property: {Err}",
-      "translation": "properties 包含无效的属性：{Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "message": "Property must include a name and a value: {Property}",
-      "translation": "属性必须包括名称和值：{Property}",
-      "placeholders": [
-        {
-          "id": "Property",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.Property",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
-          "argNum": 1,
-          "expr": "property"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "属性 {Name} 的属性类型 {DeclaredType} 无效。允许的属性类型包括：版本、字符串、整型、布尔型、浮点型和字符串列表。",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "属性值的类型为 {ActualType}，但期望的类型为 {DeclaredType}",
-      "placeholders": [
-        {
-          "id": "ActualType",
-          "string": "%[1]T",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "actualType"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "message": "Value {Value} of property {Name} is not an integer type",
-      "translation": "属性 {Name} 的值 {Value} 不是整数类型",
-      "placeholders": [
-        {
-          "id": "Value",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "属性 {Name} 的值 {Value} 不是有效的字符串。请定义类型，或将值更改为字符串。",
-      "placeholders": [
-        {
-          "id": "Value",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "message": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "值为 {Value} 的属性 {Name} 不是有效的版本字符串",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "property.Value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "message": "Property {Name} has invalid value type {ActualType}",
-      "translation": "属性 {Name} 的值类型 {ActualType} 无效",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "ActualType",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "actualType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
-        "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
-      ],
-      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "协议 {Arg_1} 已存在，正在忽略建议：{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
-        "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
-      ],
-      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "针对协议 {Arg_1}，将 TsAndCs 取消编组时接收到错误：{Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
-        "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
-      ],
-      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "在将协议 {Arg_1} 用于服务 {Arg_2}/{Arg_3} 的情况下，节点接收到来自 agbot {Arg_4} 的建议消息。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        },
-        {
-          "id": "Arg_4",
-          "string": "%[4]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 4
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_NODE_REJECTED_PROPOSAL",
-        "Node rejected the proposal for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "节点已拒绝针对服务 {Arg_1}/{Arg_2} 的建议。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_ERR_HANDLE_PROPOSAL",
-        "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "处理针对服务 {Arg_1}/{Arg_2} 的建议时出错。错误：{Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_POL_FILE",
-        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "无法读取用于服务 {Arg_2} 的策略文件 {Arg_1}，错误：{Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_START_ADVERTISE_POL",
-        "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "针对服务 {Arg_1}/{Arg_2}，启动通过 Exchange 进行的策略通告。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_ADVERTISE_POL",
-        "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "无法针对服务 {Arg_1}/{Arg_2} 通过 Exchange 通告策略，错误：{Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_COMPLETE_ADVERTISE_POL",
-        "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "针对服务 {Arg_1}/{Arg_2}，完成通过 Exchange 进行的策略通告。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_HB_FAILED",
-        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号失败。错误：{Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_HB_RESTORED",
-        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号已复原。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "无法从本地数据库读取节点策略。{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_FROM_DB",
-        "Unable to read node object from the local database. {Arg_1}"
-      ],
-      "message": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "无法从本地数据库读取节点对象。{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
-        "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-      "translation": "无法使本地节点策略与 Exchange 副本同步。错误：{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
-        "Node policy updated with the exchange copy: {Arg_1}"
-      ],
-      "message": "Node policy updated with the exchange copy: {Arg_1}",
-      "translation": "节点策略已根据 Exchange 副本进行更新：{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
-        "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-      "translation": "无法使本地节点用户输入与 Exchange 副本同步。错误：{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
-        "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
-      ],
-      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "节点用户输入已根据 Exchange 副本进行更新。更改后的用户输入为：{Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_CANNOT_VERIFY_AG",
-        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
-      ],
-      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "节点未能与使用者验证协议 {Arg_1}。将予以取消",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_IS_OFFLINE",
-        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
-      ],
-      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "节点处于脱机状态。在连接复原之前，定期脱机错误消息的日志记录将会缩减",
-      "fuzzy": true
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "名称或组织是空字符串。",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 数组为空。",
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "约束表达式 {Dconstraints} 的类型为 {Dconstraints_1}，但期望字符串数组",
-      "placeholders": [
-        {
-          "id": "Dconstraints",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "dconstraints"
-        },
-        {
-          "id": "Dconstraints_1",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "dconstraints"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
-      "message": "unable to convert policy constraint {Remainder} into internal format, error {Err}",
-      "translation": "无法将策略约束 {Remainder} 转换为内部格式，错误：{Err}",
-      "placeholders": [
-        {
-          "id": "Remainder",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "remainder"
+          "expr": "nodeId"
         },
         {
           "id": "Err",
@@ -1087,321 +48,705 @@
       "fuzzy": true
     },
     {
-      "id": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
-      "message": "Logical operator {NextLogicalOperator} is not valid, expecting AND, OR, &&, ||",
-      "translation": "逻辑运算符 {NextLogicalOperator} 无效，期望 AND、OR、&& 或 ||",
+      "id": "No node found for this node id {NodeId}.",
+      "message": "No node found for this node id {NodeId}.",
+      "translation": "找不到节点标识为 {NodeId} 的节点。",
       "placeholders": [
         {
-          "id": "NextLogicalOperator",
+          "id": "NodeId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "nextLogicalOperator"
+          "expr": "nodeId"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
-      "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is <property> == <value>",
-      "translation": "在表达式 {Expression} 中找到 {Lenpieces} 个标记，但期望 3 个，期望的格式是 <property> == <value>",
-      "placeholders": [
-        {
-          "id": "Lenpieces",
-          "string": "%[1]v",
-          "type": "int",
-          "underlyingType": "int",
-          "argNum": 1,
-          "expr": "len(pieces)"
-        },
-        {
-          "id": "Expression",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "expression"
-        }
-      ],
+      "id": "The PolicyCheck input cannot be null",
+      "message": "The PolicyCheck input cannot be null",
+      "translation": "PolicyCheck 输入不得为 Null",
       "fuzzy": true
     },
     {
-      "id": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
-      "message": "found {Lenpieces} token(s), expecting 3 in an expression {Expression}, expected form is expression with 3 tokens: <property> <operator> <value> in constraint expression",
-      "translation": "在表达式 {Expression} 中找到 {Lenpieces} 个标记，但期望 3 个，期望格式是带 3 个标记的表达式：约束表达式中的 <property> <operator> <value>",
+      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
+      "message": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
+      "translation": "输入节点体系结构 {NodeArch} 与节点 {NodeId} 的 Exchange 节点体系结构 {Arch} 不匹配。",
       "placeholders": [
         {
-          "id": "Lenpieces",
-          "string": "%[1]v",
-          "type": "int",
-          "underlyingType": "int",
-          "argNum": 1,
-          "expr": "len(pieces)"
-        },
-        {
-          "id": "Expression",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "expression"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-      "message": "Expression: {Expression} should contain valid comparison operator - wrong operator {Pieces1}. Allowed operators: {Lessthan}, {Greaterthan}, {Equalto}, {Doubleequalto}, {Lessthaneq}, {Greaterthaneq}, {Notequalto}, {Inoperator}",
-      "translation": "表达式 {Expression} 应包含有效的比较运算符 - 运算符 {Pieces1} 错误。允许的运算符包括：{Lessthan}、{Greaterthan}、{Equalto}、{Doubleequalto}、{Lessthaneq}、{Greaterthaneq}、{Notequalto} 和 {Inoperator}",
-      "placeholders": [
-        {
-          "id": "Expression",
+          "id": "NodeArch",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "expression"
+          "expr": "input.NodeArch"
         },
         {
-          "id": "Pieces1",
+          "id": "Arch",
           "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "pieces[1]"
+          "expr": "node.Arch"
         },
         {
-          "id": "Lessthan",
+          "id": "NodeId",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "lessthan"
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Policy Incompatible",
+      "message": "Policy Incompatible",
+      "translation": "策略不兼容",
+      "fuzzy": true
+    },
+    {
+      "id": "Compatible",
+      "message": "Compatible",
+      "translation": "兼容",
+      "fuzzy": true
+    },
+    {
+      "id": "Architecture does not match.",
+      "message": "Architecture does not match.",
+      "translation": "体系结构不匹配。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+      "message": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+      "translation": "获取 {Org}/{WorkloadURL} V{Version} 的所有体系结构的服务失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Org",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "workload.Org"
         },
         {
-          "id": "Greaterthan",
+          "id": "WorkloadURL",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "workload.WorkloadURL"
+        },
+        {
+          "id": "Version",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "workload.Version"
+        },
+        {
+          "id": "Err",
+          "string": "%[4]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 4,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the service policy. {Err}",
+      "message": "Failed to validate the service policy. {Err}",
+      "translation": "验证服务策略失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
+      "translation": "在业务策略中找不到“arch”为 {NodeArch} 的服务。",
+      "placeholders": [
+        {
+          "id": "NodeArch",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "input.NodeArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No services found in the business policy.",
+      "message": "No services found in the business policy.",
+      "translation": "在业务策略中找不到任何服务。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node policy cannot be null.",
+      "message": "Node policy cannot be null.",
+      "translation": "节点策略不得为 Null。",
+      "fuzzy": true
+    },
+    {
+      "id": "Business policy cannot be null.",
+      "message": "Business policy cannot be null.",
+      "translation": "业务策略不得为 Null。",
+      "fuzzy": true
+    },
+    {
+      "id": "Merged service policy cannot be null.",
+      "message": "Merged service policy cannot be null.",
+      "translation": "合并的服务策略不得为 Null。",
+      "fuzzy": true
+    },
+    {
+      "id": "Error merging node policy with arch property. {Err}",
+      "message": "Error merging node policy with arch property. {Err}",
+      "translation": "将节点策略与体系结构属性合并出错。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the node policy. {Err}",
+      "message": "Failed to validate the node policy. {Err}",
+      "translation": "验证节点策略失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+      "message": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+      "translation": "对于节点 {NodeId}，将节点策略转换为内部策略格式失败：{Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No node policy found for this node {NodeId}.",
+      "message": "No node policy found for this node {NodeId}.",
+      "translation": "找不到节点 {NodeId} 的节点策略。",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Neither node policy nor node id is specified.",
+      "message": "Neither node policy nor node id is specified.",
+      "translation": "既未指定节点策略也未指定节点标识。",
+      "fuzzy": true
+    },
+    {
+      "id": "Node id is empty.",
+      "message": "Node id is empty.",
+      "translation": "节点标识为空。",
+      "fuzzy": true
+    },
+    {
+      "id": "Organization is not specified in the node id: {NodeId}.",
+      "message": "Organization is not specified in the node id: {NodeId}.",
+      "translation": "未在标识为 {NodeId} 的节点中指定组织。",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error trying to query node policy for {NodeId}: {Err}",
+      "message": "Error trying to query node policy for {NodeId}: {Err}",
+      "translation": "尝试查询 {NodeId} 的节点策略出错：{Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
+      "message": "Failed to validate the node policy for node {NodeId}. {Err}",
+      "translation": "验证节点 {NodeId} 的节点策略失败。{Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+      "message": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+      "translation": "对于节点 {NodeId}，将节点策略转换为内部策略失败：{Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
+      "message": "Failed to convert business policy {BpId} to internal policy: {Err1}",
+      "translation": "将业务策略 {BpId} 转换为内部策略失败：{Err1}",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        },
+        {
+          "id": "Err1",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Validation failure for business policy {BpId}. {Err}",
+      "message": "Validation failure for business policy {BpId}. {Err}",
+      "translation": "验证业务策略 {BpId} 失败。{Err}",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No services specified in the given business policy {BpId}.",
+      "message": "No services specified in the given business policy {BpId}.",
+      "translation": "未在给定的业务策略 {BpId} 中指定任何服务。",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No services specified in the business policy {Name}.",
+      "message": "No services specified in the business policy {Name}.",
+      "translation": "未在业务策略 {Name} 中指定任何服务。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "pPolicy.Header.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Neither business policy nor business policy id is specified.",
+      "message": "Neither business policy nor business policy id is specified.",
+      "translation": "既未指定业务策略也未指定业务策略标识。",
+      "fuzzy": true
+    },
+    {
+      "id": "Business policy id is empty.",
+      "message": "Business policy id is empty.",
+      "translation": "业务策略标识为空。",
+      "fuzzy": true
+    },
+    {
+      "id": "Organization is not specified in the business policy id: {BpId}.",
+      "message": "Organization is not specified in the business policy id: {BpId}.",
+      "translation": "未在标识为 {BpId} 的业务策略中指定组织。",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to get business policy for {BpId}, {Err}",
+      "message": "Unable to get business policy for {BpId}, {Err}",
+      "translation": "无法获取 {BpId} 的业务策略：{Err}",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No business policy found for this id {BpId}.",
+      "message": "No business policy found for this id {BpId}.",
+      "translation": "找不到标识为 {BpId} 的业务策略。",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
+      "message": "Failed to convert business policy {BpId} to internal policy format: {Err}",
+      "translation": "将业务策略 {BpId} 转换为内部策略格式失败：{Err}",
+      "placeholders": [
+        {
+          "id": "BpId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "bpId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service policy id is empty.",
+      "message": "Service policy id is empty.",
+      "translation": "服务策略标识为空。",
+      "fuzzy": true
+    },
+    {
+      "id": "Organization is not specified in the service policy id: {SvcId}.",
+      "message": "Organization is not specified in the service policy id: {SvcId}.",
+      "translation": "未在标识为 {SvcId} 的服务策略中指定组织。",
+      "placeholders": [
+        {
+          "id": "SvcId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
+      "message": "Error trying to query service policy for service id {SvcId}: {Err}",
+      "translation": "尝试查询服务标识为 {SvcId} 的服务策略出错：{Err}",
+      "placeholders": [
+        {
+          "id": "SvcId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error validating the service policy {SvcId}. {Err}",
+      "message": "Error validating the service policy {SvcId}. {Err}",
+      "translation": "验证服务策略 {SvcId} 出错。{Err}",
+      "placeholders": [
+        {
+          "id": "SvcId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service name is empty.",
+      "message": "Service name is empty.",
+      "translation": "服务名称为空。",
+      "fuzzy": true
+    },
+    {
+      "id": "Service organization is empty.",
+      "message": "Service organization is empty.",
+      "translation": "服务组织为空。",
+      "fuzzy": true
+    },
+    {
+      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "message": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "尝试查询 {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} 的服务策略出错。{Err}",
+      "placeholders": [
+        {
+          "id": "SvcOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "svcOrg"
+        },
+        {
+          "id": "SvcUrl",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "svcUrl"
+        },
+        {
+          "id": "SvcVersion",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "svcVersion"
+        },
+        {
+          "id": "SvcArch",
           "string": "%[4]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 4,
-          "expr": "greaterthan"
+          "expr": "svcArch"
         },
         {
-          "id": "Equalto",
+          "id": "Err",
           "string": "%[5]v",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 5,
-          "expr": "equalto"
-        },
-        {
-          "id": "Doubleequalto",
-          "string": "%[6]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 6,
-          "expr": "doubleequalto"
-        },
-        {
-          "id": "Lessthaneq",
-          "string": "%[7]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 7,
-          "expr": "lessthaneq"
-        },
-        {
-          "id": "Greaterthaneq",
-          "string": "%[8]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 8,
-          "expr": "greaterthaneq"
-        },
-        {
-          "id": "Notequalto",
-          "string": "%[9]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 9,
-          "expr": "notequalto"
-        },
-        {
-          "id": "Inoperator",
-          "string": "%[10]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 10,
-          "expr": "inoperator"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
-      "message": "Comparison operator: {CompOp} is not supported for numeric value: {Value}",
-      "translation": "数字值 {Value} 不支持比较运算符 {CompOp}",
+      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "message": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "验证 {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} 的服务策略失败。{Err}",
       "placeholders": [
         {
-          "id": "CompOp",
+          "id": "SvcOrg",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "compOp"
+          "expr": "svcOrg"
         },
         {
-          "id": "Value",
+          "id": "SvcUrl",
           "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
-      "message": "Comparison operator: {CompOp} is not supported for boolean value: {Value}",
-      "translation": "布尔值 {Value} 不支持比较运算符 {CompOp}",
-      "placeholders": [
-        {
-          "id": "CompOp",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "compOp"
+          "expr": "svcUrl"
         },
         {
-          "id": "Value",
-          "string": "%[2]v",
+          "id": "SvcVersion",
+          "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
-          "argNum": 2,
-          "expr": "value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
-      "message": "Comparison operator: {CompOp} is not supported for string list value: {Value}",
-      "translation": "字符串列表值 {Value} 不支持比较运算符 {CompOp}",
-      "placeholders": [
-        {
-          "id": "CompOp",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "compOp"
+          "argNum": 3,
+          "expr": "svcVersion"
         },
         {
-          "id": "Value",
-          "string": "%[2]v",
+          "id": "SvcArch",
+          "string": "%[4]v",
           "type": "string",
           "underlyingType": "string",
-          "argNum": 2,
-          "expr": "value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Comparison operator: {CompOp} is not supported for string value: {Value}",
-      "message": "Comparison operator: {CompOp} is not supported for string value: {Value}",
-      "translation": "字符串值 {Value} 不支持比较运算符 {CompOp}",
-      "placeholders": [
-        {
-          "id": "CompOp",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "compOp"
+          "argNum": 4,
+          "expr": "svcArch"
         },
         {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "value"
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Comparison operator: {CompOp} is not supported for single version: {Value}",
-      "message": "Comparison operator: {CompOp} is not supported for single version: {Value}",
-      "translation": "单版本 {Value} 不支持比较运算符 {CompOp}",
-      "placeholders": [
-        {
-          "id": "CompOp",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "compOp"
-        },
-        {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "value"
-        }
-      ],
+      "id": "The given business policy should not be null.",
+      "message": "The given business policy should not be null.",
+      "translation": "给定的业务策略不得为 Null。",
       "fuzzy": true
     },
     {
-      "id": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
-      "message": "Comparison operator: {CompOp} is not supported for version expression: {Value}",
-      "translation": "版本表达式 {Value} 不支持比较运算符 {CompOp}",
-      "placeholders": [
-        {
-          "id": "CompOp",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "compOp"
-        },
-        {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Expression: {Expression} is not valid",
-      "message": "Expression: {Expression} is not valid",
-      "translation": "表达式 {Expression} 无效",
-      "placeholders": [
-        {
-          "id": "Expression",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expression"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "message": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "无法为自签名 MMS API 证书建立目录，错误：{Err}",
+      "id": "Error merging business policy with service policy. {Err}",
+      "message": "Error merging business policy with service policy. {Err}",
+      "translation": "将业务策略与服务策略合并出错。{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -1415,65 +760,65 @@
       "fuzzy": true
     },
     {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "无法为 MMS API 证书序列号生成随机数，错误：{Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
+      "id": "The business policy should not be null.",
+      "message": "The business policy should not be null.",
+      "translation": "业务策略不得为 Null。",
       "fuzzy": true
     },
     {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "message": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "无法为 MMS API 证书生成专用密钥，错误：{Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
+      "id": "The UserInputCheck input cannot be null",
+      "message": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 输入不得为 Null",
       "fuzzy": true
     },
     {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "message": "unable to create MMS API certificate, error {Err}",
-      "translation": "无法创建 MMS API 证书，错误：{Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
+      "id": "Neither node user input nor node id is specified.",
+      "message": "Neither node user input nor node id is specified.",
+      "translation": "既未指定节点用户输入也未指定节点标识。",
       "fuzzy": true
     },
     {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "无法将 MMS API 证书写入文件 {ServerCertificate}，错误：{Err}",
+      "id": "User Input Incompatible",
+      "message": "User Input Incompatible",
+      "translation": "用户输入不兼容",
+      "fuzzy": true
+    },
+    {
+      "id": "Service architecture {Arch} does not match the node architecture {NodeArch}.",
+      "message": "Service architecture {Arch} does not match the node architecture {NodeArch}.",
+      "translation": "服务体系结构 {Arch} 与节点体系结构 {NodeArch} 不匹配。",
       "placeholders": [
         {
-          "id": "ServerCertificate",
+          "id": "Arch",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "common.Configuration.ServerCertificate"
+          "expr": "bPolicy.Service.Arch"
+        },
+        {
+          "id": "NodeArch",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "input.NodeArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Validation failure for input service {SId}. {Err}",
+      "message": "Validation failure for input service {SId}. {Err}",
+      "translation": "验证输入服务 {SId} 失败。{Err}",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
         },
         {
           "id": "Err",
@@ -1487,17 +832,69 @@
       "fuzzy": true
     },
     {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "无法将 MMS API 证书编码到文件 {ServerCertificate}，错误：{Err}",
+      "id": "Error getting services for all archetctures for {Org}/{Name} version {Version}. {Err}",
+      "message": "Error getting services for all archetctures for {Org}/{Name} version {Version}. {Err}",
+      "translation": "获取 {Org}/{Name} V{Version} 的所有体系结构的服务出错。{Err}",
       "placeholders": [
         {
-          "id": "ServerCertificate",
+          "id": "Org",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "common.Configuration.ServerCertificate"
+          "expr": "bPolicy.Service.Org"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "bPolicy.Service.Name"
+        },
+        {
+          "id": "Version",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "workload.Version"
+        },
+        {
+          "id": "Err",
+          "string": "%[4]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 4,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service definition not found in the input.",
+      "message": "Service definition not found in the input.",
+      "translation": "在输入中找不到服务定义。",
+      "fuzzy": true
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "message": "The input service spec object cannot be null.",
+      "translation": "输入服务规范对象不得为 Null。",
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
+      "message": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
+      "translation": "从 Exchange 检索 {SvcSpec} 的服务出错。{Err}",
+      "placeholders": [
+        {
+          "id": "SvcSpec",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
+          "underlyingType": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
+          "argNum": 1,
+          "expr": "svcSpec"
         },
         {
           "id": "Err",
@@ -1511,17 +908,17 @@
       "fuzzy": true
     },
     {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "无法关闭 MMS API 证书文件 {ServerCertificate}，错误：{Err}",
+      "id": "Error verifing user input for service {SId}. {Err}",
+      "message": "Error verifing user input for service {SId}. {Err}",
+      "translation": "验证服务 {SId} 的用户输入出错。{Err}",
       "placeholders": [
         {
-          "id": "ServerCertificate",
+          "id": "SId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "common.Configuration.ServerCertificate"
+          "expr": "sId"
         },
         {
           "id": "Err",
@@ -1535,17 +932,41 @@
       "fuzzy": true
     },
     {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "无法将 MMS API 证书专用密钥写入文件 {ServerKey}，错误：{Err}",
+      "id": "Failed to verify user input for service {SId}. {Reason}",
+      "message": "Failed to verify user input for service {SId}. {Reason}",
+      "translation": "验证服务 {SId} 的用户输入失败。{Reason}",
       "placeholders": [
         {
-          "id": "ServerKey",
+          "id": "SId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "common.Configuration.ServerKey"
+          "expr": "sId"
+        },
+        {
+          "id": "Reason",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "reason"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error verifing user input for dependent service {SId}. {Err}",
+      "message": "Error verifing user input for dependent service {SId}. {Err}",
+      "translation": "验证相依服务 {SId} 的用户输入出错。{Err}",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
         },
         {
           "id": "Err",
@@ -1559,17 +980,47 @@
       "fuzzy": true
     },
     {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "无法将 MMS API 证书专用密钥编码到文件 {ServerKey}，错误：{Err}",
+      "id": "Failed to verify user input for dependent service {SId}. {Reason}",
+      "message": "Failed to verify user input for dependent service {SId}. {Reason}",
+      "translation": "验证相依服务 {SId} 的用户输入失败。{Reason}",
       "placeholders": [
         {
-          "id": "ServerKey",
+          "id": "SId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "common.Configuration.ServerKey"
+          "expr": "sId"
+        },
+        {
+          "id": "Reason",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "reason"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "message": "The input service definition object cannot be null.",
+      "translation": "输入服务定义对象不得为 Null。",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "message": "Unable to create version expression from {Version}. {Err}",
+      "translation": "无法从 {Version} 创建版本表达式。{Err}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDep.Version"
         },
         {
           "id": "Err",
@@ -1583,17 +1034,17 @@
       "fuzzy": true
     },
     {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}",
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "message": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "从 Exchange 检索 {SDep} 的相依服务出错。{Err}",
       "placeholders": [
         {
-          "id": "ServerKey",
+          "id": "SDep",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
           "argNum": 1,
-          "expr": "common.Configuration.ServerKey"
+          "expr": "sDep"
         },
         {
           "id": "Err",
@@ -1602,6 +1053,172 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get the service from the exchange. {Err}",
+      "message": "Failed to get the service from the exchange. {Err}",
+      "translation": "从 Exchange 获取服务失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Servcie does not exist on the exchange.",
+      "message": "Servcie does not exist on the exchange.",
+      "translation": "服务在 Exchange 上不存在。",
+      "fuzzy": true
+    },
+    {
+      "id": "No user input found for service.",
+      "message": "No user input found for service.",
+      "translation": "找不到服务的用户输入。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to validate the user input type for variable {Name}. {Err}",
+      "message": "Failed to validate the user input type for variable {Name}. {Err}",
+      "translation": "验证变量 {Name} 的用户输入类型失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ui.Name"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "A required user input value is missing for variable {Name}.",
+      "message": "A required user input value is missing for variable {Name}.",
+      "translation": "变量 {Name} 缺少必需的用户输入值。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ui.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "message": "URL must be specified in the service definition.",
+      "translation": "在服务定义中必须指定 URL。",
+      "fuzzy": true
+    },
+    {
+      "id": "Version must be specified in the service definition.",
+      "message": "Version must be specified in the service definition.",
+      "translation": "在服务定义中必须指定版本。",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalide version format: {Version}.",
+      "message": "Invalide version format: {Version}.",
+      "translation": "版本格式无效：{Version}。",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "service.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Arch must be specified in the service definition.",
+      "message": "Arch must be specified in the service definition.",
+      "translation": "在服务定义中必须指定体系结构。",
+      "fuzzy": true
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
+      "message": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
+      "translation": "服务 URL {URL} 与业务策略中指定的服务 URL {Name} 不匹配。",
+      "placeholders": [
+        {
+          "id": "URL",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "service.URL"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "bPolicy.Service.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
+      "message": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
+      "translation": "服务体系结构 {Arch} 与业务策略中指定的服务体系结构 {Arch_1} 不匹配。",
+      "placeholders": [
+        {
+          "id": "Arch",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "service.Arch"
+        },
+        {
+          "id": "Arch_1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "bPolicy.Service.Arch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service version {Version} does not match any service versions specified in the business policy.",
+      "message": "Service version {Version} does not match any service versions specified in the business policy.",
+      "translation": "服务版本 {Version} 与业务策略中指定的任何服务版本都不匹配。",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "service.Version"
         }
       ],
       "fuzzy": true
@@ -2713,6 +2330,864 @@
     },
     {
       "id": [
+        "EL_AG_UNABLE_READ_POL_FILE",
+        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "无法读取用于服务 {Arg_2} 的策略文件 {Arg_1}，错误：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_START_ADVERTISE_POL",
+        "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "针对服务 {Arg_1}/{Arg_2}，启动通过 Exchange 进行的策略通告。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_ADVERTISE_POL",
+        "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "无法针对服务 {Arg_1}/{Arg_2} 通过 Exchange 通告策略，错误：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_COMPLETE_ADVERTISE_POL",
+        "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "针对服务 {Arg_1}/{Arg_2}，完成通过 Exchange 进行的策略通告。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_FAILED",
+        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号失败。错误：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_RESTORED",
+        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号已复原。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
+        "unable to read node policy from the local database. {Arg_1}"
+      ],
+      "message": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "无法从本地数据库读取节点策略。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_FROM_DB",
+        "Unable to read node object from the local database. {Arg_1}"
+      ],
+      "message": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "无法从本地数据库读取节点对象。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
+        "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+      "translation": "无法使本地节点策略与 Exchange 副本同步。错误：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
+        "Node policy updated with the exchange copy: {Arg_1}"
+      ],
+      "message": "Node policy updated with the exchange copy: {Arg_1}",
+      "translation": "节点策略已根据 Exchange 副本进行更新：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
+        "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+      "translation": "无法使本地节点用户输入与 Exchange 副本同步。错误：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
+        "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
+      ],
+      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "节点用户输入已根据 Exchange 副本进行更新。更改后的用户输入为：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_CANNOT_VERIFY_AG",
+        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
+      ],
+      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "节点未能与使用者验证协议 {Arg_1}。将予以取消",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_IS_OFFLINE",
+        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+      ],
+      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "节点处于脱机状态。在连接复原之前，定期脱机错误消息的日志记录将会缩减",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
+        "Unable to sync the node with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
+      "translation": "无法使节点与 Exchange 副本同步。错误：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
+        "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
+      ],
+      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+      "translation": "无法从 Exchange 中检索节点资源 {Arg_1} 的服务配置状态，错误：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
+        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
+      ],
+      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "无法从本地数据库检索已保存的节点 Exchange 模式。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
+        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
+      ],
+      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "无法将新的节点 Exchange 模式 {Arg_1} 保存至本地数据库。错误：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "兼容性错误：模式版本不相同，使用者策略：{Version}，生产者策略：{Version_1}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "consumer_policy.Header.Version"
+        },
+        {
+          "id": "Version_1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "producer_policy.Header.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "message": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "兼容性错误：节点属性 {Properties} 未满足约束需求 {Constraints}。底层错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Properties",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "producer_policy.Properties"
+        },
+        {
+          "id": "Constraints",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "consumer_policy.Constraints"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "message": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "兼容性错误：属性 {Properties} 未满足节点约束 {Constraints}。底层错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Properties",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "consumer_policy.Properties"
+        },
+        {
+          "id": "Constraints",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "producer_policy.Constraints"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "message": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "兼容性错误：在 {AgreementProtocols} 与 {AgreementProtocols_1} 之间没有公共的协议。底层错误：{Err}",
+      "placeholders": [
+        {
+          "id": "AgreementProtocols",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
+          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
+          "argNum": 1,
+          "expr": "producer_policy.AgreementProtocols"
+        },
+        {
+          "id": "AgreementProtocols_1",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
+          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
+          "argNum": 2,
+          "expr": "consumer_policy.AgreementProtocols"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "message": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "兼容性错误：数据验证必须兼容，但生产者的数据验证为 {DataVerify}，使用者的数据验证为 {DataVerify_1}。",
+      "placeholders": [
+        {
+          "id": "DataVerify",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/policy.DataVerification",
+          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
+          "argNum": 1,
+          "expr": "producer_policy.DataVerify"
+        },
+        {
+          "id": "DataVerify_1",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/policy.DataVerification",
+          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
+          "argNum": 2,
+          "expr": "consumer_policy.DataVerify"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
+        "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+      ],
+      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "协议 {Arg_1} 已存在，正在忽略建议：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
+        "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+      ],
+      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "针对协议 {Arg_1}，将 TsAndCs 取消编组时接收到错误：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
+        "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+      ],
+      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "在将协议 {Arg_1} 用于服务 {Arg_2}/{Arg_3} 的情况下，节点接收到来自 agbot {Arg_4} 的建议消息。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        },
+        {
+          "id": "Arg_4",
+          "string": "%[4]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 4
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_NODE_REJECTED_PROPOSAL",
+        "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "节点已拒绝针对服务 {Arg_1}/{Arg_2} 的建议。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_ERR_HANDLE_PROPOSAL",
+        "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "处理针对服务 {Arg_1}/{Arg_2} 的建议时出错。错误：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "message": "properties contains an invalid property: {Err}",
+      "translation": "properties 包含无效的属性：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property must include a name and a value: {Property}",
+      "message": "Property must include a name and a value: {Property}",
+      "translation": "属性必须包括名称和值：{Property}",
+      "placeholders": [
+        {
+          "id": "Property",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.Property",
+          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
+          "argNum": 1,
+          "expr": "property"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "translation": "属性 {Name} 的属性类型 {DeclaredType} 无效。允许的属性类型包括：版本、字符串、整型、布尔型、浮点型和字符串列表。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "属性值的类型为 {ActualType}，但期望的类型为 {DeclaredType}",
+      "placeholders": [
+        {
+          "id": "ActualType",
+          "string": "%[1]T",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "actualType"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "message": "Value {Value} of property {Name} is not an integer type",
+      "translation": "属性 {Name} 的值 {Value} 不是整数类型",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "属性 {Name} 的值 {Value} 不是有效的字符串。请定义类型，或将值更改为字符串。",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "message": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "值为 {Value} 的属性 {Name} 不是有效的版本字符串",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "Value",
+          "string": "%[2]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "property.Value"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "message": "Property {Name} has invalid value type {ActualType}",
+      "translation": "属性 {Name} 的值类型 {ActualType} 无效",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "ActualType",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "actualType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
         "EL_GOV_ERR_RETRIEVE_AG_FROM_DB",
         "Error retrieving agreement {Arg_1} from database, error {Arg_2}"
       ],
@@ -3045,11 +3520,11 @@
     },
     {
       "id": [
-        "EL_GOV_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
-        "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
+        "EL_GOV_ERR_SAVE_NODE_CONFIGSTATE_TO_DB",
+        "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}"
       ],
-      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-      "translation": "无法从 Exchange 中检索节点资源 {Arg_1} 的服务配置状态，错误：{Arg_2}",
+      "message": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
+      "translation": "将数据库中的节点配置状态持久保存至 {Arg_1} 出错。错误：{Arg_2}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -3064,6 +3539,42 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_RETRIEVE_DEVICE_FROM_DB",
+        "Error retrieving device from database. Error: {Arg_1}"
+      ],
+      "message": "Error retrieving device from database. Error: {Arg_1}",
+      "translation": "从数据库检索设备出错。错误：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_DEL_NODE_EXCH_PATTERN_FROM_DB",
+        "Error deleting node exchange pattern from the local database. {Arg_1}"
+      ],
+      "message": "Error deleting node exchange pattern from the local database. {Arg_1}",
+      "translation": "从本地数据库删除节点 Exchange 模式出错。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -4602,6 +5113,2512 @@
           "argNum": 2
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_EXCH_NODE_PATTERN_CHANGED",
+        "Node pattern changed on the exchange from {Arg_1} to {Arg_2}."
+      ],
+      "message": "Node pattern changed on the exchange from {Arg_1} to {Arg_2}.",
+      "translation": "Exchange 上的节点模式已从 {Arg_1} 更改为 {Arg_2}。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_REG_NODE_WITH_NEW_PATTERN",
+        "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}"
+      ],
+      "message": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
+      "translation": "使用新模式 {Arg_1} 重新注册节点时遇到错误。{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_START_REREG_NODE_PATTERN_CHANGE",
+        "Start re-registering node after pattern changed to {Arg_1}."
+      ],
+      "message": "Start re-registering node after pattern changed to {Arg_1}.",
+      "translation": "正在模式更改为 {Arg_1} 之后开始重新注册节点。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_END_REREG_NODE_PATTERN_CHANGE",
+        "Complete re-registering node after pattern changed to {Arg_1}."
+      ],
+      "message": "Complete re-registering node after pattern changed to {Arg_1}.",
+      "translation": "正在模式更改为 {Arg_1} 之后完成重新注册节点。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_PATTERN_CHANGED_AGAIN",
+        "Node pattern changed again on the exchange. Will register the node with the new pattern: {Arg_1}"
+      ],
+      "message": "Node pattern changed again on the exchange. Will register the node with the new pattern: {Arg_1}",
+      "translation": "Exchange 上的节点模式已再次更改。将使用新模式 {Arg_1} 注册该节点",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_ERR_VALIDATE_NEW_PATTERN",
+        "Error validating new node pattern {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error validating new node pattern {Arg_1}: {Arg_2}",
+      "translation": "验证新节点模式 {Arg_1} 出错：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_NODE_KEEP_OLD_PATTERN",
+        "The node will keep using the old pattern {Arg_1}"
+      ],
+      "message": "The node will keep using the old pattern {Arg_1}",
+      "translation": "该节点将继续使用旧模式 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_GOV_NEW_PATTERN_VERIFIED",
+        "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern."
+      ],
+      "message": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
+      "translation": "新模式 {Arg_1} 已通过验证。将取消协议，并使用新模式重新注册该节点。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "约束表达式 {Dconstraints} 的类型为 {Dconstraints_1}，但期望字符串数组",
+      "placeholders": [
+        {
+          "id": "Dconstraints",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "dconstraints"
+        },
+        {
+          "id": "Dconstraints_1",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "dconstraints"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "message": "The constraint expression contains unmatched parentheses.",
+      "translation": "约束表达式包含未配对的圆括号。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
+        "Deployment config {Arg_1} contains unsupported capability for a workload"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的功能",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
+        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "部署配置 {Arg_1} 包含基础结构容器所不支持的功能。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
+        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的绑定，{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
+        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "部署配置 {Arg_1} 包含{Arg_2} 所不支持的绑定，{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
+        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "将部署字符串 {Arg_1} 反序列化时出错，错误：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
+        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "将用于协议 {Arg_2} 的部署覆盖字符串 {Arg_1} 反序列化时出错，错误：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR",
+        "Error starting containers: {Arg_1}"
+      ],
+      "message": "Error starting containers: {Arg_1}",
+      "translation": "启动容器时出错：{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
+        "Error starting containers for agreement {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "启动用于协议 {Arg_1} 的容器时出错：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
+        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "重新启动用于协议 {Arg_1} 的容器时出错：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
+        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+      ],
+      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "在启动用于 {Arg_1} 的新容器之前，清除旧容器时出错。错误：{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
+        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "获取用于为 {Arg_1} 进行服务重试的一列父容器失败。{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
+        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "针对服务 {Arg_1}，复原与父代的网络连接失败。{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "[verbose] {M}",
+      "message": "[verbose] {M}",
+      "translation": "[verbose] {M}",
+      "placeholders": [
+        {
+          "id": "M",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "m"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error: {Msg}",
+      "message": "Error: {Msg}",
+      "translation": "错误：{Msg}",
+      "placeholders": [
+        {
+          "id": "Msg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: {Msg}",
+      "message": "Warning: {Msg}",
+      "translation": "警告：{Msg}",
+      "placeholders": [
+        {
+          "id": "Msg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "message": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "translation": "对 {ErrMsg} 中的字节进行取消编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ErrMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "errMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+      "message": "failed to marshal data type from {ErrMsg}: {Err}",
+      "translation": "对 {ErrMsg} 中的数据类型进行编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ErrMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "errMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "problem testing api key match: {Err}",
+      "message": "problem testing api key match: {Err}",
+      "translation": "测试 API 密钥匹配时遇到问题：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Using API key",
+      "message": "Using API key",
+      "translation": "正在使用 API 密钥",
+      "fuzzy": true
+    },
+    {
+      "id": "unable to create docker client: {Err}",
+      "message": "unable to create docker client: {Err}",
+      "translation": "无法创建 Docker 客户机：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "docker auth domainName: {DomainName}",
+      "message": "docker auth domainName: {DomainName}",
+      "translation": "Docker 认证域名：{DomainName}",
+      "placeholders": [
+        {
+          "id": "DomainName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "domainName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to find docker credentials for {Domain}",
+      "message": "unable to find docker credentials for {Domain}",
+      "translation": "找不到 {Domain} 的 Docker 凭证",
+      "placeholders": [
+        {
+          "id": "Domain",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "domain"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Pushing {Repository}:{Tag}...",
+      "message": "Pushing {Repository}:{Tag}...",
+      "translation": "正在推送 {Repository}:{Tag}...",
+      "placeholders": [
+        {
+          "id": "Repository",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "repository"
+        },
+        {
+          "id": "Tag",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "message": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。可能需要运行“docker login ...”，以提供映像注册表的凭证。",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+      "message": "unable to push docker image {Repository____tag}: {Err}",
+      "translation": "无法推送 Docker 映像 {Repository____tag}：{Err}",
+      "placeholders": [
+        {
+          "id": "Repository____tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "repository + \":\" + tag"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not find the image digest in the docker push output",
+      "message": "could not find the image digest in the docker push output",
+      "translation": "在 Docker 推送输出中找不到映像摘要",
+      "fuzzy": true
+    },
+    {
+      "id": "Pulling {Repository}:{Tag}...",
+      "message": "Pulling {Repository}:{Tag}...",
+      "translation": "正在拉取 {Repository}:{Tag}...",
+      "placeholders": [
+        {
+          "id": "Repository",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "repository"
+        },
+        {
+          "id": "Tag",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。找不到 Docker 凭证。如果映像注册表是私有的，您可能需要运行“docker login ...”。错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Repository____tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "repository + \":\" + tag"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+      "message": "unable to pull docker image {Repository____tag}: {Err}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}：{Err}",
+      "placeholders": [
+        {
+          "id": "Repository____tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "repository + \":\" + tag"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "the id can not contain more than 1 '/'",
+      "message": "the id can not contain more than 1 '/'",
+      "translation": "标识不得包含多个“/”",
+      "fuzzy": true
+    },
+    {
+      "id": "reading stdin failed: {Err}",
+      "message": "reading stdin failed: {Err}",
+      "translation": "读取 stdin 失败：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "reading {FilePath} failed: {Err}",
+      "message": "reading {FilePath} failed: {Err}",
+      "translation": "读取 {FilePath} 失败：{Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "message": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "translation": "警告：在输入文件中引用了环境变量“{EnvVarName}”，但未在环境中定义该变量。",
+      "placeholders": [
+        {
+          "id": "EnvVarName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "envVarName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading input, error {Err}",
+      "message": "Error reading input, error {Err}",
+      "translation": "读取输入出错，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Exiting.",
+      "message": "Exiting.",
+      "translation": "正在退出。",
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading HTTP response, error {Err}",
+      "message": "Error reading HTTP response, error {Err}",
+      "translation": "读取 HTTP 响应出错，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。请运行“systemctl status horizon”，以检查 Horizon 代理程序是否在运行中。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。具体错误为：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMethod",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMethod"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。与该端口相关联的 SSH 隧道可能已关闭。或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。具体错误为：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMethod",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMethod"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{ApiMsg} new request failed: {Err}",
+      "message": "{ApiMsg} new request failed: {Err}",
+      "translation": "{ApiMsg} 新请求失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HTTP code: {HttpCode}",
+      "message": "HTTP code: {HttpCode}",
+      "translation": "HTTP 代码：{HttpCode}",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "message": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码不正确：{HttpCode}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "HttpCode",
+          "string": "%[2]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "message": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码不正确：{HttpCode}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "HttpCode",
+          "string": "%[2]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "httpCode"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+      "message": "Failed to read body response from {ApiMsg}: {Err}",
+      "translation": "读取来自 {ApiMsg} 的主体响应失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+      "message": "failed to read body response from {ApiMsg}: {Err}",
+      "translation": "读取来自 {ApiMsg} 的主体响应失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "message": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的主体响应进行取消编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "message": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的主体响应进行取消编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "message": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确：{Body}",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Body",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "GetRespBodyAsString(resp.Body)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+      "message": "failed to marshal body for {ApiMsg}: {Err}",
+      "translation": "对 {ApiMsg} 的主体进行编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to unmarshal bytes. {Err}",
+      "message": "Failed to unmarshal bytes. {Err}",
+      "translation": "对字节进行取消编组失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "message": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 {OldMgmtHubCertPath} 出错：{Err}",
+      "placeholders": [
+        {
+          "id": "OldMgmtHubCertPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "config.OldMgmtHubCertPath"
+        },
+        {
+          "id": "ANAXOVERWRITEFILE",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ANAX_OVERWRITE_FILE"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "message": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "translation": "读取 ICP 证书文件 {IcpCertPath} 遇到错误：{Err}",
+      "placeholders": [
+        {
+          "id": "IcpCertPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "icpCertPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "message": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_EXCHANGE_URL 出错。{Err}",
+      "placeholders": [
+        {
+          "id": "ANAXOVERWRITEFILE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_OVERWRITE_FILE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "message": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "translation": "从 {ANAXCONFIGFILE} 获取 ExchangeUrl 出错。{Err}",
+      "placeholders": [
+        {
+          "id": "ANAXCONFIGFILE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_CONFIG_FILE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "message": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "translation": "未设置 HZN_EXCHANGE_URL，从节点上的 Horizon 代理程序配置获取。",
+      "fuzzy": true
+    },
+    {
+      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "message": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "未能从环境变量 HZN_EXCHANGE_URL 或 Horizon 代理程序获取 Exchange URL",
+      "fuzzy": true
+    },
+    {
+      "id": "The exchange url: {ExchUrl}",
+      "message": "The exchange url: {ExchUrl}",
+      "translation": "Exchange URL：{ExchUrl}",
+      "placeholders": [
+        {
+          "id": "ExchUrl",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchUrl"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "message": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_FSS_CSSURL 出错。{Err}",
+      "placeholders": [
+        {
+          "id": "ANAXOVERWRITEFILE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_OVERWRITE_FILE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "message": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "translation": "从 {ANAXCONFIGFILE} 获取模型管理服务 URL 出错。{Err}",
+      "placeholders": [
+        {
+          "id": "ANAXCONFIGFILE",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ANAX_CONFIG_FILE"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "message": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "translation": "未设置 HZN_FSS_CSSURL，从节点上的 Horizon 代理程序配置获取。",
+      "fuzzy": true
+    },
+    {
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "message": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "translation": "未能从环境变量 HZN_FSS_CSSURL 或 Horizon 代理程序获取模型管理服务 URL",
+      "fuzzy": true
+    },
+    {
+      "id": "The model management service url: {MmsUrl}",
+      "message": "The model management service url: {MmsUrl}",
+      "translation": "模型管理服务 URL：{MmsUrl}",
+      "placeholders": [
+        {
+          "id": "MmsUrl",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "mmsUrl"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。具体错误为：{Err}",
+      "placeholders": [
+        {
+          "id": "HorizonService",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "horizonService"
+        },
+        {
+          "id": "ApiMethod",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMethod"
+        },
+        {
+          "id": "ServiceEnvVarName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceEnvVarName"
+        },
+        {
+          "id": "Article",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "article"
+        },
+        {
+          "id": "HorizonService_1",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "horizonService"
+        },
+        {
+          "id": "Err",
+          "string": "%[6]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 6,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。可能是未正确设置 {ServiceEnvVarName}。或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。具体错误为：{Err}",
+      "placeholders": [
+        {
+          "id": "HorizonService",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "horizonService"
+        },
+        {
+          "id": "ApiMethod",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMethod"
+        },
+        {
+          "id": "ServiceEnvVarName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceEnvVarName"
+        },
+        {
+          "id": "ServiceEnvVarName_1",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "serviceEnvVarName"
+        },
+        {
+          "id": "HorizonService_1",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "horizonService"
+        },
+        {
+          "id": "Err",
+          "string": "%[6]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 6,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "message": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "translation": "对 {ApiMsg} 的 Exchange 主体进行编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to open object file {Name}: {Err}",
+      "message": "unable to open object file {Name}: {Err}",
+      "translation": "无法打开对象文件 {Name}：{Err}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "file.Name()"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "message": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。HTTP 状态：{Httpstatus}。将会重试。",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "Service",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "service"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Httpstatus",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "http_status"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "message": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。HTTP 状态：{Httpstatus}。",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "Service",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "service"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Httpstatus",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "http_status"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "message": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "StringbodyBytes",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "string(bodyBytes)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "message": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "message": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行编组失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "message": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "translation": "读取来自 {ApiMsg} 的 Exchange 主体响应失败：{Err}",
+      "placeholders": [
+        {
+          "id": "ApiMsg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "message": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确：{Code}，{Msg}",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        },
+        {
+          "id": "Code",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "respMsg.Code"
+        },
+        {
+          "id": "Msg",
+          "string": "%[4]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "respMsg.Msg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "message": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确",
+      "placeholders": [
+        {
+          "id": "HttpCode",
+          "string": "%[1]d",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "httpCode"
+        },
+        {
+          "id": "ApiMsg",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "apiMsg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "message": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "translation": "必须使用下列其中一项来指定 Exchange 认证：-u 标志、-n 标志、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "message": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "获取 {KeyFile} 文件的绝对路径失败。{Err}",
+      "placeholders": [
+        {
+          "id": "KeyFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "keyFile"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{Err}. Please create the signing key.",
+      "message": "{Err}. Please create the signing key.",
+      "translation": "{Err}。请创建签名密钥。",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "running: {CmdStr}",
+      "message": "running: {CmdStr}",
+      "translation": "正在运行：{CmdStr}",
+      "placeholders": [
+        {
+          "id": "CmdStr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "cmdStr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "did not get a command object",
+      "message": "did not get a command object",
+      "translation": "未能获取命令对象",
+      "fuzzy": true
+    },
+    {
+      "id": "Could not get Stdin pipe, error: {Err}",
+      "message": "Could not get Stdin pipe, error: {Err}",
+      "translation": "未能获取 Stdin 管道，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not retrieve output from command, error: {Err}",
+      "message": "could not retrieve output from command, error: {Err}",
+      "translation": "未能检索来自命令的输出，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not retrieve stderr from command, error: {Err}",
+      "message": "could not retrieve stderr from command, error: {Err}",
+      "translation": "未能检索来自命令的 stderr，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to start command, error: {Err}",
+      "message": "Unable to start command, error: {Err}",
+      "translation": "无法启动命令，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to write to stdin of command, error: {Err}",
+      "message": "Unable to write to stdin of command, error: {Err}",
+      "translation": "无法写至命令的 stdin，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to close stdin, error: {Err}",
+      "message": "Unable to close stdin, error: {Err}",
+      "translation": "无法关闭 stdin，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not read stdout, error: {Err}",
+      "message": "could not read stdout, error: {Err}",
+      "translation": "未能读取 stdout，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not read stderr, error: {Err}",
+      "message": "could not read stderr, error: {Err}",
+      "translation": "未能读取 stderr，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "message": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "translation": "命令失败：{Err}，stderr：{StringstderrBytes}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        },
+        {
+          "id": "StringstderrBytes",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "string(stderrBytes)"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "message": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "translation": "无法使用 {HTTPRequestTimeoutOverride} 来设置请求超时，值不是有效的数字：{EnvTimeout}",
+      "placeholders": [
+        {
+          "id": "HTTPRequestTimeoutOverride",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "config.HTTPRequestTimeoutOverride"
+        },
+        {
+          "id": "EnvTimeout",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "envTimeout"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "HTTP request timeout set to {RequestTimeout} seconds",
+      "message": "HTTP request timeout set to {RequestTimeout} seconds",
+      "translation": "HTTP 请求超时已设置为 {RequestTimeout} 秒",
+      "placeholders": [
+        {
+          "id": "RequestTimeout",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "requestTimeout"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "message": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "无法为自签名 MMS API 证书建立目录，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "无法为 MMS API 证书序列号生成随机数，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "message": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "无法为 MMS API 证书生成专用密钥，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "message": "unable to create MMS API certificate, error {Err}",
+      "translation": "无法创建 MMS API 证书，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "无法将 MMS API 证书写入文件 {ServerCertificate}，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ServerCertificate",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerCertificate"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "无法将 MMS API 证书编码到文件 {ServerCertificate}，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ServerCertificate",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerCertificate"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "无法关闭 MMS API 证书文件 {ServerCertificate}，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ServerCertificate",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerCertificate"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "无法将 MMS API 证书专用密钥写入文件 {ServerKey}，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ServerKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "无法将 MMS API 证书专用密钥编码到文件 {ServerKey}，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ServerKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "ServerKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "版本表达式：在 {Expr} 中不允许有空格。",
+      "placeholders": [
+        {
+          "id": "Expr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "message": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。",
+      "placeholders": [
+        {
+          "id": "Expr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "message": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "输入版本字符串 {V1} 或 {V2} 不是有效的单版本字符串。",
+      "placeholders": [
+        {
+          "id": "V1",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "v1"
+        },
+        {
+          "id": "V2",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "v2"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "message": "Unauthorized. No exchange user id is supplied.",
+      "translation": "未获授权。未提供 Exchange 用户标识。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "message": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "向 Exchange 认证用户失败。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No input found.",
+      "message": "No input found.",
+      "translation": "找不到输入。",
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "message": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "输入主体未能反序列化为 JSON 对象。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 PolicyCheck 对象。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 UserInputCheck 对象。{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "message": "No exchange user id is supplied.",
+      "translation": "未提供 Exchange 用户标识。",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "message": "No exchange user organization id is supplied.",
+      "translation": "未提供 Exchange 用户组织标识。",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "message": "No exchange user password or api key is supplied.",
+      "translation": "未提供 Exchange 用户密码或 API 密钥。",
+      "fuzzy": true
+    },
+    {
+      "id": "User not found.",
+      "message": "User not found.",
+      "translation": "找不到用户。",
+      "fuzzy": true
+    },
+    {
+      "id": "Internal server error",
+      "message": "Internal server error",
+      "translation": "内部服务器错误",
+      "fuzzy": true
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "message": "Name, or Org is empty string.",
+      "translation": "名称或组织是空字符串。",
+      "fuzzy": true
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "message": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 数组为空。",
       "fuzzy": true
     }
   ]
