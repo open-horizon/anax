@@ -130,15 +130,19 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 
 		mmsObjects := make([]MMSObjectInfo, 0)
 		c := make(chan MMSObjectInfo)
-		input_chan := make(chan common.MetaData)
 
 		for i := 0; i < len(batches); i++ {
-			for _, _ = range batches[i] {
+			for _, obj := range batches[i] {
+				obj := obj
 				go func() {
-					obj := <-input_chan
 					//1. call destination API
 					mmsObjectInfo := MMSObjectInfo{}
 					var objectDests []common.DestinationsStatus
+
+					mmsObjectInfo.ObjectType = obj.ObjectType
+					mmsObjectInfo.ObjectID = obj.ObjectID
+					mmsObjectInfo.Definition = &obj
+
 					urlPath = path.Join("api/v1/objects/", org, obj.ObjectType, obj.ObjectID, "destinations")
 
 					httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
@@ -159,19 +163,14 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 
 			}
 
-			for j := 0; j < len(batches[i]); j++ {
-				input_chan <- batches[i][j]
-			}
-
-			for _, obj := range batches[i] {
+			for range batches[i] {
 				select {
 				case mmsObjectInfo := <-c:
-					if !long {
-						mmsObjectInfo.ObjectID = obj.ObjectID
-						mmsObjectInfo.ObjectType = obj.ObjectType
+					if long {
+						mmsObjectInfo.ObjectID = ""
+						mmsObjectInfo.ObjectType = ""
 					} else {
-						objMeta := obj
-						mmsObjectInfo.Definition = &objMeta
+						mmsObjectInfo.Definition = nil
 					}
 					mmsObjects = append(mmsObjects, mmsObjectInfo)
 				}
