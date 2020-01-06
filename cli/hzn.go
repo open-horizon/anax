@@ -90,6 +90,12 @@ Environment Variables:
 	cliutils.Opts.Verbose = app.Flag("verbose", msgPrinter.Sprintf("Verbose output.")).Short('v').Bool()
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", msgPrinter.Sprintf("When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.")).Bool()
 
+	envCmd := app.Command("env", msgPrinter.Sprintf("Show the Horizon Environment Variables."))
+	envOrg := envCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	envUserPw := envCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID")).Short('u').PlaceHolder("USER:PW").String()
+	envExchUrl := envCmd.Flag("ex-url", msgPrinter.Sprintf("The Horizon exchange URL.")).String()
+	envCcsUrl := envCmd.Flag("css-url", msgPrinter.Sprintf("The Horizon Model Management Service URL.")).String()
+
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 	archCmd := app.Command("architecture", msgPrinter.Sprintf("Show the architecture of this machine (as defined by Horizon and golang)."))
 
@@ -636,6 +642,14 @@ Environment Variables:
 		mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
 
+	// For the ENV command , get org and exchange credentials
+	if strings.HasPrefix(fullCmd, "env") {
+		envOrg = cliutils.WithDefaultEnvVar(envOrg, "HZN_ORG_ID")
+		envUserPw = cliutils.WithDefaultEnvVar(envUserPw, "HZN_EXCHANGE_USER_AUTH")
+		*envExchUrl = cliutils.GetExchangeUrl()
+		*envCcsUrl = cliutils.GetMMSUrl()
+	}
+
 	// key file defaults
 	switch fullCmd {
 	case "key create":
@@ -656,6 +670,8 @@ Environment Variables:
 
 	// Decide which command to run
 	switch fullCmd {
+	case envCmd.FullCommand():
+		node.Env(*envOrg, *envUserPw, *envExchUrl, *envCcsUrl)
 	case versionCmd.FullCommand():
 		node.Version()
 	case archCmd.FullCommand():

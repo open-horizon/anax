@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/version"
+	"strings"
 )
 
 type Configstate struct {
@@ -110,4 +111,25 @@ func Version() {
 func Architecture() {
 	// Show client node architecture
 	fmt.Printf("%s\n", cutil.ArchString())
+}
+
+func Env(org, userPw, exchUrl, cssUrl string) {
+	// Show hzn Environment Variables
+	mask := "******"
+	msgPrinter := i18n.GetMessagePrinter()
+	msgPrinter.Printf("Horizon Agent HZN Environment Variables are:")
+	msgPrinter.Println()
+	msgPrinter.Printf("HZN_ORG_ID: %s", org)
+	msgPrinter.Println()
+	if strings.Contains(userPw, "iamapikey:") {
+		userPw = "iamapikey:" + mask
+	} else if strings.ContainsAny(userPw, ":") {
+		userPw = mask + ":" + mask
+	}
+	msgPrinter.Printf("HZN_EXCHANGE_USER_AUTH: %s", userPw)
+	msgPrinter.Println()
+	msgPrinter.Printf("HZN_EXCHANGE_URL: %s", exchUrl)
+	msgPrinter.Println()
+	msgPrinter.Printf("HZN_FSS_CSSURL: %s", cssUrl)
+	msgPrinter.Println()
 }
