@@ -75,7 +75,7 @@ func (a *ArchivedAgreement) CopyAgreementInto(agreement persistence.EstablishedA
 	a.TerminatedDescription = agreement.TerminatedDescription
 }
 
-func getAgreements(archivedAgreements bool) (apiAgreements []persistence.EstablishedAgreement) {
+func GetAgreements(archivedAgreements bool) (apiAgreements []persistence.EstablishedAgreement) {
 	// Get horizon api agreement output and drill down to the category we want
 	apiOutput := make(map[string]map[string][]persistence.EstablishedAgreement, 0)
 	cliutils.HorizonGet("agreement", []int{200}, &apiOutput, false)
@@ -94,7 +94,7 @@ func getAgreements(archivedAgreements bool) (apiAgreements []persistence.Establi
 }
 
 func List(archivedAgreements bool, agreementId string) {
-	apiAgreements := getAgreements(archivedAgreements)
+	apiAgreements := GetAgreements(archivedAgreements)
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -148,7 +148,7 @@ func Cancel(agreementId string, allAgreements bool) {
 	// Put the agreement ids in a slice
 	var agrIds []string
 	if allAgreements {
-		apiAgreements := getAgreements(false)
+		apiAgreements := GetAgreements(false)
 		for _, a := range apiAgreements {
 			agrIds = append(agrIds, a.CurrentAgreementId)
 		}
@@ -167,6 +167,6 @@ func Cancel(agreementId string, allAgreements bool) {
 	for _, id := range agrIds {
 		msgPrinter.Printf("Canceling agreement %s ...", id)
 		msgPrinter.Println()
-		cliutils.HorizonDelete("agreement/"+id, []int{200, 204}, false)
+		cliutils.HorizonDelete("agreement/"+id, []int{200, 204}, []int{}, false)
 	}
 }

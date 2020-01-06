@@ -155,16 +155,6 @@ func (a *SecureAPI) newHTTPClientFactory() *config.HTTPClientFactory {
 	}
 }
 
-func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) *compcheck.UserExchangeContext {
-	return &compcheck.UserExchangeContext{
-		UserId:      userId,
-		Password:    passwd,
-		URL:         a.GetExchangeURL(),
-		CSSURL:      a.GetCSSURL(),
-		HTTPFactory: a.GetHTTPFactory(),
-	}
-}
-
 // This function sets up the agbot secure http server
 func (a *SecureAPI) listen() {
 	glog.Info("Starting AgreementBot SecureAPI server")
@@ -348,7 +338,7 @@ func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 }
 
 // This function checks user cred and writes corrsponding response. It also creates a message printer with given language from the http request.
-func (a *SecureAPI) processUserCred(w http.ResponseWriter, r *http.Request) (*compcheck.UserExchangeContext, *message.Printer, bool) {
+func (a *SecureAPI) processUserCred(w http.ResponseWriter, r *http.Request) (exchange.ExchangeContext, *message.Printer, bool) {
 
 	// get message printer with the language passed in from the header
 	lan := r.Header.Get("Accept-Language")
@@ -368,7 +358,7 @@ func (a *SecureAPI) processUserCred(w http.ResponseWriter, r *http.Request) (*co
 		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
 		return nil, nil, false
 	} else {
-		user_ec := a.createUserExchangeContext(userId, userPasswd)
+		user_ec := exchange.NewCustomExchangeContext(userId, userPasswd, a.GetExchangeURL(), a.GetCSSURL(), a.GetHTTPFactory())
 		return user_ec, msgPrinter, true
 	}
 }

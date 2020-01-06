@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -22,6 +23,8 @@ import (
 // There are other workers responsible for other functions, which will also so some cleanup when the Node Shutdown Message
 // arrives. For example, the node heartbeat function is stopped by the Agreement worker.
 func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
+
+	errorMessage := ""
 
 	glog.V(3).Infof(logString(fmt.Sprintf("begin node shutdown process.")))
 
@@ -58,8 +61,9 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 	}
 
 	// Remove the node’s messaging public key from the node’s exchange resource and delete the node’s message key pair from the filesystem.
-	if err := w.patchNodeKey(); err != nil {
+	if err := w.patchNodeKey(w.limitedRetryEC.GetHTTPFactory()); err != nil {
 		w.continueWithError(logString(err.Error()))
+		errorMessage = fmt.Sprintf("Unable to reset the node in the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
 	}
 
 	// Tell the blockchain workers to terminate blockchain containers. We will do this by telling the producer protocol handlers to shutdown.
@@ -86,8 +90,9 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	// Remove the node's exchange resource.
 	if cmd.Msg.RemoveNode() {
-		if err := w.deleteNode(); err != nil {
+		if err := w.deleteNode(w.limitedRetryEC.GetHTTPFactory()); err != nil {
 			w.continueWithError(logString(err.Error()))
+			errorMessage = fmt.Sprintf("Unable to delete the node from the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
 		}
 	}
 
@@ -123,7 +128,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	// Tell the system that node quiesce is complete without error. The API worker might be waiting for this message.
 	// All the workers in the system will start quiescing as a result of this message.
-	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, "")
+	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, errorMessage)
 
 	glog.V(3).Infof(logString(fmt.Sprintf("node shutdown process complete.")))
 }
@@ -151,7 +156,7 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 	}
 
 	// Remove the node’s messaging public key from the node’s exchange resource and delete the node’s message key pair from the filesystem.
-	if err := w.patchNodeKey(); err != nil {
+	if err := w.patchNodeKey(w.GetHTTPFactory()); err != nil {
 		w.continueWithError(logString(err.Error()))
 	}
 
@@ -196,7 +201,7 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 
 	// If the node entry has already been removed form the exchange, skip this step.
-	exDev, err := exchange.GetExchangeDevice(w.Config.Collaborators.HTTPClientFactory, w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	exDev, err := exchange.GetExchangeDevice(w.limitedRetryEC.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
 	if err != nil && strings.Contains(err.Error(), "status: 401") {
 		return nil
 	} else if err != nil {
@@ -330,7 +335,7 @@ func (w *GovernanceWorker) terminateMicroservices() error {
 }
 
 // Remove the messaging key so that no one tries to communicate with the node. If the node is already gone from the exchange, ignore the error.
-func (w *GovernanceWorker) patchNodeKey() error {
+func (w *GovernanceWorker) patchNodeKey(httpClientFactory *config.HTTPClientFactory) error {
 
 	pdr := exchange.CreatePatchDeviceKey()
 	pdr.PublicKey = []byte("")
@@ -341,8 +346,11 @@ func (w *GovernanceWorker) patchNodeKey() error {
 
 	glog.V(3).Infof(logString(fmt.Sprintf("clearing messaging key in node entry: %v at %v", pdr, targetURL)))
 
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
+
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
 			if strings.Contains(err.Error(), "status: 401") {
 				break
 			} else {
@@ -350,8 +358,18 @@ func (w *GovernanceWorker) patchNodeKey() error {
 			}
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				// Break so that the rest of the function can do its cleanup.
+				glog.Errorf(logString(fmt.Sprintf("exceeded %v retries trying to clear node messaging key for %v", httpClientFactory.RetryCount, tpErr)))
+				break
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("cleared messaging key for device %v in exchange: %v", w.GetExchangeId(), resp)))
 			break
@@ -463,7 +481,7 @@ func (w *GovernanceWorker) updateHorizonDevice(device *persistence.ExchangeDevic
 }
 
 // Delete the node from the exchange.
-func (w *GovernanceWorker) deleteNode() error {
+func (w *GovernanceWorker) deleteNode(httpClientFactory *config.HTTPClientFactory) error {
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)
@@ -471,13 +489,24 @@ func (w *GovernanceWorker) deleteNode() error {
 
 	glog.V(3).Infof(logString(fmt.Sprintf("deleting node %v from exchange", w.GetExchangeId())))
 
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
+
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "DELETE", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return errors.New(fmt.Sprintf("exceeded %v retries trying to delete node for %v", httpClientFactory.RetryCount, tpErr))
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
 		} else {
 			break
 		}

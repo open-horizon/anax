@@ -137,7 +137,7 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		if a.shutdownError != "" {
 			LogDeviceEvent(a.db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_IN_NODE_UNREG, a.shutdownError),
 				persistence.EC_ERROR_NODE_UNREG, nil)
-			errorHandler(NewSystemError(fmt.Sprintf("received error handling %v on resource %v, error: %v", r.Method, resource, a.shutdownError)))
+			errorHandler(NewServiceUnavailableError(a.shutdownError))
 			return
 		}
 

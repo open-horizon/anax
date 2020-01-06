@@ -143,7 +143,7 @@ func Remove(keyName string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	cliutils.HorizonDelete("trust/"+keyName, []int{200, 204}, false)
+	cliutils.HorizonDelete("trust/"+keyName, []int{200, 204}, []int{}, false)
 	msgPrinter.Printf("Public key '%s' removed from the Horizon agent.", keyName)
 	msgPrinter.Println()
 }

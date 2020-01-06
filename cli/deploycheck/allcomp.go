@@ -223,8 +223,8 @@ func verifyCompCheckParamters(org string, userPw string,
 }
 
 // create the exchange context with the given user credentail
-func getUserExchangeContext(userOrg string, credToUse string) *compcheck.UserExchangeContext {
-	var ec *compcheck.UserExchangeContext
+func getUserExchangeContext(userOrg string, credToUse string) exchange.ExchangeContext {
+	var ec exchange.ExchangeContext
 	if credToUse != "" {
 		cred, token := cliutils.SplitIdToken(credToUse)
 		if userOrg != "" {
@@ -239,16 +239,10 @@ func getUserExchangeContext(userOrg string, credToUse string) *compcheck.UserExc
 }
 
 // create an exchange context based on the user Id and password.
-func createUserExchangeContext(userId string, passwd string) *compcheck.UserExchangeContext {
+func createUserExchangeContext(userId string, passwd string) exchange.ExchangeContext {
 	// GetExchangeUrl trims the last slash, we need to add it back for the exchange API calls.
 	exchUrl := cliutils.GetExchangeUrl() + "/"
-	return &compcheck.UserExchangeContext{
-		UserId:      userId,
-		Password:    passwd,
-		URL:         exchUrl,
-		CSSURL:      "",
-		HTTPFactory: newHTTPClientFactory(),
-	}
+	return exchange.NewCustomExchangeContext(userId, passwd, exchUrl, "", newHTTPClientFactory())
 }
 
 func newHTTPClientFactory() *config.HTTPClientFactory {

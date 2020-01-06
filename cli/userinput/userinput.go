@@ -93,7 +93,7 @@ func Remove(force bool) {
 		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to remove the node user inputs?"))
 	}
 
-	cliutils.HorizonDelete("node/userinput", []int{200, 204}, false)
+	cliutils.HorizonDelete("node/userinput", []int{200, 204}, []int{}, false)
 
 	msgPrinter.Printf("Horizon user inputs removed.")
 	msgPrinter.Println()

@@ -131,13 +131,26 @@ func (w *BaseProducerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		var resp interface{}
 		resp = new(exchange.PostDeviceResponse)
 		targetURL := w.config.Edge.ExchangeURL + "orgs/" + exchange.GetOrg(messageTarget.ReceiverExchangeId) + "/agbots/" + exchange.GetId(messageTarget.ReceiverExchangeId) + "/msgs"
+
+		httpClientFactory := w.ec.GetHTTPFactory()
+		retryCount := httpClientFactory.RetryCount
+		retryInterval := httpClientFactory.GetRetryInterval()
+
 		for {
-			if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "POST", targetURL, w.ec.GetExchangeId(), w.ec.GetExchangeToken(), pm, &resp); err != nil {
+			if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "POST", targetURL, w.ec.GetExchangeId(), w.ec.GetExchangeToken(), pm, &resp); err != nil {
 				return err
 			} else if tpErr != nil {
 				glog.Warningf(tpErr.Error())
-				time.Sleep(10 * time.Second)
-				continue
+				if httpClientFactory.RetryCount == 0 {
+					time.Sleep(time.Duration(retryInterval) * time.Second)
+					continue
+				} else if retryCount == 0 {
+					return errors.New(fmt.Sprintf("exceeded %v retries trying to retrieve agbot for %v", httpClientFactory.RetryCount, tpErr))
+				} else {
+					retryCount--
+					time.Sleep(time.Duration(retryInterval) * time.Second)
+					continue
+				}
 			} else {
 				glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("Sent message for %v to exchange.", messageTarget.ReceiverExchangeId)))
 				return nil
@@ -435,14 +448,27 @@ func (w *BaseProducerProtocolHandler) getAgbot(agbotId string, url string, devic
 	var resp interface{}
 	resp = new(exchange.GetAgbotsResponse)
 	targetURL := url + "orgs/" + exchange.GetOrg(agbotId) + "/agbots/" + exchange.GetId(agbotId)
+
+	httpClientFactory := w.ec.GetHTTPFactory()
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
+
 	for {
-		if err, tpErr := exchange.InvokeExchange(w.config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
+		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "GET", targetURL, deviceId, token, nil, &resp); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf(err.Error())))
 			return nil, err
 		} else if tpErr != nil {
 			glog.Warningf(BPPHlogString(w.Name(), tpErr.Error()))
-			time.Sleep(10 * time.Second)
-			continue
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return nil, errors.New(fmt.Sprintf("exceeded %v retries trying to retrieve agbot for %v", httpClientFactory.RetryCount, tpErr))
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
 		} else {
 			ags := resp.(*exchange.GetAgbotsResponse).Agbots
 			if ag, there := ags[agbotId]; !there {

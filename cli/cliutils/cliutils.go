@@ -621,7 +621,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 
 // HorizonDelete runs a DELETE on the anax api.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func HorizonDelete(urlSuffix string, goodHttpCodes []int, quiet bool) (httpCode int, retError error) {
+func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes []int, quiet bool) (httpCode int, retError error) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := http.MethodDelete + " " + url
 
@@ -658,7 +658,13 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, quiet bool) (httpCode 
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	if !isGoodCode(httpCode, goodHttpCodes) {
+	if isGoodCode(httpCode, goodHttpCodes) {
+		return
+	} else if isGoodCode(httpCode, expectedHttpErrorCodes) {
+		err_msg := GetRespBodyAsString(resp.Body)
+		retError = fmt.Errorf(err_msg)
+		return
+	} else {
 		err_msg := msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, GetRespBodyAsString(resp.Body))
 		if quiet {
 			retError = fmt.Errorf(err_msg)

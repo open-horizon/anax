@@ -4,8 +4,10 @@ import (
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
+	"net/http"
 	"time"
 )
 
@@ -44,7 +46,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 		msgPrinter.Printf("Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...")
 		msgPrinter.Println()
 
-		//call horizon DELETE /node api, timeout in 3 minutes.
+		// call horizon DELETE /node api, default timeout is to wait forever.
 		unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
 		if unregErr != nil {
 			fmt.Println(unregErr.Error())
@@ -87,8 +89,14 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 
 	c := make(chan string, 1)
 	go func() {
-		_, err := cliutils.HorizonDelete("node?block=true"+removeNodeOption+deepCleanOption, []int{200, 204}, true)
-		if err != nil {
+		httpCode, err := cliutils.HorizonDelete("node?block=true"+removeNodeOption+deepCleanOption, []int{200, 204}, []int{503}, true)
+		if httpCode == http.StatusServiceUnavailable {
+			msgPrinter.Printf("WARNING: The node is unregistered, but an error occurred during unregistration.")
+			msgPrinter.Println()
+			msgPrinter.Printf("The error was: %v", err)
+			msgPrinter.Println()
+			c <- "partial"
+		} else if err != nil {
 			c <- err.Error()
 		} else {
 			c <- "done"
@@ -105,10 +113,16 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 			if output == "done" {
 				cliutils.Verbose(msgPrinter.Sprintf("Horizon node delete call successful with return code: %v", output))
 				return nil
+			} else if output == "partial" {
+				return nil
 			} else {
 				return fmt.Errorf("%v", output)
 			}
 		case <-time.After(time.Duration(channelWait) * time.Second):
+
+			// Get a list of all agreements so that we can display progress.
+			ags := agreement.GetAgreements(false)
+
 			if timeout != 0 {
 				totalWait = totalWait - channelWait
 				if totalWait <= 0 {
@@ -117,10 +131,18 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 				updateStatus := msgPrinter.Sprintf("Timeout in %v seconds ...", totalWait)
 				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
 				msgPrinter.Println()
+				if len(ags) != 0 {
+					msgPrinter.Printf("%v agreements remaining to be terminated.", len(ags))
+					msgPrinter.Println()
+				}
 			} else {
 				updateStatus := msgPrinter.Sprintf("No Timeout specified ...")
 				msgPrinter.Printf("Waiting for Horizon node unregister to complete: %v", updateStatus)
 				msgPrinter.Println()
+				if len(ags) != 0 {
+					msgPrinter.Printf("%v agreements remaining to be terminated.", len(ags))
+					msgPrinter.Println()
+				}
 			}
 
 		}

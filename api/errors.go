@@ -132,6 +132,21 @@ func NewSystemError(err string) *SystemError {
 	}
 }
 
+// Service Unavailable error are generally retryable, but our CLI does several retries so in our case, retry might not work.
+type ServiceUnavailableError struct {
+	msg string
+}
+
+func (e ServiceUnavailableError) Error() string {
+	return e.msg
+}
+
+func NewServiceUnavailableError(err string) *ServiceUnavailableError {
+	return &ServiceUnavailableError{
+		msg: err,
+	}
+}
+
 // Use this function to obtain an error handler that simply passes the error through itself back to caller. This is
 // done by modifying the error variable passed to this function.
 func GetPassThroughErrorHandler(passthruErr *error) ErrorHandler {
@@ -180,9 +195,15 @@ func GetHTTPErrorHandler(w http.ResponseWriter) ErrorHandler {
 				http.Error(w, badErr.Error(), http.StatusBadRequest)
 
 			case *NotFoundError:
+				// convert to an API Input Error
 				notErr := err.(*NotFoundError)
 				apiErr := NewAPIUserInputError(notErr.Err, notErr.Input)
 				writeInputErr(w, http.StatusNotFound, apiErr)
+
+			case *ServiceUnavailableError:
+				suErr := err.(*ServiceUnavailableError)
+				glog.Errorf(apiLogString(suErr.Error()))
+				http.Error(w, suErr.Error(), http.StatusServiceUnavailable)
 
 			default:
 				glog.Errorf(apiLogString(fmt.Sprintf("unknown error (%T) %v", err, err.Error())))

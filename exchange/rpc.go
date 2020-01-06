@@ -460,21 +460,32 @@ func ConvertToString(a []string) string {
 	return r
 }
 
-func Heartbeat(h *http.Client, url string, id string, token string) error {
+func Heartbeat(httpClientFactory *config.HTTPClientFactory, url string, id string, token string) error {
 
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("Heartbeating to exchange: %v", url)))
 
 	var resp interface{}
 	resp = new(PostDeviceResponse)
 
+	retryCount := httpClientFactory.RetryCount
+	retryInterval := httpClientFactory.GetRetryInterval()
+
 	for {
-		if err, tpErr := InvokeExchange(h, "POST", url, id, token, nil, &resp); err != nil {
+		if err, tpErr := InvokeExchange(httpClientFactory.NewHTTPClient(nil), "POST", url, id, token, nil, &resp); err != nil {
 			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
 			return err
 		} else if tpErr != nil {
 			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
-			time.Sleep(10 * time.Second)
-			continue
+			if httpClientFactory.RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return tpErr
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
 		} else {
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("Sent heartbeat %v: %v", url, resp)))
 			break

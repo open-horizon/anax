@@ -93,15 +93,18 @@ type AgreementWorker struct {
 	lastExchVerCheck         int64
 	heartBeatFailed          bool
 	hznOffline               bool
+	limitedRetryEC           exchange.ExchangeContext
 }
 
 func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *AgreementWorker {
 
 	var ec *worker.BaseExchangeContext
+	var lrec exchange.ExchangeContext
 	pattern := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
+		lrec = newLimitedRetryExchangeContext(ec)
 	}
 
 	worker := &AgreementWorker{
@@ -114,11 +117,22 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 		lastExchVerCheck: 0,
 		heartBeatFailed:  false,
 		hznOffline:       false,
+		limitedRetryEC:   lrec,
 	}
 
 	glog.Info("Starting Agreement worker")
 	worker.Start(worker, 0)
 	return worker
+}
+
+func newLimitedRetryExchangeContext(baseEC *worker.BaseExchangeContext) exchange.ExchangeContext {
+	limitedRetryHTTPFactory := &config.HTTPClientFactory{
+		NewHTTPClient: baseEC.HTTPFactory.NewHTTPClient,
+		RetryCount:    1,
+		RetryInterval: 5,
+	}
+
+	return exchange.NewCustomExchangeContext(baseEC.Id, baseEC.Token, baseEC.URL, baseEC.CSSURL, limitedRetryHTTPFactory)
 }
 
 func (w *AgreementWorker) Messages() chan events.Message {
@@ -418,6 +432,7 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 
 	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", cmd.Msg.Org(), cmd.Msg.DeviceId()), cmd.Msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 	w.devicePattern = cmd.Msg.Pattern()
+	w.limitedRetryEC = newLimitedRetryExchangeContext(w.EC)
 
 	// There is no need for agreement tracking on a node that is using patterns.
 	if cmd.Msg.Pattern() != "" {
