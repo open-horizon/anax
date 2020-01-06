@@ -109,6 +109,10 @@ func FormattedTime() string {
 	return time.Now().Format(ExchangeTimeFormat)
 }
 
+func FormattedUTCTime() string {
+	return time.Now().UTC().Format(ExchangeTimeFormat)
+}
+
 func Min(first int, second int) int {
 	if first < second {
 		return first

@@ -390,3 +390,12 @@ func GetHTTPObjectPolicyUpdateReceivedHandler(ec ExchangeContext) ObjectPolicyUp
 		return SetPolicyReceived(ec, objPol)
 	}
 }
+
+// A handler for retrieving chages from the exchange.
+type ExchangeChangeHandler func(changeId uint64, lastUpdated string, maxRecords int) (*ExchangeChanges, error)
+
+func GetHTTPExchangeChangeHandler(ec ExchangeContext) ExchangeChangeHandler {
+	return func(changeId uint64, lastUpdated string, maxRecords int) (*ExchangeChanges, error) {
+		return GetExchangeChanges(ec, changeId, lastUpdated, maxRecords)
+	}
+}

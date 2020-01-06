@@ -18,32 +18,8 @@ import (
 	"time"
 )
 
-// This function runs periodically in a separate process. It checks if the service containers are up and running and
-// if new service versions are available for upgrade.
+// This function runs periodically in a separate process. It checks if the service containers are up and running.
 func (w *GovernanceWorker) governMicroservices() int {
-
-	if w.Config.Edge.ServiceUpgradeCheckIntervalS > 0 {
-		// get the microservice upgrade check interval
-		check_interval := w.Config.Edge.ServiceUpgradeCheckIntervalS
-
-		// check for the new service version when time is right
-		time_now := time.Now().Unix()
-		if time_now-w.lastSvcUpgradeCheck >= int64(check_interval) {
-			w.lastSvcUpgradeCheck = time_now
-
-			// handle service upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
-			glog.V(4).Infof(logString(fmt.Sprintf("governing service upgrades")))
-			if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error getting service definitions from db. %v", err)))
-			} else if ms_defs != nil && len(ms_defs) > 0 {
-				for _, ms := range ms_defs {
-					// upgrade the service if needed
-					cmd := w.NewUpgradeMicroserviceCommand(ms.Id)
-					w.Commands <- cmd
-				}
-			}
-		}
-	}
 
 	// check if service instance containers are down
 	glog.V(4).Infof(logString(fmt.Sprintf("governing service containers")))
@@ -63,6 +39,22 @@ func (w *GovernanceWorker) governMicroservices() int {
 	return 0
 }
 
+// This function is called when there is a change to a service in the exchange. That might signal a service upgrade.
+func (w *GovernanceWorker) governMicroserviceVersions() {
+
+	// handle service upgrade. The upgrade includes inactive upgrades if the associated agreements happen to be 0.
+	glog.V(3).Infof(logString(fmt.Sprintf("governing service upgrades")))
+	if ms_defs, err := persistence.FindMicroserviceDefs(w.db, []persistence.MSFilter{persistence.UnarchivedMSFilter()}); err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Error getting service definitions from db. %v", err)))
+	} else if ms_defs != nil && len(ms_defs) > 0 {
+		for _, ms := range ms_defs {
+			glog.V(5).Infof(logString(fmt.Sprintf("MS:%v", ms)))
+			// upgrade the service if needed
+			cmd := w.NewUpgradeMicroserviceCommand(ms.Id)
+			w.Commands <- cmd
+		}
+	}
+}
 // It creates microservice instance and loads the containers for the given microservice def
 // If the msinst_key is not empty, the function is called to restart a failed dependent service.
 func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, msinst_key string) (*persistence.MicroserviceInstance, error) {

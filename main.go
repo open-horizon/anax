@@ -11,6 +11,7 @@ import (
 	_ "github.com/open-horizon/anax/agreementbot/persistence/bolt"
 	_ "github.com/open-horizon/anax/agreementbot/persistence/postgresql"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/changes"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/exchange"
@@ -166,6 +167,7 @@ func main() {
 		workers.Add(imagefetch.NewImageFetchWorker("ImageFetch", cfg, db))
 		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
+		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 	}
 
 	// Get into the event processing loop until anax shuts itself down.

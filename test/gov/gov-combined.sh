@@ -1,7 +1,6 @@
 #!/bin/bash
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
-TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 function set_exports {
   if [ "$NOANAX" != "1" ]
@@ -131,9 +130,6 @@ fi
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   # Clean up the exchange DB to make sure we start out clean
   echo "Drop and recreate the exchange DB."
-
-  UPGRADEDB=$(curl -sLX POST -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/admin/upgradedb" | jq -r '.msg')
-  echo "Exchange DB Upgrade Response: $UPGRADEDB"
 
   # loop until DBTOK contains a string value
   while :

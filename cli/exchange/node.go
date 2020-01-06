@@ -138,8 +138,8 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 
 	// check invalid attributes
 	for k, _ := range findPatchType {
-		if k != "userInput" && k != "pattern" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot update attribute %v. Supported attributes are: userInput, pattern.", k))
+		if k != "userInput" && k != "pattern" && k != "heartbeatIntervals" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot update attribute %v. Supported attributes are: userInput, pattern, heartbeatIntervals.", k))
 		}
 	}
 
@@ -180,6 +180,13 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 			} else {
 				patch[k] = pattern
 			}
+		} else if k == "heartbeatIntervals" {
+			hb := exchange.HeartbeatIntervals{}
+			if err := json.Unmarshal(bytes, &hb); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal heartbeat input %s: %v", v, err))
+			} else {
+				patch[k] = hb
+			}
 		}
 
 		msgPrinter.Printf("Updating %v for node %v/%v in the Horizon Exchange.", k, nodeOrg, node)
@@ -191,7 +198,7 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 		updated = true
 	}
 
-	// Tell user that the device will re-evaluating the agreements based on the node update
+	// Tell user that the device will re-evaluating the agreements based on the node update, if necessary.
 	if updated {
 		for _, v := range nodeReq.Nodes {
 			var exchNode exchange.Device
@@ -202,8 +209,14 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 			if err := json.Unmarshal(bytes, &exchNode); err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal exchange node %s: %v", v, err))
 			}
-			// the exchange node is registered with a device, then give user more info.
-			if exchNode.PublicKey != nil && len(exchNode.PublicKey) != 0 {
+
+			// the exchange node is registered with a device and the update is not heartbeat interval, then give user more info.
+			skipReEval := false
+			if _, ok := findPatchType["heartbeatIntervals"]; ok && len(findPatchType) == 1 {
+				skipReEval = true
+			}
+
+			if exchNode.PublicKey != nil && len(exchNode.PublicKey) != 0 && !skipReEval {
 				msgPrinter.Printf("Device will re-evaluate all agreements based on the update. Existing agreements might be cancelled and re-negotiated.")
 				msgPrinter.Println()
 			}

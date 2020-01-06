@@ -1565,7 +1565,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			b.ContainersMatchingAgreement([]string{cmd.AgreementId}, true, report)
 
 			if len(serviceNames) == len(cMatches) {
-				glog.V(4).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
+				glog.V(3).Infof("Found expected count of running containers for agreement %v: %v", cmd.AgreementId, len(cMatches))
 			} else {
 				glog.Errorf("Insufficient running containers found for agreement %v. Found: %v", cmd.AgreementId, cMatches)
 
@@ -1641,7 +1641,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			b.ContainersMatchingAgreement([]string{cmd.MsInstKey}, true, report)
 
 			if len(serviceNames) == len(cMatches) {
-				glog.V(4).Infof("Found expected count of running containers for service instance %v: %v", cmd.MsInstKey, len(cMatches))
+				glog.V(3).Infof("Found expected count of running containers for service instance %v: %v", cmd.MsInstKey, len(cMatches))
 			} else {
 				glog.Errorf("Insufficient running containers found for service instance %v. Found: %v", cmd.MsInstKey, cMatches)
 

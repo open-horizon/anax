@@ -95,6 +95,13 @@ const (
 	OBJECT_POLICY_NEW     EventId = "OBJECT_POLICY_NEW"
 	OBJECT_POLICY_CHANGED EventId = "OBJECT_POLICY_CHANGED"
 	OBJECT_POLICY_DELETED EventId = "OBJECT_POLICY_DELETED"
+
+	// Exchange change related
+	CHANGE_MESSAGE_TYPE     EventId = "EXCHANGE_CHANGE_MESSAGE"
+	CHANGE_NODE_TYPE        EventId = "EXCHANGE_CHANGE_NODE"
+	CHANGE_NODE_POLICY_TYPE EventId = "EXCHANGE_CHANGE_NODE_POLICY"
+	CHANGE_NODE_ERROR_TYPE  EventId = "EXCHANGE_CHANGE_NODE_ERROR"
+	CHANGE_SERVICE_TYPE     EventId = "EXCHANGE_CHANGE_SERVICE"
 )
 
 type EndContractCause string
@@ -1719,24 +1726,24 @@ func NewAllBlockchainShutdownMessage(id EventId) *AllBlockchainShutdownMessage {
 	}
 }
 
-type MessagingShutdownMessage struct {
+type ExchangeChangesShutdownMessage struct {
 	event Event
 }
 
-func (w *MessagingShutdownMessage) Event() Event {
+func (w *ExchangeChangesShutdownMessage) Event() Event {
 	return w.event
 }
 
-func (w *MessagingShutdownMessage) String() string {
+func (w *ExchangeChangesShutdownMessage) String() string {
 	return w.ShortString()
 }
 
-func (w *MessagingShutdownMessage) ShortString() string {
+func (w *ExchangeChangesShutdownMessage) ShortString() string {
 	return fmt.Sprintf("Event: %v", w.event)
 }
 
-func NewMessagingShutdownMessage(id EventId) *MessagingShutdownMessage {
-	return &MessagingShutdownMessage{
+func NewExchangeChangesShutdownMessage(id EventId) *ExchangeChangesShutdownMessage {
+	return &ExchangeChangesShutdownMessage{
 		event: Event{
 			Id: id,
 		},
@@ -1840,5 +1847,29 @@ func NewMMSObjectPolicyMessage(id EventId, np interface{}, op interface{}) *MMSO
 		},
 		NewPolicy: np,
 		OldPolicy: op,
+	}
+}
+
+type ExchangeChangeMessage struct {
+	event Event
+}
+
+func (w *ExchangeChangeMessage) Event() Event {
+	return w.event
+}
+
+func (w *ExchangeChangeMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *ExchangeChangeMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v", w.event)
+}
+
+func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {
+	return &ExchangeChangeMessage{
+		event: Event{
+			Id: id,
+		},
 	}
 }

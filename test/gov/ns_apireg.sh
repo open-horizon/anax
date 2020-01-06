@@ -224,7 +224,8 @@ EOF
       "mappings": {
         "var1": "node_String",
         "var2": 20,
-        "var3": 20.2
+        "var3": 20.2,
+        "var4": ["nodeabcd"]
       }
     }
   ]
@@ -253,7 +254,8 @@ EOF
       "mappings": {
         "var1": "node_String",
         "var2": 21,
-        "var3": 21.2
+        "var3": 21.2,
+        "var4": ["nodeabcd"]
       }
     }
   ]
