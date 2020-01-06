@@ -455,7 +455,11 @@ func CreateService(service *Service,
 	}
 
 	// add node built-in properties
-	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false)
+	existingPol, err := persistence.FindNodePolicy(db)
+	if err != nil {
+		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
+	}
+	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {
 			if ele.Name == externalpolicy.PROP_NODE_CPU {

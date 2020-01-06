@@ -1660,7 +1660,11 @@ func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy
 	if err != nil {
 		return nil, fmt.Errorf("Unable to fetch service preferences for service %v/%v. Err: %v", org, url, err)
 	}
-	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM)
+	nodePol, err := persistence.FindNodePolicy(w.db)
+	if err != nil {
+		return nil, err
+	}
+	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM, nodePol)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to convert attrributes to env map for service %v/%v. Err: %v", org, url, err)
 	}
