@@ -505,9 +505,20 @@ func NodeListErrors(org string, credToUse string, node string, long bool) {
 	var nodeOrg string
 	nodeOrg, node = cliutils.TrimOrg(org, node)
 
+	// Check that the node specified exists in the exchange
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, node))
+	}
+
 	var resp exchange.ExchangeSurfaceError
-	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/errors", cliutils.OrgAndCreds(org, credToUse), []int{200}, &resp)
-	errorList := resp.ErrorList
+	httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/errors", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &resp)
+
+	errorList := []persistence.SurfaceError{}
+	if resp.ErrorList != nil {
+		errorList = resp.ErrorList
+	}
 
 	if !long {
 		jsonBytes, err := json.MarshalIndent(errorList, "", cliutils.JSON_INDENT)
