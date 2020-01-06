@@ -215,7 +215,7 @@ read -d '' service <<EOF
 }
 EOF
 
-WLRES=$(echo "$service" | curl -sS -X POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization:Basic e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
+WLRES=$(echo "$service" | curl -sS -X POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
 echo -e "Registered testwl: $WLRES"
 MSG=$(echo $WLRES | jq -r ".msg")
 if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_amd64' created" ]

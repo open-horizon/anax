@@ -190,9 +190,9 @@ clean:
 	@echo "Removing agbot container"
 	-@docker rm -f "$(DOCKER_AGBOT_CNAME)" 2>/dev/null || true
 	@echo "Dropping and re-initializing the exchange DB"
-	@$(eval DROP_DB_TOKEN := $(shell curl -sLX GET -H 'Authorization:Basic root/root:$(EXCH_ROOTPW)' "http://localhost:8080/v1/admin/dropdb/token" | jq -r '.token')) 2>/dev/null || true
-	-@curl -sLX POST -H 'Authorization:Basic root/root:$(DROP_DB_TOKEN)' "http://localhost:8080/v1/admin/dropdb" | jq -r '.msg' 2>/dev/null || true
-	-@curl -sLX POST -H "Authorization:Basic root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/initdb" | jq -r '.msg' 2>/dev/null || true
+	@$(eval DROP_DB_TOKEN := $(shell curl -sLX GET -u "root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/dropdb/token" | jq -r '.token')) 2>/dev/null || true
+	-@curl -sLX POST -u "root/root:$(DROP_DB_TOKEN)" "http://localhost:8080/v1/admin/dropdb" | jq -r '.msg' 2>/dev/null || true
+	-@curl -sLX POST -u "root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/initdb" | jq -r '.msg' 2>/dev/null || true
 	@echo "Removing stale networks"
 	-@docker network prune -f 2>/dev/null || true
 	@echo "Removing unused images"
