@@ -95,7 +95,6 @@ Environment Variables:
 	envUserPw := envCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID")).Short('u').PlaceHolder("USER:PW").String()
 	envExchUrl := envCmd.Flag("ex-url", msgPrinter.Sprintf("The Horizon exchange URL.")).String()
 	envCcsUrl := envCmd.Flag("css-url", msgPrinter.Sprintf("The Horizon Model Management Service URL.")).String()
-
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 	archCmd := app.Command("architecture", msgPrinter.Sprintf("Show the architecture of this machine (as defined by Horizon and golang)."))
 
