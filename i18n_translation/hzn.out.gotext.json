@@ -3,6 +3,546 @@
   "language": "en",
   "messages": [
     {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "unable to make directory for self signed MMS API certificate, error {Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "unable to generate random number for MMS API certificate serial number, error {Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "unable to generate private key for MMS API certificate, error {Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "unable to create MMS API certificate, error {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "The constraint expression contains unmatched parentheses."
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} is not a valid version string."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "Input version string {V1} or {V2} is not a valid single version string."
+    },
+    {
+      "id": "Unable to marshal userinput object: {Err}",
+      "translation": "Unable to marshal userinput object: {Err}"
+    },
+    {
+      "id": "A list of objects, each one containing the user inputs required for a specified service.",
+      "translation": "A list of objects, each one containing the user inputs required for a specified service."
+    },
+    {
+      "id": "The horizon org of the specified service.",
+      "translation": "The horizon org of the specified service."
+    },
+    {
+      "id": "The unique string used to identify the specified service.",
+      "translation": "The unique string used to identify the specified service."
+    },
+    {
+      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
+      "translation": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures."
+    },
+    {
+      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
+      "translation": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions."
+    },
+    {
+      "id": "A list of objects with the names and values for the user inputs used by this service.",
+      "translation": "A list of objects with the names and values for the user inputs used by this service."
+    },
+    {
+      "id": "Error unmarshaling userInput json file: {Err}",
+      "translation": "Error unmarshaling userInput json file: {Err}"
+    },
+    {
+      "id": "Horizon node user inputs updated.",
+      "translation": "Horizon node user inputs updated."
+    },
+    {
+      "id": "Are you sure you want to remove the node user inputs?",
+      "translation": "Are you sure you want to remove the node user inputs?"
+    },
+    {
+      "id": "Horizon user inputs removed.",
+      "translation": "Horizon user inputs removed."
+    },
+    {
+      "id": "Are you sure you want to unregister this Horizon node?",
+      "translation": "Are you sure you want to unregister this Horizon node?"
+    },
+    {
+      "id": "The node is not registered.",
+      "translation": "The node is not registered."
+    },
+    {
+      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
+      "translation": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
+    },
+    {
+      "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
+      "translation": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired."
+    },
+    {
+      "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
+      "translation": "WARNING: The node is unregistered, but an error occurred during unregistration."
+    },
+    {
+      "id": "The error was: {Err}",
+      "translation": "The error was: {Err}"
+    },
+    {
+      "id": "Horizon node delete call successful with return code: {Output}",
+      "translation": "Horizon node delete call successful with return code: {Output}"
+    },
+    {
+      "id": "Timeout in {TotalWait} seconds ...",
+      "translation": "Timeout in {TotalWait} seconds ..."
+    },
+    {
+      "id": "Waiting for Horizon node unregister to complete: {UpdateStatus}",
+      "translation": "Waiting for Horizon node unregister to complete: {UpdateStatus}"
+    },
+    {
+      "id": "{Lenags} agreements remaining to be terminated.",
+      "translation": "{Lenags} agreements remaining to be terminated."
+    },
+    {
+      "id": "No Timeout specified ...",
+      "translation": "No Timeout specified ..."
+    },
+    {
+      "id": "Starting external deep clean ...",
+      "translation": "Starting external deep clean ..."
+    },
+    {
+      "id": "Stopping horizon...",
+      "translation": "Stopping horizon..."
+    },
+    {
+      "id": "Deleting local horizon DB...",
+      "translation": "Deleting local horizon DB..."
+    },
+    {
+      "id": "Deleting service containers...",
+      "translation": "Deleting service containers..."
+    },
+    {
+      "id": "Starting horizon...",
+      "translation": "Starting horizon..."
+    },
+    {
+      "id": "Checking the node configuration state...",
+      "translation": "Checking the node configuration state..."
+    },
+    {
+      "id": "Node configuration state: {State}",
+      "translation": "Node configuration state: {State}"
+    },
+    {
+      "id": "Timeout waiting for node change to 'unconfigured' state.",
+      "translation": "Timeout waiting for node change to 'unconfigured' state."
+    },
+    {
+      "id": "unable to list containers, {Err}",
+      "translation": "unable to list containers, {Err}"
+    },
+    {
+      "id": "Error deleting container {Names0}. {Err}",
+      "translation": "Error deleting container {Names0}. {Err}"
+    },
+    {
+      "id": "Removed service container: {Names0}",
+      "translation": "Removed service container: {Names0}"
+    },
+    {
+      "id": "Error pruning docker networks. {Err}",
+      "translation": "Error pruning docker networks. {Err}"
+    },
+    {
+      "id": "[verbose] {M}",
+      "translation": "[verbose] {M}"
+    },
+    {
+      "id": "Error: {Msg}",
+      "translation": "Error: {Msg}"
+    },
+    {
+      "id": "Warning: {Msg}",
+      "translation": "Warning: {Msg}"
+    },
+    {
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "translation": "failed to unmarshal bytes from {ErrMsg}: {Err}"
+    },
+    {
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+      "translation": "failed to marshal data type from {ErrMsg}: {Err}"
+    },
+    {
+      "id": "problem testing api key match: {Err}",
+      "translation": "problem testing api key match: {Err}"
+    },
+    {
+      "id": "Using API key",
+      "translation": "Using API key"
+    },
+    {
+      "id": "unable to create docker client: {Err}",
+      "translation": "unable to create docker client: {Err}"
+    },
+    {
+      "id": "docker auth domainName: {DomainName}",
+      "translation": "docker auth domainName: {DomainName}"
+    },
+    {
+      "id": "unable to find docker credentials for {Domain}",
+      "translation": "unable to find docker credentials for {Domain}"
+    },
+    {
+      "id": "Pushing {Repository}:{Tag}...",
+      "translation": "Pushing {Repository}:{Tag}..."
+    },
+    {
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "translation": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry."
+    },
+    {
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+      "translation": "unable to push docker image {Repository____tag}: {Err}"
+    },
+    {
+      "id": "could not find the image digest in the docker push output",
+      "translation": "could not find the image digest in the docker push output"
+    },
+    {
+      "id": "Pulling {Repository}:{Tag}...",
+      "translation": "Pulling {Repository}:{Tag}..."
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "translation": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+      "translation": "unable to pull docker image {Repository____tag}: {Err}"
+    },
+    {
+      "id": "the id can not contain more than 1 '/'",
+      "translation": "the id can not contain more than 1 '/'"
+    },
+    {
+      "id": "reading stdin failed: {Err}",
+      "translation": "reading stdin failed: {Err}"
+    },
+    {
+      "id": "reading {FilePath} failed: {Err}",
+      "translation": "reading {FilePath} failed: {Err}"
+    },
+    {
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "translation": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment."
+    },
+    {
+      "id": "Error reading input, error {Err}",
+      "translation": "Error reading input, error {Err}"
+    },
+    {
+      "id": "Exiting.",
+      "translation": "Exiting."
+    },
+    {
+      "id": "Error reading HTTP response, error {Err}",
+      "translation": "Error reading HTTP response, error {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}"
+    },
+    {
+      "id": "{ApiMsg} new request failed: {Err}",
+      "translation": "{ApiMsg} new request failed: {Err}"
+    },
+    {
+      "id": "HTTP code: {HttpCode}",
+      "translation": "HTTP code: {HttpCode}"
+    },
+    {
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "Bad HTTP code from {ApiMsg}: {HttpCode}"
+    },
+    {
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "bad HTTP code from {ApiMsg}: {HttpCode}"
+    },
+    {
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+      "translation": "Failed to read body response from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+      "translation": "failed to read body response from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "Failed to unmarshal body response from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "failed to unmarshal body response from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "translation": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}"
+    },
+    {
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+      "translation": "failed to marshal body for {ApiMsg}: {Err}"
+    },
+    {
+      "id": "Failed to unmarshal bytes. {Err}",
+      "translation": "Failed to unmarshal bytes. {Err}"
+    },
+    {
+      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}"
+    },
+    {
+      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "translation": "Encountered error reading ICP cert file {IcpCertPath}: {Err}"
+    },
+    {
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}"
+    },
+    {
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "translation": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}"
+    },
+    {
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "translation": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node."
+    },
+    {
+      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent"
+    },
+    {
+      "id": "The exchange url: {ExchUrl}",
+      "translation": "The exchange url: {ExchUrl}"
+    },
+    {
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}"
+    },
+    {
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "translation": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}"
+    },
+    {
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "translation": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node."
+    },
+    {
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "translation": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent"
+    },
+    {
+      "id": "The model management service url: {MmsUrl}",
+      "translation": "The model management service url: {MmsUrl}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "translation": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "translation": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}"
+    },
+    {
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "translation": "failed to marshal exchange body for {ApiMsg}: {Err}"
+    },
+    {
+      "id": "unable to open object file {Name}: {Err}",
+      "translation": "unable to open object file {Name}: {Err}"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry."
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}."
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "failed to unmarshal exchange body response from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "failed to marshal exchange output from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "translation": "failed to read exchange body response from {ApiMsg}: {Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "translation": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "translation": "bad HTTP code {HttpCode} from {ApiMsg}"
+    },
+    {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "translation": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "Failed to get absolute path for file {KeyFile}. {Err}"
+    },
+    {
+      "id": "{Err}. Please create the signing key.",
+      "translation": "{Err}. Please create the signing key."
+    },
+    {
+      "id": "running: {CmdStr}",
+      "translation": "running: {CmdStr}"
+    },
+    {
+      "id": "did not get a command object",
+      "translation": "did not get a command object"
+    },
+    {
+      "id": "Could not get Stdin pipe, error: {Err}",
+      "translation": "Could not get Stdin pipe, error: {Err}"
+    },
+    {
+      "id": "could not retrieve output from command, error: {Err}",
+      "translation": "could not retrieve output from command, error: {Err}"
+    },
+    {
+      "id": "could not retrieve stderr from command, error: {Err}",
+      "translation": "could not retrieve stderr from command, error: {Err}"
+    },
+    {
+      "id": "Unable to start command, error: {Err}",
+      "translation": "Unable to start command, error: {Err}"
+    },
+    {
+      "id": "Unable to write to stdin of command, error: {Err}",
+      "translation": "Unable to write to stdin of command, error: {Err}"
+    },
+    {
+      "id": "Unable to close stdin, error: {Err}",
+      "translation": "Unable to close stdin, error: {Err}"
+    },
+    {
+      "id": "could not read stdout, error: {Err}",
+      "translation": "could not read stdout, error: {Err}"
+    },
+    {
+      "id": "could not read stderr, error: {Err}",
+      "translation": "could not read stderr, error: {Err}"
+    },
+    {
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "translation": "command failed: {Err}, stderr: {StringstderrBytes}"
+    },
+    {
+      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "translation": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}"
+    },
+    {
+      "id": "HTTP request timeout set to {RequestTimeout} seconds",
+      "translation": "HTTP request timeout set to {RequestTimeout} seconds"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
+      "translation": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
+      "translation": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}"
+    },
+    {
+      "id": "The selection string {V} is not valid.",
+      "translation": "The selection string {V} is not valid."
+    },
+    {
+      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
+      "translation": "failed to marshal 'hzn eventlog list' output: {Err}"
+    },
+    {
+      "id": "Error: event record could not be found",
+      "translation": "Error: event record could not be found"
+    },
+    {
+      "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
+      "translation": "failed to marshal 'hzn eventlog surface' output: {Err}"
+    },
+    {
       "id": "Reading configuration file: {ConfigFile}",
       "translation": "Reading configuration file: {ConfigFile}"
     },
@@ -65,6 +605,106 @@
     {
       "id": "No project level configuration file found.",
       "translation": "No project level configuration file found."
+    },
+    {
+      "id": "this command can not be run before running 'hzn register'",
+      "translation": "this command can not be run before running 'hzn register'"
+    },
+    {
+      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
+      "translation": "failed to marshal '/service/config' output attribute {Attr}. {Err}"
+    },
+    {
+      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
+      "translation": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn service list' output: {Err}",
+      "translation": "failed to marshal 'hzn service list' output: {Err}"
+    },
+    {
+      "id": "Displaying log messages for service {SpecRef} with service id {InstanceId}.",
+      "translation": "Displaying log messages for service {SpecRef} with service id {InstanceId}."
+    },
+    {
+      "id": "Use ctrl-C to terminate this command.",
+      "translation": "Use ctrl-C to terminate this command."
+    },
+    {
+      "id": "Service {RefUrl} is not running on the node.",
+      "translation": "Service {RefUrl} is not running on the node."
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Error creating StdoutPipe for command: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Error starting command: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Error waiting for command: {Err}"
+    },
+    {
+      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
+      "translation": "/var/log/syslog could not be opened or does not exist: {Err}"
+    },
+    {
+      "id": "/var/log/syslog could not get stats: {Err}",
+      "translation": "/var/log/syslog could not get stats: {Err}"
+    },
+    {
+      "id": "Error reading from /var/log/syslog: {Err}",
+      "translation": "Error reading from /var/log/syslog: {Err}"
+    },
+    {
+      "id": "Unable to state /var/log/syslog: {Err}",
+      "translation": "Unable to state /var/log/syslog: {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn service registered' output: {Err}",
+      "translation": "failed to marshal 'hzn service registered' output: {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn service configstate' output: {Err}",
+      "translation": "failed to marshal 'hzn service configstate' output: {Err}"
+    },
+    {
+      "id": "all the registered services",
+      "translation": "all the registered services"
+    },
+    {
+      "id": "service {ServiceOrg}/{ServiceUrl}",
+      "translation": "service {ServiceOrg}/{ServiceUrl}"
+    },
+    {
+      "id": "all the registered services from organization {ServiceOrg}",
+      "translation": "all the registered services from organization {ServiceOrg}"
+    },
+    {
+      "id": "Please specify the organization for service {ServiceUrl}.",
+      "translation": "Please specify the organization for service {ServiceUrl}."
+    },
+    {
+      "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
+      "translation": "Are you sure you want to suspend {Msgpart} for this Horizon node?"
+    },
+    {
+      "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
+      "translation": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers..."
+    },
+    {
+      "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
+      "translation": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes."
+    },
+    {
+      "id": "Resuming {Msgpart} ...",
+      "translation": "Resuming {Msgpart} ..."
+    },
+    {
+      "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
+      "translation": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes."
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
@@ -947,20 +1587,20 @@
       "translation": "Check policy compatibility."
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value."
-    },
-    {
-      "id": "The Horizon exchange business policy ID. Mutually exclusive with --business-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "The Horizon exchange business policy ID. Mutually exclusive with --business-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id."
-    },
-    {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
       "translation": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility."
     },
     {
+      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value."
+    },
+    {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
       "translation": "The JSON input file name containing the node policy. Mutually exclusive with -n."
+    },
+    {
+      "id": "The Horizon exchange business policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "The Horizon exchange business policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id."
     },
     {
       "id": "The JSON input file name containing the business policy. Mutually exclusive with -b.",
@@ -975,20 +1615,36 @@
       "translation": "Check user input compatibility."
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value."
+      "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.",
+      "translation": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility."
     },
     {
-      "id": "The architecture of the node. It is required when -n is not specified is specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
-      "translation": "The architecture of the node. It is required when -n is not specified is specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility."
+      "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value."
     },
     {
       "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
       "translation": "The JSON input file name containing the node user input. Mutually exclusive with -n."
     },
     {
-      "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.",
-      "translation": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy will be retrieved from the exchange. This flag can be repeated to specify different versions of the service."
+      "id": "The Horizon exchange business policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "The Horizon exchange business policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id."
+    },
+    {
+      "id": "The JSON input file name containing the business policy. Mutually exclusive with -b, -p and -P.",
+      "translation": "The JSON input file name containing the business policy. Mutually exclusive with -b, -p and -P."
+    },
+    {
+      "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.",
+      "translation": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service."
+    },
+    {
+      "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id."
+    },
+    {
+      "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.",
+      "translation": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B."
     },
     {
       "id": "Check all compatibilities for a deployment.",
@@ -997,6 +1653,22 @@
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "translation": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value."
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
+      "translation": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P."
+    },
+    {
+      "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.",
+      "translation": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy."
+    },
+    {
+      "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id."
+    },
+    {
+      "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
+      "translation": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol."
     },
     {
       "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
@@ -1523,100 +2195,252 @@
       "translation": "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"
     },
     {
-      "id": "AllCompatible called",
-      "translation": "AllCompatible called"
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "Error parsing the selections {Form}. {Err}"
     },
     {
-      "id": "Cannot use the local node because it is not registered.",
-      "translation": "Cannot use the local node because it is not registered."
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "Error getting {Resource} for output, error {Err}"
     },
     {
-      "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
-      "translation": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}."
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}",
-      "translation": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}"
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "Business policy not found for {PolOrg}/{PolId}",
-      "translation": "Business policy not found for {PolOrg}/{PolId}"
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "failed to unmarshal json input file {FilePath}: {Err}"
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "Neither node id nor node policy is not specified. Getting node policy from the local node.",
-      "translation": "Neither node id nor node policy is not specified. Getting node policy from the local node."
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "Using compatibility checking input: {PolicyCheckInput}",
-      "translation": "Using compatibility checking input: {PolicyCheckInput}"
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
-      "translation": "failed to marshal 'hzn policy compatible' output: {Err}"
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "-n and --node-pol are mutually exclusive.",
-      "translation": "-n and --node-pol are mutually exclusive."
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
     },
     {
-      "id": "-b and --business-pol are mutually exclusive.",
-      "translation": "-b and --business-pol are mutually exclusive."
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "Error in updating node {Arg_1}. {Arg_2}"
     },
     {
-      "id": "Either -b or --business-pol must be specified.",
-      "translation": "Either -b or --business-pol must be specified."
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "Error in node unregistration. {Arg_1}"
     },
     {
-      "id": "Please specify the exchange credential with -u for querying the node, business policy and service policy.",
-      "translation": "Please specify the exchange credential with -u for querying the node, business policy and service policy."
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "Error verifiying exchange version. error: {Arg_1}"
     },
     {
-      "id": "Please specify the organization with -o for the exchange credentail: {CredToUse}.",
-      "translation": "Please specify the organization with -o for the exchange credentail: {CredToUse}."
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "Error in creating or replacing node policy. {Arg_1}"
     },
     {
-      "id": "Error unmarshaling service json file {FilePath}: {Err}",
-      "translation": "Error unmarshaling service json file {FilePath}: {Err}"
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "Error in patching node policy. {Arg_1}"
     },
     {
-      "id": "Error unmarshaling userInput json file: {Err}",
-      "translation": "Error unmarshaling userInput json file: {Err}"
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "Error in deleting node policy. {Arg_1}"
     },
     {
-      "id": "Neither node id nor node user input file is not specified. Getting node user input from the local node.",
-      "translation": "Neither node id nor node user input file is not specified. Getting node user input from the local node."
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "Error in updating node user input. {Arg_1}"
     },
     {
-      "id": "URL must be specified in the service definition.",
-      "translation": "URL must be specified in the service definition."
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "Error in patching node user input. {Arg_1}"
     },
     {
-      "id": "Version must be specified in the service definition.",
-      "translation": "Version must be specified in the service definition."
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "Error in deleting node userinput. {Arg_1}"
     },
     {
-      "id": "Invalide version format: {Version}.",
-      "translation": "Invalide version format: {Version}."
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "Start node configuration/registration for node {Arg_1}."
     },
     {
-      "id": "Arch must be specified in the service definition.",
-      "translation": "Arch must be specified in the service definition."
+      "id": "Start updating node {Arg_1}.",
+      "translation": "Start updating node {Arg_1}."
     },
     {
-      "id": "-n and --node-ui are mutually exclusive.",
-      "translation": "-n and --node-ui are mutually exclusive."
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "Complete node update for {Arg_1}."
     },
     {
-      "id": "Error in service file {Sfile}. {Err}",
-      "translation": "Error in service file {Sfile}. {Err}"
+      "id": "Start node unregistration.",
+      "translation": "Start node unregistration."
     },
     {
-      "id": "The service organization {Sorg} from service file {SvcDefFilesi} does not match the service organization {Org} from business policy file {BusinessPolFile}.",
-      "translation": "The service organization {Sorg} from service file {SvcDefFilesi} does not match the service organization {Org} from business policy file {BusinessPolFile}."
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "Node unregistration complete for node {Arg_1}."
+    },
+    {
+      "id": "Error unregistring the node. The node is not found from the database.",
+      "translation": "Error unregistring the node. The node is not found from the database."
+    },
+    {
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "Unable to read node object from database, error {Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "Error in node configuration. The node is not found from the database."
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "Failed get user input from local db. {Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "Error saving new node config state to database: {Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "Complete node configuration/registration for node {Arg_1}."
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "Error in service configuration for {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "New node policy: {Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "Deleted node policy"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "New node user input: {Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "No node user input to detele"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "Deleted all node user input"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Start service auto configuration for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Complete service configuration for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+      "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "Error configuring service {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "Error changing service configstate {Arg_1}, error {Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "Error converting the selections into Selectors: {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn status -l' output: {Err}",
+      "translation": "failed to marshal 'hzn status -l' output: {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn status' output: {Err}",
+      "translation": "failed to marshal 'hzn status' output: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}"
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}"
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}."
     },
     {
       "id": "failed to marshal 'exchange agbot list' output: {Err}",
@@ -1657,6 +2481,10 @@
     {
       "id": "failed to marshal 'hzn exchange business listpolicy' output: {Err}",
       "translation": "failed to marshal 'hzn exchange business listpolicy' output: {Err}"
+    },
+    {
+      "id": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "translation": "failed to unmarshal json input file {JsonFilePath}: {Err}"
     },
     {
       "id": "Incorrect business policy format in file {JsonFilePath}: {Err}",
@@ -1787,22 +2615,6 @@
       "translation": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}"
     },
     {
-      "id": "no service name",
-      "translation": "no service name"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "no docker image for service {ServiceName}"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "failed to marshal body for {D}: {Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
-    },
-    {
       "id": "failed to marshal 'exchange node list' output: {Err}",
       "translation": "failed to marshal 'exchange node list' output: {Err}"
     },
@@ -1853,34 +2665,6 @@
     {
       "id": "Expecting 1 exchange node, but get {Lennodes} nodes",
       "translation": "Expecting 1 exchange node, but get {Lennodes} nodes"
-    },
-    {
-      "id": "Pattern {NodePatternString} of the node does not exist for org: {PatOrg}",
-      "translation": "Pattern {NodePatternString} of the node does not exist for org: {PatOrg}"
-    },
-    {
-      "id": "Expecting 1 pattern with name {NodePatternString}, but get {Lennodes} patterns",
-      "translation": "Expecting 1 pattern with name {NodePatternString}, but get {Lennodes} patterns"
-    },
-    {
-      "id": "Userinput cannot be set to empty list because some userinputs have no default value from service and pattern",
-      "translation": "Userinput cannot be set to empty list because some userinputs have no default value from service and pattern"
-    },
-    {
-      "id": "{Err}",
-      "translation": "{Err}"
-    },
-    {
-      "id": "ServiceOrgid and ServiceUrl need to be set in userinput",
-      "translation": "ServiceOrgid and ServiceUrl need to be set in userinput"
-    },
-    {
-      "id": "Unable to validate exchange node userInput, error: {Err}",
-      "translation": "Unable to validate exchange node userInput, error: {Err}"
-    },
-    {
-      "id": "validate exchange node/userinput {WarningMessage}",
-      "translation": "validate exchange node/userinput {WarningMessage}"
     },
     {
       "id": "Updating {K} for node {NodeOrg}/{Node} in the Horizon Exchange.",
@@ -1979,88 +2763,20 @@
       "translation": "failed to marshal 'hzn exchange node listerrors' output: {Err}"
     },
     {
-      "id": "Error: event record could not be found",
-      "translation": "Error: event record could not be found"
+      "id": "Verifying userInuput with the node pattern {Pattern}.",
+      "translation": "Verifying userInuput with the node pattern {Pattern}."
     },
     {
-      "id": "Start validating userinput {ServiceOrg}, {ServiceUrl}, {ServiceVersionRange}, {ServiceArch}",
-      "translation": "Start validating userinput {ServiceOrg}, {ServiceUrl}, {ServiceVersionRange}, {ServiceArch}"
+      "id": "Error varifying the given user input with the node pattern {Pattern}:",
+      "translation": "Error varifying the given user input with the node pattern {Pattern}:"
     },
     {
-      "id": "versionRange {ServiceVersionRange} cannot be converted to a version expression, error {Err}",
-      "translation": "versionRange {ServiceVersionRange} cannot be converted to a version expression, error {Err}"
+      "id": "Compatible",
+      "translation": "Compatible"
     },
     {
-      "id": "Failed to compare given userInput with service userInput, error: {Err}",
-      "translation": "Failed to compare given userInput with service userInput, error: {Err}"
-    },
-    {
-      "id": "For service {ServiceOrg} {ServiceUrl} {ServiceArch}, got warning message: {Error}",
-      "translation": "For service {ServiceOrg} {ServiceUrl} {ServiceArch}, got warning message: {Error}"
-    },
-    {
-      "id": "toplevel service does not exist {ServiceOrg}, {ServiceURL}, {ServiceArch}, {TopLevelServiceVersionNumber}",
-      "translation": "toplevel service does not exist {ServiceOrg}, {ServiceURL}, {ServiceArch}, {TopLevelServiceVersionNumber}"
-    },
-    {
-      "id": "{ServiceOrg} {ServiceURL} has userInput that need to be set because they have no default value.",
-      "translation": "{ServiceOrg} {ServiceURL} has userInput that need to be set because they have no default value."
-    },
-    {
-      "id": "Service {ServiceOrg} {ServiceUrl} {ServiceArch} {Expression} in userInput is not defined in pattern {NodePattern} or its dependent services",
-      "translation": "Service {ServiceOrg} {ServiceUrl} {ServiceArch} {Expression} in userInput is not defined in pattern {NodePattern} or its dependent services"
-    },
-    {
-      "id": "{WarningMessage}Warning: {Err}",
-      "translation": "{WarningMessage}Warning: {Err}"
-    },
-    {
-      "id": "No dependent service for service {Owner}, {URL}, {Arch}, {Version}",
-      "translation": "No dependent service for service {Owner}, {URL}, {Arch}, {Version}"
-    },
-    {
-      "id": "service does not exist {Org}, {URL}, {Arch}, {DependentServiceVersion}, {DependentServiceSearchVersion}",
-      "translation": "service does not exist {Org}, {URL}, {Arch}, {DependentServiceVersion}, {DependentServiceSearchVersion}"
-    },
-    {
-      "id": "Service {ServiceOrg}, {ServiceUrl}, {Expression} does not define a dependent service",
-      "translation": "Service {ServiceOrg}, {ServiceUrl}, {Expression} does not define a dependent service"
-    },
-    {
-      "id": "input version {Version} is not a valid version string",
-      "translation": "input version {Version} is not a valid version string"
-    },
-    {
-      "id": "Service does not exist for org: {ServiceOrg}, url: {ServiceUrl}, version: {ServiceVersion}, arch: {ServiceArch}",
-      "translation": "Service does not exist for org: {ServiceOrg}, url: {ServiceUrl}, version: {ServiceVersion}, arch: {ServiceArch}"
-    },
-    {
-      "id": "expecting 1 service for {ServiceUrl} {ServiceVersion} {SearchVersion}, but get {Lenservices} services",
-      "translation": "expecting 1 service for {ServiceUrl} {ServiceVersion} {SearchVersion}, but get {Lenservices} services"
-    },
-    {
-      "id": "expecting at least 1 service for {ServiceUrl} {ServiceVersion} {SearchVersion}, but get 0 service",
-      "translation": "expecting at least 1 service for {ServiceUrl} {ServiceVersion} {SearchVersion}, but get 0 service"
-    },
-    {
-      "id": "version range {ServiceVersion} in error: {Err}",
-      "translation": "version range {ServiceVersion} in error: {Err}"
-    },
-    {
-      "id": "Cannot find service given version range: {ServiceVersion}",
-      "translation": "Cannot find service given version range: {ServiceVersion}"
-    },
-    {
-      "id": "Error validating the type of userInput variable {PolicyInputName}. error: {Err}",
-      "translation": "Error validating the type of userInput variable {PolicyInputName}. error: {Err}"
-    },
-    {
-      "id": "The following variables are not defined in userInput for service in its highest version: {InputNameNotDefinedInService}",
-      "translation": "The following variables are not defined in userInput for service in its highest version: {InputNameNotDefinedInService}"
-    },
-    {
-      "id": "{ServiceInputName} needs to be set in userInput because it has no default value.",
-      "translation": "{ServiceInputName} needs to be set in userInput because it has no default value."
+      "id": "Unable to update the node because of the above error.",
+      "translation": "Unable to update the node because of the above error."
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -2077,6 +2793,10 @@
     {
       "id": "Pattern {Pattern}/{PatOrg} updated in the Horizon exchange.",
       "translation": "Pattern {Pattern}/{PatOrg} updated in the Horizon exchange."
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "failed to marshal body for {D}: {Err}"
     },
     {
       "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
@@ -2141,10 +2861,6 @@
     {
       "id": "key '{KeyName}' not found",
       "translation": "key '{KeyName}' not found"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "user input {Name} has no default value and is not set"
     },
     {
       "id": "failed to marshal 'hzn exchange service list' output: {Err}",
@@ -2285,766 +3001,6 @@
     {
       "id": "user '{User}' not found in org {Org}",
       "translation": "user '{User}' not found in org {Org}"
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name, or Org is empty string."
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "The serviceVersions array is empty."
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "properties contains an invalid property: {Err}"
-    },
-    {
-      "id": "The selection string {V} is not valid.",
-      "translation": "The selection string {V} is not valid."
-    },
-    {
-      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
-      "translation": "failed to marshal 'hzn eventlog list' output: {Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
-      "translation": "failed to marshal 'hzn eventlog surface' output: {Err}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "Error starting containers: {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "failed to marshal 'hzn status -l' output: {Err}",
-      "translation": "failed to marshal 'hzn status -l' output: {Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn status' output: {Err}",
-      "translation": "failed to marshal 'hzn status' output: {Err}"
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "Property must include a name and a value: {Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string."
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "Property value is of type {ActualType}, expected type {DeclaredType}"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "Value {Value} of property {Name} is not an integer type"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string."
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "Property {Name} with value {Value} is not a valid verion string"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "Property {Name} has invalid value type {ActualType}"
-    },
-    {
-      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
-      "translation": "Incorrect node policy format in file {JsonFilePath}: {Err}"
-    },
-    {
-      "id": "Reading input file {InputFile}...",
-      "translation": "Reading input file {InputFile}..."
-    },
-    {
-      "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
-      "translation": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls."
-    },
-    {
-      "id": "Horizon Exchange base URL: {ExchUrlBase}",
-      "translation": "Horizon Exchange base URL: {ExchUrlBase}"
-    },
-    {
-      "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
-      "translation": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."
-    },
-    {
-      "id": "Failed to get proper response from the Horizon agent",
-      "translation": "Failed to get proper response from the Horizon agent"
-    },
-    {
-      "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
-      "translation": "Unable to read machine serial number, error: {MsErr}. Continuing device registration."
-    },
-    {
-      "id": "Node ID not specified, using machine serial number {NodeId} as node ID.",
-      "translation": "Node ID not specified, using machine serial number {NodeId} as node ID."
-    },
-    {
-      "id": "Node ID not specified, and machine serial number not found, generating random node ID.",
-      "translation": "Node ID not specified, and machine serial number not found, generating random node ID."
-    },
-    {
-      "id": "Unable to generate random node id, error: {Err}",
-      "translation": "Unable to generate random node id, error: {Err}"
-    },
-    {
-      "id": "Generated random node ID: {NodeId}.",
-      "translation": "Generated random node ID: {NodeId}."
-    },
-    {
-      "id": "Using node ID '{NodeId}' from the Horizon agent",
-      "translation": "Using node ID '{NodeId}' from the Horizon agent"
-    },
-    {
-      "id": "could not create a random token",
-      "translation": "could not create a random token"
-    },
-    {
-      "id": "Generated random node token",
-      "translation": "Generated random node token"
-    },
-    {
-      "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
-      "translation": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it."
-    },
-    {
-      "id": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it...",
-      "translation": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it..."
-    },
-    {
-      "id": "Node {Org}/{NodeId} exists in the exchange",
-      "translation": "Node {Org}/{NodeId} exists in the exchange"
-    },
-    {
-      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "translation": "No pattern or node policy is specified. Will proceeed with the existing node policy."
-    },
-    {
-      "id": "Will proceeed with the given node policy.",
-      "translation": "Will proceeed with the given node policy."
-    },
-    {
-      "id": "Pattern {ExchangePattern} defined for the node on the exchange. Will proceeed with this pattern.",
-      "translation": "Pattern {ExchangePattern} defined for the node on the exchange. Will proceeed with this pattern."
-    },
-    {
-      "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the exchange.",
-      "translation": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the exchange."
-    },
-    {
-      "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
-      "translation": "pattern '{Patorg}/{Patname}' not found from the exchange."
-    },
-    {
-      "id": "Cannot proceed with the given pattern {Pattern} because it does not include any services.",
-      "translation": "Cannot proceed with the given pattern {Pattern} because it does not include any services."
-    },
-    {
-      "id": "Will proceeed with the given pattern {Pattern}.",
-      "translation": "Will proceeed with the given pattern {Pattern}."
-    },
-    {
-      "id": "Updating the node policy...",
-      "translation": "Updating the node policy..."
-    },
-    {
-      "id": "Initializing the Horizon node...",
-      "translation": "Initializing the Horizon node..."
-    },
-    {
-      "id": "Setting global variables...",
-      "translation": "Setting global variables..."
-    },
-    {
-      "id": "Setting service variables...",
-      "translation": "Setting service variables..."
-    },
-    {
-      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates)."
-    },
-    {
-      "id": "Changing Horizon state to configured to register this node with Horizon...",
-      "translation": "Changing Horizon state to configured to register this node with Horizon..."
-    },
-    {
-      "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again"
-    },
-    {
-      "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
-      "translation": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file."
-    },
-    {
-      "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
-      "translation": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view."
-    },
-    {
-      "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments."
-    },
-    {
-      "id": "Please specify the node organization id.",
-      "translation": "Please specify the node organization id."
-    },
-    {
-      "id": "invalid version range '{Vr}': {Err}",
-      "translation": "invalid version range '{Vr}': {Err}"
-    },
-    {
-      "id": "unable to verify that {Version} is within {VRange}, error {Err}",
-      "translation": "unable to verify that {Version} is within {VRange}, error {Err}"
-    },
-    {
-      "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",
-      "translation": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}"
-    },
-    {
-      "id": "error comparing version {ServiceshighestKey} with version {Version}. {Err}",
-      "translation": "error comparing version {ServiceshighestKey} with version {Version}. {Err}"
-    },
-    {
-      "id": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}",
-      "translation": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
-    },
-    {
-      "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
-      "translation": "found: {Org}, {Url}, {Arch}, {VersionRange}"
-    },
-    {
-      "id": "did not find pattern '{PatKey}' as expected",
-      "translation": "did not find pattern '{PatKey}' as expected"
-    },
-    {
-      "id": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}",
-      "translation": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}"
-    },
-    {
-      "id": "failed to marshal the user input template file: {Err}",
-      "translation": "failed to marshal the user input template file: {Err}"
-    },
-    {
-      "id": "problem writing the user input template file: {Err}",
-      "translation": "problem writing the user input template file: {Err}"
-    },
-    {
-      "id": "Wrote {InputFile}",
-      "translation": "Wrote {InputFile}"
-    },
-    {
-      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
-      "translation": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}"
-    },
-    {
-      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
-      "translation": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is."
-    },
-    {
-      "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
-      "translation": "Using '{NewImage}' in 'deployment' field instead of '{Image}'"
-    },
-    {
-      "id": "failed to marshal deployment string {Dep}, error {Err}",
-      "translation": "failed to marshal deployment string {Dep}, error {Err}"
-    },
-    {
-      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "translation": "problem signing deployment string with {KeyFilePath}: {Err}"
-    },
-    {
-      "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
-      "translation": "each service defined under 'deployment.services' must be a json object (with strings as the keys)"
-    },
-    {
-      "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
-      "translation": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field"
-    },
-    {
-      "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
-      "translation": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md"
-    },
-    {
-      "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
-      "translation": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)"
-    },
-    {
-      "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
-      "translation": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}"
-    },
-    {
-      "id": "Starting dependencies.",
-      "translation": "Starting dependencies."
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}"
-    },
-    {
-      "id": "Stopped service.",
-      "translation": "Stopped service."
-    },
-    {
-      "id": "must specify exchange credentials to access the model management service.",
-      "translation": "must specify exchange credentials to access the model management service."
-    },
-    {
-      "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
-      "translation": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false"
-    },
-    {
-      "id": "Invalid --data value: {WithData}, --data should be true or false",
-      "translation": "Invalid --data value: {WithData}, --data should be true or false"
-    },
-    {
-      "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
-      "translation": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime"
-    },
-    {
-      "id": "service should be in format service-org/service-name",
-      "translation": "service should be in format service-org/service-name"
-    },
-    {
-      "id": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd",
-      "translation": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd"
-    },
-    {
-      "id": "must specify objectType if set objectId",
-      "translation": "must specify objectType if set objectId"
-    },
-    {
-      "id": "must specify destinationType if set destinationId",
-      "translation": "must specify destinationType if set destinationId"
-    },
-    {
-      "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
-      "translation": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ"
-    },
-    {
-      "id": "no objects found in org {Org}",
-      "translation": "no objects found in org {Org}"
-    },
-    {
-      "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
-      "translation": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}"
-    },
-    {
-      "id": "Listing objects in org {Org}:",
-      "translation": "Listing objects in org {Org}:"
-    },
-    {
-      "id": "Required: A unique identifier of the object.",
-      "translation": "Required: A unique identifier of the object."
-    },
-    {
-      "id": "Required: The type of the object.",
-      "translation": "Required: The type of the object."
-    },
-    {
-      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
-      "translation": "Required: The organization ID of the object (an object belongs to exactly one organization)."
-    },
-    {
-      "id": "The node id (without org prefix) where the object should be placed.",
-      "translation": "The node id (without org prefix) where the object should be placed."
-    },
-    {
-      "id": "If omitted the object is sent to all nodes with the same destinationType.",
-      "translation": "If omitted the object is sent to all nodes with the same destinationType."
-    },
-    {
-      "id": "Delete this field when you are using destinationPolicy.",
-      "translation": "Delete this field when you are using destinationPolicy."
-    },
-    {
-      "id": "The pattern in use by nodes that should receive this object.",
-      "translation": "The pattern in use by nodes that should receive this object."
-    },
-    {
-      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
-      "translation": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes."
-    },
-    {
-      "id": "Delete this field when you are using policy.",
-      "translation": "Delete this field when you are using policy."
-    },
-    {
-      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
-      "translation": "The list of destinations as an array of pattern:nodeId pairs that should receive this object."
-    },
-    {
-      "id": "If provided, destinationType and destinationID must be omitted.",
-      "translation": "If provided, destinationType and destinationID must be omitted."
-    },
-    {
-      "id": "The policy specification that should be used to distribute this object.",
-      "translation": "The policy specification that should be used to distribute this object."
-    },
-    {
-      "id": "Delete these fields if the target node is using a pattern.",
-      "translation": "Delete these fields if the target node is using a pattern."
-    },
-    {
-      "id": "A list of policy properties that describe the object.",
-      "translation": "A list of policy properties that describe the object."
-    },
-    {
-      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
-      "translation": "Valid types are string, bool, int, float, list of string (comma separated), version."
-    },
-    {
-      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
-      "translation": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean."
-    },
-    {
-      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||)."
-    },
-    {
-      "id": "The service(s) that will use this object.",
-      "translation": "The service(s) that will use this object."
-    },
-    {
-      "id": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "Set to '*' to indcate services of any hardware architecture."
-    },
-    {
-      "id": "A version range.",
-      "translation": "A version range."
-    },
-    {
-      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
-      "translation": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format."
-    },
-    {
-      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
-      "translation": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object."
-    },
-    {
-      "id": "An arbitrary description.",
-      "translation": "An arbitrary description."
-    },
-    {
-      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
-      "translation": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format."
-    },
-    {
-      "id": "must specify exchange credentials to access the model management service",
-      "translation": "must specify exchange credentials to access the model management service"
-    },
-    {
-      "id": "must specify --type with --id",
-      "translation": "must specify --type with --id"
-    },
-    {
-      "id": "must specify --id with --type",
-      "translation": "must specify --id with --type"
-    },
-    {
-      "id": "cannot specify --id and --type with --def",
-      "translation": "cannot specify --id and --type with --def"
-    },
-    {
-      "id": "must specify either --type and --id or --def",
-      "translation": "must specify either --type and --id or --def"
-    },
-    {
-      "id": "cannot specify --pattern with --def",
-      "translation": "cannot specify --pattern with --def"
-    },
-    {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "unable to read definition file {ObjMetadataFile}: {Err}"
-    },
-    {
-      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
-      "translation": "failed to unmarshal definition file {ObjMetadataFile}: {Err}"
-    },
-    {
-      "id": "unable to open object file {ObjFile}: {Err}",
-      "translation": "unable to open object file {ObjFile}: {Err}"
-    },
-    {
-      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
-      "translation": "Object {ObjFile} uploaded to org {Org} in the Model Management Service"
-    },
-    {
-      "id": "Object status: {Stringresp}",
-      "translation": "Object status: {Stringresp}"
-    },
-    {
-      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
-      "translation": "Object {ObjectID} added to org {Org} in the Model Management Service"
-    },
-    {
-      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "object '{ObjId}' of type '{ObjType}' not found in org {Org}"
-    },
-    {
-      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
-      "translation": "Object {ObjId} deleted from org {Org} in the Model Management Service"
-    },
-    {
-      "id": "health status API returned HTTP code {HttpCode}",
-      "translation": "health status API returned HTTP code {HttpCode}"
-    },
-    {
-      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "unable to create network {NETWORKNAME} for file sync service, error {Err}"
-    },
-    {
-      "id": "unable to start CSS, error {Err}",
-      "translation": "unable to start CSS, error {Err}"
-    },
-    {
-      "id": "unable to load file objects into CSS, error {Err}",
-      "translation": "unable to load file objects into CSS, error {Err}"
-    },
-    {
-      "id": "unable to start ESS, error {Err}",
-      "translation": "unable to start ESS, error {Err}"
-    },
-    {
-      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
-      "translation": "Unable to stop {MakeLabelNameESSNAME}, error {Err}"
-    },
-    {
-      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}"
-    },
-    {
-      "id": "unable to list existing docker images, error {Err}",
-      "translation": "unable to list existing docker images, error {Err}"
-    },
-    {
-      "id": "Found docker image {Name} locally.",
-      "translation": "Found docker image {Name} locally."
-    },
-    {
-      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
-      "translation": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag."
-    },
-    {
-      "id": "Pulled docker image {Name}.",
-      "translation": "Pulled docker image {Name}."
-    },
-    {
-      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
-      "translation": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag."
-    },
-    {
-      "id": "unable to start CSS container, error {Err}",
-      "translation": "unable to start CSS container, error {Err}"
-    },
-    {
-      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
-      "translation": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}"
-    },
-    {
-      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
-      "translation": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}"
-    },
-    {
-      "id": "unable to create SSL certificate for ESS, error {Err}",
-      "translation": "unable to create SSL certificate for ESS, error {Err}"
-    },
-    {
-      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
-      "translation": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}"
-    },
-    {
-      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
-      "translation": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}"
-    },
-    {
-      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
-      "translation": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}"
-    },
-    {
-      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
-      "translation": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}"
-    },
-    {
-      "id": "unable to create ESS container, error {Err}",
-      "translation": "unable to create ESS container, error {Err}"
-    },
-    {
-      "id": "unable to start ESS container, error {Err}",
-      "translation": "unable to start ESS container, error {Err}"
-    },
-    {
-      "id": "Created {MakeLabelNameESSNAME} container",
-      "translation": "Created {MakeLabelNameESSNAME} container"
-    },
-    {
-      "id": "unable to list docker containers, error {Err}",
-      "translation": "unable to list docker containers, error {Err}"
-    },
-    {
-      "id": "unable to stop docker container {Name}, error {Err}",
-      "translation": "unable to stop docker container {Name}, error {Err}"
-    },
-    {
-      "id": "unable to remove docker container {Name}, error {Err}",
-      "translation": "unable to remove docker container {Name}, error {Err}"
-    },
-    {
-      "id": "Stopped {Name} container",
-      "translation": "Stopped {Name} container"
-    },
-    {
-      "id": "Loading {FileName} into CSS",
-      "translation": "Loading {FileName} into CSS"
-    },
-    {
-      "id": "unable to open file object {FileName}, error {Err}",
-      "translation": "unable to open file object {FileName}, error {Err}"
-    },
-    {
-      "id": "unable to read file object {FileName}, error {Err}",
-      "translation": "unable to read file object {FileName}, error {Err}"
-    },
-    {
-      "id": "unable to add file {FileName} to the CSS, error {Err}",
-      "translation": "unable to add file {FileName} to the CSS, error {Err}"
-    },
-    {
-      "id": "Configuration files {FileObjects} loaded into the File sync service.",
-      "translation": "Configuration files {FileObjects} loaded into the File sync service."
-    },
-    {
-      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
-      "translation": "unable to marshal CSS file PUT for {Metadata}, error {Err}"
-    },
-    {
-      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
-      "translation": "unable to create CSS file PUT request for {Metadata}, error {Err}"
-    },
-    {
-      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
-      "translation": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}"
-    },
-    {
-      "id": "Received HTTP code: {StatusCode}",
-      "translation": "Received HTTP code: {StatusCode}"
-    },
-    {
-      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
-      "translation": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}"
-    },
-    {
-      "id": "Created network {Name}",
-      "translation": "Created network {Name}"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "unable to list docker networks, error {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "unable to remove docker network {Name}, error {Err}"
-    },
-    {
-      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
-      "translation": "problem signing stdin with {PrivKeyFilePath}: {Err}"
-    },
-    {
-      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
-      "translation": "problem verifying deployment string with {PubKeyFilePath}: {Err}"
-    },
-    {
-      "id": "This is not a valid signature for stdin.",
-      "translation": "This is not a valid signature for stdin."
-    },
-    {
-      "id": "Signature is valid.",
-      "translation": "Signature is valid."
-    },
-    {
-      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "translation": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}"
-    },
-    {
-      "id": "horizon api agreement output did not include 'agreements' key",
-      "translation": "horizon api agreement output did not include 'agreements' key"
-    },
-    {
-      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
-      "translation": "horizon api agreement output did not include '{WhichAgreements}' key"
-    },
-    {
-      "id": "failed to marshal 'hzn metering list' output: {Err}",
-      "translation": "failed to marshal 'hzn metering list' output: {Err}"
     },
     {
       "id": "New dependency created: {Target} .",
@@ -3535,10 +3491,6 @@
       "translation": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}"
     },
     {
-      "id": "unable to list containers, {Err}",
-      "translation": "unable to list containers, {Err}"
-    },
-    {
       "id": "unable to list existing containers: {Err}",
       "translation": "unable to list existing containers: {Err}"
     },
@@ -3635,228 +3587,16 @@
       "translation": "unable to write content to file {FilePath}, error: {Err}"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Unauthorized. No exchange user id is supplied."
+      "id": "horizon api agreement output did not include 'agreements' key",
+      "translation": "horizon api agreement output did not include 'agreements' key"
     },
     {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "Failed to authenticate the user with the exchange. {Err}"
+      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
+      "translation": "horizon api agreement output did not include '{WhichAgreements}' key"
     },
     {
-      "id": "No input found.",
-      "translation": "No input found."
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Input body couldn't be deserialized to JSON object. {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to PolicyCheck object. {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to UserInputCheck object. {Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "No exchange user id is supplied."
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "No exchange user organization id is supplied."
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "No exchange user password or api key is supplied."
-    },
-    {
-      "id": "User not found.",
-      "translation": "User not found."
-    },
-    {
-      "id": "Internal server error",
-      "translation": "Internal server error"
-    },
-    {
-      "id": "unable to set env var 'HORIZON_URL', error {Err}",
-      "translation": "unable to set env var 'HORIZON_URL', error {Err}"
-    },
-    {
-      "id": "failed to marshal 'agreement list' output: {Err}",
-      "translation": "failed to marshal 'agreement list' output: {Err}"
-    },
-    {
-      "id": "No active agreements to cancel.",
-      "translation": "No active agreements to cancel."
-    },
-    {
-      "id": "either an agreement ID or -a must be specified.",
-      "translation": "either an agreement ID or -a must be specified."
-    },
-    {
-      "id": "Canceling agreement {Id} ...",
-      "translation": "Canceling agreement {Id} ..."
-    },
-    {
-      "id": "failed to marshal 'hzn node list' output: {Err}",
-      "translation": "failed to marshal 'hzn node list' output: {Err}"
-    },
-    {
-      "id": "failed to marshal 'policy list' output: {Err}",
-      "translation": "failed to marshal 'policy list' output: {Err}"
-    },
-    {
-      "id": "Error: The organization '{Org}' does not exist.",
-      "translation": "Error: The organization '{Org}' does not exist."
-    },
-    {
-      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
-      "translation": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot."
-    },
-    {
-      "id": "Unable to marshal userinput object: {Err}",
-      "translation": "Unable to marshal userinput object: {Err}"
-    },
-    {
-      "id": "A list of objects, each one containing the user inputs required for a specified service.",
-      "translation": "A list of objects, each one containing the user inputs required for a specified service."
-    },
-    {
-      "id": "The horizon org of the specified service.",
-      "translation": "The horizon org of the specified service."
-    },
-    {
-      "id": "The unique string used to identify the specified service.",
-      "translation": "The unique string used to identify the specified service."
-    },
-    {
-      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
-      "translation": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures."
-    },
-    {
-      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
-      "translation": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions."
-    },
-    {
-      "id": "A list of objects with the names and values for the user inputs used by this service.",
-      "translation": "A list of objects with the names and values for the user inputs used by this service."
-    },
-    {
-      "id": "Horizon node user inputs updated.",
-      "translation": "Horizon node user inputs updated."
-    },
-    {
-      "id": "Are you sure you want to remove the node user inputs?",
-      "translation": "Are you sure you want to remove the node user inputs?"
-    },
-    {
-      "id": "Horizon user inputs removed.",
-      "translation": "Horizon user inputs removed."
-    },
-    {
-      "id": "cleaned {String} resulted in an empty string.",
-      "translation": "cleaned {String} resulted in an empty string."
-    },
-    {
-      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
-      "translation": "plugin context must include 'currentDir' as the current directory of the service definition file"
-    },
-    {
-      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
-      "translation": "unable to read chart archive {Depchartarchive}, error {Err}"
-    },
-    {
-      "id": "chart_archive must have a string type value, has {C}",
-      "translation": "chart_archive must have a string type value, has {C}"
-    },
-    {
-      "id": "release_name must have a string type value, has {R}",
-      "translation": "release_name must have a string type value, has {R}"
-    },
-    {
-      "id": "chart_archive and release_name must be non-empty strings",
-      "translation": "chart_archive and release_name must be non-empty strings"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments"
-    },
-    {
-      "id": "Are you sure you want to unregister this Horizon node?",
-      "translation": "Are you sure you want to unregister this Horizon node?"
-    },
-    {
-      "id": "The node is not registered.",
-      "translation": "The node is not registered."
-    },
-    {
-      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
-      "translation": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
-    },
-    {
-      "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-      "translation": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired."
-    },
-    {
-      "id": "Horizon node delete call successful with return code: {Output}",
-      "translation": "Horizon node delete call successful with return code: {Output}"
-    },
-    {
-      "id": "Timeout in {TotalWait} seconds ...",
-      "translation": "Timeout in {TotalWait} seconds ..."
-    },
-    {
-      "id": "Waiting for Horizon node unregister to complete: {UpdateStatus}",
-      "translation": "Waiting for Horizon node unregister to complete: {UpdateStatus}"
-    },
-    {
-      "id": "No Timeout specified ...",
-      "translation": "No Timeout specified ..."
-    },
-    {
-      "id": "Starting external deep clean ...",
-      "translation": "Starting external deep clean ..."
-    },
-    {
-      "id": "Stopping horizon...",
-      "translation": "Stopping horizon..."
-    },
-    {
-      "id": "Deleting local horizon DB...",
-      "translation": "Deleting local horizon DB..."
-    },
-    {
-      "id": "Deleting service containers...",
-      "translation": "Deleting service containers..."
-    },
-    {
-      "id": "Starting horizon...",
-      "translation": "Starting horizon..."
-    },
-    {
-      "id": "Checking the node configuration state...",
-      "translation": "Checking the node configuration state..."
-    },
-    {
-      "id": "Node configuration state: {State}",
-      "translation": "Node configuration state: {State}"
-    },
-    {
-      "id": "Timeout waiting for node change to 'unconfigured' state.",
-      "translation": "Timeout waiting for node change to 'unconfigured' state."
-    },
-    {
-      "id": "Error deleting container {Names0}. {Err}",
-      "translation": "Error deleting container {Names0}. {Err}"
-    },
-    {
-      "id": "Removed service container: {Names0}",
-      "translation": "Removed service container: {Names0}"
-    },
-    {
-      "id": "Error pruning docker networks. {Err}",
-      "translation": "Error pruning docker networks. {Err}"
+      "id": "failed to marshal 'hzn metering list' output: {Err}",
+      "translation": "failed to marshal 'hzn metering list' output: {Err}"
     },
     {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
@@ -3883,264 +3623,60 @@
       "translation": "Horizon node policy deleted."
     },
     {
-      "id": "deployment config {Dep} is not supported",
-      "translation": "deployment config {Dep} is not supported"
+      "id": "A list of policy properties that describe the object.",
+      "translation": "A list of policy properties that describe the object."
     },
     {
-      "id": "starting test mode is not supported for this project",
-      "translation": "starting test mode is not supported for this project"
+      "id": "no service name",
+      "translation": "no service name"
     },
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
+      "id": "no docker image for service {ServiceName}",
+      "translation": "no docker image for service {ServiceName}"
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "The constraint expression contains unmatched parentheses."
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
     },
     {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "Error parsing the selections {Form}. {Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "user input {Name} has no default value and is not set"
     },
     {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "Error getting {Resource} for output, error {Err}"
+      "id": "Name, or Org is empty string.",
+      "translation": "Name, or Org is empty string."
     },
     {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      "id": "The serviceVersions array is empty.",
+      "translation": "The serviceVersions array is empty."
     },
     {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "properties contains an invalid property: {Err}"
     },
     {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      "id": "failed to marshal agreement with index {I}: {Err}",
+      "translation": "failed to marshal agreement with index {I}: {Err}"
     },
     {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
+      "id": "agreement id {AgreementId} not found",
+      "translation": "agreement id {AgreementId} not found"
     },
     {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      "id": "failed to marshal 'hzn agreement list' output: {Err}",
+      "translation": "failed to marshal 'hzn agreement list' output: {Err}"
     },
     {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      "id": "No active agreements to cancel.",
+      "translation": "No active agreements to cancel."
     },
     {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
+      "id": "either an agreement ID or -a must be specified.",
+      "translation": "either an agreement ID or -a must be specified."
     },
     {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "Error in updating node {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "Error in node unregistration. {Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "Error verifiying exchange version. error: {Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "Error in creating or replacing node policy. {Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "Error in patching node policy. {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "Error in deleting node policy. {Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "Error in updating node user input. {Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "Error in patching node user input. {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "Error in deleting node userinput. {Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "Start node configuration/registration for node {Arg_1}."
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "Start updating node {Arg_1}."
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "Complete node update for {Arg_1}."
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "Start node unregistration."
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "Node unregistration complete for node {Arg_1}."
-    },
-    {
-      "id": "Error unregistring the node. The node is not found from the database.",
-      "translation": "Error unregistring the node. The node is not found from the database."
-    },
-    {
-      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "Unable to read node object from database, error {Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "Error in node configuration. The node is not found from the database."
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "Failed get user input from local db. {Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "Error saving new node config state to database: {Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "Complete node configuration/registration for node {Arg_1}."
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "Error in service configuration for {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "New node policy: {Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "Deleted node policy"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "New node user input: {Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "No node user input to detele"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "Deleted all node user input"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Start service auto configuration for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Complete service configuration for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-      "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "Error configuring service {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "Error changing service configstate {Arg_1}, error {Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "Error converting the selections into Selectors: {Err}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} is not a valid version string."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "Input version string {V1} or {V2} is not a valid single version string."
+      "id": "Canceling agreement {Id} ...",
+      "translation": "Canceling agreement {Id} ..."
     },
     {
       "id": "failed to marshal 'key list' output: {Err}",
@@ -4199,10 +3735,6 @@
       "translation": "-d is mutually exclusive with -k and -K"
     },
     {
-      "id": "Failed to get absolute path for file {KFileName}. {Err}",
-      "translation": "Failed to get absolute path for file {KFileName}. {Err}"
-    },
-    {
       "id": "Creating directory {OutputDirPub}.",
       "translation": "Creating directory {OutputDirPub}."
     },
@@ -4223,92 +3755,212 @@
       "translation": "Deleting file {PrivKeyFile}."
     },
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}"
+      "id": "deployment config {Dep} is not supported",
+      "translation": "deployment config {Dep} is not supported"
     },
     {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}"
+      "id": "starting test mode is not supported for this project",
+      "translation": "starting test mode is not supported for this project"
     },
     {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
     },
     {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
     },
     {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}."
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
     },
     {
-      "id": "Failed to get proper response from Horizon agent",
-      "translation": "Failed to get proper response from Horizon agent"
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
     },
     {
-      "id": "Horizon CLI version: {HORIZONVERSION}",
-      "translation": "Horizon CLI version: {HORIZONVERSION}"
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "Horizon Agent version: {HorizonVersion}",
-      "translation": "Horizon Agent version: {HorizonVersion}"
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
     },
     {
-      "id": "Horizon Agent version: failed to get.",
-      "translation": "Horizon Agent version: failed to get."
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "Error starting containers: {Arg_1}"
     },
     {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "unable to make directory for self signed MMS API certificate, error {Err}"
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
     },
     {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "unable to generate random number for MMS API certificate serial number, error {Err}"
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
     },
     {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "unable to generate private key for MMS API certificate, error {Err}"
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
     },
     {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "unable to create MMS API certificate, error {Err}"
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
     },
     {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}"
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
     },
     {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}"
+      "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
+      "translation": "Neither node id nor node policy is specified. Getting node policy from the local node."
     },
     {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}"
+      "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
+      "translation": "Neither node id nor node user input file is specified. Getting node user input from the local node."
     },
     {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}"
+      "id": "Using compatibility checking input: {CompCheckInput}",
+      "translation": "Using compatibility checking input: {CompCheckInput}"
     },
     {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}"
+      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
+      "translation": "failed to marshal 'hzn policy compatible' output: {Err}"
     },
     {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
+      "id": "Please specify either bussiness policy or pattern.",
+      "translation": "Please specify either bussiness policy or pattern."
     },
     {
-      "id": "this command can not be run before running 'hzn register'",
-      "translation": "this command can not be run before running 'hzn register'"
+      "id": "Neither bussiness policy nor pattern is specified.",
+      "translation": "Neither bussiness policy nor pattern is specified."
     },
     {
-      "id": "horizon api attributes output did not include 'attributes' key",
-      "translation": "horizon api attributes output did not include 'attributes' key"
+      "id": "--node-pol, -p and -P are mutually exclusive.",
+      "translation": "--node-pol, -p and -P are mutually exclusive."
     },
     {
-      "id": "failed to marshal 'hzn attribute list' output: {Err}",
-      "translation": "failed to marshal 'hzn attribute list' output: {Err}"
+      "id": "--service-pol, -p and -P are mutually exclusive.",
+      "translation": "--service-pol, -p and -P are mutually exclusive."
+    },
+    {
+      "id": "-n and --node-pol are mutually exclusive.",
+      "translation": "-n and --node-pol are mutually exclusive."
+    },
+    {
+      "id": "-n and --node-ui are mutually exclusive.",
+      "translation": "-n and --node-ui are mutually exclusive."
+    },
+    {
+      "id": "-b and -B are mutually exclusive.",
+      "translation": "-b and -B are mutually exclusive."
+    },
+    {
+      "id": "-p and -P are mutually exclusive.",
+      "translation": "-p and -P are mutually exclusive."
+    },
+    {
+      "id": "Please specify the exchange credential with -u for querying the node, business policy and service policy.",
+      "translation": "Please specify the exchange credential with -u for querying the node, business policy and service policy."
+    },
+    {
+      "id": "Please specify the organization with -o for the exchange credentail: {CredToUse}.",
+      "translation": "Please specify the organization with -o for the exchange credentail: {CredToUse}."
+    },
+    {
+      "id": "Cannot use the local node because it is not registered.",
+      "translation": "Cannot use the local node because it is not registered."
+    },
+    {
+      "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
+      "translation": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}."
+    },
+    {
+      "id": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}",
+      "translation": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}"
+    },
+    {
+      "id": "Business policy not found for {PolOrg}/{PolId}",
+      "translation": "Business policy not found for {PolOrg}/{PolId}"
+    },
+    {
+      "id": "Either -b or -B must be specified.",
+      "translation": "Either -b or -B must be specified."
+    },
+    {
+      "id": "Error unmarshaling service json file {FilePath}: {Err}",
+      "translation": "Error unmarshaling service json file {FilePath}: {Err}"
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "translation": "URL must be specified in the service definition."
+    },
+    {
+      "id": "Version must be specified in the service definition.",
+      "translation": "Version must be specified in the service definition."
+    },
+    {
+      "id": "Invalide version format: {Version}.",
+      "translation": "Invalide version format: {Version}."
+    },
+    {
+      "id": "Arch must be specified in the service definition.",
+      "translation": "Arch must be specified in the service definition."
+    },
+    {
+      "id": "Error in service file {Sfile}. {Err}",
+      "translation": "Error in service file {Sfile}. {Err}"
+    },
+    {
+      "id": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
+      "translation": "failed to unmarshal pattern json input file {PatternFile}: {Err}"
+    },
+    {
+      "id": "Pattern not found for {PatOrg}/{PatId}",
+      "translation": "Pattern not found for {PatOrg}/{PatId}"
+    },
+    {
+      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the patterh requirement.",
+      "translation": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the patterh requirement."
+    },
+    {
+      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the business policy requirement.",
+      "translation": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the business policy requirement."
+    },
+    {
+      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
+      "translation": "problem signing stdin with {PrivKeyFilePath}: {Err}"
+    },
+    {
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "translation": "problem verifying deployment string with {PubKeyFilePath}: {Err}"
+    },
+    {
+      "id": "This is not a valid signature for stdin.",
+      "translation": "This is not a valid signature for stdin."
+    },
+    {
+      "id": "Signature is valid.",
+      "translation": "Signature is valid."
+    },
+    {
+      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
+      "translation": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}"
+    },
+    {
+      "id": "Bussiness policy and pattern are mutually exclusive.",
+      "translation": "Bussiness policy and pattern are mutually exclusive."
+    },
+    {
+      "id": "Incompatible",
+      "translation": "Incompatible"
+    },
+    {
+      "id": "Error marshaling object {In}. {Arg_2}",
+      "translation": "Error marshaling object {In}. {Arg_2}"
+    },
+    {
+      "id": "Failed to convert input to PolicyCheck object. {Err}",
+      "translation": "Failed to convert input to PolicyCheck object. {Err}"
     },
     {
       "id": "The given node id is empty.",
@@ -4337,10 +3989,6 @@
     {
       "id": "Policy Incompatible",
       "translation": "Policy Incompatible"
-    },
-    {
-      "id": "Compatible",
-      "translation": "Compatible"
     },
     {
       "id": "Architecture does not match.",
@@ -4507,24 +4155,32 @@
       "translation": "Neither node user input nor node id is specified."
     },
     {
+      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
+      "translation": "No service versions with architecture {NodeArch} specified in the business policy or pattern."
+    },
+    {
+      "id": "No service versions specified in the business policy or pattern.",
+      "translation": "No service versions specified in the business policy or pattern."
+    },
+    {
       "id": "User Input Incompatible",
       "translation": "User Input Incompatible"
     },
     {
-      "id": "Service architecture {Arch} does not match the node architecture {NodeArch}.",
-      "translation": "Service architecture {Arch} does not match the node architecture {NodeArch}."
-    },
-    {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "Validation failure for input service {SId}. {Err}"
-    },
-    {
-      "id": "Error getting services for all archetctures for {Org}/{Name} version {Version}. {Err}",
-      "translation": "Error getting services for all archetctures for {Org}/{Name} version {Version}. {Err}"
+      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+      "translation": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}"
     },
     {
       "id": "Service definition not found in the input.",
       "translation": "Service definition not found in the input."
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
+      "translation": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern."
+    },
+    {
+      "id": "No services found in the business policy or pattern.",
+      "translation": "No services found in the business policy or pattern."
     },
     {
       "id": "The input service spec object cannot be null.",
@@ -4543,12 +4199,12 @@
       "translation": "Failed to verify user input for service {SId}. {Reason}"
     },
     {
-      "id": "Error verifing user input for dependent service {SId}. {Err}",
-      "translation": "Error verifing user input for dependent service {SId}. {Err}"
+      "id": "Error verifing user input for dependent service {Id}. {Err}",
+      "translation": "Error verifing user input for dependent service {Id}. {Err}"
     },
     {
-      "id": "Failed to verify user input for dependent service {SId}. {Reason}",
-      "translation": "Failed to verify user input for dependent service {SId}. {Reason}"
+      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+      "translation": "Failed to verify user input for dependent service {Id}. {Reason}"
     },
     {
       "id": "The input service definition object cannot be null.",
@@ -4587,6 +4243,10 @@
       "translation": "Service URL {URL} does not match the service URL {Name} specified in the business policy."
     },
     {
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
+      "translation": "Service Org {Org} does not match the service org {Org_1} specified in the business policy."
+    },
+    {
       "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
       "translation": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy."
     },
@@ -4595,412 +4255,816 @@
       "translation": "Service version {Version} does not match any service versions specified in the business policy."
     },
     {
-      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
-      "translation": "failed to marshal '/service/config' output attribute {Attr}. {Err}"
+      "id": "The service does not match any services in the pattern.",
+      "translation": "The service does not match any services in the pattern."
     },
     {
-      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
-      "translation": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}"
+      "id": "Pattern {PatId} cannot be found on the exchange.",
+      "translation": "Pattern {PatId} cannot be found on the exchange."
     },
     {
-      "id": "failed to marshal 'hzn service list' output: {Err}",
-      "translation": "failed to marshal 'hzn service list' output: {Err}"
+      "id": "Neither pattern nor pattern id is specified.",
+      "translation": "Neither pattern nor pattern id is specified."
     },
     {
-      "id": "Displaying log messages for service {SpecRef} with service id {InstanceId}.",
-      "translation": "Displaying log messages for service {SpecRef} with service id {InstanceId}."
+      "id": "Pattern id is empty.",
+      "translation": "Pattern id is empty."
     },
     {
-      "id": "Use ctrl-C to terminate this command.",
-      "translation": "Use ctrl-C to terminate this command."
+      "id": "Organization is not specified in the pattern id: {PatId}.",
+      "translation": "Organization is not specified in the pattern id: {PatId}."
     },
     {
-      "id": "Service {RefUrl} is not running on the node.",
-      "translation": "Service {RefUrl} is not running on the node."
+      "id": "Error getting pattern {PatId} from the exchange, {Err}",
+      "translation": "Error getting pattern {PatId} from the exchange, {Err}"
     },
     {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "translation": "Error creating StdoutPipe for command: {Err}"
+      "id": "No pattern found for this id {PatId}.",
+      "translation": "No pattern found for this id {PatId}."
     },
     {
-      "id": "Error starting command: {Err}",
-      "translation": "Error starting command: {Err}"
+      "id": "Version must be specified in the service definition for service {URL}.",
+      "translation": "Version must be specified in the service definition for service {URL}."
     },
     {
-      "id": "Error waiting for command: {Err}",
-      "translation": "Error waiting for command: {Err}"
+      "id": "Invalide version format {Version} for service {URL}.",
+      "translation": "Invalide version format {Version} for service {URL}."
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog could not be opened or does not exist: {Err}"
+      "id": "Arch must be specified in the service definition for service {URL}.",
+      "translation": "Arch must be specified in the service definition for service {URL}."
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog could not get stats: {Err}"
+      "id": "Org must be specified in the service definition for service {URL}.",
+      "translation": "Org must be specified in the service definition for service {URL}."
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Error reading from /var/log/syslog: {Err}"
+      "id": "Validation failure for input service {SId}. {Err}",
+      "translation": "Validation failure for input service {SId}. {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Unable to state /var/log/syslog: {Err}"
+      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
+      "translation": "Incorrect node policy format in file {JsonFilePath}: {Err}"
     },
     {
-      "id": "failed to marshal 'hzn service registered' output: {Err}",
-      "translation": "failed to marshal 'hzn service registered' output: {Err}"
+      "id": "Reading input file {InputFile}...",
+      "translation": "Reading input file {InputFile}..."
     },
     {
-      "id": "failed to marshal 'hzn service configstate' output: {Err}",
-      "translation": "failed to marshal 'hzn service configstate' output: {Err}"
+      "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
+      "translation": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls."
     },
     {
-      "id": "all the registered services",
-      "translation": "all the registered services"
+      "id": "Horizon Exchange base URL: {ExchUrlBase}",
+      "translation": "Horizon Exchange base URL: {ExchUrlBase}"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "service {ServiceOrg}/{ServiceUrl}"
+      "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
+      "translation": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."
     },
     {
-      "id": "all the registered services from organization {ServiceOrg}",
-      "translation": "all the registered services from organization {ServiceOrg}"
+      "id": "Failed to get proper response from the Horizon agent",
+      "translation": "Failed to get proper response from the Horizon agent"
     },
     {
-      "id": "Please specify the organization for service {ServiceUrl}.",
-      "translation": "Please specify the organization for service {ServiceUrl}."
+      "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
+      "translation": "Unable to read machine serial number, error: {MsErr}. Continuing device registration."
     },
     {
-      "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
-      "translation": "Are you sure you want to suspend {Msgpart} for this Horizon node?"
+      "id": "Node ID not specified, using machine serial number {NodeId} as node ID.",
+      "translation": "Node ID not specified, using machine serial number {NodeId} as node ID."
     },
     {
-      "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
-      "translation": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers..."
+      "id": "Node ID not specified, and machine serial number not found, generating random node ID.",
+      "translation": "Node ID not specified, and machine serial number not found, generating random node ID."
     },
     {
-      "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
-      "translation": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes."
+      "id": "Unable to generate random node id, error: {Err}",
+      "translation": "Unable to generate random node id, error: {Err}"
     },
     {
-      "id": "Resuming {Msgpart} ...",
-      "translation": "Resuming {Msgpart} ..."
+      "id": "Generated random node ID: {NodeId}.",
+      "translation": "Generated random node ID: {NodeId}."
     },
     {
-      "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
-      "translation": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes."
+      "id": "Using node ID '{NodeId}' from the Horizon agent",
+      "translation": "Using node ID '{NodeId}' from the Horizon agent"
     },
     {
-      "id": "failed to marshal agreement with index {I}: {Err}",
-      "translation": "failed to marshal agreement with index {I}: {Err}"
+      "id": "could not create a random token",
+      "translation": "could not create a random token"
     },
     {
-      "id": "agreement id {AgreementId} not found",
-      "translation": "agreement id {AgreementId} not found"
+      "id": "Generated random node token",
+      "translation": "Generated random node token"
     },
     {
-      "id": "failed to marshal 'hzn agreement list' output: {Err}",
-      "translation": "failed to marshal 'hzn agreement list' output: {Err}"
+      "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
+      "translation": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it."
     },
     {
-      "id": "[verbose] {M}",
-      "translation": "[verbose] {M}"
+      "id": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it...",
+      "translation": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it..."
     },
     {
-      "id": "Error: {Msg}",
-      "translation": "Error: {Msg}"
+      "id": "Node {Org}/{NodeId} exists in the exchange",
+      "translation": "Node {Org}/{NodeId} exists in the exchange"
     },
     {
-      "id": "Warning: {Msg}",
-      "translation": "Warning: {Msg}"
+      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
+      "translation": "No pattern or node policy is specified. Will proceeed with the existing node policy."
     },
     {
-      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "failed to unmarshal bytes from {ErrMsg}: {Err}"
+      "id": "Will proceeed with the given node policy.",
+      "translation": "Will proceeed with the given node policy."
     },
     {
-      "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "failed to marshal data type from {ErrMsg}: {Err}"
+      "id": "Pattern {ExchangePattern} defined for the node on the exchange. Will proceeed with this pattern.",
+      "translation": "Pattern {ExchangePattern} defined for the node on the exchange. Will proceeed with this pattern."
     },
     {
-      "id": "problem testing api key match: {Err}",
-      "translation": "problem testing api key match: {Err}"
+      "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the exchange.",
+      "translation": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the exchange."
     },
     {
-      "id": "Using API key",
-      "translation": "Using API key"
+      "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
+      "translation": "pattern '{Patorg}/{Patname}' not found from the exchange."
     },
     {
-      "id": "unable to create docker client: {Err}",
-      "translation": "unable to create docker client: {Err}"
+      "id": "Cannot proceed with the given pattern {Pattern} because it does not include any services.",
+      "translation": "Cannot proceed with the given pattern {Pattern} because it does not include any services."
     },
     {
-      "id": "docker auth domainName: {DomainName}",
-      "translation": "docker auth domainName: {DomainName}"
+      "id": "Will proceeed with the given pattern {Pattern}.",
+      "translation": "Will proceeed with the given pattern {Pattern}."
     },
     {
-      "id": "unable to find docker credentials for {Domain}",
-      "translation": "unable to find docker credentials for {Domain}"
+      "id": "Updating the node policy...",
+      "translation": "Updating the node policy..."
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Pushing {Repository}:{Tag}..."
+      "id": "Initializing the Horizon node...",
+      "translation": "Initializing the Horizon node..."
     },
     {
-      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry."
+      "id": "Setting global variables...",
+      "translation": "Setting global variables..."
     },
     {
-      "id": "unable to push docker image {Repository____tag}: {Err}",
-      "translation": "unable to push docker image {Repository____tag}: {Err}"
+      "id": "Setting service variables...",
+      "translation": "Setting service variables..."
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "could not find the image digest in the docker push output"
+      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+      "translation": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again"
     },
     {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Pulling {Repository}:{Tag}..."
+      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
+      "translation": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates)."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}"
+      "id": "Changing Horizon state to configured to register this node with Horizon...",
+      "translation": "Changing Horizon state to configured to register this node with Horizon..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "unable to pull docker image {Repository____tag}: {Err}"
+      "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+      "translation": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again"
     },
     {
-      "id": "the id can not contain more than 1 '/'",
-      "translation": "the id can not contain more than 1 '/'"
+      "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
+      "translation": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file."
     },
     {
-      "id": "reading stdin failed: {Err}",
-      "translation": "reading stdin failed: {Err}"
+      "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
+      "translation": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view."
     },
     {
-      "id": "reading {FilePath} failed: {Err}",
-      "translation": "reading {FilePath} failed: {Err}"
+      "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
+      "translation": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments."
     },
     {
-      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment."
+      "id": "Please specify the node organization id.",
+      "translation": "Please specify the node organization id."
     },
     {
-      "id": "Error reading input, error {Err}",
-      "translation": "Error reading input, error {Err}"
+      "id": "invalid version range '{Vr}': {Err}",
+      "translation": "invalid version range '{Vr}': {Err}"
     },
     {
-      "id": "Exiting.",
-      "translation": "Exiting."
+      "id": "unable to verify that {Version} is within {VRange}, error {Err}",
+      "translation": "unable to verify that {Version} is within {VRange}, error {Err}"
     },
     {
-      "id": "Error reading HTTP response, error {Err}",
-      "translation": "Error reading HTTP response, error {Err}"
+      "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",
+      "translation": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}"
+      "id": "error comparing version {ServiceshighestKey} with version {Version}. {Err}",
+      "translation": "error comparing version {ServiceshighestKey} with version {Version}. {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}"
+      "id": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}",
+      "translation": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
     },
     {
-      "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} new request failed: {Err}"
+      "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
+      "translation": "found: {Org}, {Url}, {Arch}, {VersionRange}"
     },
     {
-      "id": "HTTP code: {HttpCode}",
-      "translation": "HTTP code: {HttpCode}"
+      "id": "did not find pattern '{PatKey}' as expected",
+      "translation": "did not find pattern '{PatKey}' as expected"
     },
     {
-      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "Bad HTTP code from {ApiMsg}: {HttpCode}"
+      "id": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}",
+      "translation": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}"
     },
     {
-      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "bad HTTP code from {ApiMsg}: {HttpCode}"
+      "id": "failed to marshal the user input template file: {Err}",
+      "translation": "failed to marshal the user input template file: {Err}"
     },
     {
-      "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Failed to read body response from {ApiMsg}: {Err}"
+      "id": "problem writing the user input template file: {Err}",
+      "translation": "problem writing the user input template file: {Err}"
     },
     {
-      "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "failed to read body response from {ApiMsg}: {Err}"
+      "id": "Wrote {InputFile}",
+      "translation": "Wrote {InputFile}"
     },
     {
-      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Failed to unmarshal body response from {ApiMsg}: {Err}"
+      "id": "horizon api attributes output did not include 'attributes' key",
+      "translation": "horizon api attributes output did not include 'attributes' key"
     },
     {
-      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "failed to unmarshal body response from {ApiMsg}: {Err}"
+      "id": "failed to marshal 'hzn attribute list' output: {Err}",
+      "translation": "failed to marshal 'hzn attribute list' output: {Err}"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "Property must include a name and a value: {Property}"
     },
     {
-      "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "failed to marshal body for {ApiMsg}: {Err}"
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "translation": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string."
     },
     {
-      "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "Failed to unmarshal bytes. {Err}"
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "Property value is of type {ActualType}, expected type {DeclaredType}"
     },
     {
-      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}"
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "Value {Value} of property {Name} is not an integer type"
     },
     {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "Encountered error reading ICP cert file {IcpCertPath}: {Err}"
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string."
     },
     {
-      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}"
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "Property {Name} with value {Value} is not a valid verion string"
     },
     {
-      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
-      "translation": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}"
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "Property {Name} has invalid value type {ActualType}"
     },
     {
-      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
-      "translation": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node."
+      "id": "No input found.",
+      "translation": "No input found."
     },
     {
-      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Unauthorized. No exchange user id is supplied."
     },
     {
-      "id": "The exchange url: {ExchUrl}",
-      "translation": "The exchange url: {ExchUrl}"
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "Failed to authenticate the user with the exchange. {Err}"
     },
     {
-      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Input body couldn't be deserialized to JSON object. {Err}"
     },
     {
-      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
-      "translation": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to PolicyCheck object. {Err}"
     },
     {
-      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
-      "translation": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node."
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to UserInputCheck object. {Err}"
     },
     {
-      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
-      "translation": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to CompCheck object. {Err}"
     },
     {
-      "id": "The model management service url: {MmsUrl}",
-      "translation": "The model management service url: {MmsUrl}"
+      "id": "No exchange user id is supplied.",
+      "translation": "No exchange user id is supplied."
     },
     {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "No exchange user organization id is supplied."
     },
     {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "No exchange user password or api key is supplied."
     },
     {
-      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "failed to marshal exchange body for {ApiMsg}: {Err}"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "Wrong organization id, user id or password."
     },
     {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
-      "translation": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry."
+      "id": "Internal server error",
+      "translation": "Internal server error"
     },
     {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}."
+      "id": "must specify exchange credentials to access the model management service.",
+      "translation": "must specify exchange credentials to access the model management service."
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}"
+      "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
+      "translation": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false"
     },
     {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "failed to unmarshal exchange body response from {ApiMsg}: {Err}"
+      "id": "Invalid --data value: {WithData}, --data should be true or false",
+      "translation": "Invalid --data value: {WithData}, --data should be true or false"
     },
     {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "failed to marshal exchange output from {ApiMsg}: {Err}"
+      "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
+      "translation": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime"
     },
     {
-      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "failed to read exchange body response from {ApiMsg}: {Err}"
+      "id": "service should be in format service-org/service-name",
+      "translation": "service should be in format service-org/service-name"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}"
+      "id": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd",
+      "translation": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
-      "translation": "bad HTTP code {HttpCode} from {ApiMsg}"
+      "id": "must specify objectType if set objectId",
+      "translation": "must specify objectType if set objectId"
     },
     {
-      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH"
+      "id": "must specify destinationType if set destinationId",
+      "translation": "must specify destinationType if set destinationId"
     },
     {
-      "id": "{Err}. Please create the signing key.",
-      "translation": "{Err}. Please create the signing key."
+      "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
+      "translation": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ"
     },
     {
-      "id": "running: {CmdStr}",
-      "translation": "running: {CmdStr}"
+      "id": "no objects found in org {Org}",
+      "translation": "no objects found in org {Org}"
     },
     {
-      "id": "did not get a command object",
-      "translation": "did not get a command object"
+      "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
+      "translation": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}"
     },
     {
-      "id": "Could not get Stdin pipe, error: {Err}",
-      "translation": "Could not get Stdin pipe, error: {Err}"
+      "id": "Listing objects in org {Org}:",
+      "translation": "Listing objects in org {Org}:"
     },
     {
-      "id": "could not retrieve output from command, error: {Err}",
-      "translation": "could not retrieve output from command, error: {Err}"
+      "id": "Required: A unique identifier of the object.",
+      "translation": "Required: A unique identifier of the object."
     },
     {
-      "id": "could not retrieve stderr from command, error: {Err}",
-      "translation": "could not retrieve stderr from command, error: {Err}"
+      "id": "Required: The type of the object.",
+      "translation": "Required: The type of the object."
     },
     {
-      "id": "Unable to start command, error: {Err}",
-      "translation": "Unable to start command, error: {Err}"
+      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
+      "translation": "Required: The organization ID of the object (an object belongs to exactly one organization)."
     },
     {
-      "id": "Unable to write to stdin of command, error: {Err}",
-      "translation": "Unable to write to stdin of command, error: {Err}"
+      "id": "The node id (without org prefix) where the object should be placed.",
+      "translation": "The node id (without org prefix) where the object should be placed."
     },
     {
-      "id": "Unable to close stdin, error: {Err}",
-      "translation": "Unable to close stdin, error: {Err}"
+      "id": "If omitted the object is sent to all nodes with the same destinationType.",
+      "translation": "If omitted the object is sent to all nodes with the same destinationType."
     },
     {
-      "id": "could not read stdout, error: {Err}",
-      "translation": "could not read stdout, error: {Err}"
+      "id": "Delete this field when you are using destinationPolicy.",
+      "translation": "Delete this field when you are using destinationPolicy."
     },
     {
-      "id": "could not read stderr, error: {Err}",
-      "translation": "could not read stderr, error: {Err}"
+      "id": "The pattern in use by nodes that should receive this object.",
+      "translation": "The pattern in use by nodes that should receive this object."
     },
     {
-      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "command failed: {Err}, stderr: {StringstderrBytes}"
+      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
+      "translation": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes."
     },
     {
-      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
-      "translation": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}"
+      "id": "Delete this field when you are using policy.",
+      "translation": "Delete this field when you are using policy."
     },
     {
-      "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP request timeout set to {RequestTimeout} seconds"
+      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
+      "translation": "The list of destinations as an array of pattern:nodeId pairs that should receive this object."
+    },
+    {
+      "id": "If provided, destinationType and destinationID must be omitted.",
+      "translation": "If provided, destinationType and destinationID must be omitted."
+    },
+    {
+      "id": "The policy specification that should be used to distribute this object.",
+      "translation": "The policy specification that should be used to distribute this object."
+    },
+    {
+      "id": "Delete these fields if the target node is using a pattern.",
+      "translation": "Delete these fields if the target node is using a pattern."
+    },
+    {
+      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
+      "translation": "Valid types are string, bool, int, float, list of string (comma separated), version."
+    },
+    {
+      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
+      "translation": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean."
+    },
+    {
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
+      "translation": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||)."
+    },
+    {
+      "id": "The service(s) that will use this object.",
+      "translation": "The service(s) that will use this object."
+    },
+    {
+      "id": "Set to '*' to indcate services of any hardware architecture.",
+      "translation": "Set to '*' to indcate services of any hardware architecture."
+    },
+    {
+      "id": "A version range.",
+      "translation": "A version range."
+    },
+    {
+      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
+      "translation": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format."
+    },
+    {
+      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
+      "translation": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object."
+    },
+    {
+      "id": "An arbitrary description.",
+      "translation": "An arbitrary description."
+    },
+    {
+      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
+      "translation": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format."
+    },
+    {
+      "id": "must specify exchange credentials to access the model management service",
+      "translation": "must specify exchange credentials to access the model management service"
+    },
+    {
+      "id": "must specify --type with --id",
+      "translation": "must specify --type with --id"
+    },
+    {
+      "id": "must specify --id with --type",
+      "translation": "must specify --id with --type"
+    },
+    {
+      "id": "cannot specify --id and --type with --def",
+      "translation": "cannot specify --id and --type with --def"
+    },
+    {
+      "id": "must specify either --type and --id or --def",
+      "translation": "must specify either --type and --id or --def"
+    },
+    {
+      "id": "cannot specify --pattern with --def",
+      "translation": "cannot specify --pattern with --def"
+    },
+    {
+      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
+      "translation": "unable to read definition file {ObjMetadataFile}: {Err}"
+    },
+    {
+      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
+      "translation": "failed to unmarshal definition file {ObjMetadataFile}: {Err}"
+    },
+    {
+      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
+      "translation": "Object {ObjFile} uploaded to org {Org} in the Model Management Service"
+    },
+    {
+      "id": "Object status: {Stringresp}",
+      "translation": "Object status: {Stringresp}"
+    },
+    {
+      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
+      "translation": "Object {ObjectID} added to org {Org} in the Model Management Service"
+    },
+    {
+      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+      "translation": "object '{ObjId}' of type '{ObjType}' not found in org {Org}"
+    },
+    {
+      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
+      "translation": "Object {ObjId} deleted from org {Org} in the Model Management Service"
+    },
+    {
+      "id": "health status API returned HTTP code {HttpCode}",
+      "translation": "health status API returned HTTP code {HttpCode}"
+    },
+    {
+      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
+      "translation": "unable to create network {NETWORKNAME} for file sync service, error {Err}"
+    },
+    {
+      "id": "unable to start CSS, error {Err}",
+      "translation": "unable to start CSS, error {Err}"
+    },
+    {
+      "id": "unable to load file objects into CSS, error {Err}",
+      "translation": "unable to load file objects into CSS, error {Err}"
+    },
+    {
+      "id": "unable to start ESS, error {Err}",
+      "translation": "unable to start ESS, error {Err}"
+    },
+    {
+      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
+      "translation": "Unable to stop {MakeLabelNameESSNAME}, error {Err}"
+    },
+    {
+      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
+      "translation": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}"
+    },
+    {
+      "id": "unable to list existing docker images, error {Err}",
+      "translation": "unable to list existing docker images, error {Err}"
+    },
+    {
+      "id": "Found docker image {Name} locally.",
+      "translation": "Found docker image {Name} locally."
+    },
+    {
+      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
+      "translation": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag."
+    },
+    {
+      "id": "Pulled docker image {Name}.",
+      "translation": "Pulled docker image {Name}."
+    },
+    {
+      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
+      "translation": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag."
+    },
+    {
+      "id": "unable to start CSS container, error {Err}",
+      "translation": "unable to start CSS container, error {Err}"
+    },
+    {
+      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
+      "translation": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}"
+    },
+    {
+      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
+      "translation": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}"
+    },
+    {
+      "id": "unable to create SSL certificate for ESS, error {Err}",
+      "translation": "unable to create SSL certificate for ESS, error {Err}"
+    },
+    {
+      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+      "translation": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}"
+    },
+    {
+      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+      "translation": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}"
+    },
+    {
+      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+      "translation": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}"
+    },
+    {
+      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+      "translation": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}"
+    },
+    {
+      "id": "unable to create ESS container, error {Err}",
+      "translation": "unable to create ESS container, error {Err}"
+    },
+    {
+      "id": "unable to start ESS container, error {Err}",
+      "translation": "unable to start ESS container, error {Err}"
+    },
+    {
+      "id": "Created {MakeLabelNameESSNAME} container",
+      "translation": "Created {MakeLabelNameESSNAME} container"
+    },
+    {
+      "id": "unable to list docker containers, error {Err}",
+      "translation": "unable to list docker containers, error {Err}"
+    },
+    {
+      "id": "unable to stop docker container {Name}, error {Err}",
+      "translation": "unable to stop docker container {Name}, error {Err}"
+    },
+    {
+      "id": "unable to remove docker container {Name}, error {Err}",
+      "translation": "unable to remove docker container {Name}, error {Err}"
+    },
+    {
+      "id": "Stopped {Name} container",
+      "translation": "Stopped {Name} container"
+    },
+    {
+      "id": "Loading {FileName} into CSS",
+      "translation": "Loading {FileName} into CSS"
+    },
+    {
+      "id": "unable to open file object {FileName}, error {Err}",
+      "translation": "unable to open file object {FileName}, error {Err}"
+    },
+    {
+      "id": "unable to read file object {FileName}, error {Err}",
+      "translation": "unable to read file object {FileName}, error {Err}"
+    },
+    {
+      "id": "unable to add file {FileName} to the CSS, error {Err}",
+      "translation": "unable to add file {FileName} to the CSS, error {Err}"
+    },
+    {
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+      "translation": "Configuration files {FileObjects} loaded into the File sync service."
+    },
+    {
+      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
+      "translation": "unable to marshal CSS file PUT for {Metadata}, error {Err}"
+    },
+    {
+      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
+      "translation": "unable to create CSS file PUT request for {Metadata}, error {Err}"
+    },
+    {
+      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
+      "translation": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}"
+    },
+    {
+      "id": "Received HTTP code: {StatusCode}",
+      "translation": "Received HTTP code: {StatusCode}"
+    },
+    {
+      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
+      "translation": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "Created network {Name}"
+    },
+    {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "unable to list docker networks, error {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "unable to remove docker network {Name}, error {Err}"
+    },
+    {
+      "id": "unable to set env var 'HORIZON_URL', error {Err}",
+      "translation": "unable to set env var 'HORIZON_URL', error {Err}"
+    },
+    {
+      "id": "failed to marshal 'agreement list' output: {Err}",
+      "translation": "failed to marshal 'agreement list' output: {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn node list' output: {Err}",
+      "translation": "failed to marshal 'hzn node list' output: {Err}"
+    },
+    {
+      "id": "failed to marshal 'policy list' output: {Err}",
+      "translation": "failed to marshal 'policy list' output: {Err}"
+    },
+    {
+      "id": "Error: The organization '{Org}' does not exist.",
+      "translation": "Error: The organization '{Org}' does not exist."
+    },
+    {
+      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
+      "translation": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot."
+    },
+    {
+      "id": "Failed to get proper response from Horizon agent",
+      "translation": "Failed to get proper response from Horizon agent"
+    },
+    {
+      "id": "Horizon CLI version: {HORIZONVERSION}",
+      "translation": "Horizon CLI version: {HORIZONVERSION}"
+    },
+    {
+      "id": "Horizon Agent version: {HorizonVersion}",
+      "translation": "Horizon Agent version: {HorizonVersion}"
+    },
+    {
+      "id": "Horizon Agent version: failed to get.",
+      "translation": "Horizon Agent version: failed to get."
+    },
+    {
+      "id": "cleaned {String} resulted in an empty string.",
+      "translation": "cleaned {String} resulted in an empty string."
+    },
+    {
+      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
+      "translation": "plugin context must include 'currentDir' as the current directory of the service definition file"
+    },
+    {
+      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
+      "translation": "unable to read chart archive {Depchartarchive}, error {Err}"
+    },
+    {
+      "id": "failed to marshal deployment string {Dep}, error {Err}",
+      "translation": "failed to marshal deployment string {Dep}, error {Err}"
+    },
+    {
+      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
+      "translation": "problem signing deployment string with {KeyFilePath}: {Err}"
+    },
+    {
+      "id": "chart_archive must have a string type value, has {C}",
+      "translation": "chart_archive must have a string type value, has {C}"
+    },
+    {
+      "id": "release_name must have a string type value, has {R}",
+      "translation": "release_name must have a string type value, has {R}"
+    },
+    {
+      "id": "chart_archive and release_name must be non-empty strings",
+      "translation": "chart_archive and release_name must be non-empty strings"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments"
+    },
+    {
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}"
+    },
+    {
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is."
+    },
+    {
+      "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
+      "translation": "Using '{NewImage}' in 'deployment' field instead of '{Image}'"
+    },
+    {
+      "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
+      "translation": "each service defined under 'deployment.services' must be a json object (with strings as the keys)"
+    },
+    {
+      "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
+      "translation": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field"
+    },
+    {
+      "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
+      "translation": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md"
+    },
+    {
+      "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
+      "translation": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)"
+    },
+    {
+      "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
+      "translation": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}"
+    },
+    {
+      "id": "Starting dependencies.",
+      "translation": "Starting dependencies."
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}"
+    },
+    {
+      "id": "Stopped service.",
+      "translation": "Stopped service."
     }
   ]
 }
