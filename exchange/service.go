@@ -65,7 +65,7 @@ const MS_SHARING_MODE_SINGLETON = "singleton"
 const MS_SHARING_MODE_MULTIPLE = "multiple"
 
 type ServiceDefinition struct {
-	Owner               string              `json:"owner"`
+	Owner               string              `json:"owner,omitempty"`
 	Label               string              `json:"label"`
 	Description         string              `json:"description"`
 	Documentation       string              `json:"documentation"`
@@ -79,7 +79,7 @@ type ServiceDefinition struct {
 	UserInputs          []UserInput         `json:"userInput"`
 	Deployment          string              `json:"deployment"`
 	DeploymentSignature string              `json:"deploymentSignature"`
-	LastUpdated         string              `json:"lastUpdated"`
+	LastUpdated         string              `json:"lastUpdated,omitempty"`
 }
 
 func (s ServiceDefinition) String() string {

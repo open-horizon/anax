@@ -21,6 +21,7 @@ service_locgps=`cat /root/input_files/compcheck/service_locgps.json`
 
 # check the the result to see if it matches the expected http code and error
 function results {
+
   rc="${1: -3}"
   output="${1::-3}"
 
@@ -61,7 +62,7 @@ function check_comp_results {
   reason=$(echo $COMP_RESULT | jq -r ".reason")
 
   if [ "$comp" != "$1" ]; then
-    echo "Expexted compatible be $1 but got $comp."
+    echo "Expected compatible be $1 but got $comp."
     exit 2
   fi
 

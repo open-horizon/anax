@@ -220,7 +220,7 @@ else
 fi
 
 # Delete when nothing to delete
-echo "Testing for delete when node is node defined on node/policy API"
+echo "Testing for delete on node/policy API when node is not defined"
 RES=$(curl -sS -X DELETE -H "Content-Type: application/json" "$ANAX_API/node/policy")
 
 if [ "$RES" == "" ]
@@ -229,8 +229,8 @@ then
   exit 2
 fi
 
-err=$(echo $RES | jq '.error')
-if [ $err != "Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path." ]
+err=$(echo $RES | jq -r ".error")
+if [ "$err" != "Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path." ]
 then
   echo -e "Testing for delete when node not defined resulted in incorrect response: $RES"
   exit 2

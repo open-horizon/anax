@@ -589,7 +589,7 @@ elif [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$NOCOMPCHECK" != "1" ]; then
+if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
    ./agbot_apitest.sh
   if [ $? -ne 0 ]
   then
@@ -606,14 +606,14 @@ if [ "$NOCOMPCHECK" != "1" ]; then
 
 fi
 
-if [ "$NOSURFERR" != "1" ]; then
+if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]; then
     ./verify_surfaced_error.sh
     if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
   fi
 fi
 
-if [ "$NOHZNREG" != "1" ]; then
+if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
     echo "Sleeping 15 seconds..."
     sleep 15
@@ -626,7 +626,7 @@ if [ "$NOHZNREG" != "1" ]; then
   fi
 fi
 
-if [ "$NOPATTERNCHANGE" != "1" ]; then
+if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
     ./pattern_change.sh
     if [ $? -ne 0 ]; then
