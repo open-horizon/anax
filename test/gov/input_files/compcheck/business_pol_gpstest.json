@@ -1,0 +1,41 @@
+{
+    "label": "business policy for gpstest",
+    "description": "for gpstest",
+    "service": {
+      "name": "https://bluehorizon.network/services/gpstest",
+      "org": "e2edev@somecomp.com",
+      "arch": "amd64",
+      "serviceVersions": [
+        {
+          "version": "1.0.0",
+          "priority": {},
+          "upgradePolicy": {}
+        }
+      ],
+      "nodeHealth": {
+        "missing_heartbeat_interval": 1800,
+        "check_agreement_status": 1800
+      }
+    },
+    "properties": [
+      {
+        "name": "iame2edev",
+        "value": "true"
+      },
+      {
+        "name": "NOGPS",
+        "value": false
+      },
+      {
+        "name": "number",
+        "value": 24
+      },
+      {
+        "name": "gpsvar",
+        "value": "gpsval"
+      }
+    ],
+    "constraints": [
+      "purpose == network-testing"
+    ]
+}

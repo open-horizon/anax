@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -62,21 +63,23 @@ type CompCheck struct {
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
+	PatternId      string                         `json:"pattern_id,omitempty"`
+	Pattern        *common.PatternFile            `json:"pattern,omitempty"`
 	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
-	Service        []exchange.ServiceDefinition   `json:"service,omitempty"`
+	Service        []common.ServiceFile           `json:"service,omitempty"`
 }
 
 func (p CompCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, ServicePolicy: %v, Service: %v",
-		p.NodeId, p.NodeArch, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
 
 }
 
 // The output format for the compatibility check
 type CompCheckOutput struct {
-	Compatible bool              `json:"compatible"`
-	Reason     map[string]string `json:"reason"` // set when not compatible
-	Input      *CompCheck        `json:"input,omitempty"`
+	Compatible bool               `json:"compatible"`
+	Reason     map[string]string  `json:"reason"` // set when not compatible
+	Input      *CompCheckResource `json:"input,omitempty"`
 }
 
 func (p *CompCheckOutput) String() string {
@@ -85,7 +88,7 @@ func (p *CompCheckOutput) String() string {
 
 }
 
-func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCheck) *CompCheckOutput {
+func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCheckResource) *CompCheckOutput {
 	return &CompCheckOutput{
 		Compatible: compatible,
 		Reason:     reason,
@@ -93,23 +96,79 @@ func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCh
 	}
 }
 
+// To store the resource (pattern, bp, services etc) used for compatibility check
+type CompCheckResource struct {
+	NodeId         string                         `json:"node_id,omitempty"`
+	NodeArch       string                         `json:"node_arch,omitempty"`
+	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
+	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
+	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
+	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
+	PatternId      string                         `json:"pattern_id,omitempty"`
+	Pattern        common.AbstractPatternFile     `json:"pattern,omitempty"`
+	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
+	Service        []common.AbstractServiceFile   `json:"service,omitempty"`
+}
+
+func (p CompCheckResource) String() string {
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+
+}
+
+func NewCompCheckResourceFromUICheck(uiInput *UserInputCheck) *CompCheckResource {
+	var rsrc CompCheckResource
+	rsrc.NodeId = uiInput.NodeId
+	rsrc.NodeArch = uiInput.NodeArch
+	rsrc.NodeUserInput = uiInput.NodeUserInput
+	rsrc.BusinessPolId = uiInput.BusinessPolId
+	rsrc.BusinessPolicy = uiInput.BusinessPolicy
+	rsrc.PatternId = uiInput.PatternId
+
+	// change the type from PatternFile to AbstractPatternFile
+	rsrc.Pattern = uiInput.Pattern
+
+	// change the service type to from ServiceFile to AbstractServiceFile
+	if uiInput.Service != nil {
+		rsrc.Service = []common.AbstractServiceFile{}
+		for _, svc := range uiInput.Service {
+			rsrc.Service = append(rsrc.Service, &svc)
+		}
+	}
+	return &rsrc
+}
+
+func NewCompCheckResourceFromPolicyCheck(uiInput *PolicyCheck) *CompCheckResource {
+	var rsrc CompCheckResource
+	rsrc.NodeId = uiInput.NodeId
+	rsrc.NodeArch = uiInput.NodeArch
+	rsrc.NodePolicy = uiInput.NodePolicy
+	rsrc.BusinessPolId = uiInput.BusinessPolId
+	rsrc.BusinessPolicy = uiInput.BusinessPolicy
+	rsrc.ServicePolicy = uiInput.ServicePolicy
+
+	return &rsrc
+}
+
 func DeployCompatible(ec exchange.ExchangeContext, ccInput *CompCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	getDeviceHandler := exchange.GetHTTPDeviceHandler(ec)
 	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
 	getBusinessPolicies := exchange.GetHTTPBusinessPoliciesHandler(ec)
+	getPatterns := exchange.GetHTTPExchangePatternHandler(ec)
 	servicePolicyHandler := exchange.GetHTTPServicePolicyHandler(ec)
 	getServiceHandler := exchange.GetHTTPServiceHandler(ec)
 	serviceDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(ec)
 	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
 
-	return deployCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getServiceHandler, serviceDefResolverHandler, getSelectedServices, ccInput, checkAllSvcs, msgPrinter)
+	return deployCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, getPatterns, servicePolicyHandler, getServiceHandler, serviceDefResolverHandler, getSelectedServices, ccInput, checkAllSvcs, msgPrinter)
 }
 
 // Internal function for PolicyCompatible
 func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	nodePolicyHandler exchange.NodePolicyHandler,
 	getBusinessPolicies exchange.BusinessPoliciesHandler,
+	getPatterns exchange.PatternHandler,
 	servicePolicyHandler exchange.ServicePolicyHandler,
 	getServiceHandler exchange.ServiceHandler,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
@@ -121,24 +180,41 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 		msgPrinter = i18n.GetMessagePrinter()
 	}
 
-	// check policy first
+	useBPol := false
+	if ccInput.BusinessPolId != "" || ccInput.BusinessPolicy != nil {
+		useBPol = true
+		if ccInput.PatternId != "" || ccInput.Pattern != nil {
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Bussiness policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
+		}
+	} else {
+		if ccInput.PatternId == "" && ccInput.Pattern == nil {
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
+		}
+	}
+
+	// check policy first, for business policy case only
 	policyCheckInput, err := convertToPolicyCheck(ccInput, msgPrinter)
 	if err != nil {
 		return nil, err
 	}
-	pcOutput, err := policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, policyCheckInput, true, msgPrinter)
-	if err != nil {
-		return nil, err
-	}
 
-	// if not compatible, then do not bother to do user input check
-	if !pcOutput.Compatible {
-		return convertToCompCheckOutput(pcOutput, msgPrinter)
+	pcOutput := NewCompCheckOutput(true, map[string]string{}, NewCompCheckResourceFromPolicyCheck(policyCheckInput))
+	if useBPol {
+		var err1 error
+		pcOutput, err1 = policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, policyCheckInput, true, msgPrinter)
+		if err1 != nil {
+			return nil, err1
+		}
+
+		// if not compatible, then do not bother to do user input check
+		if !pcOutput.Compatible {
+			return pcOutput, nil
+		}
 	}
 
 	// check user input for those services that are compatible
 	uiCheckInput := createUserInputCheckInput(ccInput, pcOutput, msgPrinter)
-	uiOutput, err := userInputCompatible(getDeviceHandler, getBusinessPolicies, getServiceHandler, serviceDefResolverHandler, getSelectedServices, uiCheckInput, checkAllSvcs, msgPrinter)
+	uiOutput, err := userInputCompatible(getDeviceHandler, getBusinessPolicies, getPatterns, getServiceHandler, serviceDefResolverHandler, getSelectedServices, uiCheckInput, checkAllSvcs, msgPrinter)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +224,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 }
 
 // Use the result of policy check together with the original input to create a user input check input object.
-func createUserInputCheckInput(ccInput *CompCheck, pcOutput *PolicyCheckOutput, msgPrinter *message.Printer) *UserInputCheck {
+func createUserInputCheckInput(ccInput *CompCheck, pcOutput *CompCheckOutput, msgPrinter *message.Printer) *UserInputCheck {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -165,8 +241,11 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *PolicyCheckOutput, 
 	// these are from the original input
 	uiCheckInput.Service = ccInput.Service
 	uiCheckInput.NodeUserInput = ccInput.NodeUserInput
+	uiCheckInput.PatternId = ccInput.PatternId
+	uiCheckInput.Pattern = ccInput.Pattern
 
 	// limit the check to the services that are compatible for policy check
+	// empty means check all
 	svcs := []string{}
 	for sId, reason := range pcOutput.Reason {
 		if !strings.Contains(reason, msgPrinter.Sprintf("Incompatible")) {
@@ -178,8 +257,8 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *PolicyCheckOutput, 
 	return &uiCheckInput
 }
 
-// combine the PolicyCheckOutput and UserInputCheckOutput into CompCheckOutput
-func createCompCheckOutput(pcOutput *PolicyCheckOutput, uiOutput *UserInputCheckOutput, checkAllSvcs bool, msgPrinter *message.Printer) *CompCheckOutput {
+// combine the policy check output and user input output into CompCheckOutput
+func createCompCheckOutput(pcOutput *CompCheckOutput, uiOutput *CompCheckOutput, checkAllSvcs bool, msgPrinter *message.Printer) *CompCheckOutput {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -197,17 +276,24 @@ func createCompCheckOutput(pcOutput *PolicyCheckOutput, uiOutput *UserInputCheck
 		reason = uiOutput.Reason
 	} else {
 		// save the policy incompatibility reason.
-		for sId_pc, rs_pc := range pcOutput.Reason {
-			if rs_pc != msg_compatible {
-				reason[sId_pc] = rs_pc
-			} else {
-				// add user input compatibility result
-				for sId_ui, rs_ui := range uiOutput.Reason {
-					if sId_ui == sId_pc {
-						reason[sId_ui] = rs_ui
+		if pcOutput.Reason == nil || len(pcOutput.Reason) == 0 {
+			// pattern case, only has userinput check
+			for sId_ui, rs_ui := range uiOutput.Reason {
+				reason[sId_ui] = rs_ui
+			}
+		} else {
+			// business policy case, has policy and userinput checks
+			for sId_pc, rs_pc := range pcOutput.Reason {
+				if rs_pc != msg_compatible {
+					reason[sId_pc] = rs_pc
+				} else {
+					// add user input compatibility result
+					for sId_ui, rs_ui := range uiOutput.Reason {
+						if sId_ui == sId_pc {
+							reason[sId_ui] = rs_ui
+						}
 					}
 				}
-
 			}
 		}
 
@@ -215,34 +301,20 @@ func createCompCheckOutput(pcOutput *PolicyCheckOutput, uiOutput *UserInputCheck
 	ccOutput.Reason = reason
 
 	// combine the input part
-	ccInput := CompCheck{}
+	ccInput := CompCheckResource{}
 	ccInput.NodeId = uiOutput.Input.NodeId
 	ccInput.NodeArch = uiOutput.Input.NodeArch
 	ccInput.NodeUserInput = uiOutput.Input.NodeUserInput
 	ccInput.NodePolicy = pcOutput.Input.NodePolicy
 	ccInput.BusinessPolId = uiOutput.Input.BusinessPolId
 	ccInput.BusinessPolicy = uiOutput.Input.BusinessPolicy
+	ccInput.PatternId = uiOutput.Input.PatternId
+	ccInput.Pattern = uiOutput.Input.Pattern
 	ccInput.Service = uiOutput.Input.Service
 	ccInput.ServicePolicy = pcOutput.Input.ServicePolicy
 	ccOutput.Input = &ccInput
 
 	return &ccOutput
-}
-
-// convert PolicyCheckOutput or UserInputCheckOutput object to a CompCheckOutput object
-func convertToCompCheckOutput(in interface{}, msgPrinter *message.Printer) (*CompCheckOutput, error) {
-	// get default message printer if nil
-	if msgPrinter == nil {
-		msgPrinter = i18n.GetMessagePrinter()
-	}
-
-	var out CompCheckOutput
-	if buf, err := json.Marshal(in); err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error marshaling object %v. %v", in)), COMPCHECK_GENERAL_ERROR)
-	} else if err := json.Unmarshal(buf, &out); err != nil {
-		return nil, fmt.Errorf(msgPrinter.Sprintf("Failed to convert input to CompCheckOutput object. %v", err))
-	}
-	return &out, nil
 }
 
 // convert CompCheck object to PolicyCheckobject.

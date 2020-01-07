@@ -1,0 +1,17 @@
+{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "network-testing"
+    },
+    {
+      "name": "group",
+      "value": "bluenode"
+    }
+  ],
+  "constraints": [
+    "iame2edev == true",
+    "NONS==false || NOGPS == false || NOLOC == false || NOPWS == false || NOHELLO == false"
+  ]
+}
+

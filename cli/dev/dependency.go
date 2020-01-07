@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -212,8 +212,8 @@ func GetDependencyFiles(directory string, fileSuffix string) ([]os.FileInfo, err
 
 }
 
-func GetServiceDependencies(directory string, deps []exchange.ServiceDependency) ([]*cliexchange.ServiceFile, error) {
-	res := make([]*cliexchange.ServiceFile, 0, 10)
+func GetServiceDependencies(directory string, deps []exchange.ServiceDependency) ([]*common.ServiceFile, error) {
+	res := make([]*common.ServiceFile, 0, 10)
 	depFiles, err := GetDependencyFiles(directory, SERVICE_DEFINITION_FILE)
 	if err != nil {
 		return res, err
@@ -325,7 +325,7 @@ func ValidateService(directory string, fInfo os.FileInfo, userInputs *register.I
 	return validateDependencyUserInputs(d, d.GetUserInputs(), userInputs.Services, userInputsFilePath)
 }
 
-func validateDependencyUserInputs(d cliexchange.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []register.MicroWork, userInputsFilePath string) error {
+func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []register.MicroWork, userInputsFilePath string) error {
 	for _, ui := range uis {
 		if ui.DefaultValue == "" {
 			found := false
@@ -586,7 +586,7 @@ func fetchExchangeProjectDependency(homeDirectory string, specRef string, url st
 }
 
 // update the service definition file and userinput file with this dependent service
-func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.AbstractServiceFile, skipServcieDef bool) error {
+func UpdateServiceDefandUserInputFile(homeDirectory string, sDef common.AbstractServiceFile, skipServcieDef bool) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -652,7 +652,7 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef cliexchange.Abs
 	return nil
 }
 
-func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, userInputFile string) (cliexchange.AbstractServiceFile, error) {
+func getExchangeDefinition(homeDirectory string, specRef string, surl string, org string, version string, arch string, userCreds string, userInputFile string) (common.AbstractServiceFile, error) {
 
 	if ex, err := ServiceDefinitionExists(homeDirectory); !ex || err != nil {
 		return nil, errors.New(i18n.GetMessagePrinter().Sprintf("no service definition config file found in project"))
@@ -663,7 +663,7 @@ func getExchangeDefinition(homeDirectory string, specRef string, surl string, or
 	}
 }
 
-func UpdateDependencyFile(homeDirectory string, sDef cliexchange.AbstractServiceFile) error {
+func UpdateDependencyFile(homeDirectory string, sDef common.AbstractServiceFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -723,7 +723,7 @@ func UpdateDependentDependencies(homeDirectory string, depProject string) error 
 }
 
 // Iterate through the dependencies of the given service and create a dependency for each one.
-func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexchange.ServiceFile, userCreds string) error {
+func getServiceDefinitionDependencies(homeDirectory string, serviceDef *common.ServiceFile, userCreds string) error {
 	for _, rs := range serviceDef.RequiredServices {
 		// Get the service definition for each required service. Dependencies refer to each other by version range, so the
 		// service we're looking for might not be at the exact version specified in the required service element.
@@ -738,7 +738,7 @@ func getServiceDefinitionDependencies(homeDirectory string, serviceDef *cliexcha
 	return nil
 }
 
-func getServiceDefinition(homeDirectory, surl string, org string, version string, arch string, userCreds string) (*cliexchange.ServiceFile, error) {
+func getServiceDefinition(homeDirectory, surl string, org string, version string, arch string, userCreds string) (*common.ServiceFile, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -788,7 +788,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 
 	cliutils.Verbose(msgPrinter.Sprintf("Creating dependency on: %v, Org: %v", serviceDef, org))
 
-	sDef_cliex := new(cliexchange.ServiceFile)
+	sDef_cliex := new(common.ServiceFile)
 
 	// Get container images into the local docker
 	dc := make(map[string]interface{})

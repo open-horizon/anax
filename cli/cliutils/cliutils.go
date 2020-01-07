@@ -345,29 +345,6 @@ func AddOrg(org, id string) string {
 	return "" // will never get here
 }
 
-// FormExchangeId combines url, version, arch the same way the exchange does to form the resource ID.
-func FormExchangeIdForService(url, version, arch string) string {
-	// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
-	//val workloadUrl2 = """^[A-Za-z0-9+.-]*?://""".r replaceFirstIn (url, "")
-	//val workloadUrl3 = """[$!*,;/?@&~=%]""".r replaceAllIn (workloadUrl2, "-")     // I think possible chars in valid urls are: $_.+!*,;/?:@&~=%-
-	//return OrgAndId(orgid, workloadUrl3 + "_" + version + "_" + arch).toString
-	url1 := FormExchangeIdWithSpecRef(url)
-	return url1 + "_" + version + "_" + arch
-}
-
-// Remove the https:// from the beginning of workloadUrl and replace troublesome chars with a dash.
-func FormExchangeIdWithSpecRef(specRef string) string {
-	re := regexp.MustCompile(`^[A-Za-z0-9+.-]*?://`)
-	specRef2 := re.ReplaceAllLiteralString(specRef, "")
-	return FormExchangeId(specRef2)
-}
-
-// Replace unwanted charactore with - in the id
-func FormExchangeId(id string) string {
-	re := regexp.MustCompile(`[$!*,;/?@&~=%]`)
-	return re.ReplaceAllLiteralString(id, "-")
-}
-
 // ReadStdin reads from stdin, and returns it as a byte array.
 func ReadStdin() []byte {
 	fileBytes, err := ioutil.ReadAll(os.Stdin)
@@ -1498,6 +1475,56 @@ func GetHTTPClient(timeout int) *http.Client {
 		},
 	}
 
+}
+
+// create the exchange context with the given user credentail
+func GetUserExchangeContext(userOrg string, credToUse string) exchange.ExchangeContext {
+	var ec exchange.ExchangeContext
+	if credToUse != "" {
+		cred, token := SplitIdToken(credToUse)
+		if userOrg != "" {
+			cred = AddOrg(userOrg, cred)
+		}
+		ec = CreateUserExchangeContext(cred, token)
+	} else {
+		ec = CreateUserExchangeContext("", "")
+	}
+
+	return ec
+}
+
+// create an exchange context based on the user Id and password.
+func CreateUserExchangeContext(userId string, passwd string) exchange.ExchangeContext {
+	// GetExchangeUrl trims the last slash, we need to add it back for the exchange API calls.
+	exchUrl := GetExchangeUrl() + "/"
+	return exchange.NewCustomExchangeContext(userId, passwd, exchUrl, "", NewHTTPClientFactory())
+}
+
+
+// create an http client factory to be used for the exchange calls.
+func NewHTTPClientFactory() *config.HTTPClientFactory {
+	clientFunc := func(overrideTimeoutS *uint) *http.Client {
+		var timeoutS uint
+		if overrideTimeoutS != nil {
+			timeoutS = *overrideTimeoutS
+		} else {
+			timeoutS = config.HTTPRequestTimeoutS
+		}
+
+		return GetHTTPClient(int(timeoutS))
+	}
+
+	// get retry count and retry interval from env
+	maxRetries, retryInterval, err := GetHttpRetryParameters(5, 2)
+	if err != nil {
+		Fatal(CLI_GENERAL_ERROR, err.Error())
+	}
+
+	return &config.HTTPClientFactory{
+		NewHTTPClient: clientFunc,
+		RetryCount:    maxRetries,
+		RetryInterval: retryInterval,
+	}
 }
 
 // get the http retry count and interval from the env variables.

@@ -1,0 +1,26 @@
+[
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "https://bluehorizon.network/services/locgps",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "2.0.3",
+    "inputs": [
+      {
+        "name": "HZN_LAT",
+        "value": 41.921766
+      },
+      {
+        "name": "HZN_LON",
+        "value": -73.894224
+      },
+      {
+        "name": "HZN_LOCATION_ACCURACY_KM",
+        "value": 0.5
+      },
+      {
+        "name": "HZN_USE_GPS",
+        "value": false
+      }
+    ]
+  }
+]

@@ -8,8 +8,8 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
@@ -237,10 +237,10 @@ func AbstractServiceValidation(dir string) error {
 // definition config file in the current project. This function assumes the caller has determined the exact location of the file.
 // This function also assumes that the project pointed to by the directory parameter is assumed to contain the kind of definition
 // the caller expects.
-func GetAbstractDefinition(directory string) (cliexchange.AbstractServiceFile, error) {
+func GetAbstractDefinition(directory string) (common.AbstractServiceFile, error) {
 
 	tryDefinitionName := SERVICE_DEFINITION_FILE
-	res := new(cliexchange.ServiceFile)
+	res := new(common.ServiceFile)
 
 	// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
 	if err := GetFile(directory, tryDefinitionName, res); err != nil {
@@ -447,7 +447,7 @@ func findContainers(serviceName string, cw *container.ContainerWorker) ([]docker
 	return containers, nil
 }
 
-func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 	containerNetworks := map[string]docker.ContainerNetwork{}
 	for serviceName, _ := range depConfig.Services {
 		containers, err := findContainers(serviceName, cw)
@@ -468,7 +468,7 @@ func getContainerNetworks(depConfig *cliexchange.DeploymentConfig, cw *container
 	return containerNetworks, nil
 }
 
-func ProcessStartDependencies(dir string, deps []*cliexchange.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// Collect all the service networks that have to be connected to the caller's container.
 	ms_networks := map[string]docker.ContainerNetwork{}
@@ -498,7 +498,7 @@ func ProcessStartDependencies(dir string, deps []*cliexchange.ServiceFile, globa
 }
 
 func startDependent(dir string,
-	serviceDef *cliexchange.ServiceFile,
+	serviceDef *common.ServiceFile,
 	globals []register.GlobalSet, // API attributes
 	configUserInputs []register.MicroWork, // indicates configured variables
 	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
@@ -566,7 +566,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	defUserInputs []exchange.UserInput, // indicates variable defaults
 	configUserInputs []register.MicroWork, // indicates configured variables
 	org string,
-	dc *cliexchange.DeploymentConfig,
+	dc *common.DeploymentConfig,
 	cw *container.ContainerWorker,
 	msNetworks map[string]docker.ContainerNetwork,
 	service bool,
@@ -619,7 +619,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	return getContainerNetworks(dc, cw)
 }
 
-func ProcessStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *container.ContainerWorker) error {
+func ProcessStopDependencies(dir string, deps []*common.ServiceFile, cw *container.ContainerWorker) error {
 
 	// Log the stopping of dependencies if there are any.
 	if len(deps) != 0 {
@@ -635,7 +635,7 @@ func ProcessStopDependencies(dir string, deps []*cliexchange.ServiceFile, cw *co
 	return nil
 }
 
-func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *container.ContainerWorker) error {
+func stopDependent(dir string, serviceDef *common.ServiceFile, cw *container.ContainerWorker) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -668,11 +668,11 @@ func stopDependent(dir string, serviceDef *cliexchange.ServiceFile, cw *containe
 	return nil
 }
 
-func StopService(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker) error {
+func StopService(dc *common.DeploymentConfig, cw *container.ContainerWorker) error {
 	return stopContainers(dc, cw, true)
 }
 
-func stopContainers(dc *cliexchange.DeploymentConfig, cw *container.ContainerWorker, service bool) error {
+func stopContainers(dc *common.DeploymentConfig, cw *container.ContainerWorker, service bool) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

@@ -1,0 +1,16 @@
+{
+  "properties": [
+    {
+      "name": "iame2edev_service",
+      "value": "true"
+    },
+    {
+      "name": "service_var2",
+      "value": "this is gpstest service"
+    }
+  ],
+  "constraints": [
+    "group == bluenode"
+  ]
+}
+

@@ -8,8 +8,8 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
@@ -272,7 +272,7 @@ func getConfiguredVariables(configEntries []register.MicroWork, url string) map[
 
 // Given a userinput file, a dependency definition and a set of configured user input variables, copy the configured variables
 // into the userinput file.
-func UpdateVariableConfiguration(homeDirectory string, sDef cliexchange.AbstractServiceFile, configuredVars []register.MicroWork) (*register.InputFile, error) {
+func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []register.MicroWork) (*register.InputFile, error) {
 
 	currentUIs, _, err := GetUserInputs(homeDirectory, "")
 	if err != nil {
@@ -301,7 +301,7 @@ func UpdateVariableConfiguration(homeDirectory string, sDef cliexchange.Abstract
 
 }
 
-func SetUserInputsVariableConfiguration(homeDirectory string, sDef cliexchange.AbstractServiceFile, configuredVars []register.MicroWork) error {
+func SetUserInputsVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []register.MicroWork) error {
 
 	if currentUIs, err := UpdateVariableConfiguration(homeDirectory, sDef, configuredVars); err != nil {
 		return err
@@ -311,7 +311,7 @@ func SetUserInputsVariableConfiguration(homeDirectory string, sDef cliexchange.A
 }
 
 // Remove configured variables from the userinputs file
-func RemoveConfiguredVariables(homeDirectory string, theDep cliexchange.AbstractServiceFile) error {
+func RemoveConfiguredVariables(homeDirectory string, theDep common.AbstractServiceFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

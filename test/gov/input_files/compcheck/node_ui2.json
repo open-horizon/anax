@@ -1,0 +1,9 @@
+[
+  {
+    "serviceOrgid": "e2edev@somecomp.com",
+    "serviceUrl": "https://bluehorizon.network/services/locgps",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "2.0.3",
+    "inputs": []
+  }
+]

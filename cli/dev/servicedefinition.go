@@ -3,8 +3,8 @@ package dev
 import (
 	"errors"
 	"github.com/open-horizon/anax/cli/cliutils"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/plugin_registry"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"path"
@@ -17,9 +17,9 @@ const DEFAULT_SDEF_URL = ""
 
 // Sort of like a constructor, it creates an in memory object except that it is created from the service definition config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
-func GetServiceDefinition(directory string, name string) (*cliexchange.ServiceFile, error) {
+func GetServiceDefinition(directory string, name string) (*common.ServiceFile, error) {
 
-	res := new(cliexchange.ServiceFile)
+	res := new(common.ServiceFile)
 
 	// GetFile will write to the res object, demarshalling the bytes into a json object that can be returned.
 	if err := GetFile(directory, name, res); err != nil {
@@ -39,7 +39,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Create a skeletal service definition config object with fillins/place-holders for configuration.
-	res := new(cliexchange.ServiceFile)
+	res := new(common.ServiceFile)
 
 	res.Org = "$HZN_ORG_ID"
 	res.Label = msgPrinter.Sprintf("$SERVICE_NAME for $ARCH")
@@ -125,7 +125,7 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 }
 
 // Refresh the RequiredServices dependencies in the definition. This is called when new dependencies are added or removed.
-func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.AbstractServiceFile) error {
+func RefreshServiceDependencies(homeDirectory string, newDepDef common.AbstractServiceFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -166,7 +166,7 @@ func RefreshServiceDependencies(homeDirectory string, newDepDef cliexchange.Abst
 	return nil
 }
 
-func RemoveServiceDependency(homeDirectory string, theDepDef cliexchange.AbstractServiceFile) error {
+func RemoveServiceDependency(homeDirectory string, theDepDef common.AbstractServiceFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

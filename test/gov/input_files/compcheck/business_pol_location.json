@@ -1,0 +1,84 @@
+{
+    "label": "business policy for location",
+    "description": "for location",
+    "service": {
+      "name": "https://bluehorizon.network/services/location",
+      "org": "e2edev@somecomp.com",
+      "arch": "amd64",
+      "serviceVersions": [
+        {
+          "version": "2.0.6",
+          "priority": {
+            "priority_value": 3,
+            "retries": 2,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version": "2.0.7",
+          "priority": {
+            "priority_value": 2,
+            "retries": 2,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        }
+      ],
+      "nodeHealth": {
+        "missing_heartbeat_interval": 1800,
+        "check_agreement_status": 1800
+      }
+    },
+    "properties": [
+      {
+        "name": "iame2edev",
+        "value": "true"
+      },
+      {
+        "name": "NOLOC",
+        "value": false
+      },
+      {
+        "name": "number",
+        "value": "36"
+      },
+      {
+        "name": "locvar",
+        "value": "location value"
+      }
+    ],
+    "constraints": [
+      "purpose == network-testing"
+    ],
+    "userInput": [
+      {
+        "serviceOrgid": "e2edev@somecomp.com",
+        "serviceUrl": "https://bluehorizon.network/services/locgps",
+        "serviceVersionRange": "2.0.3",
+        "inputs": [
+          {
+            "name": "test",
+            "value": "testValue"
+          },
+          {
+            "name": "extra",
+            "value": "extraValue"
+          }
+        ]
+      },
+      {
+        "serviceOrgid": "IBM",
+        "serviceUrl": "https://bluehorizon.network/service-cpu",
+        "serviceVersionRange": "1.0.0",
+        "inputs": [
+          {
+            "name": "cpu_var1",
+            "value": "ibmvar1"
+          }
+        ]
+      }
+    ]
+}

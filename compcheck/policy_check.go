@@ -3,7 +3,7 @@ package compcheck
 import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
-	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -27,27 +27,6 @@ func (p PolicyCheck) String() string {
 
 }
 
-// The output format for the policy check
-type PolicyCheckOutput struct {
-	Compatible bool              `json:"compatible"`
-	Reason     map[string]string `json:"reason"` // set when not compatible
-	Input      *PolicyCheck      `json:"input,omitempty"`
-}
-
-func (p *PolicyCheckOutput) String() string {
-	return fmt.Sprintf("Compatible: %v, Reason: %v, Input: %v",
-		p.Compatible, p.Reason, p.Input)
-
-}
-
-func NewPolicyCheckOutput(compatible bool, reason map[string]string, input *PolicyCheck) *PolicyCheckOutput {
-	return &PolicyCheckOutput{
-		Compatible: compatible,
-		Reason:     reason,
-		Input:      input,
-	}
-}
-
 // This is the function that HZN and the agbot secure API calls.
 // Given the PolicyCheck input, check if the policies are compatible.
 // The required fields in PolicyCheck are:
@@ -56,7 +35,7 @@ func NewPolicyCheckOutput(compatible bool, reason map[string]string, input *Poli
 // When checking whether the policies are compatible or not, we devide policies into two side:
 //    Edge side: node policy (including the node built-in policy)
 //    Agbot side: business policy + service policy + service built-in properties
-func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*PolicyCheckOutput, error) {
+func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	getDeviceHandler := exchange.GetHTTPDeviceHandler(ec)
 	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(ec)
@@ -73,7 +52,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	getBusinessPolicies exchange.BusinessPoliciesHandler,
 	servicePolicyHandler exchange.ServicePolicyHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
-	pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*PolicyCheckOutput, error) {
+	pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -88,6 +67,8 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	input_temp := PolicyCheck(*pcInput)
 	input := &input_temp
 
+	resources := NewCompCheckResourceFromPolicyCheck(pcInput)
+
 	nodeId := input.NodeId
 	if nodeId != "" {
 		if node, err := GetExchangeNode(getDeviceHandler, nodeId, msgPrinter); err != nil {
@@ -97,14 +78,14 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
 			}
 		} else {
-			input.NodeArch = node.Arch
+			resources.NodeArch = node.Arch
 		}
 	}
 
 	// validate node policy and convert it to internal policy
 	var nPolicy *policy.Policy
 	var err1 error
-	input.NodePolicy, nPolicy, err1 = processNodePolicy(nodePolicyHandler, nodeId, input.NodePolicy, msgPrinter)
+	resources.NodePolicy, nPolicy, err1 = processNodePolicy(nodePolicyHandler, nodeId, input.NodePolicy, msgPrinter)
 	if err1 != nil {
 		return nil, err1
 	}
@@ -112,7 +93,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	// validate and convert the business policy to internal policy
 	var bPolicy *policy.Policy
 	bpId := input.BusinessPolId
-	input.BusinessPolicy, bPolicy, err1 = processBusinessPolicy(getBusinessPolicies, bpId, input.BusinessPolicy, true, msgPrinter)
+	resources.BusinessPolicy, bPolicy, err1 = processBusinessPolicy(getBusinessPolicies, bpId, input.BusinessPolicy, true, msgPrinter)
 	if err1 != nil {
 		return nil, err1
 	}
@@ -130,12 +111,12 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		if workload.Arch == "*" {
 			workload.Arch = ""
 		}
-		if input.NodeArch != "" {
+		if resources.NodeArch != "" {
 			if workload.Arch == "" {
-				workload.Arch = input.NodeArch
-			} else if input.NodeArch != workload.Arch {
+				workload.Arch = resources.NodeArch
+			} else if resources.NodeArch != workload.Arch {
 				if checkAllSvcs {
-					sId := cliutils.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
+					sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
 					sId = fmt.Sprintf("%v/%v", workload.Org, sId)
 					messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Architecture does not match."))
 				}
@@ -151,7 +132,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 					return nil, err
 					// compatibility check
 				} else {
-					if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, input.NodeArch, msgPrinter); err != nil {
+					if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter); err != nil {
 						return nil, err
 					} else if compatible {
 						overall_compatible = true
@@ -159,8 +140,8 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 							servicePol_comp = sPol
 							messages[sId] = msg_compatible
 						} else {
-							input.ServicePolicy = sPol
-							return NewPolicyCheckOutput(true, map[string]string{sId: msg_compatible}, input), nil
+							resources.ServicePolicy = sPol
+							return NewCompCheckOutput(true, map[string]string{sId: msg_compatible}, resources), nil
 						}
 					} else {
 						servicePol_incomp = sPol
@@ -178,7 +159,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 							return nil, err
 							// compatibility check
 						} else {
-							if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, input.NodeArch, msgPrinter); err != nil {
+							if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter); err != nil {
 								return nil, err
 							} else if compatible {
 								overall_compatible = true
@@ -186,8 +167,8 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 									servicePol_comp = sPol
 									messages[sId] = msg_compatible
 								} else {
-									input.ServicePolicy = sPol
-									return NewPolicyCheckOutput(true, map[string]string{sId: msg_compatible}, input), nil
+									resources.ServicePolicy = sPol
+									return NewCompCheckOutput(true, map[string]string{sId: msg_compatible}, resources), nil
 								}
 							} else {
 								servicePol_incomp = sPol
@@ -208,16 +189,16 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			// add built-in service properties to the service policy
 			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol)
 			// compatibility check
-			sId := cliutils.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
+			sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
 			sId = fmt.Sprintf("%v/%v", workload.Org, sId)
-			if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, input.NodeArch, msgPrinter); err != nil {
+			if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter); err != nil {
 				return nil, err
 			} else if compatible {
 				overall_compatible = true
 				if checkAllSvcs {
 					messages[sId] = msg_compatible
 				} else {
-					return NewPolicyCheckOutput(true, map[string]string{sId: msg_compatible}, input), nil
+					return NewCompCheckOutput(true, map[string]string{sId: msg_compatible}, resources), nil
 				}
 			} else {
 				messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
@@ -225,22 +206,22 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 	}
 
-	// If we get here, it means that no workload is found in the bp that matches the required node arch.
 	if messages != nil && len(messages) != 0 {
 		if overall_compatible {
-			input.ServicePolicy = servicePol_comp
+			resources.ServicePolicy = servicePol_comp
 		} else {
-			input.ServicePolicy = servicePol_incomp
+			resources.ServicePolicy = servicePol_incomp
 		}
-		return NewPolicyCheckOutput(overall_compatible, messages, input), nil
+		return NewCompCheckOutput(overall_compatible, messages, resources), nil
 	} else {
-		if input.NodeArch != "" {
-			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the business policy.", input.NodeArch))
+		// If we get here, it means that no workload is found in the bp that matches the required node arch.
+		if resources.NodeArch != "" {
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the business policy.", resources.NodeArch))
 		} else {
 			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the business policy."))
 		}
 
-		return NewPolicyCheckOutput(false, messages, input), nil
+		return NewCompCheckOutput(false, messages, resources), nil
 	}
 }
 

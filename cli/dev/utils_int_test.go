@@ -4,8 +4,8 @@ package dev
 
 import (
 	"github.com/open-horizon/anax/cli/cliutils"
-	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
@@ -28,16 +28,16 @@ func Test_nested_dependencies(t *testing.T) {
 	horizonDir := createTempProject(t, projectDir)
 
 	// Create leaf node dependencies.
-	c21 := createServiceDef(t, horizonDir, "child21", []*cliexchange.ServiceFile{}, true)
-	c22 := createServiceDef(t, horizonDir, "child22", []*cliexchange.ServiceFile{}, true)
-	c11 := createServiceDef(t, horizonDir, "child11", []*cliexchange.ServiceFile{}, true)
+	c21 := createServiceDef(t, horizonDir, "child21", []*common.ServiceFile{}, true)
+	c22 := createServiceDef(t, horizonDir, "child22", []*common.ServiceFile{}, true)
+	c11 := createServiceDef(t, horizonDir, "child11", []*common.ServiceFile{}, true)
 
 	// Create intermediate dependencies.
-	c1 := createServiceDef(t, horizonDir, "child1", []*cliexchange.ServiceFile{c11}, true)
-	c2 := createServiceDef(t, horizonDir, "child2", []*cliexchange.ServiceFile{c21, c22}, true)
+	c1 := createServiceDef(t, horizonDir, "child1", []*common.ServiceFile{c11}, true)
+	c2 := createServiceDef(t, horizonDir, "child2", []*common.ServiceFile{c21, c22}, true)
 
 	// Create top level service.
-	sDef := createServiceDef(t, horizonDir, "parent", []*cliexchange.ServiceFile{c1, c2}, false)
+	sDef := createServiceDef(t, horizonDir, "parent", []*common.ServiceFile{c1, c2}, false)
 
 	// Start the test. Grab the dependencies and start the dependencies.
 	deps, derr := GetServiceDependencies(horizonDir, sDef.RequiredServices)
@@ -99,7 +99,7 @@ func createTempProject(t *testing.T, projectDir string) string {
 	return horizonDir
 }
 
-func createServiceDef(t *testing.T, horizonDir string, serviceName string, children []*cliexchange.ServiceFile, dependency bool) *cliexchange.ServiceFile {
+func createServiceDef(t *testing.T, horizonDir string, serviceName string, children []*common.ServiceFile, dependency bool) *common.ServiceFile {
 	depSDef1 := createSkeletalServiceDef(serviceName)
 	depSDef1.URL = "http://service/" + serviceName
 
@@ -122,8 +122,8 @@ func createServiceDef(t *testing.T, horizonDir string, serviceName string, child
 	return depSDef1
 }
 
-func createSkeletalServiceDef(serviceName string) *cliexchange.ServiceFile {
-	res := new(cliexchange.ServiceFile)
+func createSkeletalServiceDef(serviceName string) *common.ServiceFile {
+	res := new(common.ServiceFile)
 	res.Label = ""
 	res.Description = ""
 	res.Public = true
