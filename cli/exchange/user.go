@@ -26,6 +26,7 @@ func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 		theUser = ""
 	} else if theUser == "" {
 		theUser, _ = cliutils.SplitIdToken(userPwCreds)
+		_, theUser = cliutils.TrimOrg("", theUser)
 	} // else we list the user specified in theUser
 
 	// Get users

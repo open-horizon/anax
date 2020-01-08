@@ -158,7 +158,7 @@ done
 
 # -l
 TARGET_NUM_OBJS=5
-OBJS_CMD=$(hzn mms object list -l | awk '{if(NR>1)print}') 
+OBJS_CMD=$(hzn mms object list -l | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
@@ -180,7 +180,7 @@ OBJS_CMD=$(hzn mms object list -d | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
-  echo -e "Got unexpected number of objects listing all objects with -l"
+  echo -e "Got unexpected number of objects listing all objects with -d"
   exit -1
 fi
 
