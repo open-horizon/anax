@@ -90,6 +90,8 @@ Environment Variables:
 	cliutils.Opts.Verbose = app.Flag("verbose", msgPrinter.Sprintf("Verbose output.")).Short('v').Bool()
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", msgPrinter.Sprintf("When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.")).Bool()
 
+	envCmd := app.Command("env", msgPrinter.Sprintf("Show the Horizon Environment Variables."))
+
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 	archCmd := app.Command("architecture", msgPrinter.Sprintf("Show the architecture of this machine (as defined by Horizon and golang)."))
 
@@ -660,6 +662,12 @@ Environment Variables:
 
 	// Decide which command to run
 	switch fullCmd {
+	case envCmd.FullCommand():
+		envOrg := os.Getenv("HZN_ORG_ID")
+		envUserPw := os.Getenv("HZN_EXCHANGE_USER_AUTH")
+		envExchUrl := cliutils.GetExchangeUrl()
+		envCcsUrl := cliutils.GetMMSUrl()
+		node.Env(envOrg, envUserPw, envExchUrl, envCcsUrl)
 	case versionCmd.FullCommand():
 		node.Version()
 	case archCmd.FullCommand():
