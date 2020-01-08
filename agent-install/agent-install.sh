@@ -18,13 +18,17 @@ SKIP_REGISTRATION=false
 CFG="agent-install.cfg"
 OVERWRITE=false
 HZN_NODE_POLICY=""
+AGENT_INSTALL_ZIP="agent-install-files.tar.gz"
+NODE_ID_MAPPING_FILE="node-id-mapping.csv"
+CERTIFICATE_DEFAULT="agent-install.crt"
 
 VERBOSITY=3 # Default logging verbosity
+BATCH_INSTALL=false
 
 # required parameters and their defaults
-REQUIRED_PARAMS=( "CERTIFICATE" "HZN_EXCHANGE_URL" "HZN_FSS_CSSURL" "HZN_ORG_ID" "HZN_EXCHANGE_USER_AUTH" )
+REQUIRED_PARAMS=( "HZN_EXCHANGE_URL" "HZN_FSS_CSSURL" "HZN_ORG_ID" "HZN_EXCHANGE_USER_AUTH" )
 REQUIRED_VALUE_FLAG="REQUIRED_FROM_USER"
-DEFAULTS=( "agent-install.crt" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" )
+DEFAULTS=( "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" )
 
 # certificate for the CLI package on MacOS
 MAC_PACKAGE_CERT="horizon-cli.crt"
@@ -44,6 +48,8 @@ where:
     -s          - skip registration
     -v          - show version
     -l          - logging verbosity level (0-5, 5 is verbose)
+    -u          - exchange user authorization credentials
+    -f          - install older version without prompt. overwrite configured node without prompt.
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -204,6 +210,37 @@ function validate_number_int() {
 	log_debug "validate_number_int() end"
 }
 
+# set HZN_EXCHANGE_PATTERN to a pattern set in the exchange
+function set_pattern_from_exchange(){
+	log_debug "set_pattern_from_exchange() begin"
+        if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
+        	HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
+	fi
+	EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH )
+	if [[ ! "$EXCH_OUTPUT" == "" ]]; then
+		EXCH_PATTERN=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].pattern')
+		if [[ ! "$EXCH_PATTERN" == "\"\"" ]]; then
+        		HZN_EXCHANGE_PATTERN=$(echo "$EXCH_PATTERN" | sed 's/"//g' )
+		fi
+	fi
+	log_debug "set_pattern_from_exchange() end"
+}
+
+# create a file for HZN_NODE_POLICY to point to containing the node policy found in the exchange
+function set_policy_from_exchange(){
+	log_debug "set_policy_from_exchange() begin"
+	if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
+		HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
+	fi
+	EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH)
+	if [[ $EXCH_POLICY != "" ]]; then
+		echo $EXCH_POLICY > exchange-node-policy.json
+		HZN_NODE_POLICY="exchange-node-policy.json"
+	fi
+	log_debug "set_policy_from_exchange() end"
+}
+
+
 # checks input arguments and env variables specified
 function validate_args(){
 	log_debug "validate_args() begin"
@@ -227,9 +264,17 @@ function validate_args(){
     get_variable HZN_EXCHANGE_USER_AUTH $CFG
     check_empty HZN_EXCHANGE_USER_AUTH "Exchange User Auth"
     get_variable HZN_EXCHANGE_PATTERN $CFG
+        if [ -z "$HZN_EXCHANGE_PATTERN" ]; then
+                set_pattern_from_exchange
+        fi
+
 
     get_variable CERTIFICATE $CFG
-    check_exist f "$CERTIFICATE" "The certificate"
+	if [ -z "$CERTIFICATE" ]; then
+		if [ -f "$CERTIFICATE_DEFAULT" ]; then
+			CERTIFICATE="$CERTIFICATE_DEFAULT"
+		fi
+	fi
 
     get_variable HZN_NODE_POLICY $CFG
     # check on mutual exclusive params (node policy and pattern name)
@@ -238,7 +283,10 @@ function validate_args(){
 	# if a node policy is non-empty, check if the file exists
 	if [[ ! -z  $HZN_NODE_POLICY ]]; then
 		check_exist f "$HZN_NODE_POLICY" "The node policy"
+        elif [ -z "$HZN_EXCHANGE_PATTERN" ]; then
+                set_policy_from_exchange
 	fi
+
 
     log_info "Check finished successfully"
     log_debug "validate_args() end"
@@ -298,10 +346,12 @@ function install_macos() {
 
     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${PACKAGES}/${MAC_PACKAGE_CERT}
     set +x
-    log_info "Configuring an edge node to trust the ICP certificate..."
-    set -x
-    sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$CERTIFICATE"
-    set +x
+	if [ -z "$CERTIFICATE" ]; then
+		log_info "Configuring an edge node to trust the ICP certificate..."
+		set -x
+		sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$CERTIFICATE"
+		set +x
+	fi
 
 	log_info "Detecting packages version..."
 	PACKAGE_VERSION=$(ls ${PACKAGES} | grep horizon-cli- | cut -d'-' -f3 | cut -d'.' -f1-3)
@@ -339,6 +389,9 @@ function install_macos() {
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] ; then
+						if [ $BATCH_INSTALL ]; then
+							exit 1
+						fi
 						echo "The installed agent is newer than one you're trying to install, continue?[y/N]:"
 						read RESPONSE
 						if [ ! "$RESPONSE" == 'y' ]; then
@@ -385,16 +438,28 @@ function install_macos() {
 	    fi
 	    log_info "Creating ${HZN_CONFIG} file..."
         set -x
-	    echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
-			\nHZN_DEVICE_ID=${HOSTNAME}" | sudo tee "$HZN_CONFIG"
+	if [ -z "$CERTIFICATE" ]; then
+		echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
+			\nHZN_DEVICE_ID=${HOSTNAME}"  | sudo tee "$HZN_CONFIG"
+	else
+		echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
+			\nHZN_DEVICE_ID=${HOSTNAME} \nHZN_MGMT_HUB_CERT_PATH=$(pwd)/${CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
+	fi
+
         set +x
         log_info "Config created"
     else
         if [[ ! -z "${HZN_EXCHANGE_URL}" ]] && [[ ! -z "${HZN_FSS_CSSURL}" ]]; then
                 log_info "Found environment variables HZN_EXCHANGE_URL and HZN_FSS_CSSURL, updating horizon config..."
                 set -x
-                sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-                    -e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" "$HZN_CONFIG"
+		if [ -z "$CERTIFICATE" ]; then
+			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g"  "$HZN_CONFIG"
+		else
+			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
+				-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=$(pwd)/${CERTIFICATE}~g" "$HZN_CONFIG"
+		fi
                 set +x
                 log_info "Config updated"
         fi
@@ -406,15 +471,24 @@ function install_macos() {
         if [[ -f "$CONFIG_MAC" ]]; then
 	        log_info "${CONFIG_MAC} config file exists, updating..."
             set -x
-	        sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
-			   -e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|" \
-	            "$CONFIG_MAC"
+		if [ -z "$CERTIFICATE" ]; then
+			sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
+				-e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|"  "$CONFIG_MAC"
+		else
+			sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
+				-e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|" \
+				-e "s|\"HZN_MGMT_HUB_CERT_PATH\": \"[^ ]*\"|\"HZN_MGMT_HUB_CERT_PATH\": \"$(pwd)"/$CERTIFICATE"\"|" "$CONFIG_MAC"
+		fi
             set +x
             log_info "Config updated"
         else
 	        log_info "${CONFIG_MAC} file doesn't exist, creating..."
             set -x
-	        echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"\n}" > "$CONFIG_MAC"
+		if [ -z "$CERTIFICATE" ]; then
+			echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"}" > "$CONFIG_MAC"
+		else
+			echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"\n  \"HZN_MGMT_HUB_CERT_PATH\": \"$(pwd)/"$CERTIFICATE"\"}" > "$CONFIG_MAC"
+		fi
             set +x
             log_info "Config created"
         fi
@@ -432,12 +506,6 @@ function install_macos() {
 function install_linux(){
     log_debug "install_linux() begin"
     log_notify "Installing agent on ${DISTRO}, version ${CODENAME}, architecture ${ARCH}"
-
-    # Configure certificates
-    log_info "Configuring an edge node to trust the certificate..."
-    set -x
-    sudo cp "$CERTIFICATE" /usr/local/share/ca-certificates && sudo update-ca-certificates
-    set +x
 
     ANAX_PORT=8510
 
@@ -534,6 +602,9 @@ function install_linux(){
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION" ; then
 					log_notify "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] ; then
+						if [ $BATCH_INSTALL ]; then
+							exit 1
+						fi
 						echo "The installed agent is newer than one you're trying to install, continue?[y/N]:"
 						read RESPONSE
 						if [ ! "$RESPONSE" == 'y' ]; then
@@ -586,8 +657,14 @@ function install_linux(){
     if [[ ! -z "${HZN_EXCHANGE_URL}" ]] && [[ ! -z "${HZN_FSS_CSSURL}" ]]; then
         log_info "Found variables HZN_EXCHANGE_URL and HZN_FSS_CSSURL, updating horizon config..."
         set -x
-        sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-	        -e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" /etc/default/horizon
+	if [ -z "$CERTIFICATE" ]; then
+		sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+			-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g"  /etc/default/horizon
+	else
+		sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+			-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
+			-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=$(pwd)/${CERTIFICATE}~g" /etc/default/horizon
+	fi
         set +x
         log_info "Config updated"
     fi
@@ -628,9 +705,6 @@ function start_horizon_service(){
 
 			if [[ -z $(docker ps -aq --filter name=horizon1) ]]; then
 				# horizon services container doesn't exist
-				log_info "Making ICP certificate available to the agent container..."
-		    	export HZN_ICP_CA_CERT_PATH="$(pwd)/${CERTIFICATE}"
-		    	log_debug "HZN_ICP_CA_CERT_PATH=${HZN_ICP_CA_CERT_PATH}"
 		    	log_info "Starting horizon services..."
 		    	set -x
 		    	horizon-container start
@@ -726,6 +800,9 @@ function process_node(){
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has been specified"
 				if [ ! "$OVERWRITE_NODE" = true ] ; then
+					if [ $BATCH_INSTALL ]; then
+						exit 1
+					fi
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
 					read RESPONSE
 					if [ ! "$RESPONSE" == 'y' ]; then
@@ -741,7 +818,7 @@ function process_node(){
 				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
-				if [ ! "$OVERWRITE_NODE" = true ] ; then
+				if [ ! "$OVERWRITE_NODE" = true && ! "$BATCH_INSTALL"] ; then
 					if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
@@ -792,11 +869,13 @@ function create_node(){
         log_info "HZN_EXCHANGE_NODE_AUTH is not defined, creating it..."
         if [[ "$OS" == "linux" ]]; then
             if [ -f /etc/default/horizon ]; then
+              if [[ "$NODE_ID" == "" ]]; then
                 log_info "Getting node id from /etc/default/horizon file..."
                 NODE_ID=$(grep HZN_DEVICE_ID /etc/default/horizon |cut -d'=' -f2)
                 if [[ "$NODE_ID" == "" ]]; then
                     NODE_ID=$HOSTNAME
                 fi
+              fi
             else
                 log_info "Cannot detect node id as /etc/default/horizon cannot be found, using ${NODE_NAME} hostname instead"
                 NODE_ID=$NODE_NAME
@@ -850,27 +929,27 @@ function registration() {
         if [[ -z "${2}" ]]; then
         	if [[ -z "${3}" ]]; then
         		log_info "Neither a pattern nor node policy were not specified, registering without it..."
-            	set -x
-            	hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH"
-            	set +x
-        	else
+            		set -x
+            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH"
+            		set +x
+                else
         		log_info "Node policy ${HZN_NODE_POLICY} was specified, registering..."
-            	set -x
-            	hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3"
-            	set +x
-        	fi
+            		set -x
+            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3"
+            		set +x
+                fi
         else
         	if [[ -z "${3}" ]]; then
-        		log_info "Registering node with ${2} pattern"
-            	set -x
-            	hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH"
-            	set +x
+        			log_info "Registering node with ${2} pattern"
+            		set -x
+            		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH"
+            		set +x
         	else
         		log_info "Pattern ${2} and policy ${3} were specified. However, pattern registration will override the policy, registering..."
-            	set -x
+            		set -x
            	 	hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3"
-            	set +x
-        	fi
+            		set +x
+                fi
         fi
     fi
 
@@ -1076,16 +1155,16 @@ function check_requirements() {
     	log_info "Checking the path with packages..."
 
     	if [ "$PKG_TREE_IGNORE" = true ] ; then
-        	# ignoring the package tree, checking the current dir
-        	PACKAGES="${PKG_PATH}"
-      	else
-        	# checking the package tree for macos
-        	PACKAGES="${PKG_PATH}/${OS}"
-        fi
+      	# ignoring the package tree, checking the current dir
+      	PACKAGES="${PKG_PATH}"
+      else
+      	# checking the package tree for macos
+      	PACKAGES="${PKG_PATH}/${OS}"
+      fi
 
-        log_info "Checking path with packages ${PACKAGES}"
-        check_exist w "${PACKAGES}/horizon-cli-*.pkg" "MacOS installation"
-        check_exist f "${PACKAGES}/${MAC_PACKAGE_CERT}" "The CLI package certificate"
+      log_info "Checking path with packages ${PACKAGES}"
+      check_exist w "${PACKAGES}/horizon-cli-*.pkg" "MacOS installation"
+      check_exist f "${PACKAGES}/${MAC_PACKAGE_CERT}" "The CLI package certificate"
     fi
 
     log_debug "check_requirements() end"
@@ -1098,7 +1177,11 @@ function check_node_state() {
 		local NODE_STATE=$(hzn node list | jq -r .configstate.state)
 		log_info "Current node state is: ${NODE_STATE}"
 
-		if [ "$NODE_STATE" = "configured" ]; then
+		if [ "$NODE_STATE" = "configured" -a !$OVERWRITE ]; then
+			if [ $BATCH_INSTALL ]; then
+				log_notify "Node is already configured."
+				exit 1
+			fi
 			# node is configured need to ask what to do
 			log_notify "Your node is registered"
 			echo "Do you want to overwrite the current node configuration?[y/N]:"
@@ -1120,33 +1203,84 @@ function check_node_state() {
 	log_debug "check_node_state() end"
 }
 
+function unzip_install_files() {
+	if [ -f $AGENT_INSTALL_ZIP ]; then
+		tar -zxf $AGENT_INSTALL_ZIP
+	else
+		log_error "Agent install tar file $AGENT_INSTALL_ZIP does not exist."
+	fi
+}
+
+function find_node_id() {
+	log_debug "start find_node_id"
+	if [ -f $NODE_ID_MAPPING_FILE ]; then
+		log_debug "found id mapping file $NODE_ID_MAPPING_FILE"
+		ID_LINE=$(grep $(hostname) "$NODE_ID_MAPPING_FILE" || [[ $? == 1 ]] )
+		if [ -z $ID_LINE ]; then
+			log_debug "Did not find node id with hostname. Trying with ip"
+			find_node_ip_address
+			for IP in $(echo $NODE_IP); do
+				ID_LINE=$(grep "$IP" "$NODE_ID_MAPPING_FILE" || [[ $? == 1 ]] )
+				if [ ! -z $ID_LINE ];then break; fi
+			done
+			if [ ! -z $ID_LINE ]; then
+				NODE_ID=$(echo $ID_LINE | cut -d "," -f 2)
+			else
+				log_notify "Failed to find node id in mapping file $NODE_ID_MAPPING_FILE with $(hostname) or $NODE_IP"
+				exit 1
+			fi
+		else
+			NODE_ID=$(echo $ID_LINE | cut -d "," -f 2)
+		fi
+	else
+		log_notify "Node id mapping file $NODE_ID_MAPPING_FILE does not exist."
+		exit 1
+	fi
+	log_debug "finished find_node_id"
+}
+
+function find_node_ip_address() {
+	NODE_IP=$(hostname -I)
+}
+
 # Accept the parameters from command line
-while getopts "c:i:p:k:hvl:n:s" opt; do
-    case $opt in
-        c) CERTIFICATE="$OPTARG"
-        ;;
-        i) PKG_PATH="$OPTARG" PKG_TREE_IGNORE=true
-        ;;
-        p) HZN_EXCHANGE_PATTERN="$OPTARG"
-        ;;
-        k) CFG="$OPTARG"
-        ;;
-        h) help
+while getopts "c:i:p:k:u:hvl:n:s:f" opt; do
+	case $opt in
+		c) CERTIFICATE="$OPTARG"
+		;;
+		i) PKG_PATH="$OPTARG" PKG_TREE_IGNORE=true
+		;;
+		p) HZN_EXCHANGE_PATTERN="$OPTARG"
+		;;
+		k) CFG="$OPTARG"
+		;;
+		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
+		;;
+		h) help
 		;;
 		v) version
-        ;;
-        l) validate_number_int "$OPTARG"; VERBOSITY="$OPTARG"
-        ;;
-        n) HZN_NODE_POLICY="$OPTARG"
 		;;
-        s) SKIP_REGISTRATION=true
-        ;;
-        \?) echo "Invalid option: -$OPTARG"; help
-        ;;
-        :) echo "Option -$OPTARG requires an argument"; help
-        ;;
-    esac
+		l) validate_number_int "$OPTARG"; VERBOSITY="$OPTARG"
+		;;
+		n) HZN_NODE_POLICY="$OPTARG"
+		;;
+		s) SKIP_REGISTRATION=true
+		;;
+		f) OVERWRITE=true
+		;;
+		\?) echo "Invalid option: -$OPTARG"; help
+		;;
+		:) echo "Option -$OPTARG requires an argument"; help
+		;;
+	esac
 done
+
+if [ -f "$AGENT_INSTALL_ZIP" ]; then
+	unzip_install_files
+	find_node_id
+	log_info "Found node id $NODE_ID"
+	BATCH_INSTALL=true
+fi
 
 # checking the supplied arguments
 validate_args "$*" "$#"
@@ -1158,11 +1292,11 @@ check_requirements
 check_node_state
 
 if [[ "$OS" == "linux" ]]; then
-    echo `now` "Detection results: OS is ${OS}, distributive is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
-    install_${OS} ${OS} ${DISTRO} ${CODENAME} ${ARCH}
+	echo `now` "Detection results: OS is ${OS}, distributive is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
+	install_${OS} ${OS} ${DISTRO} ${CODENAME} ${ARCH}
 elif [[ "$OS" == "macos" ]]; then
-    echo `now` "Detection results: OS is ${OS}"
-    install_${OS}
+	echo `now` "Detection results: OS is ${OS}"
+	install_${OS}
 fi
 
 add_autocomplete
