@@ -42,8 +42,10 @@ func PolicyCompatible(ec exchange.ExchangeContext, pcInput *PolicyCheck, checkAl
 	getBusinessPolicies := exchange.GetHTTPBusinessPoliciesHandler(ec)
 	servicePolicyHandler := exchange.GetHTTPServicePolicyHandler(ec)
 	getSelectedServices := exchange.GetHTTPSelectedServicesHandler(ec)
+	getService := exchange.GetHTTPServiceHandler(ec)
+	getServiceResolvedDef := exchange.GetHTTPServiceDefResolverHandler(ec)
 
-	return policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, pcInput, checkAllSvcs, msgPrinter)
+	return policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, getService, getServiceResolvedDef, pcInput, checkAllSvcs, msgPrinter)
 }
 
 // Internal function for PolicyCompatible
@@ -52,6 +54,8 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	getBusinessPolicies exchange.BusinessPoliciesHandler,
 	servicePolicyHandler exchange.ServicePolicyHandler,
 	getSelectedServices exchange.SelectedServicesHandler,
+	getService exchange.ServiceHandler,
+	getServiceResolvedDef exchange.ServiceDefResolverHandler,
 	pcInput *PolicyCheck, checkAllSvcs bool, msgPrinter *message.Printer) (*CompCheckOutput, error) {
 
 	// get default message printer if nil
@@ -127,7 +131,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		if input.ServicePolicy == nil {
 			if workload.Arch != "" {
 				// get service policy with built-in properties
-				if mergedServicePol, sPol, sId, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, msgPrinter); err != nil {
+				if mergedServicePol, sPol, sId, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, getServiceResolvedDef, getService, workload.WorkloadURL, workload.Org, workload.Version, workload.Arch, msgPrinter); err != nil {
 					return nil, err
 					// compatibility check
 				} else {
@@ -154,7 +158,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 					// since workload arch is empty, need to go through all the arches
 					for sId, svc := range svcMeta {
 						// get service policy with built-in properties
-						if mergedServicePol, sPol, _, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, workload.WorkloadURL, workload.Org, workload.Version, svc.Arch, msgPrinter); err != nil {
+						if mergedServicePol, sPol, _, err := GetServicePolicyWithDefaultProperties(servicePolicyHandler, getServiceResolvedDef, getService, workload.WorkloadURL, workload.Org, workload.Version, svc.Arch, msgPrinter); err != nil {
 							return nil, err
 							// compatibility check
 						} else {
@@ -186,7 +190,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			// get default service properties
 			builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 			// add built-in service properties to the service policy
-			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol)
+			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol, getServiceResolvedDef, getService, workload, msgPrinter)
 			// compatibility check
 			sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
 			sId = fmt.Sprintf("%v/%v", workload.Org, sId)
@@ -316,7 +320,7 @@ func processNodePolicy(nodePolicyHandler exchange.NodePolicyHandler,
 			}
 
 			if nPolicy, err := policy.GenPolicyFromExternalPolicy(inputNP, policy.MakeExternalPolicyHeaderName(nodeId)); err != nil {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy format for node %v: %v", nodeId, err)), COMPCHECK_CONVERTION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy format for node %v: %v", nodeId, err)), COMPCHECK_CONVERSION_ERROR)
 			} else {
 				return inputNP, nPolicy, nil
 			}
@@ -371,7 +375,7 @@ func GetNodePolicy(nodePolicyHandler exchange.NodePolicyHandler, nodeId string, 
 	// convert the policy to internal policy format
 	pPolicy, err := policy.GenPolicyFromExternalPolicy(&extPolicy, policy.MakeExternalPolicyHeaderName(nodeId))
 	if err != nil {
-		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy for node %v: %v", nodeId, err)), COMPCHECK_CONVERTION_ERROR)
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert node policy to internal policy for node %v: %v", nodeId, err)), COMPCHECK_CONVERSION_ERROR)
 	}
 	return &extPolicy, pPolicy, nil
 }
@@ -396,7 +400,7 @@ func processBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler,
 			var err1 error
 			pPolicy, err1 = inputBP.GenPolicyFromBusinessPolicy(bpId)
 			if err1 != nil {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy: %v", bpId, err1)), COMPCHECK_CONVERTION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy: %v", bpId, err1)), COMPCHECK_CONVERSION_ERROR)
 			}
 			return inputBP, pPolicy, nil
 		} else {
@@ -457,7 +461,7 @@ func GetBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpI
 		if convert {
 			pPolicy, err := bPol.GenPolicyFromBusinessPolicy(polId)
 			if err != nil {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy format: %v", bpId, err)), COMPCHECK_CONVERTION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy format: %v", bpId, err)), COMPCHECK_CONVERSION_ERROR)
 			}
 			return &bPol, pPolicy, nil
 		} else {
@@ -531,7 +535,7 @@ func GetServicePolicy(servicePolicyHandler exchange.ServicePolicyHandler, svcUrl
 }
 
 // Get service policy from the exchange and then add the service defalt properties
-func GetServicePolicyWithDefaultProperties(servicePolicyHandler exchange.ServicePolicyHandler, svcUrl string, svcOrg string, svcVersion string, svcArch string, msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *externalpolicy.ExternalPolicy, string, error) {
+func GetServicePolicyWithDefaultProperties(servicePolicyHandler exchange.ServicePolicyHandler, getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler, svcUrl string, svcOrg string, svcVersion string, svcArch string, msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, *externalpolicy.ExternalPolicy, string, error) {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -545,14 +549,20 @@ func GetServicePolicyWithDefaultProperties(servicePolicyHandler exchange.Service
 	// get default service properties
 	builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(svcUrl, svcOrg, svcVersion, svcArch)
 
+	if err != nil {
+		return nil, nil, "", err
+	}
+
 	// add built-in service properties to the service policy
-	merged_pol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol)
+	merged_pol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcUrl, Org: svcOrg, Version: svcVersion, Arch: svcArch}, msgPrinter)
 
 	return merged_pol, servicePol, sId, nil
 }
 
 // Add service default properties to the given service policy
-func AddDefaultPropertiesToServicePolicy(servicePol, defaultSvcProps *externalpolicy.ExternalPolicy) *externalpolicy.ExternalPolicy {
+func AddDefaultPropertiesToServicePolicy(servicePol, defaultSvcProps *externalpolicy.ExternalPolicy,
+	getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+	workload policy.Workload, msgPrinter *message.Printer) *externalpolicy.ExternalPolicy {
 	var merged_pol externalpolicy.ExternalPolicy
 	if servicePol != nil {
 		merged_pol = externalpolicy.ExternalPolicy(*servicePol)
@@ -563,6 +573,13 @@ func AddDefaultPropertiesToServicePolicy(servicePol, defaultSvcProps *externalpo
 		if defaultSvcProps != nil {
 			merged_pol = externalpolicy.ExternalPolicy(*defaultSvcProps)
 		}
+	}
+	tmp_pol, err := SetServicePolicyPrivilege(getServiceResolvedDef, getService, workload, &merged_pol, msgPrinter)
+	if err != nil {
+		return nil
+	}
+	if tmp_pol != nil {
+		merged_pol = *tmp_pol
 	}
 
 	return &merged_pol
@@ -591,7 +608,8 @@ func MergeFullServicePolicyToBusinessPolicy(businessPolicy *policy.Policy, servi
 
 // This function merges the given business policy with the given built-in properties of the service and the given service policy
 // from the top level service, if any.
-func MergeServicePolicyToBusinessPolicy(businessPol *policy.Policy, builtInSvcPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, msgPrinter *message.Printer) (*policy.Policy, error) {
+func MergeServicePolicyToBusinessPolicy(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+	workload policy.Workload, businessPol *policy.Policy, builtInSvcPol *externalpolicy.ExternalPolicy, servicePol *externalpolicy.ExternalPolicy, msgPrinter *message.Printer) (*policy.Policy, error) {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -602,7 +620,7 @@ func MergeServicePolicyToBusinessPolicy(businessPol *policy.Policy, builtInSvcPo
 	}
 
 	// add built-in service properties to the service policy
-	merged_pol1 := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol)
+	merged_pol1 := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getServiceResolvedDef, getService, workload, msgPrinter)
 
 	//merge service policy
 	if merged_pol2, err := MergeFullServicePolicyToBusinessPolicy(businessPol, merged_pol1, msgPrinter); err != nil {
@@ -610,4 +628,38 @@ func MergeServicePolicyToBusinessPolicy(businessPol *policy.Policy, builtInSvcPo
 	} else {
 		return merged_pol2, nil
 	}
+}
+
+// SetServicePolicyPrivilege sets a property on the service privilege that indicates if the service uses a workload that requires privileged mode or network=host
+// This will not overwrite openhorizon.allowPrivileged=true if the service is found to not require privileged mode.
+func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+	workload policy.Workload, svcPolicy *externalpolicy.ExternalPolicy,
+	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, error) {
+	declaredPriv := true
+	if svcPolicy.Properties.HasProperty(externalpolicy.PROP_SVC_PRIVILEGED) {
+		privProp, err := svcPolicy.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
+		if err != nil {
+			return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
+		}
+		declaredPriv = privProp.Value.(bool)
+	}
+	svcList, err := GetAllServices(getServiceResolvedDef, getService, workload, msgPrinter)
+	if err != nil {
+		return nil, err
+	}
+	runtimePriv, err, _ := servicesRequirePrivilege(svcList, msgPrinter)
+	if err != nil {
+		return nil, err
+	}
+	if runtimePriv && !declaredPriv {
+		// Runtime privilege is true, but policy had privilege set to false. This is an error
+		return svcPolicy, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Policy for service %s/%s has %s but service introspection indicates these services require privileged containers to run %v.", workload.Org, workload.WorkloadURL)), COMPCHECK_GENERAL_ERROR)
+	}
+	if !declaredPriv {
+		svcPolicy.Properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv), true)
+	}
+	if runtimePriv {
+		svcPolicy.Constraints.Add_Constraint(fmt.Sprintf("%s = %t", externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv))
+	}
+	return svcPolicy, nil
 }

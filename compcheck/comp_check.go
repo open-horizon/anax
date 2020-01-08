@@ -3,8 +3,10 @@ package compcheck
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/golang/glog"
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -20,7 +22,7 @@ import (
 const (
 	COMPCHECK_INPUT_ERROR      = 10
 	COMPCHECK_VALIDATION_ERROR = 11
-	COMPCHECK_CONVERTION_ERROR = 12
+	COMPCHECK_CONVERSION_ERROR = 12
 	COMPCHECK_MERGING_ERROR    = 13
 	COMPCHECK_EXCHANGE_ERROR   = 14
 	COMPCHECK_GENERAL_ERROR    = 15
@@ -204,9 +206,10 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	pcOutput := NewCompCheckOutput(true, map[string]string{}, NewCompCheckResourceFromPolicyCheck(policyCheckInput))
+	privOutput := NewCompCheckOutput(true, map[string]string{}, &CompCheckResource{})
 	if useBPol {
 		var err1 error
-		pcOutput, err1 = policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, policyCheckInput, true, msgPrinter)
+		pcOutput, err1 = policyCompatible(getDeviceHandler, nodePolicyHandler, getBusinessPolicies, servicePolicyHandler, getSelectedServices, getServiceHandler, serviceDefResolverHandler, policyCheckInput, true, msgPrinter)
 		if err1 != nil {
 			return nil, err1
 		}
@@ -214,6 +217,14 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 		// if not compatible, then do not bother to do user input check
 		if !pcOutput.Compatible {
 			return pcOutput, nil
+		}
+	} else if ccInput.NodeId != "" || ccInput.NodePolicy != nil {
+		privOutput, err := EvaluatePatternPrivilegeCompatability(serviceDefResolverHandler, getServiceHandler, getPatterns, nodePolicyHandler, ccInput, &CompCheckResource{NodeArch: "amd64"}, msgPrinter, checkAllSvcs)
+		if err != nil {
+			return nil, err
+		}
+		if !privOutput.Compatible {
+			return privOutput, nil
 		}
 	}
 
@@ -225,7 +236,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	// combine the output of policy check and user input check into one
-	return createCompCheckOutput(pcOutput, uiOutput, checkAllSvcs, msgPrinter), nil
+	return createCompCheckOutput(pcOutput, privOutput, uiOutput, checkAllSvcs, msgPrinter), nil
 }
 
 // Use the result of policy check together with the original input to create a user input check input object.
@@ -263,7 +274,7 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *CompCheckOutput, ms
 }
 
 // combine the policy check output and user input output into CompCheckOutput
-func createCompCheckOutput(pcOutput *CompCheckOutput, uiOutput *CompCheckOutput, checkAllSvcs bool, msgPrinter *message.Printer) *CompCheckOutput {
+func createCompCheckOutput(pcOutput *CompCheckOutput, privOutput *CompCheckOutput, uiOutput *CompCheckOutput, checkAllSvcs bool, msgPrinter *message.Printer) *CompCheckOutput {
 	// get default message printer if nil
 	if msgPrinter == nil {
 		msgPrinter = i18n.GetMessagePrinter()
@@ -271,7 +282,7 @@ func createCompCheckOutput(pcOutput *CompCheckOutput, uiOutput *CompCheckOutput,
 
 	var ccOutput CompCheckOutput
 
-	// the last one take precedence for overall assesement
+	// the last one takes precedence for overall assesement
 	ccOutput.Compatible = uiOutput.Compatible
 
 	// combine the reason from both
@@ -291,12 +302,17 @@ func createCompCheckOutput(pcOutput *CompCheckOutput, uiOutput *CompCheckOutput,
 			for sId_pc, rs_pc := range pcOutput.Reason {
 				if rs_pc != msg_compatible {
 					reason[sId_pc] = rs_pc
+				} else if rs_privc, ok := privOutput.Reason[sId_pc]; ok && rs_privc != msg_compatible {
+					reason[sId_pc] = rs_privc
 				} else {
 					// add user input compatibility result
-					for sId_ui, rs_ui := range uiOutput.Reason {
-						if sId_ui == sId_pc {
-							reason[sId_ui] = rs_ui
-						}
+					// for sId_ui, rs_ui := range uiOutput.Reason {
+					// 	if sId_ui == sId_pc {
+					// 		reason[sId_ui] = rs_ui
+					// 	}
+					// }
+					if rs_ui, ok := uiOutput.Reason[sId_pc]; ok {
+						reason[sId_pc] = rs_ui
 					}
 				}
 			}
@@ -362,4 +378,113 @@ func GetExchangeNode(getDeviceHandler exchange.DeviceHandler, nodeId string, msg
 	} else {
 		return node, nil
 	}
+}
+
+// EvaluatePatternPrivilegeCompatability determines if a given node requires a workload that uses privileged mode or network=host.
+// This function will recursively evaluate top-level services specified in the pattern.
+func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+	getPatterns exchange.PatternHandler, nodePolicyHandler exchange.NodePolicyHandler,
+	cc *CompCheck, ccResource *CompCheckResource, msgPrinter *message.Printer, checkAll bool) (*CompCheckOutput, error) {
+
+	if cc.NodeId == "" && cc.NodePolicy == nil {
+		return nil, nil
+	}
+	nodePol, _, err := processNodePolicy(nodePolicyHandler, cc.NodeId, cc.NodePolicy, msgPrinter)
+	if err != nil {
+		return nil, err
+	}
+	nodePriv := false
+	if nodePol.Properties.HasProperty(externalpolicy.PROP_NODE_PRIVILEGED) {
+		privProv, err := nodePol.Properties.GetProperty(externalpolicy.PROP_NODE_PRIVILEGED)
+		if err != nil {
+			return nil, err
+		}
+		nodePriv = privProv.Value.(bool)
+	}
+	if nodePriv {
+		return NewCompCheckOutput(true, nil, nil), nil
+	}
+
+	patternDef, err := processPattern(getPatterns, cc.PatternId, cc.Pattern, msgPrinter)
+	if err != nil {
+		return nil, err
+	}
+
+	messages := map[string]string{}
+	overallPriv := false
+	for _, svcRef := range getWorkloadsFromPattern(patternDef, ccResource.NodeArch) {
+		svcPriv := false
+		for _, workload := range svcRef.ServiceVersions {
+			allSvcs, err := GetAllServices(getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcRef.ServiceURL, Org: svcRef.ServiceOrg, Arch: svcRef.ServiceArch, Version: workload.Version}, msgPrinter)
+			if err != nil {
+				return nil, err
+			}
+			workLoadPriv, err, privWorkloads := servicesRequirePrivilege(allSvcs, msgPrinter)
+			if err != nil {
+				return nil, err
+			}
+			if workLoadPriv && checkAll {
+				svcPriv = true
+				messages[fmt.Sprintf("%s/%s", svcRef.ServiceOrg, svcRef.ServiceURL)] = fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)
+			} else if workLoadPriv {
+				return NewCompCheckOutput(false, map[string]string{fmt.Sprintf("%s/%s", svcRef.ServiceOrg, svcRef.ServiceURL): fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)}, nil), nil
+			}
+		}
+		if svcPriv {
+			overallPriv = true
+		}
+	}
+
+	if !nodePriv && overallPriv {
+		return NewCompCheckOutput(false, messages, ccResource), nil
+	}
+	return NewCompCheckOutput(true, nil, ccResource), nil
+}
+
+func GetAllServices(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
+	workload policy.Workload, msgPrinter *message.Printer) (*map[string]exchange.ServiceDefinition, error) {
+	sDefMap, topSvcDef, topSvcId, err := getServiceResolvedDef(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
+	if err != nil {
+		// logging this message here so it gets translated. Will add quiet parameter to determine if this is an error or a cli warning later.
+		glog.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the exchange.", topSvcId, externalpolicy.PROP_NODE_PRIVILEGED))
+	}
+	if topSvcDef != nil {
+		sDefMap[topSvcId] = *topSvcDef
+	}
+	return &sDefMap, nil
+}
+
+// this function takes as a parameter a map of service ids to deployment strings
+func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (bool, error, []string) {
+	privSvcs := []string{}
+	reqPriv := false
+
+	for sId, sDef := range *serviceDefs {
+		if priv, err := deploymentRequiresPrivilege(sDef.GetDeployment(), msgPrinter); err != nil {
+			return false, err, nil
+		} else if priv {
+			reqPriv = true
+			privSvcs = append(privSvcs, sId)
+		}
+	}
+	return reqPriv, nil, privSvcs
+}
+
+func deploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Printer) (bool, error) {
+	if deploymentString == "" {
+		return false, nil
+	}
+	deploymentStruct := &containermessage.DeploymentDescription{}
+	err := json.Unmarshal([]byte(deploymentString), deploymentStruct)
+	if err != nil {
+		return false, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error unmarshaling deployment string to internal deployment structure: %v", err)), COMPCHECK_CONVERSION_ERROR)
+	}
+	for _, topSvc := range deploymentStruct.Services {
+		if topSvc != nil {
+			if topSvc.Privileged || topSvc.Network == "host" {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
 }

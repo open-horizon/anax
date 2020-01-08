@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-const NUM_BUILT_INS = 4
+const NUM_BUILT_INS = 5
 
 func init() {
 	flag.Set("alsologtostderr", "true")

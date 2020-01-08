@@ -368,15 +368,25 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			} else if mergedProducer != nil {
 				wi.ProducerPolicy = *mergedProducer
 			}
-
+			svcDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(b)
+			svcHandler := exchange.GetHTTPServiceHandler(b)
+			patternHandler := exchange.GetHTTPExchangePatternHandler(b)
+			nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
+			cc := compcheck.CompCheck{NodeId: wi.Device.Id, PatternId: wi.ConsumerPolicy.PatternId}
+			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, svcHandler, patternHandler, nodePolHandler, &cc, &compcheck.CompCheckResource{}, msgPrinter, false)
 			// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
 			// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
 			// even if retries have been disabled.
-			if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
-				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
+			if ccOutput.Compatible {
+				if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
+				} else {
+					policy_match = true
+				}
 			} else {
-				policy_match = true
+				policy_match = false
 			}
+
 		} else {
 			// non patten case
 			// get node policy
@@ -411,7 +421,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			//merge the service policy with the built-in service policy
 			builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 			// add built-in service properties to the service policy
-			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol)
+			getResolvedServiceDef := exchange.GetHTTPServiceDefResolverHandler(b)
+			getService := exchange.GetHTTPServiceHandler(b)
+			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getResolvedServiceDef, getService, *workload, nil)
 
 			if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
 				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
