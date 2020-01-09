@@ -259,7 +259,7 @@ type DeviceAgreement struct {
 	Service          []MSAgreementState `json:"services"`
 	State            string             `json:"state"`
 	AgreementService WorkloadAgreement  `json:"agrService"`
-	LastUpdated      string             `json:"lastUpdated"`
+	LastUpdated      string             `json:"lastUpdated,omitempty"`
 }
 
 func (a DeviceAgreement) String() string {
@@ -547,7 +547,7 @@ func ConvertPropertyToExchangeFormat(prop *externalpolicy.Property) (*MSProp, er
 type Organization struct {
 	Label       string `json:"label"`
 	Description string `json:"description"`
-	LastUpdated string `json:"lastUpdated"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
 }
 
 type GetOrganizationResponse struct {
@@ -601,7 +601,7 @@ type UserDefinition struct {
 	Password    string `json:"password"`
 	Admin       bool   `json:"admin"`
 	Email       string `json:"email"`
-	LastUpdated string `json:"lastUpdated"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
 }
 
 type GetUsersResponse struct {

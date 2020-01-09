@@ -117,7 +117,7 @@ type ServedBusinessPolicy struct {
 	BusinessPolOrg string `json:"businessPolOrgid"` // defaults to nodeOrgid
 	BusinessPol    string `json:"businessPol"`      // '*' means all
 	NodeOrg        string `json:"nodeOrgid"`
-	LastUpdated    string `json:"lastUpdated"`
+	LastUpdated    string `json:"lastUpdated,omitempty"`
 }
 
 func AgbotListBusinessPolicy(org, userPw, agbot string) {

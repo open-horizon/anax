@@ -199,7 +199,7 @@ type ImageDockerAuth struct {
 	Registry    string `json:"registry"`
 	UserName    string `json:"username"`
 	Token       string `json:"token"`
-	LastUpdated string `json:"lastUpdated"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
 }
 
 func (s ImageDockerAuth) String() string {

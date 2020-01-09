@@ -256,7 +256,6 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 		// get pattern from file or exchange
 		pattern, pf := getPattern(orgToUse, *credToUse, patternId, patternFile)
 
-
 		// check if the specified the services are the ones that the pattern needs.
 		// only check if the given services are valid or not.
 		// Not checking the missing ones becaused it will be checked by the compcheck package.

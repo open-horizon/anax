@@ -432,7 +432,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// Make sure the user inputs are all there
 		userInput_match := true
 		if policy_match {
-			svcDef := compcheck.ServiceDefinition{workload.Org, *workloadDetails}
+			svcDef := compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}
 			if compatible, reason, _, err := compcheck.VerifyUserInputForSingleServiceDef(&svcDef, wi.ConsumerPolicy.UserInput, exchangeDev.UserInput, nil); err != nil {
 				glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("Error validating the user input for service %v/%v %v %v: %v", workload.Org, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, err)))
 				userInput_match = false

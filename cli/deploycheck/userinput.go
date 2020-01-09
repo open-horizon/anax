@@ -302,7 +302,7 @@ func getPattern(defaultOrg string, credToUse string, patternId string, patternFi
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Pattern not found for %v/%v", patOrg, patId))
 		} else {
 			for _, exchPat := range patternList.Patterns {
-				pe = compcheck.Pattern{patOrg, exchPat}
+				pe = compcheck.Pattern{Org: patOrg, Pattern: exchPat}
 				return &pe, nil
 			}
 		}

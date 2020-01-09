@@ -55,7 +55,7 @@ func (w WorkloadStatus) String() string {
 type DeviceStatus struct {
 	Connectivity map[string]bool  `json:"connectivity"` //  hosts and whether this device can reach them or not
 	Services     []WorkloadStatus `json:"services"`
-	LastUpdated  string           `json:"lastUpdated"`
+	LastUpdated  string           `json:"lastUpdated,omitempty"`
 }
 
 func (w DeviceStatus) String() string {

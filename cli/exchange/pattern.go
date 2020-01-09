@@ -33,7 +33,7 @@ type PatternOutput struct {
 	Services           []ServiceReference           `json:"services"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
 	UserInput          []policy.UserInput           `json:"userInput,omitempty"`
-	LastUpdated        string                       `json:"lastUpdated"`
+	LastUpdated        string                       `json:"lastUpdated,omitempty"`
 }
 
 // These 5 structs are used when reading json file the user gives us as input to create the pattern struct
