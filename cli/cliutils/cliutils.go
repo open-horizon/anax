@@ -1500,7 +1500,6 @@ func CreateUserExchangeContext(userId string, passwd string) exchange.ExchangeCo
 	return exchange.NewCustomExchangeContext(userId, passwd, exchUrl, "", NewHTTPClientFactory())
 }
 
-
 // create an http client factory to be used for the exchange calls.
 func NewHTTPClientFactory() *config.HTTPClientFactory {
 	clientFunc := func(overrideTimeoutS *uint) *http.Client {

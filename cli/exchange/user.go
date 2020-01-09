@@ -32,7 +32,7 @@ func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 	var users ExchangeUsers
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/users"+cliutils.AddSlash(theUser), cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &users)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("theUser '%s' not found in org %s", strings.TrimPrefix(theUser, "/"), org))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("user '%s' not found in org %s", strings.TrimPrefix(theUser, "/"), org))
 	}
 
 	// Decide how much of each user should be shown
