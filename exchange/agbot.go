@@ -39,7 +39,7 @@ type GetAgbotsBusinessPolsResponse struct {
 type AgbotAgreement struct {
 	Service     WorkloadAgreement `json:"service,omitempty"`
 	State       string            `json:"state"`
-	LastUpdated string            `json:"lastUpdated"`
+	LastUpdated string            `json:"lastUpdated,omitempty"`
 }
 
 func (a AgbotAgreement) String() string {
@@ -83,7 +83,7 @@ type ServedPattern struct {
 	PatternOrg  string `json:"patternOrgid"` // defaults to NodeOrg
 	Pattern     string `json:"pattern"`      // '*' means all
 	NodeOrg     string `json:"nodeOrgid"`
-	LastUpdated string `json:"lastUpdated"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
 }
 
 // business policies served by an agbot that are allowed to be put on the nodes of an org.
@@ -91,7 +91,7 @@ type ServedBusinessPolicy struct {
 	BusinessPolOrg string `json:"businessPolOrgid"` // defaults to nodeOrgid
 	BusinessPol    string `json:"businessPol"`      // '*' means all
 	NodeOrg        string `json:"nodeOrgid"`
-	LastUpdated    string `json:"lastUpdated"`
+	LastUpdated    string `json:"lastUpdated,omitempty"`
 }
 
 type PatchAgbotPublicKey struct {

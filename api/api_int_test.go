@@ -195,35 +195,30 @@ func Test_API_attribute_Suite(suite *testing.T) {
 	testKeyName := "Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem"
 
 	putURL, _ := url.Parse(fmt.Sprintf("%s/%s/%s", server.URL, "trust", testKeyName))
+
+	// The following cert generated via: openssl req -newkey rsa:2048 -nodes -addext keyUsage=digitalSignature -addext basicConstraints=critical,CA:false -keyout key.pem -days 1000 -x509 -out certificate.pem
+	// then copy/paste content of certificate.pem in here
+
 	req, err := http.NewRequest(http.MethodPut, putURL.String(), bytes.NewReader([]byte(`-----BEGIN CERTIFICATE-----
-MIIFJTCCAw2gAwIBAgIUIRH+ONCq0Yh97E4bf7Xgg/3jo5MwDQYJKoZIhvcNAQEL
-BQAwPDEQMA4GA1UEChMHSG9yaXpvbjEoMCYGA1UEAwwfZGV2ZWxvcG1lbnRAYmx1
-ZWhvcml6b24ubmV0d29yazAeFw0xNzEyMDgwNTIxMzhaFw0yMDAxMDcxNzIxMzVa
-MDwxEDAOBgNVBAoTB0hvcml6b24xKDAmBgNVBAMMH2RldmVsb3BtZW50QGJsdWVo
-b3Jpem9uLm5ldHdvcmswggIhMA0GCSqGSIb3DQEBAQUAA4ICDgAwggIJAoICAAsN
-jfwgD1eGct8Xewl7sk3qF1xPgovZPDi6OQxGU4VuOg15LyfS6hYK83kx205BMzb+
-eS1lvP2eLUD/73iheJ5dTUGb/L8DvywF/cYYROUxjxCUMYEKTlM6Y9s4Amyc21Fh
-NGH+ADpP9JieYA1A+zwqY+g5aa7/O5JmAIln1RBlNWPH84Qh5iq/jyY/uUDpJJzm
-Xd2XgCSR9hDagJQzJ1b6Y6d3wB+t7jXJL4usVBR9k+IjKPT9fTDlH85modWKA+fx
-jXD29W2iYcKR36QGJAf4+uW6j1ZHPqzDfnbuy5NCegWAFOnUZFo9TwpwMRfBzH9w
-zyaJvuuTwcW5JDRy+SJFuRWthLChIvZCC8RignFM05oFUjBTnZFWfOYVdioe3mqp
-15LpH4Rr11XvR8ZwFpl1s9zeugwQZAa9vnTzrCSOnqQ4JBZ6XrtuqsEwM+2NonCQ
-GX/B4ldB4QchiIys4PN+Qv35BCEYuCEvXpr3wv9Lnq4tkUF7sTnilMSYuTASCI1p
-leE1Bb+Iz4pwi0R4UmtAKlNsUjtmXDKNvIvAjMfLkFwWhoelsFXFdsi7CXGJpsyo
-y8el5I2ZF9HlZCla4L63Ye/vaAee6qXY+0Bt5Vb/++885d5Zq07ymJBbf18si0uK
-q7JSw4YB3ol3W5r8q3vxKQFssVl2DJpWxNm4GgaFAgMBAAGjIDAeMA4GA1UdDwEB
-/wQEAwIHgDAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4ICAQAI3qc5KCnJ
-cxrAVHUVlEQ34L2g1w3OB3Y2IhzrDPwfZWyT/IUq4J2yIjgMt2UzfHlJD/V8cunb
-Hsz41pxr+Oqifnzj0uTXctX8eS0EsLYu6OG0nhgrx2Z6Q9sHk6GvWYfDHNfJ1ETo
-SpmcN1F2Ro/ngqt3N5nYsKYQub/x4VozK3FI1Lr245+6AF5BJBfZfZtCukNOgOnz
-5jgRJqNE2n5ADEwwIf0lsAckBM6uMMIWzqYRCZQe5n+h8e8avk8+9MOW5EKmExvq
-9TundbWDSOxJv28i8sEp5apVKWHgTCaQNb/xSXDEruKUQVDfm80F2HZPsQdUsFrK
-MyOV+rLKymN9UJxbbszi02X7q/+hVH7eCn4UJ970AgVKRTREOPwzZyQHBvUymnZQ
-1Gm/I8Z+zWcbpViYzNkmCdaQTVnSo60ewNDdeDBcbDyvJLs9VutQgVooHP5u2iWe
-5lZQlr6OBX+B5LRujJBNKD58quwAsKNFbuOx+yTNS4NbR9Gf4aQj5neUA2UPn+62
-RyutzM1amwOzzalhBcHJQaTiHR0QKQWyvvzlT3vDyg1DBZC2ReyDSmkT7CkJoC0O
-vTLlpah1Y8Dvd1Mg6DorvN7eHb+R9pRYz6m/ll84KeLHyX+ml9Yj9Xem+H7MMYh7
-6OPMAFGj9NP8jRVx/m71mKa1rIqqa+Wpew==
+MIIDcDCCAligAwIBAgIUD7YETXojmUUJNwF3VNAKLYC0jJIwDQYJKoZIhvcNAQEL
+BQAwOjELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAk5ZMQwwCgYDVQQKDANJQk0xEDAO
+BgNVBAMMB2libS5jb20wHhcNMjAwMTA5MTc1MDIxWhcNMjIxMDA1MTc1MDIxWjA6
+MQswCQYDVQQGEwJVUzELMAkGA1UECAwCTlkxDDAKBgNVBAoMA0lCTTEQMA4GA1UE
+AwwHaWJtLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJXpQHxV
+5ckBoa/K62iswb9lzsO4tHQX1Bl957y1Y/hKVXyOvAa90Zy8xt7GY+NyvJTojEdf
+Mz6RhY+43J97SiU0PRs3J73dYz7Kb64e1Zt2rjYl9WZdTkVi4lhZgNMiw1KKndht
+WMPJU2SLDZk5pS3EhwRrJo3tP/NOZiSfOMo9HBvJSUOVyUaKrxSKyZxrwx/Omm9p
+d+Dlip32dd1yqfq3XVDHGMtJQNJYOpObXiIQPTGuh8SCMnDr5/y3zqWoHILPCkrb
+/vK20wfam8P5XXaxZJFTpV07rqqUTWIbfJ94yFX0ACWsjQapq84POVxJIut/rqBk
+hosSYXBElM/m158CAwEAAaNuMGwwHQYDVR0OBBYEFF/YMJkse4F3SGHjzGy/oIsn
+VXW/MB8GA1UdIwQYMBaAFF/YMJkse4F3SGHjzGy/oIsnVXW/MA8GA1UdEwEB/wQF
+MAMBAf8wCwYDVR0PBAQDAgeAMAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQELBQAD
+ggEBAHMUwqBf6h6W9zKQp+6mvj9Kdx0R6sxc7HtLA1JOrO4BVRARHg7VGvgdwKnK
+RWNjw/i71WUD/JKnnqnzV76e7tEUAbvjjU/wQomklR9cqHx27EX/D3ClteTYhe7y
+mRR3Vj2NwMNiDrDNPCKzGguaVbf0gntleMFSvd1D7hKNkCDhyUkTJ+6hIsJqhDoh
+psdYUa44KM8ue7oRUz4F0CxLeyjO83tyalWeAgu5nRRd/UkGsdX0kCpHiQy2VaG+
+nF3ewq1o585M21iHNHsS7BHjYnhE7zFyGqNpH6l+xEkeWgsCk/DxhX5JQ9PHKp0d
+JMEaRpo4HBqI78UOex31m3MMA2s=
 -----END CERTIFICATE-----`)))
 	assert.Nil(suite, err)
 	assert.NotNil(suite, req)
@@ -460,7 +455,10 @@ SoxItJkxfl2adAjY2DVzdhY=
 		err = json.Unmarshal(b, &certList)
 		assert.Nil(t, err)
 
-		assert.EqualValues(t, "21:11:fe:38:d0:aa:d1:88:7d:ec:4e:1b:7f:b5:e0:83:fd:e3:a3:93", certList["pem"][0].SerialNumber)
+		// Obtain cert serial number via: openssl x509 -in certificate.pem -text
+		// copy/paste the value of the Serial Number: field in here
+
+		assert.EqualValues(t, "0f:b6:04:4d:7a:23:99:45:09:37:01:77:54:d0:0a:2d:80:b4:8c:92", certList["pem"][0].SerialNumber)
 	})
 
 	// shutdown

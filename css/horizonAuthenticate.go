@@ -219,7 +219,7 @@ type UserDefinition struct {
 	Password    string `json:"password"`
 	Admin       bool   `json:"admin"`
 	Email       string `json:"email"`
-	LastUpdated string `json:"lastUpdated"`
+	LastUpdated string `json:"lastUpdated,omitempty"`
 }
 
 type GetUsersResponse struct {
