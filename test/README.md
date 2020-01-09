@@ -48,6 +48,9 @@ There are several env vars that you can specify on the make run-combined command
 
 A common way to run the environment during development is `make test TEST_VARS="NOLOOP=1 PATTERN=sloc"`
 
+Light Test:
+`make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1"`
+
 Here is a full description of all the variables you can use to setup the test the way you want it:
 - NOLOOP=1 - turns off the loop that cancels agreements on the device and agbot (alternating), every 10 mins. Usually you want to specify NOLOOP=1 when actively iterating code.
 - NOCANCEL=1 - when set with NOLOOP=1, skips the single round of cancellation tests for less log clutter and time when just interested in agreement formation.
