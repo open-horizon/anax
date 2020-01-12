@@ -13,6 +13,8 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/rsapss-tool/sign"
+	"github.com/open-horizon/rsapss-tool/verify"
 	"golang.org/x/text/language"
 	"io"
 	"io/ioutil"
@@ -1263,6 +1265,35 @@ func SetDefaultArch() {
 	}
 }
 
+//Get and verify public key file
+func GetAndVerifyPublicKey(pubKeyFilePath string) string {
+	msgPrinter := i18n.GetMessagePrinter()
+	msgPrinter.Printf("Verifying public key file ... ")
+	msgPrinter.Println()
+	pubKeyFilePath_tmp := WithDefaultEnvVar(&pubKeyFilePath, "HZN_PUBLIC_KEY_FILE")
+	pubKeyFilePath = VerifySigningKeyInput(*pubKeyFilePath_tmp, true)
+
+	//inBytes := cliutils.ReadFile(pubKeyFilePath)
+	inBytes := ReadFile(pubKeyFilePath)
+	//import github.com/open-horizon/rsapss-tool/verify
+	if _, err := verify.ValidKeyOrCert(inBytes); err != nil {
+		Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("provided public key is not valid; error: %v", err))
+	}
+	return pubKeyFilePath
+}
+
+//Verify private key file format
+func verifyPrivateKeyFormat(keyFile string) {
+	//import github.com/open-horizon/rsapss-tool/sign
+	msgPrinter := i18n.GetMessagePrinter()
+	msgPrinter.Printf("Checking private key file format ... ")
+	msgPrinter.Println()
+
+	if _, err := sign.ReadPrivateKey(keyFile); err != nil {
+		Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("provided private key is not valid; error: %v", err))
+	}
+}
+
 // get the default private or public key file name
 func GetDefaultSigningKeyFile(isPublic bool) (string, error) {
 	// we have to use $HOME for now because os/user is not implemented on some plateforms
@@ -1315,10 +1346,12 @@ func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, string) {
 	privKeyFilePath_tmp := WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
 	privKeyFilePath = VerifySigningKeyInput(*privKeyFilePath_tmp, false)
 
+	if privKeyFilePath != "" {
+		verifyPrivateKeyFormat(privKeyFilePath)
+	}
 	// get default public key
 	if defaultPublicKey {
-		pubKeyFilePath_tmp := WithDefaultEnvVar(&pubKeyFilePath, "HZN_PUBLIC_KEY_FILE")
-		pubKeyFilePath = VerifySigningKeyInput(*pubKeyFilePath_tmp, true)
+		pubKeyFilePath = GetAndVerifyPublicKey(pubKeyFilePath)
 	}
 	return privKeyFilePath, pubKeyFilePath
 }
