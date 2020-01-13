@@ -213,15 +213,19 @@ function validate_number_int() {
 # set HZN_EXCHANGE_PATTERN to a pattern set in the exchange
 function set_pattern_from_exchange(){
 	log_debug "set_pattern_from_exchange() begin"
-        if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
-        	HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
-	fi
-	EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH )
-	if [[ ! "$EXCH_OUTPUT" == "" ]]; then
-		EXCH_PATTERN=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].pattern')
-		if [[ ! "$EXCH_PATTERN" == "\"\"" ]]; then
-        		HZN_EXCHANGE_PATTERN=$(echo "$EXCH_PATTERN" | sed 's/"//g' )
+	if [[ "$NODE_ID" != "" ]]; then
+        	if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
+        		HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
 		fi
+		EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH )
+		if [[ ! "$EXCH_OUTPUT" == "" ]]; then
+			EXCH_PATTERN=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].pattern')
+			if [[ ! "$EXCH_PATTERN" == "\"\"" ]]; then
+        			HZN_EXCHANGE_PATTERN=$(echo "$EXCH_PATTERN" | sed 's/"//g' )
+			fi
+		fi
+	else
+		log_notify "Node id not set. Skipping finding node pattern in the exchange."
 	fi
 	log_debug "set_pattern_from_exchange() end"
 }
@@ -229,13 +233,17 @@ function set_pattern_from_exchange(){
 # create a file for HZN_NODE_POLICY to point to containing the node policy found in the exchange
 function set_policy_from_exchange(){
 	log_debug "set_policy_from_exchange() begin"
-	if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
-		HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
-	fi
-	EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH)
-	if [[ $EXCH_POLICY != "" ]]; then
-		echo $EXCH_POLICY > exchange-node-policy.json
-		HZN_NODE_POLICY="exchange-node-policy.json"
+	if [[ "$NODE_ID" != "" ]]; then
+		if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
+			HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
+		fi
+		EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH)
+		if [[ $EXCH_POLICY != "" ]]; then
+			echo $EXCH_POLICY > exchange-node-policy.json
+			HZN_NODE_POLICY="exchange-node-policy.json"
+		fi
+	else
+		log_notify "Node id not set. Skipping finding node policy in the exchange."
 	fi
 	log_debug "set_policy_from_exchange() end"
 }
@@ -1232,9 +1240,6 @@ function find_node_id() {
 		else
 			NODE_ID=$(echo $ID_LINE | cut -d "," -f 2)
 		fi
-	else
-		log_notify "Node id mapping file $NODE_ID_MAPPING_FILE does not exist."
-		exit 1
 	fi
 	log_debug "finished find_node_id"
 }
