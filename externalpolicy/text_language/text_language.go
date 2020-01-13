@@ -236,24 +236,24 @@ func getLexer() lexer.Definition {
 	  digit = "0"…"9" .
 	  alpha = "a"…"z" | "A"…"Z" .
 
-	  AndOp = whitespace ("AND" | "&&") whitespace .
-	  OrOp = whitespace ("OR" | "||") whitespace .
+	  AndOp = whitespace {whitespace} ("AND" | "&&") whitespace {whitespace} .
+	  OrOp = whitespace {whitespace} ("OR" | "||") whitespace {whitespace} .
 
-		OpComp =  [whitespace] ( ["="] (">" | "<") ["="] ) [whitespace] .
-		OpIn =  [whitespace] "in" [whitespace] .
-	  OpEq =  [whitespace]  ( "!=" | "="["="] )  [whitespace] .
+		OpComp =  {whitespace} ( ["="] (">" | "<") ["="] ) {whitespace} .
+		OpIn =  {whitespace} "in" {whitespace} .
+	  OpEq =  {whitespace}  ( "!=" | "="["="] )  {whitespace} .
 
-	  VersRange = [whitespace]  ( "(" | "[" )  vers [whitespace]  "," [whitespace]  (vers | "INFINITY")  ("]" | ")").
-		Vers = [whitespace]  vers .
-	  Num = [whitespace] ["-"] digit {digit} ["." {digit}] .
+	  VersRange = {whitespace}  ( "(" | "[" )  vers {whitespace}  "," {whitespace}  (vers | "INFINITY")  ("]" | ")").
+		Vers = {whitespace}  vers .
+	  Num = {whitespace} ["-"] digit {digit} ["." {digit}] .
 	  whitespace = "\n" | "\r" | "\t" | " " .
 	  OpenParen = "(" .
 	  CloseParen = ")" .
 
 
-	  Str =  [whitespace] (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .
-	  QuoteStr = [whitespace] "\x22" (alphanumeric  | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | " " | "\t") {alphanumeric | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | " " | "\t" } "\x22" .
-		ListStr = [whitespace] "\x22" (alphanumeric  | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | "," | " " | "\t") {alphanumeric | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | "," | " " | "\t" } "\x22" .
+	  Str =  {whitespace} (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .
+	  QuoteStr = {whitespace} "\x22" (alphanumeric  | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | " " | "\t") {alphanumeric | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | " " | "\t" } "\x22" .
+		ListStr = {whitespace} "\x22" (alphanumeric  | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | "," | " " | "\t") {alphanumeric | "_" | "-" |  "/" | "!" | "?" | "+" | "~" | "." | "'" | "," | " " | "\t" } "\x22" .
 
 
 	  Unused = digit .`))
