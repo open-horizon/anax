@@ -64,56 +64,58 @@ func Test_invalid_simple1(t *testing.T) {
 	invalid_control_operator := `{"nand":[{"name":"prop1", "value":"val1"}]}`
 	if rp = create_RP(invalid_control_operator, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_operator)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_operator)
+		} else {
+			t.Errorf("New Error: %v", err)
 		}
 	}
 
 	single_property := `{"name":"prop1", "value":"val1"}`
 	if rp = create_RP(single_property, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", single_property)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", single_property)
 		}
 	}
 
 	invalid_control_value := `{"and":{"name":"prop1", "value":"val1"}}`
 	if rp = create_RP(invalid_control_value, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_value)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_value)
 		}
 	}
 
 	invalid_control_value2 := `{"and":[{"name2":"prop1", "value":"val1"} ]}`
 	if rp = create_RP(invalid_control_value2, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_value2)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_value2)
 		}
 	}
 
 	invalid_control_value3 := `{"and":[{"name":"prop1", "value2":"val1"} ]}`
 	if rp = create_RP(invalid_control_value3, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_value3)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_value3)
 		}
 	}
 
 	invalid_control_value4 := `{"and":[{"name":"prop1"} ]}`
 	if rp = create_RP(invalid_control_value4, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_value4)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_value4)
 		}
 	}
 
 	invalid_control_value5 := `{"and":[{"value":"val1"} ]}`
 	if rp = create_RP(invalid_control_value5, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_value5)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_value5)
 		}
 	}
 
 	invalid_control_value6 := `{"and":[{"name":"prop1", "value":"val1", "op":"a"}]}`
 	if rp = create_RP(invalid_control_value6, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
-			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.\n", invalid_control_value6)
+			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_value6)
 		}
 	}
 }
@@ -293,7 +295,7 @@ func Test_not_satisfy_simple1(t *testing.T) {
 	if rp = create_RP(simple_and, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_and)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, simple_and)
 			}
 		}
 	}
@@ -304,7 +306,7 @@ func Test_not_satisfy_simple1(t *testing.T) {
 	if rp = create_RP(simple_and, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_and)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, simple_and)
 			}
 		}
 	}
@@ -321,7 +323,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_and, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_and)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, simple_and)
 			}
 		}
 	}
@@ -332,7 +334,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(two_prop_and, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_and)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_and)
 			}
 		}
 	}
@@ -343,7 +345,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, simple_or)
 			}
 		}
 	}
@@ -354,7 +356,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(two_prop_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -365,7 +367,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -376,7 +378,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -387,7 +389,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -396,7 +398,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -405,7 +407,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -414,7 +416,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -423,7 +425,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -432,7 +434,7 @@ func Test_not_satisfy_simple2(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -449,7 +451,7 @@ func Test_not_satisfy_multiple1(t *testing.T) {
 	if rp = create_RP(simple_and, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_and)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, simple_and)
 			}
 		}
 	}
@@ -460,7 +462,7 @@ func Test_not_satisfy_multiple1(t *testing.T) {
 	if rp = create_RP(two_prop_and, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_and)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_and)
 			}
 		}
 	}
@@ -471,7 +473,7 @@ func Test_not_satisfy_multiple1(t *testing.T) {
 	if rp = create_RP(simple_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, simple_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, simple_or)
 			}
 		}
 	}
@@ -482,7 +484,7 @@ func Test_not_satisfy_multiple1(t *testing.T) {
 	if rp = create_RP(two_prop_or, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, two_prop_or)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, two_prop_or)
 			}
 		}
 	}
@@ -544,7 +546,7 @@ func Test_not_satisfy_complex1(t *testing.T) {
 	if rp = create_RP(ex, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, ex)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, ex)
 			}
 		}
 	}
@@ -554,7 +556,7 @@ func Test_not_satisfy_complex1(t *testing.T) {
 	if rp = create_RP(ex, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, ex)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, ex)
 			}
 		}
 	}
@@ -564,7 +566,7 @@ func Test_not_satisfy_complex1(t *testing.T) {
 	if rp = create_RP(ex, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, ex)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, ex)
 			}
 		}
 	}
@@ -574,7 +576,7 @@ func Test_not_satisfy_complex1(t *testing.T) {
 	if rp = create_RP(ex, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, ex)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, ex)
 			}
 		}
 	}
@@ -584,7 +586,7 @@ func Test_not_satisfy_complex1(t *testing.T) {
 	if rp = create_RP(ex, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, ex)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, ex)
 			}
 		}
 	}
@@ -594,7 +596,7 @@ func Test_not_satisfy_complex1(t *testing.T) {
 	if rp = create_RP(ex, t); rp != nil {
 		if pa = create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err == nil {
-				t.Errorf("Error: %v should not satisfy %v, but it did.\n", prop_list, ex)
+				t.Errorf("Error: %v should not satisfy %v, but it did.", prop_list, ex)
 			}
 		}
 	}
@@ -611,7 +613,7 @@ func Test_merge1(t *testing.T) {
 	if rp1 = create_RP(simple1, t); rp1 != nil {
 		if rp2 = create_RP(simple2, t); rp2 != nil {
 			if rp3 := rp1.Merge(rp2); rp3 == nil {
-				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+				t.Errorf("Error: Merged RequiredProperty expression not returned.")
 			} else {
 				var pa *[]Property
 				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"},{"name":"prop3", "value":"val3"},{"name":"prop4", "value":"val4"}]`
@@ -636,9 +638,9 @@ func Test_merge2(t *testing.T) {
 	if rp1 = create_RP(simple1, t); rp1 != nil {
 		if rp2 = create_RP(simple2, t); rp2 != nil {
 			if rp3 := rp1.Merge(rp2); rp3 == nil {
-				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+				t.Errorf("Error: Merged RequiredProperty expression not returned.")
 			} else if len(*rp3) != 0 {
-				t.Errorf("Error: Merged RequiredProperty should be empty, is %v.\n", *rp3)
+				t.Errorf("Error: Merged RequiredProperty should be empty, is %v.", *rp3)
 			}
 		}
 	}
@@ -654,9 +656,9 @@ func Test_merge3(t *testing.T) {
 	if rp1 = create_RP(simple1, t); rp1 != nil {
 		if rp2 = create_RP(simple2, t); rp2 != nil {
 			if rp3 := rp1.Merge(rp2); rp3 == nil {
-				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+				t.Errorf("Error: Merged RequiredProperty expression not returned.")
 			} else if len(*rp3) != 1 {
-				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.\n", len(*rp3))
+				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.", len(*rp3))
 			} else {
 				var pa *[]Property
 				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]`
@@ -681,9 +683,9 @@ func Test_merge4(t *testing.T) {
 	if rp1 = create_RP(simple1, t); rp1 != nil {
 		if rp2 = create_RP(simple2, t); rp2 != nil {
 			if rp3 := rp1.Merge(rp2); rp3 == nil {
-				t.Errorf("Error: Merged RequiredProperty expression not returned.\n")
+				t.Errorf("Error: Merged RequiredProperty expression not returned.")
 			} else if len(*rp3) != 1 {
-				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.\n", len(*rp3))
+				t.Errorf("Error: Merged RequiredProperty should have 1 element, but it has %v.", len(*rp3))
 			} else {
 				var pa *[]Property
 				prop_list := `[{"name":"prop1", "value":"val1"},{"name":"prop2", "value":"val2"}]`
@@ -705,7 +707,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -716,7 +718,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -727,7 +729,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -738,7 +740,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -749,7 +751,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -760,7 +762,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -771,7 +773,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
 			if err := rp.IsSatisfiedBy(*pa); err != nil {
-				t.Errorf("Error: %v should satisfy %v, but it did not: %v.\n", prop_list, rp_list, err)
+				t.Errorf("Error: %v should satisfy %v, but it did not: %v.", prop_list, rp_list, err)
 			}
 		}
 	}
@@ -787,7 +789,7 @@ func create_RP(jsonString string, t *testing.T) *RequiredProperty {
 	rp := new(RequiredProperty)
 
 	if err := json.Unmarshal([]byte(jsonString), &rp); err != nil {
-		t.Errorf("Error unmarshalling RequiredProperty json string: %v error:%v\n", jsonString, err)
+		t.Errorf("Error unmarshalling RequiredProperty json string: %v error:%v", jsonString, err)
 		return nil
 	} else {
 		return rp
@@ -801,7 +803,7 @@ func create_property_list(jsonString string, t *testing.T) *[]Property {
 	pa := make([]Property, 0, 10)
 
 	if err := json.Unmarshal([]byte(jsonString), &pa); err != nil {
-		t.Errorf("Error unmarshalling Property json string: %v error:%v\n", jsonString, err)
+		t.Errorf("Error unmarshalling Property json string: %v error:%v", jsonString, err)
 		return nil
 	} else {
 		return &pa

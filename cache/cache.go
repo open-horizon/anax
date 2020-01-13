@@ -1,7 +1,6 @@
 package cache
 
-import (
-)
+import ()
 
 type Cache interface {
 	Get(key string) interface{}
