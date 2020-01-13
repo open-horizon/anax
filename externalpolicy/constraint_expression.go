@@ -142,27 +142,27 @@ func RequiredPropertyFromConstraint(extConstraint *ConstraintExpression) (*Requi
 		// Create a new Required Property structure and initialize it with a top level OR followed by a top level AND. This will allow us
 		// to drop expressions into the structure as they come in through the GetNextExpression function.
 
-		allPropArray, _, err = parseConstraintExpression(remainder, allPropArray, handler)
+		newPropArray, _, err := parseConstraintExpression(remainder, handler)
 		if err != nil {
 			return nil, err
 		}
-
-		allRP.Initialize(&map[string]interface{}{
-			OP_AND: allPropArray,
-		})
+		allPropArray = append(allPropArray, newPropArray)
 	}
+	allRP.Initialize(&map[string]interface{}{
+		OP_AND: allPropArray,
+	})
 	return allRP, nil
 }
 
 // parse a single constraint expression. This function is called recursively to handle parenthetical expressions
-func parseConstraintExpression(constraint string, allPropArray []interface{}, handler plugin_registry.ConstraintLanguagePlugin) ([]interface{}, string, error) {
+func parseConstraintExpression(constraint string, handler plugin_registry.ConstraintLanguagePlugin) (map[string]interface{}, string, error) {
 	andArray := make([]interface{}, 0)
 	orArray := make([]interface{}, 0)
 
 	var err error
 	var nextProp string
 	var ctrlOp string
-	var subExpr []interface{}
+	var subExpr map[string]interface{}
 
 	for err == nil {
 		// Start of property expression. This case will consume the entire expression.
@@ -182,14 +182,13 @@ func parseConstraintExpression(constraint string, allPropArray []interface{}, ha
 
 		if ctrlOp == "(" {
 			// handle a parenthetical expression as a seperate constraint expression
-			subExpr, constraint, err = parseConstraintExpression(constraint, allPropArray, handler)
+			subExpr, constraint, err = parseConstraintExpression(constraint, handler)
 			if err != nil {
 				return nil, constraint, err
 			}
 
-			for _, elem := range subExpr {
-				andArray = append(andArray, elem)
-			}
+			andArray = append(andArray, subExpr)
+
 			ctrlOp, constraint, err = handler.GetNextOperator(constraint)
 			if err != nil {
 				return nil, constraint, err
@@ -208,8 +207,7 @@ func parseConstraintExpression(constraint string, allPropArray []interface{}, ha
 			}
 			orArray = append(orArray, innerAnd)
 			newRP := map[string]interface{}{OP_OR: orArray}
-			allPropArray = append(allPropArray, newRP)
-			return allPropArray, constraint, nil
+			return newRP, constraint, nil
 		}
 	}
 
