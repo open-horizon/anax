@@ -3,6 +3,546 @@
   "language": "zh-TW",
   "messages": [
     {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "無法建立目錄來存放自行簽署的 MMS API 憑證，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "無法為 MMS API 憑證序號產生亂數，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "無法為 MMS API 憑證產生私密金鑰，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "無法建立 MMS API 憑證，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "無法將 MMS API 憑證寫入檔案 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "無法將 MMS API 憑證編碼至檔案 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "無法關閉 MMS API 憑證檔 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "無法將 MMS API 憑證私密金鑰寫入檔案 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "無法將 MMS API 憑證私密金鑰編碼至檔案 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "限制表示式包含不相符的括弧。"
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
+    },
+    {
+      "id": "Unable to marshal userinput object: {Err}",
+      "translation": "無法配置使用者輸入物件：{Err}"
+    },
+    {
+      "id": "A list of objects, each one containing the user inputs required for a specified service.",
+      "translation": "物件清單，每個物件都包含特定服務所需的使用者輸入。"
+    },
+    {
+      "id": "The horizon org of the specified service.",
+      "translation": "所指定服務的 Horizon 組織。"
+    },
+    {
+      "id": "The unique string used to identify the specified service.",
+      "translation": "用來識別所指定服務的唯一字串。"
+    },
+    {
+      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
+      "translation": "套用這些輸入的服務架構。省略或留為空白表示這些輸入套用於所有架構。"
+    },
+    {
+      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
+      "translation": "套用這些輸入的服務版本。省略或指定 \"[0.0.0,INFINITY)\" 表示這些輸入套用於所有版本。"
+    },
+    {
+      "id": "A list of objects with the names and values for the user inputs used by this service.",
+      "translation": "包含此服務所使用之使用者輸入的名稱和值的物件清單。"
+    },
+    {
+      "id": "Error unmarshaling userInput json file: {Err}",
+      "translation": "解除配置使用者輸入 JSON 檔案時發生錯誤：{Err}"
+    },
+    {
+      "id": "Horizon node user inputs updated.",
+      "translation": "已更新 Horizon 節點使用者輸入。"
+    },
+    {
+      "id": "Are you sure you want to remove the node user inputs?",
+      "translation": "確定要移除節點使用者輸入嗎？"
+    },
+    {
+      "id": "Horizon user inputs removed.",
+      "translation": "已移除 Horizon 使用者輸入。"
+    },
+    {
+      "id": "Are you sure you want to unregister this Horizon node?",
+      "translation": "確定要取消登錄這個 Horizon 節點嗎？"
+    },
+    {
+      "id": "The node is not registered.",
+      "translation": "未登錄節點。"
+    },
+    {
+      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
+      "translation": "正在取消登錄此節點、取消所有合約、停止所有工作量並重新啟動 Horizon..."
+    },
+    {
+      "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
+      "translation": "已取消登錄 Horizon 節點。必要的話，您現在可以重新執行 'hzn register ...'。"
+    },
+    {
+      "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
+      "translation": "警告：節點已取消登錄，但是在取消登錄期間發生錯誤。"
+    },
+    {
+      "id": "The error was: {Err}",
+      "translation": "錯誤為：{Err}"
+    },
+    {
+      "id": "Horizon node delete call successful with return code: {Output}",
+      "translation": "Horizon 節點刪除呼叫成功，回覆碼為：{Output}"
+    },
+    {
+      "id": "Timeout in {TotalWait} seconds ...",
+      "translation": "在 {TotalWait} 秒內逾時 ..."
+    },
+    {
+      "id": "Waiting for Horizon node unregister to complete: {UpdateStatus}",
+      "translation": "正在等待 Horizon 節點完成取消登錄：{UpdateStatus}"
+    },
+    {
+      "id": "{Lenags} agreements remaining to be terminated.",
+      "translation": "{Lenags} 合約保留以待終止。"
+    },
+    {
+      "id": "No Timeout specified ...",
+      "translation": "未指定逾時值 ..."
+    },
+    {
+      "id": "Starting external deep clean ...",
+      "translation": "正在開始外部深度清理 ..."
+    },
+    {
+      "id": "Stopping horizon...",
+      "translation": "正在停止 Horizon..."
+    },
+    {
+      "id": "Deleting local horizon DB...",
+      "translation": "正在刪除本端 Horizon 資料庫..."
+    },
+    {
+      "id": "Deleting service containers...",
+      "translation": "正在刪除服務儲存器..."
+    },
+    {
+      "id": "Starting horizon...",
+      "translation": "正在啟動 Horizon..."
+    },
+    {
+      "id": "Checking the node configuration state...",
+      "translation": "正在檢查節點配置狀態..."
+    },
+    {
+      "id": "Node configuration state: {State}",
+      "translation": "節點配置狀態：{State}"
+    },
+    {
+      "id": "Timeout waiting for node change to 'unconfigured' state.",
+      "translation": "等待節點變更為「未配置」狀態時發生逾時。"
+    },
+    {
+      "id": "unable to list containers, {Err}",
+      "translation": "無法列出儲存器：{Err}"
+    },
+    {
+      "id": "Error deleting container {Names0}. {Err}",
+      "translation": "刪除儲存器 {Names0} 時發生錯誤。{Err}"
+    },
+    {
+      "id": "Removed service container: {Names0}",
+      "translation": "已移除服務儲存器：{Names0}"
+    },
+    {
+      "id": "Error pruning docker networks. {Err}",
+      "translation": "刪改 Docker 網路時發生錯誤。{Err}"
+    },
+    {
+      "id": "[verbose] {M}",
+      "translation": "[verbose] {M}"
+    },
+    {
+      "id": "Error: {Msg}",
+      "translation": "錯誤：{Msg}"
+    },
+    {
+      "id": "Warning: {Msg}",
+      "translation": "警告：{Msg}"
+    },
+    {
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "translation": "無法解除配置 {ErrMsg} 中的位元組：{Err}"
+    },
+    {
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+      "translation": "無法解除配置 {ErrMsg} 中的資料類型：{Err}"
+    },
+    {
+      "id": "problem testing api key match: {Err}",
+      "translation": "測試 API 金鑰符合時發生問題：{Err}"
+    },
+    {
+      "id": "Using API key",
+      "translation": "使用 API 金鑰"
+    },
+    {
+      "id": "unable to create docker client: {Err}",
+      "translation": "無法建立 Docker 用戶端：{Err}"
+    },
+    {
+      "id": "docker auth domainName: {DomainName}",
+      "translation": "Docker 授權網域名稱：{DomainName}"
+    },
+    {
+      "id": "unable to find docker credentials for {Domain}",
+      "translation": "找不到 {Domain} 的 Docker 認證"
+    },
+    {
+      "id": "Pushing {Repository}:{Tag}...",
+      "translation": "正在推送 {Repository}:{Tag}..."
+    },
+    {
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "translation": "無法從 ~/.docker/config.json 中獲取 Docker 認證：{Err}。如果映像檔登錄為私密，以為映像檔登錄提供認證。"
+    },
+    {
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+      "translation": "無法推送 Docker 映像檔 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "could not find the image digest in the docker push output",
+      "translation": "在 Docker 推送輸出中找不到映像檔摘要"
+    },
+    {
+      "id": "Pulling {Repository}:{Tag}...",
+      "translation": "正在擷取 {Repository}:{Tag}..."
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "translation": "無法擷取 Docker 映像檔 {Repository____tag}。找不到 Docker 認證。如果映像檔登錄為私密，則您可能需要執行 'docker login ...'。錯誤為：{Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+      "translation": "無法擷取 Docker 映像檔 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "the id can not contain more than 1 '/'",
+      "translation": "ID 不能包含多個 '/'"
+    },
+    {
+      "id": "reading stdin failed: {Err}",
+      "translation": "讀取 stdin 失敗：{Err}"
+    },
+    {
+      "id": "reading {FilePath} failed: {Err}",
+      "translation": "讀取 {FilePath} 失敗：{Err}"
+    },
+    {
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "translation": "警告：環境變數 '{EnvVarName}' 在輸入檔中參照，但在環境中並未定義。"
+    },
+    {
+      "id": "Error reading input, error {Err}",
+      "translation": "讀取輸入時發生錯誤：{Err}"
+    },
+    {
+      "id": "Exiting.",
+      "translation": "結束中。"
+    },
+    {
+      "id": "Error reading HTTP response, error {Err}",
+      "translation": "讀取 HTTP 回應時發生錯誤，錯誤為：{Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。請執行 'systemctl status horizon' 以檢查 Horizon 是否在執行中。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。特定的錯誤為：{Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。可能是與該埠相關聯的 ssh 通道已關閉。或者可能是該通道另一端的 Horizon 代理程式已關閉。特定的錯誤為：{Err}"
+    },
+    {
+      "id": "{ApiMsg} new request failed: {Err}",
+      "translation": "{ApiMsg} 新建要求失敗：{Err}"
+    },
+    {
+      "id": "HTTP code: {HttpCode}",
+      "translation": "HTTP 代碼：{HttpCode}"
+    },
+    {
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼不正確：{HttpCode}"
+    },
+    {
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼不正確：{HttpCode}"
+    },
+    {
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+      "translation": "無法讀取 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+      "translation": "無法讀取 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "無法解除配置 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "無法解除配置 {ApiMsg} 中的主體回應：{Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確：{Body}"
+    },
+    {
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+      "translation": "無法配置 {ApiMsg} 的主體：{Err}"
+    },
+    {
+      "id": "Failed to unmarshal bytes. {Err}",
+      "translation": "無法解除配置位元組。{Err}"
+    },
+    {
+      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "從 {ANAXOVERWRITEFILE} 取得 {OldMgmtHubCertPath} 時發生錯誤：{Err}"
+    },
+    {
+      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "translation": "讀取 ICP 憑證檔 {IcpCertPath} 時發現錯誤：{Err}"
+    },
+    {
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_EXCHANGE_URL 時發生錯誤。{Err}"
+    },
+    {
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "translation": "從 {ANAXCONFIGFILE} 中獲取 ExchangeUrl 時發生錯誤。{Err}"
+    },
+    {
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "translation": "未設定 HZN_EXCHANGE_URL，請從節點上的 Horizon 代理程式配置中獲取。"
+    },
+    {
+      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "無法從環境變數 HZN_EXCHANGE_URL 或 Horizon 代理程式中獲取 Exchange URL"
+    },
+    {
+      "id": "The exchange url: {ExchUrl}",
+      "translation": "Exchange URL：{ExchUrl}"
+    },
+    {
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_FSS_CSSURL 時發生錯誤。{Err}"
+    },
+    {
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "translation": "從 {ANAXCONFIGFILE} 中獲取模型管理服務 URL 時發生錯誤。{Err}"
+    },
+    {
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "translation": "未設定 HZN_FSS_CSSURL，請從節點上的 Horizon 代理程式配置中獲取。"
+    },
+    {
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "translation": "無法從環境變數 HZN_FSS_CSSURL 或 Horizon 代理程式中獲取模型管理服務 URL"
+    },
+    {
+      "id": "The model management service url: {MmsUrl}",
+      "translation": "模型管理服務 URL：{MmsUrl}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "translation": "無法連接至 Horizon {HorizonService} REST API 以執行 {ApiMethod}。將 {ServiceEnvVarName} 設為使用 {Article} {HorizonService_1} 而不是目前針對 Horizon 代理程式配置的服務。特定的錯誤為：{Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "translation": "無法連接至 Horizon {HorizonService} REST API 以執行 {ApiMethod}。可能是未正確設定 {ServiceEnvVarName}？或者，未將 {ServiceEnvVarName_1} 設定為使用針對 Horizon 代理程式配置的 {HorizonService_1}。特定的錯誤為：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "translation": "無法配置 {ApiMsg} 的 Exchange 主體：{Err}"
+    },
+    {
+      "id": "unable to open object file {Name}: {Err}",
+      "translation": "無法開啟物件檔 {Name}：{Err}"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}。HTTP 狀態：{Httpstatus}。將重試。"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}。HTTP 狀態：{Httpstatus}。"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確，輸出：{StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "無法解除配置 {ApiMsg} 中的 Exchange 主體回應：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "無法配置 {ApiMsg} 中的 Exchange 輸出：{Err}"
+    },
+    {
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "translation": "無法從 {ApiMsg} 中讀取 Exchange 主體回應：{Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確：{Code}，{Msg}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確"
+    },
+    {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "translation": "必須使用下列其中一項指定 Exchange 鑑別：-u 旗標、-n 旗標、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "無法取得檔案 {KeyFile} 的絕對路徑。{Err}"
+    },
+    {
+      "id": "{Err}. Please create the signing key.",
+      "translation": "{Err}。請建立簽署金鑰。"
+    },
+    {
+      "id": "running: {CmdStr}",
+      "translation": "正在執行：{CmdStr}"
+    },
+    {
+      "id": "did not get a command object",
+      "translation": "未取得指令物件"
+    },
+    {
+      "id": "Could not get Stdin pipe, error: {Err}",
+      "translation": "無法取得 stdin 管線，錯誤為：{Err}"
+    },
+    {
+      "id": "could not retrieve output from command, error: {Err}",
+      "translation": "無法從指令中擷取輸出，錯誤為：{Err}"
+    },
+    {
+      "id": "could not retrieve stderr from command, error: {Err}",
+      "translation": "無法從指令中擷取 stderr，錯誤為：{Err}"
+    },
+    {
+      "id": "Unable to start command, error: {Err}",
+      "translation": "無法啟動指令：{Err}"
+    },
+    {
+      "id": "Unable to write to stdin of command, error: {Err}",
+      "translation": "無法寫入指令的 stdin，錯誤為：{Err}"
+    },
+    {
+      "id": "Unable to close stdin, error: {Err}",
+      "translation": "無法關閉 stdin，錯誤為：{Err}"
+    },
+    {
+      "id": "could not read stdout, error: {Err}",
+      "translation": "無法讀取 stdout，錯誤為：{Err}"
+    },
+    {
+      "id": "could not read stderr, error: {Err}",
+      "translation": "無法讀取 stderr，錯誤為：{Err}"
+    },
+    {
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "translation": "指令失敗：{Err}，stderr 為：{StringstderrBytes}"
+    },
+    {
+      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "translation": "無法使用 {HTTPRequestTimeoutOverride} 設定要求逾時值，該值不是有效數字：{EnvTimeout}"
+    },
+    {
+      "id": "HTTP request timeout set to {RequestTimeout} seconds",
+      "translation": "HTTP 要求逾時值設為 {RequestTimeout} 秒"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
+      "translation": "將環境變數 HZN_HTTP_RETRIES {MaxRetriess} 轉換為整數時發生錯誤。{Err1}"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
+      "translation": "將環境變數 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 轉換為整數時發生錯誤。{Err1}"
+    },
+    {
+      "id": "The selection string {V} is not valid.",
+      "translation": "selection 字串 {V} 無效。"
+    },
+    {
+      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
+      "translation": "無法配置 'hzn eventlog list' 輸出：{Err}"
+    },
+    {
+      "id": "Error: event record could not be found",
+      "translation": "錯誤：找不到事件記錄"
+    },
+    {
+      "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
+      "translation": "無法配置 'hzn eventlog surface' 輸出：{Err}"
+    },
+    {
       "id": "Reading configuration file: {ConfigFile}",
       "translation": "正在讀取配置檔：{ConfigFile}"
     },
@@ -65,6 +605,106 @@
     {
       "id": "No project level configuration file found.",
       "translation": "找不到專案層次配置檔。"
+    },
+    {
+      "id": "this command can not be run before running 'hzn register'",
+      "translation": "在執行 'hzn register' 之前無法執行此指令"
+    },
+    {
+      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
+      "translation": "無法配置 '/service/config' 輸出屬性 {Attr}。{Err}"
+    },
+    {
+      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
+      "translation": "無法將 '/service/config' 輸出屬性 {Attr} 轉換為其原始類型。{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn service list' output: {Err}",
+      "translation": "無法配置 'hzn service list' 輸出，錯誤為：{Err}"
+    },
+    {
+      "id": "Displaying log messages for service {SpecRef} with service id {InstanceId}.",
+      "translation": "正在顯示服務 ID為 {InstanceId} 的服務 {SpecRef} 的日誌訊息。"
+    },
+    {
+      "id": "Use ctrl-C to terminate this command.",
+      "translation": "使用 ctrl-C 終止此指令。"
+    },
+    {
+      "id": "Service {RefUrl} is not running on the node.",
+      "translation": "服務 {RefUrl} 未在節點上執行。"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "為指令建立 StdoutPipe 時發生錯誤：{Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "啟動指令時發生錯誤：{Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "等待指令時發生錯誤：{Err}"
+    },
+    {
+      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
+      "translation": "/var/log/syslog 無法開啟或不存在：{Err}"
+    },
+    {
+      "id": "/var/log/syslog could not get stats: {Err}",
+      "translation": "/var/log/syslog 無法取得統計資料：{Err}"
+    },
+    {
+      "id": "Error reading from /var/log/syslog: {Err}",
+      "translation": "從 /var/log/syslog 中讀取時發生錯誤：{Err}"
+    },
+    {
+      "id": "Unable to state /var/log/syslog: {Err}",
+      "translation": "無法指定 /var/log/syslog：{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn service registered' output: {Err}",
+      "translation": "無法配置 'hzn service registered' 輸出，錯誤為：{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn service configstate' output: {Err}",
+      "translation": "無法配置 'hzn service configstate' 輸出，錯誤為：{Err}"
+    },
+    {
+      "id": "all the registered services",
+      "translation": "所有登錄服務"
+    },
+    {
+      "id": "service {ServiceOrg}/{ServiceUrl}",
+      "translation": "服務 {ServiceOrg}/{ServiceUrl}"
+    },
+    {
+      "id": "all the registered services from organization {ServiceOrg}",
+      "translation": "組織 {ServiceOrg} 中的所有登錄服務"
+    },
+    {
+      "id": "Please specify the organization for service {ServiceUrl}.",
+      "translation": "請為服務 {ServiceUrl} 指定組織。"
+    },
+    {
+      "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
+      "translation": "確定要暫停此 Horizon 節點的 {Msgpart} 嗎？"
+    },
+    {
+      "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
+      "translation": "正在暫停 {Msgpart}、正在取消相關合約、正在停止相關服務儲存器..."
+    },
+    {
+      "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
+      "translation": "已順利傳送服務暫停要求，請使用 'hzn agreement' 和 'docker ps' 以確保移除相關的合約和服務儲存器。完成此作業可能需要幾分鐘。"
+    },
+    {
+      "id": "Resuming {Msgpart} ...",
+      "translation": "正在回復 {Msgpart} ..."
+    },
+    {
+      "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
+      "translation": "已順利傳送服務回復要求，請使用 'hzn agreement' 和 'docker ps' 以確保啟動相關的合約和服務儲存器。完成此作業可能需要幾分鐘。"
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
@@ -947,20 +1587,20 @@
       "translation": "檢查原則相容性。"
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange 節點 ID。與 --node-pol 互斥。如果省略，則將使用登錄現行裝置所使用的節點 ID。如果您未在它前面加上組織 ID，則它前面會自動加上 -o 值。"
-    },
-    {
-      "id": "The Horizon exchange business policy ID. Mutually exclusive with --business-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange 商業原則 ID。與 --business-pol 互斥。如果您未在它前面加上組織 ID，則它前面會自動加上節點的組織 ID。"
-    },
-    {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
       "translation": "節點的架構。未指定 -n 時需要該架構。如果省略，將會檢查商業原則中引用的所有架構服務的相容性。"
     },
     {
+      "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 節點 ID。與 --node-pol 互斥。如果省略，則將使用登錄現行裝置所使用的節點 ID。如果您未在它前面加上組織 ID，則它前面會自動加上 -o 值。"
+    },
+    {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
       "translation": "包含節點原則的 JSON 輸入檔名稱。與 -n 互斥。"
+    },
+    {
+      "id": "The Horizon exchange business policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "Horizon Exchange 商業原則 ID。與 -B 互斥。如果您未在它前面加上組織 ID，則它前面會自動加上節點的組織 ID。"
     },
     {
       "id": "The JSON input file name containing the business policy. Mutually exclusive with -b.",
@@ -975,20 +1615,36 @@
       "translation": "請檢查使用者輸入相容性。"
     },
     {
-      "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Horizon Exchange 節點 ID。與 --node-ui 互斥。如果省略，則將使用登錄現行裝置所使用的節點 ID。如果您未在它前面加上組織 ID，則它前面會自動加上 -o 值。"
+      "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.",
+      "translation": "節點的架構。未指定 -n 時需要該架構。如果省略，將會檢查商業原則或型樣中引用的所有架構服務的相容性。"
     },
     {
-      "id": "The architecture of the node. It is required when -n is not specified is specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
-      "translation": "節點的架構。未指定 -n 時需要該架構。如果省略，將會檢查商業原則中引用的所有架構服務的相容性。"
+      "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
+      "translation": "Horizon Exchange 節點 ID。與 --node-ui 互斥。如果省略，則將使用登錄現行裝置所使用的節點 ID。如果您未在它前面加上組織 ID，則它前面會自動加上 -o 值。"
     },
     {
       "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
       "translation": "包含節點使用者輸入的 JSON 輸入檔名稱。與 -n 互斥。"
     },
     {
-      "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.",
-      "translation": "（選用）包含服務定義的 JSON 輸入檔名稱。如果省略，將從 Exchange 擷取商業原則中定義的服務。此旗標可以重複用於指定不同版本的服務。"
+      "id": "The Horizon exchange business policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "Horizon Exchange 商業原則 ID。與 -B、-p 及 -P 互斥。如果您未在它前面加上組織 ID，則它前面會自動加上節點的組織 ID。"
+    },
+    {
+      "id": "The JSON input file name containing the business policy. Mutually exclusive with -b, -p and -P.",
+      "translation": "包含商業原則的 JSON 輸入檔名稱。與 -b、-p 及 -P 互斥。"
+    },
+    {
+      "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.",
+      "translation": "（選用）包含服務定義的 JSON 輸入檔名稱。如果省略，將從 Exchange 擷取商業原則或型樣中定義的服務。此旗標可以重複用於指定不同版本的服務。"
+    },
+    {
+      "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "Horizon Exchange 型樣 ID。與 -P、-b 及 -B 互斥。如果您未在它前面加上組織 ID，則它前面會自動加上節點的組織 ID。"
+    },
+    {
+      "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.",
+      "translation": "包含型樣的 JSON 輸入檔名稱。與 -p、-b 及 -B 互斥。"
     },
     {
       "id": "Check all compatibilities for a deployment.",
@@ -997,6 +1653,22 @@
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "translation": "Horizon Exchange 節點 ID。與 --node-pol 和 --node-ui 互斥。如果省略，則將使用登錄現行裝置所使用的節點 ID。如果您未在它前面加上組織 ID，則它前面會自動加上 -o 值。"
+    },
+    {
+      "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
+      "translation": "包含節點原則的 JSON 輸入檔名稱。與 -n、-p 及 -P 互斥。"
+    },
+    {
+      "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.",
+      "translation": "（選用）包含服務原則的 JSON 輸入檔名稱。與 -p 及 -P 互斥。如果省略，則將從 Exchange 擷取商業原則中所定義服務的服務原則。"
+    },
+    {
+      "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
+      "translation": "Horizon Exchange 型樣 ID。與 -P、-b、-B、--node-pol 及 --service-pol 互斥。如果您未在它前面加上組織 ID，則它前面會自動加上節點的組織 ID。"
+    },
+    {
+      "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
+      "translation": "包含型樣的 JSON 輸入檔名稱。與 -p、-b、-B、--node-pol 及 --service-pol 互斥。"
     },
     {
       "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
@@ -1523,100 +2195,252 @@
       "translation": "必須使用 -u 旗標或 HZN_EXCHANGE_USER_AUTH 來指定 Exchange 使用者鑑別"
     },
     {
-      "id": "AllCompatible called",
-      "translation": "已呼叫 AllCompatible"
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "剖析 selections {Form} 時發生錯誤。{Err}"
     },
     {
-      "id": "Cannot use the local node because it is not registered.",
-      "translation": "無法使用本端節點，因為它未登錄。"
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "取得輸出的 {Resource} 時發生錯誤，錯誤為：{Err}"
     },
     {
-      "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
-      "translation": "-a 指定的節點架構 {InputArch} 不符合本端節點 {Arch} 的架構。"
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}",
-      "translation": "無法解除配置商業原則 JSON 輸入檔 {BusinessPolFile}：{Err}"
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。輸入主體無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "Business policy not found for {PolOrg}/{PolId}",
-      "translation": "找不到 {PolOrg}/{PolId} 的商業原則"
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點更新的輸入時發生錯誤。輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "無法解除配置 JSON 輸入檔 {FilePath}：{Err}"
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點原則的輸入時發生錯誤。輸入主體無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "Neither node id nor node policy is not specified. Getting node policy from the local node.",
-      "translation": "未指定節點 ID 和節點原則。正在從本端節點取得節點原則。"
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。輸入主體無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "Using compatibility checking input: {PolicyCheckInput}",
-      "translation": "正在使用相容性檢查輸入：{PolicyCheckInput}"
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。輸入主體不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
-      "translation": "無法配置 'hzn policy compatible' 輸出：{Err}"
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點使用者輸入的輸入時發生錯誤。輸入主體無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "-n and --node-pol are mutually exclusive.",
-      "translation": "-n 和 --node-pol 互斥。"
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "在節點 {Arg_1} 的節點配置/登錄中發生錯誤。{Arg_2}"
     },
     {
-      "id": "-b and --business-pol are mutually exclusive.",
-      "translation": "-b 和 --business-pol 互斥。"
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "更新節點 {Arg_1} 時發生錯誤。{Arg_2}"
     },
     {
-      "id": "Either -b or --business-pol must be specified.",
-      "translation": "必須指定 -b 或 --business-pol。"
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "在節點取消登錄中發生錯誤。{Arg_1}"
     },
     {
-      "id": "Please specify the exchange credential with -u for querying the node, business policy and service policy.",
-      "translation": "請使用 -u 指定 Exchange 認證來查詢節點、商業原則和服務原則。"
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "驗證 Exchange 版本時發生錯誤。錯誤為：{Arg_1}"
     },
     {
-      "id": "Please specify the organization with -o for the exchange credentail: {CredToUse}.",
-      "translation": "請使用 -o 為 Exchange 認證 {CredToUse} 指定組織。"
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "建立或取代節點原則時發生錯誤。{Arg_1}"
     },
     {
-      "id": "Error unmarshaling service json file {FilePath}: {Err}",
-      "translation": "解除配置 JSON 檔案 {FilePath} 時發生錯誤：{Err}"
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "修補節點原則時發生錯誤。{Arg_1}"
     },
     {
-      "id": "Error unmarshaling userInput json file: {Err}",
-      "translation": "解除配置使用者輸入 JSON 檔案時發生錯誤：{Err}"
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "刪除節點原則時發生錯誤。{Arg_1}"
     },
     {
-      "id": "Neither node id nor node user input file is not specified. Getting node user input from the local node.",
-      "translation": "未指定節點 ID 和節點使用者輸入檔。正在從本端節點取得節點使用者輸入。"
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "更新節點使用者輸入時發生錯誤。{Arg_1}"
     },
     {
-      "id": "URL must be specified in the service definition.",
-      "translation": "必須在服務定義中指定 URL。"
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "修補節點使用者輸入時發生錯誤。{Arg_1}"
     },
     {
-      "id": "Version must be specified in the service definition.",
-      "translation": "必須在服務定義中指定版本。"
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "刪除節點使用者輸入時發生錯誤。{Arg_1}"
     },
     {
-      "id": "Invalide version format: {Version}.",
-      "translation": "版本格式 {Version} 無效。"
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "啟動節點 {Arg_1} 的節點配置/登錄。"
     },
     {
-      "id": "Arch must be specified in the service definition.",
-      "translation": "必須在服務定義中指定架構。"
+      "id": "Start updating node {Arg_1}.",
+      "translation": "開始更新節點 {Arg_1}。"
     },
     {
-      "id": "-n and --node-ui are mutually exclusive.",
-      "translation": "-n 和 --node-ui 互斥。"
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "完成 {Arg_1} 的節點更新。"
     },
     {
-      "id": "Error in service file {Sfile}. {Err}",
-      "translation": "服務檔 {Sfile} 中發生錯誤。{Err}"
+      "id": "Start node unregistration.",
+      "translation": "啟動節點取消登錄。"
     },
     {
-      "id": "The service organization {Sorg} from service file {SvcDefFilesi} does not match the service organization {Org} from business policy file {BusinessPolFile}.",
-      "translation": "服務檔 {SvcDefFilesi} 中的服務組織 {Sorg} 不符合商業原則檔案 {BusinessPolFile} 中的服務組織 {Org}。"
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "完成節點 {Arg_1} 的節點取消登錄。"
+    },
+    {
+      "id": "Error unregistring the node. The node is not found from the database.",
+      "translation": "取消登錄節點時發生錯誤。在資料庫中找不到該節點。"
+    },
+    {
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "取消登錄節點時發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能進行取消配置。"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 removeNode 而言不正確"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 deepClean 而言不正確"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 block 而言不正確"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "無法從資料庫中讀取節點物件，錯誤為：{Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "在資料庫中儲存新的節點配置狀態 (unconfiguring) 時發生錯誤：{Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "節點配置中發生錯誤。在資料庫中找不到該節點。"
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "節點配置中發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能將狀態變更為 {Arg_1}。"
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "不支援將節點狀態從 '{Arg_1}' 轉移為 '{Arg_2}'。"
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "無法從本端資料庫取得使用者輸入。{Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "在本端使用者輸入中找不到服務 {Arg_1}/{Arg_2} 的喜好設定，錯誤為：{Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "將新的節點配置狀態儲存至資料庫時發生錯誤：{Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "完成節點 {Arg_1} 的節點配置/登錄。"
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "在 {Arg_1} 的服務配置中發生錯誤。{Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "取得型樣 {Arg_1} 的服務參照時發生錯誤。{Arg_2}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "新建節點原則：{Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "已刪除節點原則"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "新建節點使用者輸入：{Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "沒有要刪除的節點使用者輸入"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "刪除所有節點使用者輸入"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "開始使用使用者輸入進行 {Arg_1}/{Arg_2} 的服務配置。"
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "開始進行 {Arg_1}/{Arg_2} 的服務自動配置。"
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "完成 {Arg_1}/{Arg_2} 的服務配置。"
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "完成 {Arg_1}/{Arg_2} 的服務自動配置。"
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+      "translation": "變數 {Arg_1} 在 {Arg_2}/{Arg_3} 的服務配置中遺漏。它可能會造成合約格式不正確（如果商業原則不包含遺漏變數的設定）。"
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "配置服務 {Arg_1} 時發生錯誤。{Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "變更服務配置狀態 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "開始將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn status -l' output: {Err}",
+      "translation": "無法配置 'hzn status -l' 輸出：{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn status' output: {Err}",
+      "translation": "無法配置 'hzn status' 輸出：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "相容性錯誤：綱目版本不同，消費者原則：{Version}，生產者原則 {Version_1}"
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "相容性錯誤：節點內容 {Properties} 不滿足限制需求 {Constraints}。基礎錯誤：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "相容性錯誤：內容 {Properties} 不滿足節點限制 {Constraints}。基礎錯誤：{Err}"
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "相容性錯誤：{AgreementProtocols} 與 {AgreementProtocols_1} 之間沒有共用的合約通訊協定。基礎錯誤：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "相容性錯誤：資料驗證必須相容，生產者具有 {DataVerify} 而消費者具有 {DataVerify_1}。"
     },
     {
       "id": "failed to marshal 'exchange agbot list' output: {Err}",
@@ -1657,6 +2481,10 @@
     {
       "id": "failed to marshal 'hzn exchange business listpolicy' output: {Err}",
       "translation": "無法配置 'hzn exchange business listpolicy' 輸出：{Err}"
+    },
+    {
+      "id": "failed to unmarshal json input file {JsonFilePath}: {Err}",
+      "translation": "無法解除配置 JSON 輸入檔 {JsonFilePath}：{Err}"
     },
     {
       "id": "Incorrect business policy format in file {JsonFilePath}: {Err}",
@@ -1787,22 +2615,6 @@
       "translation": "無法配置 'hzn exchange catalog patternlist' 輸出：{Err}"
     },
     {
-      "id": "no service name",
-      "translation": "無服務名稱"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "無法配置 {D} 的主體：{Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
-    },
-    {
       "id": "failed to marshal 'exchange node list' output: {Err}",
       "translation": "無法配置 'exchange node list' 輸出：{Err}"
     },
@@ -1853,34 +2665,6 @@
     {
       "id": "Expecting 1 exchange node, but get {Lennodes} nodes",
       "translation": "預期 1 個 Exchange 節點，但獲得 {Lennodes} 個節點"
-    },
-    {
-      "id": "Pattern {NodePatternString} of the node does not exist for org: {PatOrg}",
-      "translation": "組織 {PatOrg} 的節點的型樣 {NodePatternString} 不存在"
-    },
-    {
-      "id": "Expecting 1 pattern with name {NodePatternString}, but get {Lennodes} patterns",
-      "translation": "預期 1 個名稱為 {NodePatternString} 的型樣，但獲得 {Lennodes} 個型樣"
-    },
-    {
-      "id": "Userinput cannot be set to empty list because some userinputs have no default value from service and pattern",
-      "translation": "使用者輸入不能設為空白清單，因為服務和型樣的部分使用者輸入沒有預設值"
-    },
-    {
-      "id": "{Err}",
-      "translation": "{Err}"
-    },
-    {
-      "id": "ServiceOrgid and ServiceUrl need to be set in userinput",
-      "translation": "必須在使用者輸入中設定 ServiceOrgid 和 ServiceUrl"
-    },
-    {
-      "id": "Unable to validate exchange node userInput, error: {Err}",
-      "translation": "無法驗證 Exchange 節點使用者輸入，發生錯誤 {Err}"
-    },
-    {
-      "id": "validate exchange node/userinput {WarningMessage}",
-      "translation": "驗證 Exchange 節點/使用者輸入 {WarningMessage}"
     },
     {
       "id": "Updating {K} for node {NodeOrg}/{Node} in the Horizon Exchange.",
@@ -1979,88 +2763,20 @@
       "translation": "無法配置 'hzn exchange node listerrors' 輸出：{Err}"
     },
     {
-      "id": "Error: event record could not be found",
-      "translation": "錯誤：找不到事件記錄"
+      "id": "Verifying userInuput with the node pattern {Pattern}.",
+      "translation": "正在使用節點型樣 {Pattern} 驗證 userInuput。"
     },
     {
-      "id": "Start validating userinput {ServiceOrg}, {ServiceUrl}, {ServiceVersionRange}, {ServiceArch}",
-      "translation": "開始驗證使用者輸入 {ServiceOrg}、{ServiceUrl}、{ServiceVersionRange}、{ServiceArch}"
+      "id": "Error varifying the given user input with the node pattern {Pattern}:",
+      "translation": "驗證具有節點型樣 {Pattern} 的給定使用者輸入時發生錯誤："
     },
     {
-      "id": "versionRange {ServiceVersionRange} cannot be converted to a version expression, error {Err}",
-      "translation": "versionRange {ServiceVersionRange} 無法轉換為版本表示式，發生錯誤 {Err}"
+      "id": "Compatible",
+      "translation": "相容"
     },
     {
-      "id": "Failed to compare given userInput with service userInput, error: {Err}",
-      "translation": "無法將給定的使用者輸入與服務使用者輸入進行比較，發生錯誤 {Err}"
-    },
-    {
-      "id": "For service {ServiceOrg} {ServiceUrl} {ServiceArch}, got warning message: {Error}",
-      "translation": "針對服務 {ServiceOrg} {ServiceUrl} {ServiceArch}，收到警告訊息：{Error}"
-    },
-    {
-      "id": "toplevel service does not exist {ServiceOrg}, {ServiceURL}, {ServiceArch}, {TopLevelServiceVersionNumber}",
-      "translation": "{ServiceOrg}、{ServiceURL}、{ServiceArch}、{TopLevelServiceVersionNumber} 不存在頂層服務"
-    },
-    {
-      "id": "{ServiceOrg} {ServiceURL} has userInput that need to be set because they have no default value.",
-      "translation": "必須設定 {ServiceOrg} {ServiceURL} 的使用者輸入，因為它們沒有預設值。"
-    },
-    {
-      "id": "Service {ServiceOrg} {ServiceUrl} {ServiceArch} {Expression} in userInput is not defined in pattern {NodePattern} or its dependent services",
-      "translation": "在型樣 {NodePattern} 或其相依服務中未定義使用者輸入中的服務 {ServiceOrg} {ServiceUrl} {ServiceArch} {Expression}"
-    },
-    {
-      "id": "{WarningMessage}Warning: {Err}",
-      "translation": "{WarningMessage}警告：{Err}"
-    },
-    {
-      "id": "No dependent service for service {Owner}, {URL}, {Arch}, {Version}",
-      "translation": "服務 {Owner}、{URL}、{Arch}、{Version} 沒有相依服務"
-    },
-    {
-      "id": "service does not exist {Org}, {URL}, {Arch}, {DependentServiceVersion}, {DependentServiceSearchVersion}",
-      "translation": "{Org}、{URL}、{Arch}、{DependentServiceVersion}、{DependentServiceSearchVersion} 不存在服務"
-    },
-    {
-      "id": "Service {ServiceOrg}, {ServiceUrl}, {Expression} does not define a dependent service",
-      "translation": "服務 {ServiceOrg}、{ServiceUrl}、{Expression} 未定義相依服務"
-    },
-    {
-      "id": "input version {Version} is not a valid version string",
-      "translation": "輸入版本 {Version} 不是有效的版本字串"
-    },
-    {
-      "id": "Service does not exist for org: {ServiceOrg}, url: {ServiceUrl}, version: {ServiceVersion}, arch: {ServiceArch}",
-      "translation": "組織 {ServiceOrg}、URL {ServiceUrl}、版本 {ServiceVersion}、架構 {ServiceArch} 不存在服務"
-    },
-    {
-      "id": "expecting 1 service for {ServiceUrl} {ServiceVersion} {SearchVersion}, but get {Lenservices} services",
-      "translation": "{ServiceUrl} {ServiceVersion} {SearchVersion} 預期 1 個服務，但獲得 {Lenservices} 個服務"
-    },
-    {
-      "id": "expecting at least 1 service for {ServiceUrl} {ServiceVersion} {SearchVersion}, but get 0 service",
-      "translation": "{ServiceUrl} {ServiceVersion} {SearchVersion} 預期至少 1 個服務，但獲得 0 個服務"
-    },
-    {
-      "id": "version range {ServiceVersion} in error: {Err}",
-      "translation": "版本範圍 {ServiceVersion} 發生錯誤：{Err}"
-    },
-    {
-      "id": "Cannot find service given version range: {ServiceVersion}",
-      "translation": "找不到服務給定的版本範圍：{ServiceVersion}"
-    },
-    {
-      "id": "Error validating the type of userInput variable {PolicyInputName}. error: {Err}",
-      "translation": "驗證使用者輸入變數 {PolicyInputName} 的類型時發生錯誤。錯誤為：{Err}"
-    },
-    {
-      "id": "The following variables are not defined in userInput for service in its highest version: {InputNameNotDefinedInService}",
-      "translation": "在服務的最高版本中，服務的使用者輸入中未定義下列變數：{InputNameNotDefinedInService}"
-    },
-    {
-      "id": "{ServiceInputName} needs to be set in userInput because it has no default value.",
-      "translation": "必須在使用者輸入中設定 {ServiceInputName}，因為它沒有預設值。"
+      "id": "Unable to update the node because of the above error.",
+      "translation": "由於上方的錯誤，無法更新節點。"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -2077,6 +2793,10 @@
     {
       "id": "Pattern {Pattern}/{PatOrg} updated in the Horizon exchange.",
       "translation": "在 Horizon Exchange 中更新了型樣 {Pattern}/{PatOrg}。"
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "無法配置 {D} 的主體：{Err}"
     },
     {
       "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
@@ -2141,10 +2861,6 @@
     {
       "id": "key '{KeyName}' not found",
       "translation": "找不到金鑰 '{KeyName}'"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
     },
     {
       "id": "failed to marshal 'hzn exchange service list' output: {Err}",
@@ -2285,766 +3001,6 @@
     {
       "id": "user '{User}' not found in org {Org}",
       "translation": "在組織 {Org} 中找不到使用者 '{User}'"
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "名稱或組織為空字串。"
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 陣列為空。"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "內容包含無效內容：{Err}"
-    },
-    {
-      "id": "The selection string {V} is not valid.",
-      "translation": "selection 字串 {V} 無效。"
-    },
-    {
-      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
-      "translation": "無法配置 'hzn eventlog list' 輸出：{Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
-      "translation": "無法配置 'hzn eventlog surface' 輸出：{Err}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。{Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。{Arg_2}"
-    },
-    {
-      "id": "failed to marshal 'hzn status -l' output: {Err}",
-      "translation": "無法配置 'hzn status -l' 輸出：{Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn status' output: {Err}",
-      "translation": "無法配置 'hzn status' 輸出：{Err}"
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "內容必須包括名稱及值：{Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "內容 {Name} 的內容類型 {DeclaredType} 無效。容許的內容類型為：版本、字串、整數、布林、浮點數及字串清單。"
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "內容值的類型為 {ActualType}，但預期的類型為 {DeclaredType}"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "內容 {Name} 的值 {Value} 類型不是整數"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "內容 {Name} 的值 {Value} 不是有效字串。請定義類型或將值變更為字串。"
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "值為 {Value} 的內容 {Name} 不是有效的版本字串"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "內容 {Name} 的值類型 {ActualType} 無效"
-    },
-    {
-      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
-      "translation": "檔案 {JsonFilePath} 中的節點原則格式不正確：{Err}"
-    },
-    {
-      "id": "Reading input file {InputFile}...",
-      "translation": "正在讀取輸入檔 {InputFile}..."
-    },
-    {
-      "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
-      "translation": "hzn cli 配置了來自 {ExchangeUrlLocation} 的 Exchange URL {ExchUrlBase}，而 Horizon 代理程式配置了來自 {ExchangeUrlLocationFromAnax} 的 Exchange URL {AnaxExchUrlBase}。hzn 登錄將不適合不相符的交換 URL。"
-    },
-    {
-      "id": "Horizon Exchange base URL: {ExchUrlBase}",
-      "translation": "Horizon Exchange 基本 URL：{ExchUrlBase}"
-    },
-    {
-      "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
-      "translation": "此 Horizon 節點已登錄或正在登錄。如果您想要以其他方式登錄它，請先執行 'hzn unregister'。"
-    },
-    {
-      "id": "Failed to get proper response from the Horizon agent",
-      "translation": "無法從 Horizon 代理程式中取得適當的回應"
-    },
-    {
-      "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
-      "translation": "無法讀取機器序號，發生錯誤：{MsErr}。繼續登錄裝置。"
-    },
-    {
-      "id": "Node ID not specified, using machine serial number {NodeId} as node ID.",
-      "translation": "未指定節點 ID，使用指定的序號 {NodeId} 作為節點 ID。"
-    },
-    {
-      "id": "Node ID not specified, and machine serial number not found, generating random node ID.",
-      "translation": "未指定節點 ID 且找不到機器序號，正在產生隨機節點 ID。"
-    },
-    {
-      "id": "Unable to generate random node id, error: {Err}",
-      "translation": "無法產生隨機節點 ID，發生錯誤 {Err}"
-    },
-    {
-      "id": "Generated random node ID: {NodeId}.",
-      "translation": "已產生隨機節點 ID：{NodeId}。"
-    },
-    {
-      "id": "Using node ID '{NodeId}' from the Horizon agent",
-      "translation": "使用 Horizon 代理程式中的節點 ID '{NodeId}'"
-    },
-    {
-      "id": "could not create a random token",
-      "translation": "無法建立隨機記號"
-    },
-    {
-      "id": "Generated random node token",
-      "translation": "已產生隨機節點記號"
-    },
-    {
-      "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
-      "translation": "在具有指定記號的 Exchange 中不存在節點 '{Org}/{NodeId}'，並且未指定 -u 旗標以提供 Exchange 使用者認證來建立/更新該節點。"
-    },
-    {
-      "id": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it...",
-      "translation": "在具有指定記號的 Exchange 中不存在節點 {Org}/{NodeId}，正在建立/更新該節點..."
-    },
-    {
-      "id": "Node {Org}/{NodeId} exists in the exchange",
-      "translation": "在 Exchange 中存在節點 {Org}/{NodeId}"
-    },
-    {
-      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "translation": "未指定型樣或節點原則。將繼續使用現有的節點原則。"
-    },
-    {
-      "id": "Will proceeed with the given node policy.",
-      "translation": "將繼續使用給定的節點原則。"
-    },
-    {
-      "id": "Pattern {ExchangePattern} defined for the node on the exchange. Will proceeed with this pattern.",
-      "translation": "已在 Exchange 上為節點定義型樣 {ExchangePattern}。將繼續使用此型樣。"
-    },
-    {
-      "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the exchange.",
-      "translation": "無法繼續使用給定的型樣 {Pattern}，因為它與為 Exchange 中節點定義的型樣 {ExchangePattern} 不同。"
-    },
-    {
-      "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
-      "translation": "在 Exchange 中找不到型樣 '{Patorg}/{Patname}'。"
-    },
-    {
-      "id": "Cannot proceed with the given pattern {Pattern} because it does not include any services.",
-      "translation": "無法繼續使用給定的型樣 {Pattern}，因為它不包含任何服務。"
-    },
-    {
-      "id": "Will proceeed with the given pattern {Pattern}.",
-      "translation": "將繼續使用給定的型樣 {Pattern}。"
-    },
-    {
-      "id": "Updating the node policy...",
-      "translation": "正在更新節點原則..."
-    },
-    {
-      "id": "Initializing the Horizon node...",
-      "translation": "正在起始設定 Horizon 節點..."
-    },
-    {
-      "id": "Setting global variables...",
-      "translation": "正在設定廣域變數..."
-    },
-    {
-      "id": "Setting service variables...",
-      "translation": "正在設定服務變數..."
-    },
-    {
-      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "由於 {Matches0}，登錄失敗，請在輸入檔 {InputFile} 中更新服務區段。執行 'hzn unregister'，然後再次執行 'hzn register...'"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "警告：未指定輸入檔。僅當沒有任何服務需要變數集（包括 GPS 座標）時此選項才有效。"
-    },
-    {
-      "id": "Changing Horizon state to configured to register this node with Horizon...",
-      "translation": "正在將 Horizon 狀態變更為已配置以向 Horizon 登錄此節點..."
-    },
-    {
-      "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "{Errstring}。請在輸入檔 {InputFile} 中為服務 {Matches2} 定義變數。執行 'hzn unregister'，然後再次執行 'hzn register...'"
-    },
-    {
-      "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
-      "translation": "{Errstring}。請建立輸入檔，為服務 {Matches2} 定義變數。執行 'hzn unregister'，然後使用 -f 旗標再次執行 'hzn register...' 以指定輸入檔。"
-    },
-    {
-      "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
-      "translation": "已登錄 Horizon 節點。應該很快會開始協議工作量合約。執行 'hzn agreement list' 進行檢視。"
-    },
-    {
-      "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "-o 和 -p 與 <nodeorg> 和 <pattern> 引數互斥。"
-    },
-    {
-      "id": "Please specify the node organization id.",
-      "translation": "請指定節點組織 ID。"
-    },
-    {
-      "id": "invalid version range '{Vr}': {Err}",
-      "translation": "版本範圍 '{Vr}' 無效：{Err}"
-    },
-    {
-      "id": "unable to verify that {Version} is within {VRange}, error {Err}",
-      "translation": "無法驗證 {Version} 是否位於 {VRange} 範圍之內，錯誤為：{Err}"
-    },
-    {
-      "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",
-      "translation": "在 Exchange 相符項中找不到服務：組織={Org}，URL={Url}，架構={Arch}"
-    },
-    {
-      "id": "error comparing version {ServiceshighestKey} with version {Version}. {Err}",
-      "translation": "將版本 {ServiceshighestKey} 與版本 {Version} 比較時發生錯誤。{Err}"
-    },
-    {
-      "id": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}",
-      "translation": "在相符的 Exchange 中找不到服務：組織={Org}，specRef={Url}，版本範圍={VersionRanges}，架構={Arch}"
-    },
-    {
-      "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
-      "translation": "找到：{Org}、{Url}、{Arch}、{VersionRange}"
-    },
-    {
-      "id": "did not find pattern '{PatKey}' as expected",
-      "translation": "找不到預期的型樣 '{PatKey}'"
-    },
-    {
-      "id": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}",
-      "translation": "忽略作為其他架構的服務：{ServiceOrg}、{ServiceURL}、{ServiceArch}"
-    },
-    {
-      "id": "failed to marshal the user input template file: {Err}",
-      "translation": "無法配置使用者輸入範本檔案：{Err}"
-    },
-    {
-      "id": "problem writing the user input template file: {Err}",
-      "translation": "寫入使用者輸入範本檔案時發生問題：{Err}"
-    },
-    {
-      "id": "Wrote {InputFile}",
-      "translation": "已寫入 {InputFile}"
-    },
-    {
-      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
-      "translation": "{Image} 剖析為：網域={Domain}，路徑={Path}，標籤={Tag}"
-    },
-    {
-      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
-      "translation": "警告：無法剖析映像檔路徑 '{Image}'。不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
-    },
-    {
-      "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
-      "translation": "在 'deployment' 欄位中使用 '{NewImage}' 而不是使用 '{Image}'"
-    },
-    {
-      "id": "failed to marshal deployment string {Dep}, error {Err}",
-      "translation": "無法配置部署字串 {Dep}，錯誤為：{Err}"
-    },
-    {
-      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "translation": "使用 {KeyFilePath} 簽署部署字串時發生問題：{Err}"
-    },
-    {
-      "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
-      "translation": "'deployment.services' 下定義的每個服務都必須是 JSON 物件（使用字串作為金鑰）"
-    },
-    {
-      "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
-      "translation": "在 'deployment.services' 之下定義的服務 '{SvcName}' 沒有必要的 'image' 欄位"
-    },
-    {
-      "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
-      "translation": "在 'deployment.services' 之下定義的服務 '{SvcName}' 有未被辨識的欄位 '{K}'。請參閱 https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md"
-    },
-    {
-      "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
-      "translation": "'deployment' 欄位必須包含 'services'欄位，其值必須是 JSON 物件（使用字串作為金鑰）"
-    },
-    {
-      "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
-      "translation": "'deployment' 欄位必須包含原生 Horizon 部署配置或 Helm 部署配置，其值必須是 JSON 物件（使用字串作為金鑰）"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動檔案同步服務，錯誤為：{Sserr}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法取得服務相依關係，錯誤為：{Derr}"
-    },
-    {
-      "id": "Starting dependencies.",
-      "translation": "正在啟動相依關係。"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動服務相依關係，錯誤為：{Perr}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法產生測試合約 ID，錯誤為：{Aerr}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' 無法停止服務相依關係，錯誤為：{Err}"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法停止檔案同步服務，錯誤為：{Sserr}"
-    },
-    {
-      "id": "Stopped service.",
-      "translation": "已停止服務。"
-    },
-    {
-      "id": "must specify exchange credentials to access the model management service.",
-      "translation": "必須指定 Exchange 認證來存取模型管理服務。"
-    },
-    {
-      "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
-      "translation": "--policy/-p 值 {DestPolicy} 無效，--policy/-p 應該為 true 或 false"
-    },
-    {
-      "id": "Invalid --data value: {WithData}, --data should be true or false",
-      "translation": "--data 值 {WithData} 無效，--data 應該為 true 或 false"
-    },
-    {
-      "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
-      "translation": "依 --service、--property 或 --updateTime 過濾時，必須省略 --policy 或將它設為 true"
-    },
-    {
-      "id": "service should be in format service-org/service-name",
-      "translation": "服務格式應該為 service-org/service-name"
-    },
-    {
-      "id": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd",
-      "translation": "updateTime 應該採用 RC3339 格式：yyyy-MM-ddTHH:mm:ssZ 或 yyyy-MM-dd"
-    },
-    {
-      "id": "must specify objectType if set objectId",
-      "translation": "如果設定了 objectId，則必須指定 objectType"
-    },
-    {
-      "id": "must specify destinationType if set destinationId",
-      "translation": "如果設定了 destinationId，則必須指定 destinationType"
-    },
-    {
-      "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
-      "translation": "expirationTimeBefore 應該指定為 'now' 或採用 RC3339 格式 (yyyy-MM-ddTHH:mm:ssZ) 的時間戳記"
-    },
-    {
-      "id": "no objects found in org {Org}",
-      "translation": "在組織 {Org} 中找不到物件"
-    },
-    {
-      "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
-      "translation": "在組織 {Org} 中找不到類型為 '{ObjectType}' 的物件 '{ObjectID}' 的目的地明細"
-    },
-    {
-      "id": "Listing objects in org {Org}:",
-      "translation": "正在列出組織 {Org} 中的物件："
-    },
-    {
-      "id": "Required: A unique identifier of the object.",
-      "translation": "必需：物件的唯一 ID。"
-    },
-    {
-      "id": "Required: The type of the object.",
-      "translation": "必需：物件的類型。"
-    },
-    {
-      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
-      "translation": "必需：物件的組織 ID（一個物件只屬於一個組織）。"
-    },
-    {
-      "id": "The node id (without org prefix) where the object should be placed.",
-      "translation": "應用來放置物件的節點 ID（不含組織字首）。"
-    },
-    {
-      "id": "If omitted the object is sent to all nodes with the same destinationType.",
-      "translation": "省略的話，物件會傳送至具有同一目的地類型的所有節點。"
-    },
-    {
-      "id": "Delete this field when you are using destinationPolicy.",
-      "translation": "在使用目的地原則時刪除此欄位。"
-    },
-    {
-      "id": "The pattern in use by nodes that should receive this object.",
-      "translation": "型樣正由應該接收此物件的節點使用。"
-    },
-    {
-      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
-      "translation": "省略的話（同時省略目的地清單），物件會播送至所有已知節點。"
-    },
-    {
-      "id": "Delete this field when you are using policy.",
-      "translation": "在使用原則時刪除此欄位。"
-    },
-    {
-      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
-      "translation": "作為應接收此物件之 pattern:nodeId 配對陣列的目的地清單。"
-    },
-    {
-      "id": "If provided, destinationType and destinationID must be omitted.",
-      "translation": "提供的話，必須省略目的地類型和目的地 ID。"
-    },
-    {
-      "id": "The policy specification that should be used to distribute this object.",
-      "translation": "應該用來配送此物件的原則規範。"
-    },
-    {
-      "id": "Delete these fields if the target node is using a pattern.",
-      "translation": "當目標節點正在使用型樣時刪除這些欄位。"
-    },
-    {
-      "id": "A list of policy properties that describe the object.",
-      "translation": "說明物件的原則內容清單。"
-    },
-    {
-      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
-      "translation": "有效類型是字串、布林、整數、浮點數、字串清單（以逗點分隔）、版本。"
-    },
-    {
-      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
-      "translation": "如果類型可與值區別（例如，true 不加引號表示布林），則可以省略類型。"
-    },
-    {
-      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "格式為 <property name> <operator> <property value> 的限制項表示式清單，以布林運算子 AND (&&) 或 OR (||) 分隔。"
-    },
-    {
-      "id": "The service(s) that will use this object.",
-      "translation": "將使用此物件的服務。"
-    },
-    {
-      "id": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "設為 '*' 表示任何硬體架構的服務。"
-    },
-    {
-      "id": "A version range.",
-      "translation": "版本範圍。"
-    },
-    {
-      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
-      "translation": "時間戳記/日期表示物件的到期日（系統會自動將它刪除）。應該以 RFC3339 格式提供時間戳記。"
-    },
-    {
-      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
-      "translation": "任意字串值。該值沒有語義解譯。「模型管理系統」不會保留物件的多個版本。"
-    },
-    {
-      "id": "An arbitrary description.",
-      "translation": "任意說明。"
-    },
-    {
-      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
-      "translation": "時間戳記/日期指出何時應自動啟動此物件。應該以 RFC3339 格式提供時間戳記。"
-    },
-    {
-      "id": "must specify exchange credentials to access the model management service",
-      "translation": "必須指定 Exchange 認證來存取模型管理服務"
-    },
-    {
-      "id": "must specify --type with --id",
-      "translation": "必須指定 --type 與 --id"
-    },
-    {
-      "id": "must specify --id with --type",
-      "translation": "必須指定 --id 與 --type"
-    },
-    {
-      "id": "cannot specify --id and --type with --def",
-      "translation": "無法指定 --id 和 --type 與 --def"
-    },
-    {
-      "id": "must specify either --type and --id or --def",
-      "translation": "必須指定 --type 和 --id 或指定 --def"
-    },
-    {
-      "id": "cannot specify --pattern with --def",
-      "translation": "無法指定 --pattern 與 --def"
-    },
-    {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "無法讀取定義檔 {ObjMetadataFile}：{Err}"
-    },
-    {
-      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
-      "translation": "無法解除配置定義檔 {ObjMetadataFile}：{Err}"
-    },
-    {
-      "id": "unable to open object file {ObjFile}: {Err}",
-      "translation": "無法開啟物件檔 {ObjFile}：{Err}"
-    },
-    {
-      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
-      "translation": "物件 {ObjFile} 已上傳至「模型管理服務」中的組織 {Org}"
-    },
-    {
-      "id": "Object status: {Stringresp}",
-      "translation": "物件狀態：{Stringresp}"
-    },
-    {
-      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
-      "translation": "物件 {ObjectID} 已新增至「模型管理服務」中的組織 {Org}"
-    },
-    {
-      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "在組織 {Org} 中找不到類型為 '{ObjType}' 的物件 '{ObjId}'"
-    },
-    {
-      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
-      "translation": "已從「模型管理服務」的組織 {Org} 中刪除物件 {ObjId}"
-    },
-    {
-      "id": "health status API returned HTTP code {HttpCode}",
-      "translation": "性能狀態 API 傳回了 HTTP 代碼 {HttpCode}"
-    },
-    {
-      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "無法建立檔案同步服務的網路 {NETWORKNAME}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to start CSS, error {Err}",
-      "translation": "無法啟動 CSS，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to load file objects into CSS, error {Err}",
-      "translation": "無法將檔案物件載入 CSS，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to start ESS, error {Err}",
-      "translation": "無法啟動 ESS，錯誤為：{Err}"
-    },
-    {
-      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
-      "translation": "無法停止 {MakeLabelNameESSNAME}，錯誤為：{Err}"
-    },
-    {
-      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "無法移除檔案同步服務的網路 {NETWORKNAME}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to list existing docker images, error {Err}",
-      "translation": "無法列出現有 Docker 映像檔，錯誤為：{Err}"
-    },
-    {
-      "id": "Found docker image {Name} locally.",
-      "translation": "在本端找到 Docker 映像檔 {Name}。"
-    },
-    {
-      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
-      "translation": "無法使用映像檔 {GetFSSFullImageName} 擷取 CSS 儲存器，錯誤為：{Err}。設定環境變數 {DEVTOOLHZNFSSIMAGETAG} 以使用其他映像檔標籤。"
-    },
-    {
-      "id": "Pulled docker image {Name}.",
-      "translation": "已擷取 Docker 映像檔 {Name}。"
-    },
-    {
-      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
-      "translation": "無法使用映像檔 {GetFSSImageName} 建立 CSS 儲存器，錯誤為：{Err}。設定環境變數 {DEVTOOLHZNFSSIMAGETAG} 以使用其他映像檔標籤。"
-    },
-    {
-      "id": "unable to start CSS container, error {Err}",
-      "translation": "無法啟動 CSS 儲存器，錯誤為：{Err}"
-    },
-    {
-      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
-      "translation": "已建立 {MakeLabelNameCSSNAME} 儲存器，在主機埠 {GetCSSPort} 上接聽"
-    },
-    {
-      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
-      "translation": "在主機埠 {GetCSSPort} 上接聽的檔案同步服務儲存器 {MakeLabelNameCSSNAME}"
-    },
-    {
-      "id": "unable to create SSL certificate for ESS, error {Err}",
-      "translation": "無法為 ESS 建立 SSL 憑證，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
-      "translation": "無法開啟 ESS SSL 憑證檔 {ESSSSLClientCertPath}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
-      "translation": "無法讀取 ESS SSL 憑證檔 {ESSSSLClientCertPath}，錯誤為 {Err}"
-    },
-    {
-      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
-      "translation": "無法開啟 ESS SSL 憑證金鑰檔 {ESSSSLCertKeyPath}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
-      "translation": "無法讀取 ESS SSL 憑證金鑰檔 {ESSSSLCertKeyPath}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to create ESS container, error {Err}",
-      "translation": "無法建立 ESS 儲存器，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to start ESS container, error {Err}",
-      "translation": "無法啟動 ESS 儲存器，錯誤為：{Err}"
-    },
-    {
-      "id": "Created {MakeLabelNameESSNAME} container",
-      "translation": "已建立 {MakeLabelNameESSNAME} 儲存器"
-    },
-    {
-      "id": "unable to list docker containers, error {Err}",
-      "translation": "無法列出 Docker 儲存器，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to stop docker container {Name}, error {Err}",
-      "translation": "無法停止 Docker 儲存器 {Name}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to remove docker container {Name}, error {Err}",
-      "translation": "無法移除 Docker 儲存器 {Name}，錯誤為：{Err}"
-    },
-    {
-      "id": "Stopped {Name} container",
-      "translation": "已停止 {Name} 儲存器"
-    },
-    {
-      "id": "Loading {FileName} into CSS",
-      "translation": "正在將 {FileName} 載入 CSS"
-    },
-    {
-      "id": "unable to open file object {FileName}, error {Err}",
-      "translation": "無法開啟檔案物件 {FileName}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to read file object {FileName}, error {Err}",
-      "translation": "無法讀取檔案物件 {FileName}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to add file {FileName} to the CSS, error {Err}",
-      "translation": "無法將檔案 {FileName} 新增至 CSS，錯誤為：{Err}"
-    },
-    {
-      "id": "Configuration files {FileObjects} loaded into the File sync service.",
-      "translation": "配置檔 {FileObjects} 已載入檔案同步服務。"
-    },
-    {
-      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
-      "translation": "無法為 {Metadata} 配置 CSS 檔案 PUT 要求，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
-      "translation": "無法為 {Metadata} 建立 CSS 檔案 PUT 要求，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
-      "translation": "無法將針對 {Metadata} 發出的 CSS 檔案 PUT 要求傳送給 CSS，錯誤為：{Err}"
-    },
-    {
-      "id": "Received HTTP code: {StatusCode}",
-      "translation": "收到的 HTTP 代碼：{StatusCode}"
-    },
-    {
-      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
-      "translation": "無法將檔案 {Metadata} 放置在 CSS 中，HTTP 代碼為：{StatusCode}"
-    },
-    {
-      "id": "Created network {Name}",
-      "translation": "已建立網路 {Name}"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "無法列出 Docker 網路，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "無法移除 Docker 網路 {Name}，錯誤為：{Err}"
-    },
-    {
-      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
-      "translation": "使用 {PrivKeyFilePath} 簽署 stdin 時發生問題：{Err}"
-    },
-    {
-      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
-      "translation": "使用 {PubKeyFilePath} 驗證部署字串時發生問題：{Err}"
-    },
-    {
-      "id": "This is not a valid signature for stdin.",
-      "translation": "這不是 stdin 的有效簽章。"
-    },
-    {
-      "id": "Signature is valid.",
-      "translation": "簽章有效。"
-    },
-    {
-      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "translation": "無法從 {CofigFile} 中獲取變數。錯誤為：{Err}"
-    },
-    {
-      "id": "horizon api agreement output did not include 'agreements' key",
-      "translation": "Horizon API 合約輸出不包括 'agreements' 金鑰"
-    },
-    {
-      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
-      "translation": "Horizon API 合約輸出不包括 '{WhichAgreements}' 金鑰"
-    },
-    {
-      "id": "failed to marshal 'hzn metering list' output: {Err}",
-      "translation": "無法配置 'hzn metering list' 輸出：{Err}"
     },
     {
       "id": "New dependency created: {Target} .",
@@ -3535,10 +3491,6 @@
       "translation": "'{ProjectType} {Cmd}' 無法建立儲存器工作者：{Cerr}"
     },
     {
-      "id": "unable to list containers, {Err}",
-      "translation": "無法列出儲存器：{Err}"
-    },
-    {
       "id": "unable to list existing containers: {Err}",
       "translation": "無法列出現有儲存器：{Err}"
     },
@@ -3635,228 +3587,16 @@
       "translation": "無法將內容寫入檔案 {FilePath}，錯誤為：{Err}"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "未獲授權。未提供任何 Exchange 使用者 ID。"
+      "id": "horizon api agreement output did not include 'agreements' key",
+      "translation": "Horizon API 合約輸出不包括 'agreements' 金鑰"
     },
     {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "無法向 Exchange 鑑別使用者。{Err}"
+      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
+      "translation": "Horizon API 合約輸出不包括 '{WhichAgreements}' 金鑰"
     },
     {
-      "id": "No input found.",
-      "translation": "找不到輸入。"
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "輸入主體無法解除序列化為 JSON 物件。{Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。{Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。{Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "未提供任何 Exchange 使用者 ID。"
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "未提供任何 Exchange 使用者組織 ID。"
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
-    },
-    {
-      "id": "User not found.",
-      "translation": "找不到使用者。"
-    },
-    {
-      "id": "Internal server error",
-      "translation": "內部伺服器錯誤"
-    },
-    {
-      "id": "unable to set env var 'HORIZON_URL', error {Err}",
-      "translation": "無法設定環境變數 'HORIZON_URL'，錯誤為：{Err}"
-    },
-    {
-      "id": "failed to marshal 'agreement list' output: {Err}",
-      "translation": "無法配置 'agreement list' 輸出：{Err}"
-    },
-    {
-      "id": "No active agreements to cancel.",
-      "translation": "沒有要取消的作用中合約。"
-    },
-    {
-      "id": "either an agreement ID or -a must be specified.",
-      "translation": "必須指定合約 ID 或 -a。"
-    },
-    {
-      "id": "Canceling agreement {Id} ...",
-      "translation": "正在取消合約 {Id} ..."
-    },
-    {
-      "id": "failed to marshal 'hzn node list' output: {Err}",
-      "translation": "無法配置 'hzn node list' 輸出：{Err}"
-    },
-    {
-      "id": "failed to marshal 'policy list' output: {Err}",
-      "translation": "無法配置 'policy list' 輸出：{Err}"
-    },
-    {
-      "id": "Error: The organization '{Org}' does not exist.",
-      "translation": "錯誤：組織 '{Org}' 不存在。"
-    },
-    {
-      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
-      "translation": "錯誤：組織 '{Org}' 不存在或原則 '{Name}' 不是由這個 agbot 託管。"
-    },
-    {
-      "id": "Unable to marshal userinput object: {Err}",
-      "translation": "無法配置使用者輸入物件：{Err}"
-    },
-    {
-      "id": "A list of objects, each one containing the user inputs required for a specified service.",
-      "translation": "物件清單，每個物件都包含特定服務所需的使用者輸入。"
-    },
-    {
-      "id": "The horizon org of the specified service.",
-      "translation": "所指定服務的 Horizon 組織。"
-    },
-    {
-      "id": "The unique string used to identify the specified service.",
-      "translation": "用來識別所指定服務的唯一字串。"
-    },
-    {
-      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
-      "translation": "套用這些輸入的服務架構。省略或留為空白表示這些輸入套用於所有架構。"
-    },
-    {
-      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
-      "translation": "套用這些輸入的服務版本。省略或指定 \"[0.0.0,INFINITY)\" 表示這些輸入套用於所有版本。"
-    },
-    {
-      "id": "A list of objects with the names and values for the user inputs used by this service.",
-      "translation": "包含此服務所使用之使用者輸入的名稱和值的物件清單。"
-    },
-    {
-      "id": "Horizon node user inputs updated.",
-      "translation": "已更新 Horizon 節點使用者輸入。"
-    },
-    {
-      "id": "Are you sure you want to remove the node user inputs?",
-      "translation": "確定要移除節點使用者輸入嗎？"
-    },
-    {
-      "id": "Horizon user inputs removed.",
-      "translation": "已移除 Horizon 使用者輸入。"
-    },
-    {
-      "id": "cleaned {String} resulted in an empty string.",
-      "translation": "已清除 {String} 導致出現空字串。"
-    },
-    {
-      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
-      "translation": "外掛程式環境定義必須包括 'currentDir' 作為服務定義檔的現行目錄"
-    },
-    {
-      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
-      "translation": "無法讀取圖表保存檔 {Depchartarchive}，錯誤為：{Err}"
-    },
-    {
-      "id": "chart_archive must have a string type value, has {C}",
-      "translation": "chart_archive 必須包含具有 {C} 的字串類型值"
-    },
-    {
-      "id": "release_name must have a string type value, has {R}",
-      "translation": "release_name 必須包含具有 {R} 的字串類型值"
-    },
-    {
-      "id": "chart_archive and release_name must be non-empty strings",
-      "translation": "chart_archive 和 release_name 必須是非空字串"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 不支援進行 Helm 部署"
-    },
-    {
-      "id": "Are you sure you want to unregister this Horizon node?",
-      "translation": "確定要取消登錄這個 Horizon 節點嗎？"
-    },
-    {
-      "id": "The node is not registered.",
-      "translation": "未登錄節點。"
-    },
-    {
-      "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
-      "translation": "正在取消登錄此節點、取消所有合約、停止所有工作量並重新啟動 Horizon..."
-    },
-    {
-      "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-      "translation": "已取消登錄 Horizon 節點。必要的話，您現在可以重新執行 'hzn register ...'。"
-    },
-    {
-      "id": "Horizon node delete call successful with return code: {Output}",
-      "translation": "Horizon 節點刪除呼叫成功，回覆碼為：{Output}"
-    },
-    {
-      "id": "Timeout in {TotalWait} seconds ...",
-      "translation": "在 {TotalWait} 秒內逾時 ..."
-    },
-    {
-      "id": "Waiting for Horizon node unregister to complete: {UpdateStatus}",
-      "translation": "正在等待 Horizon 節點完成取消登錄：{UpdateStatus}"
-    },
-    {
-      "id": "No Timeout specified ...",
-      "translation": "未指定逾時值 ..."
-    },
-    {
-      "id": "Starting external deep clean ...",
-      "translation": "正在開始外部深度清理 ..."
-    },
-    {
-      "id": "Stopping horizon...",
-      "translation": "正在停止 Horizon..."
-    },
-    {
-      "id": "Deleting local horizon DB...",
-      "translation": "正在刪除本端 Horizon 資料庫..."
-    },
-    {
-      "id": "Deleting service containers...",
-      "translation": "正在刪除服務儲存器..."
-    },
-    {
-      "id": "Starting horizon...",
-      "translation": "正在啟動 Horizon..."
-    },
-    {
-      "id": "Checking the node configuration state...",
-      "translation": "正在檢查節點配置狀態..."
-    },
-    {
-      "id": "Node configuration state: {State}",
-      "translation": "節點配置狀態：{State}"
-    },
-    {
-      "id": "Timeout waiting for node change to 'unconfigured' state.",
-      "translation": "等待節點變更為「未配置」狀態時發生逾時。"
-    },
-    {
-      "id": "Error deleting container {Names0}. {Err}",
-      "translation": "刪除儲存器 {Names0} 時發生錯誤。{Err}"
-    },
-    {
-      "id": "Removed service container: {Names0}",
-      "translation": "已移除服務儲存器：{Names0}"
-    },
-    {
-      "id": "Error pruning docker networks. {Err}",
-      "translation": "刪改 Docker 網路時發生錯誤。{Err}"
+      "id": "failed to marshal 'hzn metering list' output: {Err}",
+      "translation": "無法配置 'hzn metering list' 輸出：{Err}"
     },
     {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
@@ -3883,264 +3623,60 @@
       "translation": "已刪除 Horizon 節點原則。"
     },
     {
-      "id": "deployment config {Dep} is not supported",
-      "translation": "不支援部署配置 {Dep}"
+      "id": "A list of policy properties that describe the object.",
+      "translation": "說明物件的原則內容清單。"
     },
     {
-      "id": "starting test mode is not supported for this project",
-      "translation": "此專案不支援啟動測試模式"
+      "id": "no service name",
+      "translation": "無服務名稱"
     },
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
+      "id": "no docker image for service {ServiceName}",
+      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "限制表示式包含不相符的括弧。"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
     },
     {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "剖析 selections {Form} 時發生錯誤。{Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
     },
     {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "取得輸出的 {Resource} 時發生錯誤，錯誤為：{Err}"
+      "id": "Name, or Org is empty string.",
+      "translation": "名稱或組織為空字串。"
     },
     {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點配置/登錄的輸入時發生錯誤。輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 陣列為空。"
     },
     {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點配置/登錄的輸入時發生錯誤。輸入主體無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "內容包含無效內容：{Err}"
     },
     {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點更新的輸入時發生錯誤。輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "failed to marshal agreement with index {I}: {Err}",
+      "translation": "無法配置索引為 {I} 的合約：{Err}"
     },
     {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則的輸入時發生錯誤。輸入主體無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "agreement id {AgreementId} not found",
+      "translation": "找不到合約 ID {AgreementId}"
     },
     {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。輸入主體無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "failed to marshal 'hzn agreement list' output: {Err}",
+      "translation": "無法配置 'hzn agreement list' 輸出：{Err}"
     },
     {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。輸入主體不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "No active agreements to cancel.",
+      "translation": "沒有要取消的作用中合約。"
     },
     {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點使用者輸入的輸入時發生錯誤。輸入主體無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
+      "id": "either an agreement ID or -a must be specified.",
+      "translation": "必須指定合約 ID 或 -a。"
     },
     {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "在節點 {Arg_1} 的節點配置/登錄中發生錯誤。{Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "更新節點 {Arg_1} 時發生錯誤。{Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "在節點取消登錄中發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "驗證 Exchange 版本時發生錯誤。錯誤為：{Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "建立或取代節點原則時發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "修補節點原則時發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "刪除節點原則時發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "更新節點使用者輸入時發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "修補節點使用者輸入時發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "刪除節點使用者輸入時發生錯誤。{Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "啟動節點 {Arg_1} 的節點配置/登錄。"
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "開始更新節點 {Arg_1}。"
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "完成 {Arg_1} 的節點更新。"
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "啟動節點取消登錄。"
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "完成節點 {Arg_1} 的節點取消登錄。"
-    },
-    {
-      "id": "Error unregistring the node. The node is not found from the database.",
-      "translation": "取消登錄節點時發生錯誤。在資料庫中找不到該節點。"
-    },
-    {
-      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "取消登錄節點時發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能進行取消配置。"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 removeNode 而言不正確"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 deepClean 而言不正確"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "節點取消登錄的輸入錯誤。{Arg_1} 值對於 block 而言不正確"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "無法從資料庫中讀取節點物件，錯誤為：{Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "在資料庫中儲存新的節點配置狀態 (unconfiguring) 時發生錯誤：{Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "節點配置中發生錯誤。在資料庫中找不到該節點。"
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "節點配置中發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能將狀態變更為 {Arg_1}。"
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "不支援將節點狀態從 '{Arg_1}' 轉移為 '{Arg_2}'。"
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "無法從本端資料庫取得使用者輸入。{Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "在本端使用者輸入中找不到服務 {Arg_1}/{Arg_2} 的喜好設定，錯誤為：{Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "將新的節點配置狀態儲存至資料庫時發生錯誤：{Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "完成節點 {Arg_1} 的節點配置/登錄。"
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "在 {Arg_1} 的服務配置中發生錯誤。{Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "取得型樣 {Arg_1} 的服務參照時發生錯誤。{Arg_2}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "新建節點原則：{Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "已刪除節點原則"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "新建節點使用者輸入：{Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "沒有要刪除的節點使用者輸入"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "刪除所有節點使用者輸入"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "開始使用使用者輸入進行 {Arg_1}/{Arg_2} 的服務配置。"
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "開始進行 {Arg_1}/{Arg_2} 的服務自動配置。"
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "完成 {Arg_1}/{Arg_2} 的服務配置。"
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "完成 {Arg_1}/{Arg_2} 的服務自動配置。"
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-      "translation": "變數 {Arg_1} 在 {Arg_2}/{Arg_3} 的服務配置中遺漏。它可能會造成合約格式不正確（如果商業原則不包含遺漏變數的設定）。"
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "配置服務 {Arg_1} 時發生錯誤。{Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "變更服務配置狀態 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "開始將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
+      "id": "Canceling agreement {Id} ...",
+      "translation": "正在取消合約 {Id} ..."
     },
     {
       "id": "failed to marshal 'key list' output: {Err}",
@@ -4199,10 +3735,6 @@
       "translation": "-d 與 -k 和 -K 互斥"
     },
     {
-      "id": "Failed to get absolute path for file {KFileName}. {Err}",
-      "translation": "無法取得檔案 {KFileName} 的絕對路徑。{Err}"
-    },
-    {
       "id": "Creating directory {OutputDirPub}.",
       "translation": "正在建立目錄 {OutputDirPub}。"
     },
@@ -4223,92 +3755,212 @@
       "translation": "正在刪除檔案 {PrivKeyFile}。"
     },
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "相容性錯誤：綱目版本不同，消費者原則：{Version}，生產者原則 {Version_1}"
+      "id": "deployment config {Dep} is not supported",
+      "translation": "不支援部署配置 {Dep}"
     },
     {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "相容性錯誤：節點內容 {Properties} 不滿足限制需求 {Constraints}。基礎錯誤：{Err}"
+      "id": "starting test mode is not supported for this project",
+      "translation": "此專案不支援啟動測試模式"
     },
     {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "相容性錯誤：內容 {Properties} 不滿足節點限制 {Constraints}。基礎錯誤：{Err}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
     },
     {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "相容性錯誤：{AgreementProtocols} 與 {AgreementProtocols_1} 之間沒有共用的合約通訊協定。基礎錯誤：{Err}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
     },
     {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "相容性錯誤：資料驗證必須相容，生產者具有 {DataVerify} 而消費者具有 {DataVerify_1}。"
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
     },
     {
-      "id": "Failed to get proper response from Horizon agent",
-      "translation": "無法從 Horizon 代理程式中取得適當的回應"
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
     },
     {
-      "id": "Horizon CLI version: {HORIZONVERSION}",
-      "translation": "Horizon CLI 版本：{HORIZONVERSION}"
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
     },
     {
-      "id": "Horizon Agent version: {HorizonVersion}",
-      "translation": "Horizon 代理程式版本：{HorizonVersion}"
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
     },
     {
-      "id": "Horizon Agent version: failed to get.",
-      "translation": "Horizon 代理程式版本：無法取得。"
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
     },
     {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "無法建立目錄來存放自行簽署的 MMS API 憑證，錯誤為：{Err}"
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
     },
     {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "無法為 MMS API 憑證序號產生亂數，錯誤為：{Err}"
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
     },
     {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "無法為 MMS API 憑證產生私密金鑰，錯誤為：{Err}"
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。錯誤為：{Arg_2}"
     },
     {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "無法建立 MMS API 憑證，錯誤為：{Err}"
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。{Arg_2}"
     },
     {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "無法將 MMS API 憑證寫入檔案 {ServerCertificate}，錯誤為：{Err}"
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。{Arg_2}"
     },
     {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "無法將 MMS API 憑證編碼至檔案 {ServerCertificate}，錯誤為：{Err}"
+      "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
+      "translation": "未指定節點 ID 及節點原則。正在從本端節點取得節點原則。"
     },
     {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "無法關閉 MMS API 憑證檔 {ServerCertificate}，錯誤為：{Err}"
+      "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
+      "translation": "未指定節點 ID 及節點使用者輸入檔。正在從本端節點取得節點使用者輸入。"
     },
     {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "無法將 MMS API 憑證私密金鑰寫入檔案 {ServerKey}，錯誤為：{Err}"
+      "id": "Using compatibility checking input: {CompCheckInput}",
+      "translation": "正在使用相容性檢查輸入：{CompCheckInput}"
     },
     {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "無法將 MMS API 憑證私密金鑰編碼至檔案 {ServerKey}，錯誤為：{Err}"
+      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
+      "translation": "無法配置 'hzn policy compatible' 輸出：{Err}"
     },
     {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+      "id": "Please specify either bussiness policy or pattern.",
+      "translation": "請指定商業原則或型樣。"
     },
     {
-      "id": "this command can not be run before running 'hzn register'",
-      "translation": "在執行 'hzn register' 之前無法執行此指令"
+      "id": "Neither bussiness policy nor pattern is specified.",
+      "translation": "未指定商業原則及型樣。"
     },
     {
-      "id": "horizon api attributes output did not include 'attributes' key",
-      "translation": "Horizon API 屬性輸出不包括 'attributes' 金鑰"
+      "id": "--node-pol, -p and -P are mutually exclusive.",
+      "translation": "--node-pol、-p 與 -P 互斥。"
     },
     {
-      "id": "failed to marshal 'hzn attribute list' output: {Err}",
-      "translation": "無法配置 'hzn attribute list' 輸出：{Err}"
+      "id": "--service-pol, -p and -P are mutually exclusive.",
+      "translation": "--service-pol、-p 與 -P 互斥。"
+    },
+    {
+      "id": "-n and --node-pol are mutually exclusive.",
+      "translation": "-n 和 --node-pol 互斥。"
+    },
+    {
+      "id": "-n and --node-ui are mutually exclusive.",
+      "translation": "-n 和 --node-ui 互斥。"
+    },
+    {
+      "id": "-b and -B are mutually exclusive.",
+      "translation": "-b 與 -B 互斥。"
+    },
+    {
+      "id": "-p and -P are mutually exclusive.",
+      "translation": "-p 與 -P 互斥。"
+    },
+    {
+      "id": "Please specify the exchange credential with -u for querying the node, business policy and service policy.",
+      "translation": "請使用 -u 指定 Exchange 認證來查詢節點、商業原則和服務原則。"
+    },
+    {
+      "id": "Please specify the organization with -o for the exchange credentail: {CredToUse}.",
+      "translation": "請使用 -o 為 Exchange 認證 {CredToUse} 指定組織。"
+    },
+    {
+      "id": "Cannot use the local node because it is not registered.",
+      "translation": "無法使用本端節點，因為它未登錄。"
+    },
+    {
+      "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
+      "translation": "-a 指定的節點架構 {InputArch} 不符合本端節點 {Arch} 的架構。"
+    },
+    {
+      "id": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}",
+      "translation": "無法解除配置商業原則 JSON 輸入檔 {BusinessPolFile}：{Err}"
+    },
+    {
+      "id": "Business policy not found for {PolOrg}/{PolId}",
+      "translation": "找不到 {PolOrg}/{PolId} 的商業原則"
+    },
+    {
+      "id": "Either -b or -B must be specified.",
+      "translation": "必須指定 -b 或 -B。"
+    },
+    {
+      "id": "Error unmarshaling service json file {FilePath}: {Err}",
+      "translation": "解除配置 JSON 檔案 {FilePath} 時發生錯誤：{Err}"
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "translation": "必須在服務定義中指定 URL。"
+    },
+    {
+      "id": "Version must be specified in the service definition.",
+      "translation": "必須在服務定義中指定版本。"
+    },
+    {
+      "id": "Invalide version format: {Version}.",
+      "translation": "版本格式 {Version} 無效。"
+    },
+    {
+      "id": "Arch must be specified in the service definition.",
+      "translation": "必須在服務定義中指定架構。"
+    },
+    {
+      "id": "Error in service file {Sfile}. {Err}",
+      "translation": "服務檔 {Sfile} 中發生錯誤。{Err}"
+    },
+    {
+      "id": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
+      "translation": "無法解除配置型樣 JSON 輸入檔 {PatternFile}：{Err}"
+    },
+    {
+      "id": "Pattern not found for {PatOrg}/{PatId}",
+      "translation": "找不到 {PatOrg}/{PatId} 的型樣"
+    },
+    {
+      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the patterh requirement.",
+      "translation": "在檔案 {SvcDefFilesi} 中指定的服務 {Org}/{URL} {Arch} {Version} 不符合型樣需求。"
+    },
+    {
+      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the business policy requirement.",
+      "translation": "在檔案 {SvcDefFilesi} 中指定的服務 {Org}/{URL} {Arch} {Version} 不符合商業原則需求。"
+    },
+    {
+      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
+      "translation": "使用 {PrivKeyFilePath} 簽署 stdin 時發生問題：{Err}"
+    },
+    {
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "translation": "使用 {PubKeyFilePath} 驗證部署字串時發生問題：{Err}"
+    },
+    {
+      "id": "This is not a valid signature for stdin.",
+      "translation": "這不是 stdin 的有效簽章。"
+    },
+    {
+      "id": "Signature is valid.",
+      "translation": "簽章有效。"
+    },
+    {
+      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
+      "translation": "無法從 {CofigFile} 中獲取變數。錯誤為：{Err}"
+    },
+    {
+      "id": "Bussiness policy and pattern are mutually exclusive.",
+      "translation": "商業原則與型樣互斥。"
+    },
+    {
+      "id": "Incompatible",
+      "translation": "不相容"
+    },
+    {
+      "id": "Error marshaling object {In}. {Arg_2}",
+      "translation": "配置物件 {In} 時發生錯誤。{Arg_2}"
+    },
+    {
+      "id": "Failed to convert input to PolicyCheck object. {Err}",
+      "translation": "無法將輸入轉換為 PolicyCheck 物件。{Err}"
     },
     {
       "id": "The given node id is empty.",
@@ -4337,10 +3989,6 @@
     {
       "id": "Policy Incompatible",
       "translation": "原則不相容"
-    },
-    {
-      "id": "Compatible",
-      "translation": "相容"
     },
     {
       "id": "Architecture does not match.",
@@ -4507,24 +4155,32 @@
       "translation": "未指定節點使用者輸入和節點 ID。"
     },
     {
+      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
+      "translation": "未在商業原則或型樣中指定具有架構 {NodeArch} 的服務版本。"
+    },
+    {
+      "id": "No service versions specified in the business policy or pattern.",
+      "translation": "未在商業原則或型樣中指定任何服務版本。"
+    },
+    {
       "id": "User Input Incompatible",
       "translation": "使用者輸入不相容"
     },
     {
-      "id": "Service architecture {Arch} does not match the node architecture {NodeArch}.",
-      "translation": "服務架構 {Arch} 不符合節點架構 {NodeArch}。"
-    },
-    {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "驗證輸入服務 {SId} 失敗。{Err}"
-    },
-    {
-      "id": "Error getting services for all archetctures for {Org}/{Name} version {Version}. {Err}",
-      "translation": "取得 {Org}/{Name} {Version} 版的所有架構的服務時發生錯誤。{Err}"
+      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+      "translation": "取得 {ServiceOrg}/{ServiceURL} {Version} 版的所有架構的服務時發生錯誤。{Err}"
     },
     {
       "id": "Service definition not found in the input.",
       "translation": "在輸入中找不到服務定義。"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
+      "translation": "在商業原則或型樣中找不到「架構」為 {NodeArch} 的服務。"
+    },
+    {
+      "id": "No services found in the business policy or pattern.",
+      "translation": "在商業原則或型樣中找不到服務。"
     },
     {
       "id": "The input service spec object cannot be null.",
@@ -4543,12 +4199,12 @@
       "translation": "無法驗證服務 {SId} 的使用者輸入。{Reason}"
     },
     {
-      "id": "Error verifing user input for dependent service {SId}. {Err}",
-      "translation": "驗證相依服務 {SId} 的使用者輸入時發生錯誤。{Err}"
+      "id": "Error verifing user input for dependent service {Id}. {Err}",
+      "translation": "驗證相依服務 {Id} 的使用者輸入時發生錯誤。{Err}"
     },
     {
-      "id": "Failed to verify user input for dependent service {SId}. {Reason}",
-      "translation": "無法驗證相依服務 {SId} 的使用者輸入。{Reason}"
+      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+      "translation": "無法驗證相依服務 {Id} 的使用者輸入。{Reason}"
     },
     {
       "id": "The input service definition object cannot be null.",
@@ -4587,6 +4243,10 @@
       "translation": "服務 URL {URL} 不符合商業原則中指定的服務 URL {Name}。"
     },
     {
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
+      "translation": "服務組織 {Org} 不符合商業原則中指定的服務組織 {Org_1}。"
+    },
+    {
       "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
       "translation": "服務架構 {Arch} 不符合商業原則中指定的服務架構 {Arch_1}。"
     },
@@ -4595,412 +4255,816 @@
       "translation": "服務版本 {Version} 不符合商業原則中指定的任何服務版本。"
     },
     {
-      "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
-      "translation": "無法配置 '/service/config' 輸出屬性 {Attr}。{Err}"
+      "id": "The service does not match any services in the pattern.",
+      "translation": "服務不符合型樣中的任何服務。"
     },
     {
-      "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
-      "translation": "無法將 '/service/config' 輸出屬性 {Attr} 轉換為其原始類型。{Err}"
+      "id": "Pattern {PatId} cannot be found on the exchange.",
+      "translation": "在 Exchange 上找不到型樣 {PatId}。"
     },
     {
-      "id": "failed to marshal 'hzn service list' output: {Err}",
-      "translation": "無法配置 'hzn service list' 輸出，錯誤為：{Err}"
+      "id": "Neither pattern nor pattern id is specified.",
+      "translation": "未指定型樣及型樣 ID。"
     },
     {
-      "id": "Displaying log messages for service {SpecRef} with service id {InstanceId}.",
-      "translation": "正在顯示服務 ID為 {InstanceId} 的服務 {SpecRef} 的日誌訊息。"
+      "id": "Pattern id is empty.",
+      "translation": "型樣 ID 為空。"
     },
     {
-      "id": "Use ctrl-C to terminate this command.",
-      "translation": "使用 ctrl-C 終止此指令。"
+      "id": "Organization is not specified in the pattern id: {PatId}.",
+      "translation": "在型樣 ID {PatId} 中未指定組織。"
     },
     {
-      "id": "Service {RefUrl} is not running on the node.",
-      "translation": "服務 {RefUrl} 未在節點上執行。"
+      "id": "Error getting pattern {PatId} from the exchange, {Err}",
+      "translation": "從 Exchange 取得型樣 {PatId} 時發生錯誤：{Err}"
     },
     {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "translation": "為指令建立 StdoutPipe 時發生錯誤：{Err}"
+      "id": "No pattern found for this id {PatId}.",
+      "translation": "找不到此 ID {PatId} 的型樣。"
     },
     {
-      "id": "Error starting command: {Err}",
-      "translation": "啟動指令時發生錯誤：{Err}"
+      "id": "Version must be specified in the service definition for service {URL}.",
+      "translation": "必須在服務 {URL} 的服務定義中指定版本。"
     },
     {
-      "id": "Error waiting for command: {Err}",
-      "translation": "等待指令時發生錯誤：{Err}"
+      "id": "Invalide version format {Version} for service {URL}.",
+      "translation": "服務 {URL} 的版本格式 {Version} 無效。"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog 無法開啟或不存在：{Err}"
+      "id": "Arch must be specified in the service definition for service {URL}.",
+      "translation": "必須在服務 {URL} 的服務定義中指定架構。"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog 無法取得統計資料：{Err}"
+      "id": "Org must be specified in the service definition for service {URL}.",
+      "translation": "必須在服務 {URL} 的服務定義中指定組織。"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "從 /var/log/syslog 中讀取時發生錯誤：{Err}"
+      "id": "Validation failure for input service {SId}. {Err}",
+      "translation": "驗證輸入服務 {SId} 失敗。{Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "無法指定 /var/log/syslog：{Err}"
+      "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
+      "translation": "檔案 {JsonFilePath} 中的節點原則格式不正確：{Err}"
     },
     {
-      "id": "failed to marshal 'hzn service registered' output: {Err}",
-      "translation": "無法配置 'hzn service registered' 輸出，錯誤為：{Err}"
+      "id": "Reading input file {InputFile}...",
+      "translation": "正在讀取輸入檔 {InputFile}..."
     },
     {
-      "id": "failed to marshal 'hzn service configstate' output: {Err}",
-      "translation": "無法配置 'hzn service configstate' 輸出，錯誤為：{Err}"
+      "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
+      "translation": "hzn cli 配置了來自 {ExchangeUrlLocation} 的 Exchange URL {ExchUrlBase}，而 Horizon 代理程式配置了來自 {ExchangeUrlLocationFromAnax} 的 Exchange URL {AnaxExchUrlBase}。hzn 登錄將不適合不相符的交換 URL。"
     },
     {
-      "id": "all the registered services",
-      "translation": "所有登錄服務"
+      "id": "Horizon Exchange base URL: {ExchUrlBase}",
+      "translation": "Horizon Exchange 基本 URL：{ExchUrlBase}"
     },
     {
-      "id": "service {ServiceOrg}/{ServiceUrl}",
-      "translation": "服務 {ServiceOrg}/{ServiceUrl}"
+      "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
+      "translation": "此 Horizon 節點已登錄或正在登錄。如果您想要以其他方式登錄它，請先執行 'hzn unregister'。"
     },
     {
-      "id": "all the registered services from organization {ServiceOrg}",
-      "translation": "組織 {ServiceOrg} 中的所有登錄服務"
+      "id": "Failed to get proper response from the Horizon agent",
+      "translation": "無法從 Horizon 代理程式中取得適當的回應"
     },
     {
-      "id": "Please specify the organization for service {ServiceUrl}.",
-      "translation": "請為服務 {ServiceUrl} 指定組織。"
+      "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
+      "translation": "無法讀取機器序號，發生錯誤：{MsErr}。繼續登錄裝置。"
     },
     {
-      "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
-      "translation": "確定要暫停此 Horizon 節點的 {Msgpart} 嗎？"
+      "id": "Node ID not specified, using machine serial number {NodeId} as node ID.",
+      "translation": "未指定節點 ID，使用指定的序號 {NodeId} 作為節點 ID。"
     },
     {
-      "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
-      "translation": "正在暫停 {Msgpart}、正在取消相關合約、正在停止相關服務儲存器..."
+      "id": "Node ID not specified, and machine serial number not found, generating random node ID.",
+      "translation": "未指定節點 ID 且找不到機器序號，正在產生隨機節點 ID。"
     },
     {
-      "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
-      "translation": "已順利傳送服務暫停要求，請使用 'hzn agreement' 和 'docker ps' 以確保移除相關的合約和服務儲存器。完成此作業可能需要幾分鐘。"
+      "id": "Unable to generate random node id, error: {Err}",
+      "translation": "無法產生隨機節點 ID，發生錯誤 {Err}"
     },
     {
-      "id": "Resuming {Msgpart} ...",
-      "translation": "正在回復 {Msgpart} ..."
+      "id": "Generated random node ID: {NodeId}.",
+      "translation": "已產生隨機節點 ID：{NodeId}。"
     },
     {
-      "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
-      "translation": "已順利傳送服務回復要求，請使用 'hzn agreement' 和 'docker ps' 以確保啟動相關的合約和服務儲存器。完成此作業可能需要幾分鐘。"
+      "id": "Using node ID '{NodeId}' from the Horizon agent",
+      "translation": "使用 Horizon 代理程式中的節點 ID '{NodeId}'"
     },
     {
-      "id": "failed to marshal agreement with index {I}: {Err}",
-      "translation": "無法配置索引為 {I} 的合約：{Err}"
+      "id": "could not create a random token",
+      "translation": "無法建立隨機記號"
     },
     {
-      "id": "agreement id {AgreementId} not found",
-      "translation": "找不到合約 ID {AgreementId}"
+      "id": "Generated random node token",
+      "translation": "已產生隨機節點記號"
     },
     {
-      "id": "failed to marshal 'hzn agreement list' output: {Err}",
-      "translation": "無法配置 'hzn agreement list' 輸出：{Err}"
+      "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
+      "translation": "在具有指定記號的 Exchange 中不存在節點 '{Org}/{NodeId}'，並且未指定 -u 旗標以提供 Exchange 使用者認證來建立/更新該節點。"
     },
     {
-      "id": "[verbose] {M}",
-      "translation": "[verbose] {M}"
+      "id": "Node {Org}/{NodeId} does not exist in the exchange with the specified token, creating/updating it...",
+      "translation": "在具有指定記號的 Exchange 中不存在節點 {Org}/{NodeId}，正在建立/更新該節點..."
     },
     {
-      "id": "Error: {Msg}",
-      "translation": "錯誤：{Msg}"
+      "id": "Node {Org}/{NodeId} exists in the exchange",
+      "translation": "在 Exchange 中存在節點 {Org}/{NodeId}"
     },
     {
-      "id": "Warning: {Msg}",
-      "translation": "警告：{Msg}"
+      "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
+      "translation": "未指定型樣或節點原則。將繼續使用現有的節點原則。"
     },
     {
-      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "無法解除配置 {ErrMsg} 中的位元組：{Err}"
+      "id": "Will proceeed with the given node policy.",
+      "translation": "將繼續使用給定的節點原則。"
     },
     {
-      "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "無法解除配置 {ErrMsg} 中的資料類型：{Err}"
+      "id": "Pattern {ExchangePattern} defined for the node on the exchange. Will proceeed with this pattern.",
+      "translation": "已在 Exchange 上為節點定義型樣 {ExchangePattern}。將繼續使用此型樣。"
     },
     {
-      "id": "problem testing api key match: {Err}",
-      "translation": "測試 API 金鑰符合時發生問題：{Err}"
+      "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the exchange.",
+      "translation": "無法繼續使用給定的型樣 {Pattern}，因為它與為 Exchange 中節點定義的型樣 {ExchangePattern} 不同。"
     },
     {
-      "id": "Using API key",
-      "translation": "使用 API 金鑰"
+      "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
+      "translation": "在 Exchange 中找不到型樣 '{Patorg}/{Patname}'。"
     },
     {
-      "id": "unable to create docker client: {Err}",
-      "translation": "無法建立 Docker 用戶端：{Err}"
+      "id": "Cannot proceed with the given pattern {Pattern} because it does not include any services.",
+      "translation": "無法繼續使用給定的型樣 {Pattern}，因為它不包含任何服務。"
     },
     {
-      "id": "docker auth domainName: {DomainName}",
-      "translation": "Docker 授權網域名稱：{DomainName}"
+      "id": "Will proceeed with the given pattern {Pattern}.",
+      "translation": "將繼續使用給定的型樣 {Pattern}。"
     },
     {
-      "id": "unable to find docker credentials for {Domain}",
-      "translation": "找不到 {Domain} 的 Docker 認證"
+      "id": "Updating the node policy...",
+      "translation": "正在更新節點原則..."
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
+      "id": "Initializing the Horizon node...",
+      "translation": "正在起始設定 Horizon 節點..."
     },
     {
-      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "無法從 ~/.docker/config.json 中獲取 Docker 認證：{Err}。如果映像檔登錄為私密，以為映像檔登錄提供認證。"
+      "id": "Setting global variables...",
+      "translation": "正在設定廣域變數..."
     },
     {
-      "id": "unable to push docker image {Repository____tag}: {Err}",
-      "translation": "無法推送 Docker 映像檔 {Repository____tag}：{Err}"
+      "id": "Setting service variables...",
+      "translation": "正在設定服務變數..."
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送輸出中找不到映像檔摘要"
+      "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+      "translation": "由於 {Matches0}，登錄失敗，請在輸入檔 {InputFile} 中更新服務區段。執行 'hzn unregister'，然後再次執行 'hzn register...'"
     },
     {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在擷取 {Repository}:{Tag}..."
+      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
+      "translation": "警告：未指定輸入檔。僅當沒有任何服務需要變數集（包括 GPS 座標）時此選項才有效。"
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "無法擷取 Docker 映像檔 {Repository____tag}。找不到 Docker 認證。如果映像檔登錄為私密，則您可能需要執行 'docker login ...'。錯誤為：{Err}"
+      "id": "Changing Horizon state to configured to register this node with Horizon...",
+      "translation": "正在將 Horizon 狀態變更為已配置以向 Horizon 登錄此節點..."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "無法擷取 Docker 映像檔 {Repository____tag}：{Err}"
+      "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
+      "translation": "{Errstring}。請在輸入檔 {InputFile} 中為服務 {Matches2} 定義變數。執行 'hzn unregister'，然後再次執行 'hzn register...'"
     },
     {
-      "id": "the id can not contain more than 1 '/'",
-      "translation": "ID 不能包含多個 '/'"
+      "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
+      "translation": "{Errstring}。請建立輸入檔，為服務 {Matches2} 定義變數。執行 'hzn unregister'，然後使用 -f 旗標再次執行 'hzn register...' 以指定輸入檔。"
     },
     {
-      "id": "reading stdin failed: {Err}",
-      "translation": "讀取 stdin 失敗：{Err}"
+      "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
+      "translation": "已登錄 Horizon 節點。應該很快會開始協議工作量合約。執行 'hzn agreement list' 進行檢視。"
     },
     {
-      "id": "reading {FilePath} failed: {Err}",
-      "translation": "讀取 {FilePath} 失敗：{Err}"
+      "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
+      "translation": "-o 和 -p 與 <nodeorg> 和 <pattern> 引數互斥。"
     },
     {
-      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "警告：環境變數 '{EnvVarName}' 在輸入檔中參照，但在環境中並未定義。"
+      "id": "Please specify the node organization id.",
+      "translation": "請指定節點組織 ID。"
     },
     {
-      "id": "Error reading input, error {Err}",
-      "translation": "讀取輸入時發生錯誤：{Err}"
+      "id": "invalid version range '{Vr}': {Err}",
+      "translation": "版本範圍 '{Vr}' 無效：{Err}"
     },
     {
-      "id": "Exiting.",
-      "translation": "結束中。"
+      "id": "unable to verify that {Version} is within {VRange}, error {Err}",
+      "translation": "無法驗證 {Version} 是否位於 {VRange} 範圍之內，錯誤為：{Err}"
     },
     {
-      "id": "Error reading HTTP response, error {Err}",
-      "translation": "讀取 HTTP 回應時發生錯誤，錯誤為：{Err}"
+      "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",
+      "translation": "在 Exchange 相符項中找不到服務：組織={Org}，URL={Url}，架構={Arch}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。請執行 'systemctl status horizon' 以檢查 Horizon 是否在執行中。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。特定的錯誤為：{Err}"
+      "id": "error comparing version {ServiceshighestKey} with version {Version}. {Err}",
+      "translation": "將版本 {ServiceshighestKey} 與版本 {Version} 比較時發生錯誤。{Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。可能是與該埠相關聯的 ssh 通道已關閉。或者可能是該通道另一端的 Horizon 代理程式已關閉。特定的錯誤為：{Err}"
+      "id": "found no services in the exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}",
+      "translation": "在相符的 Exchange 中找不到服務：組織={Org}，specRef={Url}，版本範圍={VersionRanges}，架構={Arch}"
     },
     {
-      "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} 新建要求失敗：{Err}"
+      "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
+      "translation": "找到：{Org}、{Url}、{Arch}、{VersionRange}"
     },
     {
-      "id": "HTTP code: {HttpCode}",
-      "translation": "HTTP 代碼：{HttpCode}"
+      "id": "did not find pattern '{PatKey}' as expected",
+      "translation": "找不到預期的型樣 '{PatKey}'"
     },
     {
-      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼不正確：{HttpCode}"
+      "id": "Ignoring service that is a different architecture: {ServiceOrg}, {ServiceURL}, {ServiceArch}",
+      "translation": "忽略作為其他架構的服務：{ServiceOrg}、{ServiceURL}、{ServiceArch}"
     },
     {
-      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼不正確：{HttpCode}"
+      "id": "failed to marshal the user input template file: {Err}",
+      "translation": "無法配置使用者輸入範本檔案：{Err}"
     },
     {
-      "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "無法讀取 {ApiMsg} 中的主體回應：{Err}"
+      "id": "problem writing the user input template file: {Err}",
+      "translation": "寫入使用者輸入範本檔案時發生問題：{Err}"
     },
     {
-      "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "無法讀取 {ApiMsg} 中的主體回應：{Err}"
+      "id": "Wrote {InputFile}",
+      "translation": "已寫入 {InputFile}"
     },
     {
-      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "無法解除配置 {ApiMsg} 中的主體回應：{Err}"
+      "id": "horizon api attributes output did not include 'attributes' key",
+      "translation": "Horizon API 屬性輸出不包括 'attributes' 金鑰"
     },
     {
-      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "無法解除配置 {ApiMsg} 中的主體回應：{Err}"
+      "id": "failed to marshal 'hzn attribute list' output: {Err}",
+      "translation": "無法配置 'hzn attribute list' 輸出：{Err}"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確：{Body}"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "內容必須包括名稱及值：{Property}"
     },
     {
-      "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "無法配置 {ApiMsg} 的主體：{Err}"
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "translation": "內容 {Name} 的內容類型 {DeclaredType} 無效。容許的內容類型為：版本、字串、整數、布林、浮點數及字串清單。"
     },
     {
-      "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "無法解除配置位元組。{Err}"
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "內容值的類型為 {ActualType}，但預期的類型為 {DeclaredType}"
     },
     {
-      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "從 {ANAXOVERWRITEFILE} 取得 {OldMgmtHubCertPath} 時發生錯誤：{Err}"
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "內容 {Name} 的值 {Value} 類型不是整數"
     },
     {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "讀取 ICP 憑證檔 {IcpCertPath} 時發現錯誤：{Err}"
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "內容 {Name} 的值 {Value} 不是有效字串。請定義類型或將值變更為字串。"
     },
     {
-      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_EXCHANGE_URL 時發生錯誤。{Err}"
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "值為 {Value} 的內容 {Name} 不是有效的版本字串"
     },
     {
-      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
-      "translation": "從 {ANAXCONFIGFILE} 中獲取 ExchangeUrl 時發生錯誤。{Err}"
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "內容 {Name} 的值類型 {ActualType} 無效"
     },
     {
-      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
-      "translation": "未設定 HZN_EXCHANGE_URL，請從節點上的 Horizon 代理程式配置中獲取。"
+      "id": "No input found.",
+      "translation": "找不到輸入。"
     },
     {
-      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "無法從環境變數 HZN_EXCHANGE_URL 或 Horizon 代理程式中獲取 Exchange URL"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "未獲授權。未提供任何 Exchange 使用者 ID。"
     },
     {
-      "id": "The exchange url: {ExchUrl}",
-      "translation": "Exchange URL：{ExchUrl}"
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "無法向 Exchange 鑑別使用者。{Err}"
     },
     {
-      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "從 {ANAXOVERWRITEFILE} 中獲取 HZN_FSS_CSSURL 時發生錯誤。{Err}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "輸入主體無法解除序列化為 JSON 物件。{Err}"
     },
     {
-      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
-      "translation": "從 {ANAXCONFIGFILE} 中獲取模型管理服務 URL 時發生錯誤。{Err}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。{Err}"
     },
     {
-      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
-      "translation": "未設定 HZN_FSS_CSSURL，請從節點上的 Horizon 代理程式配置中獲取。"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。{Err}"
     },
     {
-      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
-      "translation": "無法從環境變數 HZN_FSS_CSSURL 或 Horizon 代理程式中獲取模型管理服務 URL"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 CompCheck 物件。{Err}"
     },
     {
-      "id": "The model management service url: {MmsUrl}",
-      "translation": "模型管理服務 URL：{MmsUrl}"
+      "id": "No exchange user id is supplied.",
+      "translation": "未提供任何 Exchange 使用者 ID。"
     },
     {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon {HorizonService} REST API 以執行 {ApiMethod}。將 {ServiceEnvVarName} 設為使用 {Article} {HorizonService_1} 而不是目前針對 Horizon 代理程式配置的服務。特定的錯誤為：{Err}"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "未提供任何 Exchange 使用者組織 ID。"
     },
     {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon {HorizonService} REST API 以執行 {ApiMethod}。可能是未正確設定 {ServiceEnvVarName}？或者，未將 {ServiceEnvVarName_1} 設定為使用針對 Horizon 代理程式配置的 {HorizonService_1}。特定的錯誤為：{Err}"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
     },
     {
-      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "無法配置 {ApiMsg} 的 Exchange 主體：{Err}"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
     },
     {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
-      "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}。HTTP 狀態：{Httpstatus}。將重試。"
+      "id": "Internal server error",
+      "translation": "內部伺服器錯誤"
     },
     {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "呼叫 {Service} REST API {ApiMsg} 時發現 HTTP 錯誤：{Err}。HTTP 狀態：{Httpstatus}。"
+      "id": "must specify exchange credentials to access the model management service.",
+      "translation": "必須指定 Exchange 認證來存取模型管理服務。"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確，輸出：{StringbodyBytes}"
+      "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
+      "translation": "--policy/-p 值 {DestPolicy} 無效，--policy/-p 應該為 true 或 false"
     },
     {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "無法解除配置 {ApiMsg} 中的 Exchange 主體回應：{Err}"
+      "id": "Invalid --data value: {WithData}, --data should be true or false",
+      "translation": "--data 值 {WithData} 無效，--data 應該為 true 或 false"
     },
     {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "無法配置 {ApiMsg} 中的 Exchange 輸出：{Err}"
+      "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
+      "translation": "依 --service、--property 或 --updateTime 過濾時，必須省略 --policy 或將它設為 true"
     },
     {
-      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "無法從 {ApiMsg} 中讀取 Exchange 主體回應：{Err}"
+      "id": "service should be in format service-org/service-name",
+      "translation": "服務格式應該為 service-org/service-name"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確：{Code}，{Msg}"
+      "id": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd",
+      "translation": "updateTime 應該採用 RC3339 格式：yyyy-MM-ddTHH:mm:ssZ 或 yyyy-MM-dd"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
-      "translation": "{ApiMsg} 中的 HTTP 代碼 {HttpCode} 不正確"
+      "id": "must specify objectType if set objectId",
+      "translation": "如果設定了 objectId，則必須指定 objectType"
     },
     {
-      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "必須使用下列其中一項指定 Exchange 鑑別：-u 旗標、-n 旗標、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
+      "id": "must specify destinationType if set destinationId",
+      "translation": "如果設定了 destinationId，則必須指定 destinationType"
     },
     {
-      "id": "{Err}. Please create the signing key.",
-      "translation": "{Err}。請建立簽署金鑰。"
+      "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
+      "translation": "expirationTimeBefore 應該指定為 'now' 或採用 RC3339 格式 (yyyy-MM-ddTHH:mm:ssZ) 的時間戳記"
     },
     {
-      "id": "running: {CmdStr}",
-      "translation": "正在執行：{CmdStr}"
+      "id": "no objects found in org {Org}",
+      "translation": "在組織 {Org} 中找不到物件"
     },
     {
-      "id": "did not get a command object",
-      "translation": "未取得指令物件"
+      "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
+      "translation": "在組織 {Org} 中找不到類型為 '{ObjectType}' 的物件 '{ObjectID}' 的目的地明細"
     },
     {
-      "id": "Could not get Stdin pipe, error: {Err}",
-      "translation": "無法取得 stdin 管線，錯誤為：{Err}"
+      "id": "Listing objects in org {Org}:",
+      "translation": "正在列出組織 {Org} 中的物件："
     },
     {
-      "id": "could not retrieve output from command, error: {Err}",
-      "translation": "無法從指令中擷取輸出，錯誤為：{Err}"
+      "id": "Required: A unique identifier of the object.",
+      "translation": "必需：物件的唯一 ID。"
     },
     {
-      "id": "could not retrieve stderr from command, error: {Err}",
-      "translation": "無法從指令中擷取 stderr，錯誤為：{Err}"
+      "id": "Required: The type of the object.",
+      "translation": "必需：物件的類型。"
     },
     {
-      "id": "Unable to start command, error: {Err}",
-      "translation": "無法啟動指令：{Err}"
+      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
+      "translation": "必需：物件的組織 ID（一個物件只屬於一個組織）。"
     },
     {
-      "id": "Unable to write to stdin of command, error: {Err}",
-      "translation": "無法寫入指令的 stdin，錯誤為：{Err}"
+      "id": "The node id (without org prefix) where the object should be placed.",
+      "translation": "應用來放置物件的節點 ID（不含組織字首）。"
     },
     {
-      "id": "Unable to close stdin, error: {Err}",
-      "translation": "無法關閉 stdin，錯誤為：{Err}"
+      "id": "If omitted the object is sent to all nodes with the same destinationType.",
+      "translation": "省略的話，物件會傳送至具有同一目的地類型的所有節點。"
     },
     {
-      "id": "could not read stdout, error: {Err}",
-      "translation": "無法讀取 stdout，錯誤為：{Err}"
+      "id": "Delete this field when you are using destinationPolicy.",
+      "translation": "在使用目的地原則時刪除此欄位。"
     },
     {
-      "id": "could not read stderr, error: {Err}",
-      "translation": "無法讀取 stderr，錯誤為：{Err}"
+      "id": "The pattern in use by nodes that should receive this object.",
+      "translation": "型樣正由應該接收此物件的節點使用。"
     },
     {
-      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "指令失敗：{Err}，stderr 為：{StringstderrBytes}"
+      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
+      "translation": "省略的話（同時省略目的地清單），物件會播送至所有已知節點。"
     },
     {
-      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
-      "translation": "無法使用 {HTTPRequestTimeoutOverride} 設定要求逾時值，該值不是有效數字：{EnvTimeout}"
+      "id": "Delete this field when you are using policy.",
+      "translation": "在使用原則時刪除此欄位。"
     },
     {
-      "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP 要求逾時值設為 {RequestTimeout} 秒"
+      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
+      "translation": "作為應接收此物件之 pattern:nodeId 配對陣列的目的地清單。"
+    },
+    {
+      "id": "If provided, destinationType and destinationID must be omitted.",
+      "translation": "提供的話，必須省略目的地類型和目的地 ID。"
+    },
+    {
+      "id": "The policy specification that should be used to distribute this object.",
+      "translation": "應該用來配送此物件的原則規範。"
+    },
+    {
+      "id": "Delete these fields if the target node is using a pattern.",
+      "translation": "當目標節點正在使用型樣時刪除這些欄位。"
+    },
+    {
+      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
+      "translation": "有效類型是字串、布林、整數、浮點數、字串清單（以逗點分隔）、版本。"
+    },
+    {
+      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
+      "translation": "如果類型可與值區別（例如，true 不加引號表示布林），則可以省略類型。"
+    },
+    {
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
+      "translation": "格式為 <property name> <operator> <property value> 的限制項表示式清單，以布林運算子 AND (&&) 或 OR (||) 分隔。"
+    },
+    {
+      "id": "The service(s) that will use this object.",
+      "translation": "將使用此物件的服務。"
+    },
+    {
+      "id": "Set to '*' to indcate services of any hardware architecture.",
+      "translation": "設為 '*' 表示任何硬體架構的服務。"
+    },
+    {
+      "id": "A version range.",
+      "translation": "版本範圍。"
+    },
+    {
+      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
+      "translation": "時間戳記/日期表示物件的到期日（系統會自動將它刪除）。應該以 RFC3339 格式提供時間戳記。"
+    },
+    {
+      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
+      "translation": "任意字串值。該值沒有語義解譯。「模型管理系統」不會保留物件的多個版本。"
+    },
+    {
+      "id": "An arbitrary description.",
+      "translation": "任意說明。"
+    },
+    {
+      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
+      "translation": "時間戳記/日期指出何時應自動啟動此物件。應該以 RFC3339 格式提供時間戳記。"
+    },
+    {
+      "id": "must specify exchange credentials to access the model management service",
+      "translation": "必須指定 Exchange 認證來存取模型管理服務"
+    },
+    {
+      "id": "must specify --type with --id",
+      "translation": "必須指定 --type 與 --id"
+    },
+    {
+      "id": "must specify --id with --type",
+      "translation": "必須指定 --id 與 --type"
+    },
+    {
+      "id": "cannot specify --id and --type with --def",
+      "translation": "無法指定 --id 和 --type 與 --def"
+    },
+    {
+      "id": "must specify either --type and --id or --def",
+      "translation": "必須指定 --type 和 --id 或指定 --def"
+    },
+    {
+      "id": "cannot specify --pattern with --def",
+      "translation": "無法指定 --pattern 與 --def"
+    },
+    {
+      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
+      "translation": "無法讀取定義檔 {ObjMetadataFile}：{Err}"
+    },
+    {
+      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
+      "translation": "無法解除配置定義檔 {ObjMetadataFile}：{Err}"
+    },
+    {
+      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
+      "translation": "物件 {ObjFile} 已上傳至「模型管理服務」中的組織 {Org}"
+    },
+    {
+      "id": "Object status: {Stringresp}",
+      "translation": "物件狀態：{Stringresp}"
+    },
+    {
+      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
+      "translation": "物件 {ObjectID} 已新增至「模型管理服務」中的組織 {Org}"
+    },
+    {
+      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+      "translation": "在組織 {Org} 中找不到類型為 '{ObjType}' 的物件 '{ObjId}'"
+    },
+    {
+      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
+      "translation": "已從「模型管理服務」的組織 {Org} 中刪除物件 {ObjId}"
+    },
+    {
+      "id": "health status API returned HTTP code {HttpCode}",
+      "translation": "性能狀態 API 傳回了 HTTP 代碼 {HttpCode}"
+    },
+    {
+      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
+      "translation": "無法建立檔案同步服務的網路 {NETWORKNAME}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to start CSS, error {Err}",
+      "translation": "無法啟動 CSS，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to load file objects into CSS, error {Err}",
+      "translation": "無法將檔案物件載入 CSS，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to start ESS, error {Err}",
+      "translation": "無法啟動 ESS，錯誤為：{Err}"
+    },
+    {
+      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
+      "translation": "無法停止 {MakeLabelNameESSNAME}，錯誤為：{Err}"
+    },
+    {
+      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
+      "translation": "無法移除檔案同步服務的網路 {NETWORKNAME}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to list existing docker images, error {Err}",
+      "translation": "無法列出現有 Docker 映像檔，錯誤為：{Err}"
+    },
+    {
+      "id": "Found docker image {Name} locally.",
+      "translation": "在本端找到 Docker 映像檔 {Name}。"
+    },
+    {
+      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
+      "translation": "無法使用映像檔 {GetFSSFullImageName} 擷取 CSS 儲存器，錯誤為：{Err}。設定環境變數 {DEVTOOLHZNFSSIMAGETAG} 以使用其他映像檔標籤。"
+    },
+    {
+      "id": "Pulled docker image {Name}.",
+      "translation": "已擷取 Docker 映像檔 {Name}。"
+    },
+    {
+      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
+      "translation": "無法使用映像檔 {GetFSSImageName} 建立 CSS 儲存器，錯誤為：{Err}。設定環境變數 {DEVTOOLHZNFSSIMAGETAG} 以使用其他映像檔標籤。"
+    },
+    {
+      "id": "unable to start CSS container, error {Err}",
+      "translation": "無法啟動 CSS 儲存器，錯誤為：{Err}"
+    },
+    {
+      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
+      "translation": "已建立 {MakeLabelNameCSSNAME} 儲存器，在主機埠 {GetCSSPort} 上接聽"
+    },
+    {
+      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
+      "translation": "在主機埠 {GetCSSPort} 上接聽的檔案同步服務儲存器 {MakeLabelNameCSSNAME}"
+    },
+    {
+      "id": "unable to create SSL certificate for ESS, error {Err}",
+      "translation": "無法為 ESS 建立 SSL 憑證，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+      "translation": "無法開啟 ESS SSL 憑證檔 {ESSSSLClientCertPath}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+      "translation": "無法讀取 ESS SSL 憑證檔 {ESSSSLClientCertPath}，錯誤為 {Err}"
+    },
+    {
+      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+      "translation": "無法開啟 ESS SSL 憑證金鑰檔 {ESSSSLCertKeyPath}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+      "translation": "無法讀取 ESS SSL 憑證金鑰檔 {ESSSSLCertKeyPath}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to create ESS container, error {Err}",
+      "translation": "無法建立 ESS 儲存器，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to start ESS container, error {Err}",
+      "translation": "無法啟動 ESS 儲存器，錯誤為：{Err}"
+    },
+    {
+      "id": "Created {MakeLabelNameESSNAME} container",
+      "translation": "已建立 {MakeLabelNameESSNAME} 儲存器"
+    },
+    {
+      "id": "unable to list docker containers, error {Err}",
+      "translation": "無法列出 Docker 儲存器，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to stop docker container {Name}, error {Err}",
+      "translation": "無法停止 Docker 儲存器 {Name}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to remove docker container {Name}, error {Err}",
+      "translation": "無法移除 Docker 儲存器 {Name}，錯誤為：{Err}"
+    },
+    {
+      "id": "Stopped {Name} container",
+      "translation": "已停止 {Name} 儲存器"
+    },
+    {
+      "id": "Loading {FileName} into CSS",
+      "translation": "正在將 {FileName} 載入 CSS"
+    },
+    {
+      "id": "unable to open file object {FileName}, error {Err}",
+      "translation": "無法開啟檔案物件 {FileName}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to read file object {FileName}, error {Err}",
+      "translation": "無法讀取檔案物件 {FileName}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to add file {FileName} to the CSS, error {Err}",
+      "translation": "無法將檔案 {FileName} 新增至 CSS，錯誤為：{Err}"
+    },
+    {
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+      "translation": "配置檔 {FileObjects} 已載入檔案同步服務。"
+    },
+    {
+      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
+      "translation": "無法為 {Metadata} 配置 CSS 檔案 PUT 要求，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
+      "translation": "無法為 {Metadata} 建立 CSS 檔案 PUT 要求，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
+      "translation": "無法將針對 {Metadata} 發出的 CSS 檔案 PUT 要求傳送給 CSS，錯誤為：{Err}"
+    },
+    {
+      "id": "Received HTTP code: {StatusCode}",
+      "translation": "收到的 HTTP 代碼：{StatusCode}"
+    },
+    {
+      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
+      "translation": "無法將檔案 {Metadata} 放置在 CSS 中，HTTP 代碼為：{StatusCode}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "已建立網路 {Name}"
+    },
+    {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "無法列出 Docker 網路，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "無法移除 Docker 網路 {Name}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to set env var 'HORIZON_URL', error {Err}",
+      "translation": "無法設定環境變數 'HORIZON_URL'，錯誤為：{Err}"
+    },
+    {
+      "id": "failed to marshal 'agreement list' output: {Err}",
+      "translation": "無法配置 'agreement list' 輸出：{Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn node list' output: {Err}",
+      "translation": "無法配置 'hzn node list' 輸出：{Err}"
+    },
+    {
+      "id": "failed to marshal 'policy list' output: {Err}",
+      "translation": "無法配置 'policy list' 輸出：{Err}"
+    },
+    {
+      "id": "Error: The organization '{Org}' does not exist.",
+      "translation": "錯誤：組織 '{Org}' 不存在。"
+    },
+    {
+      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
+      "translation": "錯誤：組織 '{Org}' 不存在或原則 '{Name}' 不是由這個 agbot 託管。"
+    },
+    {
+      "id": "Failed to get proper response from Horizon agent",
+      "translation": "無法從 Horizon 代理程式中取得適當的回應"
+    },
+    {
+      "id": "Horizon CLI version: {HORIZONVERSION}",
+      "translation": "Horizon CLI 版本：{HORIZONVERSION}"
+    },
+    {
+      "id": "Horizon Agent version: {HorizonVersion}",
+      "translation": "Horizon 代理程式版本：{HorizonVersion}"
+    },
+    {
+      "id": "Horizon Agent version: failed to get.",
+      "translation": "Horizon 代理程式版本：無法取得。"
+    },
+    {
+      "id": "cleaned {String} resulted in an empty string.",
+      "translation": "已清除 {String} 導致出現空字串。"
+    },
+    {
+      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
+      "translation": "外掛程式環境定義必須包括 'currentDir' 作為服務定義檔的現行目錄"
+    },
+    {
+      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
+      "translation": "無法讀取圖表保存檔 {Depchartarchive}，錯誤為：{Err}"
+    },
+    {
+      "id": "failed to marshal deployment string {Dep}, error {Err}",
+      "translation": "無法配置部署字串 {Dep}，錯誤為：{Err}"
+    },
+    {
+      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
+      "translation": "使用 {KeyFilePath} 簽署部署字串時發生問題：{Err}"
+    },
+    {
+      "id": "chart_archive must have a string type value, has {C}",
+      "translation": "chart_archive 必須包含具有 {C} 的字串類型值"
+    },
+    {
+      "id": "release_name must have a string type value, has {R}",
+      "translation": "release_name 必須包含具有 {R} 的字串類型值"
+    },
+    {
+      "id": "chart_archive and release_name must be non-empty strings",
+      "translation": "chart_archive 和 release_name 必須是非空字串"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 不支援進行 Helm 部署"
+    },
+    {
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} 剖析為：網域={Domain}，路徑={Path}，標籤={Tag}"
+    },
+    {
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "警告：無法剖析映像檔路徑 '{Image}'。不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
+    },
+    {
+      "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
+      "translation": "在 'deployment' 欄位中使用 '{NewImage}' 而不是使用 '{Image}'"
+    },
+    {
+      "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
+      "translation": "'deployment.services' 下定義的每個服務都必須是 JSON 物件（使用字串作為金鑰）"
+    },
+    {
+      "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
+      "translation": "在 'deployment.services' 之下定義的服務 '{SvcName}' 沒有必要的 'image' 欄位"
+    },
+    {
+      "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
+      "translation": "在 'deployment.services' 之下定義的服務 '{SvcName}' 有未被辨識的欄位 '{K}'。請參閱 https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md"
+    },
+    {
+      "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
+      "translation": "'deployment' 欄位必須包含 'services'欄位，其值必須是 JSON 物件（使用字串作為金鑰）"
+    },
+    {
+      "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
+      "translation": "'deployment' 欄位必須包含原生 Horizon 部署配置或 Helm 部署配置，其值必須是 JSON 物件（使用字串作為金鑰）"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動檔案同步服務，錯誤為：{Sserr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法取得服務相依關係，錯誤為：{Derr}"
+    },
+    {
+      "id": "Starting dependencies.",
+      "translation": "正在啟動相依關係。"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動服務相依關係，錯誤為：{Perr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法產生測試合約 ID，錯誤為：{Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' 無法停止服務相依關係，錯誤為：{Err}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法停止檔案同步服務，錯誤為：{Sserr}"
+    },
+    {
+      "id": "Stopped service.",
+      "translation": "已停止服務。"
     }
   ]
 }
