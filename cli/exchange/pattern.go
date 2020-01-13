@@ -200,10 +200,10 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the pattern definition (%s) must contain services, unable to proceed", patFile.Services))
 	}
 
+	keyVerified := false
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
 	if patFile.Services != nil && len(patFile.Services) > 0 {
 		patInput.Services = make([]ServiceReference, len(patFile.Services))
-		keyVerified := false
 		for i := range patFile.Services {
 			patInput.Services[i].ServiceURL = patFile.Services[i].ServiceURL
 			patInput.Services[i].ServiceOrg = patFile.Services[i].ServiceOrg
@@ -244,6 +244,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					// We know we need to sign the overrides, so make sure a real key file was provided.
 					if !keyVerified {
 						keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+						keyVerified = true
 					}
 
 					patInput.Services[i].ServiceVersions[j].DeploymentOverridesSignature, err = sign.Input(keyFilePath, deployment)
@@ -286,6 +287,9 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	// Store the public key in the exchange, if they gave it to us
 	if pubKeyFilePath != "" {
 		// Note: already verified the file exists
+		if !keyVerified {
+			pubKeyFilePath = cliutils.GetAndVerifyPublicKey(pubKeyFilePath)
+		}
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
 		msgPrinter.Printf("Storing %s with the pattern in the exchange...", baseName)
@@ -328,7 +332,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 			}
 			if !keyVerified {
 				//take default key if empty, make sure the key exists
-				keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, true)
+				keyFilePath = cliutils.GetAndVerifyPublicKey(keyFilePath)
 				keyVerified = true
 			}
 			verified, err := verify.Input(keyFilePath, pat.Services[i].ServiceVersions[j].DeploymentOverridesSignature, []byte(pat.Services[i].ServiceVersions[j].DeploymentOverrides))
