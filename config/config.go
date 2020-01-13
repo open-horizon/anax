@@ -40,7 +40,7 @@ type Config struct {
 	DefaultHTTPClientTimeoutS        uint
 	PolicyPath                       string
 	ExchangeHeartbeat                int       // Seconds between heartbeats
-	ExchangeVersionCheckIntervalM    int64     // Exchange version check interval in minutes. The default is 720.
+	ExchangeVersionCheckIntervalM    int64     // Exchange version check interval in minutes. The default is 720. This is now deprecated with the usage of /changes API which returns exchange version on every call.
 	AgreementTimeoutS                uint64    // Number of seconds to wait before declaring agreement not finalized in blockchain
 	DVPrefix                         string    // When passing agreement ids into a workload container, add this prefix to the agreement id
 	RegistrationDelayS               uint64    // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
@@ -61,9 +61,9 @@ type Config struct {
 	NodeCheckIntervalS               int       // the node check interval. The default is 15 seconds.
 	NodePolicyCheckIntervalS         int       // the node policy check interval. The default is 15 seconds.
 	FileSyncService                  FSSConfig // The config for the embedded ESS sync service.
-	SurfaceErrorTimeoutS             int       //How long surfaced errors will remain active after they're created. Default is no timeout
-	SurfaceErrorCheckIntervalS       int       //How often the node will check for errors that are no longer active and update the exchange. Default is 15 seconds
-	SurfaceErrorAgreementPersistentS int       //How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
+	SurfaceErrorTimeoutS             int       // How long surfaced errors will remain active after they're created. Default is no timeout
+	SurfaceErrorCheckIntervalS       int       // Deprecated. Used to be how often the node will check for errors that are no longer active and update the exchange. Default is 15 seconds
+	SurfaceErrorAgreementPersistentS int       // How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string

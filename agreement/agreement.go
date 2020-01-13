@@ -25,19 +25,12 @@ import (
 	"time"
 )
 
-// for identifying the subworkers used by this worker
-const HEARTBEAT = "HeartBeat"
-const EDGENODE = "EdgeNode"
-const NODEPOLICY = "NodePolicy"
-
 // messages for eventlog
 const (
 	EL_AG_UNABLE_READ_POL_FILE                   = "Unable to read policy file %v for service %v, error: %v"
 	EL_AG_START_ADVERTISE_POL                    = "Start policy advertising with the exchange for service %v/%v."
 	EL_AG_UNABLE_ADVERTISE_POL                   = "Unable to advertise policies with exchange for service %v/%v, error: %v"
 	EL_AG_COMPLETE_ADVERTISE_POL                 = "Complete policy advertising with the exchange for service %v/%v."
-	EL_AG_NODE_HB_FAILED                         = "Node heartbeat failed for node %v/%v. Error: %v"
-	EL_AG_NODE_HB_RESTORED                       = "Node heartbeat restored for node %v/%v."
 	EL_AG_UNABLE_READ_NODE_POL_FROM_DB           = "unable to read node policy from the local database. %v"
 	EL_AG_UNABLE_READ_NODE_FROM_DB               = "Unable to read node object from the local database. %v"
 	EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH         = "Unable to sync the local node policy with the exchange copy. Error: %v"
@@ -53,7 +46,7 @@ const (
 )
 
 // This is does nothing useful at run time.
-// This code is only used in compileing time to make the eventlog messages gets into the catalog so that
+// This code is only used at compile time to make the eventlog messages get into the catalog so that
 // they can be translated.
 // The event log messages will be saved in English. But the CLI can request them in different languages.
 func MarkI18nMessages() {
@@ -64,8 +57,6 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_AG_START_ADVERTISE_POL)
 	msgPrinter.Sprintf(EL_AG_UNABLE_ADVERTISE_POL)
 	msgPrinter.Sprintf(EL_AG_COMPLETE_ADVERTISE_POL)
-	msgPrinter.Sprintf(EL_AG_NODE_HB_FAILED)
-	msgPrinter.Sprintf(EL_AG_NODE_HB_RESTORED)
 	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_POL_FROM_DB)
 	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_FROM_DB)
 	msgPrinter.Sprintf(EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH)
@@ -91,7 +82,6 @@ type AgreementWorker struct {
 	containerSyncUpSucessful bool
 	producerPH               map[string]producer.ProducerProtocolHandler
 	lastExchVerCheck         int64
-	heartBeatFailed          bool
 	hznOffline               bool
 	limitedRetryEC           exchange.ExchangeContext
 }
@@ -115,7 +105,6 @@ func NewAgreementWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm 
 		pm:               pm,
 		producerPH:       make(map[string]producer.ProducerProtocolHandler),
 		lastExchVerCheck: 0,
-		heartBeatFailed:  false,
 		hznOffline:       false,
 		limitedRetryEC:   lrec,
 	}
@@ -223,6 +212,15 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewNodePolicyChangedCommand(msg)
 		}
 
+	case *events.ExchangeChangeMessage:
+		msg, _ := incoming.(*events.ExchangeChangeMessage)
+		switch msg.Event().Id {
+		case events.CHANGE_NODE_TYPE:
+			w.Commands <- NewNodeChangeCommand()
+		case events.CHANGE_NODE_POLICY_TYPE:
+			w.Commands <- NewNodePolicyChangeCommand()
+		}
+
 	default: //nothing
 	}
 
@@ -270,12 +268,6 @@ func (w *AgreementWorker) Initialize() bool {
 			w.Messages() <- events.NewDeviceAgreementsSyncedMessage(events.DEVICE_AGREEMENTS_SYNCED, true)
 		}
 
-		// If the device is registered, start heartbeating. If the device isn't registered yet, then we will
-		// start heartbeating when the registration event comes in.
-		w.heartBeatFailed = false
-		w.DispatchSubworker(EDGENODE, w.checkNodeChanges, w.BaseWorker.Manager.Config.Edge.NodeCheckIntervalS, false)
-		w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
-		w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 	}
 
 	// Publish what we have for the world to see
@@ -418,6 +410,12 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			w.NodePolicyDeleted()
 		}
 
+	case *NodeChangeCommand:
+		w.checkNodeChanges()
+
+	case *NodePolicyChangeCommand:
+		w.checkNodePolicyChanges()
+
 	default:
 		// Unexpected commands are not handled.
 		return false
@@ -452,16 +450,6 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	if err := w.syncOnInit(); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error during sync up of agreements, error: %v", err)))
 	}
-
-	// start checking exchange node changes periodically
-	w.DispatchSubworker(EDGENODE, w.checkNodeChanges, w.BaseWorker.Manager.Config.Edge.NodeCheckIntervalS, false)
-
-	// start checking node policy changes periodically
-	w.DispatchSubworker(NODEPOLICY, w.checkNodePolicyChanges, w.BaseWorker.Manager.Config.Edge.NodePolicyCheckIntervalS, false)
-
-	// Start the go thread that heartbeats to the exchange
-	w.heartBeatFailed = false
-	w.DispatchSubworker(HEARTBEAT, w.heartBeat, w.BaseWorker.Manager.Config.Edge.ExchangeHeartbeat, false)
 
 }
 

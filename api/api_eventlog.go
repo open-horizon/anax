@@ -62,6 +62,9 @@ func (a *API) surface(w http.ResponseWriter, r *http.Request) {
 			lan = i18n.DEFAULT_LANGUAGE
 		}
 		msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
+
+		glog.V(5).Infof(apiLogString(fmt.Sprintf("Handling %v on resource %v. Language: %v", r.Method, resource, lan)))
+
 		if out, err := FindSurfaceLogsForOutput(a.db, msgPrinter); err != nil {
 			errorHandler(NewSystemError(msgPrinter.Sprintf("Error getting %v for output, error %v", resource, err)))
 		} else {

@@ -340,7 +340,7 @@ func (w *BaseWorker) Start(worker Worker, noWorkInterval int) {
 				glog.V(2).Infof(cdLogString(fmt.Sprintf("%v command processor non-blocking for commands", w.GetName())))
 				waitTime := w.GetNoWorkInterval()
 
-				// If there are deferred commands, then we need to use the non-blocking recieve with a timeout.
+				// If there are deferred commands, then we need to use the non-blocking receive with a timeout.
 				if w.GetNoWorkInterval() == 0 {
 					waitTime = 5
 				}

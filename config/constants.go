@@ -61,7 +61,7 @@ const HZN_FSS_POLLING_RATE = 60
 const ExchangeMessagePollInterval_DEFAULT = 10
 
 // The Default message poll interval maximum.
-const ExchangeMessagePollMaxInterval_DEFAULT = 60
+const ExchangeMessagePollMaxInterval_DEFAULT = 120
 
 // The Default message poll increment size.
 const ExchangeMessagePollIncrement_DEFAULT = 10

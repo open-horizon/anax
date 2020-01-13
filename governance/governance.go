@@ -7,6 +7,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
+	"github.com/open-horizon/anax/cache"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
@@ -45,6 +46,9 @@ const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
 const SURFACEERRORS = "SurfaceExchErrors"
 
+// Keys for the exchange errors cache in the worker
+const EXCHANGE_ERRORS = "ExchangeErrors"
+
 type GovernanceWorker struct {
 	worker.BaseWorker   // embedded field
 	db                  *bolt.DB
@@ -53,9 +57,9 @@ type GovernanceWorker struct {
 	producerPH          map[string]producer.ProducerProtocolHandler
 	deviceStatus        *DeviceStatus
 	ShuttingDownCmd     *NodeShutdownCommand
-	lastSvcUpgradeCheck int64
 	patternChange       ChangePattern
 	limitedRetryEC      exchange.ExchangeContext
+	exchErrors          cache.Cache
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -77,8 +81,8 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		producerPH:          make(map[string]producer.ProducerProtocolHandler),
 		deviceStatus:        NewDeviceStatus(),
 		ShuttingDownCmd:     nil,
-		lastSvcUpgradeCheck: time.Now().Unix(),
 		limitedRetryEC:      lrec,
+		exchErrors:          cache.NewSimpleMapCache(),
 	}
 
 	// Start the worker and set the no work interval to 10 seconds.
@@ -311,8 +315,10 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 
 			// Make sure device status is up to date since heartbeating is now restored. It means connectivity to
 			// the exchange has been out but is now working again.
-			cmd2 := w.NewReportDeviceStatusCommand()
-			w.Commands <- cmd2
+			w.Commands <- w.NewReportDeviceStatusCommand()
+
+			w.Commands <- NewNodeErrorChangeCommand()
+
 		}
 
 	case *events.ServiceConfigStateChangeMessage:
@@ -353,6 +359,15 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		switch msg.Event().Id {
 		case events.NODE_PATTERN_CHANGE_SHUTDOWN, events.NODE_PATTERN_CHANGE_REREG:
 			w.Commands <- NewNodePatternChangedCommand(msg)
+		}
+
+	case *events.ExchangeChangeMessage:
+		msg, _ := incoming.(*events.ExchangeChangeMessage)
+		switch msg.Event().Id {
+		case events.CHANGE_NODE_ERROR_TYPE:
+			w.Commands <- NewNodeErrorChangeCommand()
+		case events.CHANGE_SERVICE_TYPE:
+			w.Commands <- NewServiceChangeCommand()
 		}
 
 	default: //nothing
@@ -721,8 +736,8 @@ func (w *GovernanceWorker) Initialize() bool {
 	// Fire up the container governor
 	w.DispatchSubworker(CONTAINER_GOVERNOR, w.governContainers, 60, false)
 
-	// Fire up the blockchain reporter
-	w.DispatchSubworker(BC_GOVERNOR, w.reportBlockchains, 60, false)
+	// Fire up the blockchain reporter. Disabled for now.
+	//w.DispatchSubworker(BC_GOVERNOR, w.reportBlockchains, 60, false)
 
 	// Fire up the microservice governor
 	w.DispatchSubworker(MICROSERVICE_GOVERNOR, w.governMicroservices, 60, false)
@@ -1329,6 +1344,18 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 		} else if cmd.Msg.Event().Id == events.NODE_PATTERN_CHANGE_REREG {
 			w.handleNodeExchPatternChanged(false, cmd.Msg.Pattern)
 		}
+
+	case *NodeErrorChangeCommand:
+		exchErrors, err := exchange.GetHTTPSurfaceErrorsHandler(w.limitedRetryEC)(w.GetExchangeId())
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error reading surfaced errors from the exchange: %v", err)))
+			w.exchErrors.Put(EXCHANGE_ERRORS, nil)
+		} else {
+			w.exchErrors.Put(EXCHANGE_ERRORS, exchErrors)
+		}
+
+	case *ServiceChangeCommand:
+		w.governMicroserviceVersions()
 
 	default:
 		return false

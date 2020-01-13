@@ -66,3 +66,27 @@ func NewNodePolicyChangedCommand(msg *events.NodePolicyMessage) *NodePolicyChang
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+type NodeChangeCommand struct {
+}
+
+func (c NodeChangeCommand) ShortString() string {
+	return fmt.Sprintf("NodeChangeCommand")
+}
+
+func NewNodeChangeCommand() *NodeChangeCommand {
+	return &NodeChangeCommand{}
+}
+
+// ==============================================================================================================
+type NodePolicyChangeCommand struct {
+}
+
+func (c NodePolicyChangeCommand) ShortString() string {
+	return fmt.Sprintf("NodePolicyChangeCommand")
+}
+
+func NewNodePolicyChangeCommand() *NodePolicyChangeCommand {
+	return &NodePolicyChangeCommand{}
+}

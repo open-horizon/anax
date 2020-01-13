@@ -277,3 +277,29 @@ func NewNodePatternChangedCommand(msg *events.NodePatternMessage) *NodePatternCh
 		Msg: msg,
 	}
 }
+
+// ==============================================================================================================
+// Update node surfaced errors
+type NodeErrorChangeCommand struct {
+}
+
+func (c NodeErrorChangeCommand) ShortString() string {
+	return fmt.Sprintf("NodeErrorChangeCommand")
+}
+
+func NewNodeErrorChangeCommand() *NodeErrorChangeCommand {
+	return &NodeErrorChangeCommand{}
+}
+
+// ==============================================================================================================
+// Check service version upgrades
+type ServiceChangeCommand struct {
+}
+
+func (c ServiceChangeCommand) ShortString() string {
+	return fmt.Sprintf("ServiceChangeCommand")
+}
+
+func NewServiceChangeCommand() *ServiceChangeCommand {
+	return &ServiceChangeCommand{}
+}

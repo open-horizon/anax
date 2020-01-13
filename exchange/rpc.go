@@ -123,6 +123,12 @@ func CreateSearchMSRequest() *SearchExchangeMSRequest {
 	return ser
 }
 
+type HeartbeatIntervals struct {
+	MinInterval        int `json:"minInterval"`
+	MaxInterval        int `json:"maxInterval"`
+	IntervalAdjustment int `json:"intervalAdjustment"`
+}
+
 // Structs and types for interacting with the device (node) object in the exchange
 type Device struct {
 	Token              string             `json:"token"`
@@ -136,14 +142,15 @@ type Device struct {
 	PublicKey          []byte             `json:"publicKey"`
 	Arch               string             `json:"arch"`
 	UserInput          []policy.UserInput `json:"userInput"`
+	HeartbeatIntv      HeartbeatIntervals `json:"heartbeatIntervals,omitempty"`
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput)
+	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, RegisteredServices URLs:", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch)
+	str := fmt.Sprintf("Name: %v, Owner: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v, RegisteredServices URLs:", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -924,6 +931,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *ExchangeSurfaceError:
+						return nil, nil
+
+					case *ExchangeChanges:
 						return nil, nil
 
 					default:

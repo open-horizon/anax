@@ -11,73 +11,9 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"github.com/open-horizon/anax/version"
 	"sort"
 	"strings"
-	"time"
 )
-
-// Heartbeat to the exchange. This function is called by the heartbeat subworker.
-func (w *AgreementWorker) heartBeat() int {
-
-	if w.Config.Edge.ExchangeVersionCheckIntervalM > 0 {
-		// get the exchange version check interval and change to seconds
-		check_interval := w.Config.Edge.ExchangeVersionCheckIntervalM * 60
-
-		// check the exchange version when time is right
-		time_now := time.Now().Unix()
-		if w.lastExchVerCheck == 0 || time_now-w.lastExchVerCheck >= int64(check_interval) {
-			w.lastExchVerCheck = time_now
-
-			// log error if the current exchange version does not meet the requirement
-			if err := version.VerifyExchangeVersion(w.limitedRetryEC.GetHTTPFactory(), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken(), false); err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error verifiying exchange version. error: %v", err)))
-			}
-		}
-	}
-
-	// now do the hearbeat
-	nodeOrg := exchange.GetOrg(w.GetExchangeId())
-	nodeId := exchange.GetId(w.GetExchangeId())
-
-	targetURL := w.GetExchangeURL() + "orgs/" + nodeOrg + "/nodes/" + nodeId + "/heartbeat"
-	err := exchange.Heartbeat(w.limitedRetryEC.GetHTTPFactory(), targetURL, w.GetExchangeId(), w.GetExchangeToken())
-
-	if err != nil {
-		if strings.Contains(err.Error(), "status: 401") {
-			// If the heartbeat fails because the node entry is gone then initiate a full node quiesce
-			w.Messages() <- events.NewNodeShutdownMessage(events.START_UNCONFIGURE, false, false)
-		} else {
-			// let other workers know that the heartbeat failed.
-			// the message is sent out only when the heartbeat state changes from success to failed.
-			if !w.heartBeatFailed {
-				w.heartBeatFailed = true
-
-				glog.Errorf(logString(fmt.Sprintf("node heartbeat failed for node %v/%v. Error: %v", nodeOrg, nodeId, err)))
-				eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_AG_NODE_HB_FAILED, nodeOrg, nodeId, err.Error()),
-					persistence.EC_NODE_HEARTBEAT_FAILED, nodeId, nodeOrg, "", "")
-
-				w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_FAILED, nodeOrg, nodeId)
-			}
-		}
-	} else {
-		if w.heartBeatFailed {
-			// let other workers know that the heartbeat restored
-			// the message is sent out only when the heartbeat state changes from faild to success.
-			w.heartBeatFailed = false
-
-			glog.Infof(logString(fmt.Sprintf("node heartbeat restored for node %v/%v.", nodeOrg, nodeId)))
-			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_INFO,
-				persistence.NewMessageMeta(EL_AG_NODE_HB_RESTORED, nodeOrg, nodeId),
-				persistence.EC_NODE_HEARTBEAT_RESTORED, nodeId, nodeOrg, "", "")
-
-			w.Messages() <- events.NewNodeHeartbeatStateChangeMessage(events.NODE_HEARTBEAT_RESTORED, nodeOrg, nodeId)
-		}
-	}
-
-	return 0
-}
 
 // handles the node policy UPDATE_POLICY event
 func (w *AgreementWorker) NodePolicyUpdated() {
@@ -108,8 +44,8 @@ func (w *AgreementWorker) NodePolicyDeleted() {
 }
 
 // Check node changes on the exchange and save it on local node
-func (w *AgreementWorker) checkNodeChanges() int {
-	glog.V(5).Infof(logString(fmt.Sprintf("checking the exchange node changes.")))
+func (w *AgreementWorker) checkNodeChanges() {
+	glog.V(3).Infof(logString(fmt.Sprintf("checking the exchange node changes.")))
 
 	// get the node
 	pDevice, err := persistence.FindExchangeDevice(w.db)
@@ -118,10 +54,10 @@ func (w *AgreementWorker) checkNodeChanges() int {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
-		return 0
+		return
 	} else if pDevice == nil {
 		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
-		return 0
+		return
 	}
 
 	// save a local copy of the exchange node
@@ -136,13 +72,13 @@ func (w *AgreementWorker) checkNodeChanges() int {
 				exchange.GetId(w.GetExchangeId()),
 				w.devicePattern, "")
 			w.isOffline()
-			return 0
+			return
 		}
 	} else {
 		w.hznOffline = false
 	}
 
-	glog.V(5).Infof(logString(fmt.Sprintf("Done checking exchange node changes.")))
+	glog.V(3).Infof(logString(fmt.Sprintf("Done checking exchange node changes.")))
 
 	// now check the user input changes.
 	w.checkNodeUserInputChanges(pDevice)
@@ -153,7 +89,7 @@ func (w *AgreementWorker) checkNodeChanges() int {
 	// check the service configstate changes
 	w.checkServiceConfigStateChanges(exchNode)
 
-	return 0
+	return
 }
 
 // Check the node user input changes on the exchange and sync up with
@@ -285,9 +221,9 @@ func (w *AgreementWorker) checkServiceConfigStateChanges(exchDevice *exchange.De
 }
 
 // Check the node policy changes on the exchange and sync up with
-// the local copy. The exchange is the master
-func (w *AgreementWorker) checkNodePolicyChanges() int {
-	glog.V(5).Infof(logString(fmt.Sprintf("checking the node policy changes.")))
+// the local copy. The exchange is the master.
+func (w *AgreementWorker) checkNodePolicyChanges() {
+	glog.V(3).Infof(logString(fmt.Sprintf("checking the node policy changes.")))
 
 	// get the node
 	pDevice, err := persistence.FindExchangeDevice(w.db)
@@ -296,10 +232,10 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
 			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
 			persistence.EC_DATABASE_ERROR)
-		return 0
+		return
 	} else if pDevice == nil {
 		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
-		return 0
+		return
 	}
 
 	// exchange is the master
@@ -331,8 +267,8 @@ func (w *AgreementWorker) checkNodePolicyChanges() int {
 	} else {
 		w.hznOffline = false
 	}
-	glog.V(5).Infof(logString(fmt.Sprint("Done checking the node policy changes.")))
-	return 0
+	glog.V(3).Infof(logString(fmt.Sprint("Done checking the node policy changes.")))
+	return
 }
 
 func (w *AgreementWorker) isOffline() {

@@ -21,7 +21,7 @@ import (
 // function ends in an error, the error will be in the shutdown complete message.
 //
 // There are other workers responsible for other functions, which will also so some cleanup when the Node Shutdown Message
-// arrives. For example, the node heartbeat function is stopped by the Agreement worker.
+// arrives.
 func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	errorMessage := ""
@@ -65,6 +65,10 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		w.continueWithError(logString(err.Error()))
 		errorMessage = fmt.Sprintf("Unable to reset the node in the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
 	}
+
+	// Tell the exchange changes worker to stop retrieving and recording changes. We dont need it any longer now that the agreements
+	// are all gone.
+	w.Messages() <- events.NewExchangeChangesShutdownMessage(events.MESSAGE_STOP)
 
 	// Tell the blockchain workers to terminate blockchain containers. We will do this by telling the producer protocol handlers to shutdown.
 	// Any protocol handlers that are using a blockchain will tell the blockchain worker to terminate.
@@ -122,6 +126,12 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	// Reset the node user input hash
 	if err := persistence.DeleteNodeUserInputHash_Exch(w.db); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// Delete exchange change state from local db
+	if err := persistence.DeleteExchangeChangeState(w.db); err != nil {
 		w.completedWithError(logString(err.Error()))
 		return
 	}
@@ -382,9 +392,6 @@ func (w *GovernanceWorker) patchNodeKey(httpClientFactory *config.HTTPClientFact
 	}
 
 	glog.V(3).Infof(logString(fmt.Sprintf("deleted messaging keys from the node")))
-
-	// Tell the messaging worker it can terminate now.
-	w.Messages() <- events.NewMessagingShutdownMessage(events.MESSAGE_STOP)
 
 	return nil
 
