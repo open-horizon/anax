@@ -169,20 +169,24 @@ func (s *Service) HasSpecificPortBinding() bool {
 	return false
 }
 
-func (s *Service) GetSpecificHostPortBinding() string {
-	p := []string{}
-	if s.SpecificPorts != nil && len(s.SpecificPorts) != 0 {
-		p = strings.Split(s.SpecificPorts[0].HostPort, ":")
-	} else if s.Ports != nil && len(s.Ports) != 0 {
-		p = strings.Split(s.Ports[0].HostPort, ":")
-	}
-
+func GetSpecificHostPort(hostPort string) string {
+	p := strings.Split(hostPort, ":")
 	if len(p) > 0 {
 		port := strings.Split(p[0], "/")[0]
 		return port
 	}
-
 	return ""
+}
+
+func (s *Service) GetSpecificHostPortBinding() string {
+	p := ""
+	if s.SpecificPorts != nil && len(s.SpecificPorts) != 0 {
+		p = s.SpecificPorts[0].HostPort
+	} else if s.Ports != nil && len(s.Ports) != 0 {
+		p = s.Ports[0].HostPort
+	}
+
+	return GetSpecificHostPort(p)
 }
 
 func (s *Service) GetSpecificContainerPortBinding() string {
