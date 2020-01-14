@@ -3,304 +3,468 @@
   "language": "it",
   "messages": [
     {
-      "id": "The given node id is empty.",
-      "translation": "L'id nodo fornito è vuoto."
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Errore di compatibilità: le versioni di schema non sono uguali, Politica consumer: {Version}, Politica producer {Version_1}"
     },
     {
-      "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "L'organizzazione non è specificata nell'id nodo fornito: {NodeId}."
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Errore di compatibilità: le proprietà del nodo {Properties} non soddisfano i requisiti di vincolo {Constraints}. Errore sottostante: {Err}"
     },
     {
-      "id": "Error getting node {NodeId} from the exchange. {Err}",
-      "translation": "Errore durante l'acquisizione del nodo {NodeId} da exchange. {Err}"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Errore di compatibilità: le proprietà {Properties} non soddisfano i vincoli del nodo {Constraints}. Errore sottostante: {Err}"
     },
     {
-      "id": "No node found for this node id {NodeId}.",
-      "translation": "Nessun nodo trovato per questo id nodo {NodeId}."
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Errore di compatibilità: nessun protocollo di accordo comune tra {AgreementProtocols} e {AgreementProtocols_1}. Errore sottostante: {Err}"
     },
     {
-      "id": "The PolicyCheck input cannot be null",
-      "translation": "L'input di PolicyCheck non può essere null"
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Errore di compatibilità: la verifica dei dati deve essere compatibile, il producer ha {DataVerify} e il consumer ha {DataVerify_1}."
     },
     {
-      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
-      "translation": "L'architettura del nodo di input {NodeArch} non corrisponde all'architettura del nodo exchange {Arch} per il nodo {NodeId}."
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: spazi non consentiti in {Expr}."
     },
     {
-      "id": "Policy Incompatible",
-      "translation": "Politica incompatibile"
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} non è una stringa di versione valida."
     },
     {
-      "id": "Compatible",
-      "translation": "Compatibile"
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} non inizia con una direttiva di inclusione o esclusione."
     },
     {
-      "id": "Architecture does not match.",
-      "translation": "L'architettura non corrisponde."
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} non termina con una direttiva di inclusione o esclusione."
     },
     {
-      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
-      "translation": "Impossibile ottenere servizi per tutte le architetture per {Org}/{WorkloadURL} versione {Version}. {Err}"
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: numero di versioni errato nell'espressione: {Expr}."
     },
     {
-      "id": "Failed to validate the service policy. {Err}",
-      "translation": "Impossibile convalidare la politica del servizio. {Err}"
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "La stringa di versione di input {V1} o {V2} non è una stringa di versione singola valida."
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica aziendale."
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "La configurazione di distribuzione {Arg_1} contiene la funzionalità non supportata per un workload"
     },
     {
-      "id": "No services found in the business policy.",
-      "translation": "Nessun servizio trovato nella politica aziendale."
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "La configurazione di distribuzione {Arg_1} contiene la funzionalità non supportata per il contenitore dell'infrastruttura."
     },
     {
-      "id": "Node policy cannot be null.",
-      "translation": "La politica del nodo non può essere null."
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "La configurazione di distribuzione {Arg_1} contiene il bind non supportato per un workload, {Arg_2}"
     },
     {
-      "id": "Business policy cannot be null.",
-      "translation": "La politica aziendale non può essere null."
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "La configurazione di distribuzione {Arg_1} contiene il bind non supportato per {Arg_2}, {Arg_3}"
     },
     {
-      "id": "Merged service policy cannot be null.",
-      "translation": "La politica del servizio unita non può essere null."
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Errore durante l'annullamento del marshalling della stringa di distribuzione {Arg_1}, errore: {Arg_2}"
     },
     {
-      "id": "Error merging node policy with arch property. {Err}",
-      "translation": "Errore di unione della politica del nodo con la proprietà arch. {Err}"
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Errore durante l'annullamento del marshalling della stringa di sostituzione distribuzione {Arg_1} per l'accordo {Arg_2}, errore: {Arg_3}"
     },
     {
-      "id": "Failed to validate the node policy. {Err}",
-      "translation": "Impossibile convalidare la politica del nodo. {Err}"
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "Errore di avvio dei contenitori: {Arg_1}"
     },
     {
-      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
-      "translation": "Impossibile convertire la politica del nodo nel formato di politica interna per il nodo {NodeId}: {Err}"
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Errore durante l'avvio dei contenitori per l'accordo {Arg_1}: {Arg_2}"
     },
     {
-      "id": "No node policy found for this node {NodeId}.",
-      "translation": "Nessuna politica del nodo trovata per questo nodo {NodeId}."
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Errore durante il riavvio dei contenitori per gli accordi {Arg_1}: {Arg_2}"
     },
     {
-      "id": "Neither node policy nor node id is specified.",
-      "translation": "Non sono stati specificati né la politica del nodo né l'id nodo."
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Errore durante la ripulitura dei vecchi contenitori prima di avviare i nuovi contenitori per {Arg_1}. Errore: {Arg_2}"
     },
     {
-      "id": "Node id is empty.",
-      "translation": "L'id nodo è vuoto."
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Impossibile richiamare un elenco di contenitori parent per il nuovo tentativo di servizio per {Arg_1}. {Arg_2}"
     },
     {
-      "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "L'organizzazione non è specificata nell'id nodo: {NodeId}."
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Impossibile ripristinare la connessione di rete con i parent per il servizio {Arg_1}. {Arg_2}"
     },
     {
-      "id": "Error trying to query node policy for {NodeId}: {Err}",
-      "translation": "Errore durante il tentativo di query sulla politica del nodo per {NodeId}: {Err}"
+      "id": "No input found.",
+      "translation": "Nessun input trovato."
     },
     {
-      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
-      "translation": "Impossibile convalidare la politica del nodo per il nodo {NodeId}. {Err}"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Non autorizzato. Nessun id utente exchange fornito."
     },
     {
-      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
-      "translation": "Impossibile convertire la politica del nodo nella politica interna per il nodo {NodeId}: {Err}"
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "Impossibile autenticare l'utente con exchange. {Err}"
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "translation": "Impossibile convertire la politica aziendale {BpId} nella politica interna: {Err1}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto JSON. {Err}"
     },
     {
-      "id": "Validation failure for business policy {BpId}. {Err}",
-      "translation": "Errore di convalida per la politica aziendale {BpId}. {Err}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto PolicyCheck. {Err}"
     },
     {
-      "id": "No services specified in the given business policy {BpId}.",
-      "translation": "Nessun servizio specificato nella policy aziendale fornita {BpId}."
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto UserInputCheck. {Err}"
     },
     {
-      "id": "No services specified in the business policy {Name}.",
-      "translation": "Nessun servizio specificato nella policy aziendale {Name}."
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto CompCheck. {Err}"
     },
     {
-      "id": "Neither business policy nor business policy id is specified.",
-      "translation": "Non sono stati specificati né la politica aziendale né l'id politica aziendale."
+      "id": "No exchange user id is supplied.",
+      "translation": "Nessun id utente exchange fornito."
     },
     {
-      "id": "Business policy id is empty.",
-      "translation": "L'id politica aziendale è vuoto."
+      "id": "No exchange user organization id is supplied.",
+      "translation": "Nessun id organizzazione utente exchange fornito."
     },
     {
-      "id": "Organization is not specified in the business policy id: {BpId}.",
-      "translation": "L'organizzazione non è specificata nell'id politica aziendale: {BpId}."
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "Nessuna password utente exchange o chiave API fornita."
     },
     {
-      "id": "Unable to get business policy for {BpId}, {Err}",
-      "translation": "Impossibile richiamare la politica aziendale per {BpId}, {Err}"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "Id organizzazione, id utente o password errati."
     },
     {
-      "id": "No business policy found for this id {BpId}.",
-      "translation": "Nessuna politica aziendale trovata per questo id {BpId}."
+      "id": "Internal server error",
+      "translation": "Errore interno del server"
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "translation": "Impossibile convertire la politica aziendale {BpId} nel formato di politica interna: {Err}"
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "L'espressione di vincolo {Dconstraints} è di tipo {Dconstraints_1}, ma è prevista come array di stringhe"
     },
     {
-      "id": "Service policy id is empty.",
-      "translation": "L'id politica del servizio è vuoto."
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "L'espressione del vincolo contiene parentesi non corrispondenti."
     },
     {
-      "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "L'organizzazione non è specificata nell'id politica del servizio: {SvcId}."
+      "id": "[verbose] {M}",
+      "translation": "[verbose] {M}"
     },
     {
-      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
-      "translation": "Errore durante il tentativo di eseguire query sulla politica del servizio per l'id servizio {SvcId}: {Err}"
+      "id": "Error: {Msg}",
+      "translation": "Errore: {Msg}"
     },
     {
-      "id": "Error validating the service policy {SvcId}. {Err}",
-      "translation": "Errore durante la convalida della politica del servizio {SvcId}. {Err}"
+      "id": "Warning: {Msg}",
+      "translation": "Avvertenza: {Msg}"
     },
     {
-      "id": "Service name is empty.",
-      "translation": "Il nome del servizio è vuoto."
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "translation": "impossibile annullare il marshalling dei byte da {ErrMsg}: {Err}"
     },
     {
-      "id": "Service organization is empty.",
-      "translation": "L'organizzazione del servizio è vuota."
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+      "translation": "impossibile eseguire il marshalling del tipo di dati da {ErrMsg}: {Err}"
     },
     {
-      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "Errore durante il tentativo di query sulla politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
+      "id": "problem testing api key match: {Err}",
+      "translation": "problema durante il test di corrispondenza della chiave API: {Err}"
     },
     {
-      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "Impossibile convalidare la politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
+      "id": "Using API key",
+      "translation": "Viene utilizzata la chiave API"
     },
     {
-      "id": "The given business policy should not be null.",
-      "translation": "La politica aziendale fornita non deve essere null."
+      "id": "unable to create docker client: {Err}",
+      "translation": "impossibile creare il client docker: {Err}"
     },
     {
-      "id": "Error merging business policy with service policy. {Err}",
-      "translation": "Errore durante l'unione della politica aziendale con la politica del servizio. {Err}"
+      "id": "docker auth domainName: {DomainName}",
+      "translation": "domainName di autenticazione docker: {DomainName}"
     },
     {
-      "id": "The business policy should not be null.",
-      "translation": "La politica aziendale non deve essere null."
+      "id": "unable to find docker credentials for {Domain}",
+      "translation": "impossibile trovare le credenziali docker per {Domain}"
     },
     {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "L'input di UserInputCheck non può essere null"
+      "id": "Pushing {Repository}:{Tag}...",
+      "translation": "Push di {Repository}:{Tag}..."
     },
     {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "Non sono stati specificati né l'input utente del nodo né l'id nodo."
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "translation": "impossibile richiamare le credenziali docker da ~/.docker/config.json: {Err}. Potrebbe essere necessario eseguire 'docker login ...' per fornire le credenziali per il registro di immagini."
     },
     {
-      "id": "User Input Incompatible",
-      "translation": "Input utente incompatibile"
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+      "translation": "impossibile eseguire il push dell'immagine docker {Repository____tag}: {Err}"
     },
     {
-      "id": "Service architecture {Arch} does not match the node architecture {NodeArch}.",
-      "translation": "L'architettura del servizio {Arch} non corrisponde all'architettura del nodo {NodeArch}."
+      "id": "could not find the image digest in the docker push output",
+      "translation": "impossibile trovare il digest dell'immagine nell'output di push del docker"
     },
     {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "Errore di convalida per il servizio di input {SId}. {Err}"
+      "id": "Pulling {Repository}:{Tag}...",
+      "translation": "Estrazione di {Repository}:{Tag}..."
     },
     {
-      "id": "Error getting services for all archetctures for {Org}/{Name} version {Version}. {Err}",
-      "translation": "Errore di richiamo dei servizi per tutte le architetture per {Org}/{Name} versione {Version}. {Err}"
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "translation": "impossibile estrarre l'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}"
     },
     {
-      "id": "Service definition not found in the input.",
-      "translation": "Definizione del servizio non trovata nell'input."
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+      "translation": "impossibile estrarre l'immagine docker {Repository____tag}: {Err}"
     },
     {
-      "id": "The input service spec object cannot be null.",
-      "translation": "L'oggetto specifica del servizio di input non può essere null."
+      "id": "the id can not contain more than 1 '/'",
+      "translation": "l'id non può contenere più di 1 '/'"
     },
     {
-      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "translation": "Errore durante il richiamo del servizio da exchange per {SvcSpec}. {Err}"
+      "id": "reading stdin failed: {Err}",
+      "translation": "lettura di stdin non riuscita: {Err}"
     },
     {
-      "id": "Error verifing user input for service {SId}. {Err}",
-      "translation": "Errore durante la verifica dell'input utente per il servizio {SId}. {Err}"
+      "id": "reading {FilePath} failed: {Err}",
+      "translation": "lettura di {FilePath} non riuscita: {Err}"
     },
     {
-      "id": "Failed to verify user input for service {SId}. {Reason}",
-      "translation": "Impossibile verificare l'input utente per il servizio {SId}. {Reason}"
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "translation": "Avvertenza: la variabile di ambiente '{EnvVarName}' è utilizzata in un file di input, ma non è definita nell'ambiente."
     },
     {
-      "id": "Error verifing user input for dependent service {SId}. {Err}",
-      "translation": "Errore durante la verifica dell'input utente per il servizio dipendente {SId}. {Err}"
+      "id": "Error reading input, error {Err}",
+      "translation": "Errore durante la lettura dell'input, errore {Err}"
     },
     {
-      "id": "Failed to verify user input for dependent service {SId}. {Reason}",
-      "translation": "Impossibile verificare l'input utente per il servizio dipendente {SId}. {Reason}"
+      "id": "Exiting.",
+      "translation": "Uscita."
     },
     {
-      "id": "The input service definition object cannot be null.",
-      "translation": "L'oggetto di definizione del servizio di input non può essere null."
+      "id": "Error reading HTTP response, error {Err}",
+      "translation": "Errore durante la lettura della risposta HTTP, errore {Err}"
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "Impossibile creare l'espressione di versione da {Version}. {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire 'systemctl status horizon' per controllare se l'agent Horizon è in esecuzione. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
     },
     {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "Errore durante il richiamo dei servizi dipendenti da exchange per {SDep}. {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Verificare se il tunnel ssh associato è inattivo. Oppure potrebbe essere inattivo l'agent Horizon remoto all'altra estremità del tunnel. L'errore specifico è: {Err}"
     },
     {
-      "id": "Failed to get the service from the exchange. {Err}",
-      "translation": "Impossibile richiamare il servizio da exchange. {Err}"
+      "id": "{ApiMsg} new request failed: {Err}",
+      "translation": "{ApiMsg} nuova richiesta non riuscita: {Err}"
     },
     {
-      "id": "Servcie does not exist on the exchange.",
-      "translation": "Il servizio non esiste in exchange."
+      "id": "HTTP code: {HttpCode}",
+      "translation": "Codice HTTP: {HttpCode}"
     },
     {
-      "id": "No user input found for service.",
-      "translation": "Nessun input utente trovato per il servizio."
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "Codice HTTP errato da {ApiMsg}: {HttpCode}"
     },
     {
-      "id": "Failed to validate the user input type for variable {Name}. {Err}",
-      "translation": "Impossibile convalidare il tipo di input utente per la variabile {Name}. {Err}"
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "Codice HTTP errato da {ApiMsg}: {HttpCode}"
     },
     {
-      "id": "A required user input value is missing for variable {Name}.",
-      "translation": "Un valore di input utente obbligatorio è mancante per la variabile {Name}."
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+      "translation": "Impossibile leggere la risposta del corpo da {ApiMsg}: {Err}"
     },
     {
-      "id": "URL must be specified in the service definition.",
-      "translation": "L'URL deve essere specificato nella definizione del servizio."
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+      "translation": "Impossibile leggere la risposta del corpo da {ApiMsg}: {Err}"
     },
     {
-      "id": "Version must be specified in the service definition.",
-      "translation": "La versione deve essere specificata nella definizione del servizio."
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "Impossibile annullare il marshalling della risposta del corpo da {ApiMsg}: {Err}"
     },
     {
-      "id": "Invalide version format: {Version}.",
-      "translation": "Formato della versione non valido: {Version}."
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "Impossibile annullare il marshalling della risposta del corpo da {ApiMsg}: {Err}"
     },
     {
-      "id": "Arch must be specified in the service definition.",
-      "translation": "L'architettura deve essere specificata nella definizione del servizio."
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}: {Body}"
     },
     {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "translation": "L'URL del servizio {URL} non corrisponde all'URL di servizio {Name} specificato nella politica aziendale."
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+      "translation": "Impossibile eseguire il marshalling del corpo per {ApiMsg}: {Err}"
     },
     {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "translation": "L'architettura del servizio {Arch} non corrisponde all'architettura del servizio {Arch_1} specificata nella politica aziendale."
+      "id": "Failed to unmarshal bytes. {Err}",
+      "translation": "Impossibile eseguire il marshalling dei byte. {Err}"
     },
     {
-      "id": "Service version {Version} does not match any service versions specified in the business policy.",
-      "translation": "La versione del servizio {Version} non corrisponde ad alcuna versione del servizio specificata nella politica aziendale."
+      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "Errore durante il richiamo di {OldMgmtHubCertPath} da {ANAXOVERWRITEFILE}: {Err}"
+    },
+    {
+      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "translation": "Rilevato errore durante la lettura del file cert ICP {IcpCertPath}: {Err}"
+    },
+    {
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "Errore durante il richiamo di HZN_EXCHANGE_URL da {ANAXOVERWRITEFILE}. {Err}"
+    },
+    {
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "translation": "Errore durante il richiamo di ExchangeUrl da {ANAXCONFIGFILE}. {Err}"
+    },
+    {
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "translation": "HZN_EXCHANGE_URL non è impostato, richiamarlo dalla configurazione dell'agent Horizon sul nodo."
+    },
+    {
+      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "Impossibile ottenere l'url exchange dalla variabile di ambiente HZN_EXCHANGE_URL o dall'agent Horizon"
+    },
+    {
+      "id": "The exchange url: {ExchUrl}",
+      "translation": "URL exchange: {ExchUrl}"
+    },
+    {
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "Errore durante il richiamo di HZN_FSS_CSSURL da {ANAXOVERWRITEFILE}. {Err}"
+    },
+    {
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "translation": "Errore durante il richiamo dell'URL del servizio di gestione modelli da {ANAXCONFIGFILE}. {Err}"
+    },
+    {
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "translation": "HZN_FSS_CSSURL non è impostato, richiamarlo dalla configurazione dell'agent Horizon sul nodo."
+    },
+    {
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "translation": "Impossibile ottenere l'URL del servizio di gestione modelli dalla variabile di ambiente HZN_FSS_CSSURL o dall'agent Horizon"
+    },
+    {
+      "id": "The model management service url: {MmsUrl}",
+      "translation": "URL del servizio di gestione modelli: {MmsUrl}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon {HorizonService} per eseguire {ApiMethod}. Impostare {ServiceEnvVarName} per utilizzare {Article} {HorizonService_1} diverso da quello per cui è attualmente configurato l'agent Horizon. L'errore specifico è: {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon {HorizonService} per eseguire {ApiMethod}. Controllare che {ServiceEnvVarName} sia impostato correttamente. Oppure annullare l'impostazione di {ServiceEnvVarName_1} per utilizzare {HorizonService_1} per cui è configurato l'agent Horizon. L'errore specifico è: {Err}"
+    },
+    {
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "translation": "impossibile eseguire il marshalling del corpo exchange per {ApiMsg}: {Err}"
+    },
+    {
+      "id": "unable to open object file {Name}: {Err}",
+      "translation": "Impossibile aprire il file oggetto {Name}: {Err}"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "Rilevato errore HTTP: {Err} durante la chiamata all'API REST {Service} {ApiMsg}. Stato HTTP: {Httpstatus}. Verrà eseguito un nuovo tentativo."
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "Rilevato errore HTTP: {Err} durante la chiamata all'API REST {Service} {ApiMsg}. Stato HTTP: {Httpstatus}."
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}, output: {StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "impossibile annullare il marshalling della risposta del corpo exchange da {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "impossibile eseguire il marshalling dell'output exchange da {ApiMsg}: {Err}"
+    },
+    {
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "translation": "impossibile leggere la risposta del corpo exchange da {ApiMsg}: {Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}: {Code}, {Msg}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}"
+    },
+    {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "translation": "L'autenticazione exchange deve essere specificata con uno tra: indicatore -u, indicatore -n, HZN_EXCHANGE_USER_AUTH o HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "Impossibile ottenere il percorso assoluto per il file {KeyFile}. {Err}"
+    },
+    {
+      "id": "{Err}. Please create the signing key.",
+      "translation": "{Err}. Creare la chiave di firma."
+    },
+    {
+      "id": "running: {CmdStr}",
+      "translation": "in esecuzione: {CmdStr}"
+    },
+    {
+      "id": "did not get a command object",
+      "translation": "non è stato richiamato un oggetto del comando"
+    },
+    {
+      "id": "Could not get Stdin pipe, error: {Err}",
+      "translation": "Impossibile richiamare pipe Stdin, errore: {Err}"
+    },
+    {
+      "id": "could not retrieve output from command, error: {Err}",
+      "translation": "impossibile richiamare l'output dal comando, errore: {Err}"
+    },
+    {
+      "id": "could not retrieve stderr from command, error: {Err}",
+      "translation": "impossibile richiamare stderr dal comando, errore: {Err}"
+    },
+    {
+      "id": "Unable to start command, error: {Err}",
+      "translation": "Impossibile avviare il comando, errore: {Err}"
+    },
+    {
+      "id": "Unable to write to stdin of command, error: {Err}",
+      "translation": "Impossibile scrivere su stdin del comando, errore: {Err}"
+    },
+    {
+      "id": "Unable to close stdin, error: {Err}",
+      "translation": "Impossibile chiudere stdin, errore: {Err}"
+    },
+    {
+      "id": "could not read stdout, error: {Err}",
+      "translation": "impossibile leggere stdout, errore: {Err}"
+    },
+    {
+      "id": "could not read stderr, error: {Err}",
+      "translation": "impossibile leggere stderr, errore: {Err}"
+    },
+    {
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "translation": "comando non riuscito: {Err}, stderr: {StringstderrBytes}"
+    },
+    {
+      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "translation": "Impossibile utilizzare {HTTPRequestTimeoutOverride} per impostare il timeout della richiesta, il valore non è un numero valido: {EnvTimeout}"
+    },
+    {
+      "id": "HTTP request timeout set to {RequestTimeout} seconds",
+      "translation": "Timeout della richiesta HTTP impostato su {RequestTimeout} secondi"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
+      "translation": "Errore durante la conversione della variabile di ambiente HZN_HTTP_RETRIES {MaxRetriess} in numero intero. {Err1}"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
+      "translation": "Errore durante la conversione della variabile di ambiente HZN_HTTP_RETRY_INTERVAL {RetryIntervals} in numero intero. {Err1}"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -521,150 +685,6 @@
     {
       "id": "Error converting the selections into Selectors: {Err}",
       "translation": "Errore durante la conversione delle selezioni in selettori: {Err}"
-    },
-    {
-      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "Impossibile leggere il file di politica {Arg_1} per il servizio {Arg_2}, errore: {Arg_3}"
-    },
-    {
-      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Avvio della promozione della politica con exchange per il servizio {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "Impossibile promuovere le politiche con exchange per il servizio {Arg_1}/{Arg_2}, errore: {Arg_3}"
-    },
-    {
-      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Completamento della promozione della politica con exchange per il servizio {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Heartbeat del nodo non riuscito per il nodo {Arg_1}/{Arg_2}. Errore: {Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Heartbeat del nodo ripristinato per il nodo {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "impossibile leggere la politica del nodo dal database locale. {Arg_1}"
-    },
-    {
-      "id": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "impossibile leggere l'oggetto nodo dal database locale. {Arg_1}"
-    },
-    {
-      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-      "translation": "Impossibile sincronizzare la politica del nodo locale con la copia di exchange. Errore: {Arg_1}"
-    },
-    {
-      "id": "Node policy updated with the exchange copy: {Arg_1}",
-      "translation": "Politica del nodo aggiornata con la copia di exchange: {Arg_1}"
-    },
-    {
-      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-      "translation": "Impossibile sincronizzare l'input utente del nodo locale con la copia di exchange. Errore: {Arg_1}"
-    },
-    {
-      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "Input utente del nodo aggiornato con la copia di exchange. Gli input utente modificati sono: {Arg_1}"
-    },
-    {
-      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "Il nodo non è riuscito a verificare l'accordo {Arg_1} con il consumer. Verrà annullato"
-    },
-    {
-      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "Il nodo è offline. La registrazione dei messaggi di errore offline periodici verrà limitata fino a quando non viene ripristinata la connessione"
-    },
-    {
-      "id": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
-      "translation": "Impossibile sincronizzare il nodo con la copia exchange. Errore: {Arg_1}"
-    },
-    {
-      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-      "translation": "Impossibile richiamare lo stato di configurazione del servizio per la risorsa nodo {Arg_1} da exchange, errore {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "Impossibile richiamare il modello exchange del nodo salvato dal database locale. {Arg_1}"
-    },
-    {
-      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "Impossibile salvare il nuovo modello exchange del nodo {Arg_1} nel database locale. Errore: {Arg_2}"
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Errore di compatibilità: le versioni di schema non sono uguali, Politica consumer: {Version}, Politica producer {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Errore di compatibilità: le proprietà del nodo {Properties} non soddisfano i requisiti di vincolo {Constraints}. Errore sottostante: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Errore di compatibilità: le proprietà {Properties} non soddisfano i vincoli del nodo {Constraints}. Errore sottostante: {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Errore di compatibilità: nessun protocollo di accordo comune tra {AgreementProtocols} e {AgreementProtocols_1}. Errore sottostante: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Errore di compatibilità: la verifica dei dati deve essere compatibile, il producer ha {DataVerify} e il consumer ha {DataVerify_1}."
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "L'accordo {Arg_1} esiste già, la proposta viene ignorata: {Arg_2}"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "ricevuto errore durante l'annullamento del marshalling di TsAndCs per l'accordo {Arg_1}, {Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "Il nodo ha ricevuto il messaggio di proposta utilizzando l'accordo {Arg_1} per il servizio {Arg_2}/{Arg_3} dall'agbot {Arg_4}."
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "Il nodo ha rifiutato la proposta per il servizio {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Errore durante la gestione della proposta per il servizio {Arg_1}/{Arg_2}. Errore: {Arg_3}"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "le proprietà contengono una proprietà non valida: {Err}"
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "La proprietà deve includere un nome e un valore: {Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "La proprietà {Name} ha un tipo di proprietà non valido {DeclaredType}. I tipi di proprietà consentiti sono: version, string, int, boolean, float e elenco di stringhe."
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "Il valore della proprietà è di tipo {ActualType}, tipo previsto {DeclaredType}"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "Il valore {Value} della proprietà {Name} non è un tipo integer"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "Il valore {Value} della proprietà {Name} non è una stringa valida. Definire il tipo o modificare il valore in una stringa."
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "La proprietà {Name} con il valore {Value} non è una stringa di versione valida"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "La proprietà {Name} ha un tipo di valore non valido {ActualType}"
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -983,368 +1003,444 @@
       "translation": "Il nuovo modello {Arg_1} è stato verificato. Gli accordi verranno annullati e il nodo verrà registrato di nuovo con il nuovo modello."
     },
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "L'espressione di vincolo {Dconstraints} è di tipo {Dconstraints_1}, ma è prevista come array di stringhe"
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "Impossibile leggere il file di politica {Arg_1} per il servizio {Arg_2}, errore: {Arg_3}"
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "L'espressione del vincolo contiene parentesi non corrispondenti."
+      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Avvio della promozione della politica con exchange per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "La configurazione di distribuzione {Arg_1} contiene la funzionalità non supportata per un workload"
+      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "Impossibile promuovere le politiche con exchange per il servizio {Arg_1}/{Arg_2}, errore: {Arg_3}"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "La configurazione di distribuzione {Arg_1} contiene la funzionalità non supportata per il contenitore dell'infrastruttura."
+      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Completamento della promozione della politica con exchange per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "La configurazione di distribuzione {Arg_1} contiene il bind non supportato per un workload, {Arg_2}"
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Heartbeat del nodo non riuscito per il nodo {Arg_1}/{Arg_2}. Errore: {Arg_3}"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "La configurazione di distribuzione {Arg_1} contiene il bind non supportato per {Arg_2}, {Arg_3}"
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Heartbeat del nodo ripristinato per il nodo {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Errore durante l'annullamento del marshalling della stringa di distribuzione {Arg_1}, errore: {Arg_2}"
+      "id": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "impossibile leggere la politica del nodo dal database locale. {Arg_1}"
     },
     {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Errore durante l'annullamento del marshalling della stringa di sostituzione distribuzione {Arg_1} per l'accordo {Arg_2}, errore: {Arg_3}"
+      "id": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "impossibile leggere l'oggetto nodo dal database locale. {Arg_1}"
     },
     {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "Errore di avvio dei contenitori: {Arg_1}"
+      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+      "translation": "Impossibile sincronizzare la politica del nodo locale con la copia di exchange. Errore: {Arg_1}"
     },
     {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Errore durante l'avvio dei contenitori per l'accordo {Arg_1}: {Arg_2}"
+      "id": "Node policy updated with the exchange copy: {Arg_1}",
+      "translation": "Politica del nodo aggiornata con la copia di exchange: {Arg_1}"
     },
     {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Errore durante il riavvio dei contenitori per gli accordi {Arg_1}: {Arg_2}"
+      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+      "translation": "Impossibile sincronizzare l'input utente del nodo locale con la copia di exchange. Errore: {Arg_1}"
     },
     {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Errore durante la ripulitura dei vecchi contenitori prima di avviare i nuovi contenitori per {Arg_1}. Errore: {Arg_2}"
+      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "Input utente del nodo aggiornato con la copia di exchange. Gli input utente modificati sono: {Arg_1}"
     },
     {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Impossibile richiamare un elenco di contenitori parent per il nuovo tentativo di servizio per {Arg_1}. {Arg_2}"
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "Il nodo non è riuscito a verificare l'accordo {Arg_1} con il consumer. Verrà annullato"
     },
     {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Impossibile ripristinare la connessione di rete con i parent per il servizio {Arg_1}. {Arg_2}"
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "Il nodo è offline. La registrazione dei messaggi di errore offline periodici verrà limitata fino a quando non viene ripristinata la connessione"
     },
     {
-      "id": "[verbose] {M}",
-      "translation": "[verbose] {M}"
+      "id": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
+      "translation": "Impossibile sincronizzare il nodo con la copia exchange. Errore: {Arg_1}"
     },
     {
-      "id": "Error: {Msg}",
-      "translation": "Errore: {Msg}"
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+      "translation": "Impossibile richiamare lo stato di configurazione del servizio per la risorsa nodo {Arg_1} da exchange, errore {Arg_2}"
     },
     {
-      "id": "Warning: {Msg}",
-      "translation": "Avvertenza: {Msg}"
+      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "Impossibile richiamare il modello exchange del nodo salvato dal database locale. {Arg_1}"
     },
     {
-      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "impossibile annullare il marshalling dei byte da {ErrMsg}: {Err}"
+      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "Impossibile salvare il nuovo modello exchange del nodo {Arg_1} nel database locale. Errore: {Arg_2}"
     },
     {
-      "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "impossibile eseguire il marshalling del tipo di dati da {ErrMsg}: {Err}"
+      "id": "Bussiness policy and pattern are mutually exclusive.",
+      "translation": "Politica aziendale e modello si escludono reciprocamente."
     },
     {
-      "id": "problem testing api key match: {Err}",
-      "translation": "problema durante il test di corrispondenza della chiave API: {Err}"
+      "id": "Neither bussiness policy nor pattern is specified.",
+      "translation": "Non è stato specificato né politica aziendale né modello."
     },
     {
-      "id": "Using API key",
-      "translation": "Viene utilizzata la chiave API"
+      "id": "Incompatible",
+      "translation": "Incompatibile"
     },
     {
-      "id": "unable to create docker client: {Err}",
-      "translation": "impossibile creare il client docker: {Err}"
+      "id": "Compatible",
+      "translation": "Compatibile"
     },
     {
-      "id": "docker auth domainName: {DomainName}",
-      "translation": "domainName di autenticazione docker: {DomainName}"
+      "id": "Error marshaling object {In}. {Arg_2}",
+      "translation": "Errore durante il marshalling dell'oggetto {In}. {Arg_2}"
     },
     {
-      "id": "unable to find docker credentials for {Domain}",
-      "translation": "impossibile trovare le credenziali docker per {Domain}"
+      "id": "Failed to convert input to PolicyCheck object. {Err}",
+      "translation": "Impossibile convertire l'input nell'oggetto PolicyCheck. {Err}"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Push di {Repository}:{Tag}..."
+      "id": "The given node id is empty.",
+      "translation": "L'id nodo fornito è vuoto."
     },
     {
-      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "impossibile richiamare le credenziali docker da ~/.docker/config.json: {Err}. Potrebbe essere necessario eseguire 'docker login ...' per fornire le credenziali per il registro di immagini."
+      "id": "Organization is not specified in the given node id: {NodeId}.",
+      "translation": "L'organizzazione non è specificata nell'id nodo fornito: {NodeId}."
     },
     {
-      "id": "unable to push docker image {Repository____tag}: {Err}",
-      "translation": "impossibile eseguire il push dell'immagine docker {Repository____tag}: {Err}"
+      "id": "Error getting node {NodeId} from the exchange. {Err}",
+      "translation": "Errore durante l'acquisizione del nodo {NodeId} da exchange. {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "impossibile trovare il digest dell'immagine nell'output di push del docker"
+      "id": "No node found for this node id {NodeId}.",
+      "translation": "Nessun nodo trovato per questo id nodo {NodeId}."
     },
     {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Estrazione di {Repository}:{Tag}..."
+      "id": "The PolicyCheck input cannot be null",
+      "translation": "L'input di PolicyCheck non può essere null"
     },
     {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "impossibile estrarre l'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}"
+      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
+      "translation": "L'architettura del nodo di input {NodeArch} non corrisponde all'architettura del nodo exchange {Arch} per il nodo {NodeId}."
     },
     {
-      "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "impossibile estrarre l'immagine docker {Repository____tag}: {Err}"
+      "id": "Policy Incompatible",
+      "translation": "Politica incompatibile"
     },
     {
-      "id": "the id can not contain more than 1 '/'",
-      "translation": "l'id non può contenere più di 1 '/'"
+      "id": "Architecture does not match.",
+      "translation": "L'architettura non corrisponde."
     },
     {
-      "id": "reading stdin failed: {Err}",
-      "translation": "lettura di stdin non riuscita: {Err}"
+      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+      "translation": "Impossibile ottenere servizi per tutte le architetture per {Org}/{WorkloadURL} versione {Version}. {Err}"
     },
     {
-      "id": "reading {FilePath} failed: {Err}",
-      "translation": "lettura di {FilePath} non riuscita: {Err}"
+      "id": "Failed to validate the service policy. {Err}",
+      "translation": "Impossibile convalidare la politica del servizio. {Err}"
     },
     {
-      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "Avvertenza: la variabile di ambiente '{EnvVarName}' è utilizzata in un file di input, ma non è definita nell'ambiente."
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
+      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica aziendale."
     },
     {
-      "id": "Error reading input, error {Err}",
-      "translation": "Errore durante la lettura dell'input, errore {Err}"
+      "id": "No services found in the business policy.",
+      "translation": "Nessun servizio trovato nella politica aziendale."
     },
     {
-      "id": "Exiting.",
-      "translation": "Uscita."
+      "id": "Node policy cannot be null.",
+      "translation": "La politica del nodo non può essere null."
     },
     {
-      "id": "Error reading HTTP response, error {Err}",
-      "translation": "Errore durante la lettura della risposta HTTP, errore {Err}"
+      "id": "Business policy cannot be null.",
+      "translation": "La politica aziendale non può essere null."
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire 'systemctl status horizon' per controllare se l'agent Horizon è in esecuzione. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
+      "id": "Merged service policy cannot be null.",
+      "translation": "La politica del servizio unita non può essere null."
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Verificare se il tunnel ssh associato è inattivo. Oppure potrebbe essere inattivo l'agent Horizon remoto all'altra estremità del tunnel. L'errore specifico è: {Err}"
+      "id": "Error merging node policy with arch property. {Err}",
+      "translation": "Errore di unione della politica del nodo con la proprietà arch. {Err}"
     },
     {
-      "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} nuova richiesta non riuscita: {Err}"
+      "id": "Failed to validate the node policy. {Err}",
+      "translation": "Impossibile convalidare la politica del nodo. {Err}"
     },
     {
-      "id": "HTTP code: {HttpCode}",
-      "translation": "Codice HTTP: {HttpCode}"
+      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+      "translation": "Impossibile convertire la politica del nodo nel formato di politica interna per il nodo {NodeId}: {Err}"
     },
     {
-      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "Codice HTTP errato da {ApiMsg}: {HttpCode}"
+      "id": "No node policy found for this node {NodeId}.",
+      "translation": "Nessuna politica del nodo trovata per questo nodo {NodeId}."
     },
     {
-      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "Codice HTTP errato da {ApiMsg}: {HttpCode}"
+      "id": "Neither node policy nor node id is specified.",
+      "translation": "Non sono stati specificati né la politica del nodo né l'id nodo."
     },
     {
-      "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Impossibile leggere la risposta del corpo da {ApiMsg}: {Err}"
+      "id": "Node id is empty.",
+      "translation": "L'id nodo è vuoto."
     },
     {
-      "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Impossibile leggere la risposta del corpo da {ApiMsg}: {Err}"
+      "id": "Organization is not specified in the node id: {NodeId}.",
+      "translation": "L'organizzazione non è specificata nell'id nodo: {NodeId}."
     },
     {
-      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Impossibile annullare il marshalling della risposta del corpo da {ApiMsg}: {Err}"
+      "id": "Error trying to query node policy for {NodeId}: {Err}",
+      "translation": "Errore durante il tentativo di query sulla politica del nodo per {NodeId}: {Err}"
     },
     {
-      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Impossibile annullare il marshalling della risposta del corpo da {ApiMsg}: {Err}"
+      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
+      "translation": "Impossibile convalidare la politica del nodo per il nodo {NodeId}. {Err}"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}: {Body}"
+      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+      "translation": "Impossibile convertire la politica del nodo nella politica interna per il nodo {NodeId}: {Err}"
     },
     {
-      "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "Impossibile eseguire il marshalling del corpo per {ApiMsg}: {Err}"
+      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
+      "translation": "Impossibile convertire la politica aziendale {BpId} nella politica interna: {Err1}"
     },
     {
-      "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "Impossibile eseguire il marshalling dei byte. {Err}"
+      "id": "Validation failure for business policy {BpId}. {Err}",
+      "translation": "Errore di convalida per la politica aziendale {BpId}. {Err}"
     },
     {
-      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "Errore durante il richiamo di {OldMgmtHubCertPath} da {ANAXOVERWRITEFILE}: {Err}"
+      "id": "No services specified in the given business policy {BpId}.",
+      "translation": "Nessun servizio specificato nella policy aziendale fornita {BpId}."
     },
     {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "Rilevato errore durante la lettura del file cert ICP {IcpCertPath}: {Err}"
+      "id": "No services specified in the business policy {Name}.",
+      "translation": "Nessun servizio specificato nella policy aziendale {Name}."
     },
     {
-      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "Errore durante il richiamo di HZN_EXCHANGE_URL da {ANAXOVERWRITEFILE}. {Err}"
+      "id": "Neither business policy nor business policy id is specified.",
+      "translation": "Non sono stati specificati né la politica aziendale né l'id politica aziendale."
     },
     {
-      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
-      "translation": "Errore durante il richiamo di ExchangeUrl da {ANAXCONFIGFILE}. {Err}"
+      "id": "Business policy id is empty.",
+      "translation": "L'id politica aziendale è vuoto."
     },
     {
-      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
-      "translation": "HZN_EXCHANGE_URL non è impostato, richiamarlo dalla configurazione dell'agent Horizon sul nodo."
+      "id": "Organization is not specified in the business policy id: {BpId}.",
+      "translation": "L'organizzazione non è specificata nell'id politica aziendale: {BpId}."
     },
     {
-      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "Impossibile ottenere l'url exchange dalla variabile di ambiente HZN_EXCHANGE_URL o dall'agent Horizon"
+      "id": "Unable to get business policy for {BpId}, {Err}",
+      "translation": "Impossibile richiamare la politica aziendale per {BpId}, {Err}"
     },
     {
-      "id": "The exchange url: {ExchUrl}",
-      "translation": "URL exchange: {ExchUrl}"
+      "id": "No business policy found for this id {BpId}.",
+      "translation": "Nessuna politica aziendale trovata per questo id {BpId}."
     },
     {
-      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "Errore durante il richiamo di HZN_FSS_CSSURL da {ANAXOVERWRITEFILE}. {Err}"
+      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
+      "translation": "Impossibile convertire la politica aziendale {BpId} nel formato di politica interna: {Err}"
     },
     {
-      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
-      "translation": "Errore durante il richiamo dell'URL del servizio di gestione modelli da {ANAXCONFIGFILE}. {Err}"
+      "id": "Service policy id is empty.",
+      "translation": "L'id politica del servizio è vuoto."
     },
     {
-      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
-      "translation": "HZN_FSS_CSSURL non è impostato, richiamarlo dalla configurazione dell'agent Horizon sul nodo."
+      "id": "Organization is not specified in the service policy id: {SvcId}.",
+      "translation": "L'organizzazione non è specificata nell'id politica del servizio: {SvcId}."
     },
     {
-      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
-      "translation": "Impossibile ottenere l'URL del servizio di gestione modelli dalla variabile di ambiente HZN_FSS_CSSURL o dall'agent Horizon"
+      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
+      "translation": "Errore durante il tentativo di eseguire query sulla politica del servizio per l'id servizio {SvcId}: {Err}"
     },
     {
-      "id": "The model management service url: {MmsUrl}",
-      "translation": "URL del servizio di gestione modelli: {MmsUrl}"
+      "id": "Error validating the service policy {SvcId}. {Err}",
+      "translation": "Errore durante la convalida della politica del servizio {SvcId}. {Err}"
     },
     {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon {HorizonService} per eseguire {ApiMethod}. Impostare {ServiceEnvVarName} per utilizzare {Article} {HorizonService_1} diverso da quello per cui è attualmente configurato l'agent Horizon. L'errore specifico è: {Err}"
+      "id": "Service name is empty.",
+      "translation": "Il nome del servizio è vuoto."
     },
     {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon {HorizonService} per eseguire {ApiMethod}. Controllare che {ServiceEnvVarName} sia impostato correttamente. Oppure annullare l'impostazione di {ServiceEnvVarName_1} per utilizzare {HorizonService_1} per cui è configurato l'agent Horizon. L'errore specifico è: {Err}"
+      "id": "Service organization is empty.",
+      "translation": "L'organizzazione del servizio è vuota."
     },
     {
-      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "impossibile eseguire il marshalling del corpo exchange per {ApiMsg}: {Err}"
+      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "Errore durante il tentativo di query sulla politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
     },
     {
-      "id": "unable to open object file {Name}: {Err}",
-      "translation": "Impossibile aprire il file oggetto {Name}: {Err}"
+      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "Impossibile convalidare la politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
     },
     {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
-      "translation": "Rilevato errore HTTP: {Err} durante la chiamata all'API REST {Service} {ApiMsg}. Stato HTTP: {Httpstatus}. Verrà eseguito un nuovo tentativo."
+      "id": "The given business policy should not be null.",
+      "translation": "La politica aziendale fornita non deve essere null."
     },
     {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "Rilevato errore HTTP: {Err} durante la chiamata all'API REST {Service} {ApiMsg}. Stato HTTP: {Httpstatus}."
+      "id": "Error merging business policy with service policy. {Err}",
+      "translation": "Errore durante l'unione della politica aziendale con la politica del servizio. {Err}"
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}, output: {StringbodyBytes}"
+      "id": "The business policy should not be null.",
+      "translation": "La politica aziendale non deve essere null."
     },
     {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "impossibile annullare il marshalling della risposta del corpo exchange da {ApiMsg}: {Err}"
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "L'input di UserInputCheck non può essere null"
     },
     {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "impossibile eseguire il marshalling dell'output exchange da {ApiMsg}: {Err}"
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "Non sono stati specificati né l'input utente del nodo né l'id nodo."
     },
     {
-      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "impossibile leggere la risposta del corpo exchange da {ApiMsg}: {Err}"
+      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
+      "translation": "Nessuna versione del servizio con architettura {NodeArch} specificata nella politica aziendale o nel modello."
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}: {Code}, {Msg}"
+      "id": "No service versions specified in the business policy or pattern.",
+      "translation": "Nessuna versione del servizio specificata nella politica aziendale o nel modello."
     },
     {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
-      "translation": "Codice HTTP errato {HttpCode} da {ApiMsg}"
+      "id": "User Input Incompatible",
+      "translation": "Input utente incompatibile"
     },
     {
-      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "L'autenticazione exchange deve essere specificata con uno tra: indicatore -u, indicatore -n, HZN_EXCHANGE_USER_AUTH o HZN_EXCHANGE_NODE_AUTH"
+      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+      "translation": "Errore durante il richiamo dei servizi per tutte le architetture per {ServiceOrg}/{ServiceURL} versione {Version}. {Err}"
     },
     {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Impossibile ottenere il percorso assoluto per il file {KeyFile}. {Err}"
+      "id": "Service definition not found in the input.",
+      "translation": "Definizione del servizio non trovata nell'input."
     },
     {
-      "id": "{Err}. Please create the signing key.",
-      "translation": "{Err}. Creare la chiave di firma."
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
+      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica aziendale o nel modello."
     },
     {
-      "id": "running: {CmdStr}",
-      "translation": "in esecuzione: {CmdStr}"
+      "id": "No services found in the business policy or pattern.",
+      "translation": "Nessun servizio trovato nella politica aziendale o nel modello."
     },
     {
-      "id": "did not get a command object",
-      "translation": "non è stato richiamato un oggetto del comando"
+      "id": "The input service spec object cannot be null.",
+      "translation": "L'oggetto specifica del servizio di input non può essere null."
     },
     {
-      "id": "Could not get Stdin pipe, error: {Err}",
-      "translation": "Impossibile richiamare pipe Stdin, errore: {Err}"
+      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
+      "translation": "Errore durante il richiamo del servizio da exchange per {SvcSpec}. {Err}"
     },
     {
-      "id": "could not retrieve output from command, error: {Err}",
-      "translation": "impossibile richiamare l'output dal comando, errore: {Err}"
+      "id": "Error verifing user input for service {SId}. {Err}",
+      "translation": "Errore durante la verifica dell'input utente per il servizio {SId}. {Err}"
     },
     {
-      "id": "could not retrieve stderr from command, error: {Err}",
-      "translation": "impossibile richiamare stderr dal comando, errore: {Err}"
+      "id": "Failed to verify user input for service {SId}. {Reason}",
+      "translation": "Impossibile verificare l'input utente per il servizio {SId}. {Reason}"
     },
     {
-      "id": "Unable to start command, error: {Err}",
-      "translation": "Impossibile avviare il comando, errore: {Err}"
+      "id": "Error verifing user input for dependent service {Id}. {Err}",
+      "translation": "Errore durante la verifica dell'input utente per il servizio dipendente {Id}. {Err}"
     },
     {
-      "id": "Unable to write to stdin of command, error: {Err}",
-      "translation": "Impossibile scrivere su stdin del comando, errore: {Err}"
+      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+      "translation": "Impossibile verificare l'input utente per il servizio dipendente {Id}. {Reason}"
     },
     {
-      "id": "Unable to close stdin, error: {Err}",
-      "translation": "Impossibile chiudere stdin, errore: {Err}"
+      "id": "The input service definition object cannot be null.",
+      "translation": "L'oggetto di definizione del servizio di input non può essere null."
     },
     {
-      "id": "could not read stdout, error: {Err}",
-      "translation": "impossibile leggere stdout, errore: {Err}"
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "translation": "Impossibile creare l'espressione di versione da {Version}. {Err}"
     },
     {
-      "id": "could not read stderr, error: {Err}",
-      "translation": "impossibile leggere stderr, errore: {Err}"
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "Errore durante il richiamo dei servizi dipendenti da exchange per {SDep}. {Err}"
     },
     {
-      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "comando non riuscito: {Err}, stderr: {StringstderrBytes}"
+      "id": "Failed to get the service from the exchange. {Err}",
+      "translation": "Impossibile richiamare il servizio da exchange. {Err}"
     },
     {
-      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
-      "translation": "Impossibile utilizzare {HTTPRequestTimeoutOverride} per impostare il timeout della richiesta, il valore non è un numero valido: {EnvTimeout}"
+      "id": "Servcie does not exist on the exchange.",
+      "translation": "Il servizio non esiste in exchange."
     },
     {
-      "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "Timeout della richiesta HTTP impostato su {RequestTimeout} secondi"
+      "id": "No user input found for service.",
+      "translation": "Nessun input utente trovato per il servizio."
+    },
+    {
+      "id": "Failed to validate the user input type for variable {Name}. {Err}",
+      "translation": "Impossibile convalidare il tipo di input utente per la variabile {Name}. {Err}"
+    },
+    {
+      "id": "A required user input value is missing for variable {Name}.",
+      "translation": "Un valore di input utente obbligatorio è mancante per la variabile {Name}."
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
+      "translation": "L'URL del servizio {URL} non corrisponde all'URL di servizio {Name} specificato nella politica aziendale."
+    },
+    {
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
+      "translation": "L'organizzazione del servizio {Org} non corrisponde all'organizzazione del servizio {Org_1} specificata nella politica aziendale."
+    },
+    {
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
+      "translation": "L'architettura del servizio {Arch} non corrisponde all'architettura del servizio {Arch_1} specificata nella politica aziendale."
+    },
+    {
+      "id": "Service version {Version} does not match any service versions specified in the business policy.",
+      "translation": "La versione del servizio {Version} non corrisponde ad alcuna versione del servizio specificata nella politica aziendale."
+    },
+    {
+      "id": "The service does not match any services in the pattern.",
+      "translation": "Il servizio non corrisponde ad alcun servizio nel modello."
+    },
+    {
+      "id": "Pattern {PatId} cannot be found on the exchange.",
+      "translation": "Impossibile trovare il modello {PatId} in exchange."
+    },
+    {
+      "id": "Neither pattern nor pattern id is specified.",
+      "translation": "Non è stato specificato né modello né id modello."
+    },
+    {
+      "id": "Pattern id is empty.",
+      "translation": "L'id modello è vuoto."
+    },
+    {
+      "id": "Organization is not specified in the pattern id: {PatId}.",
+      "translation": "L'organizzazione non è specificata nell'id modello: {PatId}."
+    },
+    {
+      "id": "Error getting pattern {PatId} from the exchange, {Err}",
+      "translation": "Errore durante il richiamo del modello {PatId} da exchange, {Err}"
+    },
+    {
+      "id": "No pattern found for this id {PatId}.",
+      "translation": "Nessun modello trovato per questo id {PatId}."
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "translation": "L'URL deve essere specificato nella definizione del servizio."
+    },
+    {
+      "id": "Version must be specified in the service definition for service {URL}.",
+      "translation": "La versione deve essere specificata nella definizione del servizio per il servizio {URL}."
+    },
+    {
+      "id": "Invalide version format {Version} for service {URL}.",
+      "translation": "Formato della versione {Version} non valido per il servizio {URL}."
+    },
+    {
+      "id": "Arch must be specified in the service definition for service {URL}.",
+      "translation": "L'architettura deve essere specificata nella definizione del servizio per il servizio {URL}."
+    },
+    {
+      "id": "Org must be specified in the service definition for service {URL}.",
+      "translation": "L'organizzazione deve essere specificata nella definizione del servizio per il servizio {URL}."
+    },
+    {
+      "id": "Validation failure for input service {SId}. {Err}",
+      "translation": "Errore di convalida per il servizio di input {SId}. {Err}"
     },
     {
       "id": "unable to make directory for self signed MMS API certificate, error {Err}",
@@ -1387,72 +1483,76 @@
       "translation": "impossibile chiudere il file di chiave privata del certificato API MMS {ServerKey}, errore {Err}"
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: spazi non consentiti in {Expr}."
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "L'accordo {Arg_1} esiste già, la proposta viene ignorata: {Arg_2}"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} non è una stringa di versione valida."
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "ricevuto errore durante l'annullamento del marshalling di TsAndCs per l'accordo {Arg_1}, {Arg_2}"
     },
     {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} non inizia con una direttiva di inclusione o esclusione."
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "Il nodo ha ricevuto il messaggio di proposta utilizzando l'accordo {Arg_1} per il servizio {Arg_2}/{Arg_3} dall'agbot {Arg_4}."
     },
     {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} non termina con una direttiva di inclusione o esclusione."
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "Il nodo ha rifiutato la proposta per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: numero di versioni errato nell'espressione: {Expr}."
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Errore durante la gestione della proposta per il servizio {Arg_1}/{Arg_2}. Errore: {Arg_3}"
     },
     {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "La stringa di versione di input {V1} o {V2} non è una stringa di versione singola valida."
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "le proprietà contengono una proprietà non valida: {Err}"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Non autorizzato. Nessun id utente exchange fornito."
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "La proprietà deve includere un nome e un valore: {Property}"
     },
     {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "Impossibile autenticare l'utente con exchange. {Err}"
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "translation": "La proprietà {Name} ha un tipo di proprietà non valido {DeclaredType}. I tipi di proprietà consentiti sono: version, string, int, boolean, float e elenco di stringhe."
     },
     {
-      "id": "No input found.",
-      "translation": "Nessun input trovato."
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "Il valore della proprietà è di tipo {ActualType}, tipo previsto {DeclaredType}"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto JSON. {Err}"
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "Il valore {Value} della proprietà {Name} non è un tipo integer"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto PolicyCheck. {Err}"
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "Il valore {Value} della proprietà {Name} non è una stringa valida. Definire il tipo o modificare il valore in una stringa."
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto UserInputCheck. {Err}"
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "La proprietà {Name} con il valore {Value} non è una stringa di versione valida"
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "Nessun id utente exchange fornito."
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "La proprietà {Name} ha un tipo di valore non valido {ActualType}"
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Nessun id organizzazione utente exchange fornito."
+      "id": "no service name",
+      "translation": "nessun nome servizio"
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Nessuna password utente exchange o chiave API fornita."
+      "id": "no docker image for service {ServiceName}",
+      "translation": "nessuna immagine docker per il servizio {ServiceName}"
     },
     {
-      "id": "User not found.",
-      "translation": "Utente non trovato."
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "impossibile eseguire il marshalling del corpo per {D}: {Err}"
     },
     {
-      "id": "Internal server error",
-      "translation": "Errore interno del server"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "impossibile annullare il marshalling del json per il campo di distribuzione {StringjsonBytes}: {Err}"
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "l'input utente {Name} non ha un valore predefinito e non è impostato"
     },
     {
       "id": "Name, or Org is empty string.",
