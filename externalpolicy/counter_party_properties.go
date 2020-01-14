@@ -89,7 +89,7 @@ func PropertyExpression_Factory(name string, value interface{}, op string) *Prop
 // Initialize a RequiredProperty object from a plain map
 func (self *RequiredProperty) Initialize(exp *map[string]interface{}) error {
 	if len(*exp) != 1 {
-		return errors.New(fmt.Sprintf("Input expression must have only 1 key, has %v", len(*exp)))
+		return errors.New(fmt.Sprintf("Input expression must have only 1 key, has %v.", len(*exp)))
 	} else {
 		for op, val := range *exp {
 			(*self)[op] = val
@@ -125,21 +125,21 @@ func (self *RequiredProperty) IsSatisfiedBy(props []Property) error {
 // the list of properties and values that have been supplied. This function is called
 // recursively because control operators can be nested n levels deep.
 func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]Property) error {
-	controlOp := self.getControlOperator(cop)
+	controlOp := getControlOperator(cop)
 	if controlOp == OP_AND {
 
 		propArray := (*cop)[controlOp].([]interface{})
 		for _, p := range propArray {
 			if prop := isPropertyExpression(p); prop != nil {
 				if !propertyInArray(prop, props) {
-					return errors.New(fmt.Sprintf("Property %v with value %v not in %v\n", prop.Name, prop.Value, props))
+					return errors.New(fmt.Sprintf("The required property '%v %v %v' were not found in the available properties %v", prop.Name, prop.Op, prop.Value, displayProperties(props)))
 				}
 			} else if cop := isControlOp(p); cop != nil {
 				if err := self.satisfied(cop, props); err != nil {
 					return err
 				}
 			} else {
-				return errors.New(fmt.Sprintf("Control Operator contains an element that is not a Property and not a control operator %v\n", p))
+				return errors.New(fmt.Sprintf("Control Operator contains an element that is neither a Property nor a control operator: %v.", p))
 			}
 		}
 		return nil
@@ -159,11 +159,10 @@ func (self *RequiredProperty) satisfied(cop *map[string]interface{}, props *[]Pr
 					return nil
 				}
 			} else {
-				return errors.New(fmt.Sprintf("Control Operator contains an element that is not a Property and not a control operator %v\n", p))
+				return errors.New(fmt.Sprintf("Control Operator contains an element that is neither a Property nor a control operator: %v.", p))
 			}
 		}
-		return errors.New(fmt.Sprintf("One of Required Properties %v not in %v\n", propArray, props))
-
+		return errors.New(fmt.Sprintf("The required properties %v were not found in the available properties %v", displayRequiredProperty(cop), displayProperties(props)))
 	} else if controlOp == OP_NOT {
 
 	}
@@ -195,21 +194,25 @@ func (self *RequiredProperty) verify(cop *map[string]interface{}) error {
 
 	// A Control Operator map should only have 1 key
 	if len(*cop) != 1 {
-		return errors.New(fmt.Sprintf("RequiredProperty Object not valid, %v should have 1 top level key, has %v", *cop, len(*cop)))
+		return errors.New(fmt.Sprintf("RequiredProperty Object not valid, %v should have 1 top level key, has %v.", *cop, len(*cop)))
 	}
 
 	// Make sure the top level key is supported
 	keys := getKeys(*cop)
 	if _, ok := controlOperators()[keys[0]]; !ok {
-		return errors.New(fmt.Sprintf("RequiredProperty Object not valid, top level key has to be one of %v, is %v", controlOperators(), keys))
+		ks := []string{}
+		for k, _ := range controlOperators() {
+			ks = append(ks, k)
+		}
+		return errors.New(fmt.Sprintf("RequiredProperty Object not valid, top level key '%v' is not valid. It has to be one of %v.", keys[0], ks))
 	}
 
 	// Iterate through the expression
-	controlOp := self.getControlOperator(cop)
+	controlOp := getControlOperator(cop)
 
 	// Ensure the control operator value is an array
 	if !isArray((*cop)[controlOp]) {
-		return errors.New(fmt.Sprintf("RequiredProperty Object not valid, control operator value is not an array, is %v", (*cop)[controlOp]))
+		return errors.New(fmt.Sprintf("RequiredProperty Object not valid, control operator value is not an array, is %v.", (*cop)[controlOp]))
 	}
 
 	propArray := (*cop)[controlOp].([]interface{})
@@ -221,7 +224,7 @@ func (self *RequiredProperty) verify(cop *map[string]interface{}) error {
 				return err
 			}
 		} else {
-			return errors.New(fmt.Sprintf("Control Operator contains an element that is not a Property and not a control operator %v\n", p))
+			return errors.New(fmt.Sprintf("Control Operator contains an element that is not a Property and not a control operator %v.", p))
 		}
 	}
 
@@ -264,7 +267,7 @@ func (self *RequiredProperty) Merge(other *RequiredProperty) *RequiredProperty {
 
 // A simple function used to extract the 1 and only key of the input map. Callers of this function
 /// must check that there is only 1 key in the map before calling.
-func (self *RequiredProperty) getControlOperator(m *map[string]interface{}) string {
+func getControlOperator(m *map[string]interface{}) string {
 	return getKeys(*m)[0]
 }
 
@@ -527,4 +530,57 @@ func stringListContainsOneOfStringList(propList string, constrList string) bool 
 		}
 	}
 	return false
+}
+
+// This function displays the given RequiredProperty to a human readable format.
+func displayRequiredProperty(cop *map[string]interface{}) string {
+	controlOp := getControlOperator(cop)
+
+	op_display := ""
+	if controlOp == OP_AND {
+		op_display = " AND "
+	} else if controlOp == OP_OR {
+		op_display = ", "
+	} else if controlOp == OP_NOT {
+		op_display = " NOT "
+	}
+
+	propArray := (*cop)[controlOp].([]interface{})
+	display_strings := []string{}
+	for _, p := range propArray {
+		if prop := isPropertyExpression(p); prop != nil {
+			if prop.Op == "" {
+				prop.Op = doubleequalto
+			}
+			s := fmt.Sprintf("%v%v%v", prop.Name, prop.Op, prop.Value)
+			display_strings = append(display_strings, s)
+		} else if cop1 := isControlOp(p); cop1 != nil {
+			s := displayRequiredProperty(cop1)
+			if controlOp == OP_OR {
+				display_strings = append(display_strings, fmt.Sprintf("%v", s))
+			} else {
+				display_strings = append(display_strings, fmt.Sprintf("(%v)", s))
+			}
+		} else {
+			// if expression has error, display itself.
+			display_strings = append(display_strings, fmt.Sprintf("v", p))
+		}
+	}
+
+	return strings.Join(display_strings, op_display)
+}
+
+// This fuction displays the a property list to "key1=value1, key1=value2..." format.
+func displayProperties(props *[]Property) string {
+	if props != nil && len(*props) > 0 {
+		display_strings := []string{}
+		for _, p := range *props {
+			s := fmt.Sprintf("%v=%v", p.Name, p.Value)
+			display_strings = append(display_strings, s)
+		}
+
+		return strings.Join(display_strings, ", ")
+	}
+
+	return ""
 }

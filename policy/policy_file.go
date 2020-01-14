@@ -207,7 +207,7 @@ func (self *Policy) Add_NodeHealth(nh *NodeHealth) error {
 // 3) the Producer is offering enough resources for the Consumer's workload.
 //
 
-func Are_Compatible(producer_policy *Policy, consumer_policy *Policy, msgPrinter *message.Printer) error {
+func Are_Compatible(producer_policy *Policy, consumer_policy *Policy, msgPrinter *message.Printer) *PolicyCompError {
 
 	// get default message printer if nil
 	if msgPrinter == nil {
@@ -215,15 +215,22 @@ func Are_Compatible(producer_policy *Policy, consumer_policy *Policy, msgPrinter
 	}
 
 	if !consumer_policy.Is_Version(producer_policy.Header.Version) {
-		return errors.New(msgPrinter.Sprintf("Compatibility Error: Schema versions are not the same, Consumer policy: %v, Producer policy %v", consumer_policy.Header.Version, producer_policy.Header.Version))
+		full_err := errors.New(msgPrinter.Sprintf("Compatibility Error: Schema versions are not the same, Consumer policy: %v, Producer policy %v", consumer_policy.Header.Version, producer_policy.Header.Version))
+		return NewPolicyCompError1(full_err)
 	} else if err := (&consumer_policy.Constraints).IsSatisfiedBy(producer_policy.Properties); err != nil {
-		return errors.New(msgPrinter.Sprintf("Compatibility Error: Node properties %v do not satisfy constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
+		full_err := errors.New(msgPrinter.Sprintf("Compatibility Error: Node properties %v do not satisfy constraint requirements %v. Underlying error: %v", producer_policy.Properties, consumer_policy.Constraints, err))
+		short_err_str := msgPrinter.Sprintf("Compatibility Error: Node properties do not satisfy constraint requirements. %v", err)
+		return NewPolicyCompError(full_err, short_err_str)
 	} else if err := (&producer_policy.Constraints).IsSatisfiedBy(consumer_policy.Properties); err != nil {
-		return errors.New(msgPrinter.Sprintf("Compatibility Error: Properties %v do not satisfy Node constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
+		full_err := errors.New(msgPrinter.Sprintf("Compatibility Error: Properties %v do not satisfy Node constraint  %v. Underlying error: %v", consumer_policy.Properties, producer_policy.Constraints, err))
+		short_err_str := msgPrinter.Sprintf("Compatibility Error: Properties do not satisfy node constraint. %v", err)
+		return NewPolicyCompError(full_err, short_err_str)
 	} else if _, err := (&producer_policy.AgreementProtocols).Intersects_With(&consumer_policy.AgreementProtocols); err != nil {
-		return errors.New(msgPrinter.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
+		full_err := errors.New(msgPrinter.Sprintf("Compatibility Error: No common Agreement Protocols between %v and %v. Underlying error: %v", producer_policy.AgreementProtocols, consumer_policy.AgreementProtocols, err))
+		return NewPolicyCompError1(full_err)
 	} else if !producer_policy.DataVerify.IsCompatibleWith(consumer_policy.DataVerify) {
-		return errors.New(msgPrinter.Sprintf("Compatibility Error: Data verification must be compatible, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify))
+		full_err := errors.New(msgPrinter.Sprintf("Compatibility Error: Data verification must be compatible, producer has %v and consumer has %v.", producer_policy.DataVerify, consumer_policy.DataVerify))
+		return NewPolicyCompError1(full_err)
 	}
 
 	return nil
@@ -1051,5 +1058,55 @@ func getPolicyDirectories(homePath string) ([]os.FileInfo, error) {
 			}
 		}
 		return res, nil
+	}
+}
+
+// Error contains a full error string and a short error. The short error can be used for cli output.
+// the full error can be used for internal logs.
+// It implements the error interface
+type PolicyCompError struct {
+	Err      string
+	ShortErr string
+}
+
+func (e *PolicyCompError) Error() string {
+	if e == nil {
+		return ""
+	} else {
+		return fmt.Sprintf("%v", e.Err)
+	}
+}
+
+func (e *PolicyCompError) String() string {
+	if e == nil {
+		return ""
+	} else {
+		return e.Err
+	}
+}
+
+// returns the short error.
+// if the short error is empty, then return the long error.
+func (e *PolicyCompError) ShortString() string {
+	if e == nil {
+		return ""
+	} else if e.ShortErr != "" {
+		return e.ShortErr
+	} else {
+		return e.Err
+	}
+}
+
+func NewPolicyCompError(err error, shortErr string) *PolicyCompError {
+	return &PolicyCompError{
+		Err:      err.Error(),
+		ShortErr: shortErr,
+	}
+}
+
+// short error and long error is the same. we only save long error.
+func NewPolicyCompError1(err error) *PolicyCompError {
+	return &PolicyCompError{
+		Err: err.Error(),
 	}
 }

@@ -263,7 +263,7 @@ func CheckPolicyCompatiblility(nodePolicy *policy.Policy, businessPolicy *policy
 
 	// check if the node policy and merged bp policy are compatible
 	if err := policy.Are_Compatible(nodePolicy, mergedConsumerPol, msgPrinter); err != nil {
-		return false, err.Error(), mergedProducerPol, mergedConsumerPol, nil
+		return false, err.ShortString(), mergedProducerPol, mergedConsumerPol, nil
 	} else {
 		// policy match
 		return true, "", mergedProducerPol, mergedConsumerPol, nil
