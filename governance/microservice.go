@@ -55,6 +55,7 @@ func (w *GovernanceWorker) governMicroserviceVersions() {
 		}
 	}
 }
+
 // It creates microservice instance and loads the containers for the given microservice def
 // If the msinst_key is not empty, the function is called to restart a failed dependent service.
 func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, msinst_key string) (*persistence.MicroserviceInstance, error) {

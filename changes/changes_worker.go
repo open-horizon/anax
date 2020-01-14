@@ -439,7 +439,7 @@ func (w *ChangesWorker) getNodeHeartbeatIntervals() {
 	if node, err := exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), ""); err != nil {
 		glog.Errorf(chglog(fmt.Sprintf("Error retrieving node %v heartbeat intervals, error: %v", w.GetExchangeId(), err)))
 	} else {
-		updated:= false
+		updated := false
 		if node.HeartbeatIntv.MinInterval != 0 {
 			w.pollMinInterval = node.HeartbeatIntv.MinInterval
 			updated = true

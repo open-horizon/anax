@@ -50,16 +50,16 @@ const SURFACEERRORS = "SurfaceExchErrors"
 const EXCHANGE_ERRORS = "ExchangeErrors"
 
 type GovernanceWorker struct {
-	worker.BaseWorker   // embedded field
-	db                  *bolt.DB
-	devicePattern       string
-	pm                  *policy.PolicyManager
-	producerPH          map[string]producer.ProducerProtocolHandler
-	deviceStatus        *DeviceStatus
-	ShuttingDownCmd     *NodeShutdownCommand
-	patternChange       ChangePattern
-	limitedRetryEC      exchange.ExchangeContext
-	exchErrors          cache.Cache
+	worker.BaseWorker // embedded field
+	db                *bolt.DB
+	devicePattern     string
+	pm                *policy.PolicyManager
+	producerPH        map[string]producer.ProducerProtocolHandler
+	deviceStatus      *DeviceStatus
+	ShuttingDownCmd   *NodeShutdownCommand
+	patternChange     ChangePattern
+	limitedRetryEC    exchange.ExchangeContext
+	exchErrors        cache.Cache
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -74,15 +74,15 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	}
 
 	worker := &GovernanceWorker{
-		BaseWorker:          worker.NewBaseWorker(name, cfg, ec),
-		db:                  db,
-		pm:                  pm,
-		devicePattern:       pattern,
-		producerPH:          make(map[string]producer.ProducerProtocolHandler),
-		deviceStatus:        NewDeviceStatus(),
-		ShuttingDownCmd:     nil,
-		limitedRetryEC:      lrec,
-		exchErrors:          cache.NewSimpleMapCache(),
+		BaseWorker:      worker.NewBaseWorker(name, cfg, ec),
+		db:              db,
+		pm:              pm,
+		devicePattern:   pattern,
+		producerPH:      make(map[string]producer.ProducerProtocolHandler),
+		deviceStatus:    NewDeviceStatus(),
+		ShuttingDownCmd: nil,
+		limitedRetryEC:  lrec,
+		exchErrors:      cache.NewSimpleMapCache(),
 	}
 
 	// Start the worker and set the no work interval to 10 seconds.
