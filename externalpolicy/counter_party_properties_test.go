@@ -65,8 +65,6 @@ func Test_invalid_simple1(t *testing.T) {
 	if rp = create_RP(invalid_control_operator, t); rp != nil {
 		if err := rp.IsValid(); err == nil {
 			t.Errorf("Error: %v is an invalid RequiredProperty value, but it was not detected as invalid.", invalid_control_operator)
-		} else {
-			t.Errorf("New Error: %v", err)
 		}
 	}
 

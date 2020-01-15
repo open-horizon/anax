@@ -98,16 +98,16 @@ func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCh
 
 // To store the resource (pattern, bp, services etc) used for compatibility check
 type CompCheckResource struct {
-	NodeId         string                         `json:"node_id,omitempty"`
-	NodeArch       string                         `json:"node_arch,omitempty"`
-	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
-	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
-	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
-	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
-	PatternId      string                         `json:"pattern_id,omitempty"`
-	Pattern        common.AbstractPatternFile     `json:"pattern,omitempty"`
-	ServicePolicy  *externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
-	Service        []common.AbstractServiceFile   `json:"service,omitempty"`
+	NodeId         string                                   `json:"node_id,omitempty"`
+	NodeArch       string                                   `json:"node_arch,omitempty"`
+	NodePolicy     *externalpolicy.ExternalPolicy           `json:"node_policy,omitempty"`
+	NodeUserInput  []policy.UserInput                       `json:"node_user_input,omitempty"`
+	BusinessPolId  string                                   `json:"business_policy_id,omitempty"`
+	BusinessPolicy *businesspolicy.BusinessPolicy           `json:"business_policy,omitempty"`
+	PatternId      string                                   `json:"pattern_id,omitempty"`
+	Pattern        common.AbstractPatternFile               `json:"pattern,omitempty"`
+	ServicePolicy  map[string]externalpolicy.ExternalPolicy `json:"service_policy,omitempty"`
+	Service        []common.AbstractServiceFile             `json:"service,omitempty"`
 }
 
 func (p CompCheckResource) String() string {
@@ -145,7 +145,12 @@ func NewCompCheckResourceFromPolicyCheck(uiInput *PolicyCheck) *CompCheckResourc
 	rsrc.NodePolicy = uiInput.NodePolicy
 	rsrc.BusinessPolId = uiInput.BusinessPolId
 	rsrc.BusinessPolicy = uiInput.BusinessPolicy
-	rsrc.ServicePolicy = uiInput.ServicePolicy
+
+	// If user input a service policy, it will be applied to all the services defined in the bp or pattern
+	rsrc.ServicePolicy = map[string]externalpolicy.ExternalPolicy{}
+	if uiInput.ServicePolicy != nil {
+		rsrc.ServicePolicy["AllServices"] = *uiInput.ServicePolicy
+	}
 
 	return &rsrc
 }
