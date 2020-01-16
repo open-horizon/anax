@@ -116,21 +116,21 @@ func (a *SecureAPI) listen() {
 	} else if a.db == nil {
 		glog.Errorf("AgreementBotWorker SecureAPI terminating, no AgreementBot database configured.")
 		return
-	} else if certFile == "" {
-		glog.Errorf("AgreementBotWorker SecureAPI terminating, no SecureAPIServerCert config.")
-		return
-	} else if !fileExists(certFile) {
+	} else if certFile != "" && !fileExists(certFile) {
 		glog.Errorf("AgreementBotWorker SecureAPI terminating, secure API server certificate file %v does not exist.", certFile)
 		return
-	} else if keyFile == "" {
-		glog.Errorf("AgreementBotWorker SecureAPI terminating, no SecureAPIServerKey API config.")
-		return
-	} else if !fileExists(keyFile) {
+	} else if keyFile != "" && !fileExists(keyFile) {
 		glog.Errorf("AgreementBotWorker SecureAPI terminating, secure API server key file %v does not exist.", keyFile)
 		return
 	}
 
-	glog.V(3).Infof(APIlogString(fmt.Sprintf("Starting AgreementBot SecureAPI server with address: %v:%v, cert file: %v, key file: %v", apiListenHost, apiListenPort, certFile, keyFile)))
+	bSecure := true
+	if certFile == "" || keyFile == "" {
+		glog.V(3).Infof(APIlogString(fmt.Sprintf("Starting AgreementBot Remote API server in non TLS mode with address: %v:%v. The server cert file or key file is not specified in the configuration file.", apiListenHost, apiListenPort)))
+		bSecure = false
+	} else {
+		glog.V(3).Infof(APIlogString(fmt.Sprintf("Starting AgreementBot Remote API server in secure (TLS) mode with address: %v:%v, cert file: %v, key file: %v", apiListenHost, apiListenPort, certFile, keyFile)))
+	}
 
 	nocache := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -153,7 +153,14 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
-		if err := http.ListenAndServeTLS(apiListen, certFile, keyFile, nocache(router)); err != nil {
+
+		var err error
+		if bSecure {
+			err = http.ListenAndServeTLS(apiListen, certFile, keyFile, nocache(router))
+		} else {
+			err = http.ListenAndServe(apiListen, nocache(router))
+		}
+		if err != nil {
 			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
 		}
 	}()
