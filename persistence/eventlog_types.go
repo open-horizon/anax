@@ -96,17 +96,13 @@ func (w AgreementEventSource) Matches(selectors map[string][]Selector) bool {
 		case "service_url":
 			// service_url is no longer an attribute for AgreementEventSource,
 			// but we keep it here so that the selection can be made for both AgreementEventSource and ServiceEventSource in the eventlogs
-			matches := false
 			for _, sp := range w.DependentServices {
 				if m, _, _ := MatchAttributeValue(sp.Url, s_vals); m {
-					matches = true
+					handle = false
 					break
 				}
 			}
-			if !matches {
-				return false
-			}
-			handle = false
+			attr = w.RunningWorkload.URL
 		case "dependent_services.organization":
 			matches := false
 			for _, sp := range w.DependentServices {

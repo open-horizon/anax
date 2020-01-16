@@ -318,6 +318,9 @@ Environment Variables:
 	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.")).String()
 	org := registerCmd.Arg("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.")).String()
 	pattern := registerCmd.Arg("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.")).String()
+	waitServiceFlag := registerCmd.Flag("service", msgPrinter.Sprintf("Wait for the named service to start executing on this node.")).Short('s').String()
+	waitServiceOrgFlag := registerCmd.Flag("serviceorg", msgPrinter.Sprintf("The org of the service to wait for on this node. If omitted, the node's org is used.")).String()
+	waitTimeoutFlag := registerCmd.Flag("timeout", msgPrinter.Sprintf("The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.")).Short('t').Default("60").Int()
 
 	keyCmd := app.Command("key", msgPrinter.Sprintf("List and manage keys for signing and verifying services."))
 	keyListCmd := keyCmd.Command("list", msgPrinter.Sprintf("List the signing keys that have been imported into this Horizon agent."))
@@ -775,7 +778,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodepolicyFlag)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():

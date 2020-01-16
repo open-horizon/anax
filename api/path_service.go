@@ -42,8 +42,8 @@ func FindServicesForOutput(pm *policy.PolicyManager,
 
 	wrap := NewServiceOutput()
 
-	wrap.Instances[archivedKey] = make([]interface{}, 0, 5)
-	wrap.Instances[activeKey] = make([]interface{}, 0, 5)
+	wrap.Instances[archivedKey] = make([]*MicroserviceInstanceOutput, 0, 5)
+	wrap.Instances[activeKey] = make([]*MicroserviceInstanceOutput, 0, 5)
 
 	wrap.Definitions[archivedKey] = make([]interface{}, 0, 5)
 	wrap.Definitions[activeKey] = make([]interface{}, 0, 5)
@@ -51,26 +51,26 @@ func FindServicesForOutput(pm *policy.PolicyManager,
 	// Iterate through each service instance from the ms database and generate the output object for each one.
 	for _, msinst := range msinsts {
 		if msinst.Archived {
-			wrap.Instances[archivedKey] = append(wrap.Instances[archivedKey], *NewMicroserviceInstanceOutput(msinst, nil))
+			wrap.Instances[archivedKey] = append(wrap.Instances[archivedKey], NewMicroserviceInstanceOutput(msinst, nil))
 		} else {
 			containers, err := GetMicroserviceContainer(config.Edge.DockerEndpoint, msinst.SpecRef, msinst.Org, msinst.Version, msinst.InstanceId)
 			if err != nil {
 				return nil, errors.New(fmt.Sprintf("unable to get docker container info, error %v", err))
 			}
-			wrap.Instances[activeKey] = append(wrap.Instances[activeKey], *NewMicroserviceInstanceOutput(msinst, &containers))
+			wrap.Instances[activeKey] = append(wrap.Instances[activeKey], NewMicroserviceInstanceOutput(msinst, &containers))
 		}
 	}
 
 	// Iterate through each agreement service instance and generate the output object for each one.
 	for _, agInst := range agInsts {
 		if agInst.Archived {
-			wrap.Instances[archivedKey] = append(wrap.Instances[archivedKey], *NewAgreementServiceInstanceOutput(&agInst, nil))
+			wrap.Instances[archivedKey] = append(wrap.Instances[archivedKey], NewAgreementServiceInstanceOutput(&agInst, nil))
 		} else {
 			containers, err := GetWorkloadContainers(config.Edge.DockerEndpoint, agInst.CurrentAgreementId)
 			if err != nil {
 				return nil, errors.New(fmt.Sprintf("unable to get docker container info, error %v", err))
 			}
-			wrap.Instances[activeKey] = append(wrap.Instances[activeKey], *NewAgreementServiceInstanceOutput(&agInst, &containers))
+			wrap.Instances[activeKey] = append(wrap.Instances[activeKey], NewAgreementServiceInstanceOutput(&agInst, &containers))
 		}
 	}
 

@@ -58,7 +58,7 @@ func Test_EventLog_Matches(t *testing.T) {
 	assert.False(t, e7.Matches(selectors), "Test eventlog Matches.")
 	assert.False(t, e8.Matches(selectors), "Test eventlog Matches.")
 
-	// not tolerte the extra selectors
+	// not tolerate the extra selectors
 	selectors["extra"] = []Selector{{"=", "extra"}}
 	assert.False(t, e1.Matches(selectors), "Test eventlog Matches.")
 	assert.False(t, e2.Matches(selectors), "Test eventlog Matches.")
