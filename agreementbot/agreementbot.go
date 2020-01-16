@@ -512,13 +512,13 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 
 func (w *AgreementBotWorker) NoWorkHandler() {
 
-	glog.V(4).Infof("AgreementBotWorker queueing deferred commands")
+	glog.V(3).Infof("AgreementBotWorker queueing deferred commands")
 	for _, cph := range w.consumerPH {
 		cph.HandleDeferredCommands()
 	}
 	glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
 
-	glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
+	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
 
 	if msgs, err := w.getMessages(); err != nil {
 		glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to retrieve exchange messages, error: %v", err))
@@ -566,15 +566,15 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 
 		}
 	}
-	glog.V(5).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))
+	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker done processing messages"))
 
 	// If shutdown has not started then keep looking for nodes to make agreements with.
 	// If shutdown has started then we will stop making new agreements. Instead we will look for agreements that have not yet completed
 	// the agreement protocol process. If there are any, then we will hold the quiesce from completing.
 	if !w.ShutdownStarted() {
-		glog.V(4).Infof("AgreementBotWorker Polling Exchange.")
+		glog.V(3).Infof("AgreementBotWorker Polling Exchange.")
 		w.findAndMakeAgreements()
-		glog.V(4).Infof("AgreementBotWorker Done Polling Exchange.")
+		glog.V(3).Infof("AgreementBotWorker Done Polling Exchange.")
 
 	} else {
 		// Find all agreements that are not yet finalized. This filter will return only agreements that are still in an agreement protocol
