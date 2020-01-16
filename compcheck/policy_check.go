@@ -104,7 +104,6 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	// go through all the workloads and check if compatible or not
 	messages := map[string]string{}
 	overall_compatible := false
-	var servicePol_comp, servicePol_incomp *externalpolicy.ExternalPolicy
 	for _, workload := range bPolicy.Workloads {
 
 		// make sure arch is correct
@@ -132,19 +131,19 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 					return nil, err
 					// compatibility check
 				} else {
+					if sPol != nil {
+						resources.ServicePolicy[sId] = *sPol
+					}
 					if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter); err != nil {
 						return nil, err
 					} else if compatible {
 						overall_compatible = true
 						if checkAllSvcs {
-							servicePol_comp = sPol
 							messages[sId] = msg_compatible
 						} else {
-							resources.ServicePolicy = sPol
 							return NewCompCheckOutput(true, map[string]string{sId: msg_compatible}, resources), nil
 						}
 					} else {
-						servicePol_incomp = sPol
 						messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
 					}
 				}
@@ -159,19 +158,19 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 							return nil, err
 							// compatibility check
 						} else {
+							if sPol != nil {
+								resources.ServicePolicy[sId] = *sPol
+							}
 							if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter); err != nil {
 								return nil, err
 							} else if compatible {
 								overall_compatible = true
 								if checkAllSvcs {
-									servicePol_comp = sPol
 									messages[sId] = msg_compatible
 								} else {
-									resources.ServicePolicy = sPol
 									return NewCompCheckOutput(true, map[string]string{sId: msg_compatible}, resources), nil
 								}
 							} else {
-								servicePol_incomp = sPol
 								messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
 							}
 						}
@@ -207,11 +206,6 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 
 	if messages != nil && len(messages) != 0 {
-		if overall_compatible {
-			resources.ServicePolicy = servicePol_comp
-		} else {
-			resources.ServicePolicy = servicePol_incomp
-		}
 		return NewCompCheckOutput(overall_compatible, messages, resources), nil
 	} else {
 		// If we get here, it means that no workload is found in the bp that matches the required node arch.

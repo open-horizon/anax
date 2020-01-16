@@ -563,7 +563,7 @@ func displayRequiredProperty(cop *map[string]interface{}) string {
 			}
 		} else {
 			// if expression has error, display itself.
-			display_strings = append(display_strings, fmt.Sprintf("v", p))
+			display_strings = append(display_strings, fmt.Sprintf("%v", p))
 		}
 	}
 
