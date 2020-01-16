@@ -259,7 +259,7 @@ type EventLogRaw struct {
 }
 
 // return the real event source from the base event source
-func getRealEventSource(source_type string, src *json.RawMessage) (*EventSourceInterface, error) {
+func GetRealEventSource(source_type string, src *json.RawMessage) (*EventSourceInterface, error) {
 
 	var ret_src EventSourceInterface
 
@@ -319,7 +319,7 @@ func FindEventLogWithKey(db *bolt.DB, key string) (*EventLog, error) {
 				glog.Errorf("Unable to deserialize event log db record: %v. Error: %v", v, err)
 				return err
 			} else {
-				if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
+				if esrc, err := GetRealEventSource(el.SourceType, el.Source); err != nil {
 					glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 					return err
 				} else {
@@ -374,7 +374,7 @@ func FindEventLogs(db *bolt.DB, filters []EventLogFilter) ([]EventLog, error) {
 				if err := json.Unmarshal(v, &el); err != nil {
 					glog.Errorf("Unable to deserialize event log db record: %v. Error: %v", v, err)
 				} else {
-					if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
+					if esrc, err := GetRealEventSource(el.SourceType, el.Source); err != nil {
 						glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 					} else {
 						pel := newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
@@ -446,7 +446,7 @@ func FindEventLogsWithSelectors(db *bolt.DB, all_logs bool, selectors map[string
 					}
 
 					if (all_logs || el.Timestamp > last_unreg) && el.EventLogBase.Matches(base_selectors) {
-						if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
+						if esrc, err := GetRealEventSource(el.SourceType, el.Source); err != nil {
 							glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 						} else if (*esrc).Matches(source_selectors) {
 							pel := newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
@@ -485,7 +485,7 @@ func FindAllEventLogs(db *bolt.DB) ([]EventLog, error) {
 				if err := json.Unmarshal(v, &el); err != nil {
 					glog.Errorf("Unable to deserialize event log db record: %v. Error: %v", v, err)
 				} else {
-					if esrc, err := getRealEventSource(el.SourceType, el.Source); err != nil {
+					if esrc, err := GetRealEventSource(el.SourceType, el.Source); err != nil {
 						glog.Errorf("Unable to convert event source: %v. Error: %v", el.Source, err)
 					} else {
 						pel := newEventLog1(el.Severity, el.Message, el.MessageMeta, el.EventCode, el.SourceType, *esrc)
@@ -514,7 +514,7 @@ type Selector struct {
 	MatchValue interface{}
 }
 
-// convert the given string to a selecor
+// convert the given string to a selector
 func ConvertToSelectorType(s string) (*Selector, error) {
 	var a interface{}
 	op := "="

@@ -81,7 +81,7 @@ func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.Externa
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -331,8 +331,19 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
 	}
 
-	msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
-	msgPrinter.Println()
+	// Now drop into the long wait for a service to get started on the node.
+	if waitService != "" {
+		msgPrinter.Printf("Horizon node is registered. Workload services should begin executing shortly.")
+		msgPrinter.Println()
+
+		// Wait for the service to be started.
+		WaitForService(waitOrg, waitService, waitTimeout)
+
+	} else {
+		msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+		msgPrinter.Println()
+	}
+
 }
 
 func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string) (string, string) {

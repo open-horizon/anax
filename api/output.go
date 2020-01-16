@@ -97,15 +97,15 @@ func NewWorkloadOutput() *AllWorkloads {
 
 // The output format for GET service
 type AllServices struct {
-	Config      []MicroserviceConfig     `json:"config"`      // the service configurations
-	Instances   map[string][]interface{} `json:"instances"`   // the mservice instances that are running
-	Definitions map[string][]interface{} `json:"definitions"` // the definitions of services from the exchange
+	Config      []MicroserviceConfig                     `json:"config"`      // the service configurations
+	Instances   map[string][]*MicroserviceInstanceOutput `json:"instances"`   // the microservice instances that are running
+	Definitions map[string][]interface{}                 `json:"definitions"` // the definitions of services from the exchange
 }
 
 func NewServiceOutput() *AllServices {
 	return &AllServices{
 		Config:      make([]MicroserviceConfig, 0, 10),
-		Instances:   make(map[string][]interface{}, 0),
+		Instances:   make(map[string][]*MicroserviceInstanceOutput, 0),
 		Definitions: make(map[string][]interface{}, 0),
 	}
 }
@@ -167,7 +167,7 @@ func (s MicroserviceDefByUpgradeStartTime) Less(i, j int) bool {
 	return s[i].(persistence.MicroserviceDefinition).UpgradeStartTime < s[j].(persistence.MicroserviceDefinition).UpgradeStartTime
 }
 
-type MicroserviceInstanceByMicroserviceDefId []interface{}
+type MicroserviceInstanceByMicroserviceDefId []*MicroserviceInstanceOutput
 
 func (s MicroserviceInstanceByMicroserviceDefId) Len() int {
 	return len(s)
@@ -178,10 +178,10 @@ func (s MicroserviceInstanceByMicroserviceDefId) Swap(i, j int) {
 }
 
 func (s MicroserviceInstanceByMicroserviceDefId) Less(i, j int) bool {
-	return s[i].(MicroserviceInstanceOutput).MicroserviceDefId < s[j].(MicroserviceInstanceOutput).MicroserviceDefId
+	return s[i].MicroserviceDefId < s[j].MicroserviceDefId
 }
 
-type MicroserviceInstanceByCleanupStartTime []interface{}
+type MicroserviceInstanceByCleanupStartTime []*MicroserviceInstanceOutput
 
 func (s MicroserviceInstanceByCleanupStartTime) Len() int {
 	return len(s)
@@ -192,7 +192,7 @@ func (s MicroserviceInstanceByCleanupStartTime) Swap(i, j int) {
 }
 
 func (s MicroserviceInstanceByCleanupStartTime) Less(i, j int) bool {
-	return s[i].(MicroserviceInstanceOutput).CleanupStartTime < s[j].(MicroserviceInstanceOutput).CleanupStartTime
+	return s[i].CleanupStartTime < s[j].CleanupStartTime
 }
 
 type EventLogByRecordId []persistence.EventLog
