@@ -193,10 +193,10 @@ start() {
 	fi
 
 	if isMacos; then
-		docker run $DOCKER_ADD_HOSTS -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
+		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:$SOCAT_LISTEN_PORT -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker run"
 	else
-		docker run $DOCKER_ADD_HOSTS -d -t --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
+		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
 		checkrc $? "docker run"
 	fi
 
@@ -243,12 +243,24 @@ restart() {
 
 	# Stop the anax container, but 1st tell it not to unregister when stopping, and dont delete the volumes
 	echo "Stopping/removing the horizon container..."
-	docker exec $DOCKER_NAME touch /root/dont-unregister-on-exit
-	checkrc $? "docker dont-unregister-on-exit"
-	docker stop $DOCKER_NAME
-	checkrc $? "docker stop"
-	docker rm $DOCKER_NAME
-	checkrc $? "docker rm"
+
+	# check if the container is running or not
+	ret=$(docker inspect -f '{{.State.Running}}' $DOCKER_NAME)
+	if [ $? -eq 0 ]; then
+		# if not running, bring it up
+		if [ "$ret" == "false" ]; then
+			docker start $DOCKER_NAME
+			checkrc $? "docker start"
+		fi
+
+		# now the container is running, set the dont-unregister-on-exit falg
+		docker exec $DOCKER_NAME touch /root/dont-unregister-on-exit
+		checkrc $? "docker dont-unregister-on-exit"
+		docker stop $DOCKER_NAME
+		checkrc $? "docker stop"
+		docker rm $DOCKER_NAME
+		checkrc $? "docker rm"
+	fi
 
 	start "$1" 'updating'
 }
