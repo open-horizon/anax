@@ -655,7 +655,7 @@
     {
       "id": "Wrong organization id, user id or password.",
       "message": "Wrong organization id, user id or password.",
-      "translation": "Mauvais ID d'organisation, d'utilisateur ou de mot de passe.",
+      "translation": "Mauvais ID organisation, ID utilisateur ou de mot de passe.",
       "fuzzy": true
     },
     {
@@ -2025,7 +2025,7 @@
     {
       "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
       "message": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateurs -u ou -n, ou variables HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH",
+      "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateur -u ou -n, variable HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH",
       "fuzzy": true
     },
     {
@@ -4009,7 +4009,7 @@
         "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}."
       ],
       "message": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-      "translation": "Accord trouvé pour le service {Arg_1}. L'ID de l'accord est {Arg_2}.",
+      "translation": "Accord trouvé pour le service {Arg_1}. ID accord : {Arg_2}.",
       "placeholders": [
         {
           "id": "Arg_1",

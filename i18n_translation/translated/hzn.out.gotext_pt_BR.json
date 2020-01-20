@@ -708,7 +708,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Interface da linha de comandos para o agente do Horizon. A maioria dos subcomandos usa a API do Horizon Agent no local padrão http://localhost (consulte a seção Variáveis de ambiente para substituir isso).\n\nVariáveis de ambiente:\n  HORIZON_URL:  substitua a URL na qual o hzn entra em contato com a API do Horizon Agent.\n      Isso pode facilitar o uso do Horizon Agent remoto por meio de um túnel ssh.\n  HZN_EXCHANGE_URL:  substitua a URL que os subcomandos 'hzn exchange' usam\n      para se comunicar com o Horizon Exchange, por exemplo\n      https://exchange.bluehorizon.network/api/v1. (Por padrão, o hzn solicitará ao\n      Horizon Agent que forneça a URL.)\n  HZN_ORG_ID:  o valor padrão para a sinalização 'hzn exchange -o',\n     para especificar o ID da organização'.\n  HZN_EXCHANGE_USER_AUTH:  o valor padrão para a sinalização 'hzn exchange -u' ou 'hzn\n\t  register -u', no formato '[org/]user:pw'. Observe que HZN_ORG_ID pode ser configurado \n\t  se a organização for omitida quando HZN_EXCHANGE_USER_AUTH for configurado.\n  HZN_FSS_CSSURL:  substitua a URL que os subcomandos 'hzn mms' usam\n      para se comunicar com o Horizon Model Management Service, por exemplo\n      https://exchange.bluehorizon.network/css/. (Por padrão, o hzn solicitará ao\n      Horizon Agent que forneça a URL.)\n\n  Todas essas variáveis de ambiente e as que são mencionadas na ajuda do comando podem ser\n  especificadas no arquivo de configuração do usuário: ~/.hzn/hzn.json com formato JSON.\n  Por exemplo:\n  {Com____}"
+      "translation": "Interface da linha de comandos para o agente do Horizon. A maioria dos subcomandos usa a API do Horizon Agent no local padrão http://localhost (consulte a seção Variáveis de ambiente para substituir isso).\n\nVariáveis de ambiente:\n  HORIZON_URL:  substituir a URL na qual o hzn entra em contato com a API do Horizon Agent.\n      Isso pode facilitar o uso do Horizon Agent remoto por meio de um túnel ssh.\n  HZN_EXCHANGE_URL:  substituir a URL que os subcomandos 'hzn exchange' usam\n      para se comunicar com o Horizon Exchange, por exemplo\n      https://exchange.bluehorizon.network/api/v1. (Por padrão, o hzn solicitará ao\n      Horizon Agent que forneça a URL.)\n  HZN_ORG_ID:  o valor padrão para a sinalização 'hzn exchange -o',\n     para especificar o ID da organização'.\n  HZN_EXCHANGE_USER_AUTH:  o valor padrão para a sinalização 'hzn exchange -u' ou 'hzn\n\t  register -u', no formato '[org/]user:pw'. Observe que HZN_ORG_ID pode ser configurado \n\t  se a organização for omitida quando HZN_EXCHANGE_USER_AUTH for configurado.\n  HZN_FSS_CSSURL:  substituir a URL que os subcomandos 'hzn mms' usam\n      para se comunicar com o Horizon Model Management Service, por exemplo\n      https://exchange.bluehorizon.network/css/. (Por padrão, o hzn solicitará ao\n      Horizon Agent que forneça a URL.)\n\n  Todas essas variáveis de ambiente e as que são mencionadas na ajuda do comando podem ser\n  especificadas no arquivo de configuração do usuário: ~/.hzn/hzn.json com formato JSON.\n  Por exemplo:\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -872,7 +872,7 @@
     },
     {
       "id": "Change the token of a node resource in the Horizon Exchange.",
-      "translation": "Alterar o token de um recurso de nó no Horizon Exchange."
+      "translation": "Modificar o token de um recurso de nó no Horizon Exchange."
     },
     {
       "id": "The node to be changed.",
@@ -884,7 +884,7 @@
     },
     {
       "id": "Check to see if the specified node and token are valid in the Horizon Exchange.",
-      "translation": "Verifique se o nó e o token especificados são válidos no Horizon Exchange."
+      "translation": "Verificar se o nó e o token especificados são válidos no Horizon Exchange."
     },
     {
       "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
@@ -1860,11 +1860,11 @@
     },
     {
       "id": "List all the active errors that will be shared with the exchange if the node is online.",
-      "translation": "Liste todos os erros ativos que serão compartilhados com o Exchange se o nó estiver on-line."
+      "translation": "Listar todos os erros ativos que serão compartilhados com o Exchange se o nó estiver on-line."
     },
     {
       "id": "List the full event logs of the surface errors.",
-      "translation": "Liste os logs de eventos completos dos erros exibidos."
+      "translation": "Listar os logs de eventos completos dos erros exibidos."
     },
     {
       "id": "Development tools for creation of services.",
@@ -1880,7 +1880,7 @@
     },
     {
       "id": "Create a new service project.",
-      "translation": "Crie um novo projeto de serviço."
+      "translation": "Criar um novo projeto de serviço."
     },
     {
       "id": "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.",
@@ -2112,23 +2112,23 @@
     },
     {
       "id": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
-      "translation": "Liste objetos mms usando a política que são alvos para o serviço fornecido. Serviço especificado no formato service-org/service-name."
+      "translation": "Listar objetos mms usando a política que são alvos para o serviço fornecido. Serviço especificado no formato service-org/service-name."
     },
     {
       "id": "List mms objects using policy that reference the given property name.",
-      "translation": "Liste objetos mms usando a política que referencia o nome de propriedade fornecido."
+      "translation": "Listar objetos mms usando a política que referencia o nome de propriedade fornecido."
     },
     {
       "id": "List mms objects using policy that has been updated since the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. The time of day may be omitted.",
-      "translation": "Liste objetos mms usando a política que foi atualizada desde o tempo determinado. O valor de tempo é especificado no formato RFC3339: yyyy-MM-ddTHH:mm:ssZ. A hora do dia pode ser omitida."
+      "translation": "Listar objetos mms usando a política que foi atualizada desde o tempo determinado. O valor de tempo é especificado no formato RFC3339: yyyy-MM-ddTHH:mm:ssZ. A hora do dia pode ser omitida."
     },
     {
       "id": "List mms objects with given destination type",
-      "translation": "Liste objetos mms com o tipo de destino determinado"
+      "translation": "Listar objetos mms com o tipo de destino determinado"
     },
     {
       "id": "List mms objects with given destination id. Must specify --destinationType to use this flag",
-      "translation": "Liste objetos mms com o ID de destino fornecido. Deve-se especificar --destinationType para usar esta sinalização"
+      "translation": "Listar objetos mms com o ID de destino fornecido. Deve-se especificar --destinationType para usar esta sinalização"
     },
     {
       "id": "Specify true to show objects that have data. Specify false to show objects that have no data. If this flag is omitted, both kinds of objects are shown.",
@@ -2136,7 +2136,7 @@
     },
     {
       "id": "List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.",
-      "translation": "Liste objetos mms que expiraram antes do tempo determinado. O valor de tempo é especificado no formato RFC3339: yyyy-MM-ddTHH:mm:ssZ. Especifique now para mostrar objetos que estão expirados atualmente."
+      "translation": "Listar objetos mms que expiraram antes do tempo determinado. O valor de tempo é especificado no formato RFC3339: yyyy-MM-ddTHH:mm:ssZ. Especifique now para mostrar objetos que estão expirados atualmente."
     },
     {
       "id": "Show detailed object metadata information",
@@ -2176,7 +2176,7 @@
     },
     {
       "id": "Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes.",
-      "translation": "Exclua um objeto no Horizon Model Management Service, tornando-o indisponível para serviços implementados em nós."
+      "translation": "Excluir um objeto no Horizon Model Management Service, tornando-o indisponível para serviços implementados em nós."
     },
     {
       "id": "The type of the object to delete.",

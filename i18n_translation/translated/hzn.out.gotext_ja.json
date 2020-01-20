@@ -132,7 +132,7 @@
     },
     {
       "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-      "translation": "Horizon ノードが登録抹消されました。 必要な場合は、「hzn register...」を再度実行することができます。"
+      "translation": "Horizon ノードが登録抹消されました。 必要に応じて、「hzn register...」を再度実行できます。"
     },
     {
       "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
@@ -516,7 +516,7 @@
     },
     {
       "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP 要求タイムアウトが {RequestTimeout} 秒に設定されました"
+      "translation": "HTTP 要求タイムアウトは {RequestTimeout} 秒に設定されています"
     },
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
@@ -688,11 +688,11 @@
     },
     {
       "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
-      "translation": "この Horizon ノードの {Msgpart} を中断しますか?"
+      "translation": "この Horizon ノードの{Msgpart}を中断しますか?"
     },
     {
       "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
-      "translation": "{Msgpart} を中断中、関連する契約を解除中、関連するサービス・コンテナーを停止中..."
+      "translation": "{Msgpart}の中断、関連する契約の解除、関連するサービス・コンテナーの停止を行います..."
     },
     {
       "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
@@ -700,7 +700,7 @@
     },
     {
       "id": "Resuming {Msgpart} ...",
-      "translation": "{Msgpart} を再開中..."
+      "translation": "{Msgpart}を再開中..."
     },
     {
       "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
@@ -708,7 +708,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください。)\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介したリモート Horizon エージェントの使用が容易になります。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために使用する URL をオーバーライドします。\n例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。 HZN_EXCHANGE_USER_AUTH を設定した時に org を省略した場合は、HZN_ORG_ID を設定できる\n\tことに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと\n     通信するために使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
+      "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください)。\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介したリモート Horizon エージェントの使用が容易になります。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために\n使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。 HZN_EXCHANGE_USER_AUTH を設定した時に\n\t org を省略した場合は、HZN_ORG_ID を設定できることに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと\n     通信するために使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -1568,7 +1568,7 @@
     },
     {
       "id": "Check deployment compatibility.",
-      "translation": "デプロイメント互換性をチェックします。"
+      "translation": "デプロイメント互換性を検査します。"
     },
     {
       "id": "Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1580,15 +1580,15 @@
     },
     {
       "id": "Show policies and userinput used for the compatibility checking.",
-      "translation": "互換性チェックに使用されるポリシーとユーザー入力を表示します。"
+      "translation": "互換性検査に使用されるポリシーとユーザー入力を表示します。"
     },
     {
       "id": "Check policy compatibility.",
-      "translation": "ポリシー互換性をチェックします。"
+      "translation": "ポリシー互換性を検査します。"
     },
     {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
-      "translation": "ノードのアーキテクチャー。 -n が指定されない場合は必須です。 省略された場合、ビジネス・ポリシー内で参照されているすべてのアーキテクチャーのサービスを対象に互換性がチェックされます。"
+      "translation": "ノードのアーキテクチャー。 -n が指定されない場合は必須です。 省略された場合、ビジネス・ポリシー内で参照されているすべてのアーキテクチャーのサービスを対象に互換性が検査されます。"
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1612,11 +1612,11 @@
     },
     {
       "id": "Check user input compatibility.",
-      "translation": "ユーザー入力互換性をチェックします。"
+      "translation": "ユーザー入力互換性を検査します。"
     },
     {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.",
-      "translation": "ノードのアーキテクチャー。 -n が指定されない場合は必須です。 省略された場合、ビジネス・ポリシーまたはパターン内で参照されているすべてのアーキテクチャーのサービスを対象に互換性がチェックされます。"
+      "translation": "ノードのアーキテクチャー。 -n が指定されない場合は必須です。 省略された場合、ビジネス・ポリシーまたはパターン内で参照されているすべてのアーキテクチャーのサービスを対象に互換性が検査されます。"
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1648,7 +1648,7 @@
     },
     {
       "id": "Check all compatibilities for a deployment.",
-      "translation": "デプロイメントのすべての互換性をチェックします。"
+      "translation": "デプロイメントのすべての互換性を検査します。"
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -2192,7 +2192,7 @@
     },
     {
       "id": "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH",
-      "translation": "-u フラグまたは HZN_EXCHANGE_USER_AUTH のいずれかで Exchange のユーザー認証を指定する必要があります。"
+      "translation": "Exchange のユーザー認証は -u フラグまたは HZN_EXCHANGE_USER_AUTH のいずれかで指定する必要があります。"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -2568,11 +2568,11 @@
     },
     {
       "id": "A list of constraint expressions of the form <property name> <operator> <property value>,",
-      "translation": "<property name> <operator> <property value> という形式の制約式のリスト、"
+      "translation": "<property name> <operator> <property value> という形式の制約式のリストであり、"
     },
     {
       "id": "separated by boolean operators AND (&&) or OR (||).",
-      "translation": "ブール演算子 AND (&&) または OR (||) で分離。"
+      "translation": "ブール演算子 AND (&&) または OR (||) で区切ります。"
     },
     {
       "id": "A list of userInput variables to set when the service runs, listed by service.",
@@ -2984,7 +2984,7 @@
     },
     {
       "id": "theUser '{TrimPrefixtheUser_}' not found in org {Org}",
-      "translation": "ユーザー「{TrimPrefixtheUser_}」は組織 {Org} 内で検出されませんでした"
+      "translation": "ユーザー「{TrimPrefixtheUser_}」は組織「{Org}」 内で検出されませんでした"
     },
     {
       "id": "failed to marshal 'exchange user list' output: {Err}",
@@ -3000,7 +3000,7 @@
     },
     {
       "id": "user '{User}' not found in org {Org}",
-      "translation": "ユーザー「{User}」は組織 {Org} 内で検出されませんでした"
+      "translation": "ユーザー「{User}」は組織「{Org}」 内で検出されませんでした"
     },
     {
       "id": "New dependency created: {Target} .",
@@ -3688,7 +3688,7 @@
     },
     {
       "id": "Creating RSA PSS private and public keys, and an x509 certificate for distribution. This is a CPU-intensive operation and, depending on key length and platform, may take a while. Key generation on an amd64 or ppc64 system using the default key length will complete in less than 1 minute.",
-      "translation": "RSA PSS 秘密鍵および公開鍵、配布用の x509 証明書を作成しています。 これは、CPU 集中的な操作であり、鍵の長さやプラットフォームによっては時間がかかる場合があります。 amd64 または ppc64 システムでデフォルトの長さの鍵の場合、鍵の生成は 1 分未満で完了します。"
+      "translation": "RSA PSS 秘密鍵および公開鍵、配布用の x509 証明書を作成しています。 これは、CPU に負荷がかかる操作であり、鍵の長さやプラットフォームによっては時間がかかる場合があります。 amd64 または ppc64 システムでデフォルトの長さの鍵の場合、鍵の生成は 1 分未満で完了します。"
     },
     {
       "id": "failed to create a new key pair: {Err}",
@@ -3820,7 +3820,7 @@
     },
     {
       "id": "Using compatibility checking input: {CompCheckInput}",
-      "translation": "互換性チェック入力: {CompCheckInput} を使用します"
+      "translation": "互換性検査入力: {CompCheckInput} を使用します"
     },
     {
       "id": "failed to marshal 'hzn policy compatible' output: {Err}",
@@ -4244,7 +4244,7 @@
     },
     {
       "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "サービス組織 {Org} が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
+      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
     },
     {
       "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
@@ -4344,7 +4344,7 @@
     },
     {
       "id": "Generated random node ID: {NodeId}.",
-      "translation": "ランダム・ノード ID を生成しました: {NodeId}."
+      "translation": "生成されたランダム・ノード ID: {NodeId} "
     },
     {
       "id": "Using node ID '{NodeId}' from the Horizon agent",
@@ -4356,7 +4356,7 @@
     },
     {
       "id": "Generated random node token",
-      "translation": "ランダム・ノード・トークンを生成しました。"
+      "translation": "ランダム・ノード・トークンが生成されました。"
     },
     {
       "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
@@ -4436,7 +4436,7 @@
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
-      "translation": "Horizon ノードは登録済みです。 間もなくワークロード契約の交渉が始まります。 表示するには、「hzn agreement list」を実行してください。"
+      "translation": "Horizon ノードが登録されました。間もなくワークロード契約の交渉が始まります。 表示するには、「hzn agreement list」を実行してください。"
     },
     {
       "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -4612,15 +4612,15 @@
     },
     {
       "id": "no objects found in org {Org}",
-      "translation": "組織 {Org} 内でオブジェクトは検出されませんでした"
+      "translation": "組織「{Org}」 内でオブジェクトは検出されませんでした"
     },
     {
       "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
-      "translation": "タイプ「{ObjectType}」のオブジェクト「{ObjectID}」の宛先詳細は、組織 {Org} 内で検出されませんでした"
+      "translation": "タイプ「{ObjectType}」のオブジェクト「{ObjectID}」の宛先詳細は、組織「{Org}」 内で検出されませんでした"
     },
     {
       "id": "Listing objects in org {Org}:",
-      "translation": "組織 {Org} 内のオブジェクトのリスト:"
+      "translation": "組織「{Org}」 内のオブジェクトのリスト:"
     },
     {
       "id": "Required: A unique identifier of the object.",
@@ -4632,7 +4632,7 @@
     },
     {
       "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
-      "translation": "必須: オブジェクトの組織 ID (オブジェクトは正確に 1 つの組織に所属します)。"
+      "translation": "必須: オブジェクトの組織 ID (オブジェクトは必ず 1 つの組織に所属します)。"
     },
     {
       "id": "The node id (without org prefix) where the object should be placed.",
@@ -4684,7 +4684,7 @@
     },
     {
       "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "<property name> <operator> <property value>　という形式の制約式を、ブール演算子 AND (&&) または OR (||)で分離したリスト。"
+      "translation": "<property name> <operator> <property value>　という形式の制約式を、ブール演算子 AND (&&) または OR (||)で区切ったリスト。"
     },
     {
       "id": "The service(s) that will use this object.",
@@ -4748,7 +4748,7 @@
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
-      "translation": "オブジェクト {ObjFile} はモデル管理サービス内の組織 {Org} にアップロードされました"
+      "translation": "オブジェクト {ObjFile} はモデル管理サービス内の組織「{Org}」 にアップロードされました"
     },
     {
       "id": "Object status: {Stringresp}",
@@ -4756,15 +4756,15 @@
     },
     {
       "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
-      "translation": "オブジェクト {ObjectID} は、モデル管理サービス内の組織 {Org} に追加されました"
+      "translation": "オブジェクト {ObjectID} は、モデル管理サービス内の組織「{Org}」 に追加されました"
     },
     {
       "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "タイプ「{ObjType}」のオブジェクト「{ObjId}」は組織 {Org} 内で検出されませんでした"
+      "translation": "タイプ「{ObjType}」のオブジェクト「{ObjId}」は組織「{Org}」 内で検出されませんでした"
     },
     {
       "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
-      "translation": "オブジェクト {ObjId} は、モデル管理サービス内の組織 {Org} から削除されました"
+      "translation": "オブジェクト {ObjId} は、モデル管理サービス内の組織「{Org}」 から削除されました"
     },
     {
       "id": "health status API returned HTTP code {HttpCode}",

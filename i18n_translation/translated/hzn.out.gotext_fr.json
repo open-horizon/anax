@@ -112,15 +112,15 @@
     },
     {
       "id": "Are you sure you want to remove the node user inputs?",
-      "translation": "Voulez-vous vraiment supprimer les entrées utilisateur du noeud ?"
+      "translation": "Voulez-vous vraiment retirer les entrées utilisateur du noeud ?"
     },
     {
       "id": "Horizon user inputs removed.",
-      "translation": "Entrées utilisateur Horizon supprimées."
+      "translation": "Entrées utilisateur Horizon retirées."
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
-      "translation": "Voulez-vous vraiment annuler l'enregistrement de ce noeud Horizon ?"
+      "translation": "Voulez-vous vraiment désenregistrer de ce noeud Horizon ?"
     },
     {
       "id": "The node is not registered.",
@@ -136,7 +136,7 @@
     },
     {
       "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
-      "translation": "AVERTISSEMENT : Le noeud est désinscrit, mais une erreur s'est produite pendant l'annulation de l'enregistrement."
+      "translation": "AVERTISSEMENT : Le noeud est désenregistré, mais une erreur s'est produite pendant l'annulation de l'enregistrement."
     },
     {
       "id": "The error was: {Err}",
@@ -204,7 +204,7 @@
     },
     {
       "id": "Removed service container: {Names0}",
-      "translation": "Conteneur de serveur supprimé : {Names0}"
+      "translation": "Conteneur de serveur retiré : {Names0}"
     },
     {
       "id": "Error pruning docker networks. {Err}",
@@ -456,7 +456,7 @@
     },
     {
       "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateurs -u ou -n, ou variables HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH"
+      "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateur -u ou -n, variable HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH"
     },
     {
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
@@ -672,7 +672,7 @@
     },
     {
       "id": "all the registered services",
-      "translation": "Tous les services enregistrés"
+      "translation": "tous les services enregistrés"
     },
     {
       "id": "service {ServiceOrg}/{ServiceUrl}",
@@ -680,7 +680,7 @@
     },
     {
       "id": "all the registered services from organization {ServiceOrg}",
-      "translation": "Tous les services enregistrés à partir de l'organisation {ServiceOrg}"
+      "translation": "tous les services enregistrés à partir de l'organisation {ServiceOrg}"
     },
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
@@ -688,7 +688,7 @@
     },
     {
       "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
-      "translation": "Voulez-vous vraiment suspendre {Msgpart} pour ce noeud Horizon ?"
+      "translation": "Voulez-vous vraiment interrompre {Msgpart} pour ce noeud Horizon ?"
     },
     {
       "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
@@ -696,11 +696,11 @@
     },
     {
       "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
-      "translation": "La demande d'interruption de service a été envoyée, veuillez utiliser 'hzn agreement' et 'docker ps' pour vérifier que les accords et les conteneurs de service associés sont supprimés. Cela peut prendre quelques minutes."
+      "translation": "La demande d'interruption de service a été envoyée, veuillez utiliser 'hzn agreement' et 'docker ps' pour vérifier que les accords et les conteneurs de service associés sont retirés. Cela peut prendre quelques minutes."
     },
     {
       "id": "Resuming {Msgpart} ...",
-      "translation": "Reprise {Msgpart}..."
+      "translation": "Reprise de {Msgpart}..."
     },
     {
       "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
@@ -732,11 +732,11 @@
     },
     {
       "id": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
-      "translation": "ID d'organisation Horizon Exchange. S'il n'est pas spécifié, la variable HZN_ORG_ID est utilisée par défaut."
+      "translation": "ID organisation Horizon Exchange. S'il n'est pas spécifié, la variable HZN_ORG_ID est utilisée par défaut."
     },
     {
       "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
-      "translation": "Données d'identification de l'utilisateur Horizon Exchange permettant d'interroger et de créer des ressources Exchange. Si elles ne sont pas renseignées, la variable HZN_EXCHANGE_USER_AUTH sera utilisée comme valeur par défaut. Si vous n'ajoutez pas l'organisation de l'utilisateur en préfixe, elle sera automatiquement ajoutée avec la valeur -o. Comme solution de rechange à l'utilisation de la valeur -o, définissez HZN_ORG_ID avec l'ID d'organisation Horizon Exchange."
+      "translation": "Données d'identification de l'utilisateur Horizon Exchange permettant d'interroger et de créer des ressources Exchange. Si elles ne sont pas renseignées, la variable HZN_EXCHANGE_USER_AUTH sera utilisée comme valeur par défaut. Si vous n'ajoutez pas l'organisation de l'utilisateur en préfixe, elle sera automatiquement ajoutée avec la valeur -o. Comme solution de rechange à l'utilisation de la valeur -o, définissez HZN_ORG_ID avec l'ID organisation Horizon Exchange."
     },
     {
       "id": "Display the version of the Horizon Exchange.",
@@ -788,7 +788,7 @@
     },
     {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
-      "translation": "Modifier l'utilisateur existant de manière à ce qu'il soit un administrateur (root dans son organisation) ou à ce qu'il ne soit plus un administrateur. Accessible uniquement par un utilisateur root Exchange ou autre administrateur."
+      "translation": "Changer l'utilisateur existant pour qu'il soit administrateur (root dans son organisation, par exemple) ou qu'il ne soit plus administrateur. Accessible uniquement par un utilisateur root Exchange ou autre administrateur."
     },
     {
       "id": "The user to be modified.",
@@ -800,11 +800,11 @@
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
-      "translation": "Supprimer une ressource utilisateur depuis Horizon Exchange. Avertissement: Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc.)."
+      "translation": "Retirer une ressource utilisateur d'Horizon Exchange. Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc.)."
     },
     {
       "id": "The user to remove.",
-      "translation": "Utilisateur à supprimer."
+      "translation": "Utilisateur à retirer."
     },
     {
       "id": "Skip the 'are you sure?' prompt.",
@@ -884,11 +884,11 @@
     },
     {
       "id": "Check to see if the specified node and token are valid in the Horizon Exchange.",
-      "translation": "Vérifiez si le noeud et le jeton sont valides dans Horizon Exchange."
+      "translation": "Vérifier si le noeud et le jeton spécifiés sont valides dans Horizon Exchange."
     },
     {
       "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
-      "translation": "L'ID noeud et le jeton Horizon Exchange à vérifier. S'ils ne sont pas spécifiés, la variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut. Cet indicateur est mutuellement exclusif avec les arguments <node> et <token>."
+      "translation": "ID noeud et jeton Horizon Exchange à vérifier. S'ils ne sont pas spécifiés, la variable HZN_EXCHANGE_NODE_AUTH sera utilisée comme valeur par défaut. Cet indicateur est mutuellement exclusif avec les arguments <node> et <token>."
     },
     {
       "id": "The node id to be checked. Mutually exclusive with -n flag.",
@@ -900,7 +900,7 @@
     },
     {
       "id": "Remove a node resource from the Horizon Exchange. Do NOT do this when an edge node is registered with this node id.",
-      "translation": "Supprimer une ressource de noeud d'Horizon Exchange. A ne PAS faire lorsqu'un noeud de périphérie est enregistré avec cet ID noeud."
+      "translation": "Retirer une ressource de noeud d'Horizon Exchange. A ne PAS faire lorsqu'un noeud de périphérie est enregistré avec cet ID noeud."
     },
     {
       "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
@@ -908,7 +908,7 @@
     },
     {
       "id": "The node to remove.",
-      "translation": "Le noeud à supprimer."
+      "translation": "Le noeud à retirer."
     },
     {
       "id": "Display the node policy from the Horizon Exchange.",
@@ -944,11 +944,11 @@
     },
     {
       "id": "Remove the node policy in the Horizon Exchange.",
-      "translation": "Supprimer la règle de noeud dans Horizon Exchange."
+      "translation": "Retirer la règle de noeud dans Horizon Exchange."
     },
     {
       "id": "Remove policy for this node.",
-      "translation": "Supprimer la règle pour ce noeud."
+      "translation": "Retirer la règle pour ce noeud."
     },
     {
       "id": "List the node errors currently surfaced to the exchange.",
@@ -980,11 +980,11 @@
     },
     {
       "id": "Display the patterns that this agbot is serving.",
-      "translation": "Afficher les patterns servis par l'agbot."
+      "translation": "Afficher les patterns utilisés par cet agbot."
     },
     {
       "id": "The agbot to list the patterns for.",
-      "translation": "Agbot permettant de dresser la liste des patterns."
+      "translation": "Agbot pour lequel dresser la liste des patterns."
     },
     {
       "id": "The organization of the 1 pattern to list.",
@@ -1016,19 +1016,19 @@
     },
     {
       "id": "Remove this pattern from the list of patterns this agbot is serving.",
-      "translation": "Supprimer ce pattern de la liste des patterns utilisés par cet agbot."
+      "translation": "Retirer ce pattern de la liste des patterns utilisés par cet agbot."
     },
     {
       "id": "The agbot to remove the pattern from.",
-      "translation": "Agbot duquel supprimer le pattern."
+      "translation": "Agbot duquel retirer le pattern."
     },
     {
       "id": "The organization of the pattern to remove.",
-      "translation": "Organisation du pattern à supprimer."
+      "translation": "Organisation du pattern à retirer."
     },
     {
       "id": "The name of the pattern to remove.",
-      "translation": "Nom du pattern à supprimer."
+      "translation": "Nom du pattern à retirer."
     },
     {
       "id": "Display the business policies that this agbot is serving.",
@@ -1052,15 +1052,15 @@
     },
     {
       "id": "Remove this business policy from the list of policies this agbot is serving. Currently only support removing all the business polycies from an organization.",
-      "translation": "Supprimer cette règle métier de la liste des règles utilisées par cet agbot. Seule la suppression de toutes les règles métier d'une organisation est actuellement prise en charge."
+      "translation": "Retirer cette règle métier de la liste des règles utilisées par cet agbot. Seule le retrait de toutes les règles métier d'une organisation est actuellement prise en charge."
     },
     {
       "id": "The agbot to remove the business policy from.",
-      "translation": "Agbot duquel supprimer la règle métier."
+      "translation": "Agbot duquel retirer la règle métier."
     },
     {
       "id": "The organization of the business policy to remove.",
-      "translation": "Organisation de la règle métier à supprimer."
+      "translation": "Organisation de la règle métier à retirer."
     },
     {
       "id": "List and manage patterns in the Horizon Exchange",
@@ -1124,11 +1124,11 @@
     },
     {
       "id": "Remove a pattern resource from the Horizon Exchange.",
-      "translation": "Supprimer une ressource de pattern depuis Horizon Exchange."
+      "translation": "Retirer une ressource de pattern depuis Horizon Exchange."
     },
     {
       "id": "The pattern to remove.",
-      "translation": "Pattern à supprimer."
+      "translation": "Pattern à retirer."
     },
     {
       "id": "List the signing public keys/certs for this pattern resource in the Horizon Exchange.",
@@ -1144,15 +1144,15 @@
     },
     {
       "id": "Remove a signing public key/cert for this pattern resource in the Horizon Exchange.",
-      "translation": "Supprimer une clé publique/un certificat de signature pour cette ressource de pattern dans Horizon Exchange."
+      "translation": "Retirer une clé publique/un certificat de signature pour cette ressource de pattern dans Horizon Exchange."
     },
     {
       "id": "The existing pattern to remove the key from.",
-      "translation": "Pattern existant à partir duquel supprimer la clé."
+      "translation": "Pattern existant duquel retirer la clé."
     },
     {
       "id": "The existing key name to remove.",
-      "translation": "Nom de clé existant à supprimer."
+      "translation": "Nom de clé existant à retirer."
     },
     {
       "id": "List and manage services in the Horizon Exchange",
@@ -1184,15 +1184,15 @@
     },
     {
       "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "Chemin d'accès au fichier de clé publique (correspondant à la clé privée) qui doit être stocké avec le service, et qui est utilisé par l'agent Horizon pour vérifier la signature. Si ce chemin et les indicateurs -k ne sont pas spécifiés, la variable d'environnement HZN_PUBLIC_KEY_FILE est utilisée. Si la variable HZN_PUBLIC_KEY_FILE n'est pas définie, ~/.hzn/keys/service.public.pem est la valeur par défaut. Si -k est spécifié, mais pas le chemin, aucun fichier de clé publique n'est stocké avec le service. L'agent Horizon doit alors importer la clé publique pour vérifier la signature."
+      "translation": "Chemin d'accès au fichier de clé publique (correspondant à la clé privée) qui doit être stocké avec le service et qui est utilisé par l'agent Horizon pour vérifier la signature. Si ce chemin et les indicateurs -k ne sont pas spécifiés, la variable d'environnement HZN_PUBLIC_KEY_FILE est utilisée. Si la variable HZN_PUBLIC_KEY_FILE n'est pas définie, ~/.hzn/keys/service.public.pem est la valeur par défaut. Si -k est spécifié, mais pas le chemin, aucun fichier de clé publique n'est stocké avec le service. L'agent Horizon doit alors importer la clé publique pour vérifier la signature."
     },
     {
       "id": "The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.",
-      "translation": "Les chemins d'accès aux images dans la zone de déploiement comportent des balises ordinaires et ne doivent pas être modifiés en valeurs de synthèse sha256. L'image ne sera pas automatiquement téléchargée vers le référentiel. Cette option ne doit être utilisée qu'en phase de développement lorsque des nouvelles versions sont souvent testées."
+      "translation": "Les chemins d'accès aux images dans la zone de déploiement comportent des balises ordinaires et ne doivent pas être modifiés en valeurs de synthèse sha256. L'image ne sera pas automatiquement téléchargée vers le référentiel. Cette option doit être utilisée uniquement en phase de développement, lorsque de nouvelles versions sont souvent testées."
     },
     {
       "id": "Use the image from the image repository. It will pull the image from the image repository and overwrite the local image if exists. This flag is mutually exclusive with -I.",
-      "translation": "Utiliser l'image du référentiel d'images. L'image sera extraite du référentiel et remplacera l'image locale le cas échéant. Cet indicateur est mutuellement exclusif avec -I."
+      "translation": "Utiliser l'image du référentiel d'images. L'image sera extraite du référentiel et remplacera l'image locale le cas échéant. Indicateur mutuellement exclusif avec -I."
     },
     {
       "id": "Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token",
@@ -1220,11 +1220,11 @@
     },
     {
       "id": "Remove a service resource from the Horizon Exchange.",
-      "translation": "Supprimer une ressource du service depuis Horizon Exchange."
+      "translation": "Retirer une ressource du service d'Horizon Exchange."
     },
     {
       "id": "The service to remove.",
-      "translation": "Service à supprimer."
+      "translation": "Service à retirer."
     },
     {
       "id": "List the signing public keys/certs for this service resource in the Horizon Exchange.",
@@ -1236,11 +1236,11 @@
     },
     {
       "id": "Remove a signing public key/cert for this service resource in the Horizon Exchange.",
-      "translation": "Supprimer une clé publique/un certificat de signature pour cette ressource de service dans Horizon Exchange."
+      "translation": "Retirer une clé publique/un certificat de signature pour cette ressource de service dans Horizon Exchange."
     },
     {
       "id": "The existing service to remove the key from.",
-      "translation": "Service existant à partir duquel supprimer la clé."
+      "translation": "Service existant duquel retirer la clé."
     },
     {
       "id": "List the docker auth tokens for this service resource in the Horizon Exchange.",
@@ -1256,15 +1256,15 @@
     },
     {
       "id": "Remove a docker auth token for this service resource in the Horizon Exchange.",
-      "translation": "Supprimer un jeton d'authentification Docker pour cette ressource de service dans Horizon Exchange."
+      "translation": "Retirer un jeton d'authentification Docker pour cette ressource de service dans Horizon Exchange."
     },
     {
       "id": "The existing service to remove the docker auth from.",
-      "translation": "Service existant à partir duquel supprimer l'authentification Docker."
+      "translation": "Service existant duquel retirer l'authentification Docker."
     },
     {
       "id": "The existing docker auth id to remove.",
-      "translation": "ID d'authentification Docker existant à supprimer."
+      "translation": "ID d'authentification Docker existant à retirer."
     },
     {
       "id": "Display the service policy from the Horizon Exchange.",
@@ -1300,11 +1300,11 @@
     },
     {
       "id": "Remove the service policy in the Horizon Exchange.",
-      "translation": "Supprimer la règle de service dans Horizon Exchange."
+      "translation": "Retirer la règle de service dans Horizon Exchange."
     },
     {
       "id": "Remove policy for this service.",
-      "translation": "Supprimer la règle pour ce service."
+      "translation": "Retirer la règle pour ce service."
     },
     {
       "id": "List and manage business policies in the Horizon Exchange.",
@@ -1332,7 +1332,7 @@
     },
     {
       "id": "Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template.",
-      "translation": "Ajouter ou remplacer une règle métier dans Horizon Exchange. Utilisez 'hzn exchange business new' pour un nouveau modèle de règle vierge."
+      "translation": "Ajouter ou remplacer une règle métier dans Horizon Exchange. Utilisez 'hzn exchange business new' pour un modèle de règle vierge."
     },
     {
       "id": "The name of the policy to add or overwrite.",
@@ -1352,11 +1352,11 @@
     },
     {
       "id": "Remove the business policy in the Horizon Exchange.",
-      "translation": "Supprimer la règle métier dans Horizon Exchange."
+      "translation": "Retirer la règle métier dans Horizon Exchange."
     },
     {
       "id": "The name of the business policy to be removed.",
-      "translation": "Nom de la règle métier à supprimer."
+      "translation": "Nom de la règle métier à retirer."
     },
     {
       "id": "List all public services/patterns in all orgs that have orgType: IBM.",
@@ -1400,7 +1400,7 @@
     },
     {
       "id": "The Horizon exchange organization ID that the node will be registered in.",
-      "translation": "ID d'organisation Horizon Exchange dans lequel sera enregistré le noeud."
+      "translation": "ID organisation Horizon Exchange dans lequel sera enregistré le noeud."
     },
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
@@ -1436,7 +1436,7 @@
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "ID d'organisation Horizon Exchange dans lequel doit être enregistré le noeud. La valeur par défaut est la variable d'environnement HZN_ORG_ID. Mutuellement exclusif avec les arguments <nodeorg> et <pattern>."
+      "translation": "ID organisation Horizon Exchange dans lequel doit être enregistré le noeud. La valeur par défaut est la variable d'environnement HZN_ORG_ID. Mutuellement exclusif avec les arguments <nodeorg> et <pattern>."
     },
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag.",
@@ -1448,7 +1448,7 @@
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
-      "translation": "ID d'organisation Horizon Exchange dans lequel doit être enregistré le noeud. Mutuellement exclusif avec -o et -p."
+      "translation": "ID organisation Horizon Exchange dans lequel doit être enregistré le noeud. Mutuellement exclusif avec -o et -p."
     },
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.",
@@ -1520,11 +1520,11 @@
     },
     {
       "id": "Remove the specified signing key from this Horizon agent.",
-      "translation": "Supprimer la clé de signature spécifiée de l'agent Horizon."
+      "translation": "Retirer la clé de signature spécifiée de l'agent Horizon."
     },
     {
       "id": "The name of a specific key to remove.",
-      "translation": "Nom d'une clé spécifique à supprimer."
+      "translation": "Nom d'une clé spécifique à retirer."
     },
     {
       "id": "List and manage general information about this Horizon edge node.",
@@ -1564,7 +1564,7 @@
     },
     {
       "id": "Remove the node's policy.",
-      "translation": "Supprimer la règle du noeud."
+      "translation": "Retirer la règle du noeud."
     },
     {
       "id": "Check deployment compatibility.",
@@ -1748,7 +1748,7 @@
     },
     {
       "id": "Remove the user inputs that are currently registered on this Horizon edge node.",
-      "translation": "Supprimer les entrées utilisateur qui sont actuellement enregistrées sur ce noeud de périphérie Horizon."
+      "translation": "Retirer les entrées utilisateur qui sont actuellement enregistrées sur ce noeud de périphérie Horizon."
     },
     {
       "id": "Skip the 'Are you sure?' prompt.",
@@ -1760,7 +1760,7 @@
     },
     {
       "id": "Show the container logs for a service.",
-      "translation": "Affichez les journaux de conteneur pour un service."
+      "translation": "Afficher les journaux de conteneur pour un service."
     },
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
@@ -1792,7 +1792,7 @@
     },
     {
       "id": "Change the configuration state to 'active' for a service.",
-      "translation": "Modifier l'état de configuration sur 'active' (actif) pour un service."
+      "translation": "Changer l'état de configuration en 'active' (actif) pour un service."
     },
     {
       "id": "Suspend all registerd services.",
@@ -1820,23 +1820,23 @@
     },
     {
       "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
-      "translation": "Annulez l'enregistrement et réinitialisez le noeud de périphérie Horizon afin qu'il soit prêt à être de nouveau enregistré. Avertissement : Ceci arrêtera tous les services Horizon qui s'exécute sur ce noeud de périphérie, et redémarrera l'agent Horizon."
+      "translation": "Annuler l'enregistrement et réinitialiser le noeud de périphérie Horizon afin qu'il soit prêt à être de nouveau enregistré. Avertissement : Ceci arrêtera tous les services Horizon qui s'exécutent sur ce noeud de périphérie, et redémarrera l'agent Horizon."
     },
     {
       "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
-      "translation": "Supprimez également ce noeud d'Horizon Exchange (car vous ne voulez plus l'utiliser avec Horizon)."
+      "translation": "Retirer également ce noeud d'Horizon Exchange (car vous ne voulez plus l'utiliser avec Horizon)."
     },
     {
       "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "translation": "Supprimez également toutes les informations d'enregistrement précédentes. N'effectuez cette action que si la commande 'hzn unregister' a échoué. Capturez les journaux à l'aide de la commande 'hzn eventlog list -a -l' avant d'utiliser cet indicateur."
+      "translation": "Retirer également toutes les informations d'enregistrement précédentes. Effectuer cette action uniquement si la commande 'hzn unregister' a échoué. Capturer les journaux à l'aide de la commande 'hzn eventlog list -a -l' avant d'utiliser cet indicateur."
     },
     {
       "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
-      "translation": "Nombre de minutes d'attente pour que l'annulation de l'enregistrement se termine. La valeur par défaut est zéro, ce qui signifie que l'attente est indéfinie."
+      "translation": "Nombre de minutes d'attente pour que l'annulation de l'enregistrement se termine. La valeur par défaut est zéro, ce qui signifie que l'attente dure indéfiniment."
     },
     {
       "id": "Display the current horizon internal status for the node.",
-      "translation": "Afficher le statut interne Horizon actuel pour le noeud."
+      "translation": "Afficher le statut interne Horizon en cours pour le noeud."
     },
     {
       "id": "Show detailed status",
@@ -1856,7 +1856,7 @@
     },
     {
       "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'AND'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attributs communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attributs."
+      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'AND'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attribut communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attribut."
     },
     {
       "id": "List all the active errors that will be shared with the exchange if the node is online.",
@@ -1884,7 +1884,7 @@
     },
     {
       "id": "The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.",
-      "translation": "ID d'organisation dans lequel est défini le service. Si cet indicateur n'est pas spécifié, la variable d'environnement HZN_ORG_ID est utilisée."
+      "translation": "ID organisation dans lequel est défini le service. Si cet indicateur n'est pas spécifié, la variable d'environnement HZN_ORG_ID est utilisée."
     },
     {
       "id": "The name of the service. If this flag and the -i flag are omitted, only the skeletal horizon metadata files will be generated.",
@@ -1996,7 +1996,7 @@
     },
     {
       "id": "Remove a project dependency.",
-      "translation": "Supprimer une dépendance de projet."
+      "translation": "Retirer une dépendance de projet."
     },
     {
       "id": "List and manage Horizon agreement bot resources.",
@@ -2040,7 +2040,7 @@
     },
     {
       "id": "Display the current horizon internal status for the Horizon agreement bot.",
-      "translation": "Afficher le statut interne Horizon actuel pour le bot d'accord Horizon."
+      "translation": "Afficher le statut interne Horizon en cours pour le bot d'accord Horizon."
     },
     {
       "id": "Utility commands.",
@@ -2056,7 +2056,7 @@
     },
     {
       "id": "Verify that the signature specified via -s is a valid signature for the text in stdin.",
-      "translation": "Vérifiez que la signature spécifiée via -s est valide pour le texte dans stdin."
+      "translation": "Vérifier que la signature spécifiée via -s est valide pour le texte dans stdin."
     },
     {
       "id": "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.",
@@ -2080,7 +2080,7 @@
     },
     {
       "id": "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.",
-      "translation": "ID d'organisation Horizon. S'il n'est pas spécifié, la variable HZN_ORG_ID est utilisée par défaut."
+      "translation": "ID organisation Horizon. S'il n'est pas spécifié, la variable HZN_ORG_ID est utilisée par défaut."
     },
     {
       "id": "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
@@ -2108,35 +2108,35 @@
     },
     {
       "id": "Specify true to show only objects using policy. Specify false to show only objects not using policy. If this flag is omitted, both kinds of objects are shown.",
-      "translation": "Indiquez true pour afficher uniquement les objets utilisant la règle. Indiquez false pour afficher uniquement les objets qui n'utilisent pas la règle. Si cet indicateur est omis, les deux types d'objet sont affichés."
+      "translation": "Indiquer true pour afficher uniquement les objets utilisant la règle. Indiquer false pour afficher uniquement les objets qui n'utilisent pas la règle. Si cet indicateur est omis, les deux types d'objet sont affichés."
     },
     {
       "id": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
-      "translation": "Répertoriez les objets mms utilisant la règle et qui sont ciblés pour le service donné. Service spécifié au format service-org/service-name."
+      "translation": "Afficher les objets mms utilisant la règle et qui sont ciblés pour le service donné. Service spécifié au format service-org/service-name."
     },
     {
       "id": "List mms objects using policy that reference the given property name.",
-      "translation": "Répertoriez les objets mms utilisant la règle et qui font référence au nom de propriété donné."
+      "translation": "Afficher les objets mms utilisant la règle et qui font référence au nom de propriété donné."
     },
     {
       "id": "List mms objects using policy that has been updated since the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. The time of day may be omitted.",
-      "translation": "Répertoriez les objets mms utilisant la règle qui a été mise à jour depuis la date et l'heure indiquées. La valeur temporelle est spécifiée au format RFC3339 : aaaa-MM-jjTHH:mm:ssZ. L'heure du jour peut être omise."
+      "translation": "Afficher les objets mms utilisant la règle qui a été mise à jour depuis la date et l'heure indiquées. La valeur temporelle est spécifiée au format RFC3339 : aaaa-MM-jjTHH:mm:ssZ. L'heure du jour peut être omise."
     },
     {
       "id": "List mms objects with given destination type",
-      "translation": "Liste des objets mms avec le type de destination donné"
+      "translation": "Afficher les objets mms avec le type de destination donné"
     },
     {
       "id": "List mms objects with given destination id. Must specify --destinationType to use this flag",
-      "translation": "Répertoriez les objets mms avec le type de destination indiqué. Vous devez spécifier --destinationType pour utiliser cet indicateur."
+      "translation": "Afficher les objets mms avec le type de destination indiqué. Vous devez spécifier --destinationType pour utiliser cet indicateur."
     },
     {
       "id": "Specify true to show objects that have data. Specify false to show objects that have no data. If this flag is omitted, both kinds of objects are shown.",
-      "translation": "Indiquez true pour afficher les objets comportant des données. Indiquez false pour afficher les objets sans données. Si cet indicateur est omis, les deux types d'objet sont affichés."
+      "translation": "Indiquer true pour afficher les objets comportant des données. Indiquer false pour afficher les objets sans données. Si cet indicateur est omis, les deux types d'objet sont affichés."
     },
     {
       "id": "List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.",
-      "translation": "Répertoriez les objets mms arrivés à expiration avant les date et heure indiquées. La valeur temporelle est spécifiée au format RFC3339 : aaaa-MM-jjTHH:mm:ssZ. Indiquez maintenant pour afficher les objets actuellement arrivés à expiration."
+      "translation": "Afficher les objets mms arrivés à expiration avant les date et heure indiquées. La valeur temporelle est spécifiée au format RFC3339 : aaaa-MM-jjTHH:mm:ssZ. Indiquer maintenant (now) pour afficher les objets actuellement arrivés à expiration."
     },
     {
       "id": "Show detailed object metadata information",
@@ -2148,11 +2148,11 @@
     },
     {
       "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
-      "translation": "Affiche un modèle de métadonnées d'objet vide qui peut être rempli et transmis en tant qu'option -m sur la commande 'hzn mms object publish'."
+      "translation": "Afficher un modèle de métadonnées d'objet vide qui peut être rempli et transmis en tant qu'option -m sur la commande 'hzn mms object publish'."
     },
     {
       "id": "Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes.",
-      "translation": "Publie un objet dans le service de gestion des modèles Horizon afin de le rendre disponible pour les services déployés sur les noeuds."
+      "translation": "Publier un objet dans le service de gestion des modèles Horizon afin de le rendre disponible pour les services déployés sur les noeuds."
     },
     {
       "id": "The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m",
@@ -2176,7 +2176,7 @@
     },
     {
       "id": "Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes.",
-      "translation": "Supprimez un objet du service de gestion des modèles Horizon, le rendant ainsi indisponible pour les services déployés sur les noeuds."
+      "translation": "Supprimer un objet du service de gestion des modèles Horizon, le rendant ainsi indisponible pour les services déployés sur les noeuds."
     },
     {
       "id": "The type of the object to delete.",
@@ -2188,7 +2188,7 @@
     },
     {
       "id": "organization ID must be specified with either the -o flag or HZN_ORG_ID",
-      "translation": "L'ID d'organisation doit être renseigné avec l'indicateur -o ou la variable HZN_ORG_ID."
+      "translation": "L'ID organisation doit être renseigné avec l'indicateur -o ou la variable HZN_ORG_ID."
     },
     {
       "id": "exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH",
@@ -2472,7 +2472,7 @@
     },
     {
       "id": "Removing Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot is no longer looking for nodes that are compatible with this policy.",
-      "translation": "Suppression de l'organisation de la règle métier {PolOrg}' de l'agbot '{Agbot}'. L'agbot cesse de chercher les noeuds qui sont compatibles avec cette règle."
+      "translation": "Retrait de l'organisation de la règle métier {PolOrg}' de l'agbot '{Agbot}'. L'agbot cesse de chercher les noeuds qui sont compatibles avec cette règle."
     },
     {
       "id": "Policy {Policy} not found in org {PolOrg}",
@@ -2524,7 +2524,7 @@
     },
     {
       "id": "Are you sure you want to remove business policy {Policy} for org {PolOrg} from the Horizon Exchange?",
-      "translation": "Voulez-vous vraiment supprimer la règle métier {Policy} pour l'organisation {PolOrg} d'Horizon Exchange ?"
+      "translation": "Voulez-vous vraiment retirer la règle métier {Policy} pour l'organisation {PolOrg} d'Horizon Exchange ?"
     },
     {
       "id": "Policy {PolOrg}/{Policy} not found in the Horizon Exchange",
@@ -2532,11 +2532,11 @@
     },
     {
       "id": "Removing Business policy {PolOrg}/{Policy} and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated",
-      "translation": "Suppression de la règle métier {PolOrg}/{Policy} et réévaluation de tous les accords basés uniquement sur la règle de noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
+      "translation": "Retrait de la règle métier {PolOrg}/{Policy} et réévaluation de tous les accords basés uniquement sur la règle de noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
     },
     {
       "id": "Business policy {PolOrg}/{Policy} removed",
-      "translation": "Règle métier {PolOrg}/{Policy} supprimée"
+      "translation": "Règle métier {PolOrg}/{Policy} retirée"
     },
     {
       "id": "Business policy label.",
@@ -2556,7 +2556,7 @@
     },
     {
       "id": "Set to '*' to use services of any hardware architecture.",
-      "translation": "Défini sur '*' pour pouvoir utiliser les services de n'importe quelle architecture matérielle."
+      "translation": "Définir sur '*' pour utiliser des services de toute architecture matérielle."
     },
     {
       "id": "A list of service versions.",
@@ -2580,7 +2580,7 @@
     },
     {
       "id": "The service version range to which these variables should be applied.",
-      "translation": "Plage de versions du service auxquelles ces variables doivent être appliquées."
+      "translation": "Plage des versions du service auxquelles ces variables doivent être appliquées."
     },
     {
       "id": "The input variables to be set.",
@@ -2696,7 +2696,7 @@
     },
     {
       "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "Etes-vous sûr de vouloir supprimer le noeud {NodeOrg}/{Node} d'Horizon Exchange (à ne pas faire si un noeud de périphérie est enregistré avec cet ID noeud) ?"
+      "translation": "Etes-vous sûr de vouloir retirer le noeud {NodeOrg}/{Node} d'Horizon Exchange (à ne pas faire si un noeud de périphérie est enregistré avec cet ID noeud) ?"
     },
     {
       "id": "node '{NodeOrg}/{Node}' not found.",
@@ -2748,15 +2748,15 @@
     },
     {
       "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir supprimer la règle de noeud pour {NodeOrg}/{Node} d'Horizon Exchange ?"
+      "translation": "Etes-vous sûr de vouloir retirer la règle de noeud pour {NodeOrg}/{Node} d'Horizon Exchange ?"
     },
     {
       "id": "Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Suppression de la règle du noeud et réévaluation de tous les accords basés uniquement sur la règle du noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
+      "translation": "Retrait de la règle du noeud et réévaluation de tous les accords basés uniquement sur la règle du noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
     },
     {
       "id": "Node policy removed.",
-      "translation": "Règle de noeud supprimée."
+      "translation": "Règle de noeud retirée."
     },
     {
       "id": "failed to marshal 'hzn exchange node listerrors' output: {Err}",
@@ -2856,7 +2856,7 @@
     },
     {
       "id": "Are you sure you want to remove pattern {Org}/{Pattern} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir supprimer le pattern {Org}/{Pattern} d'Horizon Exchange ?"
+      "translation": "Etes-vous sûr de vouloir retirer le pattern {Org}/{Pattern} d'Horizon Exchange ?"
     },
     {
       "id": "key '{KeyName}' not found",
@@ -2932,7 +2932,7 @@
     },
     {
       "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir supprimer le service {Svcorg}/{Service} d'Horizon Exchange ?"
+      "translation": "Etes-vous sûr de vouloir retirer le service {Svcorg}/{Service} d'Horizon Exchange ?"
     },
     {
       "id": "keys not found",
@@ -2972,15 +2972,15 @@
     },
     {
       "id": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir supprimer la règle de noeud pour {Svcorg}/{Service} d'Horizon Exchange ?"
+      "translation": "Etes-vous sûr de vouloir retirer la règle de noeud pour {Svcorg}/{Service} d'Horizon Exchange ?"
     },
     {
       "id": "Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Suppression de la règle de service et réévaluation de tous les accords basés uniquement sur la règle du noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
+      "translation": "Retrait de la règle de service et réévaluation de tous les accords basés uniquement sur la règle du noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
     },
     {
       "id": "Service policy removed.",
-      "translation": "Règle de service supprimée."
+      "translation": "Règle de service retirée."
     },
     {
       "id": "theUser '{TrimPrefixtheUser_}' not found in org {Org}",
@@ -2996,7 +2996,7 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
-      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc). Etes-vous sûr de vouloir supprimer l'utilisateur {Org}/{User} d'Horizon Exchange ?"
+      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc). Etes-vous sûr de vouloir retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?"
     },
     {
       "id": "user '{User}' not found in org {Org}",
@@ -3080,7 +3080,7 @@
     },
     {
       "id": "--specRef or --url is required for remove.",
-      "translation": "--specRef ou --url est requis pour la suppression."
+      "translation": "--specRef ou --url est requis pour le retrait."
     },
     {
       "id": "--specRef and --url are mutually exclusive.",
@@ -3184,7 +3184,7 @@
     },
     {
       "id": "Will not remove dependency {Name} because it is referenced by other services.",
-      "translation": "La dépendance {Name} ne sera pas supprimée, car elle est référencée par d'autres services."
+      "translation": "La dépendance {Name} ne sera pas retirée, car elle est référencée par d'autres services."
     },
     {
       "id": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
@@ -3200,7 +3200,7 @@
     },
     {
       "id": "Dependency {Name} could not be removed. Error: {Err}",
-      "translation": "La dépendance {Name} n'a pas pu être supprimée. Erreur : {Err}"
+      "translation": "La dépendance {Name} n'a pas pu être retirée. Erreur : {Err}"
     },
     {
       "id": "Error updating userinputs: {Err}",
@@ -3208,11 +3208,11 @@
     },
     {
       "id": "Removed dependency {Arch}.",
-      "translation": "Dépendance {Arch} supprimée."
+      "translation": "Dépendance {Arch} retirée."
     },
     {
       "id": "Removed dependency's dependency {Arch}.",
-      "translation": "La dépendance de la dépendance {Arch} a été supprimée."
+      "translation": "La dépendance de la dépendance {Arch} a été retirée."
     },
     {
       "id": "error creating {DOCKERFILE} for service image. {Err}",
@@ -3612,11 +3612,11 @@
     },
     {
       "id": "Are you sure you want to remove the node policy?",
-      "translation": "Voulez-vous vraiment supprimer la règle du noeud ?"
+      "translation": "Voulez-vous vraiment retirer la règle de noeud ?"
     },
     {
       "id": "Removing Horizon node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Suppression de la règle du noeud Horizon et réévaluation de tous les accords basés uniquement sur la règle du noeud intégré. Il se peut que les accords existants soient supprimés et renégociés."
+      "translation": "Retrait de la règle du noeud Horizon et réévaluation de tous les accords basés uniquement sur la règle du noeud intégré. Il se peut que les accords existants soient annulés et renégociés."
     },
     {
       "id": "Horizon node policy deleted.",
@@ -3660,7 +3660,7 @@
     },
     {
       "id": "agreement id {AgreementId} not found",
-      "translation": "L'ID de l'accord {AgreementId} est introuvable"
+      "translation": "L'ID accord {AgreementId} est introuvable"
     },
     {
       "id": "failed to marshal 'hzn agreement list' output: {Err}",
@@ -3728,7 +3728,7 @@
     },
     {
       "id": "Public key '{KeyName}' removed from the Horizon agent.",
-      "translation": "La clé publique '{KeyName}' a été supprimée de l'agent Horizon."
+      "translation": "La clé publique '{KeyName}' a été retirée de l'agent Horizon."
     },
     {
       "id": "-d is mutually exclusive with -k and -K",
@@ -3812,11 +3812,11 @@
     },
     {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
-      "translation": "Aucun ID de noeud ni aucune règle de noeud n'est spécifié. Obtention de la règle de noeud à partir du noeud local."
+      "translation": "Aucun ID noeud ni aucune règle de noeud n'est spécifié. Obtention de la règle de noeud à partir du noeud local."
     },
     {
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
-      "translation": "Aucun ID de noeud ni aucun fichier d'entrée utilisateur de noeud n'est spécifié. Obtention de l'entrée utilisateur de noeud à partir du noeud local."
+      "translation": "Aucun ID noeud ni aucun fichier d'entrée utilisateur de noeud n'est spécifié. Obtention de l'entrée utilisateur de noeud à partir du noeud local."
     },
     {
       "id": "Using compatibility checking input: {CompCheckInput}",
@@ -4444,7 +4444,7 @@
     },
     {
       "id": "Please specify the node organization id.",
-      "translation": "Veuillez spécifier l'ID d'organisation du noeud."
+      "translation": "Veuillez spécifier l'ID organisation du noeud."
     },
     {
       "id": "invalid version range '{Vr}': {Err}",
@@ -4568,7 +4568,7 @@
     },
     {
       "id": "Wrong organization id, user id or password.",
-      "translation": "Mauvais ID d'organisation, d'utilisateur ou de mot de passe."
+      "translation": "Mauvais ID organisation, ID utilisateur ou de mot de passe."
     },
     {
       "id": "Internal server error",
@@ -4624,15 +4624,15 @@
     },
     {
       "id": "Required: A unique identifier of the object.",
-      "translation": "Obligatoire : Un identificateur unique de l'objet."
+      "translation": "Obligatoire : Identificateur unique de l'objet."
     },
     {
       "id": "Required: The type of the object.",
-      "translation": "Obligatoire : Le type de l'objet."
+      "translation": "Obligatoire : Type de l'objet."
     },
     {
       "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
-      "translation": "Obligatoire : L'ID organisation de l'objet (un objet appartient à une seule organisation)."
+      "translation": "Obligatoire : ID organisation de l'objet (un objet appartient à une seule organisation)."
     },
     {
       "id": "The node id (without org prefix) where the object should be placed.",
@@ -4640,7 +4640,7 @@
     },
     {
       "id": "If omitted the object is sent to all nodes with the same destinationType.",
-      "translation": "S'il est omis, l'objet est envoyé à l'ensemble des noeuds ayant le même type de destination."
+      "translation": "S'il est omis, l'objet est envoyé à tous les noeuds avec le même type de destination."
     },
     {
       "id": "Delete this field when you are using destinationPolicy.",
@@ -4652,7 +4652,7 @@
     },
     {
       "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
-      "translation": "S'il est omis (de même que destinationsList), l'objet est diffusé à l'ensemble des noeuds connus."
+      "translation": "S'il est omis (de même que destinationsList), l'objet est diffusé à tous les noeuds connus."
     },
     {
       "id": "Delete this field when you are using policy.",
@@ -4676,7 +4676,7 @@
     },
     {
       "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
-      "translation": "Les types valides sont string, bool, int, float, list of string (chaînes séparées par des virgules), version."
+      "translation": "Types valides : string, bool, int, float, list of string (séparation par des virgules), version."
     },
     {
       "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
@@ -4692,7 +4692,7 @@
     },
     {
       "id": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "Défini sur '*' pour indiquer les services de n'importe quelle architecture matérielle."
+      "translation": "Définir sur '*' pour indiquer des services de toute architecture matérielle."
     },
     {
       "id": "A version range.",
@@ -4700,7 +4700,7 @@
     },
     {
       "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
-      "translation": "Horodatage indiquant lorsque l'objet arrive à expiration (suppression automatique). L'horodatage doit respecter le format RFC3339."
+      "translation": "Horodatage/date indiquant quand l'objet arrive à expiration (suppression automatique). L'horodatage doit respecter le format RFC3339."
     },
     {
       "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
@@ -4712,7 +4712,7 @@
     },
     {
       "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
-      "translation": "Horodatage indiquant lorsque l'objet doit être automatiquement activé. L'horodatage doit respecter le format RFC3339."
+      "translation": "Horodatage/date indiquant quand l'objet doit être automatiquement activé. L'horodatage doit respecter le format RFC3339."
     },
     {
       "id": "must specify exchange credentials to access the model management service",
@@ -4792,7 +4792,7 @@
     },
     {
       "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "Impossible de supprimer le réseau {NETWORKNAME} pour le service de synchronisation des fichiers, erreur {Err}"
+      "translation": "Impossible de retirer le réseau {NETWORKNAME} pour le service de synchronisation des fichiers, erreur {Err}"
     },
     {
       "id": "unable to list existing docker images, error {Err}",
@@ -4868,7 +4868,7 @@
     },
     {
       "id": "unable to remove docker container {Name}, error {Err}",
-      "translation": "Impossible de supprimer le conteneur Docker {Name}, erreur {Err}"
+      "translation": "Impossible de retirer le conteneur Docker {Name}, erreur {Err}"
     },
     {
       "id": "Stopped {Name} container",
@@ -4924,7 +4924,7 @@
     },
     {
       "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Impossible de supprimer le réseau Docker {Name}, erreur {Err}"
+      "translation": "Impossible de retirer le réseau Docker {Name}, erreur {Err}"
     },
     {
       "id": "unable to set env var 'HORIZON_URL', error {Err}",

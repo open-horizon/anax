@@ -2269,7 +2269,7 @@
     {
       "id": "HTTP request timeout set to {RequestTimeout} seconds",
       "message": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP 要求タイムアウトが {RequestTimeout} 秒に設定されました",
+      "translation": "HTTP 要求タイムアウトは {RequestTimeout} 秒に設定されています",
       "placeholders": [
         {
           "id": "RequestTimeout",
@@ -7125,7 +7125,7 @@
     {
       "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
       "message": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "サービス組織 {Org} が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。",
+      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。",
       "placeholders": [
         {
           "id": "Org",
