@@ -15,7 +15,7 @@ echo -e "${PREFIX} start test"
 
 # check the the result to see if it matches the expected http code and error
 function results {
- 
+
   echo "$1"
 
   # check error text
@@ -91,7 +91,7 @@ do
   CMD="hzn deploycheck $subcmd -u $USERDEV_ADMIN_AUTH -n xxxuserdev/an12345 -b userdev/bp_gpstest"
   echo "$CMD"
   RES=$($CMD 2>&1)
-  results "$RES" "Error getting node xxxuserdev/an12345 from the exchange" "403"
+  results "$RES" "Error getting node xxxuserdev/an12345 from the exchange"
 done
 
 PREFIX="HZN policy compatibility test:"
@@ -174,21 +174,21 @@ CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH  -b userdev/bp_location --nod
 echo "$CMD"
 RES=$($CMD 2>&1)
 c=$(echo $RES | jq '.compatible')
-if [ "$c" != "true" ]; then 
+if [ "$c" != "true" ]; then
   echo "It should return compatible but not."
   exit 2
 fi
 l=$(echo $RES | jq '.reason | length')
-if [ "$l" != "2" ]; then 
+if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible 
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible
 if [ $? -ne 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.6_amd64 should be incompatible but not."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible 
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible
 if [ $? -eq 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.7_amd64 should be compatible but not."
   exit 2
@@ -237,7 +237,7 @@ echo -e "\n${PREFIX} test input: wrong pattern id"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -p e2edev@somecomp.com/slocxxx"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "bad HTTP code 403 from GET"
+results "$RES" "Pattern not found for e2edev@somecomp.com/slocxxx"
 
 echo -e "\n${PREFIX} test input: node org and business org missing, they pick up org from the user cred."
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -n an12345 -b bp_gpstest"
@@ -375,21 +375,21 @@ echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 c=$(echo $RES | jq '.compatible')
-if [ "$c" != "true" ]; then 
+if [ "$c" != "true" ]; then
   echo "It should return compatible but not."
   exit 2
 fi
 l=$(echo $RES | jq '.reason | length')
-if [ "$l" != "2" ]; then 
+if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible 
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible
 if [ $? -ne 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.6_amd64 should be incompatible but not."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible 
+echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible
 if [ $? -eq 0 ]; then
   echo "Service bluehorizon.network-services-location_2.0.7_amd64 should be compatible but not."
   exit 2
@@ -404,4 +404,3 @@ check_comp_results "$RES" "false" "Policy Incompatible"
 
 
 echo -e "\n${PREFIX} complete test\n"
-

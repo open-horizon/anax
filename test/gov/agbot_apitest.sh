@@ -87,7 +87,7 @@ function run_and_check {
   results "$RES" "$3" "$4"
 }
 
-# get the cert file 
+# get the cert file
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   CERT_FILE="/home/agbotuser/keys/agbotapi.crt"
 else
@@ -162,7 +162,7 @@ EOF
     "business_policy_id": "userdev/bp_gpstest"
   }
 EOF
-  run_and_check "$api" "$comp_input" "500" "READ_OTHER_ORGS"
+  run_and_check "$api" "$comp_input" "500" "device userdevxxx/an12345 not in GET response map"
 
   echo -e "\n${PREFIX} test /${api}. Input: no node org specifiled"
   read -d '' comp_input <<EOF
@@ -325,8 +325,8 @@ read -d '' comp_input <<EOF
 }
 EOF
 run_and_check "userinputcompatible" "$comp_input" "200" ""
-check_comp_results "false" "User Input Incompatible" 
-check_comp_results "false" "A required user input value is missing for variable HZN_LAT" 
+check_comp_results "false" "User Input Incompatible"
+check_comp_results "false" "A required user input value is missing for variable HZN_LAT"
 
 echo -e "\n${PREFIX} test /deploycompatible. Input: node policy, node userinput, business policy. compatible"
 read -d '' comp_input <<EOF
@@ -430,7 +430,7 @@ read -d '' comp_input <<EOF
 }
 EOF
 run_and_check "deploycompatible" "$comp_input" "200" ""
-check_comp_results "true" "Compatible" 
+check_comp_results "true" "Compatible"
 
 
 echo -e "\n${PREFIX} test /deploycompatible. Input: patten, node user input, service, node arch. Result: not compatible."
@@ -443,8 +443,7 @@ read -d '' comp_input <<EOF
  }
 EOF
 run_and_check "deploycompatible" "$comp_input" "200" ""
-check_comp_results "false" "User Input Incompatible" 
+check_comp_results "false" "User Input Incompatible"
 
 
 echo -e "\n${PREFIX} complete test\n"
-
