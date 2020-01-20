@@ -140,6 +140,7 @@ type Service struct {
 	Image            string               `json:"image"`
 	VariationLabel   string               `json:"variation_label,omitempty"`
 	Privileged       bool                 `json:"privileged"`
+	Network          string               `json:"network"`
 	Environment      []string             `json:"environment,omitempty"`
 	CapAdd           []string             `json:"cap_add,omitempty"`
 	Command          []string             `json:"command,omitempty"`

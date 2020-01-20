@@ -336,7 +336,12 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 	writePrefix("ARCH", cutil.ArchString())
 
 	// Override with the built-in properties
-	externalPol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
+	externalPol, externalPolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
+	if externalPol != nil {
+		externalPol.MergeWith(externalPolReadWrite, false)
+	} else if externalPolReadWrite != nil {
+		externalPol = externalPolReadWrite
+	}
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {
 			if ele.Name == externalpolicy.PROP_NODE_CPU {
@@ -347,6 +352,8 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 				writePrefix("ARCH", ele.Value.(string))
 			} else if ele.Name == externalpolicy.PROP_NODE_HARDWAREID {
 				writePrefix("HARDWAREID", ele.Value.(string))
+			} else if ele.Name == externalpolicy.PROP_NODE_PRIVILEGED {
+				writePrefix("PRIVILEGED", fmt.Sprintf("%t", ele.Value))
 			}
 		}
 	}

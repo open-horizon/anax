@@ -276,7 +276,6 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				},
 			}
 		}
-
 		serviceConfig := &persistence.ServiceConfig{
 			Config: docker.Config{
 				Image:        service.Image,
@@ -289,6 +288,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			},
 			HostConfig: docker.HostConfig{
 				Privileged:      service.Privileged,
+				NetworkMode:     service.Network,
 				CapAdd:          service.CapAdd,
 				PublishAllPorts: false,
 				PortBindings:    map[docker.Port][]docker.PortBinding{},
@@ -1226,8 +1226,14 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	// every one of these gets wired to both the agBridge and every shared bridge from this agreement
 	for serviceName, servicePair := range private {
-		servicePair.serviceConfig.HostConfig.NetworkMode = agreementId // custom bridge has agreementId as name, same as endpoint key
-		if err := serviceStart(b.client, agreementId, serviceName, "", servicePair.serviceConfig, mkEndpoints(agBridge, serviceName), sharedEndpoints, &postCreateContainers, fail, true); err != nil {
+		if servicePair.serviceConfig.HostConfig.NetworkMode == "" {
+			servicePair.serviceConfig.HostConfig.NetworkMode = agreementId // custom bridge has agreementId as name, same as endpoint key
+		}
+		var endpoints map[string]*docker.EndpointConfig
+		if servicePair.serviceConfig.HostConfig.NetworkMode != "host" {
+			endpoints = mkEndpoints(agBridge, serviceName)
+		}
+		if err := serviceStart(b.client, agreementId, serviceName, "", servicePair.serviceConfig, endpoints, sharedEndpoints, &postCreateContainers, fail, true); err != nil {
 			if err != docker.ErrContainerAlreadyExists {
 				return nil, err
 			}

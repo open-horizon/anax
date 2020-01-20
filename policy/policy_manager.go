@@ -717,7 +717,7 @@ func (self *PolicyManager) GetPolicyList(homeOrg string, inPolicy *Policy) ([]Po
 	res := make([]Policy, 0, 10)
 
 	// Get node policy that matches the inPolicy, this is the non-pattern case
-	if len(inPolicy.APISpecs) == 0 {
+	if inPolicy != nil && len(inPolicy.APISpecs) == 0 {
 		pol := self.unlockedGetPolicyByName(homeOrg, inPolicy.Header.Name)
 		if pol != nil {
 			res = append(res, *pol)

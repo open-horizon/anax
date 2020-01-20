@@ -234,7 +234,7 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 				if id != "" {
 					orgToUse, _ = cliutils.TrimOrg("", id)
 					if orgToUse == "" {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the exchange credentail: %v.", *credToUse))
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the exchange credentials: %v.", *credToUse))
 					}
 				}
 			}

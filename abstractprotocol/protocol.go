@@ -577,10 +577,17 @@ func addNodeBuiltInProps(pol *policy.Policy, nodePol *externalpolicy.ExternalPol
 	// get built-in node properties and replace the ones in the policy,
 	// the memory will be the available memory instead of total memory -- not yet,
 	// still use total memory, change first parameter to true if you want available memory
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
+	builtinNodePol, readWriteBuiltinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
 	for _, prop := range builtinNodePol.Properties {
 		if err := pol.Add_Property(&prop, true); err != nil {
 			return nil, err
+		}
+	}
+	for _, prop := range readWriteBuiltinNodePol.Properties {
+		if !pol.Properties.HasProperty(prop.Name) {
+			if err := pol.Add_Property(&prop, false); err != nil {
+				return nil, err
+			}
 		}
 	}
 

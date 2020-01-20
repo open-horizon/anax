@@ -92,10 +92,14 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
 
-	builtinPolicy := externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
+	builtinPolicyReadOnly, builtinPolicyReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
 
+	builtinPolicy := &externalpolicy.ExternalPolicy{}
+	builtinPolicy.MergeWith(builtinPolicyReadOnly, false)
+	builtinPolicy.MergeWith(builtinPolicyReadWrite, false)
 	var mergedPol *externalpolicy.ExternalPolicy
 	if exchangeNodePolicy == nil {
+		builtinPolicy.MergeWith(builtinPolicyReadWrite, false)
 		mergedPol = builtinPolicy
 	} else {
 		// check if it contains node's built-in properties and they are the same
@@ -123,7 +127,8 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 		if needsBuiltIns {
 			polTemp := exchangeNodePolicy.GetExternalPolicy()
 			mergedPol = &polTemp
-			mergedPol.MergeWith(builtinPolicy, true)
+			mergedPol.MergeWith(builtinPolicyReadOnly, true)
+			mergedPol.MergeWith(builtinPolicyReadWrite, false)
 		}
 	}
 
@@ -157,7 +162,8 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	builtinNodePol.MergeWith(builtinNodePolReadWrite, true)
 
 	// get the default node policy file name from the config and set it up in local and exchange
 	policyFile := config.Edge.DefaultNodePolicyFile
@@ -344,10 +350,13 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	builtinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
 
 	if builtinNodePol != nil {
 		nodePolicy.MergeWith(builtinNodePol, true)
+	}
+	if builtinNodePolReadWrite != nil {
+		nodePolicy.MergeWith(builtinNodePolReadWrite, false)
 	}
 
 	// verify the policy again
