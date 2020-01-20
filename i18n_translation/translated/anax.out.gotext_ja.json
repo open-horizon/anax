@@ -456,7 +456,7 @@
     },
     {
       "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP 要求タイムアウトが {RequestTimeout} 秒に設定されました"
+      "translation": "HTTP 要求タイムアウトは {RequestTimeout} 秒に設定されています"
     },
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
@@ -1380,7 +1380,7 @@
     },
     {
       "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "サービス組織 {Org} が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
+      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
     },
     {
       "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",

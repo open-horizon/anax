@@ -380,13 +380,13 @@
     {
       "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
       "message": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
-      "translation": "La arquitectura de servicio a la que se aplican estas entradas. Omítala o déjelo en blanco para indicar todas las arquitecturas.",
+      "translation": "La arquitectura de servicio a la que se aplican estas entradas. Omítalo o déjelo en blanco para indicar todas las arquitecturas.",
       "fuzzy": true
     },
     {
       "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
       "message": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
-      "translation": "Las versiones de servicio a las que se aplican estas entradas. Omítalas o especifique \"[0.0.0,INFINITY)\" para indicar todas las versiones.",
+      "translation": "Las versiones de servicio a las que se aplican estas entradas. Omítalo o especifique \"[0.0.0,INFINITY)\" para indicar todas las versiones.",
       "fuzzy": true
     },
     {
@@ -2954,7 +2954,7 @@
     {
       "id": "all the registered services",
       "message": "all the registered services",
-      "translation": "Todos los servicios registrados",
+      "translation": "todos los servicios registrados",
       "fuzzy": true
     },
     {
@@ -2984,7 +2984,7 @@
     {
       "id": "all the registered services from organization {ServiceOrg}",
       "message": "all the registered services from organization {ServiceOrg}",
-      "translation": "Todos los servicios registrados de la organización {ServiceOrg}",
+      "translation": "todos los servicios registrados de la organización {ServiceOrg}",
       "placeholders": [
         {
           "id": "ServiceOrg",
@@ -3076,7 +3076,7 @@
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Interfaz de línea de mandatos para el agente de Horizon. La mayoría de los submandatos utilizan la API de Agente de Horizon como ubicación predeterminada http://localhost (consulte la sección Variables de entorno para alterar temporalmente esto).\n\nVariables de entorno:\n  HORIZON_URL:  Alterar temporalmente el URL en el que hzn contacta con la API de Agente de Horizon.\n      Esto puede facilitar la utilización de un agente de Horizon remoto a través de un túnel ssh.\n  HZN_EXCHANGE_URL:  Alterar temporalmente el URL que los submandatos 'hzn exchange' utilizan\n      para comunicarse con el Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada hzn preguntará al\n      agente de Horizon por el URL.)\n  HZN_ORG_ID:  Valor predeterminado para el distintivo 'hzn exchange -o',\n      para especificar el ID de organización'.\n  HZN_EXCHANGE_USER_AUTH:  Valor predeterminado para el distintivo 'hzn exchange -u' o 'hzn\n\t  register -u' con el formato '[org/]user:pw'. Tenga en cuenta que HZN_ORG_ID se puede establecer \n\t  si se omite org cuando se establece HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Alterar temporalmente el URL que los submandatos 'hzn mms' utilizan\n      para comunicarse con el Servicio de gestión de modelos de Horizon, por ejemplo\n      https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn preguntará al\n      agente de Horizon por el URL.)\n\n  Todas estas variables de entorno y las mencionadas en la ayuda del mandato se pueden\n  especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json con formato JSON.\n  Por ejemplo:\n  {Com____}",
+      "translation": "Interfaz de línea de mandatos para el agente de Horizon. La mayoría de los submandatos utilizan la API de Agente de Horizon como ubicación predeterminada http://localhost (consulte la sección Variables de entorno para alterar temporalmente esto).\n\nVariables de entorno:\n  HORIZON_URL:  Alterar temporalmente el URL en el que hzn contacta con la API de Agente de Horizon.\n      Esto puede facilitar la utilización de un agente de Horizon remoto a través de un túnel ssh.\n  HZN_EXCHANGE_URL:  Alterar temporalmente el URL que los submandatos 'hzn exchange' utilizan\n      para comunicarse con el Horizon Exchange, por ejemplo\n      https://exchange.bluehorizon.network/api/v1. (De forma predeterminada hzn preguntará al\n      agente de Horizon por el URL).\n  HZN_ORG_ID:  Valor predeterminado para el distintivo 'hzn exchange -o',\n      para especificar el ID de organización'.\n  HZN_EXCHANGE_USER_AUTH:  Valor predeterminado para el distintivo 'hzn exchange -u' o 'hzn\n\t  register -u' con el formato '[org/]user:pw'. Tenga en cuenta que HZN_ORG_ID se puede establecer \n\t  si se omite org cuando se establece HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Alterar temporalmente el URL que los submandatos 'hzn mms' utilizan\n      para comunicarse con el Servicio de gestión de modelos de Horizon, por ejemplo\n      https://exchange.bluehorizon.network/css/. (De forma predeterminada hzn preguntará al\n      agente de Horizon por el URL).\n\n  Todas estas variables de entorno y las mencionadas en la ayuda del mandato se pueden\n  especificar en el archivo de configuración del usuario: ~/.hzn/hzn.json con formato JSON.\n  Por ejemplo:\n  {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -3122,13 +3122,13 @@
     {
       "id": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
       "message": "The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.",
-      "translation": "El ID de organización de Horizon Exchange. Si no se especifica, HZN_ORG_ID se utilizará como valor predeterminado.",
+      "translation": "El ID de organización de Horizon Exchange. Si no se especifica, se utilizará HZN_ORG_ID como valor predeterminado.",
       "fuzzy": true
     },
     {
       "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
       "message": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
-      "translation": "Credenciales de usuario de Horizon Exchange para consultar y crear recursos de Exchange. Si no se especifica, HZN_EXCHANGE_USER_AUTH se utilizará como valor predeterminado. Si no se ha añadido como prefijo la organización del usuario, se añadirá automáticamente el valor -o. Como alternativa a la utilización de -o, puede establecer HZN_ORG_ID con el ID de organización de Horizon Exchange",
+      "translation": "Credenciales de usuario de Horizon Exchange para consultar y crear recursos de Exchange. Si no se especifica, se utilizará HZN_EXCHANGE_USER_AUTH como valor predeterminado. Si no se ha añadido como prefijo la organización del usuario, se añadirá automáticamente el valor -o. Como alternativa a la utilización de -o, puede establecer HZN_ORG_ID con el ID de organización de Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -3152,7 +3152,7 @@
     {
       "id": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
       "message": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
-      "translation": "Visualizar el recurso de usuario de Horizon Exchange. (Normalmente solo puede visualizar su propio usuario. Si el usuario no existe, obtendrá un error de credenciales no válidas.)",
+      "translation": "Visualizar el recurso de usuario de Horizon Exchange. (Normalmente solo puede visualizar su propio usuario. Si el usuario no existe, obtendrá un error de credenciales no válidas).",
       "fuzzy": true
     },
     {
@@ -3260,7 +3260,7 @@
     {
       "id": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
       "message": "The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "El ID de nodo y la señal de Horizon Exchange que se van a utilizar como credenciales para consultar y modificar lo recursos de nodo si no se especifica el distintivo -u. HZN_EXCHANGE_NODE_AUTH se utilizará como valor predeterminado para -n. Si no se ha añadido como prefijo la organización del nodo, se añadirá automáticamente el valor -o.",
+      "translation": "El ID de nodo y la señal de Horizon Exchange que se van a utilizar como credenciales para consultar y modificar los recursos de nodo si no se especifica el distintivo -u. Se utilizará HZN_EXCHANGE_NODE_AUTH como valor predeterminado para -n. Si no se ha añadido como prefijo la organización del nodo, se añadirá automáticamente el valor -o.",
       "fuzzy": true
     },
     {
@@ -3356,7 +3356,7 @@
     {
       "id": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
       "message": "The Horizon exchange node ID and token to be checked. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. Mutually exclusive with <node> and <token> arguments.",
-      "translation": "El ID y la señal de nodo de Horizon Exchange que se van a comprobar. Si no se especifica, HZN_EXCHANGE_NODE_AUTH se utilizará como valor predeterminado. Mutuamente excluyente con los argumentos <node> y <token>.",
+      "translation": "El ID y la señal de nodo de Horizon Exchange que se van a comprobar. Si no se especifica, se utilizará HZN_EXCHANGE_NODE_AUTH como valor predeterminado. Mutuamente excluyente con los argumentos <node> y <token>.",
       "fuzzy": true
     },
     {
@@ -3380,7 +3380,7 @@
     {
       "id": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
       "message": "The Horizon Exchange node ID and token to be used as credentials to query and modfy the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.",
-      "translation": "El ID de nodo y la señal de Horizon Exchange que se van a utilizar como credenciales para consultar y modificar lo recursos de nodo si no se especifica el distintivo -u. HZN_EXCHANGE_NODE_AUTH se utilizará como valor predeterminado para -n. Si no se ha añadido como prefijo la organización del nodo, se añadirá automáticamente el valor -o.",
+      "translation": "El ID de nodo y la señal de Horizon Exchange que se van a utilizar como credenciales para consultar y modificar los recursos de nodo si no se especifica el distintivo -u. Se utilizará HZN_EXCHANGE_NODE_AUTH como valor predeterminado para -n. Si no se ha añadido como prefijo la organización del nodo, se añadirá automáticamente el valor -o.",
       "fuzzy": true
     },
     {
@@ -3548,7 +3548,7 @@
     {
       "id": "Remove this pattern from the list of patterns this agbot is serving.",
       "message": "Remove this pattern from the list of patterns this agbot is serving.",
-      "translation": "Elimine este patrón de la lista de patrones a los que este agbot da servicio.",
+      "translation": "Eliminar este patrón de la lista de patrones a los que este agbot da servicio.",
       "fuzzy": true
     },
     {
@@ -3656,13 +3656,13 @@
     {
       "id": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
       "message": "The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "La vía de acceso de un archivo de clave privada que se va a utilizar para firmar el patrón. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.private.key es el valor predeterminado.",
+      "translation": "La vía de acceso de un archivo de clave privada que se va a utilizar para firmar el patrón. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.private.key",
       "fuzzy": true
     },
     {
       "id": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
       "message": "The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "La vía de acceso del archivo de clave pública (correspondiente a la clave privada) que se debe almacenar con el patrón para que lo utilice el agente de Horizon para verificar la firma. Si tanto esto como los distintivos -k no se especifican, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece HZN_PUBLIC_KEY_FILE, ~/.hzn/keys/service.public.pem es el valor predeterminado. Si se especifica -k y este distintivo no se especifica, no se almacenará ningún archivo de clave pública con el patrón. El agente de Horizon tiene que importar la clave pública para verificar la firma.",
+      "translation": "La vía de acceso del archivo de clave pública (correspondiente a la clave privada) que se debe almacenar con el patrón para que lo utilice el agente de Horizon para verificar la firma. Si no se especifica este distintivo ni el distintivo -k, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece HZN_PUBLIC_KEY_FILE, el valor predeterminado es ~/.hzn/keys/service.public.pem. Si se especifica -k y este distintivo no se especifica, no se almacenará ningún archivo de clave pública con el patrón. El agente de Horizon tiene que importar la clave pública para verificar la firma.",
       "fuzzy": true
     },
     {
@@ -3674,7 +3674,7 @@
     {
       "id": "Verify the signatures of a pattern resource in the Horizon Exchange.",
       "message": "Verify the signatures of a pattern resource in the Horizon Exchange.",
-      "translation": "Verifique las firmas de un recurso de patrón en Horizon Exchange.",
+      "translation": "Verificar las firmas de un recurso de patrón en Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3686,7 +3686,7 @@
     {
       "id": "The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
       "message": "The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "La vía de acceso de un archivo de clave pública PEM que se va a utilizar para verificar el patrón. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.public.pem es el valor predeterminado.",
+      "translation": "La vía de acceso de un archivo de clave pública PEM que se va a utilizar para verificar el patrón. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.public.pem.",
       "fuzzy": true
     },
     {
@@ -3794,13 +3794,13 @@
     {
       "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
       "message": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "La vía de acceso de un archivo de clave privada que se va a utilizar para firmar el servicio. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.private.key es el valor predeterminado.",
+      "translation": "La vía de acceso de un archivo de clave privada que se va a utilizar para firmar el servicio. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.private.key",
       "fuzzy": true
     },
     {
       "id": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
       "message": "The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.",
-      "translation": "La vía de acceso del archivo de clave pública (correspondiente a la clave privada) que se debe almacenar con el servicio para que lo utilice el agente de Horizon para verificar la firma. Si tanto esto como los distintivos -k no se especifican, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece HZN_PUBLIC_KEY_FILE, ~/.hzn/keys/service.public.pem es el valor predeterminado. Si se especifica -k y este distintivo no se especifica, no se almacenará ningún archivo de clave pública con el servicio. El agente de Horizon tiene que importar la clave pública para verificar la firma.",
+      "translation": "La vía de acceso del archivo de clave pública (correspondiente a la clave privada) que se debe almacenar con el servicio para que lo utilice el agente de Horizon para verificar la firma. Si no se especifica este distintivo ni el distintivo -k, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece HZN_PUBLIC_KEY_FILE, el valor predeterminado es ~/.hzn/keys/service.public.pem. Si se especifica -k y este distintivo no se especifica, no se almacenará ningún archivo de clave pública con el servicio. El agente de Horizon tiene que importar la clave pública para verificar la firma.",
       "fuzzy": true
     },
     {
@@ -3836,7 +3836,7 @@
     {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
       "message": "Verify the signatures of a service resource in the Horizon Exchange.",
-      "translation": "Verifique las firmas de un recurso de servicio en Horizon Exchange.",
+      "translation": "Verificar las firmas de un recurso de servicio en Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -3848,7 +3848,7 @@
     {
       "id": "The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
       "message": "The path of a pem public key file to be used to verify the service. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "La vía de acceso de un archivo de clave pública PEM que se va a utilizar para verificar el servicio. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.public.pem es el valor predeterminado.",
+      "translation": "La vía de acceso de un archivo de clave pública PEM que se va a utilizar para verificar el servicio. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.public.pem.",
       "fuzzy": true
     },
     {
@@ -4136,7 +4136,7 @@
     {
       "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
       "message": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
-      "translation": "La arquitectura para la escribir el archivo de plantilla. (Horizon ignora los servicios en patrones cuya arquitectura es diferente del sistema de destino.) La arquitectura debe ser lo que 'hzn node list' devuelve en el sistema de destino.",
+      "translation": "La arquitectura para la escribir el archivo de plantilla. (Horizon ignora los servicios en patrones cuya arquitectura es diferente del sistema de destino). La arquitectura debe ser lo que 'hzn node list' devuelve en el sistema de destino.",
       "fuzzy": true
     },
     {
@@ -4148,7 +4148,7 @@
     {
       "id": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
       "message": "The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.",
-      "translation": "El ID y la señal de nodo de Horizon Exchange. El ID de nodo debe ser exclusivo dentro de la organización. Si no se especifica, HZN_EXCHANGE_NODE_AUTH se utilizará como valor predeterminado. Si no se especifican -n ni HZN_EXCHANGE_NODE_AUTH, Horizon creará el ID de nodo a partir del número de serie de máquina o el nombre de host completo. Si no se especifica la señal, Horizon creará una señal aleatoria. Si el recurso de nodo de Exchange identificado por el ID y la señal no existe aún, también debe especificar el distintivo -u para que se pueda crear.",
+      "translation": "El ID y la señal de nodo de Horizon Exchange. El ID de nodo debe ser exclusivo dentro de la organización. Si no se especifica, se utilizará HZN_EXCHANGE_NODE_AUTH como valor predeterminado. Si no se especifican -n ni HZN_EXCHANGE_NODE_AUTH, Horizon creará el ID de nodo a partir del número de serie de máquina o el nombre de host completo. Si no se especifica la señal, Horizon creará una señal aleatoria. Si el recurso de nodo de Exchange identificado por el ID y la señal no existe aún, también debe especificar el distintivo -u para que se pueda crear.",
       "fuzzy": true
     },
     {
@@ -4160,7 +4160,7 @@
     {
       "id": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
       "message": "User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.",
-      "translation": "Las credenciales de usuario para crear el recurso de nodo en Horizon Exchange si es que no existe ya. Si no se especifica, HZN_EXCHANGE_USER_AUTH se utilizará como valor predeterminado.",
+      "translation": "Las credenciales de usuario para crear el recurso de nodo en Horizon Exchange si es que no existe ya. Si no se especifica, se utilizará HZN_EXCHANGE_USER_AUTH como valor predeterminado.",
       "fuzzy": true
     },
     {
@@ -4256,13 +4256,13 @@
     {
       "id": "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
       "message": "The full path of the private key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "La vía de acceso completa del archivo de claves privadas. Mutuamente excluyente con -d. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.private.key es el valor predeterminado.",
+      "translation": "La vía de acceso completa del archivo de claves privadas. Mutuamente excluyente con -d. Si no se especifica, se utilizará la variable de entorno HZN_PRIVATE_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.private.key",
       "fuzzy": true
     },
     {
       "id": "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
       "message": "The full path of the public key file. Mutually exclusive with -d. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "La vía de acceso completa del archivo de claves públicas. Mutuamente excluyente con -d. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.public.pem es el valor predeterminado.",
+      "translation": "La vía de acceso completa del archivo de claves públicas. Mutuamente excluyente con -d. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.public.pem.",
       "fuzzy": true
     },
     {
@@ -4298,7 +4298,7 @@
     {
       "id": "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
       "message": "The path of a pem public key file to be imported. The base name in the path is also used as the key name in the Horizon agent. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.",
-      "translation": "La vía de acceso de un archivo de clave pública PEM que se va a importar. El nombre base en la vía de acceso también se utiliza como el nombre de clave en el agente de Horizon. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, ~/.hzn/keys/service.public.pem es el valor predeterminado.",
+      "translation": "La vía de acceso de un archivo de clave pública PEM que se va a importar. El nombre base en la vía de acceso también se utiliza como el nombre de clave en el agente de Horizon. Si no se especifica, se utilizará la variable de entorno HZN_PUBLIC_KEY_FILE. Si no se establece ninguno de ellos, el valor predeterminado es ~/.hzn/keys/service.public.pem.",
       "fuzzy": true
     },
     {
@@ -4394,13 +4394,13 @@
     {
       "id": "Check deployment compatibility.",
       "message": "Check deployment compatibility.",
-      "translation": "Comprobar la compatibilidad de despliegue.",
+      "translation": "Comprobar compatibilidad de despliegue.",
       "fuzzy": true
     },
     {
       "id": "Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "Credencial de usuario de Horizon Exchange para consultar recursos de Exchange. Si no se especifica, HZN_EXCHANGE_USER_AUTH o HZN_EXCHANGE_NODE_AUTH se utilizará como valor predeterminado. Si no se ha añadido como prefijo el ID de organización, se añadirá automáticamente el valor -o.",
+      "translation": "Credencial de usuario de Horizon Exchange para consultar recursos de Exchange. Si no se especifica, se utilizará HZN_EXCHANGE_USER_AUTH o HZN_EXCHANGE_NODE_AUTH como valor predeterminado. Si no se ha añadido como prefijo el ID de organización, se añadirá automáticamente el valor -o.",
       "fuzzy": true
     },
     {
@@ -4460,7 +4460,7 @@
     {
       "id": "Check user input compatibility.",
       "message": "Check user input compatibility.",
-      "translation": "Comprobar la compatibilidad de entrada de usuario.",
+      "translation": "Comprobar compatibilidad de entrada de usuario.",
       "fuzzy": true
     },
     {
@@ -4724,13 +4724,13 @@
     {
       "id": "Change the configuration state to 'suspend' for a service.",
       "message": "Change the configuration state to 'suspend' for a service.",
-      "translation": "Cambie el estado de configuración a 'suspend' para un servicio.",
+      "translation": "Cambiar el estado de configuración a 'suspend' para un servicio.",
       "fuzzy": true
     },
     {
       "id": "Change the configuration state to 'active' for a service.",
       "message": "Change the configuration state to 'active' for a service.",
-      "translation": "Cambie el estado de configuración a 'active' para un servicio.",
+      "translation": "Cambiar el estado de configuración a 'active' para un servicio.",
       "fuzzy": true
     },
     {
@@ -4790,7 +4790,7 @@
     {
       "id": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
       "message": "The number of minutes to wait for unregistration to complete. The default is zero which will wait forever.",
-      "translation": "El número de minutos que se debe esperar a que la anulación del registro termine. El valor predeterminado es cero que significa esperar para siempre.",
+      "translation": "El número de minutos que se debe esperar a que la anulación del registro termine. El valor predeterminado es cero, que significa esperar para siempre.",
       "fuzzy": true
     },
     {
@@ -4826,7 +4826,7 @@
     {
       "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
       "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "Serie de selección. Este distintivo se puede repetir, lo que significa 'AND'. Cada distintivo debe tener el formato atributo=valor, atributo~valor, \"atributo>valor\" o \"atributo<valor\", donde '~' significa contiene. Los nombres de atributo comunes son timestamp, severity, message, event_code, source_type, agreement_id, service_url, etc. Utilice el distintivo '-l' para ver todos los nombres de atributo.",
+      "translation": "Serie de selección. Este distintivo se puede repetir utilizando 'AND'. Cada distintivo debe tener el formato atributo=valor, atributo~valor, \"atributo>valor\" o \"atributo<valor\", donde '~' significa contiene. Los nombres de atributo comunes son timestamp, severity, message, event_code, source_type, agreement_id, service_url, etc. Utilice el distintivo '-l' para ver todos los nombres de atributo.",
       "fuzzy": true
     },
     {
@@ -4916,7 +4916,7 @@
     {
       "id": "Run a service in a mocked Horizon Agent environment.",
       "message": "Run a service in a mocked Horizon Agent environment.",
-      "translation": "Ejecute un servicio en un entorno de agente de Horizon simulado.",
+      "translation": "Ejecutar un servicio en un entorno de agente de Horizon simulado.",
       "fuzzy": true
     },
     {
@@ -4928,13 +4928,13 @@
     {
       "id": "File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.",
       "message": "File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.",
-      "translation": "Archivo que va a quedar disponible a través de las APIs de servicio de sincronización. Este distintivo se puede repetir para llenar varios archivos.",
+      "translation": "Archivo que va a quedar disponible a través de las API de servicio de sincronización. Este distintivo se puede repetir para cumplimentar varios archivos.",
       "fuzzy": true
     },
     {
       "id": "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.",
       "message": "The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.",
-      "translation": "El tipo del archivo que va a quedar disponible a través de las APIs de servicio de sincronización. Se supone que todos los archivos de configuración deben ser del mismo tipo. Este distintivo es necesario si se especifican archivos de configuración.",
+      "translation": "El tipo del archivo que va a quedar disponible a través de las API de servicio de sincronización. Se presupone que todos los archivos de configuración son del mismo tipo. Este distintivo es necesario si se especifican archivos de configuración.",
       "fuzzy": true
     },
     {
@@ -5162,13 +5162,13 @@
     {
       "id": "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.",
       "message": "The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.",
-      "translation": "El ID de organización de Horizon. Si no se especifica, HZN_ORG_ID se utilizará como valor predeterminado.",
+      "translation": "El ID de organización de Horizon. Si no se especifica, se utilizará HZN_ORG_ID como valor predeterminado.",
       "fuzzy": true
     },
     {
       "id": "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
       "message": "Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
-      "translation": "Credenciales de usuario de Horizon para consultar y crear recursos de Servicio de gestión de modelos. Si no se especifica, HZN_EXCHANGE_USER_AUTH se utilizará como valor predeterminado. Si no se ha añadido como prefijo la organización del usuario, se añadirá automáticamente el valor -o.",
+      "translation": "Credenciales de usuario de Horizon para consultar y crear recursos de Servicio de gestión de modelos. Si no se especifica, se utilizará HZN_EXCHANGE_USER_AUTH como valor predeterminado. Si no se ha añadido como prefijo la organización del usuario, se añadirá automáticamente el valor -o.",
       "fuzzy": true
     },
     {
@@ -12239,7 +12239,7 @@
     {
       "id": "Public key '{KeyName}' removed from the Horizon agent.",
       "message": "Public key '{KeyName}' removed from the Horizon agent.",
-      "translation": "El archivo público '{KeyName}' se ha eliminado del agente de Horizon.",
+      "translation": "La clave pública '{KeyName}' se ha eliminado del agente de Horizon.",
       "placeholders": [
         {
           "id": "KeyName",
@@ -14889,7 +14889,7 @@
     {
       "id": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
       "message": "No pattern or node policy is specified. Will proceeed with the existing node policy.",
-      "translation": "No se ha especificado ningún patrón o política de nodo. Se procederá con la política de nodo existente.",
+      "translation": "No se ha especificado ningún patrón ni política de nodo. Se procederá con la política de nodo existente.",
       "fuzzy": true
     },
     {

@@ -3016,7 +3016,7 @@
     {
       "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
       "message": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
-      "translation": "確定要暫停此 Horizon 節點的 {Msgpart} 嗎？",
+      "translation": "確定要暫停此 Horizon 節點的{Msgpart}嗎？",
       "placeholders": [
         {
           "id": "Msgpart",
@@ -3032,7 +3032,7 @@
     {
       "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
       "message": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
-      "translation": "正在暫停 {Msgpart}、正在取消相關合約、正在停止相關服務儲存器...",
+      "translation": "正在暫停{Msgpart}、正在取消相關合約、正在停止相關服務儲存器...",
       "placeholders": [
         {
           "id": "Msgpart",
@@ -3054,7 +3054,7 @@
     {
       "id": "Resuming {Msgpart} ...",
       "message": "Resuming {Msgpart} ...",
-      "translation": "正在回復 {Msgpart} ...",
+      "translation": "正在回復{Msgpart} ...",
       "placeholders": [
         {
           "id": "Msgpart",
@@ -4712,13 +4712,13 @@
     {
       "id": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
       "message": "List or manage the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "列出或管理目前登錄在這個 Horizon 邊緣節點上的服務的配置狀態。",
+      "translation": "列出或管理目前登錄在這個 Horizon 邊緣節點上的服務配置狀態。",
       "fuzzy": true
     },
     {
       "id": "List the configuration state for the services that are currently registered on this Horizon edge node.",
       "message": "List the configuration state for the services that are currently registered on this Horizon edge node.",
-      "translation": "列出目前登錄在這個 Horizon 邊緣節點上的服務的配置狀態。",
+      "translation": "列出目前登錄在這個 Horizon 邊緣節點上的服務配置狀態。",
       "fuzzy": true
     },
     {

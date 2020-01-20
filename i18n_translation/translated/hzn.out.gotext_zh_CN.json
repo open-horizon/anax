@@ -128,11 +128,11 @@
     },
     {
       "id": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon...",
-      "translation": "正在取消注册此节点，取消所有协议，停止所有工作负载，并重新启动 Horizon..."
+      "translation": "正在取消注册此节点，正在取消所有协议，正在停止所有工作负载，正在重新启动 Horizon..."
     },
     {
       "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-      "translation": "已取消注册 Horizon 节点。现在如果您愿意，可以再次运行“hzn register...”。"
+      "translation": "已取消注册 Horizon 节点。如果需要，您现在即可再次运行“hzn register...”。"
     },
     {
       "id": "WARNING: The node is unregistered, but an error occurred during unregistration.",
@@ -688,11 +688,11 @@
     },
     {
       "id": "Are you sure you want to suspend {Msgpart} for this Horizon node?",
-      "translation": "确定要针对这个 Horizon 节点暂挂 {Msgpart} 吗？"
+      "translation": "确定要暂挂此 Horizon 节点的{Msgpart}吗？"
     },
     {
       "id": "Suspending {Msgpart}, cancelling releated agreements, stopping related service containers...",
-      "translation": "正在暂挂 {Msgpart}，正在取消相关的协议，正在停止相关的服务容器..."
+      "translation": "正在暂挂{Msgpart}，正在取消相关的协议，正在停止相关的服务容器..."
     },
     {
       "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
@@ -700,7 +700,7 @@
     },
     {
       "id": "Resuming {Msgpart} ...",
-      "translation": "正在恢复 {Msgpart}..."
+      "translation": "正在恢复{Msgpart}..."
     },
     {
       "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
@@ -708,7 +708,7 @@
     },
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅“环境变量”一节以覆盖该位置）。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用来联系 Horizon 代理程序 API 的 URL。\n      这可以方便您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供“hzn exchange”子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID：“hzn exchange -o”标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH：“hzn exchange -u”或“hzn\n\t  register -u”标志的缺省值，其格式为“[org/]user:pw”。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供“hzn mms”子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
+      "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅“环境变量”一节以覆盖该位置）。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供“hzn exchange”子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID：“hzn exchange -o”标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH：“hzn exchange -u”或“hzn\n\t  register -u”标志的缺省值，其格式为“[org/]user:pw”。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供“hzn mms”子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}"
     },
     {
       "id": "Verbose output.",
@@ -840,7 +840,7 @@
     },
     {
       "id": "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.",
-      "translation": "电子邮件地址。仅在以下情况下需要指定：-u 标志中指定的用户不存在，并且已指定“public”组织。如果这些条件成立，我们将创建该用户，并包括此值作为电子邮件地址属性。"
+      "translation": "电子邮件地址。仅在以下情况下需要指定：-u 标志中指定的用户不存在，并且已指定“public”组织。如果这些条件成立，我们将创建该用户，并加入此值作为电子邮件地址属性。"
     },
     {
       "id": "Your node architecture. If not specified, arch will leave blank.",
@@ -952,15 +952,15 @@
     },
     {
       "id": "List the node errors currently surfaced to the exchange.",
-      "translation": "列出当前已向 Exchange 浮现的节点错误。"
+      "translation": "列出当前在 Exchange 中出现的节点错误。"
     },
     {
       "id": "List surfaced errors for this node.",
-      "translation": "列出此节点的已浮现错误。"
+      "translation": "列出此节点已出现的错误。"
     },
     {
       "id": "Show the full eventlog object of the errors currently surfaced to the exchange.",
-      "translation": "显示当前已向 Exchange 浮现的错误的完整事件日志对象。"
+      "translation": "显示当前在 Exchange 中出现的错误的完整事件日志对象。"
     },
     {
       "id": "List and manage agbots in the Horizon Exchange",
@@ -1428,7 +1428,7 @@
     },
     {
       "id": "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.",
-      "translation": "电子邮件地址。仅在以下情况下需要指定：该节点资源尚不存在于 Horizon Exchange 中，-u 标志中指定的用户不存在，并且已指定“public”组织。如果所有这些条件都成立，我们将创建该用户，并包括此值作为电子邮件地址属性。"
+      "translation": "电子邮件地址。仅在以下情况下需要指定：该节点资源尚不存在于 Horizon Exchange 中，-u 标志中指定的用户不存在，并且已指定“public”组织。如果所有这些条件都成立，我们将创建该用户，并加入此值作为电子邮件地址属性。"
     },
     {
       "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/node_reg_input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.",
@@ -1864,7 +1864,7 @@
     },
     {
       "id": "List the full event logs of the surface errors.",
-      "translation": "列出浮现错误的完整事件日志。"
+      "translation": "列示出现的错误的完整事件日志。"
     },
     {
       "id": "Development tools for creation of services.",
@@ -2056,11 +2056,11 @@
     },
     {
       "id": "Verify that the signature specified via -s is a valid signature for the text in stdin.",
-      "translation": "请确认通过 -s 指定的签名是 stdin 中的文本的有效签名。"
+      "translation": "验证通过 -s 指定的签名是 stdin 中的文本的有效签名。"
     },
     {
       "id": "The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.",
-      "translation": "用来验证 stdin 签名的公用密钥文件（对应于用来进行签名的专用密钥）的路径。"
+      "translation": "用于验证 stdin 签名的公用密钥文件（对应于用来进行签名的专用密钥）的路径。"
     },
     {
       "id": "The supposed signature of stdin.",
@@ -4452,7 +4452,7 @@
     },
     {
       "id": "unable to verify that {Version} is within {VRange}, error {Err}",
-      "translation": "无法确认 {Version} 在 {VRange} 内，错误：{Err}"
+      "translation": "无法验证 {Version} 在 {VRange} 内，错误：{Err}"
     },
     {
       "id": "found no services in the exchange matching: org={Org}, url={Url}, arch={Arch}",

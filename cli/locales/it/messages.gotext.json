@@ -3076,7 +3076,7 @@
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Interfaccia di riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API agent Horizon nell'ubicazione predefinita http://localhost (vedere la sezione Variabili di ambiente per sostituire tale valore).\n\nVariabili di ambiente:\n  HORIZON_URL:  Sostituisce l'URL su cui hzn contatta l'API agent Horizon.\n      Può facilitare l'utilizzo di un agent Horizon remoto tramite tunnel ssh.\n  HZN_EXCHANGE_URL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn exchange'\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn richiederà \n      l'agent Horizon per l'URL.)\n  HZN_ORG_ID:  Il valore predefinito per l'indicatore 'hzn exchange -o',\n      per specificare l'ID organizzazione'.\n  HZN_EXCHANGE_USER_AUTH:  Il valore predefinito per l'indicatore 'hzn exchange -u' o \n\t  'hzn register -u', nel formato '[org/]utente:pw'. Notare che HZN_ORG_ID può essere impostato\n\t  se viene omessa l'organizzazione quando si imposta HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn mms' \n      per comunicare il servizio di gestione modelli Horizon, ad esempio\n      https://exchange.bluehorizon.network/css/. (Per impostazione predefinita hzn richiederà \n      l'agent Horizon per l'URL.)\n\n  Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere\n  specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con il formato JSON.\n  Ad esempio:\n  {Com____}",
+      "translation": "Interfaccia di riga comandi per l'agent Horizon. La maggior parte dei sottocomandi utilizza l'API agent Horizon nell'ubicazione predefinita http://localhost (vedere la sezione Variabili di ambiente per sostituire tale valore).\n\nVariabili di ambiente:\n  HORIZON_URL:  Sostituisce l'URL su cui hzn contatta l'API agent Horizon.\n      Può facilitare l'utilizzo di un agent Horizon remoto tramite tunnel ssh.\n  HZN_EXCHANGE_URL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn exchange'\n      per comunicare con Horizon Exchange, ad esempio\n      https://exchange.bluehorizon.network/api/v1. (Per impostazione predefinita hzn richiederà \n      l'URL all'agent Horizon.)\n  HZN_ORG_ID:  Il valore predefinito per l'indicatore 'hzn exchange -o',\n      per specificare l'ID organizzazione'.\n  HZN_EXCHANGE_USER_AUTH:  Il valore predefinito per l'indicatore 'hzn exchange -u' o \n\t  'hzn register -u', nel formato '[org/]utente:pw'. Notare che HZN_ORG_ID può essere impostato\n\t  se viene omessa l'organizzazione quando si imposta HZN_EXCHANGE_USER_AUTH.\n  HZN_FSS_CSSURL:  Sostituisce l'URL utilizzato dai comandi secondari 'hzn mms' \n      per comunicare il servizio di gestione modelli Horizon, ad esempio\n      https://exchange.bluehorizon.network/css/. (Per impostazione predefinita hzn richiederà \n      l'URL all'agent Horizon.)\n\n  Tutte queste variabili di ambiente e quelle menzionate nella guida del comando possono essere\n  specificate nel file di configurazione dell'utente: ~/.hzn/hzn.json con il formato JSON.\n  Ad esempio:\n  {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -4034,7 +4034,7 @@
     {
       "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.",
       "message": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.",
-      "translation": "Aggiorna un attributo della politica esistente in Horizon Exchange. Gli attributi supportati sono gli attributi a livello superiore nella definizione della politica, come mostrato dal comando 'hzn exchange business new'.",
+      "translation": "Aggiorna un attributo della politica esistente in Horizon Exchange. Gli attributi supportati sono gli attributi di livello superiore nella definizione della politica, come mostrato dal comando 'hzn exchange business new'.",
       "fuzzy": true
     },
     {
@@ -4076,7 +4076,7 @@
     {
       "id": "Only display org (IBM) and service names.",
       "message": "Only display org (IBM) and service names.",
-      "translation": "Visualizza solo i nomi di organizzazione (IBM) e i servizi.",
+      "translation": "Visualizza solo i nomi di organizzazione (IBM) e servizi.",
       "fuzzy": true
     },
     {
@@ -4094,7 +4094,7 @@
     {
       "id": "Only display org (IBM) and pattern names.",
       "message": "Only display org (IBM) and pattern names.",
-      "translation": "Visualizza solo i nomi di organizzazione (IBM) e i modelli.",
+      "translation": "Visualizza solo i nomi di organizzazione (IBM) e modelli.",
       "fuzzy": true
     },
     {
@@ -4190,7 +4190,7 @@
     {
       "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.",
       "message": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.",
-      "translation": "Un file JSON che imposta o sovrascrive la politica dal nodo per questo nodo, che verrà utilizzata per la negoziazione di accordi basati sulla politica. Si esclude reciprocamente con l'argomento -p.",
+      "translation": "Un file JSON che imposta o sovrascrive la politica del nodo per questo nodo, che verrà utilizzata per la negoziazione di accordi basati sulla politica. Si esclude reciprocamente con l'argomento -p.",
       "fuzzy": true
     },
     {
@@ -4424,7 +4424,7 @@
     {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
       "message": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.",
-      "translation": "L'architettura del nodo. È richiesto quando -n non è specificato. Se omesso, verrà controllato per la compatibilità il servizio di tutte le architetture a cui si fa riferimento nella politica aziendale.",
+      "translation": "L'architettura del nodo. È richiesto quando -n non è specificato. Se omesso, verrà controllata la compatibilità del servizio di tutte le architetture a cui si fa riferimento nella politica aziendale.",
       "fuzzy": true
     },
     {
@@ -4466,7 +4466,7 @@
     {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.",
       "message": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.",
-      "translation": "L'architettura del nodo. È richiesto quando -n non è specificato. Se omesso, verrà controllato per la compatibilità il servizio di tutte le architetture a cui si fa riferimento nella politica aziendale o nel modello.",
+      "translation": "L'architettura del nodo. È richiesto quando -n non è specificato. Se omesso, verrà controllata la compatibilità del servizio di tutte le architetture a cui si fa riferimento nella politica aziendale o nel modello.",
       "fuzzy": true
     },
     {
@@ -4688,13 +4688,13 @@
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
       "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
-      "translation": "Il nome del servizio i cui record di log devono essere visualizzati. Il nome del servizio è uguale al campo URL di una definizione di servizio. Visualizza i record di log in modo simile al comportamento di coda e ritorna.",
+      "translation": "Il nome del servizio i cui record di log devono essere visualizzati. Il nome del servizio è uguale al campo URL di una definizione di servizio. Visualizza i record di log in modo simile al comportamento di tail e ritorna.",
       "fuzzy": true
     },
     {
       "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
       "message": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
-      "translation": "Esegue il polling continuo dei log del servizio per visualizzare i record più recenti in modo simile al comportamento di coda-F.",
+      "translation": "Esegue il polling continuo dei log del servizio per visualizzare i record più recenti in modo simile al comportamento di tail -F.",
       "fuzzy": true
     },
     {
@@ -4778,7 +4778,7 @@
     {
       "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
       "message": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
-      "translation": "Rimuove anche questa risorsa del da Horizon Exchange (perché non si desidera più utilizzare questo nodo con Horizon).",
+      "translation": "Rimuove anche questa risorsa del nodo da Horizon Exchange (perché non si desidera più utilizzare questo nodo con Horizon).",
       "fuzzy": true
     },
     {
@@ -4910,7 +4910,7 @@
     {
       "id": "Indicates the type of deployment that will be used, e.g. native (the default), or helm.",
       "message": "Indicates the type of deployment that will be used, e.g. native (the default), or helm.",
-      "translation": "Indica il tipo di distribuzione che verrà utilizzata, ovvero nativa (valore predefinito) o helm.",
+      "translation": "Indica il tipo di distribuzione che verrà utilizzata, ovvero native (valore predefinito) o helm.",
       "fuzzy": true
     },
     {
@@ -4958,7 +4958,7 @@
     {
       "id": "Validate the project for completeness and schema compliance.",
       "message": "Validate the project for completeness and schema compliance.",
-      "translation": "Convalida il progetto per completezza e conformità di schema.",
+      "translation": "Convalida la completezza e conformità di schema del progetto.",
       "fuzzy": true
     },
     {
@@ -5006,7 +5006,7 @@
     {
       "id": "Retrieving Horizon metadata for a new dependency.",
       "message": "Retrieving Horizon metadata for a new dependency.",
-      "translation": "Richiamo dei metadati di Horizon per una nuova dipendenza.",
+      "translation": "Richiama i metadati di Horizon per una nuova dipendenza.",
       "fuzzy": true
     },
     {
@@ -15953,7 +15953,7 @@
     {
       "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
       "message": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
-      "translation": "Il tipo può essere omesso se il tipo è desumibile dal valore, ad es. true senza virgolette è booleano.",
+      "translation": "Il tipo può essere omesso se il tipo è desumibile dal valore, ad es. true senza virgolette indica booleano.",
       "fuzzy": true
     },
     {
