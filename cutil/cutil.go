@@ -177,7 +177,8 @@ func VerifyWorkloadVarTypes(varValue interface{}, expectedType string) error {
 			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
 		}
 	case string:
-		if expectedType != "string" {
+		// if the type is empty, it defaults to string
+		if expectedType != "string" && expectedType != "" {
 			return errors.New(fmt.Sprintf("type %T, expecting %v.", varValue, expectedType))
 		}
 	case json.Number:
