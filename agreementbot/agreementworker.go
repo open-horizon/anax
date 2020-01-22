@@ -730,7 +730,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 					objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
 
-					if err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy); err != nil {
+					if err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy, false); err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
 					}
 

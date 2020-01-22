@@ -1440,7 +1440,7 @@ func (w *AgreementBotWorker) getAgbotBusinessPols() (map[string]exchange.ServedB
 			continue
 		} else {
 			pats := resp.(*exchange.GetAgbotsBusinessPolsResponse).BusinessPols
-			glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved agbot servced business policy names from exchange %v", pats)))
+			glog.V(5).Infof(AWlogString(fmt.Sprintf("retrieved agbot serviced business policy names from exchange %v", pats)))
 			return pats, nil
 		}
 	}

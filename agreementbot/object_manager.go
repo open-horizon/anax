@@ -42,6 +42,22 @@ func (m *MMSObjectPolicyManager) String() string {
 	return res
 }
 
+func (m *MMSObjectPolicyManager) ShowOrgMapUnlocked() string {
+	res := fmt.Sprintf("Org cache: ")
+	for org, orgMap := range m.orgMap {
+		res += fmt.Sprintf("Org: %v ", org)
+		for k, v := range orgMap {
+			res += fmt.Sprintf("Service: %v [", k)
+			for _, entry := range v {
+				res += fmt.Sprintf(" %v", entry.ShortString())
+			}
+			res += "] "
+		}
+	}
+
+	return res
+}
+
 // This is an internal function that assumes it is running with the org map lock.
 func (m *MMSObjectPolicyManager) hasOrg(org string) bool {
 	if _, ok := m.orgMap[org]; ok {
@@ -82,7 +98,7 @@ func (m *MMSObjectPolicyManager) GetObjectPolicies(org string, serviceName strin
 			}
 		}
 	}
-	glog.V(5).Infof(mmsLogString(fmt.Sprintf("returing objects for %v %v %v %v, %v", org, serviceName, arch, version, objPolicies)))
+	glog.V(5).Infof(mmsLogString(fmt.Sprintf("returning objects for %v %v %v %v, %v", org, serviceName, arch, version, objPolicies)))
 	return objPolicies
 }
 
@@ -183,7 +199,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 					if obj, err := objQueryHandler(pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType); err != nil {
 						glog.Errorf(mmsLogString(fmt.Sprintf("error reading object %v %v %v, %v", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType, err)))
 					} else if obj == nil {
-						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v %v %v has been deleted", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType)))
+						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v/%v %v has been deleted", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType)))
 						m.orgMap[org][service] = append(m.orgMap[org][service][:ix], m.orgMap[org][service][ix+1:]...)
 					}
 				}
@@ -201,6 +217,29 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 
 		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
 
+		// Find services in the cache that are not referenced by a given object id any more. This can happen if the service
+		// reference in the object policy is changed.
+		for service, peList := range m.orgMap[objPol.OrgID] {
+			for ix, pe := range peList {
+				if pe.Policy.OrgID == objPol.OrgID && pe.Policy.ObjectID == objPol.ObjectID && pe.Policy.ObjectType == objPol.ObjectType {
+					glog.V(5).Infof(mmsLogString(fmt.Sprintf("Obj %v found in %v map", objPol.ObjectID, service)))
+					found := false
+					for _, serviceID := range objPol.DestinationPolicy.Services {
+						if service == cutil.FormOrgSpecUrl(serviceID.ServiceName, serviceID.OrgID) {
+							found = true
+							break
+						}
+					}
+					if !found {
+						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v/%v %v policy removed from %v cache.", objPol.OrgID, objPol.ObjectID, objPol.ObjectType, service)))
+						m.orgMap[objPol.OrgID][service] = append(m.orgMap[objPol.OrgID][service][:ix], m.orgMap[objPol.OrgID][service][ix+1:]...)
+
+					}
+				}
+			}
+		}
+
+		// Now run through each service in the updated policy and figure out if there is a change or if it's new.
 		for _, serviceID := range objPol.DestinationPolicy.Services {
 
 			// Within each org, there is a map keyed by service names (org/service-name).
@@ -213,7 +252,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 				continue
 			}
 
-			// If one of this object's services has not been seen before, add a map for it before adding an object entry.
+			// If one of this object's services has not been seen before, add it to the map.
 			if _, ok := m.orgMap[objPol.OrgID][serviceMapKey]; !ok {
 				entry := m.NewMMSObjectPolicyEntry(&objPol, serviceID, versionExp)
 				entryArray := make([]MMSObjectPolicyEntry, 0, 2)
@@ -222,15 +261,18 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 			} else {
 
 				// The object policy references a service that already has at least one entry in the map. The object policy update
-				// be a new policy or an update to one that is already cached.
+				// could be a new policy or an update to one that is already cached.
 				found := false
 				for ix, existingEntry := range m.orgMap[objPol.OrgID][serviceMapKey] {
 					if existingEntry.Policy.OrgID == objPol.OrgID && existingEntry.Policy.ObjectID == objPol.ObjectID && existingEntry.Policy.ObjectType == objPol.ObjectType {
-						// Replace the entry
+						// Replace the entry.
 						policyReplaced = existingEntry.Policy
+
+						// Canonicalize the arch in the policy update's service ID.
 						if canonicalArch := m.config.ArchSynonyms.GetCanonicalArch(serviceID.Arch); canonicalArch != "" {
 							serviceID.Arch = canonicalArch
 						}
+
 						m.orgMap[objPol.OrgID][serviceMapKey][ix].UpdateEntry(&objPol, serviceID, versionExp)
 						found = true
 						break
@@ -256,7 +298,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 
 	}
 
-	glog.V(5).Infof(mmsLogString(fmt.Sprintf("Object Policy org map %v", m.orgMap)))
+	glog.V(3).Infof(mmsLogString(m.ShowOrgMapUnlocked()))
 	glog.V(5).Infof(mmsLogString(fmt.Sprintf("produced events %v", changeEvents)))
 
 	return changeEvents, nil
@@ -304,12 +346,7 @@ func (p *MMSObjectPolicyEntry) String() string {
 }
 
 func (p *MMSObjectPolicyEntry) ShortString() string {
-	return fmt.Sprintf("MMSObjectPolicyEntry: "+
-		"Updated: %v "+
-		"Policy: %v "+
-		"ServiceID: %v "+
-		"Version Exp: %v",
-		p.Updated, p.Policy, p.ServiceID, p.VersionExpression)
+	return fmt.Sprintf("Policy: %v", p.Policy)
 }
 
 func (p *MMSObjectPolicyEntry) UpdateEntry(pol *exchange.ObjectDestinationPolicy, serviceID common.ServiceID, ve *semanticversion.Version_Expression) (*MMSObjectPolicyEntry, error) {

@@ -200,6 +200,7 @@ func Test_object_manager_setorgs2(t *testing.T) {
 		t.Errorf("Error should not be able to get object policy for %v %v %v", myorg1, sid1, objPols)
 	} else {
 		t.Log(op)
+		t.Log(op.ShowOrgMapUnlocked())
 	}
 
 }

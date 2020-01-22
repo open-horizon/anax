@@ -541,56 +541,60 @@
 			"revisionTime": "2018-10-23T06:56:52Z"
 		},
 		{
-			"checksumSHA1": "mip9NIpXaO12ouPYllrI9cqSS9U=",
+			"checksumSHA1": "yF/uCAjg0AiRbDzkrPKt296iQ0w=",
 			"path": "github.com/open-horizon/edge-sync-service/common",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z",
-			"version": "=0.10.7",
-			"versionExact": "0.10.7"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z",
+			"version": "=0.10.8",
+			"versionExact": "0.10.8"
 		},
 		{
-			"checksumSHA1": "tlgl8xyDvOMNrX/Cv/fiPo5UQk8=",
+			"checksumSHA1": "dkjRGthD8UHThgouqNYZaBQ5hKk=",
 			"path": "github.com/open-horizon/edge-sync-service/core/base",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z",
-			"version": "=0.10.7",
-			"versionExact": "0.10.7"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z",
+			"version": "=0.10.8",
+			"versionExact": "0.10.8"
 		},
 		{
-			"checksumSHA1": "Q56MZTZuLjHfjnCAoDoukk2OkZY=",
+			"checksumSHA1": "HoWIA6FE6gxjY/swZwtRSXSkcT0=",
 			"path": "github.com/open-horizon/edge-sync-service/core/communications",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z"
 		},
 		{
 			"checksumSHA1": "KEnyffH5++LiuzT5EY5DJW2XGA0=",
 			"path": "github.com/open-horizon/edge-sync-service/core/dataURI",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z"
 		},
 		{
 			"checksumSHA1": "egV9xNEaGbCaiGOiT7UqO8zG/rc=",
 			"path": "github.com/open-horizon/edge-sync-service/core/leader",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z"
 		},
 		{
-			"checksumSHA1": "BEDPJK5+cBDYvi7fr014KJBY8UE=",
+			"checksumSHA1": "1QnqIpFvIwQANqhkmyhfQc2YnU4=",
 			"path": "github.com/open-horizon/edge-sync-service/core/security",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z",
+			"version": "=0.10.8",
+			"versionExact": "0.10.8"
 		},
 		{
-			"checksumSHA1": "hfYBlmwmTONkPILpvamejsDDdII=",
+			"checksumSHA1": "CtYqNsv082ybNJidllWpG3265xc=",
 			"path": "github.com/open-horizon/edge-sync-service/core/storage",
-			"revision": "f2a8f24c7db7a4dfe2e29ef365a592b7ef0cb018",
-			"revisionTime": "2019-11-12T21:23:27Z"
+			"revision": "9bed3e61802ef88ab9ca5766c7dbf15a4ad28ac6",
+			"revisionTime": "2020-01-22T16:29:26Z"
 		},
 		{
 			"checksumSHA1": "1LBOPvIRgYe/F2gDTN1Ro+gj2r0=",
 			"path": "github.com/open-horizon/edge-utilities/logger",
 			"revision": "0908b45a7152323471f9cc586adc0c63993114f3",
-			"revisionTime": "2019-07-11T09:33:31Z"
+			"revisionTime": "2019-07-11T09:33:31Z",
+			"version": "=0.10.3",
+			"versionExact": "0.10.3"
 		},
 		{
 			"checksumSHA1": "BwRIAsiKh2FJa2tUaasIMhiYFGU=",
