@@ -374,7 +374,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
     "devFiles":"/dev/ttyUSB*,/dev/ttyACM*"
   },
   "userInput":[
-    {"name":"test","label":"","type":"string","defaultValue":null},
+    {"name":"test","label":"","type":"","defaultValue":null},
     {"name":"testdefault","label":"","type":"string","defaultValue":"default"},
     {"name":"HZN_LAT","label":"","type":"float"},
     {"name":"HZN_LON","label":"","type":"float"},
@@ -423,7 +423,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
     "devFiles":"/dev/ttyUSB*,/dev/ttyACM*"
   },
   "userInput":[
-    {"name":"test","label":"","type":"string","defaultValue":null},
+    {"name":"test","label":"","type":"","defaultValue":null},
     {"name":"testdefault","label":"","type":"string","defaultValue":"default"},
     {"name":"HZN_LAT","label":"","type":"float"},
     {"name":"HZN_LON","label":"","type":"float"},

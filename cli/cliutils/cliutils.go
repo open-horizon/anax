@@ -801,7 +801,7 @@ func TrustIcpCert(httpClient *http.Client) error {
 	if icpCertPath != "" {
 		icpCert, err := ioutil.ReadFile(icpCertPath)
 		if err != nil {
-			Fatal(FILE_IO_ERROR, i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
+			return fmt.Errorf(i18n.GetMessagePrinter().Sprintf("Encountered error reading ICP cert file %v: %v", icpCertPath, err))
 		}
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(icpCert)
@@ -1008,7 +1008,9 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 // invoke rest api call with retry
 func invokeRestApi(httpClient *http.Client, method string, url string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
 
-	TrustIcpCert(httpClient)
+	if err := TrustIcpCert(httpClient); err != nil {
+		Fatal(FILE_IO_ERROR, err.Error())
+	}
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -1539,7 +1541,12 @@ func NewHTTPClientFactory() *config.HTTPClientFactory {
 			timeoutS = config.HTTPRequestTimeoutS
 		}
 
-		return GetHTTPClient(int(timeoutS))
+		httpClient := GetHTTPClient(int(timeoutS))
+		if err := TrustIcpCert(httpClient); err != nil {
+			Fatal(FILE_IO_ERROR, err.Error())
+		}
+
+		return httpClient
 	}
 
 	// get retry count and retry interval from env

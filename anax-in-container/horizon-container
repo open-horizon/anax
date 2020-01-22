@@ -175,7 +175,9 @@ start() {
 	fi
 
 	if [[ -n $HZN_ICP_CA_CERT_PATH ]]; then
-		icpCertMount="-v $HZN_ICP_CA_CERT_PATH:/usr/local/share/ca-certificates/icp.crt"
+		icpCertMount="-v $HZN_ICP_CA_CERT_PATH:$HZN_ICP_CA_CERT_PATH"
+	elif  [[ -n $HZN_MGMT_HUB_CERT_PATH ]]; then
+		icpCertMount="-v $HZN_MGMT_HUB_CERT_PATH:$HZN_MGMT_HUB_CERT_PATH"
 	fi
 
 	# Start the horizon container

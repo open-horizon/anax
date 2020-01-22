@@ -477,8 +477,14 @@ func newHTTPClientFactory() *config.HTTPClientFactory {
 			timeoutS = config.HTTPRequestTimeoutS
 		}
 
-		return cliutils.GetHTTPClient(int(timeoutS))
+		httpClient := cliutils.GetHTTPClient(int(timeoutS))
+		if err := cliutils.TrustIcpCert(httpClient); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+		}
+
+		return httpClient
 	}
+
 	return &config.HTTPClientFactory{
 		NewHTTPClient: clientFunc,
 		RetryCount:    5,
