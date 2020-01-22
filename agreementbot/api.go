@@ -468,6 +468,14 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 
 		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
 
+		// Augment the common status with agbot specific stuff
+		health := &apicommon.HealthTimestamps{}
+		var err error
+		if health.LastDBHeartbeatTime, err = a.db.GetHeartbeat(); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get DB heartbeat, error: %v", err)))
+		}
+		info.LiveHealth = health
+
 		if err := apicommon.WriteConnectionStatus(info); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
 		}

@@ -17,6 +17,10 @@ func (db *AgbotBoltDB) HeartbeatPartition() error {
 	return nil
 }
 
+func (db *AgbotBoltDB) GetHeartbeat() (uint64, error) {
+	return 0, nil
+}
+
 func (db *AgbotBoltDB) QuiescePartition() error {
 	return nil
 }
