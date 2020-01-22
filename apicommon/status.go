@@ -21,9 +21,15 @@ type Configuration struct {
 	HorizonVersion  string `json:"horizon_version"`
 }
 
+// These fields are filled in by the API specific code, not the common code.
+type HealthTimestamps struct {
+	LastDBHeartbeatTime uint64 `json:"lastDBHeartbeat"`
+}
+
 type Info struct {
-	Configuration *Configuration  `json:"configuration"`
-	Connectivity  map[string]bool `json:"connectivity"`
+	Configuration *Configuration    `json:"configuration"`
+	Connectivity  map[string]bool   `json:"connectivity"`
+	LiveHealth    *HealthTimestamps `json:"liveHealth"`
 }
 
 func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token string) *Info {
@@ -38,6 +44,8 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 	if err != nil {
 		glog.Errorf("Failed to get exchange version: %v", err)
 	}
+
+
 
 	return &Info{
 		Configuration: &Configuration{

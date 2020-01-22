@@ -42,6 +42,8 @@ const PARTITION_INSERT = `INSERT INTO partitions (owner, heartbeat) VALUES ($1,c
 
 const PARTITION_HEARTBEAT = `UPDATE partitions SET heartbeat = current_timestamp WHERE id = $1 AND owner = $2;`
 
+const PARTITION_GET_HEARTBEAT = `SELECT EXTRACT (EPOCH FROM heartbeat) FROM partitions WHERE id = $1;`
+
 const PARTITION_QUIESCE = `UPDATE partitions SET owner = NULL, heartbeat = NULL WHERE owner = $1;`
 
 const PARTITION_DELETE = `DELETE FROM partitions WHERE id = $1;`
@@ -209,6 +211,17 @@ func (db *AgbotPostgresqlDB) HeartbeatPartition() error {
 		glog.V(3).Infof("AgreementBot %v heartbeat", db.identity)
 	}
 	return nil
+}
+
+// Retrieve the heartbeat timestamp for a given partition.
+func (db *AgbotPostgresqlDB) GetHeartbeat() (uint64, error) {
+
+	var hb float64
+	if err := db.db.QueryRow(PARTITION_GET_HEARTBEAT, db.PrimaryPartition()).Scan(&hb); err != nil {
+		return 0, errors.New(fmt.Sprintf("error scanning partition %v heartbeat result, error: %v", db.PrimaryPartition(), err))
+	} else {
+		return uint64(hb), nil
+	}
 }
 
 // Quiesce our partition.

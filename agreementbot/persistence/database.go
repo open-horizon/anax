@@ -20,6 +20,7 @@ type AgbotDatabase interface {
 	FindPartitions() ([]string, error)
 	ClaimPartition(timeout uint64) (string, error)
 	HeartbeatPartition() error
+	GetHeartbeat() (uint64, error)
 	QuiescePartition() error
 	GetPartitionOwner(id string) (string, error)
 	MovePartition(timeout uint64) error
