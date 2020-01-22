@@ -719,7 +719,7 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		t.Errorf("The producerPolicy should not have 2 properties but got %v", len(producerPolicy.Properties))
 	} else if len(producerPolicy.Constraints) != 2 {
 		t.Errorf("The producerPolicy should not have 2 constraints but got %v", len(producerPolicy.Constraints))
-	} else if len(consumerPolicy.Properties) != 9 {
+	} else if len(consumerPolicy.Properties) != 10 {
 		t.Errorf("The consumerPolicy should not have 9 properties but got %v", len(consumerPolicy.Properties))
 	} else if len(consumerPolicy.Constraints) != 2 {
 		t.Errorf("The consumerPolicy should not have 2 constraints but got %v", len(consumerPolicy.Constraints))
@@ -742,7 +742,7 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		t.Errorf("The producerPolicy should not have 2 properties but got %v", len(producerPolicy.Properties))
 	} else if len(producerPolicy.Constraints) != 2 {
 		t.Errorf("The producerPolicy should not have 2 constraints but got %v", len(producerPolicy.Constraints))
-	} else if len(consumerPolicy.Properties) != 9 {
+	} else if len(consumerPolicy.Properties) != 10 {
 		t.Errorf("The consumerPolicy should not have 9 properties but got %v", len(consumerPolicy.Properties))
 	} else if len(consumerPolicy.Constraints) != 2 {
 		t.Errorf("The consumerPolicy should not have 2 constraints but got %v", len(consumerPolicy.Constraints))
@@ -893,10 +893,10 @@ func Test_GetServicePolicyWithDefaultProperties(t *testing.T) {
 		t.Errorf("The servicd id should be %v but got: %v", sId1, sId)
 	} else if mergedPol == nil {
 		t.Errorf("The returned merged service policy should not be null")
-	} else if len(mergedPol.Properties) != 7 {
-		t.Errorf("The merged service policy hould not have 7 properties but got %v", len(sPol.Properties))
+	} else if len(mergedPol.Properties) != 8 {
+		t.Errorf("The merged service policy hould not have 7 properties but got %v", len(mergedPol.Properties))
 	} else if len(mergedPol.Constraints) != 1 {
-		t.Errorf("The merged service policy hould not have 1 constraints but got %v", len(sPol.Constraints))
+		t.Errorf("The merged service policy hould not have 1 constraints but got %v", len(mergedPol.Constraints))
 	} else if sPol == nil {
 		t.Errorf("The returned service policy should not be null")
 	} else if len(sPol.Properties) != 2 {
@@ -933,28 +933,28 @@ func Test_AddDefaultPropertiesToServicePolicy(t *testing.T) {
 	}
 
 	// if service policy is nil, it should return the default properties
-	if mergedPol := AddDefaultPropertiesToServicePolicy(nil, nil, getServiceDefResolverHandler(), getServiceHandler(), policy.Workload{}, nil); len(mergedPol.Properties) != 0 {
+	if mergedPol := AddDefaultPropertiesToServicePolicy(nil, nil, nil); len(mergedPol.Properties) != 0 {
 		t.Errorf("The merged policy hould not have 0 properties but got %v", len(mergedPol.Properties))
 	} else if len(mergedPol.Constraints) != 0 {
 		t.Errorf("The merged policy hould not have 0 constraints but got %v", len(mergedPol.Constraints))
 	}
 
 	// if service policy is nil, it should return the default properties
-	if mergedPol := AddDefaultPropertiesToServicePolicy(nil, builtInSvcPol, getServiceDefResolverHandler(), getServiceHandler(), policy.Workload{}, nil); len(mergedPol.Properties) != 5 {
+	if mergedPol := AddDefaultPropertiesToServicePolicy(nil, builtInSvcPol, nil); len(mergedPol.Properties) != 5 {
 		t.Errorf("The merged policy hould not have 5 properties but got %v", len(mergedPol.Properties))
 	} else if len(mergedPol.Constraints) != 0 {
 		t.Errorf("The merged policy hould not have 0 constraints but got %v", len(mergedPol.Constraints))
 	}
 
 	// if the default properties is nil, it should return the service policy
-	if mergedPol := AddDefaultPropertiesToServicePolicy(servicePol, nil, getServiceDefResolverHandler(), getServiceHandler(), policy.Workload{}, nil); len(mergedPol.Properties) != 2 {
+	if mergedPol := AddDefaultPropertiesToServicePolicy(servicePol, nil, nil); len(mergedPol.Properties) != 2 {
 		t.Errorf("The merged policy hould not have 2 properties but got %v", len(mergedPol.Properties))
 	} else if len(mergedPol.Constraints) != 1 {
 		t.Errorf("The merged policy hould not have 1 constraints but got %v", len(mergedPol.Constraints))
 	}
 
 	// normal case
-	if mergedPol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getServiceDefResolverHandler(), getServiceHandler(), policy.Workload{}, nil); mergedPol == nil {
+	if mergedPol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, nil); mergedPol == nil {
 		t.Errorf("The merged policy should not be null.")
 	} else if len(mergedPol.Properties) != 7 {
 		t.Errorf("The merged policy hould not have 7 properties but got %v", len(mergedPol.Properties))
@@ -1089,7 +1089,7 @@ func Test_MergeServicePolicyToBusinessPolicy(t *testing.T) {
 		t.Errorf("MergeServicePolicyToBusinessPolicy should not have returned error but got: %v", err)
 	} else if outPol == nil {
 		t.Errorf("The merged policy should not be null.")
-	} else if len(outPol.Properties) != 8 {
+	} else if len(outPol.Properties) != 9 {
 		t.Errorf("The merged policy hould not have 8 properties but got %v", len(outPol.Properties))
 	} else if len(outPol.Constraints) != 2 {
 		t.Errorf("The merged policy hould not have 2 constraints but got %v", len(outPol.Constraints))
