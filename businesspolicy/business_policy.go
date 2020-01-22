@@ -120,6 +120,21 @@ func (b *BusinessPolicy) Validate() error {
 		}
 	}
 
+	if b.Properties.HasProperty(externalpolicy.PROP_SVC_PRIVILEGED) {
+		privProp, _ := b.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
+		if _, ok := privProp.Value.(bool); !ok {
+			if privProp.Value == "true" {
+				privProp.Value = true
+				b.Properties.Add_Property(&privProp, true)
+			} else if privProp.Value == "false" {
+				privProp.Value = false
+				b.Properties.Add_Property(&privProp, true)
+			} else {
+				return fmt.Errorf(msgPrinter.Sprintf("The property %s must have a boolean value (true or false).", externalpolicy.PROP_SVC_PRIVILEGED))
+			}
+		}
+	}
+
 	// Validate the Constraints expression by invoking the plugins.
 	if b != nil && len(b.Constraints) != 0 {
 		_, err := b.Constraints.Validate()

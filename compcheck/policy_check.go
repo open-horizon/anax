@@ -190,7 +190,11 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			// get default service properties
 			builtInSvcPol := externalpolicy.CreateServiceBuiltInPolicy(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 			// add built-in service properties to the service policy
-			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol, getServiceResolvedDef, getService, workload, msgPrinter)
+			mergedServicePol := AddDefaultPropertiesToServicePolicy(input.ServicePolicy, builtInSvcPol, msgPrinter)
+			var err error
+			if mergedServicePol, err = SetServicePolicyPrivilege(getServiceResolvedDef, getService, workload, mergedServicePol, msgPrinter); err != nil {
+				return nil, err
+			}
 			// compatibility check
 			sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
 			sId = fmt.Sprintf("%v/%v", workload.Org, sId)
@@ -554,15 +558,16 @@ func GetServicePolicyWithDefaultProperties(servicePolicyHandler exchange.Service
 	}
 
 	// add built-in service properties to the service policy
-	merged_pol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcUrl, Org: svcOrg, Version: svcVersion, Arch: svcArch}, msgPrinter)
-
+	merged_pol := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, msgPrinter)
+	if merged_pol, err = SetServicePolicyPrivilege(getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcUrl, Org: svcOrg, Version: svcVersion, Arch: svcArch}, merged_pol, msgPrinter); err != nil {
+		return nil, nil, "", err
+	}
 	return merged_pol, servicePol, sId, nil
 }
 
 // Add service default properties to the given service policy
 func AddDefaultPropertiesToServicePolicy(servicePol, defaultSvcProps *externalpolicy.ExternalPolicy,
-	getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
-	workload policy.Workload, msgPrinter *message.Printer) *externalpolicy.ExternalPolicy {
+	msgPrinter *message.Printer) *externalpolicy.ExternalPolicy {
 	var merged_pol externalpolicy.ExternalPolicy
 	if servicePol != nil {
 		merged_pol = externalpolicy.ExternalPolicy(*servicePol)
@@ -573,13 +578,6 @@ func AddDefaultPropertiesToServicePolicy(servicePol, defaultSvcProps *externalpo
 		if defaultSvcProps != nil {
 			merged_pol = externalpolicy.ExternalPolicy(*defaultSvcProps)
 		}
-	}
-	tmp_pol, err := SetServicePolicyPrivilege(getServiceResolvedDef, getService, workload, &merged_pol, msgPrinter)
-	if err != nil {
-		return nil
-	}
-	if tmp_pol != nil {
-		merged_pol = *tmp_pol
 	}
 
 	return &merged_pol
@@ -620,8 +618,27 @@ func MergeServicePolicyToBusinessPolicy(getServiceResolvedDef exchange.ServiceDe
 	}
 
 	// add built-in service properties to the service policy
-	merged_pol1 := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getServiceResolvedDef, getService, workload, msgPrinter)
+	merged_pol1 := AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, msgPrinter)
+	var err error
+	if merged_pol1, err = SetServicePolicyPrivilege(getServiceResolvedDef, getService, workload, merged_pol1, msgPrinter); err != nil {
+		return nil, err
+	}
 
+	if businessPol.Properties.HasProperty(externalpolicy.PROP_SVC_PRIVILEGED) {
+		declPrivProp, err := businessPol.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
+		if err != nil {
+			return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
+		}
+		declPriv := declPrivProp.Value.(bool)
+		svcPrivProp, err := merged_pol1.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
+		if err != nil {
+			return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
+		}
+		svcPriv := svcPrivProp.Value.(bool)
+		if svcPriv && !declPriv {
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Business policy %s cannot have %s=true when referring to a service that requires privilege to run.", businessPol.Header, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_INPUT_ERROR)
+		}
+	}
 	//merge service policy
 	if merged_pol2, err := MergeFullServicePolicyToBusinessPolicy(businessPol, merged_pol1, msgPrinter); err != nil {
 		return nil, err
@@ -635,29 +652,19 @@ func MergeServicePolicyToBusinessPolicy(getServiceResolvedDef exchange.ServiceDe
 func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
 	workload policy.Workload, svcPolicy *externalpolicy.ExternalPolicy,
 	msgPrinter *message.Printer) (*externalpolicy.ExternalPolicy, error) {
-	declaredPriv := true
-	if svcPolicy.Properties.HasProperty(externalpolicy.PROP_SVC_PRIVILEGED) {
-		privProp, err := svcPolicy.Properties.GetProperty(externalpolicy.PROP_SVC_PRIVILEGED)
-		if err != nil {
-			return nil, NewCompCheckError(err, COMPCHECK_GENERAL_ERROR)
-		}
-		declaredPriv = privProp.Value.(bool)
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
 	}
-	svcList, err := GetAllServices(getServiceResolvedDef, getService, workload, msgPrinter)
-	if err != nil {
-		return nil, err
-	}
+
+	svcList, _ := GetAllServices(getServiceResolvedDef, getService, workload, msgPrinter)
+
 	runtimePriv, err, _ := servicesRequirePrivilege(svcList, msgPrinter)
 	if err != nil {
 		return nil, err
 	}
-	if runtimePriv && !declaredPriv {
-		// Runtime privilege is true, but policy had privilege set to false. This is an error
-		return svcPolicy, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Policy for service %s/%s has %s but service introspection indicates these services require privileged containers to run %v.", workload.Org, workload.WorkloadURL)), COMPCHECK_GENERAL_ERROR)
-	}
-	if !declaredPriv {
-		svcPolicy.Properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv), true)
-	}
+
+	svcPolicy.Properties.Add_Property(externalpolicy.Property_Factory(externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv), true)
+
 	if runtimePriv {
 		svcPolicy.Constraints.Add_Constraint(fmt.Sprintf("%s = %t", externalpolicy.PROP_SVC_PRIVILEGED, runtimePriv))
 	}

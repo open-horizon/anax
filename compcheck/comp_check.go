@@ -3,7 +3,6 @@ package compcheck
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/containermessage"
@@ -219,7 +218,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 			return pcOutput, nil
 		}
 	} else if ccInput.NodeId != "" || ccInput.NodePolicy != nil {
-		privOutput, err := EvaluatePatternPrivilegeCompatability(serviceDefResolverHandler, getServiceHandler, getPatterns, nodePolicyHandler, ccInput, &CompCheckResource{NodeArch: "amd64"}, msgPrinter, checkAllSvcs)
+		privOutput, err := EvaluatePatternPrivilegeCompatability(serviceDefResolverHandler, getServiceHandler, getPatterns, nodePolicyHandler, ccInput, &CompCheckResource{NodeArch: "amd64"}, msgPrinter, checkAllSvcs, true)
 		if err != nil {
 			return nil, err
 		}
@@ -384,7 +383,10 @@ func GetExchangeNode(getDeviceHandler exchange.DeviceHandler, nodeId string, msg
 // This function will recursively evaluate top-level services specified in the pattern.
 func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
 	getPatterns exchange.PatternHandler, nodePolicyHandler exchange.NodePolicyHandler,
-	cc *CompCheck, ccResource *CompCheckResource, msgPrinter *message.Printer, checkAll bool) (*CompCheckOutput, error) {
+	cc *CompCheck, ccResource *CompCheckResource, msgPrinter *message.Printer, checkAll bool, quiet bool) (*CompCheckOutput, error) {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
 
 	if cc.NodeId == "" && cc.NodePolicy == nil {
 		return nil, nil
@@ -410,43 +412,64 @@ func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.Servic
 		return nil, err
 	}
 
+	svcComp := []common.AbstractServiceFile{}
+	svcIncomp := []common.AbstractServiceFile{}
 	messages := map[string]string{}
 	overallPriv := false
 	for _, svcRef := range getWorkloadsFromPattern(patternDef, ccResource.NodeArch) {
 		svcPriv := false
 		for _, workload := range svcRef.ServiceVersions {
+			sId := fmt.Sprintf("%s/%s", svcRef.ServiceOrg, svcRef.ServiceURL)
 			allSvcs, err := GetAllServices(getServiceResolvedDef, getService, policy.Workload{WorkloadURL: svcRef.ServiceURL, Org: svcRef.ServiceOrg, Arch: svcRef.ServiceArch, Version: workload.Version}, msgPrinter)
-			if err != nil {
+			if err != nil && !quiet {
 				return nil, err
 			}
 			workLoadPriv, err, privWorkloads := servicesRequirePrivilege(allSvcs, msgPrinter)
 			if err != nil {
 				return nil, err
 			}
+			for _, sId := range privWorkloads {
+				exchSDef := (*allSvcs)[sId]
+				sDef := &ServiceDefinition{exchange.GetOrg(sId), exchSDef}
+				svcIncomp = append(svcIncomp, sDef)
+			}
+
 			if workLoadPriv && checkAll {
 				svcPriv = true
-				messages[fmt.Sprintf("%s/%s", svcRef.ServiceOrg, svcRef.ServiceURL)] = fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)
+				messages[sId] = fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)
 			} else if workLoadPriv {
-				return NewCompCheckOutput(false, map[string]string{fmt.Sprintf("%s/%s", svcRef.ServiceOrg, svcRef.ServiceURL): fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)}, nil), nil
+				ccResource.Service = svcIncomp
+				return NewCompCheckOutput(false, map[string]string{sId: fmt.Sprintf("Version %s of this service requires the following workloads that will only run on a privileged node. %v", workload.Version, privWorkloads)}, nil), nil
+			} else {
+				sDef := &ServiceDefinition{svcRef.ServiceOrg, (*allSvcs)[sId]}
+				svcComp = append(svcComp, sDef)
 			}
 		}
 		if svcPriv {
 			overallPriv = true
 		}
 	}
-
+	if overallPriv {
+		ccResource.Service = svcComp
+	} else {
+		ccResource.Service = svcIncomp
+	}
 	if !nodePriv && overallPriv {
 		return NewCompCheckOutput(false, messages, ccResource), nil
 	}
 	return NewCompCheckOutput(true, nil, ccResource), nil
 }
 
+// GetAllServices returns a map of serviceIds to service definitions of the given service and any service it is dependent on evaluated recursively
 func GetAllServices(getServiceResolvedDef exchange.ServiceDefResolverHandler, getService exchange.ServiceHandler,
 	workload policy.Workload, msgPrinter *message.Printer) (*map[string]exchange.ServiceDefinition, error) {
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
 	sDefMap, topSvcDef, topSvcId, err := getServiceResolvedDef(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 	if err != nil {
 		// logging this message here so it gets translated. Will add quiet parameter to determine if this is an error or a cli warning later.
-		glog.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the exchange.", topSvcId, externalpolicy.PROP_NODE_PRIVILEGED))
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the exchange.", topSvcId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
 	}
 	if topSvcDef != nil {
 		sDefMap[topSvcId] = *topSvcDef
@@ -455,9 +478,19 @@ func GetAllServices(getServiceResolvedDef exchange.ServiceDefResolverHandler, ge
 }
 
 // this function takes as a parameter a map of service ids to deployment strings
+// Returns true if any of the service listed require privilge to run
+// returns a slice of service ids of any services that require privilege to run
 func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (bool, error, []string) {
 	privSvcs := []string{}
 	reqPriv := false
+
+	if serviceDefs == nil {
+		return false, nil, nil
+	}
+
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
 
 	for sId, sDef := range *serviceDefs {
 		if priv, err := deploymentRequiresPrivilege(sDef.GetDeployment(), msgPrinter); err != nil {
@@ -470,9 +503,13 @@ func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition
 	return reqPriv, nil, privSvcs
 }
 
+// Check if the deployment string given uses the privileged flag or network=host
 func deploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Printer) (bool, error) {
 	if deploymentString == "" {
 		return false, nil
+	}
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
 	}
 	deploymentStruct := &containermessage.DeploymentDescription{}
 	err := json.Unmarshal([]byte(deploymentString), deploymentStruct)

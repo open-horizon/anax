@@ -373,7 +373,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			patternHandler := exchange.GetHTTPExchangePatternHandler(b)
 			nodePolHandler := exchange.GetHTTPNodePolicyHandler(b)
 			cc := compcheck.CompCheck{NodeId: wi.Device.Id, PatternId: wi.ConsumerPolicy.PatternId}
-			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, svcHandler, patternHandler, nodePolHandler, &cc, &compcheck.CompCheckResource{}, msgPrinter, false)
+			ccOutput, err := compcheck.EvaluatePatternPrivilegeCompatability(svcDefResolverHandler, svcHandler, patternHandler, nodePolHandler, &cc, &compcheck.CompCheckResource{}, msgPrinter, false, false)
 			// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
 			// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
 			// even if retries have been disabled.
@@ -423,7 +423,10 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// add built-in service properties to the service policy
 			getResolvedServiceDef := exchange.GetHTTPServiceDefResolverHandler(b)
 			getService := exchange.GetHTTPServiceHandler(b)
-			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, getResolvedServiceDef, getService, *workload, nil)
+			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, nil)
+			if mergedServicePol, err = compcheck.SetServicePolicyPrivilege(getResolvedServiceDef, getService, *workload, mergedServicePol, msgPrinter); err != nil {
+				return
+			}
 
 			if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
 				glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
