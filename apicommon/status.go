@@ -45,8 +45,6 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 		glog.Errorf("Failed to get exchange version: %v", err)
 	}
 
-
-
 	return &Info{
 		Configuration: &Configuration{
 			ExchangeAPI:     exchangeUrl,
