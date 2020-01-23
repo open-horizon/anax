@@ -461,20 +461,14 @@ func processGetSelectedServicesResponse(mURL string, mOrg string, mVersion strin
 
 	ret := map[string]ServiceDefinition{}
 
-	// If the caller wanted a specific version, check for 1 result.
 	if searchVersion != "" {
-		if len(msMetadata) != 1 {
-			glog.Errorf(rpclogString(fmt.Sprintf("expecting 1 service %v %v %v response: %v", mURL, mOrg, mVersion, resp)))
-			return ret, errors.New(fmt.Sprintf("expecting 1 service %v %v %v, got %v", mURL, mOrg, mVersion, len(msMetadata)))
-		} else {
-			for msId, msDef := range msMetadata {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service definition %v", msDef.ShortString())))
-				ret[msId] = msDef
-				return ret, nil
-			}
-			return ret, errors.New("should not get here")
+		// If the caller wanted a specific version, return all the services with different architectures
+		// that match the version.
+		for msId, msDef := range msMetadata {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning service definition %v", msDef.ShortString())))
+			ret[msId] = msDef
 		}
-
+		return ret, nil
 	} else {
 		// get the services that are within the range
 		vRange, _ := semanticversion.Version_Expression_Factory("0.0.0")
