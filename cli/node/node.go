@@ -124,7 +124,8 @@ func Env(org, userPw, exchUrl, cssUrl string) {
 	if strings.Contains(userPw, "iamapikey:") {
 		userPw = "iamapikey:" + mask
 	} else if strings.ContainsAny(userPw, ":") {
-		userPw = mask + ":" + mask
+		user := strings.Split(userPw, ":")
+		userPw = user[0] + ":" + mask
 	}
 	msgPrinter.Printf("HZN_EXCHANGE_USER_AUTH: %s", userPw)
 	msgPrinter.Println()
