@@ -349,7 +349,7 @@ function check_installed() {
       fi
       if command -v "$1" >/dev/null 2>&1; then
         log_info "${2} is now installed"
-      else 
+      else
         log_info "Failed to install ${2} with ${3}. Please install ${2}"
       fi
     else
@@ -1307,7 +1307,7 @@ function find_node_ip_address() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:z:hvl:n:s:f:w:o" opt; do
+while getopts "c:i:j:p:k:u:z:hvl:n:s:f:w:o:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
