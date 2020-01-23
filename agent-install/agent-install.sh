@@ -43,13 +43,16 @@ where:
     -c          - path to a certificate file
     -k          - path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
     -p          - pattern name to register with (if not specified, registers node w/o pattern)
-    -i          - installation packages location (if not specified, uses current directory)
+    -i          - installation packages location (if not specified, uses current directory). if the argument begins with 'http' or 'https', will use as an apt repository
+    -j          - file location for the public key for an apt repository specified with '-i'
     -n          - path to a node policy file
     -s          - skip registration
     -v          - show version
     -l          - logging verbosity level (0-5, 5 is verbose)
     -u          - exchange user authorization credentials
     -f          - install older version without prompt. overwrite configured node without prompt.
+    -w          - wait for the named service to start executing on this node
+    -o          - specify an org id for the service specified with '-w'
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -257,7 +260,15 @@ function validate_args(){
 
     # preliminary check for script arguments
     check_empty "$PKG_PATH" "path to installation packages"
-    check_exist d "$PKG_PATH" "The package installation"
+    if [[ ${PKG_PATH:0:4} == "http" ]]; then
+	    PKG_APT_REPO="$PKG_PATH"
+	    if [[ "${PKG_APT_REPO: -1}" == "/" ]]; then
+		    PKG_APT_REPO=$(echo "$PKG_APT_REPO" | sed 's/\/$//')
+	    fi
+	    PKG_PATH="."
+    else
+	    check_exist d "$PKG_PATH" "The package installation"
+    fi
     check_empty "$SKIP_REGISTRATION" "registration flag"
     log_info "Check finished successfully"
 
@@ -295,6 +306,10 @@ function validate_args(){
                 set_policy_from_exchange
 	fi
 
+    if [[ -z "$WAIT_FOR_SERVICE_ORG" ]] && [[ ! -z "$WAIT_FOR_SERVICE" ]]; then
+    	log_error "Must specify service with -w to use with -o organization. Ignoring -o flag."
+	unset WAIT_FOR_SERVICE_ORG
+    fi
 
     log_info "Check finished successfully"
     log_debug "validate_args() end"
@@ -571,19 +586,22 @@ function install_linux(){
         log_info "jq installed"
 	fi
 
-    log_info "Checking if Docker is installed..."
-    if command -v docker >/dev/null 2>&1; then
-		log_info "Docker found"
-	else
-        log_info "Docker not found, installing it..."
-        set -x
-        curl -fsSL get.docker.com | sh
-        set +x
-	fi
-
-    log_info "Checking if hzn is installed..."
-    if command -v hzn >/dev/null 2>&1; then
-    	# if hzn is installed, need to check the current setup
+    if [[ ! -z "$PKG_APT_REPO" ]]; then
+	    if [[ ! -z "$PKG_APT_KEY" ]]; then
+		    log_info "Adding key $PKG_APT_KEY"
+		    set -x
+		    apt-key add "$PKG_APT_KEY"
+		    set +x
+	    fi
+	    log_info "Adding $PKG_APT_REPO to /etc/sources to install with apt"
+	    set -x
+	    add-apt-repository "deb $PKG_APT_REPO/linux/${DISTRO} ${CODENAME}-updates main"
+	    apt-get install bluehorizon -y -f
+	    set +x
+    else
+    	log_info "Checking if hzn is installed..."
+    	if command -v hzn >/dev/null 2>&1; then
+    		# if hzn is installed, need to check the current setup
 		log_info "hzn found, checking setup..."
 		AGENT_VERSION=$(hzn version | grep "^Horizon Agent" | sed 's/^.*: //' | cut -d'-' -f1)
 		log_info "Found Agent version is ${AGENT_VERSION}"
@@ -657,6 +675,19 @@ function install_linux(){
         apt update && apt-get install -y -f
         set +x
 	fi
+    fi
+
+    if [[ -f "/etc/horizon/anax.json" ]]; then
+	    while read line; do
+        	if [[ $(echo $line | grep "APIListen")  != "" ]]; then
+    			if [[ $(echo $line | cut -d ":" -f 3 | cut -d "\"" -f 1 ) != "$ANAX_PORT" ]]; then
+            			ANAX_PORT=$(echo $line | cut -d ":" -f 3 | cut -d "\"" -f 1 )
+				log_info "Using anax port $ANAX_PORT"
+    			fi
+		break
+		fi
+    	    done </etc/horizon/anax.json
+    fi
 
     process_node
 
@@ -928,6 +959,15 @@ function registration() {
 		return 0
 	fi
 
+	WAIT_FOR_SERVICE_ARG=""
+	if [[ "$WAIT_FOR_SERVICE" != "" ]]; then
+		if [[ "$WAIT_FOR_SERVICE_ORG" != "" ]]; then
+			WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE --serviceorg $WAIT_FOR_SERVICE_ORG "
+		else
+			WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE "
+		fi
+	fi
+
     NODE_NAME=$HOSTNAME
     log_info "Node name is $NODE_NAME"
     if [ "$1" = true ] ; then
@@ -938,24 +978,24 @@ function registration() {
         	if [[ -z "${3}" ]]; then
         		log_info "Neither a pattern nor node policy were not specified, registering without it..."
             		set -x
-            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH"
+            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
             		set +x
                 else
         		log_info "Node policy ${HZN_NODE_POLICY} was specified, registering..."
             		set -x
-            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3"
+            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
             		set +x
                 fi
         else
         	if [[ -z "${3}" ]]; then
         			log_info "Registering node with ${2} pattern"
             		set -x
-            		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH"
+            		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
             		set +x
         	else
         		log_info "Pattern ${2} and policy ${3} were specified. However, pattern registration will override the policy, registering..."
             		set -x
-           	 	hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3"
+           	 	hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
             		set +x
                 fi
         fi
@@ -1140,39 +1180,42 @@ function check_requirements() {
         log_info "Checking support of detected architecture..."
         check_support "${SUPPORTED_ARCH[*]}" "$ARCH"
 
-        log_info "Checking the path with packages..."
+	if [[ -z "$PKG_APT_REPO" ]]; then
+        	log_info "Checking the path with packages..."
 
-        if [ "$PKG_TREE_IGNORE" = true ] ; then
-        	# ignoring the package tree, checking the current dir
-        	PACKAGES="${PKG_PATH}"
-      	else
-        	# checking the package tree for linux
-        	PACKAGES="${PKG_PATH}/${OS}/${DISTRO}/${CODENAME}/${ARCH}"
-        fi
+        	if [ "$PKG_TREE_IGNORE" = true ] ; then
+        		# ignoring the package tree, checking the current dir
+        		PACKAGES="${PKG_PATH}"
+      		else
+        		# checking the package tree for linux
+        		PACKAGES="${PKG_PATH}/${OS}/${DISTRO}/${CODENAME}/${ARCH}"
+        	fi
 
-        log_info "Checking path with packages ${PACKAGES}"
-        check_exist w "${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb" "Linux installation"
+        	log_info "Checking path with packages ${PACKAGES}"
+        	check_exist w "${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb" "Linux installation"
+	fi
 
         if [ $(id -u) -ne 0 ]; then
 	        log_notify "Please run script with the root priveleges by running 'sudo -s' command first"
             quit 1
         fi
 
-    elif [ "$OS" = "macos" ]; then
+    	elif [ "$OS" = "macos" ]; then
+	    if [[ -z "$PKG_APT_REPO" ]]; then
+    		log_info "Checking the path with packages..."
 
-    	log_info "Checking the path with packages..."
+    		if [ "$PKG_TREE_IGNORE" = true ] ; then
+      			# ignoring the package tree, checking the current dir
+      			PACKAGES="${PKG_PATH}"
+      		else
+      			# checking the package tree for macos
+      			PACKAGES="${PKG_PATH}/${OS}"
+      		fi
 
-    	if [ "$PKG_TREE_IGNORE" = true ] ; then
-      	# ignoring the package tree, checking the current dir
-      	PACKAGES="${PKG_PATH}"
-      else
-      	# checking the package tree for macos
-      	PACKAGES="${PKG_PATH}/${OS}"
-      fi
-
-      log_info "Checking path with packages ${PACKAGES}"
-      check_exist w "${PACKAGES}/horizon-cli-*.pkg" "MacOS installation"
-      check_exist f "${PACKAGES}/${MAC_PACKAGE_CERT}" "The CLI package certificate"
+      		log_info "Checking path with packages ${PACKAGES}"
+      		check_exist w "${PACKAGES}/horizon-cli-*.pkg" "MacOS installation"
+      		check_exist f "${PACKAGES}/${MAC_PACKAGE_CERT}" "The CLI package certificate"
+	fi
     fi
 
     log_debug "check_requirements() end"
@@ -1249,17 +1292,21 @@ function find_node_ip_address() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:p:k:u:hvl:n:s:f" opt; do
+while getopts "c:i:j:p:k:u:z:hvl:n:s:f:w:o" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
 		i) PKG_PATH="$OPTARG" PKG_TREE_IGNORE=true
+		;;
+		j) PKG_APT_KEY="$OPTARG"
 		;;
 		p) HZN_EXCHANGE_PATTERN="$OPTARG"
 		;;
 		k) CFG="$OPTARG"
 		;;
 		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
+		;;
+		z) AGENT_INSTALL_ZIP="$OPTARG"
 		;;
 		h) help
 		;;
@@ -1272,6 +1319,10 @@ while getopts "c:i:p:k:u:hvl:n:s:f" opt; do
 		s) SKIP_REGISTRATION=true
 		;;
 		f) OVERWRITE=true
+		;;
+		w) WAIT_FOR_SERVICE="$OPTARG"
+		;;
+		o) WAIT_FOR_SERVICE_ORG="$OPTARG"
 		;;
 		\?) echo "Invalid option: -$OPTARG"; help
 		;;
