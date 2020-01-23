@@ -3,154 +3,6 @@
   "language": "zh-CN",
   "messages": [
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "兼容性错误：模式版本不相同，使用者策略：{Version}，生产者策略：{Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "兼容性错误：节点属性 {Properties} 未满足约束需求 {Constraints}。底层错误：{Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "兼容性错误：属性 {Properties} 未满足节点约束 {Constraints}。底层错误：{Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "兼容性错误：在 {AgreementProtocols} 与 {AgreementProtocols_1} 之间没有公共的协议。底层错误：{Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "兼容性错误：数据验证必须兼容，但生产者的数据验证为 {DataVerify}，使用者的数据验证为 {DataVerify_1}。"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "版本表达式：在 {Expr} 中不允许有空格。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。"
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。"
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "输入版本字符串 {V1} 或 {V2} 不是有效的单版本字符串。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的功能"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "部署配置 {Arg_1} 包含基础结构容器所不支持的功能。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的绑定，{Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "部署配置 {Arg_1} 包含{Arg_2} 所不支持的绑定，{Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "将部署字符串 {Arg_1} 反序列化时出错，错误：{Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "将用于协议 {Arg_2} 的部署覆盖字符串 {Arg_1} 反序列化时出错，错误：{Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "启动容器时出错：{Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "启动用于协议 {Arg_1} 的容器时出错：{Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "重新启动用于协议 {Arg_1} 的容器时出错：{Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "在启动用于 {Arg_1} 的新容器之前，清除旧容器时出错。错误：{Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "获取用于为 {Arg_1} 进行服务重试的一列父容器失败。{Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "针对服务 {Arg_1}，复原与父代的网络连接失败。{Arg_2}"
-    },
-    {
-      "id": "No input found.",
-      "translation": "找不到输入。"
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "未获授权。未提供 Exchange 用户标识。"
-    },
-    {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "向 Exchange 认证用户失败。{Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "输入主体未能反序列化为 JSON 对象。{Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "输入主体未能反序列化为 PolicyCheck 对象。{Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "输入主体未能反序列化为 UserInputCheck 对象。{Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "输入主体未能反序列化为 CompCheck 对象。{Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "未提供 Exchange 用户标识。"
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "未提供 Exchange 用户组织标识。"
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "未提供 Exchange 用户密码或 API 密钥。"
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "组织标识、用户标识或密码错误。"
-    },
-    {
-      "id": "Internal server error",
-      "translation": "内部服务器错误"
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "约束表达式 {Dconstraints} 的类型为 {Dconstraints_1}，但期望字符串数组"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "约束表达式包含未配对的圆括号。"
-    },
-    {
       "id": "[verbose] {M}",
       "translation": "[verbose] {M}"
     },
@@ -399,6 +251,22 @@
       "translation": "必须使用下列其中一项来指定 Exchange 认证：-u 标志、-n 标志、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
     },
     {
+      "id": "Verifying public key file ...",
+      "translation": "正在验证公用密钥文件..."
+    },
+    {
+      "id": "provided public key is not valid; error: {Err}",
+      "translation": "提供的公用密钥无效；错误：{Err}"
+    },
+    {
+      "id": "Checking private key file format ...",
+      "translation": "正在检查专用密钥文件格式..."
+    },
+    {
+      "id": "provided private key is not valid; error: {Err}",
+      "translation": "提供的专用密钥无效；错误：{Err}"
+    },
+    {
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
       "translation": "获取 {KeyFile} 文件的绝对路径失败。{Err}"
     },
@@ -467,224 +335,416 @@
       "translation": "将环境变量 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 转换为整数时出错。{Err1}"
     },
     {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "解析选定项目 {Form} 出错。{Err}"
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "版本表达式：在 {Expr} 中不允许有空格。"
     },
     {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "获取用于输出的 {Resource} 出错，错误：{Err}"
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。"
     },
     {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点配置/注册的输入出错。输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。"
     },
     {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点配置/注册的输入出错。输入主体未能反序列化为配置状态对象：{Arg_1}，错误：{Arg_2}"
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。"
     },
     {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点更新的输入出错。输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。"
     },
     {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略的输入出错。输入主体未能反序列化为策略对象：{Arg_1}，错误：{Arg_2}"
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "输入版本字符串 {V1} 或 {V2} 不是有效的单版本字符串。"
     },
     {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略修补程序的输入出错。输入主体未能反序列化到约束表达式或属性列表中：{Arg_1}，错误：{Arg_2}"
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号失败。错误：{Arg_3}"
     },
     {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略修补程序的输入出错。输入主体未包含约束表达式或属性列表：{Arg_1}，错误：{Arg_2}"
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号已复原。"
     },
     {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点用户输入的输入出错。输入主体未能反序列化为用户输入对象：{Arg_1}，错误：{Arg_2}"
+      "id": "Bussiness policy and pattern are mutually exclusive.",
+      "translation": "业务策略与模式互斥。"
     },
     {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "针对节点 {Arg_1} 进行的节点配置/注册出错。{Arg_2}"
+      "id": "Neither bussiness policy nor pattern is specified.",
+      "translation": "既未指定业务策略也未指定模式。"
     },
     {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "更新节点 {Arg_1} 出错。{Arg_2}"
+      "id": "Incompatible",
+      "translation": "不兼容"
     },
     {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "注销节点出错。{Arg_1}"
+      "id": "Compatible",
+      "translation": "兼容"
     },
     {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "验证 Exchange 版本出错。错误：{Arg_1}"
+      "id": "Error marshaling object {In}. {Arg_2}",
+      "translation": "编组对象 {In} 时出错。{Arg_2}"
     },
     {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "创建或替换节点策略出错。{Arg_1}"
+      "id": "Failed to convert input to PolicyCheck object. {Err}",
+      "translation": "未能将输入转换为 PolicyCheck 对象。{Err}"
     },
     {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "修补节点策略出错。{Arg_1}"
+      "id": "The given node id is empty.",
+      "translation": "给定的节点标识为空。"
     },
     {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "删除节点策略出错。{Arg_1}"
+      "id": "Organization is not specified in the given node id: {NodeId}.",
+      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
     },
     {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "更新节点用户输入出错。{Arg_1}"
+      "id": "Error getting node {NodeId} from the exchange. {Err}",
+      "translation": "从 Exchange 获取节点 {NodeId} 出错。{Err}"
     },
     {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "修补节点用户输入出错。{Arg_1}"
+      "id": "No node found for this node id {NodeId}.",
+      "translation": "找不到节点标识为 {NodeId} 的节点。"
     },
     {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "删除节点用户输入出错。{Arg_1}"
+      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the exchange.",
+      "translation": "未能找到 {TopSvcId} 的相依服务的定义。在所有服务位于 Exchange 中之前，无法完全评估 {PROPNODEPRIVILEGED} 的兼容性。"
     },
     {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "针对节点 {Arg_1} 进行的节点配置/注册开始。"
+      "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
+      "translation": "在将部署字符串解组为内部部署结构时出错：{Err}"
     },
     {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "开始更新节点 {Arg_1}。"
+      "id": "The PolicyCheck input cannot be null",
+      "translation": "PolicyCheck 输入不得为 Null"
     },
     {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "针对 {Arg_1} 进行的节点更新完成。"
+      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
+      "translation": "输入节点体系结构 {NodeArch} 与节点 {NodeId} 的 Exchange 节点体系结构 {Arch} 不匹配。"
     },
     {
-      "id": "Start node unregistration.",
-      "translation": "开始注销节点。"
+      "id": "Policy Incompatible",
+      "translation": "策略不兼容"
     },
     {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "针对节点 {Arg_1} 进行的节点注销完成。"
+      "id": "Architecture does not match.",
+      "translation": "体系结构不匹配。"
     },
     {
-      "id": "Error unregistring the node. The node is not found from the database.",
-      "translation": "注销节点出错。在数据库中找不到该节点。"
+      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+      "translation": "获取 {Org}/{WorkloadURL} V{Version} 的所有体系结构的服务失败。{Err}"
     },
     {
-      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "注销节点出错。节点必须处于“已配置”或“正在配置”状态才能取消配置。"
+      "id": "Failed to validate the service policy. {Err}",
+      "translation": "验证服务策略失败。{Err}"
     },
     {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "用于注销节点的输入错误。对于 removeNode，{Arg_1} 不是正确的值"
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
+      "translation": "在业务策略中找不到“arch”为 {NodeArch} 的服务。"
     },
     {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "用于注销节点的输入错误。对于 deepClean，{Arg_1} 不是正确的值"
+      "id": "No services found in the business policy.",
+      "translation": "在业务策略中找不到任何服务。"
     },
     {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "用于注销节点的输入错误。对于 block，{Arg_1} 不是正确的值"
+      "id": "Node policy cannot be null.",
+      "translation": "节点策略不得为 Null。"
     },
     {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "无法从数据库读取节点对象，错误：{Arg_1}"
+      "id": "Business policy cannot be null.",
+      "translation": "业务策略不得为 Null。"
     },
     {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "在数据库中保存新的节点配置状态（取消配置）出错：{Arg_1}"
+      "id": "Merged service policy cannot be null.",
+      "translation": "合并的服务策略不得为 Null。"
     },
     {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "节点配置出错。在数据库中找不到该节点。"
+      "id": "Error merging node policy with arch property. {Err}",
+      "translation": "将节点策略与体系结构属性合并出错。{Err}"
     },
     {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "节点配置出错。节点必须处于“已配置”或“正在配置”状态才能将状态更改为 {Arg_1}。"
+      "id": "Failed to validate the node policy. {Err}",
+      "translation": "验证节点策略失败。{Err}"
     },
     {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "不支持节点状态从“{Arg_1}”过渡到“{Arg_2}”。"
+      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+      "translation": "对于节点 {NodeId}，将节点策略转换为内部策略格式失败：{Err}"
     },
     {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "从本地数据库获取用户输入失败。{Arg_1}"
+      "id": "No node policy found for this node {NodeId}.",
+      "translation": "找不到节点 {NodeId} 的节点策略。"
     },
     {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "从本地用户输入中找不到用于服务 {Arg_1}/{Arg_2} 的首选项，错误：{Arg_3}"
+      "id": "Neither node policy nor node id is specified.",
+      "translation": "既未指定节点策略也未指定节点标识。"
     },
     {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "将新节点配置状态保存到数据库出错：{Arg_1}"
+      "id": "Node id is empty.",
+      "translation": "节点标识为空。"
     },
     {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "针对节点 {Arg_1} 进行的节点配置/注册完成。"
+      "id": "Organization is not specified in the node id: {NodeId}.",
+      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
     },
     {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 的服务配置出错。{Arg_2}"
+      "id": "Error trying to query node policy for {NodeId}: {Err}",
+      "translation": "尝试查询 {NodeId} 的节点策略出错：{Err}"
     },
     {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "获取模式 {Arg_1} 的服务引用出错。{Arg_2}"
+      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
+      "translation": "验证节点 {NodeId} 的节点策略失败。{Err}"
     },
     {
-      "id": "New node policy: {Arg_1}",
-      "translation": "新节点策略：{Arg_1}"
+      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+      "translation": "对于节点 {NodeId}，将节点策略转换为内部策略失败：{Err}"
     },
     {
-      "id": "Deleted node policy",
-      "translation": "已删除节点策略"
+      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
+      "translation": "将业务策略 {BpId} 转换为内部策略失败：{Err1}"
     },
     {
-      "id": "New node user input: {Arg_1}",
-      "translation": "新的节点用户输入：{Arg_1}"
+      "id": "Validation failure for business policy {BpId}. {Err}",
+      "translation": "验证业务策略 {BpId} 失败。{Err}"
     },
     {
-      "id": "No node user input to detele",
-      "translation": "没有可删除的节点用户输入"
+      "id": "No services specified in the given business policy {BpId}.",
+      "translation": "未在给定的业务策略 {BpId} 中指定任何服务。"
     },
     {
-      "id": "Deleted all node user input",
-      "translation": "已删除所有节点用户输入"
+      "id": "No services specified in the business policy {Name}.",
+      "translation": "未在业务策略 {Name} 中指定任何服务。"
     },
     {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 使用用户输入进行的服务配置开始。"
+      "id": "Neither business policy nor business policy id is specified.",
+      "translation": "既未指定业务策略也未指定业务策略标识。"
     },
     {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置开始。"
+      "id": "Business policy id is empty.",
+      "translation": "业务策略标识为空。"
     },
     {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务配置完成。"
+      "id": "Organization is not specified in the business policy id: {BpId}.",
+      "translation": "未在标识为 {BpId} 的业务策略中指定组织。"
     },
     {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置完成。"
+      "id": "Unable to get business policy for {BpId}, {Err}",
+      "translation": "无法获取 {BpId} 的业务策略：{Err}"
     },
     {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-      "translation": "在 {Arg_2}/{Arg_3} 的服务配置中，缺失变量 {Arg_1}。业务策略未包含该缺失变量的设置时，可能无法构造协议。"
+      "id": "No business policy found for this id {BpId}.",
+      "translation": "找不到标识为 {BpId} 的业务策略。"
     },
     {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "配置服务 {Arg_1} 出错。{Arg_2}"
+      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
+      "translation": "将业务策略 {BpId} 转换为内部策略格式失败：{Err}"
     },
     {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "更改服务配置状态 {Arg_1} 出错，错误：{Arg_2}"
+      "id": "Service policy id is empty.",
+      "translation": "服务策略标识为空。"
     },
     {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 开始。"
+      "id": "Organization is not specified in the service policy id: {SvcId}.",
+      "translation": "未在标识为 {SvcId} 的服务策略中指定组织。"
     },
     {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 完成。"
+      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
+      "translation": "尝试查询服务标识为 {SvcId} 的服务策略出错：{Err}"
     },
     {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "将选定项目转换为选择器出错：{Err}"
+      "id": "Error validating the service policy {SvcId}. {Err}",
+      "translation": "验证服务策略 {SvcId} 出错。{Err}"
+    },
+    {
+      "id": "Service name is empty.",
+      "translation": "服务名称为空。"
+    },
+    {
+      "id": "Service organization is empty.",
+      "translation": "服务组织为空。"
+    },
+    {
+      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "尝试查询 {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} 的服务策略出错。{Err}"
+    },
+    {
+      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "验证 {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} 的服务策略失败。{Err}"
+    },
+    {
+      "id": "The given business policy should not be null.",
+      "translation": "给定的业务策略不得为 Null。"
+    },
+    {
+      "id": "Error merging business policy with service policy. {Err}",
+      "translation": "将业务策略与服务策略合并出错。{Err}"
+    },
+    {
+      "id": "The business policy should not be null.",
+      "translation": "业务策略不得为 Null。"
+    },
+    {
+      "id": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
+      "translation": "服务 {Org}/{WorkloadURL} 的策略包含 {Arg_3}，但是服务自省指示这些需要需要特权容器以运行 {Arg_4}。"
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 输入不得为 Null"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "既未指定节点用户输入也未指定节点标识。"
+    },
+    {
+      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
+      "translation": "未在业务策略或模式中指定包含体系结构 {NodeArch} 的服务版本。"
+    },
+    {
+      "id": "No service versions specified in the business policy or pattern.",
+      "translation": "未在业务策略或模式中指定任何服务版本。"
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "用户输入不兼容"
+    },
+    {
+      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+      "translation": "获取 {ServiceOrg}/{ServiceURL} V{Version} 的所有体系结构的服务出错。{Err}"
+    },
+    {
+      "id": "Service definition not found in the input.",
+      "translation": "在输入中找不到服务定义。"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
+      "translation": "在业务策略或模式中找不到“arch”为 {NodeArch} 的服务。"
+    },
+    {
+      "id": "No services found in the business policy or pattern.",
+      "translation": "在业务策略或模式中找不到任何服务。"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "输入服务规范对象不得为 Null。"
+    },
+    {
+      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
+      "translation": "从 Exchange 检索 {SvcSpec} 的服务出错。{Err}"
+    },
+    {
+      "id": "Error verifing user input for service {SId}. {Err}",
+      "translation": "验证服务 {SId} 的用户输入出错。{Err}"
+    },
+    {
+      "id": "Failed to verify user input for service {SId}. {Reason}",
+      "translation": "验证服务 {SId} 的用户输入失败。{Reason}"
+    },
+    {
+      "id": "Error verifing user input for dependent service {Id}. {Err}",
+      "translation": "验证相依服务 {Id} 的用户输入出错。{Err}"
+    },
+    {
+      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+      "translation": "验证相依服务 {Id} 的用户输入失败。{Reason}"
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "输入服务定义对象不得为 Null。"
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "translation": "无法从 {Version} 创建版本表达式。{Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "从 Exchange 检索 {SDep} 的相依服务出错。{Err}"
+    },
+    {
+      "id": "Failed to get the service from the exchange. {Err}",
+      "translation": "从 Exchange 获取服务失败。{Err}"
+    },
+    {
+      "id": "Servcie does not exist on the exchange.",
+      "translation": "服务在 Exchange 上不存在。"
+    },
+    {
+      "id": "No user input found for service.",
+      "translation": "找不到服务的用户输入。"
+    },
+    {
+      "id": "Failed to validate the user input type for variable {Name}. {Err}",
+      "translation": "验证变量 {Name} 的用户输入类型失败。{Err}"
+    },
+    {
+      "id": "A required user input value is missing for variable {Name}.",
+      "translation": "变量 {Name} 缺少必需的用户输入值。"
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
+      "translation": "服务 URL {URL} 与业务策略中指定的服务 URL {Name} 不匹配。"
+    },
+    {
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
+      "translation": "服务组织 {Org} 与业务策略中指定的服务组织 {Org_1} 不匹配。"
+    },
+    {
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
+      "translation": "服务体系结构 {Arch} 与业务策略中指定的服务体系结构 {Arch_1} 不匹配。"
+    },
+    {
+      "id": "Service version {Version} does not match any service versions specified in the business policy.",
+      "translation": "服务版本 {Version} 与业务策略中指定的任何服务版本都不匹配。"
+    },
+    {
+      "id": "The service does not match any services in the pattern.",
+      "translation": "服务不匹配模式中的任何服务。"
+    },
+    {
+      "id": "Pattern {PatId} cannot be found on the exchange.",
+      "translation": "无法在 Exchange 上找到模式 {PatId}。"
+    },
+    {
+      "id": "Neither pattern nor pattern id is specified.",
+      "translation": "既未指定模式也未指定模式标识。"
+    },
+    {
+      "id": "Pattern id is empty.",
+      "translation": "模式标识为空。"
+    },
+    {
+      "id": "Organization is not specified in the pattern id: {PatId}.",
+      "translation": "未在标识为 {PatId} 的模式中指定组织。"
+    },
+    {
+      "id": "Error getting pattern {PatId} from the exchange, {Err}",
+      "translation": "从 Exchange 获取模式 {PatId} 出错：{Err}"
+    },
+    {
+      "id": "No pattern found for this id {PatId}.",
+      "translation": "未针对此标识 {PatId} 找到任何模式。"
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "translation": "在服务定义中必须指定 URL。"
+    },
+    {
+      "id": "Version must be specified in the service definition for service {URL}.",
+      "translation": "必须在服务 {URL} 的服务定义中指定版本。"
+    },
+    {
+      "id": "Invalide version format {Version} for service {URL}.",
+      "translation": "服务 {URL} 的版本格式 {Version} 无效。"
+    },
+    {
+      "id": "Arch must be specified in the service definition for service {URL}.",
+      "translation": "必须在服务 {URL} 的服务定义中指定体系结构。"
+    },
+    {
+      "id": "Org must be specified in the service definition for service {URL}.",
+      "translation": "必须在服务 {URL} 的服务定义中指定组织。"
+    },
+    {
+      "id": "Validation failure for input service {SId}. {Err}",
+      "translation": "验证输入服务 {SId} 失败。{Err}"
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -1003,6 +1063,254 @@
       "translation": "新模式 {Arg_1} 已通过验证。将取消协议，并使用新模式重新注册该节点。"
     },
     {
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "解析选定项目 {Form} 出错。{Err}"
+    },
+    {
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "获取用于输出的 {Resource} 出错，错误：{Err}"
+    },
+    {
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点配置/注册的输入出错。输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点配置/注册的输入出错。输入主体未能反序列化为配置状态对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点更新的输入出错。输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点策略的输入出错。输入主体未能反序列化为策略对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点策略修补程序的输入出错。输入主体未能反序列化到约束表达式或属性列表中：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点策略修补程序的输入出错。输入主体未包含约束表达式或属性列表：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点用户输入的输入出错。输入主体未能反序列化为用户输入对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "针对节点 {Arg_1} 进行的节点配置/注册出错。{Arg_2}"
+    },
+    {
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "更新节点 {Arg_1} 出错。{Arg_2}"
+    },
+    {
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "注销节点出错。{Arg_1}"
+    },
+    {
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "验证 Exchange 版本出错。错误：{Arg_1}"
+    },
+    {
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "创建或替换节点策略出错。{Arg_1}"
+    },
+    {
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "修补节点策略出错。{Arg_1}"
+    },
+    {
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "删除节点策略出错。{Arg_1}"
+    },
+    {
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "更新节点用户输入出错。{Arg_1}"
+    },
+    {
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "修补节点用户输入出错。{Arg_1}"
+    },
+    {
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "删除节点用户输入出错。{Arg_1}"
+    },
+    {
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "针对节点 {Arg_1} 进行的节点配置/注册开始。"
+    },
+    {
+      "id": "Start updating node {Arg_1}.",
+      "translation": "开始更新节点 {Arg_1}。"
+    },
+    {
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "针对 {Arg_1} 进行的节点更新完成。"
+    },
+    {
+      "id": "Start node unregistration.",
+      "translation": "开始注销节点。"
+    },
+    {
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "针对节点 {Arg_1} 进行的节点注销完成。"
+    },
+    {
+      "id": "Error unregistring the node. The node is not found from the database.",
+      "translation": "注销节点出错。在数据库中找不到该节点。"
+    },
+    {
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "注销节点出错。节点必须处于“已配置”或“正在配置”状态才能取消配置。"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "用于注销节点的输入错误。对于 removeNode，{Arg_1} 不是正确的值"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "用于注销节点的输入错误。对于 deepClean，{Arg_1} 不是正确的值"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "用于注销节点的输入错误。对于 block，{Arg_1} 不是正确的值"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "无法从数据库读取节点对象，错误：{Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "在数据库中保存新的节点配置状态（取消配置）出错：{Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "节点配置出错。在数据库中找不到该节点。"
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "节点配置出错。节点必须处于“已配置”或“正在配置”状态才能将状态更改为 {Arg_1}。"
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "不支持节点状态从“{Arg_1}”过渡到“{Arg_2}”。"
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "从本地数据库获取用户输入失败。{Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "从本地用户输入中找不到用于服务 {Arg_1}/{Arg_2} 的首选项，错误：{Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "将新节点配置状态保存到数据库出错：{Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "针对节点 {Arg_1} 进行的节点配置/注册完成。"
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 的服务配置出错。{Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "获取模式 {Arg_1} 的服务引用出错。{Arg_2}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "新节点策略：{Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "已删除节点策略"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "新的节点用户输入：{Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "没有可删除的节点用户输入"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "已删除所有节点用户输入"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 使用用户输入进行的服务配置开始。"
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置开始。"
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务配置完成。"
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置完成。"
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
+      "translation": "在 {Arg_2}/{Arg_3} 的服务配置中，缺失变量 {Arg_1}。业务策略未包含该缺失变量的设置时，可能无法构造协议。"
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "配置服务 {Arg_1} 出错。{Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "更改服务配置状态 {Arg_1} 出错，错误：{Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 开始。"
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 完成。"
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "将选定项目转换为选择器出错：{Err}"
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "约束表达式 {Dconstraints} 的类型为 {Dconstraints_1}，但期望字符串数组"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "约束表达式包含未配对的圆括号。"
+    },
+    {
+      "id": "no service name",
+      "translation": "没有服务名称"
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "translation": "没有用于服务 {ServiceName} 的 Docker 映像"
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "对 {D} 的主体进行编组失败：{Err}"
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "对部署字段 {StringjsonBytes} 的 JSON 进行取消编组失败：{Err}"
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "用户输入 {Name} 没有缺省值，未进行设置"
+    },
+    {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
       "translation": "无法读取用于服务 {Arg_2} 的策略文件 {Arg_1}，错误：{Arg_3}"
     },
@@ -1017,14 +1325,6 @@
     {
       "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
       "translation": "针对服务 {Arg_1}/{Arg_2}，完成通过 Exchange 进行的策略通告。"
-    },
-    {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号失败。错误：{Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号已复原。"
     },
     {
       "id": "unable to read node policy from the local database. {Arg_1}",
@@ -1075,372 +1375,140 @@
       "translation": "无法将新的节点 Exchange 模式 {Arg_1} 保存至本地数据库。错误：{Arg_2}"
     },
     {
-      "id": "Bussiness policy and pattern are mutually exclusive.",
-      "translation": "业务策略与模式互斥。"
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "properties 包含无效的属性：{Err}"
     },
     {
-      "id": "Neither bussiness policy nor pattern is specified.",
-      "translation": "既未指定业务策略也未指定模式。"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "属性必须包括名称和值：{Property}"
     },
     {
-      "id": "Incompatible",
-      "translation": "不兼容"
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "translation": "属性 {Name} 的属性类型 {DeclaredType} 无效。允许的属性类型包括：版本、字符串、整型、布尔型、浮点型和字符串列表。"
     },
     {
-      "id": "Compatible",
-      "translation": "兼容"
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "属性值的类型为 {ActualType}，但期望的类型为 {DeclaredType}"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "编组对象 {In} 时出错。{Arg_2}"
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "属性 {Name} 的值 {Value} 不是整数类型"
     },
     {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "未能将输入转换为 PolicyCheck 对象。{Err}"
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "属性 {Name} 的值 {Value} 不是有效的字符串。请定义类型，或将值更改为字符串。"
     },
     {
-      "id": "The given node id is empty.",
-      "translation": "给定的节点标识为空。"
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "值为 {Value} 的属性 {Name} 不是有效的版本字符串"
     },
     {
-      "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "属性 {Name} 的值类型 {ActualType} 无效"
     },
     {
-      "id": "Error getting node {NodeId} from the exchange. {Err}",
-      "translation": "从 Exchange 获取节点 {NodeId} 出错。{Err}"
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "兼容性错误：模式版本不相同，使用者策略：{Version}，生产者策略：{Version_1}"
     },
     {
-      "id": "No node found for this node id {NodeId}.",
-      "translation": "找不到节点标识为 {NodeId} 的节点。"
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "兼容性错误：节点属性 {Properties} 未满足约束需求 {Constraints}。底层错误：{Err}"
     },
     {
-      "id": "The PolicyCheck input cannot be null",
-      "translation": "PolicyCheck 输入不得为 Null"
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "兼容性错误：节点属性未满足约束需求。{Err}"
     },
     {
-      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
-      "translation": "输入节点体系结构 {NodeArch} 与节点 {NodeId} 的 Exchange 节点体系结构 {Arch} 不匹配。"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "兼容性错误：属性 {Properties} 未满足节点约束 {Constraints}。底层错误：{Err}"
     },
     {
-      "id": "Policy Incompatible",
-      "translation": "策略不兼容"
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "兼容性错误：属性未满足节点约束。{Err}"
     },
     {
-      "id": "Architecture does not match.",
-      "translation": "体系结构不匹配。"
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "兼容性错误：在 {AgreementProtocols} 与 {AgreementProtocols_1} 之间没有公共的协议。底层错误：{Err}"
     },
     {
-      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
-      "translation": "获取 {Org}/{WorkloadURL} V{Version} 的所有体系结构的服务失败。{Err}"
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "兼容性错误：数据验证必须兼容，但生产者的数据验证为 {DataVerify}，使用者的数据验证为 {DataVerify_1}。"
     },
     {
-      "id": "Failed to validate the service policy. {Err}",
-      "translation": "验证服务策略失败。{Err}"
+      "id": "Name, or Org is empty string.",
+      "translation": "名称或组织是空字符串。"
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "在业务策略中找不到“arch”为 {NodeArch} 的服务。"
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 数组为空。"
     },
     {
-      "id": "No services found in the business policy.",
-      "translation": "在业务策略中找不到任何服务。"
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的功能"
     },
     {
-      "id": "Node policy cannot be null.",
-      "translation": "节点策略不得为 Null。"
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "部署配置 {Arg_1} 包含基础结构容器所不支持的功能。"
     },
     {
-      "id": "Business policy cannot be null.",
-      "translation": "业务策略不得为 Null。"
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "部署配置 {Arg_1} 包含工作负载所不支持的绑定，{Arg_2}"
     },
     {
-      "id": "Merged service policy cannot be null.",
-      "translation": "合并的服务策略不得为 Null。"
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "部署配置 {Arg_1} 包含{Arg_2} 所不支持的绑定，{Arg_3}"
     },
     {
-      "id": "Error merging node policy with arch property. {Err}",
-      "translation": "将节点策略与体系结构属性合并出错。{Err}"
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "将部署字符串 {Arg_1} 反序列化时出错，错误：{Arg_2}"
     },
     {
-      "id": "Failed to validate the node policy. {Err}",
-      "translation": "验证节点策略失败。{Err}"
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "将用于协议 {Arg_2} 的部署覆盖字符串 {Arg_1} 反序列化时出错，错误：{Arg_3}"
     },
     {
-      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
-      "translation": "对于节点 {NodeId}，将节点策略转换为内部策略格式失败：{Err}"
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "启动容器时出错：{Arg_1}"
     },
     {
-      "id": "No node policy found for this node {NodeId}.",
-      "translation": "找不到节点 {NodeId} 的节点策略。"
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "启动用于协议 {Arg_1} 的容器时出错：{Arg_2}"
     },
     {
-      "id": "Neither node policy nor node id is specified.",
-      "translation": "既未指定节点策略也未指定节点标识。"
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "重新启动用于协议 {Arg_1} 的容器时出错：{Arg_2}"
     },
     {
-      "id": "Node id is empty.",
-      "translation": "节点标识为空。"
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "在启动用于 {Arg_1} 的新容器之前，清除旧容器时出错。错误：{Arg_2}"
     },
     {
-      "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "获取用于为 {Arg_1} 进行服务重试的一列父容器失败。{Arg_2}"
     },
     {
-      "id": "Error trying to query node policy for {NodeId}: {Err}",
-      "translation": "尝试查询 {NodeId} 的节点策略出错：{Err}"
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "针对服务 {Arg_1}，复原与父代的网络连接失败。{Arg_2}"
     },
     {
-      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
-      "translation": "验证节点 {NodeId} 的节点策略失败。{Err}"
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "协议 {Arg_1} 已存在，正在忽略建议：{Arg_2}"
     },
     {
-      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
-      "translation": "对于节点 {NodeId}，将节点策略转换为内部策略失败：{Err}"
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "针对协议 {Arg_1}，将 TsAndCs 取消编组时接收到错误：{Arg_2}"
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "translation": "将业务策略 {BpId} 转换为内部策略失败：{Err1}"
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "在将协议 {Arg_1} 用于服务 {Arg_2}/{Arg_3} 的情况下，节点接收到来自 agbot {Arg_4} 的建议消息。"
     },
     {
-      "id": "Validation failure for business policy {BpId}. {Err}",
-      "translation": "验证业务策略 {BpId} 失败。{Err}"
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "节点已拒绝针对服务 {Arg_1}/{Arg_2} 的建议。"
     },
     {
-      "id": "No services specified in the given business policy {BpId}.",
-      "translation": "未在给定的业务策略 {BpId} 中指定任何服务。"
-    },
-    {
-      "id": "No services specified in the business policy {Name}.",
-      "translation": "未在业务策略 {Name} 中指定任何服务。"
-    },
-    {
-      "id": "Neither business policy nor business policy id is specified.",
-      "translation": "既未指定业务策略也未指定业务策略标识。"
-    },
-    {
-      "id": "Business policy id is empty.",
-      "translation": "业务策略标识为空。"
-    },
-    {
-      "id": "Organization is not specified in the business policy id: {BpId}.",
-      "translation": "未在标识为 {BpId} 的业务策略中指定组织。"
-    },
-    {
-      "id": "Unable to get business policy for {BpId}, {Err}",
-      "translation": "无法获取 {BpId} 的业务策略：{Err}"
-    },
-    {
-      "id": "No business policy found for this id {BpId}.",
-      "translation": "找不到标识为 {BpId} 的业务策略。"
-    },
-    {
-      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "translation": "将业务策略 {BpId} 转换为内部策略格式失败：{Err}"
-    },
-    {
-      "id": "Service policy id is empty.",
-      "translation": "服务策略标识为空。"
-    },
-    {
-      "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "未在标识为 {SvcId} 的服务策略中指定组织。"
-    },
-    {
-      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
-      "translation": "尝试查询服务标识为 {SvcId} 的服务策略出错：{Err}"
-    },
-    {
-      "id": "Error validating the service policy {SvcId}. {Err}",
-      "translation": "验证服务策略 {SvcId} 出错。{Err}"
-    },
-    {
-      "id": "Service name is empty.",
-      "translation": "服务名称为空。"
-    },
-    {
-      "id": "Service organization is empty.",
-      "translation": "服务组织为空。"
-    },
-    {
-      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "尝试查询 {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} 的服务策略出错。{Err}"
-    },
-    {
-      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "验证 {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} 的服务策略失败。{Err}"
-    },
-    {
-      "id": "The given business policy should not be null.",
-      "translation": "给定的业务策略不得为 Null。"
-    },
-    {
-      "id": "Error merging business policy with service policy. {Err}",
-      "translation": "将业务策略与服务策略合并出错。{Err}"
-    },
-    {
-      "id": "The business policy should not be null.",
-      "translation": "业务策略不得为 Null。"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 输入不得为 Null"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "既未指定节点用户输入也未指定节点标识。"
-    },
-    {
-      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "translation": "未在业务策略或模式中指定包含体系结构 {NodeArch} 的服务版本。"
-    },
-    {
-      "id": "No service versions specified in the business policy or pattern.",
-      "translation": "未在业务策略或模式中指定任何服务版本。"
-    },
-    {
-      "id": "User Input Incompatible",
-      "translation": "用户输入不兼容"
-    },
-    {
-      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
-      "translation": "获取 {ServiceOrg}/{ServiceURL} V{Version} 的所有体系结构的服务出错。{Err}"
-    },
-    {
-      "id": "Service definition not found in the input.",
-      "translation": "在输入中找不到服务定义。"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "在业务策略或模式中找不到“arch”为 {NodeArch} 的服务。"
-    },
-    {
-      "id": "No services found in the business policy or pattern.",
-      "translation": "在业务策略或模式中找不到任何服务。"
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "输入服务规范对象不得为 Null。"
-    },
-    {
-      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "translation": "从 Exchange 检索 {SvcSpec} 的服务出错。{Err}"
-    },
-    {
-      "id": "Error verifing user input for service {SId}. {Err}",
-      "translation": "验证服务 {SId} 的用户输入出错。{Err}"
-    },
-    {
-      "id": "Failed to verify user input for service {SId}. {Reason}",
-      "translation": "验证服务 {SId} 的用户输入失败。{Reason}"
-    },
-    {
-      "id": "Error verifing user input for dependent service {Id}. {Err}",
-      "translation": "验证相依服务 {Id} 的用户输入出错。{Err}"
-    },
-    {
-      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
-      "translation": "验证相依服务 {Id} 的用户输入失败。{Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "输入服务定义对象不得为 Null。"
-    },
-    {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "无法从 {Version} 创建版本表达式。{Err}"
-    },
-    {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "从 Exchange 检索 {SDep} 的相依服务出错。{Err}"
-    },
-    {
-      "id": "Failed to get the service from the exchange. {Err}",
-      "translation": "从 Exchange 获取服务失败。{Err}"
-    },
-    {
-      "id": "Servcie does not exist on the exchange.",
-      "translation": "服务在 Exchange 上不存在。"
-    },
-    {
-      "id": "No user input found for service.",
-      "translation": "找不到服务的用户输入。"
-    },
-    {
-      "id": "Failed to validate the user input type for variable {Name}. {Err}",
-      "translation": "验证变量 {Name} 的用户输入类型失败。{Err}"
-    },
-    {
-      "id": "A required user input value is missing for variable {Name}.",
-      "translation": "变量 {Name} 缺少必需的用户输入值。"
-    },
-    {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "translation": "服务 URL {URL} 与业务策略中指定的服务 URL {Name} 不匹配。"
-    },
-    {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "服务组织 {Org} 与业务策略中指定的服务组织 {Org_1} 不匹配。"
-    },
-    {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "translation": "服务体系结构 {Arch} 与业务策略中指定的服务体系结构 {Arch_1} 不匹配。"
-    },
-    {
-      "id": "Service version {Version} does not match any service versions specified in the business policy.",
-      "translation": "服务版本 {Version} 与业务策略中指定的任何服务版本都不匹配。"
-    },
-    {
-      "id": "The service does not match any services in the pattern.",
-      "translation": "服务不匹配模式中的任何服务。"
-    },
-    {
-      "id": "Pattern {PatId} cannot be found on the exchange.",
-      "translation": "无法在 Exchange 上找到模式 {PatId}。"
-    },
-    {
-      "id": "Neither pattern nor pattern id is specified.",
-      "translation": "既未指定模式也未指定模式标识。"
-    },
-    {
-      "id": "Pattern id is empty.",
-      "translation": "模式标识为空。"
-    },
-    {
-      "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "未在标识为 {PatId} 的模式中指定组织。"
-    },
-    {
-      "id": "Error getting pattern {PatId} from the exchange, {Err}",
-      "translation": "从 Exchange 获取模式 {PatId} 出错：{Err}"
-    },
-    {
-      "id": "No pattern found for this id {PatId}.",
-      "translation": "未针对此标识 {PatId} 找到任何模式。"
-    },
-    {
-      "id": "URL must be specified in the service definition.",
-      "translation": "在服务定义中必须指定 URL。"
-    },
-    {
-      "id": "Version must be specified in the service definition for service {URL}.",
-      "translation": "必须在服务 {URL} 的服务定义中指定版本。"
-    },
-    {
-      "id": "Invalide version format {Version} for service {URL}.",
-      "translation": "服务 {URL} 的版本格式 {Version} 无效。"
-    },
-    {
-      "id": "Arch must be specified in the service definition for service {URL}.",
-      "translation": "必须在服务 {URL} 的服务定义中指定体系结构。"
-    },
-    {
-      "id": "Org must be specified in the service definition for service {URL}.",
-      "translation": "必须在服务 {URL} 的服务定义中指定组织。"
-    },
-    {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "验证输入服务 {SId} 失败。{Err}"
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "处理针对服务 {Arg_1}/{Arg_2} 的建议时出错。错误：{Arg_3}"
     },
     {
       "id": "unable to make directory for self signed MMS API certificate, error {Err}",
@@ -1483,84 +1551,52 @@
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
     },
     {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "协议 {Arg_1} 已存在，正在忽略建议：{Arg_2}"
+      "id": "No input found.",
+      "translation": "找不到输入。"
     },
     {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "针对协议 {Arg_1}，将 TsAndCs 取消编组时接收到错误：{Arg_2}"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "未获授权。未提供 Exchange 用户标识。"
     },
     {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "在将协议 {Arg_1} 用于服务 {Arg_2}/{Arg_3} 的情况下，节点接收到来自 agbot {Arg_4} 的建议消息。"
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "向 Exchange 认证用户失败。{Err}"
     },
     {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "节点已拒绝针对服务 {Arg_1}/{Arg_2} 的建议。"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "输入主体未能反序列化为 JSON 对象。{Err}"
     },
     {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "处理针对服务 {Arg_1}/{Arg_2} 的建议时出错。错误：{Arg_3}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 PolicyCheck 对象。{Err}"
     },
     {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "properties 包含无效的属性：{Err}"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 UserInputCheck 对象。{Err}"
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "属性必须包括名称和值：{Property}"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 CompCheck 对象。{Err}"
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "属性 {Name} 的属性类型 {DeclaredType} 无效。允许的属性类型包括：版本、字符串、整型、布尔型、浮点型和字符串列表。"
+      "id": "No exchange user id is supplied.",
+      "translation": "未提供 Exchange 用户标识。"
     },
     {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "属性值的类型为 {ActualType}，但期望的类型为 {DeclaredType}"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "未提供 Exchange 用户组织标识。"
     },
     {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "属性 {Name} 的值 {Value} 不是整数类型"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "未提供 Exchange 用户密码或 API 密钥。"
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "属性 {Name} 的值 {Value} 不是有效的字符串。请定义类型，或将值更改为字符串。"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "组织标识、用户标识或密码错误。"
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "值为 {Value} 的属性 {Name} 不是有效的版本字符串"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "属性 {Name} 的值类型 {ActualType} 无效"
-    },
-    {
-      "id": "no service name",
-      "translation": "没有服务名称"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "没有用于服务 {ServiceName} 的 Docker 映像"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "对 {D} 的主体进行编组失败：{Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "对部署字段 {StringjsonBytes} 的 JSON 进行取消编组失败：{Err}"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "用户输入 {Name} 没有缺省值，未进行设置"
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "名称或组织是空字符串。"
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 数组为空。"
+      "id": "Internal server error",
+      "translation": "内部服务器错误"
     }
   ]
 }
