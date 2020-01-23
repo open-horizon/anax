@@ -3,120 +3,108 @@
   "language": "ja",
   "messages": [
     {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "自己署名 MMS API 証明書用のディレクトリーを作成できません。エラー {Err}"
+      "id": "unable to set env var 'HORIZON_URL', error {Err}",
+      "translation": "環境変数「HORIZON_URL」を設定できません、エラー {Err}"
     },
     {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "MMS API 証明書シリアル番号用に乱数を生成できません、エラー {Err}"
+      "id": "horizon api agreement output did not include 'agreements' key",
+      "translation": "Horizon API のご使用条件の出力には「agreements」キーが含まれていませんでした。"
     },
     {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "MMS API 証明書用の秘密鍵を生成できません、エラー {Err}"
+      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
+      "translation": "Horizon API のご使用条件の出力には「{WhichAgreements}」キーが含まれていませんでした。"
     },
     {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "MMS API 証明書を作成できません。エラー {Err}"
+      "id": "failed to marshal 'agreement list' output: {Err}",
+      "translation": "「agreement list」の出力のマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 証明書をファイル {ServerCertificate} に書き込むことができません、エラー {Err}"
+      "id": "No active agreements to cancel.",
+      "translation": "解除するアクティブな契約はありません。"
     },
     {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 証明書をファイル {ServerCertificate} にエンコードすることができません、エラー {Err}"
+      "id": "either an agreement ID or -a must be specified.",
+      "translation": "契約 ID または -a のいずれかを指定する必要があります。"
     },
     {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 証明書ファイル {ServerCertificate} を閉じることができません、エラー {Err}"
+      "id": "Canceling agreement {Id} ...",
+      "translation": "契約 {Id} をキャンセル中..."
     },
     {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} に書き込むことができません、エラー {Err}"
+      "id": "failed to marshal 'hzn node list' output: {Err}",
+      "translation": "「hzn node list」の出力のマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} にエンコードすることができません、エラー {Err}"
+      "id": "failed to marshal 'policy list' output: {Err}",
+      "translation": "「policy list」の出力のマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
+      "id": "Error: The organization '{Org}' does not exist.",
+      "translation": "エラー: 組織 「{Org}」は存在しません。"
     },
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
+      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
+      "translation": "エラー: 組織「{Org}」が存在しないか、またはポリシー「{Name}」はこの agbot でホストされていません。"
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "制約式に対応しない括弧が含まれています。"
+      "id": "this command can not be run before running 'hzn register'",
+      "translation": "このコマンドは「hzn register」を実行する前に実行することはできません"
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
+      "id": "horizon api attributes output did not include 'attributes' key",
+      "translation": "Horizon API 属性の出力には「attributes」キーが含まれていませんでした"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
+      "id": "failed to marshal 'hzn attribute list' output: {Err}",
+      "translation": "「hzn attribute list」の出力のマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
+      "id": "No input found.",
+      "translation": "入力が見つかりません。"
     },
     {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
     },
     {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
     },
     {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "Unable to marshal userinput object: {Err}",
-      "translation": "ユーザー入力オブジェクトをマーシャルできません: {Err}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "A list of objects, each one containing the user inputs required for a specified service.",
-      "translation": "オブジェクトのリスト。個々のオブジェクトは、指定されたサービスに必要なユーザー入力を含みます。"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "The horizon org of the specified service.",
-      "translation": "指定されたサービスの Horizon 組織。"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "The unique string used to identify the specified service.",
-      "translation": "指定されたサービスを識別するために使用する固有のストリング。"
+      "id": "No exchange user id is supplied.",
+      "translation": "Exchange ユーザー ID が提供されていません。"
     },
     {
-      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
-      "translation": "これらの入力を適用するサービス・アーキテクチャー。 すべてのアーキテクチャーを指定するには省略するか、空のままにします。"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "Exchange ユーザー組織 ID が提供されていません。"
     },
     {
-      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
-      "translation": "これらの入力を適用するサービス・バージョン。 すべてのバージョンを指定するには省略するか、\"[0.0.0,INFINITY)\" を指定します。"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
     },
     {
-      "id": "A list of objects with the names and values for the user inputs used by this service.",
-      "translation": "このサービスで使用するユーザー入力の名前および値を示すオブジェクトのリスト。"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
     },
     {
-      "id": "Error unmarshaling userInput json file: {Err}",
-      "translation": "ユーザー入力 JSON ファイルのアンマーシャル中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Horizon node user inputs updated.",
-      "translation": "Horizon ノードのユーザー入力が更新されました。"
-    },
-    {
-      "id": "Are you sure you want to remove the node user inputs?",
-      "translation": "ノードのユーザー入力を削除しますか?"
-    },
-    {
-      "id": "Horizon user inputs removed.",
-      "translation": "Horizon ノードのユーザー入力が削除されました。"
+      "id": "Internal server error",
+      "translation": "内部サーバー・エラー"
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -209,6 +197,610 @@
     {
       "id": "Error pruning docker networks. {Err}",
       "translation": "Docker ネットワークの削除中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "no service name",
+      "translation": "サービス名がありません"
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "translation": "サービス {ServiceName} の Docker イメージがありません"
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
+    },
+    {
+      "id": "New dependency created: {Target} .",
+      "translation": "次の新規依存関係が作成されました: {Target}。"
+    },
+    {
+      "id": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' unable to create json object from dependencies, {Err}",
+      "translation": "「{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}」は依存関係から JSON オブジェクトを作成できません、{Err}"
+    },
+    {
+      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
+      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」を設定できません、エラー {Err}"
+    },
+    {
+      "id": "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
+      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」を復元できません、エラー {Err}"
+    },
+    {
+      "id": "unable to get list of dependency files in {DepPath}, error: {Err}",
+      "translation": "{DepPath} の依存ファイル・リストを取得できません、エラー: {Err}"
+    },
+    {
+      "id": "could not create dependency directory {NewDir}, error: {Err}",
+      "translation": "依存ディレクトリー {NewDir} を作成できませんでした、エラー: {Err}"
+    },
+    {
+      "id": "dependency validation failed, unable to read {Name}, error: {Err}",
+      "translation": "依存関係確認に失敗しました、{Name} を読み取ることができません、エラー: {Err}"
+    },
+    {
+      "id": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
+      "translation": "依存関係確認に失敗しました、依存関係 {Name} のバージョン {Version} は無効です、エラー: {Err}"
+    },
+    {
+      "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
+      "translation": "依存関係確認に失敗しました、バージョン範囲 {Version} が必要な範囲内 {Expression} であることを確認できませんでした、エラー: {Err}"
+    },
+    {
+      "id": "dependency {URL} at version {VersionRange} does not exist in {Joindirectory_DEFAULTDEPENDENCYDIR}.",
+      "translation": "バージョン {VersionRange} の依存関係 {URL} は {Joindirectory_DEFAULTDEPENDENCYDIR} に存在しません。"
+    },
+    {
+      "id": "dependency {Name} did not validate, error: {Err}",
+      "translation": "依存関係 {Name} を確認できませんでした、エラー: {Err}"
+    },
+    {
+      "id": "variable {Name} has no default and must be specified in {UserInputsFilePath}",
+      "translation": "変数 {Name} にはデフォルトが無く、{UserInputsFilePath} に指定する必要があります"
+    },
+    {
+      "id": "--specRef is mutually exclusive with --url.",
+      "translation": "--specRef は --url と同時に指定することはできません。"
+    },
+    {
+      "id": "--project is mutually exclusive with --specRef, --org and --url.",
+      "translation": "--project は、--specRef、--org、および --url と同時に指定することはできません。"
+    },
+    {
+      "id": "one of --project, or --specRef and --org, or --url and --org must be specified.",
+      "translation": "--project、または --specRef と --org、または --url と --org のいずれか 1 つを指定する必要があります。"
+    },
+    {
+      "id": "either --specRef and --org, or --url and --org must be specified.",
+      "translation": "--specRef と --org、または --url と --org のいずれかを指定する必要があります。"
+    },
+    {
+      "id": "use --url with service projects.",
+      "translation": "サービス・プロジェクトには、--url を使用してください。"
+    },
+    {
+      "id": "--project {Project} does not contain Horizon service metadata.",
+      "translation": "--project {Project} には、Horizon サービス・メタデータが含まれていません。"
+    },
+    {
+      "id": "Reading Horizon metadata from {Dir}",
+      "translation": "{Dir} から Horizon メタデータを読み取り中"
+    },
+    {
+      "id": "--specRef or --url is required for remove.",
+      "translation": "削除には、--specRef または --url が必要です。"
+    },
+    {
+      "id": "--specRef and --url are mutually exclusive.",
+      "translation": "--specRef と --url は、同時に指定することはできません。"
+    },
+    {
+      "id": "Service project {Dir} verified.",
+      "translation": "サービス・プロジェクト {Dir} が確認されました。"
+    },
+    {
+      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error {Err}",
+      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」をゼロに設定できません、エラー {Err}"
+    },
+    {
+      "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
+      "translation": "{Project} ディレクトリーの hzn.json 構成ファイルの取得に失敗しました。 エラー: {Err}"
+    },
+    {
+      "id": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
+      "translation": "構成ファイル {Projconfigfile} による環境変数の設定に失敗しました。 エラー: {Err}"
+    },
+    {
+      "id": "Reading Horizon metadata from dependency: {AbsProject}",
+      "translation": "次の依存関係から Horizon メタデータを読み取り中: {AbsProject}"
+    },
+    {
+      "id": "Found dependency {URL}, Org: {Org}",
+      "translation": "依存関係 {URL}、Org: {Org} が見つかりました"
+    },
+    {
+      "id": "Failed to restore the environment variables. {Err}",
+      "translation": "環境変数の復元に失敗しました。 {Err}"
+    },
+    {
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable and global attribute configuration.",
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を依存関係の変数およびグローバル属性構成で更新しました。"
+    },
+    {
+      "id": "To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.",
+      "translation": "依存関係が適切に動作するようにするには、このサービスが必要とする変数値を userinput.json ファイルに追加してください。"
+    },
+    {
+      "id": "The current project already has userinputs defined for this dependency.",
+      "translation": "現行プロジェクトには、この依存関係用に定義されたユーザー入力が既にあります。"
+    },
+    {
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable configuration.",
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を依存関係の変数構成で更新しました。"
+    },
+    {
+      "id": "no service definition config file found in project",
+      "translation": "プロジェクト内でサービス定義構成ファイルは検出されませんでした"
+    },
+    {
+      "id": "no dependency directory found in project",
+      "translation": "プロジェクト内で依存関係ディレクトリーは検出されませんでした"
+    },
+    {
+      "id": "Created {FilePath}/{FileName} as a new dependency.",
+      "translation": "{FilePath}/{FileName} を新規依存関係として作成しました。"
+    },
+    {
+      "id": "unable to find highest version of {Surl} {Org} in the exchange: {Services}",
+      "translation": "Exchange 内で {Surl} {Org} の最高バージョンは見つかりませんでした: {Services}"
+    },
+    {
+      "id": "no services found in the exchange.",
+      "translation": "Exchange 内でサービスは見つかりませんでした。"
+    },
+    {
+      "id": "Creating dependency on: {ServiceDef}, Org: {Org}",
+      "translation": "次に対して依存関係を作成します: {ServiceDef}、Org: {Org}"
+    },
+    {
+      "id": "failed to unmarshal deployment {Deployment}: {Err}",
+      "translation": "デプロイメント {Deployment} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "The image docker auths for the service {Org}/{Surl} are: {Imgauths}",
+      "translation": "サービス {Org}/{Surl} 用のイメージ Docker 認証は次のとおりです: {Imgauths}"
+    },
+    {
+      "id": "failed to get images for {Org}/{Surl}: {Err}",
+      "translation": "{Org}/{Surl} 用のイメージの取得に失敗しました: {Err}"
+    },
+    {
+      "id": "Unable to get dependency info for {Sp} , error {Err}",
+      "translation": "{Sp} 用の依存関係情報を取得できません、エラー {Err}"
+    },
+    {
+      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' failed to get a list of dependecies. Error {Err}",
+      "translation": "「dependency {DEPENDENCYREMOVECOMMAND}」は、依存関係リストの取得に失敗しました。 エラー {Err}"
+    },
+    {
+      "id": "All dependencies are: {Deps}",
+      "translation": "すべての依存関係: {Deps}"
+    },
+    {
+      "id": "Found dependency: {Name}",
+      "translation": "見つかった依存関係: {Name}"
+    },
+    {
+      "id": "Will not remove dependency {Name} because it is referenced by other services.",
+      "translation": "依存関係 {Name} は他のサービスによって参照されているため、削除されません。"
+    },
+    {
+      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
+      "translation": "「dependency {DEPENDENCYREMOVECOMMAND}」 依存関係は見つかりませんでした。"
+    },
+    {
+      "id": "Could not read the dependency file {Name}. Error: {Err}",
+      "translation": "依存ファイル {Name} を読み取ることができませんでした。 エラー: {Err}"
+    },
+    {
+      "id": "Error updating project definition: {Err}",
+      "translation": "プロジェクト定義の更新中にエラーが発生しました: {Err}"
+    },
+    {
+      "id": "Dependency {Name} could not be removed. Error: {Err}",
+      "translation": "依存関係 {Name} を削除できませんでした。 エラー: {Err}"
+    },
+    {
+      "id": "Error updating userinputs: {Err}",
+      "translation": "ユーザー入力の更新中にエラーが発生しました: {Err}"
+    },
+    {
+      "id": "Removed dependency {Arch}.",
+      "translation": "依存関係 {Arch} を削除しました。"
+    },
+    {
+      "id": "Removed dependency's dependency {Arch}.",
+      "translation": "この依存関係の依存先 {Arch} を削除しました。"
+    },
+    {
+      "id": "error creating {DOCKERFILE} for service image. {Err}",
+      "translation": "サービス・イメージ用の {DOCKERFILE} の作成中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Edge $SERVICE_NAME Service Pattern for $ARCH",
+      "translation": "$ARCH 用のエッジ $SERVICE_NAME サービス・パターン"
+    },
+    {
+      "id": "Pattern for $SERVICE_NAME for $ARCH",
+      "translation": "$ARCH 用の $SERVICE_NAME のパターン"
+    },
+    {
+      "id": "Edge $SERVICE_NAME Service Pattern for all architectures",
+      "translation": "すべてのアーキテクチャー用のエッジ $SERVICE_NAME サービス・パターン"
+    },
+    {
+      "id": "Pattern for $SERVICE_NAME",
+      "translation": "$SERVICE_NAME のパターン"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
+      "translation": "「{SERVICECOMMAND} {SERVICECREATIONCOMMAND}」イメージ名からサービス名の取得に失敗しました。 {Err}"
+    },
+    {
+      "id": "Creating config file for environmental variables: {Dir}/{HZNENVFILE}",
+      "translation": "環境変数用の構成ファイルを作成中: {Dir}/{HZNENVFILE}"
+    },
+    {
+      "id": "Creating user input file: {Dir}/{USERINPUTFILE}",
+      "translation": "ユーザー入力ファイルを作成中: {Dir}/{USERINPUTFILE}"
+    },
+    {
+      "id": "Creating service definition file: {Dir}/{SERVICEDEFINITIONFILE}",
+      "translation": "サービス定義ファイルを作成中: {Dir}/{SERVICEDEFINITIONFILE}"
+    },
+    {
+      "id": "Creating pattern definition file: {Dir}/{PATTERNDEFINITIONFILE}",
+      "translation": "パターン定義ファイルを作成中: {Dir}/{PATTERNDEFINITIONFILE}"
+    },
+    {
+      "id": "Creating service policy file: {Dir}/{SERVICEPOLICYFILE}",
+      "translation": "サービス・ポリシー・ファイルを作成中: {Dir}/{SERVICEPOLICYFILE}"
+    },
+    {
+      "id": "Creating .gitignore files for source code management.",
+      "translation": "ソース・コードの管理のために .gitignore ファイルを作成中。"
+    },
+    {
+      "id": "Creating image generation files under {Currentdir} directory.",
+      "translation": "{Currentdir} ディレクトリーの下にイメージ生成ファイルを作成中。"
+    },
+    {
+      "id": "Created image generation files in {Currentdir} and horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
+      "translation": "{Currentdir} 内にイメージ生成ファイル、{Dir} 内に Horizon メタデータ・ファイルを作成しました。 これらのファイルを編集して、新規 {SERVICECOMMAND} を定義および構成してください。"
+    },
+    {
+      "id": "Created horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
+      "translation": "{Dir} 内に Horizon メタデータ・ファイルを作成しました。 これらのファイルを編集して、新規 {SERVICECOMMAND} を定義および構成してください。"
+    },
+    {
+      "id": "must specify either --org or set the {DEVTOOLHZNORG} environment variable.",
+      "translation": "--org を指定するか、{DEVTOOLHZNORG} 環境変数を設定する必要があります。"
+    },
+    {
+      "id": "invalid version string: {Version}",
+      "translation": "無効な version ストリング: {Version}"
+    },
+    {
+      "id": "only support one image for a service unless --noImageGen flag is specified.",
+      "translation": "--noImageGen フラグが指定されていない限り、1 つのサービスに対して 1 つのイメージのみがサポートされます。"
+    },
+    {
+      "id": "image {Image} has invalid format.",
+      "translation": "イメージ {Image} のフォーマットが無効です。"
+    },
+    {
+      "id": "please specify the image name with -i flag.",
+      "translation": "-i フラグを使用してイメージ名を指定してください。"
+    },
+    {
+      "id": "unsupported deployment config type: {Dconfig}",
+      "translation": "サポートされないデプロイメント構成タイプ: {Dconfig}"
+    },
+    {
+      "id": "$SERVICE_NAME for $ARCH",
+      "translation": "$ARCH 用の $SERVICE_NAME"
+    },
+    {
+      "id": "Who to say hello to",
+      "translation": "挨拶する相手"
+    },
+    {
+      "id": "unknown deployment type: {DeploymentType}",
+      "translation": "不明なデプロイメント・タイプ: {DeploymentType}"
+    },
+    {
+      "id": "{FilePath}: URL must be set.",
+      "translation": "{FilePath}: URL を設定する必要があります。"
+    },
+    {
+      "id": "{FilePath}: version must be set to a specific version, e.g. 1.0.0.",
+      "translation": "{FilePath}: バージョンは、例えば 1.0.0 などの特定のバージョンに設定する必要があります。"
+    },
+    {
+      "id": "{FilePath}: org must be set.",
+      "translation": "{FilePath}: org を設定する必要があります。"
+    },
+    {
+      "id": "{FilePath}: deployment configuration, {Err}",
+      "translation": "{FilePath}: デプロイメント構成、{Err}"
+    },
+    {
+      "id": "{FilePath}: userInput array index {Ix} does not have name and type specified.",
+      "translation": "{FilePath}: ユーザー入力配列添字 {Ix} には名前とタイプが指定されていません。"
+    },
+    {
+      "id": "Updated {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
+      "translation": "{HomeDirectory}/{SERVICEDEFINITIONFILE} の依存関係を更新しました。"
+    },
+    {
+      "id": "No need to update {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
+      "translation": "{HomeDirectory}/{SERVICEDEFINITIONFILE} の依存関係を更新する必要はありません。"
+    },
+    {
+      "id": "error creating {HORIZONGITIGNOREFILE} for source code management. {Err}",
+      "translation": "ソース・コード管理のための {HORIZONGITIGNOREFILE} を作成中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
+      "translation": "{UserInputFilePath} ファイルをデマーシャルできませんでした、エラー: {Err}"
+    },
+    {
+      "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
+      "translation": "ユーザー入力属性: {GlobalSet} を API 属性: {Attr} に変換しました"
+    },
+    {
+      "id": "{GlobalSet} encountered error: {Error}",
+      "translation": "{GlobalSet} でエラーが発生しました: {Error}"
+    },
+    {
+      "id": "Converted API Attributes: {Global} to persistent attributes: {Attributes}",
+      "translation": "API 属性: {Global} を永続属性: {Attributes} に変換しました"
+    },
+    {
+      "id": "{OriginalUserInputFilePath}: global array element ({GlobalSet}) has an empty type, must be one of the supported attribute types. See the Horizon agent /attribute API.",
+      "translation": "{OriginalUserInputFilePath}: グローバル配列エレメント ({GlobalSet}) のタイプが空です。いずれかのサポート対象属性タイプである必要があります。 Horizon エージェント / 属性 API を参照してください。"
+    },
+    {
+      "id": "{USERINPUTFILE} has error: {Err}",
+      "translation": "{USERINPUTFILE} に誤りがあります: {Err}"
+    },
+    {
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
+      "translation": "{OriginalUserInputFilePath}: 添字 {Ix} のサービス配列エレメントは {MicroWork} です。{Err}"
+    },
+    {
+      "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
+      "translation": "{OriginalUserInputFilePath}: サービス配列には {URL} のエレメントが含まれていません。 エラー: {Err}"
+    },
+    {
+      "id": "please provice a user input file for service {URL}. Error: {Err}",
+      "translation": "サービス {URL} 用のユーザー入力ファイルを指定してください。 エラー: {Err}"
+    },
+    {
+      "id": "has empty org, must be set to the name of the organization that owns the service.",
+      "translation": "org が空です。サービスを所有する組織の名前に設定する必要があります。"
+    },
+    {
+      "id": "has empty url. Must be set to this service's url or a dependency's url.",
+      "translation": "url が空です。 このサービスの URL または依存関係の URL に設定する必要があります。"
+    },
+    {
+      "id": "sets variable {VarName} using a value of {Err}.",
+      "translation": "変数 {VarName} に値 {Err} を設定します。"
+    },
+    {
+      "id": "sets variable {VarName} of type {VarValue} that is not defined.",
+      "translation": "定義されていない型 {VarValue} の変数 {VarName} を設定します。"
+    },
+    {
+      "id": "Updated {HomeDirectory}/{USERINPUTFILE}.",
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を更新しました。"
+    },
+    {
+      "id": "No need to update {HomeDirectory}/{USERINPUTFILE}.",
+      "translation": "{HomeDirectory}/{USERINPUTFILE} を更新する必要はありません。"
+    },
+    {
+      "id": "could not create directory {NewDepDir}, error: {Err}",
+      "translation": "ディレクトリー {NewDepDir} を作成できませんでした、エラー: {Err}"
+    },
+    {
+      "id": "could not get status of directory {NewDepDir}, error: {Err}",
+      "translation": "ディレクトリー {NewDepDir} の状況を取得できませんでした、エラー: {Err}"
+    },
+    {
+      "id": "Using working directory: {Dir}",
+      "translation": "次の作業ディレクトリーを使用します: {Dir}"
+    },
+    {
+      "id": "horizon project in {Dir} already contains {FileName}.",
+      "translation": "{Dir} の Horizon プロジェクトには、{FileName} が既に含まれています。"
+    },
+    {
+      "id": "error checking for {FileName}: {Err}",
+      "translation": "{FileName} の確認中にエラーが発生しました: {Err}"
+    },
+    {
+      "id": "failed to unmarshal {FilePath}, error: {Err}",
+      "translation": "{FilePath} のアンマーシャルに失敗しました、エラー: {Err}"
+    },
+    {
+      "id": "failed to create json object for {FileName}, error: {Err}",
+      "translation": "{FileName} 用の JSON オブジェクトの作成に失敗しました、エラー: {Err}"
+    },
+    {
+      "id": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
+      "translation": "{FileName} 用の JSON オブジェクトを、ファイル {FilePath} に書き込むことができません、エラー: {Err}"
+    },
+    {
+      "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
+      "translation": "環境変数 {DEVTOOLHZNORG} を設定するか、--user-pw フラグでユーザーを「org/user」として指定する必要があります。"
+    },
+    {
+      "id": "Must set environment variable {DEVTOOLHZNUSER} or specify user exchange credentials with --user-pw",
+      "translation": "環境変数 {DEVTOOLHZNUSER} を設定するか、--user-pw を使用してユーザーの Exchange 用資格情報を指定する必要があります。"
+    },
+    {
+      "id": "Unable to set env var {DEVTOOLHZNEXCHANGEURL} to {ExchangeUrl}, error {Err}",
+      "translation": "環境変数 {DEVTOOLHZNEXCHANGEURL} を {ExchangeUrl} に設定することができません、エラー {Err}"
+    },
+    {
+      "id": "Environment variable {DEVTOOLHZNEXCHANGEURL} must be set.",
+      "translation": "環境変数 {DEVTOOLHZNEXCHANGEURL} を設定する必要があります。"
+    },
+    {
+      "id": "project has no horizon metadata directory. Use hzn dev to create a new project. Error: {Err}",
+      "translation": "プロジェクトには Horizon メタデータ・ディレクトリーがありません。 hzn dev を使用して新規プロジェクトを作成してください。 エラー: {Err}"
+    },
+    {
+      "id": "'{ProjectType} {Cmd}' project does not validate. {Derr}",
+      "translation": "「{ProjectType} {Cmd}」プロジェクトを検証できません。 {Derr}"
+    },
+    {
+      "id": "'{ProjectType} {Cmd}' project does not validate. {Verr}",
+      "translation": "「{ProjectType} {Cmd}」プロジェクトを検証できません。 {Verr}"
+    },
+    {
+      "id": "'{ProjectType} {Cmd}' Must specify configuration file type (-t) when a configuration file is specified (-m).",
+      "translation": "「{ProjectType} {Cmd}」構成ファイル (-m) が指定されている場合、構成ファイル・タイプ (-t) を指定する必要があります。"
+    },
+    {
+      "id": "'{ProjectType} {Cmd}' configuration file {FileRef} error {Err}",
+      "translation": "「{ProjectType} {Cmd}」構成ファイル {FileRef} エラー {Err}"
+    },
+    {
+      "id": "project does not validate. {Verr}",
+      "translation": "プロジェクトを検証できません。 {Verr}"
+    },
+    {
+      "id": "project in {Dir} is not a horizon project.",
+      "translation": "{Dir} 内のプロジェクトは Horizon プロジェクトではありません。"
+    },
+    {
+      "id": "Final Attributes: {Attrs}",
+      "translation": "最終属性: {Attrs}"
+    },
+    {
+      "id": "global attribute conversion error: {Cerr}",
+      "translation": "グローバル属性変換エラー: {Cerr}"
+    },
+    {
+      "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
+      "translation": "「{ProjectType} {Cmd}」コンテナー・ワーカーを作成できません、{Cerr}"
+    },
+    {
+      "id": "unable to list existing containers: {Err}",
+      "translation": "既存のコンテナーをリストできません: {Err}"
+    },
+    {
+      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
+      "translation": "サービス {Nwname}、{ContainerNetwork} のメイン・ネットワークが見つかりました。"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」依存関係 {URL} の {StartErr}"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "依存関係メタデータを取得できません: {Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "依存関係を開始できません: {Err}"
+    },
+    {
+      "id": "Skipping service because it has no deployment configuration: {DepConfig}",
+      "translation": "デプロイメント構成が無いため、サービスをスキップします: {DepConfig}"
+    },
+    {
+      "id": "unable to generate instance ID: {Err}",
+      "translation": "インスタンス ID を生成できません: {Err}"
+    },
+    {
+      "id": "unable to create environment variables",
+      "translation": "環境変数を作成できません"
+    },
+    {
+      "id": "Passing environment variables: {EnvironmentAdditions}",
+      "translation": "次の環境変数を引き渡します: {EnvironmentAdditions}"
+    },
+    {
+      "id": "Start {LogName}: {CLIString} with instance id prefix {Id}",
+      "translation": "インスタンス ID プレフィックス {Id} の {LogName}: {CLIString} を開始します"
+    },
+    {
+      "id": "unable to start container using {CLIString}, error: {StartErr}",
+      "translation": "{CLIString} を使用してコンテナーを開始できません、エラー: {StartErr}"
+    },
+    {
+      "id": "Running {LogName}.",
+      "translation": "{LogName} を実行中です。"
+    },
+    {
+      "id": "Stopping dependencies.",
+      "translation": "依存関係を停止中。"
+    },
+    {
+      "id": "unable to stop dependencies: {Err}",
+      "translation": "依存関係を停止できませんでした: {Err}"
+    },
+    {
+      "id": "Found containers {Containers}",
+      "translation": "コンテナー {Containers} が見つかりました"
+    },
+    {
+      "id": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
+      "translation": "インスタンス ID プレフィックス {MsId} の {LogName}: {CLIString} を停止します。"
+    },
+    {
+      "id": "failed to create docker client, error: {Derr}",
+      "translation": "Docker クライアントの作成に失敗しました、エラー: {Derr}"
+    },
+    {
+      "id": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
+      "translation": "{USERINPUTFILE} 内のグローバル属性の変換に失敗しました、エラー: {Err}"
+    },
+    {
+      "id": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
+      "translation": "{USERINPUTFILE} から認証属性を抽出できませんでした、エラー: {Err}"
+    },
+    {
+      "id": "getting container images into docker.",
+      "translation": "Docker にコンテナー・イメージを取り込みます。"
+    },
+    {
+      "id": "failed to get container images, error: {Err}",
+      "translation": "コンテナー・イメージの取得に失敗しました、エラー: {Err}"
+    },
+    {
+      "id": "invalid image format: {Image}",
+      "translation": "無効なイメージ・フォーマット: {Image}"
+    },
+    {
+      "id": "file {FilePath} exists already",
+      "translation": "ファイル {FilePath} は既に存在します"
+    },
+    {
+      "id": "unable to write content to file {FilePath}, error: {Err}",
+      "translation": "ファイル {FilePath} にコンテンツを書き込むことができません、エラー: {Err}"
     },
     {
       "id": "[verbose] {M}",
@@ -459,6 +1051,22 @@
       "translation": "Exchange 認証は次のいずれかで指定する必要があります: -u フラグ、-n フラグ、HZN_EXCHANGE_USER_AUTH、または HZN_EXCHANGE_NODE_AUTH"
     },
     {
+      "id": "Verifying public key file ...",
+      "translation": "公開鍵ファイルを検証中 ..."
+    },
+    {
+      "id": "provided public key is not valid; error: {Err}",
+      "translation": "指定された公開鍵は無効です、エラー: {Err}"
+    },
+    {
+      "id": "Checking private key file format ...",
+      "translation": "秘密鍵ファイル・フォーマットを確認中..."
+    },
+    {
+      "id": "provided private key is not valid; error: {Err}",
+      "translation": "指定された秘密鍵は無効です、エラー: {Err}"
+    },
+    {
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
       "translation": "ファイル {KeyFile} の絶対パスの取得に失敗しました。 {Err}"
     },
@@ -520,95 +1128,47 @@
     },
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
-      "translation": "環境変数 HZN_HTTP_RETRIES {MaxRetriess} を整数に変換中にエラーが発生しました。{Err1}"
+      "translation": "環境変数 HZN_HTTP_RETRIES {MaxRetriess} を整数に変換中にエラーが発生しました。 {Err1}"
     },
     {
       "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
-      "translation": "環境変数 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} を整数に変換中にエラーが発生しました。{Err1}"
+      "translation": "環境変数 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} を整数に変換中にエラーが発生しました。 {Err1}"
     },
     {
-      "id": "The selection string {V} is not valid.",
-      "translation": "選択ストリング {V} は無効です。"
+      "id": "cleaned {String} resulted in an empty string.",
+      "translation": "{String} のクリーンアップの結果、空ストリングになりました。"
     },
     {
-      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
-      "translation": "「hzn eventlog list」の出力のマーシャルに失敗しました: {Err}"
+      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
+      "translation": "プラグイン・コンテキストには、サービス定義ファイルの現行ディレクトリーとして「currentDir」を含める必要があります。"
     },
     {
-      "id": "Error: event record could not be found",
-      "translation": "エラー: イベント・レコードが見つかりませんでした"
+      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
+      "translation": "チャート・アーカイブ {Depchartarchive} を読み取ることができません、エラー {Err}"
     },
     {
-      "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
-      "translation": "「hzn eventlog surface」の出力のマーシャルに失敗しました: {Err}"
+      "id": "failed to marshal deployment string {Dep}, error {Err}",
+      "translation": "deployment ストリング {Dep} のマーシャルに失敗しました、エラー{Err}"
     },
     {
-      "id": "Reading configuration file: {ConfigFile}",
-      "translation": "構成ファイル {ConfigFile} を読み取り中"
+      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
+      "translation": "deployment ストリングを {KeyFilePath} で署名する際に問題が発生しました: {Err}"
     },
     {
-      "id": "Unable to read config file: {ConfigFile}. {Err}",
-      "translation": "構成ファイル {ConfigFile} を読み取ることができません。 {Err}"
+      "id": "chart_archive must have a string type value, has {C}",
+      "translation": "chart_archive の値はストリング型である必要がありますが、{C} です"
     },
     {
-      "id": "Unable to decode content of config file {ConfigFile}. {Err}",
-      "translation": "構成ファイル {ConfigFile} のコンテンツをデコードできません。 {Err}"
+      "id": "release_name must have a string type value, has {R}",
+      "translation": "release_name の値はストリング型である必要がありますが、{R} です"
     },
     {
-      "id": "Config file does not exist: {ConfigFile}.",
-      "translation": "構成ファイル {ConfigFile} は存在しません。"
+      "id": "chart_archive and release_name must be non-empty strings",
+      "translation": "chart_archive および release_name must は非空ストリングである必要があります"
     },
     {
-      "id": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
-      "translation": "ファイル {ConfigFile} の MetadataVars 属性に定義されている環境変数の設定に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
-      "translation": "ファイル {ConfigFile} の最上位の環境変数の設定に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
-      "translation": "ファイル {ConfigFile} に定義されている環境変数の設定に失敗しました。 {Err}"
-    },
-    {
-      "id": "Local configuration {LocalConfigFile} has been setup at the beginning of this command. Will not setup twice.",
-      "translation": "ローカル構成 {LocalConfigFile} はこのコマンドの開始時にセットアップ済みです。 セットアップは 2 回行いません。"
-    },
-    {
-      "id": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
-      "translation": "ファイル {FilePath} 用のローカル構成ファイル {LocalConfigFile} による環境変数の設定に失敗しました。 エラー: {Err}"
-    },
-    {
-      "id": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
-      "translation": "ローカル構成ファイル {UseLocalConfig} の使用後、環境変数の復元に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
-      "translation": "ファイル {ConfigFilepkg} の絶対パスの取得に失敗しました。 {Err}"
-    },
-    {
-      "id": "Error reading environment variables from file {ConfigFilepkg}. {Err}",
-      "translation": "ファイル {ConfigFilepkg} から環境変数を読み取り中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Error reading environment variables from file /etc/default/horizon. {Err}",
-      "translation": "ファイル /etc/default/horizon から環境変数を読み取り中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
-      "translation": "ファイル ~/.hzn/hzn.json の絶対パスの取得に失敗しました。 {Err}"
-    },
-    {
-      "id": "Error getting project level configuration file name. {Err}",
-      "translation": "プロジェクト・レベル構成ファイルの名前を取得中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "No project level configuration file found.",
-      "translation": "プロジェクト・レベル構成ファイルが見つかりませんでした。"
-    },
-    {
-      "id": "this command can not be run before running 'hzn register'",
-      "translation": "このコマンドは「hzn register」を実行する前に実行することはできません"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」は Helm デプロイメントではサポートされていません"
     },
     {
       "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
@@ -707,6 +1267,474 @@
       "translation": "サービスの再開要求が正常に送信されました。「hzn agreement」および「docker ps」を使用して、関連する契約およびサービス・コンテナーが開始されたことを確認してください。 これには数分かかる場合があります。"
     },
     {
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
+    },
+    {
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
+    },
+    {
+      "id": "must specify exchange credentials to access the model management service.",
+      "translation": "モデル管理サービスにアクセスするには Exchange の資格情報を指定する必要があります。"
+    },
+    {
+      "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
+      "translation": "無効な --policy/-p 値: {DestPolicy}。--policy/-p は、true または false でなければなりません"
+    },
+    {
+      "id": "Invalid --data value: {WithData}, --data should be true or false",
+      "translation": "無効な --data 値: {WithData}。--data は、true または false でなければなりません"
+    },
+    {
+      "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
+      "translation": "--policy は省略するか、--service、--property、または --updateTime でフィルタリングするときは true に設定してください"
+    },
+    {
+      "id": "service should be in format service-org/service-name",
+      "translation": "サービスは service-org/service-name の形式にする必要があります"
+    },
+    {
+      "id": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd",
+      "translation": "updateTime は RC3339 フォーマット: yyyy-MM-ddTHH:mm:ssZ にするか、yyyy-MM-dd にしてください"
+    },
+    {
+      "id": "must specify objectType if set objectId",
+      "translation": "objectId を設定する場合、objectType を指定する必要があります"
+    },
+    {
+      "id": "must specify destinationType if set destinationId",
+      "translation": "destinationId を設定する場合、destinationType を指定する必要があります"
+    },
+    {
+      "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
+      "translation": "expirationTimeBefore には「now」を指定するか、RC3339 フォーマット: yyyy-MM-ddTHH:mm:ssZ のタイム・スタンプを指定してください"
+    },
+    {
+      "id": "no objects found in org {Org}",
+      "translation": "組織「{Org}」 内でオブジェクトは検出されませんでした"
+    },
+    {
+      "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
+      "translation": "タイプ「{ObjectType}」のオブジェクト「{ObjectID}」の宛先詳細は、組織「{Org}」 内で検出されませんでした"
+    },
+    {
+      "id": "Listing objects in org {Org}:",
+      "translation": "組織「{Org}」 内のオブジェクトのリスト:"
+    },
+    {
+      "id": "Required: A unique identifier of the object.",
+      "translation": "必須: オブジェクトの固有 ID。"
+    },
+    {
+      "id": "Required: The type of the object.",
+      "translation": "必須: オブジェクトのタイプ。"
+    },
+    {
+      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
+      "translation": "必須: オブジェクトの組織 ID (オブジェクトは必ず 1 つの組織に所属します)。"
+    },
+    {
+      "id": "The node id (without org prefix) where the object should be placed.",
+      "translation": "オブジェクトを配置すべき (組織プレフィックスなしの) ノード ID。"
+    },
+    {
+      "id": "If omitted the object is sent to all nodes with the same destinationType.",
+      "translation": "省略すると、オブジェクトは同じ destinationType のすべてのノードに送信されます。"
+    },
+    {
+      "id": "Delete this field when you are using destinationPolicy.",
+      "translation": "destinationPolicy を使用する場合はこのフィールドを削除します。"
+    },
+    {
+      "id": "The pattern in use by nodes that should receive this object.",
+      "translation": "このオブジェクトを受信すべきノードによって使用されているパターン。"
+    },
+    {
+      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
+      "translation": "省略されている場合 (かつ destinationsList も省略されている場合)、オブジェクトはすべての既知ノードにブロードキャストされます。"
+    },
+    {
+      "id": "Delete this field when you are using policy.",
+      "translation": "ポリシーを使用する場合はこのフィールドを削除します。"
+    },
+    {
+      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
+      "translation": "pattern:nodeId ペアの配列として表記した、このオブジェクトを受信すべき宛先のリスト。"
+    },
+    {
+      "id": "If provided, destinationType and destinationID must be omitted.",
+      "translation": "指定された場合、destinationType と destinationID は省略する必要があります。"
+    },
+    {
+      "id": "The policy specification that should be used to distribute this object.",
+      "translation": "このオブジェクトを配布するために使用すべきポリシー仕様。"
+    },
+    {
+      "id": "Delete these fields if the target node is using a pattern.",
+      "translation": "ターゲット・ノードがパターンを使用している場合はこれらのフィールドを削除します。"
+    },
+    {
+      "id": "A list of policy properties that describe the object.",
+      "translation": "オブジェクトを示すポリシー・プロパティーのリスト。"
+    },
+    {
+      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
+      "translation": "有効な型は、string、bool、int、float、list of string (コンマ区切り)、version です。"
+    },
+    {
+      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
+      "translation": "値から型が識別できる場合は型を省略できます。例えば、引用符なしの TRUE はブールです。"
+    },
+    {
+      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
+      "translation": "<property name> <operator> <property value>　という形式の制約式を、ブール演算子 AND (&&) または OR (||)で区切ったリスト。"
+    },
+    {
+      "id": "The service(s) that will use this object.",
+      "translation": "このオブジェクトを使用するサービス。"
+    },
+    {
+      "id": "The org of the service.",
+      "translation": "サービスの組織。"
+    },
+    {
+      "id": "The name of the service.",
+      "translation": "サービスの名前。"
+    },
+    {
+      "id": "Set to '*' to indcate services of any hardware architecture.",
+      "translation": "あらゆるハードウェア・アーキテクチャーのサービスを示すには、「*」に設定します。"
+    },
+    {
+      "id": "A version range.",
+      "translation": "バージョン範囲。"
+    },
+    {
+      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
+      "translation": "オブジェクトの有効期限を示すタイム・スタンプ/日付 (オブジェクトは自動的に削除されます)。 タイム・スタンプは RFC3339 フォーマットで指定する必要があります。"
+    },
+    {
+      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
+      "translation": "任意のストリング値。 値のセマンティックは解釈されません。 モデル管理システムは、オブジェクトの複数バージョンを保持しません。"
+    },
+    {
+      "id": "An arbitrary description.",
+      "translation": "任意の説明。"
+    },
+    {
+      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
+      "translation": "このオブジェクトを自動的にアクティブにする時点のタイム・スタンプ/日付。 タイム・スタンプは RFC3339 フォーマットで指定する必要があります。"
+    },
+    {
+      "id": "must specify exchange credentials to access the model management service",
+      "translation": "モデル管理サービスにアクセスするには Exchange の資格情報を指定する必要があります"
+    },
+    {
+      "id": "must specify --type with --id",
+      "translation": "--type を --id と同時に指定する必要があります"
+    },
+    {
+      "id": "must specify --id with --type",
+      "translation": "--id を --type と同時に指定する必要があります"
+    },
+    {
+      "id": "cannot specify --id and --type with --def",
+      "translation": "--id と --type を --def と同時に指定することはできません"
+    },
+    {
+      "id": "must specify either --type and --id or --def",
+      "translation": "--type と --id、または --def のいずれかを指定する必要があります"
+    },
+    {
+      "id": "cannot specify --pattern with --def",
+      "translation": "--pattern を --def と同時に指定することはできません"
+    },
+    {
+      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
+      "translation": "定義ファイル {ObjMetadataFile} を読み取ることができません: {Err}"
+    },
+    {
+      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
+      "translation": "定義ファイル {ObjMetadataFile} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
+      "translation": "オブジェクト {ObjFile} はモデル管理サービス内の組織「{Org}」 にアップロードされました"
+    },
+    {
+      "id": "Object status: {Stringresp}",
+      "translation": "オブジェクトの状況: {Stringresp}"
+    },
+    {
+      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
+      "translation": "オブジェクト {ObjectID} は、モデル管理サービス内の組織「{Org}」 に追加されました"
+    },
+    {
+      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
+      "translation": "タイプ「{ObjType}」のオブジェクト「{ObjId}」は組織「{Org}」 内で検出されませんでした"
+    },
+    {
+      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
+      "translation": "オブジェクト {ObjId} は、モデル管理サービス内の組織「{Org}」 から削除されました"
+    },
+    {
+      "id": "health status API returned HTTP code {HttpCode}",
+      "translation": "ヘルス・ステータス API は、HTTP コード {HttpCode} を返しました"
+    },
+    {
+      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
+      "translation": "ファイル同期サービス用のネットワーク {NETWORKNAME} を作成できません、エラー {Err}"
+    },
+    {
+      "id": "unable to start CSS, error {Err}",
+      "translation": "CSS を開始できません、エラー {Err}"
+    },
+    {
+      "id": "unable to load file objects into CSS, error {Err}",
+      "translation": "ファイル・オブジェクトを CSS にロードできません、エラー {Err}"
+    },
+    {
+      "id": "unable to start ESS, error {Err}",
+      "translation": "ESS を開始できません、エラー {Err}"
+    },
+    {
+      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
+      "translation": "{MakeLabelNameESSNAME} を停止できません、エラー {Err}"
+    },
+    {
+      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
+      "translation": "ファイル同期サービス用のネットワーク {NETWORKNAME} を削除できません、エラー {Err}"
+    },
+    {
+      "id": "unable to list existing docker images, error {Err}",
+      "translation": "既存の Docker イメージをリストできません、エラー {Err}"
+    },
+    {
+      "id": "Found docker image {Name} locally.",
+      "translation": "ローカルで Docker イメージ {Name} が見つかりました。"
+    },
+    {
+      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
+      "translation": "イメージ {GetFSSFullImageName} を使用して CSS コンテナーをプルできません、エラー {Err}。 別のイメージ・タグを使用するように環境変数 {DEVTOOLHZNFSSIMAGETAG} を設定してください。"
+    },
+    {
+      "id": "Pulled docker image {Name}.",
+      "translation": "Docker イメージ {Name} をプルしました。"
+    },
+    {
+      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
+      "translation": "イメージ {GetFSSImageName} を使用して CSS コンテナーを作成できません、エラー {Err}。 別のイメージ・タグを使用するように環境変数 {DEVTOOLHZNFSSIMAGETAG} を設定してください。"
+    },
+    {
+      "id": "unable to start CSS container, error {Err}",
+      "translation": "CSS コンテナーを開始できません、エラー {Err}"
+    },
+    {
+      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
+      "translation": "{MakeLabelNameCSSNAME} コンテナーを作成しました。ホスト・ポート {GetCSSPort} を listen しています。"
+    },
+    {
+      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
+      "translation": "ファイル同期サービス・コンテナー {MakeLabelNameCSSNAME} は、ホスト・ポート {GetCSSPort} を listen しています"
+    },
+    {
+      "id": "unable to create SSL certificate for ESS, error {Err}",
+      "translation": "ESS の SSL 証明書を作成できません、エラー {Err}"
+    },
+    {
+      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+      "translation": "ESS の SSL 証明書ファイル {ESSSSLClientCertPath} を開くことができません、エラー {Err}"
+    },
+    {
+      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
+      "translation": "ESS の SSL 証明書ファイル {ESSSSLClientCertPath} を読み取ることができません、エラー {Err}"
+    },
+    {
+      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+      "translation": "ESS の SSL 証明書鍵ファイル {ESSSSLCertKeyPath} を開くことができません、エラー {Err}"
+    },
+    {
+      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
+      "translation": "ESS の SSL 証明書鍵ファイル {ESSSSLCertKeyPath} を読み取ることができません、エラー {Err}"
+    },
+    {
+      "id": "unable to create ESS container, error {Err}",
+      "translation": "ESS コンテナーを作成できません、エラー {Err}"
+    },
+    {
+      "id": "unable to start ESS container, error {Err}",
+      "translation": "ESS コンテナーを開始できません、エラー {Err}"
+    },
+    {
+      "id": "Created {MakeLabelNameESSNAME} container",
+      "translation": "{MakeLabelNameESSNAME} コンテナーを作成しました"
+    },
+    {
+      "id": "unable to list docker containers, error {Err}",
+      "translation": "Docker コンテナーをリストできません、エラー {Err}"
+    },
+    {
+      "id": "unable to stop docker container {Name}, error {Err}",
+      "translation": "Docker コンテナー {Name} を停止できません、エラー {Err}"
+    },
+    {
+      "id": "unable to remove docker container {Name}, error {Err}",
+      "translation": "Docker コンテナー {Name} を削除できません、エラー {Err}"
+    },
+    {
+      "id": "Stopped {Name} container",
+      "translation": "{Name} コンテナーを停止しました"
+    },
+    {
+      "id": "Loading {FileName} into CSS",
+      "translation": "{FileName} を CSS にロード中"
+    },
+    {
+      "id": "unable to open file object {FileName}, error {Err}",
+      "translation": "ファイル・オブジェクト {FileName} を開くことができません、エラー {Err}"
+    },
+    {
+      "id": "unable to read file object {FileName}, error {Err}",
+      "translation": "ファイル・オブジェクト {FileName} を読み取ることができません、エラー {Err}"
+    },
+    {
+      "id": "unable to add file {FileName} to the CSS, error {Err}",
+      "translation": "ファイル {FileName} を CSS に追加できません、エラー {Err}"
+    },
+    {
+      "id": "Configuration files {FileObjects} loaded into the File sync service.",
+      "translation": "構成ファイル {FileObjects} をファイル同期サービスにロードしました。"
+    },
+    {
+      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
+      "translation": "{Metadata} の CSS ファイル PUT をマーシャルできません、エラー {Err}"
+    },
+    {
+      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
+      "translation": "{Metadata} の CSS ファイル PUT 要求を作成できません、エラー {Err}"
+    },
+    {
+      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
+      "translation": "{Metadata} の CSS ファイル PUT 要求を CSS に送信できません、エラー {Err}"
+    },
+    {
+      "id": "Received HTTP code: {StatusCode}",
+      "translation": "受信 HTTP コード: {StatusCode}"
+    },
+    {
+      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
+      "translation": "ファイル {Metadata} を CSS に PUT できません、HTTP コード {StatusCode}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "ネットワーク {Name} を作成しました"
+    },
+    {
+      "id": "unable to list docker networks, error {Err}",
+      "translation": "Docker ネットワークをリストできません、エラー {Err}"
+    },
+    {
+      "id": "unable to remove docker network {Name}, error {Err}",
+      "translation": "Docker ネットワーク {Name} を削除できません、エラー {Err}"
+    },
+    {
+      "id": "The selection string {V} is not valid.",
+      "translation": "選択ストリング {V} は無効です。"
+    },
+    {
+      "id": "failed to marshal 'hzn eventlog list' output: {Err}",
+      "translation": "「hzn eventlog list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Error: event record could not be found",
+      "translation": "エラー: イベント・レコードが見つかりませんでした"
+    },
+    {
+      "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
+      "translation": "「hzn eventlog surface」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "自己署名 MMS API 証明書用のディレクトリーを作成できません。エラー {Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "MMS API 証明書シリアル番号用に乱数を生成できません、エラー {Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "MMS API 証明書用の秘密鍵を生成できません、エラー {Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "MMS API 証明書を作成できません。エラー {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "MMS API 証明書をファイル {ServerCertificate} に書き込むことができません、エラー {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "MMS API 証明書をファイル {ServerCertificate} にエンコードすることができません、エラー {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "MMS API 証明書ファイル {ServerCertificate} を閉じることができません、エラー {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} に書き込むことができません、エラー {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "MMS API 証明書の秘密鍵をファイル {ServerKey} にエンコードすることができません、エラー {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
+    },
+    {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "translation": "Horizon エージェントのコマンド・ライン・インターフェース。 ほとんどのサブコマンドは、デフォルトのロケーション http://localhost で Horizon エージェント API を使用します (これをオーバーライドするには、環境の環境変数セクションを参照してください)。\n\n環境変数:\n  HORIZON_URL:  hzn が Horizon エージェント API に接続する URL をオーバーライドします。\n      これによって、ssh トンネルを介したリモート Horizon エージェントの使用が容易になります。\n  HZN_EXCHANGE_URL: 「hzn exhchange」サブコマンドが Horizon Exchange と通信するために\n使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/api/v1。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n  HZN_ORG_ID:  「hzn exchange -o」フラグのデフォルト値。\n      組織 ID を指定するためのものです。\n  HZN_EXCHANGE_USER_AUTH:  「hzn exchange -u」または「hzn\n\t  register -u」フラグのデフォルト値。形式は、「[org/]user:pw」。 HZN_EXCHANGE_USER_AUTH を設定した時に\n\t org を省略した場合は、HZN_ORG_ID を設定できることに注意してください。\n  HZN_FSS_CSSURL: 「hzn mms」サブコマンドが Horizon モデル管理サービスと\n     通信するために使用する URL をオーバーライドします。例えば、\n      https://exchange.bluehorizon.network/css/。 (デフォルトで hzn は\n      Horizon エージェントに URL を要求します。)\n\n  これらすべての環境変数およびコマンド・ヘルプに記載されている変数は、\n  ユーザーの構成ファイル: ~/.hzn/hzn.json に JSON フォーマットで指定できます。\n  例えば、\n  {Com____}"
     },
@@ -717,6 +1745,10 @@
     {
       "id": "When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.",
       "translation": "Horizon または Exchange API をコールするときは GET を使用し、PUT、POST、または DELETE は使用しないでください。"
+    },
+    {
+      "id": "Show the Horizon Environment Variables.",
+      "translation": "Horizon 環境変数を表示します。"
     },
     {
       "id": "Show the Horizon version.",
@@ -1455,6 +2487,18 @@
       "translation": "このノードにデプロイすべきワークロードを示す Horizon Exchange パターン。 パターンがノードとは異なる組織のものである場合は、「other_org/pattern」の形式を使用します。 -o、-p、および --policy とは同時に指定することはできません。"
     },
     {
+      "id": "Wait for the named service to start executing on this node.",
+      "translation": "指定されたサービスの実行がこのノード上で開始されるまで待機します。"
+    },
+    {
+      "id": "The org of the service to wait for on this node. If omitted, the node's org is used.",
+      "translation": "このノードで待機するサービスの組織。省略した場合はノードの組織が使用されます。"
+    },
+    {
+      "id": "The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.",
+      "translation": "--service が開始するまでの秒数。登録が成功した時点からデフォルトで 60 秒です。--service が指定されていない場合は無視されます。"
+    },
+    {
       "id": "List and manage keys for signing and verifying services.",
       "translation": "サービスの署名および検査に使用する鍵をリストおよび管理します。"
     },
@@ -1600,7 +2644,7 @@
     },
     {
       "id": "The Horizon exchange business policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange のビジネス・ポリシー ID。 -B とは同時に指定することはできません。組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
+      "translation": "Horizon Exchange のビジネス・ポリシー ID。 -B とは同時に指定することはできません。 組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
     },
     {
       "id": "The JSON input file name containing the business policy. Mutually exclusive with -b.",
@@ -1628,7 +2672,7 @@
     },
     {
       "id": "The Horizon exchange business policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange のビジネス・ポリシー ID。 -B、-p、および -P とは同時に指定することはできません。組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
+      "translation": "Horizon Exchange のビジネス・ポリシー ID。 -B、-p、および -P とは同時に指定することはできません。 組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
     },
     {
       "id": "The JSON input file name containing the business policy. Mutually exclusive with -b, -p and -P.",
@@ -1636,15 +2680,15 @@
     },
     {
       "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.",
-      "translation": "(オプション) サービス定義を含んだ JSON 入力ファイルの名前。 省略された場合、ビジネス・ポリシーまたはパターン内に定義されているサービスが Exchange から取得されます。このフラグを繰り返し使用して、サービスのいろいろなバージョンを指定できます。"
+      "translation": "(オプション) サービス定義を含んだ JSON 入力ファイルの名前。 省略された場合、ビジネス・ポリシーまたはパターン内に定義されているサービスが Exchange から取得されます。 このフラグを繰り返し使用して、サービスのいろいろなバージョンを指定できます。"
     },
     {
       "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange のパターン ID。-P、-b、および -B とは同時に指定することはできません。組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
+      "translation": "Horizon Exchange のパターン ID。 -P、-b、および -B とは同時に指定することはできません。 組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
     },
     {
       "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.",
-      "translation": "パターンを含んだ JSON 入力ファイルの名前。-p、-b、および -B とは同時に指定することはできません。"
+      "translation": "パターンを含んだ JSON 入力ファイルの名前。 -p、-b、および -B とは同時に指定することはできません。"
     },
     {
       "id": "Check all compatibilities for a deployment.",
@@ -1660,15 +2704,15 @@
     },
     {
       "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.",
-      "translation": "(オプション) サービス・ポリシーを含んだ JSON 入力ファイルの名前。 -p および -P とは同時に指定することはできません。省略された場合、ビジネス・ポリシー内に定義されているサービスのサービス・ポリシーが、Exchange から取得されます。"
+      "translation": "(オプション) サービス・ポリシーを含んだ JSON 入力ファイルの名前。 -p および -P とは同時に指定することはできません。 省略された場合、ビジネス・ポリシー内に定義されているサービスのサービス・ポリシーが、Exchange から取得されます。"
     },
     {
       "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "Horizon Exchange のパターン ID。-P、-b、-B --node-pol および --service-pol とは同時に指定することはできません。組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
+      "translation": "Horizon Exchange のパターン ID。 -P、-b、-B --node-pol および --service-pol とは同時に指定することはできません。 組織 ID を前に付加していない場合、ノードの 組織 ID が自動的に前に付加されます。"
     },
     {
       "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
-      "translation": "パターンを含んだ JSON 入力ファイルの名前。-p、-b および -B、--node-pol および --service-pol とは同時に指定することはできません。"
+      "translation": "パターンを含んだ JSON 入力ファイルの名前。 -p、-b および -B、--node-pol および --service-pol とは同時に指定することはできません。"
     },
     {
       "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
@@ -2195,6 +3239,38 @@
       "translation": "Exchange のユーザー認証は -u フラグまたは HZN_EXCHANGE_USER_AUTH のいずれかで指定する必要があります。"
     },
     {
+      "id": "failed to marshal agreement with index {I}: {Err}",
+      "translation": "添字 {I} の契約のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "agreement id {AgreementId} not found",
+      "translation": "契約 ID {AgreementId} が見つかりません"
+    },
+    {
+      "id": "failed to marshal 'hzn agreement list' output: {Err}",
+      "translation": "「hzn agreement list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
+      "translation": "標準入力を {PrivKeyFilePath} で署名する際に問題が発生しました: {Err}"
+    },
+    {
+      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
+      "translation": "deployment ストリングを {PubKeyFilePath} で検査する際に問題が発生しました: {Err}"
+    },
+    {
+      "id": "This is not a valid signature for stdin.",
+      "translation": "これは標準入力の有効な署名ではありません。"
+    },
+    {
+      "id": "Signature is valid.",
+      "translation": "署名は有効です。"
+    },
+    {
+      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
+      "translation": "構成ファイル {CofigFile} から変数の取得に失敗しました。 エラー: {Err}"
+    },
+    {
       "id": "Error parsing the selections {Form}. {Err}",
       "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}"
     },
@@ -2415,14 +3491,6 @@
       "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
     },
     {
-      "id": "failed to marshal 'hzn status -l' output: {Err}",
-      "translation": "「hzn status -l」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn status' output: {Err}",
-      "translation": "「hzn status」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
       "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}"
     },
@@ -2431,8 +3499,16 @@
       "translation": "互換性エラー: ノードのプロパティー {Properties} が、制約条件 {Constraints} を満たしていません。 基礎のエラー: {Err}"
     },
     {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "互換性エラー: ノードのプロパティーが制約条件を満たしていません。 {Err}"
+    },
+    {
       "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
       "translation": "互換性エラー: プロパティー {Properties} が、ノード制約 {Constraints} を満たしていません。 基礎のエラー: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "互換性エラー: プロパティーがノード制約を満たしていません。 {Err}"
     },
     {
       "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
@@ -2441,6 +3517,506 @@
     {
       "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
       "translation": "互換性エラー: データ検査は対応している必要がありますが、プロデューサーは {DataVerify} で、コンシューマーは {DataVerify_1} です。"
+    },
+    {
+      "id": "Bussiness policy and pattern are mutually exclusive.",
+      "translation": "ビジネス・ポリシーとパターンは同時に指定することはできません。"
+    },
+    {
+      "id": "Neither bussiness policy nor pattern is specified.",
+      "translation": "ビジネス・ポリシーもパターンも指定されていません。"
+    },
+    {
+      "id": "Incompatible",
+      "translation": "非互換"
+    },
+    {
+      "id": "Compatible",
+      "translation": "互換"
+    },
+    {
+      "id": "Error marshaling object {In}. {Arg_2}",
+      "translation": "オブジェクト {In} のマーシャル中にエラーが発生しました。 {Arg_2}"
+    },
+    {
+      "id": "Failed to convert input to PolicyCheck object. {Err}",
+      "translation": "入力を PolicyCheck オブジェクトに変換できませんでした。 {Err}"
+    },
+    {
+      "id": "The given node id is empty.",
+      "translation": "指定されたノード ID が空です。"
+    },
+    {
+      "id": "Organization is not specified in the given node id: {NodeId}.",
+      "translation": "指定されたノード ID には組織が指定されていません: {NodeId}。"
+    },
+    {
+      "id": "Error getting node {NodeId} from the exchange. {Err}",
+      "translation": "Exchange からノード {NodeId} を取得しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "No node found for this node id {NodeId}.",
+      "translation": "このノード ID {NodeId} に該当するノードが見つかりませんでした。"
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the exchange.",
+      "translation": "{TopSvcId} の従属サービスの定義が見つかりませんでした。すべてのサービスが Exchange に含まれるまで {PROPNODEPRIVILEGED} の互換性を完全には評価できません。"
+    },
+    {
+      "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
+      "translation": "deployment ストリングを内部デプロイメント構造にアンマーシャル中にエラーが発生しました: {Err}"
+    },
+    {
+      "id": "The PolicyCheck input cannot be null",
+      "translation": "PolicyCheck 入力を NULL にすることはできません"
+    },
+    {
+      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
+      "translation": "入力ノード・アーキテクチャー {NodeArch} が、ノード {NodeId} の Exchange ノード・アーキテクチャー {Arch} と一致しません。"
+    },
+    {
+      "id": "Policy Incompatible",
+      "translation": "ポリシー非互換"
+    },
+    {
+      "id": "Architecture does not match.",
+      "translation": "アーキテクチャーが一致しません。"
+    },
+    {
+      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+      "translation": "{Org}/{WorkloadURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得することに失敗しました。 {Err}"
+    },
+    {
+      "id": "Failed to validate the service policy. {Err}",
+      "translation": "サービス・ポリシーの検証に失敗しました。 {Err}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
+      "translation": "ビジネス・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。"
+    },
+    {
+      "id": "No services found in the business policy.",
+      "translation": "ビジネス・ポリシー内でサービスは見つかりませんでした。"
+    },
+    {
+      "id": "Node policy cannot be null.",
+      "translation": "ノード・ポリシーを NULL にすることはできません。"
+    },
+    {
+      "id": "Business policy cannot be null.",
+      "translation": "ビジネス・ポリシーを NULL にすることはできません。"
+    },
+    {
+      "id": "Merged service policy cannot be null.",
+      "translation": "マージされるサービス・ポリシーを NULL にすることはできません。"
+    },
+    {
+      "id": "Error merging node policy with arch property. {Err}",
+      "translation": "arch プロパティーを使用してノード・ポリシーをマージしているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Failed to validate the node policy. {Err}",
+      "translation": "ノード・ポリシーの検証に失敗しました。 {Err}"
+    },
+    {
+      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+      "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシー・フォーマットに変換できませんでした: {Err}"
+    },
+    {
+      "id": "No node policy found for this node {NodeId}.",
+      "translation": "このノード {NodeId} のノード・ポリシーが見つかりませんでした。"
+    },
+    {
+      "id": "Neither node policy nor node id is specified.",
+      "translation": "ノード・ポリシーもノード ID も指定されていません。"
+    },
+    {
+      "id": "Node id is empty.",
+      "translation": "ノード ID が空です。"
+    },
+    {
+      "id": "Organization is not specified in the node id: {NodeId}.",
+      "translation": "このノード ID には組織が指定されていません: {NodeId}。"
+    },
+    {
+      "id": "Error trying to query node policy for {NodeId}: {Err}",
+      "translation": "{NodeId} のノード・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
+    },
+    {
+      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
+      "translation": "ノード {NodeId} のノード・ポリシーの検証に失敗しました。 {Err}"
+    },
+    {
+      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+      "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシーに変換できませんでした: {Err}"
+    },
+    {
+      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
+      "translation": "ビジネス・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}"
+    },
+    {
+      "id": "Validation failure for business policy {BpId}. {Err}",
+      "translation": "ビジネス・ポリシー {BpId} の検証失敗。 {Err}"
+    },
+    {
+      "id": "No services specified in the given business policy {BpId}.",
+      "translation": "指定されたビジネス・ポリシー {BpId} にはサービスが指定されていません。"
+    },
+    {
+      "id": "No services specified in the business policy {Name}.",
+      "translation": "ビジネス・ポリシー {Name} にはサービスが指定されていません。"
+    },
+    {
+      "id": "Neither business policy nor business policy id is specified.",
+      "translation": "ビジネス・ポリシーもビジネス・ポリシー ID も指定されていません。"
+    },
+    {
+      "id": "Business policy id is empty.",
+      "translation": "ビジネス・ポリシー ID が空です。"
+    },
+    {
+      "id": "Organization is not specified in the business policy id: {BpId}.",
+      "translation": "このビジネス・ポリシー ID には組織が指定されていません: {BpId}。"
+    },
+    {
+      "id": "Unable to get business policy for {BpId}, {Err}",
+      "translation": "{BpId} のビジネス・ポリシーを取得できません。{Err}"
+    },
+    {
+      "id": "No business policy found for this id {BpId}.",
+      "translation": "この ID {BpId} に該当するビジネス・ポリシーが見つかりません。"
+    },
+    {
+      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
+      "translation": "ビジネス・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}"
+    },
+    {
+      "id": "Service policy id is empty.",
+      "translation": "サービス・ポリシー ID が空です。"
+    },
+    {
+      "id": "Organization is not specified in the service policy id: {SvcId}.",
+      "translation": "このサービス・ポリシー ID には組織が指定されていません: {SvcId}。"
+    },
+    {
+      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
+      "translation": "サービス ID {SvcId} のサービス・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
+    },
+    {
+      "id": "Error validating the service policy {SvcId}. {Err}",
+      "translation": "サービス・ポリシー {SvcId} を検証しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Service name is empty.",
+      "translation": "サービス名が空です。"
+    },
+    {
+      "id": "Service organization is empty.",
+      "translation": "サービス組織が空です。"
+    },
+    {
+      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーを照会しようとしているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーの検証に失敗しました。 {Err}"
+    },
+    {
+      "id": "The given business policy should not be null.",
+      "translation": "指定されたビジネス・ポリシーは、NULL であってはなりません。"
+    },
+    {
+      "id": "Error merging business policy with service policy. {Err}",
+      "translation": "ビジネス・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "The business policy should not be null.",
+      "translation": "ビジネス・ポリシーは NULL にできません。"
+    },
+    {
+      "id": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
+      "translation": "サービス {Org}/{WorkloadURL} のポリシーには {Arg_3} が設定されていますが、これらのサービスでは特権コンテナーで {Arg_4} を実行する必要があることをサービス・イントロスペクションが示しています。"
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "UserInputCheck 入力を NULL にすることはできません"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "ノード・ユーザー入力もノード ID も指定されていません。"
+    },
+    {
+      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
+      "translation": "ビジネス・ポリシーまたはパターンにアーキテクチャー {NodeArch} を持つサービス・バージョンが指定されていません。"
+    },
+    {
+      "id": "No service versions specified in the business policy or pattern.",
+      "translation": "ビジネス・ポリシーまたはパターンにサービス・バージョンが指定されていません。"
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "互換性のないユーザー入力"
+    },
+    {
+      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+      "translation": "{ServiceOrg}/{ServiceURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Service definition not found in the input.",
+      "translation": "入力内でサービス定義が見つかりません。"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
+      "translation": "'arch' {NodeArch} を持つサービスがビジネス・ポリシーにもパターンにも見つかりません。"
+    },
+    {
+      "id": "No services found in the business policy or pattern.",
+      "translation": "ビジネス・ポリシーにもパターンにもサービスが見つかりませんでした。"
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。"
+    },
+    {
+      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
+      "translation": "Exchange から {SvcSpec} のサービスを取得しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Error verifing user input for service {SId}. {Err}",
+      "translation": "サービス {SId} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Failed to verify user input for service {SId}. {Reason}",
+      "translation": "サービス {SId} のユーザー入力の検証に失敗しました。 {Reason}"
+    },
+    {
+      "id": "Error verifing user input for dependent service {Id}. {Err}",
+      "translation": "従属サービス {Id} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+      "translation": "従属サービス {Id} のユーザー入力の検証に失敗しました。 {Reason}"
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "入力サービス定義オブジェクトを NULL にすることはできません。"
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "translation": "{Version} からバージョン式を作成できません。 {Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Failed to get the service from the exchange. {Err}",
+      "translation": "Exchange からサービスの取得に失敗しました。 {Err}"
+    },
+    {
+      "id": "Servcie does not exist on the exchange.",
+      "translation": "サービスは Exchange 上に存在しません。"
+    },
+    {
+      "id": "No user input found for service.",
+      "translation": "サービスのユーザー入力が見つかりません。"
+    },
+    {
+      "id": "Failed to validate the user input type for variable {Name}. {Err}",
+      "translation": "変数 {Name} のユーザー入力タイプの検証に失敗しました。 {Err}"
+    },
+    {
+      "id": "A required user input value is missing for variable {Name}.",
+      "translation": "変数 {Name} には、必要なユーザー入力値がありません。"
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
+      "translation": "サービス URL {URL} が、ビジネス・ポリシー内に指定されているサービス URL {Name} と一致しません。"
+    },
+    {
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
+      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
+    },
+    {
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
+      "translation": "サービス・アーキテクチャー {Arch} が、ビジネス・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。"
+    },
+    {
+      "id": "Service version {Version} does not match any service versions specified in the business policy.",
+      "translation": "サービス・バージョン {Version} が、ビジネス・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。"
+    },
+    {
+      "id": "The service does not match any services in the pattern.",
+      "translation": "サービスがパターン内のどのサービスにも一致しません。"
+    },
+    {
+      "id": "Pattern {PatId} cannot be found on the exchange.",
+      "translation": "パターン {PatId} が Exchange で見つかりません。"
+    },
+    {
+      "id": "Neither pattern nor pattern id is specified.",
+      "translation": "パターンもパターン ID も指定されていません。"
+    },
+    {
+      "id": "Pattern id is empty.",
+      "translation": "パターン ID が空です。"
+    },
+    {
+      "id": "Organization is not specified in the pattern id: {PatId}.",
+      "translation": "パターン ID {PatId} に組織が指定されていません。"
+    },
+    {
+      "id": "Error getting pattern {PatId} from the exchange, {Err}",
+      "translation": "Exchange からパターン {PatId} を取得中にエラーが発生しました。{Err}"
+    },
+    {
+      "id": "No pattern found for this id {PatId}.",
+      "translation": "この ID {PatId} のパターンが見つかりません。"
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "translation": "サービス定義に URL を指定する必要があります。"
+    },
+    {
+      "id": "Version must be specified in the service definition for service {URL}.",
+      "translation": "サービス {URL} のサービス定義でバージョンを指定する必要があります。"
+    },
+    {
+      "id": "Invalide version format {Version} for service {URL}.",
+      "translation": "サービス {URL} のバージョン・フォーマット {Version} が無効です。"
+    },
+    {
+      "id": "Arch must be specified in the service definition for service {URL}.",
+      "translation": "サービス {URL} のサービス定義でアーキテクチャーを指定する必要があります。"
+    },
+    {
+      "id": "Org must be specified in the service definition for service {URL}.",
+      "translation": "サービス {URL} のサービス定義で組織を指定する必要があります。"
+    },
+    {
+      "id": "Validation failure for input service {SId}. {Err}",
+      "translation": "入力サービス {SId} の検証失敗。 {Err}"
+    },
+    {
+      "id": "Failed to get proper response from Horizon agent",
+      "translation": "Horizon エージェントから適切な応答を取得できませんでした"
+    },
+    {
+      "id": "Horizon CLI version: {HORIZONVERSION}",
+      "translation": "Horizon CLI のバージョン: {HORIZONVERSION}"
+    },
+    {
+      "id": "Horizon Agent version: {HorizonVersion}",
+      "translation": "Horizon エージェントのバージョン: {HorizonVersion}"
+    },
+    {
+      "id": "Horizon Agent version: failed to get.",
+      "translation": "Horizon エージェントのバージョン: 取得に失敗しました。"
+    },
+    {
+      "id": "Horizon Agent HZN Environment Variables are:",
+      "translation": "Horizon エージェント HZN 環境変数は以下のとおりです。"
+    },
+    {
+      "id": "HZN_ORG_ID: {Org}",
+      "translation": "HZN_ORG_ID: {Org}"
+    },
+    {
+      "id": "HZN_EXCHANGE_USER_AUTH: {UserPw}",
+      "translation": "HZN_EXCHANGE_USER_AUTH: {UserPw}"
+    },
+    {
+      "id": "HZN_EXCHANGE_URL: {ExchUrl}",
+      "translation": "HZN_EXCHANGE_URL: {ExchUrl}"
+    },
+    {
+      "id": "HZN_FSS_CSSURL: {CssUrl}",
+      "translation": "HZN_FSS_CSSURL: {CssUrl}"
+    },
+    {
+      "id": "Unable to marshal userinput object: {Err}",
+      "translation": "ユーザー入力オブジェクトをマーシャルできません: {Err}"
+    },
+    {
+      "id": "A list of objects, each one containing the user inputs required for a specified service.",
+      "translation": "オブジェクトのリスト。個々のオブジェクトは、指定されたサービスに必要なユーザー入力を含みます。"
+    },
+    {
+      "id": "The horizon org of the specified service.",
+      "translation": "指定されたサービスの Horizon 組織。"
+    },
+    {
+      "id": "The unique string used to identify the specified service.",
+      "translation": "指定されたサービスを識別するために使用する固有のストリング。"
+    },
+    {
+      "id": "The service architecture that these inputs apply to. Omit or leave blank to mean all architectures.",
+      "translation": "これらの入力を適用するサービス・アーキテクチャー。 すべてのアーキテクチャーを指定するには省略するか、空のままにします。"
+    },
+    {
+      "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
+      "translation": "これらの入力を適用するサービス・バージョン。 すべてのバージョンを指定するには省略するか、\"[0.0.0,INFINITY)\" を指定します。"
+    },
+    {
+      "id": "A list of objects with the names and values for the user inputs used by this service.",
+      "translation": "このサービスで使用するユーザー入力の名前および値を示すオブジェクトのリスト。"
+    },
+    {
+      "id": "Error unmarshaling userInput json file: {Err}",
+      "translation": "ユーザー入力 JSON ファイルのアンマーシャル中にエラーが発生しました: {Err}"
+    },
+    {
+      "id": "Horizon node user inputs updated.",
+      "translation": "Horizon ノードのユーザー入力が更新されました。"
+    },
+    {
+      "id": "Are you sure you want to remove the node user inputs?",
+      "translation": "ノードのユーザー入力を削除しますか?"
+    },
+    {
+      "id": "Horizon user inputs removed.",
+      "translation": "Horizon ノードのユーザー入力が削除されました。"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "Name または Org は空ストリングです。"
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 配列は空です。"
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
+    },
+    {
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
+      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および list of string です。"
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
     },
     {
       "id": "failed to marshal 'exchange agbot list' output: {Err}",
@@ -2547,14 +4123,6 @@
       "translation": "ビジネス・ポリシーの説明。"
     },
     {
-      "id": "The name of the service.",
-      "translation": "サービスの名前。"
-    },
-    {
-      "id": "The org of the service.",
-      "translation": "サービスの組織。"
-    },
-    {
       "id": "Set to '*' to use services of any hardware architecture.",
       "translation": "あらゆるハードウェア・アーキテクチャーのサービスを使用するには、「*」に設定します。"
     },
@@ -2655,8 +4223,8 @@
       "translation": "ノード {NodeOrg}/{Node} は Horizon Exchange 内で検出されませんでした"
     },
     {
-      "id": "Cannot update attribute {K}. Supported attributes are: userInput, pattern.",
-      "translation": "属性 {K} を更新できません。 次の属性がサポートされます: userInput、pattern。"
+      "id": "Cannot update attribute {K}. Supported attributes are: userInput, pattern, heartbeatIntervals.",
+      "translation": "属性 {K} を更新できません。 次の属性がサポートされます: userInput、pattern、heartbeatIntervals。"
     },
     {
       "id": "failed to marshal attribute input {V}: {Err}",
@@ -2665,6 +4233,10 @@
     {
       "id": "Expecting 1 exchange node, but get {Lennodes} nodes",
       "translation": "1 つの Exchange ノードを予期していましたが、{Lennodes} 個のノードを受け取りました"
+    },
+    {
+      "id": "failed to unmarshal heartbeat input {V}: {Err}",
+      "translation": "ハートビート入力 {V} のアンマーシャルに失敗しました: {Err}"
     },
     {
       "id": "Updating {K} for node {NodeOrg}/{Node} in the Horizon Exchange.",
@@ -2771,10 +4343,6 @@
       "translation": "指定されたユーザー入力をノード・パターン {Pattern} を使用して検証中にエラーが発生しました。"
     },
     {
-      "id": "Compatible",
-      "translation": "互換"
-    },
-    {
       "id": "Unable to update the node because of the above error.",
       "translation": "上記のエラーのため、ノードを更新できません。"
     },
@@ -2793,10 +4361,6 @@
     {
       "id": "Pattern {Pattern}/{PatOrg} updated in the Horizon exchange.",
       "translation": "パターン {Pattern}/{PatOrg} は Horizon Exchange 内で更新されました。"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
     },
     {
       "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
@@ -2983,8 +4547,8 @@
       "translation": "サービス・ポリシーが削除されました。"
     },
     {
-      "id": "theUser '{TrimPrefixtheUser_}' not found in org {Org}",
-      "translation": "ユーザー「{TrimPrefixtheUser_}」は組織「{Org}」 内で検出されませんでした"
+      "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
+      "translation": "ユーザー「{TrimPrefixtheUser_}」は組織 {Org} 内で検出されませんでした。"
     },
     {
       "id": "failed to marshal 'exchange user list' output: {Err}",
@@ -2999,1308 +4563,32 @@
       "translation": "警告: このユーザーが所有するすべての Exchange リソース (ノード、サービス、パターン、その他) も削除されます。 Horizon Exchange からユーザー {Org}/{User} を削除しますか?"
     },
     {
-      "id": "user '{User}' not found in org {Org}",
-      "translation": "ユーザー「{User}」は組織「{Org}」 内で検出されませんでした"
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
     },
     {
-      "id": "New dependency created: {Target} .",
-      "translation": "次の新規依存関係が作成されました: {Target}。"
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
     },
     {
-      "id": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' unable to create json object from dependencies, {Err}",
-      "translation": "「{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}」は依存関係から JSON オブジェクトを作成できません、{Err}"
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
     },
     {
-      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
-      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」を設定できません、エラー {Err}"
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
     },
     {
-      "id": "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
-      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」を復元できません、エラー {Err}"
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
     },
     {
-      "id": "unable to get list of dependency files in {DepPath}, error: {Err}",
-      "translation": "{DepPath} の依存ファイル・リストを取得できません、エラー: {Err}"
-    },
-    {
-      "id": "could not create dependency directory {NewDir}, error: {Err}",
-      "translation": "依存ディレクトリー {NewDir} を作成できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "dependency validation failed, unable to read {Name}, error: {Err}",
-      "translation": "依存関係確認に失敗しました、{Name} を読み取ることができません、エラー: {Err}"
-    },
-    {
-      "id": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
-      "translation": "依存関係確認に失敗しました、依存関係 {Name} のバージョン {Version} は無効です、エラー: {Err}"
-    },
-    {
-      "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
-      "translation": "依存関係確認に失敗しました、バージョン範囲 {Version} が必要な範囲内 {Expression} であることを確認できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "dependency {URL} at version {VersionRange} does not exist in {Joindirectory_DEFAULTDEPENDENCYDIR}.",
-      "translation": "バージョン {VersionRange} の依存関係 {URL} は {Joindirectory_DEFAULTDEPENDENCYDIR} に存在しません。"
-    },
-    {
-      "id": "dependency {Name} did not validate, error: {Err}",
-      "translation": "依存関係 {Name} を確認できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "variable {Name} has no default and must be specified in {UserInputsFilePath}",
-      "translation": "変数 {Name} にはデフォルトが無く、{UserInputsFilePath} に指定する必要があります"
-    },
-    {
-      "id": "--specRef is mutually exclusive with --url.",
-      "translation": "--specRef は --url と同時に指定することはできません。"
-    },
-    {
-      "id": "--project is mutually exclusive with --specRef, --org and --url.",
-      "translation": "--project は、--specRef、--org、および --url と同時に指定することはできません。"
-    },
-    {
-      "id": "one of --project, or --specRef and --org, or --url and --org must be specified.",
-      "translation": "--project、または --specRef と --org、または --url と --org のいずれか 1 つを指定する必要があります。"
-    },
-    {
-      "id": "either --specRef and --org, or --url and --org must be specified.",
-      "translation": "--specRef と --org、または --url と --org のいずれかを指定する必要があります。"
-    },
-    {
-      "id": "use --url with service projects.",
-      "translation": "サービス・プロジェクトには、--url を使用してください。"
-    },
-    {
-      "id": "--project {Project} does not contain Horizon service metadata.",
-      "translation": "--project {Project} には、Horizon サービス・メタデータが含まれていません。"
-    },
-    {
-      "id": "Reading Horizon metadata from {Dir}",
-      "translation": "{Dir} から Horizon メタデータを読み取り中"
-    },
-    {
-      "id": "--specRef or --url is required for remove.",
-      "translation": "削除には、--specRef または --url が必要です。"
-    },
-    {
-      "id": "--specRef and --url are mutually exclusive.",
-      "translation": "--specRef と --url は、同時に指定することはできません。"
-    },
-    {
-      "id": "Service project {Dir} verified.",
-      "translation": "サービス・プロジェクト {Dir} が確認されました。"
-    },
-    {
-      "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error {Err}",
-      "translation": "環境変数「HZN_DONT_SUBST_ENV_VARS」をゼロに設定できません、エラー {Err}"
-    },
-    {
-      "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
-      "translation": "{Project} ディレクトリーの hzn.json 構成ファイルの取得に失敗しました。 エラー: {Err}"
-    },
-    {
-      "id": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
-      "translation": "構成ファイル {Projconfigfile} による環境変数の設定に失敗しました。 エラー: {Err}"
-    },
-    {
-      "id": "Reading Horizon metadata from dependency: {AbsProject}",
-      "translation": "次の依存関係から Horizon メタデータを読み取り中: {AbsProject}"
-    },
-    {
-      "id": "Found dependency {URL}, Org: {Org}",
-      "translation": "依存関係 {URL}、Org: {Org} が見つかりました"
-    },
-    {
-      "id": "Failed to restore the environment variables. {Err}",
-      "translation": "環境変数の復元に失敗しました。 {Err}"
-    },
-    {
-      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable and global attribute configuration.",
-      "translation": "{HomeDirectory}/{USERINPUTFILE} を依存関係の変数およびグローバル属性構成で更新しました。"
-    },
-    {
-      "id": "To ensure that the dependency operates correctly, please add variable values to the userinput.json file if this service needs any.",
-      "translation": "依存関係が適切に動作するようにするには、このサービスが必要とする変数値を userinput.json ファイルに追加してください。"
-    },
-    {
-      "id": "The current project already has userinputs defined for this dependency.",
-      "translation": "現行プロジェクトには、この依存関係用に定義されたユーザー入力が既にあります。"
-    },
-    {
-      "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable configuration.",
-      "translation": "{HomeDirectory}/{USERINPUTFILE} を依存関係の変数構成で更新しました。"
-    },
-    {
-      "id": "no service definition config file found in project",
-      "translation": "プロジェクト内でサービス定義構成ファイルは検出されませんでした"
-    },
-    {
-      "id": "no dependency directory found in project",
-      "translation": "プロジェクト内で依存関係ディレクトリーは検出されませんでした"
-    },
-    {
-      "id": "Created {FilePath}/{FileName} as a new dependency.",
-      "translation": "{FilePath}/{FileName} を新規依存関係として作成しました。"
-    },
-    {
-      "id": "unable to find highest version of {Surl} {Org} in the exchange: {Services}",
-      "translation": "Exchange 内で {Surl} {Org} の最高バージョンは見つかりませんでした: {Services}"
-    },
-    {
-      "id": "no services found in the exchange.",
-      "translation": "Exchange 内でサービスは見つかりませんでした。"
-    },
-    {
-      "id": "Creating dependency on: {ServiceDef}, Org: {Org}",
-      "translation": "次に対して依存関係を作成します: {ServiceDef}、Org: {Org}"
-    },
-    {
-      "id": "failed to unmarshal deployment {Deployment}: {Err}",
-      "translation": "デプロイメント {Deployment} のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "The image docker auths for the service {Org}/{Surl} are: {Imgauths}",
-      "translation": "サービス {Org}/{Surl} 用のイメージ Docker 認証は次のとおりです: {Imgauths}"
-    },
-    {
-      "id": "failed to get images for {Org}/{Surl}: {Err}",
-      "translation": "{Org}/{Surl} 用のイメージの取得に失敗しました: {Err}"
-    },
-    {
-      "id": "Unable to get dependency info for {Sp} , error {Err}",
-      "translation": "{Sp} 用の依存関係情報を取得できません、エラー {Err}"
-    },
-    {
-      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' failed to get a list of dependecies. Error {Err}",
-      "translation": "「dependency {DEPENDENCYREMOVECOMMAND}」は、依存関係リストの取得に失敗しました。 エラー {Err}"
-    },
-    {
-      "id": "All dependencies are: {Deps}",
-      "translation": "すべての依存関係: {Deps}"
-    },
-    {
-      "id": "Found dependency: {Name}",
-      "translation": "見つかった依存関係: {Name}"
-    },
-    {
-      "id": "Will not remove dependency {Name} because it is referenced by other services.",
-      "translation": "依存関係 {Name} は他のサービスによって参照されているため、削除されません。"
-    },
-    {
-      "id": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
-      "translation": "「dependency {DEPENDENCYREMOVECOMMAND}」 依存関係は見つかりませんでした。"
-    },
-    {
-      "id": "Could not read the dependency file {Name}. Error: {Err}",
-      "translation": "依存ファイル {Name} を読み取ることができませんでした。 エラー: {Err}"
-    },
-    {
-      "id": "Error updating project definition: {Err}",
-      "translation": "プロジェクト定義の更新中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Dependency {Name} could not be removed. Error: {Err}",
-      "translation": "依存関係 {Name} を削除できませんでした。 エラー: {Err}"
-    },
-    {
-      "id": "Error updating userinputs: {Err}",
-      "translation": "ユーザー入力の更新中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Removed dependency {Arch}.",
-      "translation": "依存関係 {Arch} を削除しました。"
-    },
-    {
-      "id": "Removed dependency's dependency {Arch}.",
-      "translation": "この依存関係の依存先 {Arch} を削除しました。"
-    },
-    {
-      "id": "error creating {DOCKERFILE} for service image. {Err}",
-      "translation": "サービス・イメージ用の {DOCKERFILE} の作成中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Edge $SERVICE_NAME Service Pattern for $ARCH",
-      "translation": "$ARCH 用のエッジ $SERVICE_NAME サービス・パターン"
-    },
-    {
-      "id": "Pattern for $SERVICE_NAME for $ARCH",
-      "translation": "$ARCH 用の $SERVICE_NAME のパターン"
-    },
-    {
-      "id": "Edge $SERVICE_NAME Service Pattern for all architectures",
-      "translation": "すべてのアーキテクチャー用のエッジ $SERVICE_NAME サービス・パターン"
-    },
-    {
-      "id": "Pattern for $SERVICE_NAME",
-      "translation": "$SERVICE_NAME のパターン"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
-      "translation": "「{SERVICECOMMAND} {SERVICECREATIONCOMMAND}」イメージ名からサービス名の取得に失敗しました。 {Err}"
-    },
-    {
-      "id": "Creating config file for environmental variables: {Dir}/{HZNENVFILE}",
-      "translation": "環境変数用の構成ファイルを作成中: {Dir}/{HZNENVFILE}"
-    },
-    {
-      "id": "Creating user input file: {Dir}/{USERINPUTFILE}",
-      "translation": "ユーザー入力ファイルを作成中: {Dir}/{USERINPUTFILE}"
-    },
-    {
-      "id": "Creating service definition file: {Dir}/{SERVICEDEFINITIONFILE}",
-      "translation": "サービス定義ファイルを作成中: {Dir}/{SERVICEDEFINITIONFILE}"
-    },
-    {
-      "id": "Creating pattern definition file: {Dir}/{PATTERNDEFINITIONFILE}",
-      "translation": "パターン定義ファイルを作成中: {Dir}/{PATTERNDEFINITIONFILE}"
-    },
-    {
-      "id": "Creating service policy file: {Dir}/{SERVICEPOLICYFILE}",
-      "translation": "サービス・ポリシー・ファイルを作成中: {Dir}/{SERVICEPOLICYFILE}"
-    },
-    {
-      "id": "Creating .gitignore files for source code management.",
-      "translation": "ソース・コードの管理のために .gitignore ファイルを作成中。"
-    },
-    {
-      "id": "Creating image generation files under {Currentdir} directory.",
-      "translation": "{Currentdir} ディレクトリーの下にイメージ生成ファイルを作成中。"
-    },
-    {
-      "id": "Created image generation files in {Currentdir} and horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
-      "translation": "{Currentdir} 内にイメージ生成ファイル、{Dir} 内に Horizon メタデータ・ファイルを作成しました。 これらのファイルを編集して、新規 {SERVICECOMMAND} を定義および構成してください。"
-    },
-    {
-      "id": "Created horizon metadata files in {Dir}. Edit these files to define and configure your new {SERVICECOMMAND}.",
-      "translation": "{Dir} 内に Horizon メタデータ・ファイルを作成しました。 これらのファイルを編集して、新規 {SERVICECOMMAND} を定義および構成してください。"
-    },
-    {
-      "id": "must specify either --org or set the {DEVTOOLHZNORG} environment variable.",
-      "translation": "--org を指定するか、{DEVTOOLHZNORG} 環境変数を設定する必要があります。"
-    },
-    {
-      "id": "invalid version string: {Version}",
-      "translation": "無効な version ストリング: {Version}"
-    },
-    {
-      "id": "only support one image for a service unless --noImageGen flag is specified.",
-      "translation": "--noImageGen フラグが指定されていない限り、1 つのサービスに対して 1 つのイメージのみがサポートされます。"
-    },
-    {
-      "id": "image {Image} has invalid format.",
-      "translation": "イメージ {Image} のフォーマットが無効です。"
-    },
-    {
-      "id": "please specify the image name with -i flag.",
-      "translation": "-i フラグを使用してイメージ名を指定してください。"
-    },
-    {
-      "id": "unsupported deployment config type: {Dconfig}",
-      "translation": "サポートされないデプロイメント構成タイプ: {Dconfig}"
-    },
-    {
-      "id": "$SERVICE_NAME for $ARCH",
-      "translation": "$ARCH 用の $SERVICE_NAME"
-    },
-    {
-      "id": "Who to say hello to",
-      "translation": "挨拶する相手"
-    },
-    {
-      "id": "unknown deployment type: {DeploymentType}",
-      "translation": "不明なデプロイメント・タイプ: {DeploymentType}"
-    },
-    {
-      "id": "{FilePath}: URL must be set.",
-      "translation": "{FilePath}: URL を設定する必要があります。"
-    },
-    {
-      "id": "{FilePath}: version must be set to a specific version, e.g. 1.0.0.",
-      "translation": "{FilePath}: バージョンは、例えば 1.0.0 などの特定のバージョンに設定する必要があります。"
-    },
-    {
-      "id": "{FilePath}: org must be set.",
-      "translation": "{FilePath}: org を設定する必要があります。"
-    },
-    {
-      "id": "{FilePath}: deployment configuration, {Err}",
-      "translation": "{FilePath}: デプロイメント構成、{Err}"
-    },
-    {
-      "id": "{FilePath}: userInput array index {Ix} does not have name and type specified.",
-      "translation": "{FilePath}: ユーザー入力配列添字 {Ix} には名前とタイプが指定されていません。"
-    },
-    {
-      "id": "Updated {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
-      "translation": "{HomeDirectory}/{SERVICEDEFINITIONFILE} の依存関係を更新しました。"
-    },
-    {
-      "id": "No need to update {HomeDirectory}/{SERVICEDEFINITIONFILE} dependencies.",
-      "translation": "{HomeDirectory}/{SERVICEDEFINITIONFILE} の依存関係を更新する必要はありません。"
-    },
-    {
-      "id": "error creating {HORIZONGITIGNOREFILE} for source code management. {Err}",
-      "translation": "ソース・コード管理のための {HORIZONGITIGNOREFILE} を作成中にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "{UserInputFilePath} ファイルをデマーシャルできませんでした、エラー: {Err}"
-    },
-    {
-      "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
-      "translation": "ユーザー入力属性: {GlobalSet} を API 属性: {Attr} に変換しました"
-    },
-    {
-      "id": "{GlobalSet} encountered error: {Error}",
-      "translation": "{GlobalSet} でエラーが発生しました: {Error}"
-    },
-    {
-      "id": "Converted API Attributes: {Global} to persistent attributes: {Attributes}",
-      "translation": "API 属性: {Global} を永続属性: {Attributes} に変換しました"
-    },
-    {
-      "id": "{OriginalUserInputFilePath}: global array element ({GlobalSet}) has an empty type, must be one of the supported attribute types. See the Horizon agent /attribute API.",
-      "translation": "{OriginalUserInputFilePath}: グローバル配列エレメント ({GlobalSet}) のタイプが空です。いずれかのサポート対象属性タイプである必要があります。 Horizon エージェント / 属性 API を参照してください。"
-    },
-    {
-      "id": "{USERINPUTFILE} has error: {Err}",
-      "translation": "{USERINPUTFILE} に誤りがあります: {Err}"
-    },
-    {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: 添字 {Ix} のサービス配列エレメントは {MicroWork} です。{Err}"
-    },
-    {
-      "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
-      "translation": "{OriginalUserInputFilePath}: サービス配列には {URL} のエレメントが含まれていません。 エラー: {Err}"
-    },
-    {
-      "id": "please provice a user input file for service {URL}. Error: {Err}",
-      "translation": "サービス {URL} 用のユーザー入力ファイルを指定してください。 エラー: {Err}"
-    },
-    {
-      "id": "has empty org, must be set to the name of the organization that owns the service.",
-      "translation": "org が空です。サービスを所有する組織の名前に設定する必要があります。"
-    },
-    {
-      "id": "has empty url. Must be set to this service's url or a dependency's url.",
-      "translation": "url が空です。 このサービスの URL または依存関係の URL に設定する必要があります。"
-    },
-    {
-      "id": "sets variable {VarName} using a value of {Err}.",
-      "translation": "変数 {VarName} に値 {Err} を設定します。"
-    },
-    {
-      "id": "sets variable {VarName} of type {VarValue} that is not defined.",
-      "translation": "定義されていない型 {VarValue} の変数 {VarName} を設定します。"
-    },
-    {
-      "id": "Updated {HomeDirectory}/{USERINPUTFILE}.",
-      "translation": "{HomeDirectory}/{USERINPUTFILE} を更新しました。"
-    },
-    {
-      "id": "No need to update {HomeDirectory}/{USERINPUTFILE}.",
-      "translation": "{HomeDirectory}/{USERINPUTFILE} を更新する必要はありません。"
-    },
-    {
-      "id": "could not create directory {NewDepDir}, error: {Err}",
-      "translation": "ディレクトリー {NewDepDir} を作成できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "could not get status of directory {NewDepDir}, error: {Err}",
-      "translation": "ディレクトリー {NewDepDir} の状況を取得できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "Using working directory: {Dir}",
-      "translation": "次の作業ディレクトリーを使用します: {Dir}"
-    },
-    {
-      "id": "horizon project in {Dir} already contains {FileName}.",
-      "translation": "{Dir} の Horizon プロジェクトには、{FileName} が既に含まれています。"
-    },
-    {
-      "id": "error checking for {FileName}: {Err}",
-      "translation": "{FileName} の確認中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "failed to unmarshal {FilePath}, error: {Err}",
-      "translation": "{FilePath} のアンマーシャルに失敗しました、エラー: {Err}"
-    },
-    {
-      "id": "failed to create json object for {FileName}, error: {Err}",
-      "translation": "{FileName} 用の JSON オブジェクトの作成に失敗しました、エラー: {Err}"
-    },
-    {
-      "id": "unable to write json object for {FileName} to file {FilePath}, error: {Err}",
-      "translation": "{FileName} 用の JSON オブジェクトを、ファイル {FilePath} に書き込むことができません、エラー: {Err}"
-    },
-    {
-      "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
-      "translation": "環境変数 {DEVTOOLHZNORG} を設定するか、--user-pw フラグでユーザーを「org/user」として指定する必要があります。"
-    },
-    {
-      "id": "Must set environment variable {DEVTOOLHZNUSER} or specify user exchange credentials with --user-pw",
-      "translation": "環境変数 {DEVTOOLHZNUSER} を設定するか、--user-pw を使用してユーザーの Exchange 用資格情報を指定する必要があります。"
-    },
-    {
-      "id": "Unable to set env var {DEVTOOLHZNEXCHANGEURL} to {ExchangeUrl}, error {Err}",
-      "translation": "環境変数 {DEVTOOLHZNEXCHANGEURL} を {ExchangeUrl} に設定することができません、エラー {Err}"
-    },
-    {
-      "id": "Environment variable {DEVTOOLHZNEXCHANGEURL} must be set.",
-      "translation": "環境変数 {DEVTOOLHZNEXCHANGEURL} を設定する必要があります。"
-    },
-    {
-      "id": "project has no horizon metadata directory. Use hzn dev to create a new project. Error: {Err}",
-      "translation": "プロジェクトには Horizon メタデータ・ディレクトリーがありません。 hzn dev を使用して新規プロジェクトを作成してください。 エラー: {Err}"
-    },
-    {
-      "id": "'{ProjectType} {Cmd}' project does not validate. {Derr}",
-      "translation": "「{ProjectType} {Cmd}」プロジェクトを検証できません。 {Derr}"
-    },
-    {
-      "id": "'{ProjectType} {Cmd}' project does not validate. {Verr}",
-      "translation": "「{ProjectType} {Cmd}」プロジェクトを検証できません。 {Verr}"
-    },
-    {
-      "id": "'{ProjectType} {Cmd}' Must specify configuration file type (-t) when a configuration file is specified (-m).",
-      "translation": "「{ProjectType} {Cmd}」構成ファイル (-m) が指定されている場合、構成ファイル・タイプ (-t) を指定する必要があります。"
-    },
-    {
-      "id": "'{ProjectType} {Cmd}' configuration file {FileRef} error {Err}",
-      "translation": "「{ProjectType} {Cmd}」構成ファイル {FileRef} エラー {Err}"
-    },
-    {
-      "id": "project does not validate. {Verr}",
-      "translation": "プロジェクトを検証できません。 {Verr}"
-    },
-    {
-      "id": "project in {Dir} is not a horizon project.",
-      "translation": "{Dir} 内のプロジェクトは Horizon プロジェクトではありません。"
-    },
-    {
-      "id": "Final Attributes: {Attrs}",
-      "translation": "最終属性: {Attrs}"
-    },
-    {
-      "id": "global attribute conversion error: {Cerr}",
-      "translation": "グローバル属性変換エラー: {Cerr}"
-    },
-    {
-      "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
-      "translation": "「{ProjectType} {Cmd}」コンテナー・ワーカーを作成できません、{Cerr}"
-    },
-    {
-      "id": "unable to list existing containers: {Err}",
-      "translation": "既存のコンテナーをリストできません: {Err}"
-    },
-    {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "サービス {Nwname}、{ContainerNetwork} のメイン・ネットワークが見つかりました。"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
-      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」依存関係 {URL} の {StartErr}"
-    },
-    {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "依存関係メタデータを取得できません: {Err}"
-    },
-    {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "依存関係を開始できません: {Err}"
-    },
-    {
-      "id": "Skipping service because it has no deployment configuration: {DepConfig}",
-      "translation": "デプロイメント構成が無いため、サービスをスキップします: {DepConfig}"
-    },
-    {
-      "id": "unable to generate instance ID: {Err}",
-      "translation": "インスタンス ID を生成できません: {Err}"
-    },
-    {
-      "id": "unable to create environment variables",
-      "translation": "環境変数を作成できません"
-    },
-    {
-      "id": "Passing environment variables: {EnvironmentAdditions}",
-      "translation": "次の環境変数を引き渡します: {EnvironmentAdditions}"
-    },
-    {
-      "id": "Start {LogName}: {CLIString} with instance id prefix {Id}",
-      "translation": "インスタンス ID プレフィックス {Id} の {LogName}: {CLIString} を開始します"
-    },
-    {
-      "id": "unable to start container using {CLIString}, error: {StartErr}",
-      "translation": "{CLIString} を使用してコンテナーを開始できません、エラー: {StartErr}"
-    },
-    {
-      "id": "Running {LogName}.",
-      "translation": "{LogName} を実行中です。"
-    },
-    {
-      "id": "Stopping dependencies.",
-      "translation": "依存関係を停止中。"
-    },
-    {
-      "id": "unable to stop dependencies: {Err}",
-      "translation": "依存関係を停止できませんでした: {Err}"
-    },
-    {
-      "id": "Found containers {Containers}",
-      "translation": "コンテナー {Containers} が見つかりました"
-    },
-    {
-      "id": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
-      "translation": "インスタンス ID プレフィックス {MsId} の {LogName}: {CLIString} を停止します。"
-    },
-    {
-      "id": "failed to create docker client, error: {Derr}",
-      "translation": "Docker クライアントの作成に失敗しました、エラー: {Derr}"
-    },
-    {
-      "id": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
-      "translation": "{USERINPUTFILE} 内のグローバル属性の変換に失敗しました、エラー: {Err}"
-    },
-    {
-      "id": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
-      "translation": "{USERINPUTFILE} から認証属性を抽出できませんでした、エラー: {Err}"
-    },
-    {
-      "id": "getting container images into docker.",
-      "translation": "Docker にコンテナー・イメージを取り込みます。"
-    },
-    {
-      "id": "failed to get container images, error: {Err}",
-      "translation": "コンテナー・イメージの取得に失敗しました、エラー: {Err}"
-    },
-    {
-      "id": "invalid image format: {Image}",
-      "translation": "無効なイメージ・フォーマット: {Image}"
-    },
-    {
-      "id": "file {FilePath} exists already",
-      "translation": "ファイル {FilePath} は既に存在します"
-    },
-    {
-      "id": "unable to write content to file {FilePath}, error: {Err}",
-      "translation": "ファイル {FilePath} にコンテンツを書き込むことができません、エラー: {Err}"
-    },
-    {
-      "id": "horizon api agreement output did not include 'agreements' key",
-      "translation": "Horizon API のご使用条件の出力には「agreements」キーが含まれていませんでした。"
-    },
-    {
-      "id": "horizon api agreement output did not include '{WhichAgreements}' key",
-      "translation": "Horizon API のご使用条件の出力には「{WhichAgreements}」キーが含まれていませんでした。"
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
     },
     {
       "id": "failed to marshal 'hzn metering list' output: {Err}",
       "translation": "「hzn metering list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn policy list' output: {Err}",
-      "translation": "「hzn policy list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Horizon ノード・ポリシーを更新中です。このノード・ポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
-    },
-    {
-      "id": "Horizon node policy updated.",
-      "translation": "Horizon ノード・ポリシーが更新されました。"
-    },
-    {
-      "id": "Are you sure you want to remove the node policy?",
-      "translation": "ノード・ポリシーを削除しますか?"
-    },
-    {
-      "id": "Removing Horizon node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "Horizon ノード・ポリシーを削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。 既存の契約は解除および再交渉される場合があります。"
-    },
-    {
-      "id": "Horizon node policy deleted.",
-      "translation": "Horizon ノード・ポリシーが削除されました。"
-    },
-    {
-      "id": "A list of policy properties that describe the object.",
-      "translation": "オブジェクトを示すポリシー・プロパティーのリスト。"
-    },
-    {
-      "id": "no service name",
-      "translation": "サービス名がありません"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "サービス {ServiceName} の Docker イメージがありません"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name または Org は空ストリングです。"
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 配列は空です。"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
-    },
-    {
-      "id": "failed to marshal agreement with index {I}: {Err}",
-      "translation": "添字 {I} の契約のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "agreement id {AgreementId} not found",
-      "translation": "契約 ID {AgreementId} が見つかりません"
-    },
-    {
-      "id": "failed to marshal 'hzn agreement list' output: {Err}",
-      "translation": "「hzn agreement list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "No active agreements to cancel.",
-      "translation": "解除するアクティブな契約はありません。"
-    },
-    {
-      "id": "either an agreement ID or -a must be specified.",
-      "translation": "契約 ID または -a のいずれかを指定する必要があります。"
-    },
-    {
-      "id": "Canceling agreement {Id} ...",
-      "translation": "契約 {Id} をキャンセル中..."
-    },
-    {
-      "id": "failed to marshal 'key list' output: {Err}",
-      "translation": "「key list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "horizon api trust output did not include 'pem' key",
-      "translation": "Horizon API トラスト出力には「pem」鍵が含まれていませんでした"
-    },
-    {
-      "id": "Creating RSA PSS private and public keys, and an x509 certificate for distribution. This is a CPU-intensive operation and, depending on key length and platform, may take a while. Key generation on an amd64 or ppc64 system using the default key length will complete in less than 1 minute.",
-      "translation": "RSA PSS 秘密鍵および公開鍵、配布用の x509 証明書を作成しています。 これは、CPU に負荷がかかる操作であり、鍵の長さやプラットフォームによっては時間がかかる場合があります。 amd64 または ppc64 システムでデフォルトの長さの鍵の場合、鍵の生成は 1 分未満で完了します。"
-    },
-    {
-      "id": "failed to create a new key pair: {Err}",
-      "translation": "新規鍵ペアの作成に失敗しました: {Err}"
-    },
-    {
-      "id": "Move private key file from {PrivKeyName} to {PrivKeyFile}",
-      "translation": "秘密鍵ファイルを {PrivKeyName} から {PrivKeyFile} に移動します"
-    },
-    {
-      "id": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
-      "translation": "秘密鍵ファイルの {PrivKeyName} から {PrivKeyFile} への移動に失敗しました。 {Err}"
-    },
-    {
-      "id": "Move public key file from {PubKeyName} to {PubKeyFile}.",
-      "translation": "公開鍵ファイルを {PubKeyName} から {PubKeyFile} に移動します。"
-    },
-    {
-      "id": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
-      "translation": "公開鍵ファイルの {PubKeyName} から {PubKeyFile} への移動に失敗しました。 {Err}"
-    },
-    {
-      "id": "Created keys:\n \t{PrivKeyFile}\n\t{PubKeyFile}",
-      "translation": "次の鍵を作成しました:\n \t{PrivKeyFile}\n\t{PubKeyFile}"
-    },
-    {
-      "id": "asked to import the created public key, but can not determine the name.",
-      "translation": "作成済みの公開鍵のインポートを要求されましたが、名前を判別できません。"
-    },
-    {
-      "id": "Importing public key file {PubKeyFile} to the Horizon agent.",
-      "translation": "公開鍵ファイル {PubKeyFile} を Horizon エージェントにインポートします。"
-    },
-    {
-      "id": "{PubKeyFile} imported to the Horizon agent",
-      "translation": "{PubKeyFile} が Horizon エージェントにインポートされました"
-    },
-    {
-      "id": "Public key '{KeyName}' removed from the Horizon agent.",
-      "translation": "公開鍵「{KeyName}」は Horizon エージェントから削除されました。"
-    },
-    {
-      "id": "-d is mutually exclusive with -k and -K",
-      "translation": "-d は、-k および -K とは同時に指定することはできません。"
-    },
-    {
-      "id": "Creating directory {OutputDirPub}.",
-      "translation": "ディレクトリー {OutputDirPub} を作成中。"
-    },
-    {
-      "id": "{PrivKeyFile} is a directory. Please specify a file name.",
-      "translation": "{PrivKeyFile} はディレクトリーです。 ファイル名を指定してください。"
-    },
-    {
-      "id": "File {PrivKeyFile} and {PubKeyFile} exist, do you want to overwrite?",
-      "translation": "ファイル {PrivKeyFile} および {PubKeyFile} は存在します。上書きしますか?"
-    },
-    {
-      "id": "File {PrivKeyFile} exists, do you want to overwrite?",
-      "translation": "ファイル {PrivKeyFile} は存在します。上書きしますか?"
-    },
-    {
-      "id": "Deleting file {PrivKeyFile}.",
-      "translation": "ファイル {PrivKeyFile} を削除中。"
-    },
-    {
-      "id": "deployment config {Dep} is not supported",
-      "translation": "デプロイメント構成 {Dep} はサポートされていません"
-    },
-    {
-      "id": "starting test mode is not supported for this project",
-      "translation": "このプロジェクトではテスト・モードの開始はサポートされていません"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
-      "translation": "ノード ID もノード・ポリシーも指定されていません。ローカル・ノードのノード・ポリシーを取得します。"
-    },
-    {
-      "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
-      "translation": "ノード ID もノード・ユーザー入力ファイルも指定されていません。ローカル・ノードのノード・ユーザー入力を取得します。"
-    },
-    {
-      "id": "Using compatibility checking input: {CompCheckInput}",
-      "translation": "互換性検査入力: {CompCheckInput} を使用します"
-    },
-    {
-      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
-      "translation": "「hzn policy compatible」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Please specify either bussiness policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンを指定してください。"
-    },
-    {
-      "id": "Neither bussiness policy nor pattern is specified.",
-      "translation": "ビジネス・ポリシーもパターンも指定されていません。"
-    },
-    {
-      "id": "--node-pol, -p and -P are mutually exclusive.",
-      "translation": "--node-pol、-p、および -P は同時に指定することはできません。"
-    },
-    {
-      "id": "--service-pol, -p and -P are mutually exclusive.",
-      "translation": "--service-pol、-p、および -P は同時に指定することはできません。"
-    },
-    {
-      "id": "-n and --node-pol are mutually exclusive.",
-      "translation": "-n と --node-pol は同時に指定することはできません。"
-    },
-    {
-      "id": "-n and --node-ui are mutually exclusive.",
-      "translation": "-n と --node-ui は同時に指定することはできません。"
-    },
-    {
-      "id": "-b and -B are mutually exclusive.",
-      "translation": "-b と -B は同時に指定することはできません。"
-    },
-    {
-      "id": "-p and -P are mutually exclusive.",
-      "translation": "-p と -P は同時に指定することはできません。"
-    },
-    {
-      "id": "Please specify the exchange credential with -u for querying the node, business policy and service policy.",
-      "translation": "ノード、ビジネス・ポリシー、およびサービス・ポリシーを照会する場合、-u を使用して Exchange 資格情報を指定してください。"
-    },
-    {
-      "id": "Please specify the organization with -o for the exchange credentail: {CredToUse}.",
-      "translation": "Exchange 資格情報用の組織を -o を使用して指定してください: {CredToUse}."
-    },
-    {
-      "id": "Cannot use the local node because it is not registered.",
-      "translation": "ローカル・ノードは登録されていないため、使用できません。"
-    },
-    {
-      "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
-      "translation": "-a で指定されたノード・アーキテクチャー {InputArch} が、ローカル・ノードのアーキテクチャー {Arch} と一致しません。"
-    },
-    {
-      "id": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}",
-      "translation": "ビジネス・ポリシー JSON 入力ファイル {BusinessPolFile} のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Business policy not found for {PolOrg}/{PolId}",
-      "translation": "{PolOrg}/{PolId} に該当するビジネス・ポリシーが見つかりません"
-    },
-    {
-      "id": "Either -b or -B must be specified.",
-      "translation": "-b または -B のいずれかを指定する必要があります。"
-    },
-    {
-      "id": "Error unmarshaling service json file {FilePath}: {Err}",
-      "translation": "サービス JSON ファイル {FilePath} のアンマーシャル中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "URL must be specified in the service definition.",
-      "translation": "サービス定義に URL を指定する必要があります。"
-    },
-    {
-      "id": "Version must be specified in the service definition.",
-      "translation": "サービス定義にバージョンを指定する必要があります。"
-    },
-    {
-      "id": "Invalide version format: {Version}.",
-      "translation": "無効なバージョン・フォーマット: {Version}。"
-    },
-    {
-      "id": "Arch must be specified in the service definition.",
-      "translation": "サービス定義にアーキテクチャーを指定する必要があります。"
-    },
-    {
-      "id": "Error in service file {Sfile}. {Err}",
-      "translation": "サービス・ファイル {Sfile} 内にエラーがあります。 {Err}"
-    },
-    {
-      "id": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
-      "translation": "パターン JSON 入力ファイル {PatternFile} のアンマーシャルに失敗しました。{Err}"
-    },
-    {
-      "id": "Pattern not found for {PatOrg}/{PatId}",
-      "translation": "{PatOrg}/{PatId} のパターンが見つかりません"
-    },
-    {
-      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the patterh requirement.",
-      "translation": "ファイル {SvcDefFilesi} で指定されたサービス {Org}/{URL} {Arch} {Version} がパターン要件と一致しません。"
-    },
-    {
-      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the business policy requirement.",
-      "translation": "ファイル {SvcDefFilesi} で指定されたサービス {Org}/{URL} {Arch} {Version} がビジネス・ポリシー要件と一致しません。"
-    },
-    {
-      "id": "problem signing stdin with {PrivKeyFilePath}: {Err}",
-      "translation": "標準入力を {PrivKeyFilePath} で署名する際に問題が発生しました: {Err}"
-    },
-    {
-      "id": "problem verifying deployment string with {PubKeyFilePath}: {Err}",
-      "translation": "deployment ストリングを {PubKeyFilePath} で検査する際に問題が発生しました: {Err}"
-    },
-    {
-      "id": "This is not a valid signature for stdin.",
-      "translation": "これは標準入力の有効な署名ではありません。"
-    },
-    {
-      "id": "Signature is valid.",
-      "translation": "署名は有効です。"
-    },
-    {
-      "id": "Failed to get the variables from configuration file {CofigFile}. Error: {Err}",
-      "translation": "構成ファイル {CofigFile} から変数の取得に失敗しました。 エラー: {Err}"
-    },
-    {
-      "id": "Bussiness policy and pattern are mutually exclusive.",
-      "translation": "ビジネス・ポリシーとパターンは同時に指定することはできません。"
-    },
-    {
-      "id": "Incompatible",
-      "translation": "非互換"
-    },
-    {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "オブジェクト {In} のマーシャル中にエラーが発生しました。{Arg_2}"
-    },
-    {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "入力を PolicyCheck オブジェクトに変換できませんでした。{Err}"
-    },
-    {
-      "id": "The given node id is empty.",
-      "translation": "指定されたノード ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "指定されたノード ID には組織が指定されていません: {NodeId}。"
-    },
-    {
-      "id": "Error getting node {NodeId} from the exchange. {Err}",
-      "translation": "Exchange からノード {NodeId} を取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "No node found for this node id {NodeId}.",
-      "translation": "このノード ID {NodeId} に該当するノードが見つかりませんでした。"
-    },
-    {
-      "id": "The PolicyCheck input cannot be null",
-      "translation": "PolicyCheck 入力を NULL にすることはできません"
-    },
-    {
-      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
-      "translation": "入力ノード・アーキテクチャー {NodeArch} が、ノード {NodeId} の Exchange ノード・アーキテクチャー {Arch} と一致しません。"
-    },
-    {
-      "id": "Policy Incompatible",
-      "translation": "ポリシー非互換"
-    },
-    {
-      "id": "Architecture does not match.",
-      "translation": "アーキテクチャーが一致しません。"
-    },
-    {
-      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
-      "translation": "{Org}/{WorkloadURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得することに失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to validate the service policy. {Err}",
-      "translation": "サービス・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "ビジネス・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。"
-    },
-    {
-      "id": "No services found in the business policy.",
-      "translation": "ビジネス・ポリシー内でサービスは見つかりませんでした。"
-    },
-    {
-      "id": "Node policy cannot be null.",
-      "translation": "ノード・ポリシーを NULL にすることはできません。"
-    },
-    {
-      "id": "Business policy cannot be null.",
-      "translation": "ビジネス・ポリシーを NULL にすることはできません。"
-    },
-    {
-      "id": "Merged service policy cannot be null.",
-      "translation": "マージされるサービス・ポリシーを NULL にすることはできません。"
-    },
-    {
-      "id": "Error merging node policy with arch property. {Err}",
-      "translation": "arch プロパティーを使用してノード・ポリシーをマージしているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to validate the node policy. {Err}",
-      "translation": "ノード・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
-      "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシー・フォーマットに変換できませんでした: {Err}"
-    },
-    {
-      "id": "No node policy found for this node {NodeId}.",
-      "translation": "このノード {NodeId} のノード・ポリシーが見つかりませんでした。"
-    },
-    {
-      "id": "Neither node policy nor node id is specified.",
-      "translation": "ノード・ポリシーもノード ID も指定されていません。"
-    },
-    {
-      "id": "Node id is empty.",
-      "translation": "ノード ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "このノード ID には組織が指定されていません: {NodeId}。"
-    },
-    {
-      "id": "Error trying to query node policy for {NodeId}: {Err}",
-      "translation": "{NodeId} のノード・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
-      "translation": "ノード {NodeId} のノード・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
-      "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシーに変換できませんでした: {Err}"
-    },
-    {
-      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "translation": "ビジネス・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}"
-    },
-    {
-      "id": "Validation failure for business policy {BpId}. {Err}",
-      "translation": "ビジネス・ポリシー {BpId} の検証失敗。 {Err}"
-    },
-    {
-      "id": "No services specified in the given business policy {BpId}.",
-      "translation": "指定されたビジネス・ポリシー {BpId} にはサービスが指定されていません。"
-    },
-    {
-      "id": "No services specified in the business policy {Name}.",
-      "translation": "ビジネス・ポリシー {Name} にはサービスが指定されていません。"
-    },
-    {
-      "id": "Neither business policy nor business policy id is specified.",
-      "translation": "ビジネス・ポリシーもビジネス・ポリシー ID も指定されていません。"
-    },
-    {
-      "id": "Business policy id is empty.",
-      "translation": "ビジネス・ポリシー ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the business policy id: {BpId}.",
-      "translation": "このビジネス・ポリシー ID には組織が指定されていません: {BpId}。"
-    },
-    {
-      "id": "Unable to get business policy for {BpId}, {Err}",
-      "translation": "{BpId} のビジネス・ポリシーを取得できません。{Err}"
-    },
-    {
-      "id": "No business policy found for this id {BpId}.",
-      "translation": "この ID {BpId} に該当するビジネス・ポリシーが見つかりません。"
-    },
-    {
-      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "translation": "ビジネス・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}"
-    },
-    {
-      "id": "Service policy id is empty.",
-      "translation": "サービス・ポリシー ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "このサービス・ポリシー ID には組織が指定されていません: {SvcId}。"
-    },
-    {
-      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
-      "translation": "サービス ID {SvcId} のサービス・ポリシーを照会しようとしているときにエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Error validating the service policy {SvcId}. {Err}",
-      "translation": "サービス・ポリシー {SvcId} を検証しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Service name is empty.",
-      "translation": "サービス名が空です。"
-    },
-    {
-      "id": "Service organization is empty.",
-      "translation": "サービス組織が空です。"
-    },
-    {
-      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーを照会しようとしているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "The given business policy should not be null.",
-      "translation": "指定されたビジネス・ポリシーは、NULL であってはなりません。"
-    },
-    {
-      "id": "Error merging business policy with service policy. {Err}",
-      "translation": "ビジネス・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "The business policy should not be null.",
-      "translation": "ビジネス・ポリシーは NULL にできません。"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "UserInputCheck 入力を NULL にすることはできません"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "ノード・ユーザー入力もノード ID も指定されていません。"
-    },
-    {
-      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンにアーキテクチャー {NodeArch} を持つサービス・バージョンが指定されていません。"
-    },
-    {
-      "id": "No service versions specified in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンにサービス・バージョンが指定されていません。"
-    },
-    {
-      "id": "User Input Incompatible",
-      "translation": "互換性のないユーザー入力"
-    },
-    {
-      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
-      "translation": "{ServiceOrg}/{ServiceURL} バージョン {Version} のすべてのアーキテクチャーのサービスを取得しているときにエラーが発生しました。{Err}"
-    },
-    {
-      "id": "Service definition not found in the input.",
-      "translation": "入力内でサービス定義が見つかりません。"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "'arch' {NodeArch} を持つサービスがビジネス・ポリシーにもパターンにも見つかりません。"
-    },
-    {
-      "id": "No services found in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーにもパターンにもサービスが見つかりませんでした。"
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。"
-    },
-    {
-      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "translation": "Exchange から {SvcSpec} のサービスを取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Error verifing user input for service {SId}. {Err}",
-      "translation": "サービス {SId} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to verify user input for service {SId}. {Reason}",
-      "translation": "サービス {SId} のユーザー入力の検証に失敗しました。 {Reason}"
-    },
-    {
-      "id": "Error verifing user input for dependent service {Id}. {Err}",
-      "translation": "従属サービス {Id} のユーザー入力を検証しているときにエラーが発生しました。{Err}"
-    },
-    {
-      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
-      "translation": "従属サービス {Id} のユーザー入力の検証に失敗しました。{Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "入力サービス定義オブジェクトを NULL にすることはできません。"
-    },
-    {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "{Version} からバージョン式を作成できません。 {Err}"
-    },
-    {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Failed to get the service from the exchange. {Err}",
-      "translation": "Exchange からサービスの取得に失敗しました。 {Err}"
-    },
-    {
-      "id": "Servcie does not exist on the exchange.",
-      "translation": "サービスは Exchange 上に存在しません。"
-    },
-    {
-      "id": "No user input found for service.",
-      "translation": "サービスのユーザー入力が見つかりません。"
-    },
-    {
-      "id": "Failed to validate the user input type for variable {Name}. {Err}",
-      "translation": "変数 {Name} のユーザー入力タイプの検証に失敗しました。 {Err}"
-    },
-    {
-      "id": "A required user input value is missing for variable {Name}.",
-      "translation": "変数 {Name} には、必要なユーザー入力値がありません。"
-    },
-    {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "translation": "サービス URL {URL} が、ビジネス・ポリシー内に指定されているサービス URL {Name} と一致しません。"
-    },
-    {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
-    },
-    {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "translation": "サービス・アーキテクチャー {Arch} が、ビジネス・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。"
-    },
-    {
-      "id": "Service version {Version} does not match any service versions specified in the business policy.",
-      "translation": "サービス・バージョン {Version} が、ビジネス・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。"
-    },
-    {
-      "id": "The service does not match any services in the pattern.",
-      "translation": "サービスがパターン内のどのサービスにも一致しません。"
-    },
-    {
-      "id": "Pattern {PatId} cannot be found on the exchange.",
-      "translation": "パターン {PatId} が Exchange で見つかりません。"
-    },
-    {
-      "id": "Neither pattern nor pattern id is specified.",
-      "translation": "パターンもパターン ID も指定されていません。"
-    },
-    {
-      "id": "Pattern id is empty.",
-      "translation": "パターン ID が空です。"
-    },
-    {
-      "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "パターン ID {PatId} に組織が指定されていません。"
-    },
-    {
-      "id": "Error getting pattern {PatId} from the exchange, {Err}",
-      "translation": "Exchange からパターン {PatId} を取得中にエラーが発生しました。{Err}"
-    },
-    {
-      "id": "No pattern found for this id {PatId}.",
-      "translation": "この ID {PatId} のパターンが見つかりません。"
-    },
-    {
-      "id": "Version must be specified in the service definition for service {URL}.",
-      "translation": "サービス {URL} のサービス定義でバージョンを指定する必要があります。"
-    },
-    {
-      "id": "Invalide version format {Version} for service {URL}.",
-      "translation": "サービス {URL} のバージョン・フォーマット {Version} が無効です。"
-    },
-    {
-      "id": "Arch must be specified in the service definition for service {URL}.",
-      "translation": "サービス {URL} のサービス定義でアーキテクチャーを指定する必要があります。"
-    },
-    {
-      "id": "Org must be specified in the service definition for service {URL}.",
-      "translation": "サービス {URL} のサービス定義で組織を指定する必要があります。"
-    },
-    {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "入力サービス {SId} の検証失敗。 {Err}"
     },
     {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
@@ -4344,7 +4632,7 @@
     },
     {
       "id": "Generated random node ID: {NodeId}.",
-      "translation": "生成されたランダム・ノード ID: {NodeId} "
+      "translation": "生成されたランダム・ノード ID: {NodeId}"
     },
     {
       "id": "Using node ID '{NodeId}' from the Horizon agent",
@@ -4435,8 +4723,12 @@
       "translation": "{Errstring}。 入力ファイルを作成し、サービス {Matches2} 用の変数を定義してください。 「hzn unregister」を実行してから、-f フラグを使用して入力ファイルを指定し、「hzn register...」を再度実行してください。"
     },
     {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Horizon ノードが登録されました。 間もなくワークロード・サービスの実行が始まります。 "
+    },
+    {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
-      "translation": "Horizon ノードが登録されました。間もなくワークロード契約の交渉が始まります。 表示するには、「hzn agreement list」を実行してください。"
+      "translation": "Horizon ノードが登録されました。 間もなくワークロード契約の交渉が始まります。 表示するには、「hzn agreement list」を実行してください。"
     },
     {
       "id": "-o and -p are mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -4491,516 +4783,88 @@
       "translation": "{InputFile} を書き込みました"
     },
     {
-      "id": "horizon api attributes output did not include 'attributes' key",
-      "translation": "Horizon API 属性の出力には「attributes」キーが含まれていませんでした"
+      "id": "--timeout must be a positive integer.",
+      "translation": "--timeout は正整数でなければなりません。"
     },
     {
-      "id": "failed to marshal 'hzn attribute list' output: {Err}",
-      "translation": "「hzn attribute list」の出力のマーシャルに失敗しました: {Err}"
+      "id": "Waiting for {WaitTimeout} seconds for service {Org}/{WaitService} to start...",
+      "translation": "サービス {Org}/{WaitService} が開始されるまで {WaitTimeout} 秒間待機します..."
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
+      "id": "Service {Org}/{WaitService} is started.",
+      "translation": "サービス {Org}/{WaitService} が開始されました。"
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および list of string です。"
+      "id": "The service {Org}/{WaitService} has failed.",
+      "translation": "サービス {Org}/{WaitService} が失敗しました。"
     },
     {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+      "id": "Waiting for service {Org}/{WaitService} to start executing.",
+      "translation": "サービス {Org}/{WaitService} の実行が開始されるまで待機します..."
     },
     {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
+      "id": "Timeout waiting for service {Org}/{WaitService} to successfully start. Analyzing possible reasons for the timeout...",
+      "translation": "サービス {Org}/{WaitService} が正常に開始されるまでの待機がタイムアウトになりました。このタイムアウトの考えられる原因を分析中..."
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
+      "id": "Service {Org}/{WaitService} is deployed to the node, but not executing yet.",
+      "translation": "サービス {Org}/{WaitService} はノードにデプロイされていますが、まだ実行されていません。"
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+      "id": "Service {Org}/{WaitService} execution failed: {ExecutionFailureDesc}.",
+      "translation": "サービス {Org}/{WaitService} の実行に失敗しました: {ExecutionFailureDesc}。"
     },
     {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
+      "id": "Service {Org}/{WaitService} might need more time to start executing, continuing analysis.",
+      "translation": "サービス {Org}/{WaitService} の実行開始にはさらに時間がかかります。分析を続行中です。"
     },
     {
-      "id": "No input found.",
-      "translation": "入力が見つかりません。"
+      "id": "Service {Org}/{WaitService} is not deployed to the node, continuing analysis.",
+      "translation": "サービス {Org}/{WaitService} はノードにデプロイされていません。分析を続行中です。"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
+      "id": "Currently, there are {Lenags} active agreements on this node. Use `hzn agreement list' to see the agreements that have been formed so far.",
+      "translation": "現在、このノードには {Lenags} のアクティブな契約があります。今までに締結された契約を確認するには「hzn agreement list」を使用してください。"
     },
     {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
+      "id": "Currently, there are no active agreements on this node.",
+      "translation": "現在、このノードにはアクティブな契約がありません。"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "Currently, there are no errors recorded in the node's event log.",
+      "translation": "現在、ノードのイベント・ログに記録されているエラーはありません。"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "Use the 'hzn deploycheck all' command to verify that node, service, pattern and policy configuration is compatible.",
+      "translation": "ノード、サービス、パターン、およびポリシーの構成に互換性があることを確認するには「hzn deploycheck all」コマンドを使用してください。"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "The following errors were found in the node's event log and are related to {Org}/{WaitService}. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.",
+      "translation": "以下のエラーはノードのイベント・ログに記録されたものであり、{Org}/{WaitService} と関連があります。エラーの詳しい情報を確認するには「hzn eventlog list -s severity=error -l」を使用してください。"
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。{Err}"
+      "id": "{Format2006_01_02_150405}: {Message}",
+      "translation": "{Format2006_01_02_150405}: {Message}"
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "Exchange ユーザー ID が提供されていません。"
+      "id": "Analysis complete.",
+      "translation": "分析が完了しました。"
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Exchange ユーザー組織 ID が提供されていません。"
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "制約式に対応しない括弧が含まれています。"
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
+      "id": "deployment config {Dep} is not supported",
+      "translation": "デプロイメント構成 {Dep} はサポートされていません"
     },
     {
-      "id": "Internal server error",
-      "translation": "内部サーバー・エラー"
-    },
-    {
-      "id": "must specify exchange credentials to access the model management service.",
-      "translation": "モデル管理サービスにアクセスするには Exchange の資格情報を指定する必要があります。"
-    },
-    {
-      "id": "Invalid --policy/-p value: {DestPolicy}, --policy/-p should be true or false",
-      "translation": "無効な --policy/-p 値: {DestPolicy}。--policy/-p は、true または false でなければなりません"
-    },
-    {
-      "id": "Invalid --data value: {WithData}, --data should be true or false",
-      "translation": "無効な --data 値: {WithData}。--data は、true または false でなければなりません"
-    },
-    {
-      "id": "must omit --policy or set it to true when filtering by --service, --property, or --updateTime",
-      "translation": "--policy は省略するか、--service、--property、または --updateTime でフィルタリングするときは true に設定してください"
-    },
-    {
-      "id": "service should be in format service-org/service-name",
-      "translation": "サービスは service-org/service-name の形式にする必要があります"
-    },
-    {
-      "id": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd",
-      "translation": "updateTime は RC3339 フォーマット: yyyy-MM-ddTHH:mm:ssZ にするか、yyyy-MM-dd にしてください"
-    },
-    {
-      "id": "must specify objectType if set objectId",
-      "translation": "objectId を設定する場合、objectType を指定する必要があります"
-    },
-    {
-      "id": "must specify destinationType if set destinationId",
-      "translation": "destinationId を設定する場合、destinationType を指定する必要があります"
-    },
-    {
-      "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
-      "translation": "expirationTimeBefore には「now」を指定するか、RC3339 フォーマット: yyyy-MM-ddTHH:mm:ssZ のタイム・スタンプを指定してください"
-    },
-    {
-      "id": "no objects found in org {Org}",
-      "translation": "組織「{Org}」 内でオブジェクトは検出されませんでした"
-    },
-    {
-      "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
-      "translation": "タイプ「{ObjectType}」のオブジェクト「{ObjectID}」の宛先詳細は、組織「{Org}」 内で検出されませんでした"
-    },
-    {
-      "id": "Listing objects in org {Org}:",
-      "translation": "組織「{Org}」 内のオブジェクトのリスト:"
-    },
-    {
-      "id": "Required: A unique identifier of the object.",
-      "translation": "必須: オブジェクトの固有 ID。"
-    },
-    {
-      "id": "Required: The type of the object.",
-      "translation": "必須: オブジェクトのタイプ。"
-    },
-    {
-      "id": "Required: The organization ID of the object (an object belongs to exactly one organization).",
-      "translation": "必須: オブジェクトの組織 ID (オブジェクトは必ず 1 つの組織に所属します)。"
-    },
-    {
-      "id": "The node id (without org prefix) where the object should be placed.",
-      "translation": "オブジェクトを配置すべき (組織プレフィックスなしの) ノード ID。"
-    },
-    {
-      "id": "If omitted the object is sent to all nodes with the same destinationType.",
-      "translation": "省略すると、オブジェクトは同じ destinationType のすべてのノードに送信されます。"
-    },
-    {
-      "id": "Delete this field when you are using destinationPolicy.",
-      "translation": "destinationPolicy を使用する場合はこのフィールドを削除します。"
-    },
-    {
-      "id": "The pattern in use by nodes that should receive this object.",
-      "translation": "このオブジェクトを受信すべきノードによって使用されているパターン。"
-    },
-    {
-      "id": "If omitted (and if destinationsList is omitted too) the object is broadcast to all known nodes.",
-      "translation": "省略されている場合 (かつ destinationsList も省略されている場合)、オブジェクトはすべての既知ノードにブロードキャストされます。"
-    },
-    {
-      "id": "Delete this field when you are using policy.",
-      "translation": "ポリシーを使用する場合はこのフィールドを削除します。"
-    },
-    {
-      "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
-      "translation": "pattern:nodeId ペアの配列として表記した、このオブジェクトを受信すべき宛先のリスト。"
-    },
-    {
-      "id": "If provided, destinationType and destinationID must be omitted.",
-      "translation": "指定された場合、destinationType と destinationID は省略する必要があります。"
-    },
-    {
-      "id": "The policy specification that should be used to distribute this object.",
-      "translation": "このオブジェクトを配布するために使用すべきポリシー仕様。"
-    },
-    {
-      "id": "Delete these fields if the target node is using a pattern.",
-      "translation": "ターゲット・ノードがパターンを使用している場合はこれらのフィールドを削除します。"
-    },
-    {
-      "id": "Valid types are string, bool, int, float, list of string (comma separated), version.",
-      "translation": "有効な型は、string、bool、int、float、list of string (コンマ区切り)、version です。"
-    },
-    {
-      "id": "Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.",
-      "translation": "値から型が識別できる場合は型を省略できます。例えば、引用符なしの TRUE はブールです。"
-    },
-    {
-      "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "<property name> <operator> <property value>　という形式の制約式を、ブール演算子 AND (&&) または OR (||)で区切ったリスト。"
-    },
-    {
-      "id": "The service(s) that will use this object.",
-      "translation": "このオブジェクトを使用するサービス。"
-    },
-    {
-      "id": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "あらゆるハードウェア・アーキテクチャーのサービスを示すには、「*」に設定します。"
-    },
-    {
-      "id": "A version range.",
-      "translation": "バージョン範囲。"
-    },
-    {
-      "id": "A timestamp/date indicating when the object expires (it is automatically deleted). The timestamp should be provided in RFC3339 format.",
-      "translation": "オブジェクトの有効期限を示すタイム・スタンプ/日付 (オブジェクトは自動的に削除されます)。 タイム・スタンプは RFC3339 フォーマットで指定する必要があります。"
-    },
-    {
-      "id": "Arbitrary string value. The value is not semantically interpreted. The Model Management System does not keep multiple version of an object.",
-      "translation": "任意のストリング値。 値のセマンティックは解釈されません。 モデル管理システムは、オブジェクトの複数バージョンを保持しません。"
-    },
-    {
-      "id": "An arbitrary description.",
-      "translation": "任意の説明。"
-    },
-    {
-      "id": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format.",
-      "translation": "このオブジェクトを自動的にアクティブにする時点のタイム・スタンプ/日付。 タイム・スタンプは RFC3339 フォーマットで指定する必要があります。"
-    },
-    {
-      "id": "must specify exchange credentials to access the model management service",
-      "translation": "モデル管理サービスにアクセスするには Exchange の資格情報を指定する必要があります"
-    },
-    {
-      "id": "must specify --type with --id",
-      "translation": "--type を --id と同時に指定する必要があります"
-    },
-    {
-      "id": "must specify --id with --type",
-      "translation": "--id を --type と同時に指定する必要があります"
-    },
-    {
-      "id": "cannot specify --id and --type with --def",
-      "translation": "--id と --type を --def と同時に指定することはできません"
-    },
-    {
-      "id": "must specify either --type and --id or --def",
-      "translation": "--type と --id、または --def のいずれかを指定する必要があります"
-    },
-    {
-      "id": "cannot specify --pattern with --def",
-      "translation": "--pattern を --def と同時に指定することはできません"
-    },
-    {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "定義ファイル {ObjMetadataFile} を読み取ることができません: {Err}"
-    },
-    {
-      "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
-      "translation": "定義ファイル {ObjMetadataFile} のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
-      "translation": "オブジェクト {ObjFile} はモデル管理サービス内の組織「{Org}」 にアップロードされました"
-    },
-    {
-      "id": "Object status: {Stringresp}",
-      "translation": "オブジェクトの状況: {Stringresp}"
-    },
-    {
-      "id": "Object {ObjectID} added to org {Org} in the Model Management Service",
-      "translation": "オブジェクト {ObjectID} は、モデル管理サービス内の組織「{Org}」 に追加されました"
-    },
-    {
-      "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "タイプ「{ObjType}」のオブジェクト「{ObjId}」は組織「{Org}」 内で検出されませんでした"
-    },
-    {
-      "id": "Object {ObjId} deleted from org {Org} in the Model Management Service",
-      "translation": "オブジェクト {ObjId} は、モデル管理サービス内の組織「{Org}」 から削除されました"
-    },
-    {
-      "id": "health status API returned HTTP code {HttpCode}",
-      "translation": "ヘルス・ステータス API は、HTTP コード {HttpCode} を返しました"
-    },
-    {
-      "id": "unable to create network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "ファイル同期サービス用のネットワーク {NETWORKNAME} を作成できません、エラー {Err}"
-    },
-    {
-      "id": "unable to start CSS, error {Err}",
-      "translation": "CSS を開始できません、エラー {Err}"
-    },
-    {
-      "id": "unable to load file objects into CSS, error {Err}",
-      "translation": "ファイル・オブジェクトを CSS にロードできません、エラー {Err}"
-    },
-    {
-      "id": "unable to start ESS, error {Err}",
-      "translation": "ESS を開始できません、エラー {Err}"
-    },
-    {
-      "id": "Unable to stop {MakeLabelNameESSNAME}, error {Err}",
-      "translation": "{MakeLabelNameESSNAME} を停止できません、エラー {Err}"
-    },
-    {
-      "id": "Unable to remove network {NETWORKNAME} for file sync service, error {Err}",
-      "translation": "ファイル同期サービス用のネットワーク {NETWORKNAME} を削除できません、エラー {Err}"
-    },
-    {
-      "id": "unable to list existing docker images, error {Err}",
-      "translation": "既存の Docker イメージをリストできません、エラー {Err}"
-    },
-    {
-      "id": "Found docker image {Name} locally.",
-      "translation": "ローカルで Docker イメージ {Name} が見つかりました。"
-    },
-    {
-      "id": "unable to pull CSS container using image {GetFSSFullImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a different image tag.",
-      "translation": "イメージ {GetFSSFullImageName} を使用して CSS コンテナーをプルできません、エラー {Err}。 別のイメージ・タグを使用するように環境変数 {DEVTOOLHZNFSSIMAGETAG} を設定してください。"
-    },
-    {
-      "id": "Pulled docker image {Name}.",
-      "translation": "Docker イメージ {Name} をプルしました。"
-    },
-    {
-      "id": "unable to create CSS container using image {GetFSSImageName}, error {Err}. Set environment variable {DEVTOOLHZNFSSIMAGETAG} to use a diferent image tag.",
-      "translation": "イメージ {GetFSSImageName} を使用して CSS コンテナーを作成できません、エラー {Err}。 別のイメージ・タグを使用するように環境変数 {DEVTOOLHZNFSSIMAGETAG} を設定してください。"
-    },
-    {
-      "id": "unable to start CSS container, error {Err}",
-      "translation": "CSS コンテナーを開始できません、エラー {Err}"
-    },
-    {
-      "id": "Created {MakeLabelNameCSSNAME} container, listening on host port {GetCSSPort}",
-      "translation": "{MakeLabelNameCSSNAME} コンテナーを作成しました。ホスト・ポート {GetCSSPort} を listen しています。"
-    },
-    {
-      "id": "File sync service container {MakeLabelNameCSSNAME} listening on host port {GetCSSPort}",
-      "translation": "ファイル同期サービス・コンテナー {MakeLabelNameCSSNAME} は、ホスト・ポート {GetCSSPort} を listen しています"
-    },
-    {
-      "id": "unable to create SSL certificate for ESS, error {Err}",
-      "translation": "ESS の SSL 証明書を作成できません、エラー {Err}"
-    },
-    {
-      "id": "unable to open ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
-      "translation": "ESS の SSL 証明書ファイル {ESSSSLClientCertPath} を開くことができません、エラー {Err}"
-    },
-    {
-      "id": "unable to read ESS SSL Certificate file {ESSSSLClientCertPath}, error {Err}",
-      "translation": "ESS の SSL 証明書ファイル {ESSSSLClientCertPath} を読み取ることができません、エラー {Err}"
-    },
-    {
-      "id": "unable to open ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
-      "translation": "ESS の SSL 証明書鍵ファイル {ESSSSLCertKeyPath} を開くことができません、エラー {Err}"
-    },
-    {
-      "id": "unable to read ESS SSL Certificate Key file {ESSSSLCertKeyPath}, error {Err}",
-      "translation": "ESS の SSL 証明書鍵ファイル {ESSSSLCertKeyPath} を読み取ることができません、エラー {Err}"
-    },
-    {
-      "id": "unable to create ESS container, error {Err}",
-      "translation": "ESS コンテナーを作成できません、エラー {Err}"
-    },
-    {
-      "id": "unable to start ESS container, error {Err}",
-      "translation": "ESS コンテナーを開始できません、エラー {Err}"
-    },
-    {
-      "id": "Created {MakeLabelNameESSNAME} container",
-      "translation": "{MakeLabelNameESSNAME} コンテナーを作成しました"
-    },
-    {
-      "id": "unable to list docker containers, error {Err}",
-      "translation": "Docker コンテナーをリストできません、エラー {Err}"
-    },
-    {
-      "id": "unable to stop docker container {Name}, error {Err}",
-      "translation": "Docker コンテナー {Name} を停止できません、エラー {Err}"
-    },
-    {
-      "id": "unable to remove docker container {Name}, error {Err}",
-      "translation": "Docker コンテナー {Name} を削除できません、エラー {Err}"
-    },
-    {
-      "id": "Stopped {Name} container",
-      "translation": "{Name} コンテナーを停止しました"
-    },
-    {
-      "id": "Loading {FileName} into CSS",
-      "translation": "{FileName} を CSS にロード中"
-    },
-    {
-      "id": "unable to open file object {FileName}, error {Err}",
-      "translation": "ファイル・オブジェクト {FileName} を開くことができません、エラー {Err}"
-    },
-    {
-      "id": "unable to read file object {FileName}, error {Err}",
-      "translation": "ファイル・オブジェクト {FileName} を読み取ることができません、エラー {Err}"
-    },
-    {
-      "id": "unable to add file {FileName} to the CSS, error {Err}",
-      "translation": "ファイル {FileName} を CSS に追加できません、エラー {Err}"
-    },
-    {
-      "id": "Configuration files {FileObjects} loaded into the File sync service.",
-      "translation": "構成ファイル {FileObjects} をファイル同期サービスにロードしました。"
-    },
-    {
-      "id": "unable to marshal CSS file PUT for {Metadata}, error {Err}",
-      "translation": "{Metadata} の CSS ファイル PUT をマーシャルできません、エラー {Err}"
-    },
-    {
-      "id": "unable to create CSS file PUT request for {Metadata}, error {Err}",
-      "translation": "{Metadata} の CSS ファイル PUT 要求を作成できません、エラー {Err}"
-    },
-    {
-      "id": "unable to send CSS file PUT request to CSS for {Metadata}, error {Err}",
-      "translation": "{Metadata} の CSS ファイル PUT 要求を CSS に送信できません、エラー {Err}"
-    },
-    {
-      "id": "Received HTTP code: {StatusCode}",
-      "translation": "受信 HTTP コード: {StatusCode}"
-    },
-    {
-      "id": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}",
-      "translation": "ファイル {Metadata} を CSS に PUT できません、HTTP コード {StatusCode}"
-    },
-    {
-      "id": "Created network {Name}",
-      "translation": "ネットワーク {Name} を作成しました"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "Docker ネットワークをリストできません、エラー {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Docker ネットワーク {Name} を削除できません、エラー {Err}"
-    },
-    {
-      "id": "unable to set env var 'HORIZON_URL', error {Err}",
-      "translation": "環境変数「HORIZON_URL」を設定できません、エラー {Err}"
-    },
-    {
-      "id": "failed to marshal 'agreement list' output: {Err}",
-      "translation": "「agreement list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to marshal 'hzn node list' output: {Err}",
-      "translation": "「hzn node list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to marshal 'policy list' output: {Err}",
-      "translation": "「policy list」の出力のマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "Error: The organization '{Org}' does not exist.",
-      "translation": "エラー: 組織 「{Org}」は存在しません。"
-    },
-    {
-      "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
-      "translation": "エラー: 組織「{Org}」が存在しないか、またはポリシー「{Name}」はこの agbot でホストされていません。"
-    },
-    {
-      "id": "Failed to get proper response from Horizon agent",
-      "translation": "Horizon エージェントから適切な応答を取得できませんでした"
-    },
-    {
-      "id": "Horizon CLI version: {HORIZONVERSION}",
-      "translation": "Horizon CLI のバージョン: {HORIZONVERSION}"
-    },
-    {
-      "id": "Horizon Agent version: {HorizonVersion}",
-      "translation": "Horizon エージェントのバージョン: {HorizonVersion}"
-    },
-    {
-      "id": "Horizon Agent version: failed to get.",
-      "translation": "Horizon エージェントのバージョン: 取得に失敗しました。"
-    },
-    {
-      "id": "cleaned {String} resulted in an empty string.",
-      "translation": "{String} のクリーンアップの結果、空ストリングになりました。"
-    },
-    {
-      "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
-      "translation": "プラグイン・コンテキストには、サービス定義ファイルの現行ディレクトリーとして「currentDir」を含める必要があります。"
-    },
-    {
-      "id": "unable to read chart archive {Depchartarchive}, error {Err}",
-      "translation": "チャート・アーカイブ {Depchartarchive} を読み取ることができません、エラー {Err}"
-    },
-    {
-      "id": "failed to marshal deployment string {Dep}, error {Err}",
-      "translation": "deployment ストリング {Dep} のマーシャルに失敗しました、エラー{Err}"
-    },
-    {
-      "id": "problem signing deployment string with {KeyFilePath}: {Err}",
-      "translation": "deployment ストリングを {KeyFilePath} で署名する際に問題が発生しました: {Err}"
-    },
-    {
-      "id": "chart_archive must have a string type value, has {C}",
-      "translation": "chart_archive の値はストリング型である必要がありますが、{C} です"
-    },
-    {
-      "id": "release_name must have a string type value, has {R}",
-      "translation": "release_name の値はストリング型である必要がありますが、{R} です"
-    },
-    {
-      "id": "chart_archive and release_name must be non-empty strings",
-      "translation": "chart_archive および release_name must は非空ストリングである必要があります"
-    },
-    {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
-      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」は Helm デプロイメントではサポートされていません"
+      "id": "starting test mode is not supported for this project",
+      "translation": "このプロジェクトではテスト・モードの開始はサポートされていません"
     },
     {
       "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
@@ -5025,6 +4889,14 @@
     {
       "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
       "translation": "「deployment.services」の下に定義されているサービス「{SvcName}」には、認識されていないフィールド「{K}」があります。 https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md を参照してください"
+    },
+    {
+      "id": "service '{SvcName}' defined under 'deployment.services' has a malformed ports value {DepSvck}, error {Err}",
+      "translation": "「deployment.services」の下に定義されているサービス「{SvcName}」には、誤った形式のポート値 {DepSvck} があります、error {Err}。"
+    },
+    {
+      "id": "service '{SvcName}' defined under 'deployment.services' is mapping a port {PortBinding} to the default Horizon API port {AnaxAPIPortDefault}. This service will fail when deployed on a node which has not changed the default Horizon API port.",
+      "translation": "「deployment.services」の下に定義されているサービス「{SvcName}」は、ポート {PortBinding} をデフォルトの Horizon API ポート {AnaxAPIPortDefault} にマッピングしています。このサービスは、デフォルトの Horizon API ポートが変更されていないノード上にデプロイされた場合には失敗します。"
     },
     {
       "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
@@ -5065,6 +4937,286 @@
     {
       "id": "Stopped service.",
       "translation": "サービスを停止しました。"
+    },
+    {
+      "id": "failed to marshal 'hzn status -l' output: {Err}",
+      "translation": "「hzn status -l」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "failed to marshal 'hzn status' output: {Err}",
+      "translation": "「hzn status」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Reading configuration file: {ConfigFile}",
+      "translation": "構成ファイル {ConfigFile} を読み取り中"
+    },
+    {
+      "id": "Unable to read config file: {ConfigFile}. {Err}",
+      "translation": "構成ファイル {ConfigFile} を読み取ることができません。 {Err}"
+    },
+    {
+      "id": "Unable to decode content of config file {ConfigFile}. {Err}",
+      "translation": "構成ファイル {ConfigFile} のコンテンツをデコードできません。 {Err}"
+    },
+    {
+      "id": "Config file does not exist: {ConfigFile}.",
+      "translation": "構成ファイル {ConfigFile} は存在しません。"
+    },
+    {
+      "id": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
+      "translation": "ファイル {ConfigFile} の MetadataVars 属性に定義されている環境変数の設定に失敗しました。 {Err}"
+    },
+    {
+      "id": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
+      "translation": "ファイル {ConfigFile} の最上位の環境変数の設定に失敗しました。 {Err}"
+    },
+    {
+      "id": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
+      "translation": "ファイル {ConfigFile} に定義されている環境変数の設定に失敗しました。 {Err}"
+    },
+    {
+      "id": "Local configuration {LocalConfigFile} has been setup at the beginning of this command. Will not setup twice.",
+      "translation": "ローカル構成 {LocalConfigFile} はこのコマンドの開始時にセットアップ済みです。 セットアップは 2 回行いません。"
+    },
+    {
+      "id": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
+      "translation": "ファイル {FilePath} 用のローカル構成ファイル {LocalConfigFile} による環境変数の設定に失敗しました。 エラー: {Err}"
+    },
+    {
+      "id": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
+      "translation": "ローカル構成ファイル {UseLocalConfig} の使用後、環境変数の復元に失敗しました。 {Err}"
+    },
+    {
+      "id": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
+      "translation": "ファイル {ConfigFilepkg} の絶対パスの取得に失敗しました。 {Err}"
+    },
+    {
+      "id": "Error reading environment variables from file {ConfigFilepkg}. {Err}",
+      "translation": "ファイル {ConfigFilepkg} から環境変数を読み取り中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Error reading environment variables from file /etc/default/horizon. {Err}",
+      "translation": "ファイル /etc/default/horizon から環境変数を読み取り中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
+      "translation": "ファイル ~/.hzn/hzn.json の絶対パスの取得に失敗しました。 {Err}"
+    },
+    {
+      "id": "Error getting project level configuration file name. {Err}",
+      "translation": "プロジェクト・レベル構成ファイルの名前を取得中にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "No project level configuration file found.",
+      "translation": "プロジェクト・レベル構成ファイルが見つかりませんでした。"
+    },
+    {
+      "id": "failed to marshal 'key list' output: {Err}",
+      "translation": "「key list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "horizon api trust output did not include 'pem' key",
+      "translation": "Horizon API トラスト出力には「pem」鍵が含まれていませんでした"
+    },
+    {
+      "id": "Creating RSA PSS private and public keys, and an x509 certificate for distribution. This is a CPU-intensive operation and, depending on key length and platform, may take a while. Key generation on an amd64 or ppc64 system using the default key length will complete in less than 1 minute.",
+      "translation": "RSA PSS 秘密鍵および公開鍵、配布用の x509 証明書を作成しています。 これは、CPU に負荷がかかる操作であり、鍵の長さやプラットフォームによっては時間がかかる場合があります。 amd64 または ppc64 システムでデフォルトの長さの鍵の場合、鍵の生成は 1 分未満で完了します。"
+    },
+    {
+      "id": "failed to create a new key pair: {Err}",
+      "translation": "新規鍵ペアの作成に失敗しました: {Err}"
+    },
+    {
+      "id": "Move private key file from {PrivKeyName} to {PrivKeyFile}",
+      "translation": "秘密鍵ファイルを {PrivKeyName} から {PrivKeyFile} に移動します"
+    },
+    {
+      "id": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
+      "translation": "秘密鍵ファイルの {PrivKeyName} から {PrivKeyFile} への移動に失敗しました。 {Err}"
+    },
+    {
+      "id": "Move public key file from {PubKeyName} to {PubKeyFile}.",
+      "translation": "公開鍵ファイルを {PubKeyName} から {PubKeyFile} に移動します。"
+    },
+    {
+      "id": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
+      "translation": "公開鍵ファイルの {PubKeyName} から {PubKeyFile} への移動に失敗しました。 {Err}"
+    },
+    {
+      "id": "Created keys:\n \t{PrivKeyFile}\n\t{PubKeyFile}",
+      "translation": "次の鍵を作成しました:\n \t{PrivKeyFile}\n\t{PubKeyFile}"
+    },
+    {
+      "id": "asked to import the created public key, but can not determine the name.",
+      "translation": "作成済みの公開鍵のインポートを要求されましたが、名前を判別できません。"
+    },
+    {
+      "id": "Importing public key file {PubKeyFile} to the Horizon agent.",
+      "translation": "公開鍵ファイル {PubKeyFile} を Horizon エージェントにインポートします。"
+    },
+    {
+      "id": "{PubKeyFile} imported to the Horizon agent",
+      "translation": "{PubKeyFile} が Horizon エージェントにインポートされました"
+    },
+    {
+      "id": "Public key '{KeyName}' removed from the Horizon agent.",
+      "translation": "公開鍵「{KeyName}」は Horizon エージェントから削除されました。"
+    },
+    {
+      "id": "-d is mutually exclusive with -k and -K",
+      "translation": "-d は、-k および -K とは同時に指定することはできません。"
+    },
+    {
+      "id": "Creating directory {OutputDirPub}.",
+      "translation": "ディレクトリー {OutputDirPub} を作成中。"
+    },
+    {
+      "id": "{PrivKeyFile} is a directory. Please specify a file name.",
+      "translation": "{PrivKeyFile} はディレクトリーです。 ファイル名を指定してください。"
+    },
+    {
+      "id": "File {PrivKeyFile} and {PubKeyFile} exist, do you want to overwrite?",
+      "translation": "ファイル {PrivKeyFile} および {PubKeyFile} は存在します。上書きしますか?"
+    },
+    {
+      "id": "File {PrivKeyFile} exists, do you want to overwrite?",
+      "translation": "ファイル {PrivKeyFile} は存在します。上書きしますか?"
+    },
+    {
+      "id": "Deleting file {PrivKeyFile}.",
+      "translation": "ファイル {PrivKeyFile} を削除中。"
+    },
+    {
+      "id": "failed to marshal 'hzn policy list' output: {Err}",
+      "translation": "「hzn policy list」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "Horizon ノード・ポリシーを更新中です。このノード・ポリシーに基づいてすべての契約が再評価されます。 既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+      "id": "Horizon node policy updated.",
+      "translation": "Horizon ノード・ポリシーが更新されました。"
+    },
+    {
+      "id": "Are you sure you want to remove the node policy?",
+      "translation": "ノード・ポリシーを削除しますか?"
+    },
+    {
+      "id": "Removing Horizon node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.",
+      "translation": "Horizon ノード・ポリシーを削除し、組み込みノード・ポリシーのみに基づいてすべての契約を再評価します。 既存の契約は解除および再交渉される場合があります。"
+    },
+    {
+      "id": "Horizon node policy deleted.",
+      "translation": "Horizon ノード・ポリシーが削除されました。"
+    },
+    {
+      "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
+      "translation": "ノード ID もノード・ポリシーも指定されていません。 ローカル・ノードのノード・ポリシーを取得します。"
+    },
+    {
+      "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
+      "translation": "ノード ID もノード・ユーザー入力ファイルも指定されていません。 ローカル・ノードのノード・ユーザー入力を取得します。"
+    },
+    {
+      "id": "Using compatibility checking input: {CompCheckInput}",
+      "translation": "互換性検査入力: {CompCheckInput} を使用します"
+    },
+    {
+      "id": "failed to marshal 'hzn policy compatible' output: {Err}",
+      "translation": "「hzn policy compatible」の出力のマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Please specify either bussiness policy or pattern.",
+      "translation": "ビジネス・ポリシーまたはパターンを指定してください。"
+    },
+    {
+      "id": "--node-pol, -p and -P are mutually exclusive.",
+      "translation": "--node-pol、-p、および -P は同時に指定することはできません。"
+    },
+    {
+      "id": "--service-pol, -p and -P are mutually exclusive.",
+      "translation": "--service-pol、-p、および -P は同時に指定することはできません。"
+    },
+    {
+      "id": "-n and --node-pol are mutually exclusive.",
+      "translation": "-n と --node-pol は同時に指定することはできません。"
+    },
+    {
+      "id": "-n and --node-ui are mutually exclusive.",
+      "translation": "-n と --node-ui は同時に指定することはできません。"
+    },
+    {
+      "id": "-b and -B are mutually exclusive.",
+      "translation": "-b と -B は同時に指定することはできません。"
+    },
+    {
+      "id": "-p and -P are mutually exclusive.",
+      "translation": "-p と -P は同時に指定することはできません。"
+    },
+    {
+      "id": "Please specify the exchange credential with -u for querying the node, business policy and service policy.",
+      "translation": "ノード、ビジネス・ポリシー、およびサービス・ポリシーを照会する場合、-u を使用して Exchange 資格情報を指定してください。"
+    },
+    {
+      "id": "Please specify the organization with -o for the exchange credentials: {CredToUse}.",
+      "translation": "Exchange 資格情報用の組織を -o を使用して指定してください: {CredToUse}。"
+    },
+    {
+      "id": "Cannot use the local node because it is not registered.",
+      "translation": "ローカル・ノードは登録されていないため、使用できません。"
+    },
+    {
+      "id": "The node architecture {InputArch} specified by -a does not match the architecture of the local node {Arch}.",
+      "translation": "-a で指定されたノード・アーキテクチャー {InputArch} が、ローカル・ノードのアーキテクチャー {Arch} と一致しません。"
+    },
+    {
+      "id": "failed to unmarshal business policy json input file {BusinessPolFile}: {Err}",
+      "translation": "ビジネス・ポリシー JSON 入力ファイル {BusinessPolFile} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Business policy not found for {PolOrg}/{PolId}",
+      "translation": "{PolOrg}/{PolId} に該当するビジネス・ポリシーが見つかりません"
+    },
+    {
+      "id": "Either -b or -B must be specified.",
+      "translation": "-b または -B のいずれかを指定する必要があります。"
+    },
+    {
+      "id": "Error unmarshaling service json file {FilePath}: {Err}",
+      "translation": "サービス JSON ファイル {FilePath} のアンマーシャル中にエラーが発生しました: {Err}"
+    },
+    {
+      "id": "Version must be specified in the service definition.",
+      "translation": "サービス定義にバージョンを指定する必要があります。"
+    },
+    {
+      "id": "Invalide version format: {Version}.",
+      "translation": "無効なバージョン・フォーマット: {Version}。"
+    },
+    {
+      "id": "Arch must be specified in the service definition.",
+      "translation": "サービス定義にアーキテクチャーを指定する必要があります。"
+    },
+    {
+      "id": "Error in service file {Sfile}. {Err}",
+      "translation": "サービス・ファイル {Sfile} 内にエラーがあります。 {Err}"
+    },
+    {
+      "id": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
+      "translation": "パターン JSON 入力ファイル {PatternFile} のアンマーシャルに失敗しました。{Err}"
+    },
+    {
+      "id": "Pattern not found for {PatOrg}/{PatId}",
+      "translation": "{PatOrg}/{PatId} のパターンが見つかりません"
+    },
+    {
+      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the patterh requirement.",
+      "translation": "ファイル {SvcDefFilesi} で指定されたサービス {Org}/{URL} {Arch} {Version} がパターン要件と一致しません。"
+    },
+    {
+      "id": "The service {Org}/{URL} {Arch} {Version} specified in file {SvcDefFilesi} does not match the business policy requirement.",
+      "translation": "ファイル {SvcDefFilesi} で指定されたサービス {Org}/{URL} {Arch} {Version} がビジネス・ポリシー要件と一致しません。"
     }
   ]
 }
