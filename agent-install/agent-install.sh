@@ -325,6 +325,18 @@ function check_installed() {
 
     if command -v "$1" >/dev/null 2>&1; then
         log_info "${2} is installed"
+    elif [[ $3 != "" ]]; then
+      if command -v "$3" >/dev/null 2>&1; then
+        log_notify "${2} not found. Attempting to install with ${3}"
+        set -x
+        $3 install "$2"
+        set +x
+      fi
+      if command -v "$1" >/dev/null 2>&1; then
+        log_info "${2} is now installed"
+      else 
+        log_info "Failed to install ${2} with ${3}. Please install ${2}"
+      fi
     else
         log_notify "${2} not found, please install it"
         quit 1
@@ -346,7 +358,7 @@ function install_macos() {
     log_info "Checking ${OS} specific prerequisites..."
     check_installed "socat" "socat"
     check_installed "docker" "Docker"
-    check_installed "jq" "jq"
+    check_installed "jq" "jq" "brew"
 
     # Setting up a certificate
     log_info "Importing the horizon-cli package certificate into Mac OS keychain..."
@@ -354,8 +366,8 @@ function install_macos() {
 
     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${PACKAGES}/${MAC_PACKAGE_CERT}
     set +x
-	if [ -z "$CERTIFICATE" ]; then
-		log_info "Configuring an edge node to trust the ICP certificate..."
+	if [[ "$CERTIFICATE" != "" ]]; then
+		log_info "Configuring an edge node to trust the ICP certificate ..."
 		set -x
 		sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$CERTIFICATE"
 		set +x
@@ -492,6 +504,9 @@ function install_macos() {
         else
 	        log_info "${CONFIG_MAC} file doesn't exist, creating..."
             set -x
+            if [[ ! -f "$(dirname "$CONFIG_MAC")" ]]; then
+              mkdir "$(dirname "$CONFIG_MAC")"
+            fi
 		if [ -z "$CERTIFICATE" ]; then
 			echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"}" > "$CONFIG_MAC"
 		else
