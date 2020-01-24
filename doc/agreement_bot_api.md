@@ -10,12 +10,12 @@ curl -s http://<ip>/agreement | jq '.'
 
 The following APIs can be run from a remote node. They are secure APIs, which means you need to run with HTTPS and with a CA certificate file that is provided by the Agreenent Bot. You also need to provide your user name and password (or API key) from the Exchange for verification and authentication. For example:
 ```
-curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycompatible
+curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible
 ```
 
 ### 1.1 Deployment Compatibility Check
 
-#### **API:** GET  /deploycompatible
+#### **API:** GET  /deploycheck/deploycompatible
 ---
 
 This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
@@ -66,7 +66,7 @@ read -d '' comp_input <<EOF
 }
 EOF
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycompatible | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -75,7 +75,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 }
  
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycompatible?checkAll=1 | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible?checkAll=1 | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -85,7 +85,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 }
 
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycompatible?long=1 | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible?long=1 | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -157,7 +157,7 @@ read -d '' comp_input <<EOF
 }
 EOF
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycompatible | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/deploycompatible | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -167,7 +167,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 ```
 
 
-#### **API:** GET  /policycompatible
+#### **API:** GET  /deploycheck/policycompatible
 ---
 
 This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
@@ -215,7 +215,7 @@ read -d '' comp_input <<EOF
 EOF
 
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/policycompatible?checkAll=1 | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/policycompatible?checkAll=1 | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -239,7 +239,7 @@ read -d '' comp_input <<EOF
 }
 EOF
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/policycompatible | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/policycompatible | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -249,7 +249,7 @@ echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u 
 ```
 
 
-#### **API:** GET  /userinputcompatible
+#### **API:** GET  /deploycheck/userinputcompatible
 ---
 
 This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
@@ -298,7 +298,7 @@ read -d '' comp_input <<EOF
 }
 EOF
  
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/userinputcompatible?checkAll=1 | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/userinputcompatible?checkAll=1 | jq '.'
 {
   "compatible": true,
   "reason": {
@@ -320,7 +320,7 @@ read -d '' comp_input <<EOF
 }
 EOF
 
-echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/userinputcompatible | jq '.'
+echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert <cert_file_name> -u myord/myusername:mypassword --data @- https://123.456.78.9:8083/deploycheck/userinputcompatible | jq '.'
 {
   "compatible": true,
   "reason": {

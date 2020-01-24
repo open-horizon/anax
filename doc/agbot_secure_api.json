@@ -1,0 +1,1340 @@
+{
+    "apiVersion": "1.0.0",
+    "swaggerVersion": "1.2",
+    "basePath": "https://host:port/",
+    "resourcePath": "/deploycheck",
+    "produces": [
+        "application/json"
+    ],
+    "apis": [
+        {
+            "path": "/deploycheck/policycompatible",
+            "description": "Check the policy compatibility. This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+            "operations": [
+                {
+                    "httpMethod": "GET",
+                    "nickname": "policy_compatible",
+                    "type": "github.com.open-horizon.anax.compcheck.CompCheckOutput",
+                    "items": {},
+                    "summary": "Check the policy compatibility. This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+                    "parameters": [
+                        {
+                            "paramType": "query",
+                            "name": "checkAll",
+                            "description": "Return the compatibility check result for all the service versions referenced in the business policy or pattern.",
+                            "dataType": "bool",
+                            "type": "bool",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "long",
+                            "description": "Show the input which was used to come up with the result.",
+                            "dataType": "bool",
+                            "type": "bool",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_id",
+                            "description": "The exchange id of the node. Mutually exclusive with node_policy.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_arch",
+                            "description": "The architecture of the node.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_policy",
+                            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
+                            "dataType": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "type": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "business_policy_id",
+                            "description": "The exchange id of the business policy. Mutually exclusive with business_policy.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "business_policy",
+                            "description": "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id.",
+                            "dataType": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                            "type": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "service_policy",
+                            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
+                            "dataType": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "type": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "",
+                            "responseType": "object",
+                            "responseModel": "github.com.open-horizon.anax.compcheck.CompCheckOutput"
+                        },
+                        {
+                            "code": 400,
+                            "message": "No input found",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        },
+                        {
+                            "code": 401,
+                            "message": "Failed to authenticate",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        },
+                        {
+                            "code": 500,
+                            "message": "Error",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/deploycheck/userinputcompatible",
+            "description": "Check the user input compatibility. This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+            "operations": [
+                {
+                    "httpMethod": "GET",
+                    "nickname": "userinput_compatible",
+                    "type": "github.com.open-horizon.anax.compcheck.CompCheckOutput",
+                    "items": {},
+                    "summary": "Check the user input compatibility. This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+                    "parameters": [
+                        {
+                            "paramType": "query",
+                            "name": "checkAll",
+                            "description": "Return the compatibility check result for all the service versions referenced in the business policy or pattern.",
+                            "dataType": "bool",
+                            "type": "bool",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "long",
+                            "description": "Show the input which was used to come up with the result.",
+                            "dataType": "bool",
+                            "type": "bool",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_id",
+                            "description": "The exchange id of the node. Mutually exclusive with node_user_input.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_arch",
+                            "description": "The architecture of the node.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_user_input",
+                            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
+                            "dataType": "array",
+                            "type": "array",
+                            "items": {
+                                "$ref": "github.com.open-horizon.anax.policy.UserInput"
+                            },
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "business_policy_id",
+                            "description": "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "business_policy",
+                            "description": "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
+                            "dataType": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                            "type": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "pattern_id",
+                            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "pattern",
+                            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
+                            "dataType": "github.com.open-horizon.anax.common.PatternFile",
+                            "type": "github.com.open-horizon.anax.common.PatternFile",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "service",
+                            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange.",
+                            "dataType": "array",
+                            "type": "array",
+                            "items": {
+                                "$ref": "github.com.open-horizon.anax.common.ServiceFile"
+                            },
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "",
+                            "responseType": "object",
+                            "responseModel": "github.com.open-horizon.anax.compcheck.CompCheckOutput"
+                        },
+                        {
+                            "code": 400,
+                            "message": "No input found",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        },
+                        {
+                            "code": 401,
+                            "message": "Failed to authenticate",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        },
+                        {
+                            "code": 500,
+                            "message": "Error",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/deploycheck/deploycompatible",
+            "description": "Check deployment compatibility. This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+            "operations": [
+                {
+                    "httpMethod": "GET",
+                    "nickname": "deploy_compatible",
+                    "type": "github.com.open-horizon.anax.compcheck.CompCheckOutput",
+                    "items": {},
+                    "summary": "Check deployment compatibility. This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.",
+                    "parameters": [
+                        {
+                            "paramType": "query",
+                            "name": "checkAll",
+                            "description": "Return the compatibility check result for all the service versions referenced in the business policy or pattern.",
+                            "dataType": "bool",
+                            "type": "bool",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "query",
+                            "name": "long",
+                            "description": "Show the input which was used to come up with the result.",
+                            "dataType": "bool",
+                            "type": "bool",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_id",
+                            "description": "The exchange id of the node. Mutually exclusive with node_policy and node_user_input.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_arch",
+                            "description": "The architecture of the node.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_policy",
+                            "description": "The node policy that will be put in the exchange. Mutually exclusive with node_id.",
+                            "dataType": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "type": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "node_user_input",
+                            "description": "The user input that will be put in the exchange for the services. Mutually exclusive with node_id.",
+                            "dataType": "array",
+                            "type": "array",
+                            "items": {
+                                "$ref": "github.com.open-horizon.anax.policy.UserInput"
+                            },
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "business_policy_id",
+                            "description": "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "business_policy",
+                            "description": "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern.",
+                            "dataType": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                            "type": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "pattern_id",
+                            "description": "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy.",
+                            "dataType": "string",
+                            "type": "string",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "pattern",
+                            "description": "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy.",
+                            "dataType": "github.com.open-horizon.anax.common.PatternFile",
+                            "type": "github.com.open-horizon.anax.common.PatternFile",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "service_policy",
+                            "description": "The service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy.",
+                            "dataType": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "type": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        },
+                        {
+                            "paramType": "body",
+                            "name": "service",
+                            "description": "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange.",
+                            "dataType": "array",
+                            "type": "array",
+                            "items": {
+                                "$ref": "github.com.open-horizon.anax.common.ServiceFile"
+                            },
+                            "format": "",
+                            "allowMultiple": false,
+                            "required": false,
+                            "minimum": 0,
+                            "maximum": 0
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 200,
+                            "message": "",
+                            "responseType": "object",
+                            "responseModel": "github.com.open-horizon.anax.compcheck.CompCheckOutput"
+                        },
+                        {
+                            "code": 400,
+                            "message": "No input found",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        },
+                        {
+                            "code": 401,
+                            "message": "Failed to authenticate",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        },
+                        {
+                            "code": 500,
+                            "message": "Error",
+                            "responseType": "object",
+                            "responseModel": "string"
+                        }
+                    ],
+                    "produces": [
+                        "application/json"
+                    ]
+                }
+            ]
+        }
+    ],
+    "models": {
+        "github.com.open-horizon.anax.businesspolicy.BusinessPolicy": {
+            "id": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+            "properties": {
+                "constraints": {
+                    "type": "github.com.open-horizon.anax.externalpolicy.ConstraintExpression",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "description": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "label": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "owner": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "properties": {
+                    "type": "github.com.open-horizon.anax.externalpolicy.PropertyList",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "service": {
+                    "type": "github.com.open-horizon.anax.businesspolicy.ServiceRef",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "userInput": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.policy.UserInput"
+                    },
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.businesspolicy.NodeHealth": {
+            "id": "github.com.open-horizon.anax.businesspolicy.NodeHealth",
+            "properties": {
+                "check_agreement_status": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "missing_heartbeat_interval": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.businesspolicy.ServiceRef": {
+            "id": "github.com.open-horizon.anax.businesspolicy.ServiceRef",
+            "properties": {
+                "arch": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "name": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "nodeHealth": {
+                    "type": "github.com.open-horizon.anax.businesspolicy.NodeHealth",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "org": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceVersions": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.businesspolicy.WorkloadChoice"
+                    },
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.businesspolicy.UpgradePolicy": {
+            "id": "github.com.open-horizon.anax.businesspolicy.UpgradePolicy",
+            "properties": {
+                "lifecycle": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "time": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.businesspolicy.WorkloadChoice": {
+            "id": "github.com.open-horizon.anax.businesspolicy.WorkloadChoice",
+            "properties": {
+                "priority": {
+                    "type": "github.com.open-horizon.anax.businesspolicy.WorkloadPriority",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "upgradePolicy": {
+                    "type": "github.com.open-horizon.anax.businesspolicy.UpgradePolicy",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "version": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.businesspolicy.WorkloadPriority": {
+            "id": "github.com.open-horizon.anax.businesspolicy.WorkloadPriority",
+            "properties": {
+                "priority_value": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "retries": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "retry_durations": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "verified_durations": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.common.AbstractPatternFile": {
+            "id": "github.com.open-horizon.anax.common.AbstractPatternFile",
+            "properties": null
+        },
+        "github.com.open-horizon.anax.common.AbstractServiceFile": {
+            "id": "github.com.open-horizon.anax.common.AbstractServiceFile",
+            "properties": null
+        },
+        "github.com.open-horizon.anax.common.PatternFile": {
+            "id": "github.com.open-horizon.anax.common.PatternFile",
+            "properties": {
+                "agreementProtocols": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.exchange.AgreementProtocol"
+                    },
+                    "format": ""
+                },
+                "description": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "label": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "name": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "org": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "public": {
+                    "type": "bool",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "services": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.common.ServiceReferenceFile"
+                    },
+                    "format": ""
+                },
+                "userInput": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.policy.UserInput"
+                    },
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.common.ServiceChoiceFile": {
+            "id": "github.com.open-horizon.anax.common.ServiceChoiceFile",
+            "properties": {
+                "deployment_overrides": {
+                    "type": "interface",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "deployment_overrides_signature": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "priority": {
+                    "type": "github.com.open-horizon.anax.exchange.WorkloadPriority",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "upgradePolicy": {
+                    "type": "github.com.open-horizon.anax.exchange.UpgradePolicy",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "version": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.common.ServiceFile": {
+            "id": "github.com.open-horizon.anax.common.ServiceFile",
+            "properties": {
+                "arch": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "deployment": {
+                    "type": "interface",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "deploymentSignature": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "description": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "documentation": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "label": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "matchHardware": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "type": "interface"
+                    },
+                    "format": ""
+                },
+                "org": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "public": {
+                    "type": "bool",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "requiredServices": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.exchange.ServiceDependency"
+                    },
+                    "format": ""
+                },
+                "sharable": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "url": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "userInput": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.exchange.UserInput"
+                    },
+                    "format": ""
+                },
+                "version": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.common.ServiceReferenceFile": {
+            "id": "github.com.open-horizon.anax.common.ServiceReferenceFile",
+            "properties": {
+                "agreementLess": {
+                    "type": "bool",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "dataVerification": {
+                    "type": "github.com.open-horizon.anax.exchange.DataVerification",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "nodeHealth": {
+                    "type": "github.com.open-horizon.anax.exchange.NodeHealth",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceArch": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceOrgid": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceUrl": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceVersions": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.common.ServiceChoiceFile"
+                    },
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.compcheck.CompCheckOutput": {
+            "id": "github.com.open-horizon.anax.compcheck.CompCheckOutput",
+            "properties": {
+                "compatible": {
+                    "type": "bool",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "input": {
+                    "type": "github.com.open-horizon.anax.compcheck.CompCheckResource",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "reason": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "type": "string"
+                    },
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.compcheck.CompCheckResource": {
+            "id": "github.com.open-horizon.anax.compcheck.CompCheckResource",
+            "properties": {
+                "business_policy": {
+                    "type": "github.com.open-horizon.anax.businesspolicy.BusinessPolicy",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "business_policy_id": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "node_arch": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "node_id": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "node_policy": {
+                    "type": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "node_user_input": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.policy.UserInput"
+                    },
+                    "format": ""
+                },
+                "pattern": {
+                    "type": "github.com.open-horizon.anax.common.AbstractPatternFile",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "pattern_id": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "service": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.common.AbstractServiceFile"
+                    },
+                    "format": ""
+                },
+                "service_policy": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy"
+                    },
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.AgreementProtocol": {
+            "id": "github.com.open-horizon.anax.exchange.AgreementProtocol",
+            "properties": {
+                "blockchains": {
+                    "type": "github.com.open-horizon.anax.exchange.BlockchainList",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "name": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "protocolVersion": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.BlockchainList": {
+            "id": "github.com.open-horizon.anax.exchange.BlockchainList",
+            "properties": null
+        },
+        "github.com.open-horizon.anax.exchange.DataVerification": {
+            "id": "github.com.open-horizon.anax.exchange.DataVerification",
+            "properties": {
+                "URL": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "check_rate": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "enabled": {
+                    "type": "bool",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "interval": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "metering": {
+                    "type": "github.com.open-horizon.anax.exchange.Meter",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "password": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "user": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.Meter": {
+            "id": "github.com.open-horizon.anax.exchange.Meter",
+            "properties": {
+                "notification_interval": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "per_time_unit": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "tokens": {
+                    "type": "uint64",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.NodeHealth": {
+            "id": "github.com.open-horizon.anax.exchange.NodeHealth",
+            "properties": {
+                "check_agreement_status": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "missing_heartbeat_interval": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.ServiceDependency": {
+            "id": "github.com.open-horizon.anax.exchange.ServiceDependency",
+            "properties": {
+                "arch": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "org": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "url": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "version": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "versionRange": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.UpgradePolicy": {
+            "id": "github.com.open-horizon.anax.exchange.UpgradePolicy",
+            "properties": {
+                "lifecycle": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "time": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.UserInput": {
+            "id": "github.com.open-horizon.anax.exchange.UserInput",
+            "properties": {
+                "defaultValue": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "label": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "name": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "type": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.exchange.WorkloadPriority": {
+            "id": "github.com.open-horizon.anax.exchange.WorkloadPriority",
+            "properties": {
+                "priority_value": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "retries": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "retry_durations": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "verified_durations": {
+                    "type": "int",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.externalpolicy.ConstraintExpression": {
+            "id": "github.com.open-horizon.anax.externalpolicy.ConstraintExpression",
+            "properties": null
+        },
+        "github.com.open-horizon.anax.externalpolicy.ExternalPolicy": {
+            "id": "github.com.open-horizon.anax.externalpolicy.ExternalPolicy",
+            "properties": {
+                "constraints": {
+                    "type": "github.com.open-horizon.anax.externalpolicy.ConstraintExpression",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "properties": {
+                    "type": "github.com.open-horizon.anax.externalpolicy.PropertyList",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.externalpolicy.PropertyList": {
+            "id": "github.com.open-horizon.anax.externalpolicy.PropertyList",
+            "properties": null
+        },
+        "github.com.open-horizon.anax.policy.Input": {
+            "id": "github.com.open-horizon.anax.policy.Input",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "type": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "value": {
+                    "type": "interface",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        },
+        "github.com.open-horizon.anax.policy.UserInput": {
+            "id": "github.com.open-horizon.anax.policy.UserInput",
+            "properties": {
+                "inputs": {
+                    "type": "array",
+                    "description": "",
+                    "items": {
+                        "$ref": "github.com.open-horizon.anax.policy.Input"
+                    },
+                    "format": ""
+                },
+                "serviceArch": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceOrgid": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceUrl": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                },
+                "serviceVersionRange": {
+                    "type": "string",
+                    "description": "",
+                    "items": {},
+                    "format": ""
+                }
+            }
+        }
+    }
+}
