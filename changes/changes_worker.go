@@ -130,6 +130,12 @@ func (w *ChangesWorker) NewEvent(incoming events.Message) {
 	case *events.AgreementReachedMessage:
 		w.Commands <- NewAgreementCommand()
 
+	case *events.NodePolicyMessage:
+		w.Commands <- NewResetIntervalCommand()
+
+	case *events.NodeUserInputMessage:
+		w.Commands <- NewResetIntervalCommand()
+
 	case *events.GovernanceWorkloadCancelationMessage:
 		msg, _ := incoming.(*events.GovernanceWorkloadCancelationMessage)
 		switch msg.Event().Id {
