@@ -169,5 +169,5 @@ func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, n
 		}
 	}
 
-	return orgToUse, *credToUse, nodeId, useNodeId
+	return orgToUse, *credToUse, nodeIdToUse, useNodeId
 }
