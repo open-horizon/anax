@@ -1,3 +1,9 @@
+// @APIVersion 1.0.0
+// @APITitle Agreement Bot Secure API
+// @APIDescription This is the secure API for the agreement bot.
+// @BasePath https://host:port/
+// @SubApi Deployment Check API [/deploycheck]
+
 package agreementbot
 
 import (
@@ -148,9 +154,9 @@ func (a *SecureAPI) listen() {
 	go func() {
 		router := mux.NewRouter()
 
-		router.HandleFunc("/policycompatible", a.policy_compatible).Methods("GET", "OPTIONS")
-		router.HandleFunc("/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
-		router.HandleFunc("/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/deploycheck/policycompatible", a.policy_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 
@@ -166,15 +172,33 @@ func (a *SecureAPI) listen() {
 	}()
 }
 
+// @Title policy_compatible
+// @Description Check the policy compatibility. This API does the policy compatibility check for the given business policy, node policy and service policy. The business policy and the service policy will be merged to check against the node policy. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+// @Accept  json
+// @Produce json
+// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
+// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
+// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_policy."
+// @Param   node_arch    		body     string   false        "The architecture of the node."
+// @Param   node_policy  		body     externalpolicy.ExternalPolicy     false        "The node policy that will be put in the exchange. Mutually exclusive with node_id."
+// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy."
+// @Param   business_policy  	body     businesspolicy.BusinessPolicy     false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id."
+// @Param   service_policy  	body     externalpolicy.ExternalPolicy     false        "The service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
+// @Success 200 {object}  compcheck.CompCheckOutput
+// @Failure 400 {object}  string      "No input found"
+// @Failure 401 {object}  string      "Failed to authenticate"
+// @Failure 500 {object}  string      "Error"
+// @Resource /deploycheck
+// @Router /deploycheck/policycompatible [get]
 // This function does policy compatibility check.
 func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		glog.V(5).Infof(APIlogString(fmt.Sprintf("/policycompatible called.")))
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/policycompatible called.")))
 
 		// check user cred
-		if user_ec, msgPrinter, ok := a.processUserCred("/policycompatible", w, r); ok {
+		if user_ec, msgPrinter, ok := a.processUserCred("/deploycheck/policycompatible", w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -207,14 +231,34 @@ func (a *SecureAPI) policy_compatible(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Title userinput_compatible
+// @Description Check the user input compatibility. This API does the user input compatibility check for the given business policy (or a pattern), service definition and node user input. The user input values in the business policy and the node will be merged to check against the service uer input requirement defined in the service definition. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+// @Accept  json
+// @Produce json
+// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
+// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
+// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_user_input."
+// @Param   node_arch    		body     string   false        "The architecture of the node."
+// @Param   node_user_input  	body     policy.UserInput    				false        "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
+// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
+// @Param   business_policy  	body     businesspolicy.BusinessPolicy     	false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
+// @Param   pattern_id      	body     string   false        "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
+// @Param   pattern  			body     common.PatternFile     			false        "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
+// @Param   service  			body     common.ServiceFile    				false        "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange."
+// @Success 200 {object}  compcheck.CompCheckOutput
+// @Failure 400 {object}  string      "No input found"
+// @Failure 401 {object}  string      "Failed to authenticate"
+// @Failure 500 {object}  string      "Error"
+// @Resource /deploycheck
+// @Router /deploycheck/userinputcompatible [get]
 // This function does userinput compatibility check.
 func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		glog.V(5).Infof(APIlogString(fmt.Sprintf("/userinputcompatible called.")))
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/userinputcompatible called.")))
 
-		if user_ec, msgPrinter, ok := a.processUserCred("/userinputcompatible", w, r); ok {
+		if user_ec, msgPrinter, ok := a.processUserCred("/deploycheck/userinputcompatible", w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -247,14 +291,36 @@ func (a *SecureAPI) userinput_compatible(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// @Title deploy_compatible
+// @Description Check deployment compatibility. This API does compatibility check for the given business policy (or a pattern), service definition, node policy and node user input. It does both policy compatibility check and user input compatibility check. If the result is compatible, it means that, when deployed, the node will form an agreement with the agbot and the service will be running on the node.
+// @Accept  json
+// @Produce json
+// @Param   checkAll     		query    bool     false        "Return the compatibility check result for all the service versions referenced in the business policy or pattern."
+// @Param   long         		query    bool     false        "Show the input which was used to come up with the result."
+// @Param   node_id      		body     string   false        "The exchange id of the node. Mutually exclusive with node_policy and node_user_input."
+// @Param   node_arch    		body     string   false        "The architecture of the node."
+// @Param   node_policy  		body     externalpolicy.ExternalPolicy 	false        "The node policy that will be put in the exchange. Mutually exclusive with node_id."
+// @Param   node_user_input  	body     policy.UserInput       		false        "The user input that will be put in the exchange for the services. Mutually exclusive with node_id."
+// @Param   business_policy_id  body     string   false        "The exchange id of the business policy. Mutually exclusive with business_policy. Mutually exclusive with pattern_id and pattern."
+// @Param   business_policy  	body     businesspolicy.BusinessPolicy  false        "The defintion of the business policy that will be put in the exchange. Mutually exclusive with business_policy_id. Mutually exclusive with pattern_id and pattern."
+// @Param   pattern_id      	body     string   false        "The exchange id of the pattern. Mutually exclusive with pattern. Mutually exclusive with business_policy_id and business_policy."
+// @Param   pattern  			body     common.PatternFile      		false        "The pattern that will be put in the exchange. Mutually exclusive with pattern_id. Mutually exclusive with business_policy_id and business_policy."
+// @Param   service_policy  	body     externalpolicy.ExternalPolicy 	false        "The service policy that will be put in the exchange. They are for the top level service referenced in the business policy. If omitted, the service policy will be retrieved from the exchange. The service policy has the same format as the node policy."
+// @Param   service  			body     common.ServiceFile     		false        "An array of the top level services that will be put in the exchange. They are refrenced in the business policy or pattern. If omitted, the services will be retrieved from the exchange."
+// @Success 200 {object}  compcheck.CompCheckOutput
+// @Failure 400 {object}  string      "No input found"
+// @Failure 401 {object}  string      "Failed to authenticate"
+// @Failure 500 {object}  string      "Error"
+// @Resource /deploycheck
+// @Router /deploycheck/deploycompatible [get]
 // This function does policy and userinput compatibility check.
 func (a *SecureAPI) deploy_compatible(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
-		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycompatible called.")))
+		glog.V(5).Infof(APIlogString(fmt.Sprintf("/deploycheck/deploycompatible called.")))
 
-		if user_ec, msgPrinter, ok := a.processUserCred("/deploycompatible", w, r); ok {
+		if user_ec, msgPrinter, ok := a.processUserCred("/deploycheck/deploycompatible", w, r); ok {
 			body, _ := ioutil.ReadAll(r.Body)
 			if len(body) == 0 {
 				glog.Errorf(APIlogString(fmt.Sprintf("No input found.")))
@@ -324,7 +390,7 @@ func fileExists(filename string) bool {
 	return true
 }
 
-// Verify the comcheck input body from the /policycompatible api and convert it to compcheck.PolicyCheck
+// Verify the comcheck input body from the /deploycheck/policycompatible api and convert it to compcheck.PolicyCheck
 // It will give meaningful error as much as possible
 func (a *SecureAPI) decodePolicyCheckBody(body []byte, msgPrinter *message.Printer) (*compcheck.PolicyCheck, error) {
 
@@ -344,7 +410,7 @@ func (a *SecureAPI) decodePolicyCheckBody(body []byte, msgPrinter *message.Print
 	}
 }
 
-// Verify the comcheck input body from the /userinputcompatible api and convert it to compcheck.UserInputCheck
+// Verify the comcheck input body from the /deploycheck/userinputcompatible api and convert it to compcheck.UserInputCheck
 // It will give meaningful error as much as possible
 func (a *SecureAPI) decodeUserInputCheckBody(body []byte, msgPrinter *message.Printer) (*compcheck.UserInputCheck, error) {
 
@@ -364,7 +430,7 @@ func (a *SecureAPI) decodeUserInputCheckBody(body []byte, msgPrinter *message.Pr
 	}
 }
 
-// Verify the comcheck input body from the /userinputcompatible api and convert it to compcheck.UserInputCheck
+// Verify the comcheck input body from the /deploycheck/userinputcompatible api and convert it to compcheck.UserInputCheck
 // It will give meaningful error as much as possible
 func (a *SecureAPI) decodeCompCheckBody(body []byte, msgPrinter *message.Printer) (*compcheck.CompCheck, error) {
 
