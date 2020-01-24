@@ -2,13 +2,14 @@
 
 ## Introduction
 
-This project contains the Horizon client system source code. To learn more about the Horizon system, including how to try the Blue Horizon instance of it, please browse to http://bluehorizon.network. Note that the **HEAD** of this repository's `master` branch includes alpha-grade code under current development. Stable versions of this application are packaged for many Debian-based distributions. They are available for download at http://pkg.bluehorizon.network/linux/. To build the packages yourself, consult https://github.com/open-horizon/horizon-deb-packager.
+This project contains the Horizon client system source code. Stable versions of the Horizon agent are packaged for many Debian-based distributions. They are available for download at http://pkg.bluehorizon.network/linux/. To build the packages yourself, consult https://github.com/open-horizon/horizon-deb-packager.
+To run the agent, you will need access to systems where the Exchange (https://github.com/open-horizon/exchange-api), the CSS (https://github.com/open-horizon/anax/tree/master/css/image/cloud-sync-service-amd64), and an Agbot (which is just anax deployed as an agbot instead of an agent) are deployed.
 
 Related Projects:
 
-* `anax-ui` (http://github.com/open-horizon/anax-ui): The source for the Anax web UI
 * `horizon-deb-packager` (https://github.com/open-horizon/horizon-deb-packager): A system for packaging Horizon system `deb`s for multiple distributions and architectures. It also produces Ubuntu snaps
- * `raspbian-image` (http://github.com/open-horizon/raspbian-image): The Raspbian image builder for Raspberry Pi 2 and 3 models dedicated to Horizon
+* `sync-service` (https://github.com/open-horizon/edge-sync-service): A subsystem for managing machine learning models at the edge.
+
 
 ## Documentation
 
