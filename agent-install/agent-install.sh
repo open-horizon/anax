@@ -45,6 +45,7 @@ where:
     -p          - pattern name to register with (if not specified, registers node w/o pattern)
     -i          - installation packages location (if not specified, uses current directory). if the argument begins with 'http' or 'https', will use as an apt repository
     -j          - file location for the public key for an apt repository specified with '-i'
+    -t          - set a branch to use in the apt repo specified with -i. default is 'updates'
     -n          - path to a node policy file
     -s          - skip registration
     -v          - show version
@@ -608,9 +609,12 @@ function install_linux(){
 		    apt-key add "$PKG_APT_KEY"
 		    set +x
 	    fi
+	    if [[ -z "$APT_REPO_BRANCH" ]]; then
+		    APT_REPO_BRANCH="updates"
+	    fi
 	    log_info "Adding $PKG_APT_REPO to /etc/sources to install with apt"
 	    set -x
-	    add-apt-repository "deb $PKG_APT_REPO/linux/${DISTRO} ${CODENAME}-updates main"
+	    add-apt-repository "deb $PKG_APT_REPO ${CODENAME}-$APT_REPO_BRANCH main"
 	    apt-get install bluehorizon -y -f
 	    set +x
     else
@@ -1307,7 +1311,7 @@ function find_node_ip_address() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:z:hvl:n:s:f:w:o:" opt; do
+while getopts "c:i:j:p:k:u:z:hvl:n:sfw:o:t:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1338,6 +1342,8 @@ while getopts "c:i:j:p:k:u:z:hvl:n:s:f:w:o:" opt; do
 		w) WAIT_FOR_SERVICE="$OPTARG"
 		;;
 		o) WAIT_FOR_SERVICE_ORG="$OPTARG"
+		;;
+		t) APT_REPO_BRANCH="$OPTARG"
 		;;
 		\?) echo "Invalid option: -$OPTARG"; help
 		;;
