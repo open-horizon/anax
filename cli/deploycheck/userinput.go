@@ -49,6 +49,11 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 	uiCheckInput.PatternId = patternId
 	uiCheckInput.Pattern = pattern
 
+	// use the user org for the patternId if it does not include an org id
+	if uiCheckInput.PatternId != "" {
+		uiCheckInput.PatternId = cliutils.AddOrg(userOrg, uiCheckInput.PatternId)
+	}
+
 	// formalize node id or get node policy
 	bUseLocalNode := false
 	if useNodeId {
@@ -230,7 +235,7 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 		// Other parts will be checked later by the compcheck package.
 		checkServiceDefsForBPol(bp, serviceDefs, svcDefFiles)
 
-		return orgToUse, *credToUse, nodeId, useNodeId, bp, nil, serviceDefs
+		return orgToUse, *credToUse, nodeIdToUse, useNodeId, bp, nil, serviceDefs
 	} else {
 		// get pattern from file or exchange
 		pattern, pf := getPattern(orgToUse, *credToUse, patternId, patternFile)
@@ -240,7 +245,7 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 		// Not checking the missing ones becaused it will be checked by the compcheck package.
 		checkServiceDefsForPattern(pattern, serviceDefs, svcDefFiles)
 
-		return orgToUse, *credToUse, nodeId, useNodeId, nil, pf, serviceDefs
+		return orgToUse, *credToUse, nodeIdToUse, useNodeId, nil, pf, serviceDefs
 	}
 }
 
