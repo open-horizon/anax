@@ -23,7 +23,6 @@ NODE_ID_MAPPING_FILE="node-id-mapping.csv"
 CERTIFICATE_DEFAULT="agent-install.crt"
 
 VERBOSITY=3 # Default logging verbosity
-BATCH_INSTALL=false
 
 # required parameters and their defaults
 REQUIRED_PARAMS=( "HZN_EXCHANGE_URL" "HZN_FSS_CSSURL" "HZN_ORG_ID" "HZN_EXCHANGE_USER_AUTH" )
@@ -425,7 +424,7 @@ function install_macos() {
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] ; then
-						if [ $BATCH_INSTALL ]; then
+						if [ $BATCH_INSTALL -eq 1 ]; then
 							exit 1
 						fi
 						echo "The installed agent is newer than one you're trying to install, continue?[y/N]:"
@@ -647,7 +646,7 @@ function install_linux(){
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION" ; then
 					log_notify "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] ; then
-						if [ $BATCH_INSTALL ]; then
+						if [ $BATCH_INSTALL -eq 1 ]; then
 							exit 1
 						fi
 						echo "The installed agent is newer than one you're trying to install, continue?[y/N]:"
@@ -858,7 +857,7 @@ function process_node(){
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has been specified"
 				if [ ! "$OVERWRITE_NODE" = true ] ; then
-					if [ $BATCH_INSTALL ]; then
+					if [ $BATCH_INSTALL -eq 1 ]; then
 						exit 1
 					fi
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
@@ -876,7 +875,7 @@ function process_node(){
 				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
-				if [ ! "$OVERWRITE_NODE" = true && ! "$BATCH_INSTALL"] ; then
+				if [ ! "$OVERWRITE_NODE" = true && "$BATCH_INSTALL" -eq 0 ] ; then
 					if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
@@ -1248,7 +1247,7 @@ function check_node_state() {
 		log_info "Current node state is: ${NODE_STATE}"
 
 		if [ "$NODE_STATE" = "configured" -a !$OVERWRITE ]; then
-			if [ $BATCH_INSTALL ]; then
+			if [ $BATCH_INSTALL -eq 1 ]; then
 				log_notify "Node is already configured."
 				exit 1
 			fi
@@ -1355,8 +1354,10 @@ done
 if [ -f "$AGENT_INSTALL_ZIP" ]; then
 	unzip_install_files
 	find_node_id
-	log_info "Found node id $NODE_ID"
-	BATCH_INSTALL=true
+	if [[ $NODE_ID != "" ]]; then
+		log_info "Found node id $NODE_ID"
+		BATCH_INSTALL=1
+	fi
 fi
 
 # checking the supplied arguments
