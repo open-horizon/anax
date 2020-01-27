@@ -44,8 +44,14 @@ then
   exit -1
 fi
 
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+  FILE_SIZE=128
+else
+  FILE_SIZE=512
+fi
+
 #Test timeout support for upload of large files to the CSS
-dd if=/dev/zero of=/tmp/data.txt count=512 bs=1048576
+dd if=/dev/zero of=/tmp/data.txt count=$FILE_SIZE bs=1048576
 
 RESOURCE_ORG1=e2edev@somecomp.com
 RESOURCE_TYPE=test
@@ -68,7 +74,7 @@ hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error uploading 512MB model object: $RC"
+  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
   exit -1
 fi
 
@@ -80,9 +86,9 @@ hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
 RC=$?
 if [ $RC -eq 5 ]
 then
-  echo -e "Got expected error with 521MB object upload using short HTTP request timeout: $RC"
+  echo -e "Got expected error with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
 else
-  echo -e "Got unexpected error with 521MB object upload using short HTTP request timeout: $RC"
+  echo -e "Got unexpected error with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
   exit -1
 fi
 

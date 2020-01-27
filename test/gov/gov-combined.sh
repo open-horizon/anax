@@ -181,16 +181,16 @@ else
   DL8AGBOT=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
   echo "$DL8AGBOT"
 
-  echo "Delete network_1.5.0 user..."
-  DL150=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "Delete network_1.5.0 ..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_amd64")
   echo "$DL150"
 
-  echo "Delete network2_1.5.0 user..."
-  DL2150=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "Delete network2_1.5.0 ..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_amd64")
   echo "$DL2150"
 
-  echo "Delete helm-service_1.0.0 user..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "Delete helm-service_1.0.0 ..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64")
   echo "$DLHELM100"
 
   sleep 30
@@ -279,6 +279,11 @@ echo "$REGUANAX2"
 echo "Registering Anax device1 in customer org..."
 REGANAX1C=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
 echo "$REGANAX1C"
+
+# Clean up CSS
+if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
+  ./clean_css.sh
+fi
 
 # package resources
 ./resource_package.sh
@@ -586,7 +591,7 @@ elif [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-   ./agbot_apitest.sh
+  ./agbot_apitest.sh
   if [ $? -ne 0 ]
   then
     echo "Policy compatibility test using Agbot API failure."
@@ -602,7 +607,7 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 
 fi
 
-if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]; then
     ./verify_surfaced_error.sh
     if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
@@ -674,16 +679,16 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   DL8AGBOT=$(curl -X DELETE $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"agbot1pw","email":"me%40gmail.com","admin":false}' "${EXCH_URL}/orgs/IBM/users/agbot1" | jq -r '.msg')
   echo "$DL8AGBOT"
 
-  echo "Delete network_1.5.0 user..."
-  DL150=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "Delete network_1.5.0 ..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_amd64")
   echo "$DL150"
 
-  echo "Delete network2_1.5.0 user..."
-  DL2150=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "Delete network2_1.5.0 ..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_amd64")
   echo "$DL2150"
 
-  echo "Delete helm-service_1.0.0 user..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64?username=root%2Froot&password=${EXCH_ROOTPW}" -H "accept: application/json")
+  echo "Delete helm-service_1.0.0 ..."
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64")
   echo "$DLHELM100"
 fi
 
