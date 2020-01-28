@@ -97,6 +97,13 @@ function deploy {
     echo -e "$2 service deployed."
 }
 
+# Undeploy a new hzn dev service project. The input is:
+# $1 - service
+function undeploy {
+    undeploy=$(hzn exchange service remove -f $1)
+    echo -e "$1 service undeployed."
+}
+
 # ============= Main =================================================
 #
 echo -e "Begin hzn dev service testing."
@@ -105,6 +112,7 @@ export HZN_ORG_ID="e2edev@somecomp.com"
 export HZN_EXCHANGE_URL=$1
 export ARCH=$(uname -m | sed -e 's/aarch64.*/arm64/' -e 's/x86_64.*/amd64/' -e 's/armv.*/arm/')
 E2EDEV_ADMIN_AUTH=$2
+CLEAN_UP=$3
 
 PROJECT_HOME="/root/hzn/service"
 
@@ -194,6 +202,7 @@ then
 fi
 
 echo -e "Copy public key into anax folder for use at runtime."
+
 cp /tmp/*public.pem /root/.colonus/.
 
 echo -e "Logging into the e2edev@somecomp.com docker registry."
@@ -213,5 +222,26 @@ if [ $? -ne 0 ]; then exit $?; fi
 
 deploy ${USEHELLO_HOME} "UseHello"
 if [ $? -ne 0 ]; then exit $?; fi
+
+sleep 5
+
+# ============= Clean Up ==================================
+
+if [ $CLEAN_UP -ne 0 ]
+then
+
+  echo -e "Undeploying services."
+
+  undeploy my.company.com.services.cpu2_1.0.0_amd64
+  undeploy my.company.com.services.hello2_1.0.0_amd64
+  undeploy my.company.com.services.usehello2_1.0.0_amd64
+
+  echo -e "Removing keys"
+
+  rm -rf /tmp/*public.pem
+  rm -rf /tmp/*private.key
+  rm -rf /root/.colonus/*public.pem
+
+fi
 
 echo -e "End of hzn dev service testing: success."

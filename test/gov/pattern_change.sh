@@ -273,7 +273,7 @@ function results {
 # make sure agreements are up and running
 function verify_agreements {
   HZN_REG_TEST=1 ./verify_agreements.sh
-  if [ $? -ne 0 ]; then 
+  if [ $? -ne 0 ]; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
@@ -295,6 +295,12 @@ function checkNodePatter {
         echo -e "${PREFIX} The node pattern has changed to $ret"
     fi
 }
+
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/css.crt"
+else
+  CERT_VAR=""
+fi
 
 # get the node org, it can be userdev or e2edev@somecomp.com
 ret=$(hzn node list |jq '.organization')
@@ -320,7 +326,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo -e "${PREFIX} change node pattern on the exchange to sns"
-RES=$(curl -sLX PATCH --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
+RES=$(curl -sLX PATCH $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
 echo "Sleeping 60 seconds..."
@@ -332,7 +338,7 @@ verify_agreements
 
 # now change the pattern to sall, this will fail because there is not enough user input
 echo -e "${PREFIX} change node pattern back on the exchange to sall"
-RES=$(curl -sLX PATCH --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sall"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
+RES=$(curl -sLX PATCH $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sall"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
 echo "Sleeping 30 seconds..."
@@ -370,10 +376,9 @@ sleep 60
 # the pattern should have change on local node
 checkNodePatter "e2edev@somecomp.com/sall"
 ./verify_agreements.sh
-if [ $? -ne 0 ]; then 
+if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed to verify agreement."
   exit 1
 fi
 
 echo -e "${PREFIX} Complete node pattern change test"
-

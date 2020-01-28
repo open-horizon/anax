@@ -33,7 +33,7 @@ USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
 # Register services via the hzn dev exchange commands
-./hzn_dev_services.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH}
+./hzn_dev_services.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH} 0
 if [ $? -ne 0 ]
 then
     echo -e "hzn service and pattern registration with hzn dev failed."
