@@ -94,7 +94,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
         },
 	{
           "name": "var4",
-          "value": ["node_String1", "node_String2", "node_String3"]
+          "value": []
         }
       ]
     },
