@@ -21,6 +21,7 @@ HZN_NODE_POLICY=""
 AGENT_INSTALL_ZIP="agent-install-files.tar.gz"
 NODE_ID_MAPPING_FILE="node-id-mapping.csv"
 CERTIFICATE_DEFAULT="agent-install.crt"
+BATCH_INSTALL=0
 
 VERBOSITY=3 # Default logging verbosity
 
@@ -50,6 +51,7 @@ where:
     -v          - show version
     -l          - logging verbosity level (0-5, 5 is verbose)
     -u          - exchange user authorization credentials
+    -d          - the id to register this node with
     -f          - install older version without prompt. overwrite configured node without prompt.
     -w          - wait for the named service to start executing on this node
     -o          - specify an org id for the service specified with '-w'
@@ -220,10 +222,14 @@ function set_pattern_from_exchange(){
         	if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
         		HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
 		fi
-		EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH )
-		if [[ ! "$EXCH_OUTPUT" == "" ]]; then
+		if [[ $CERTIFICATE != "" ]]; then
+			EXCH_OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH ) || true
+		else
+			EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+		fi
+		if [[ "$EXCH_OUTPUT" != "" ]]; then
 			EXCH_PATTERN=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].pattern')
-			if [[ ! "$EXCH_PATTERN" == "\"\"" ]]; then
+			if [[ "$EXCH_PATTERN" != "\"\"" ]]; then
         			HZN_EXCHANGE_PATTERN=$(echo "$EXCH_PATTERN" | sed 's/"//g' )
 			fi
 		fi
@@ -240,7 +246,11 @@ function set_policy_from_exchange(){
 		if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
 			HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
 		fi
-		EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH)
+		if [[ $CERTIFICATE != "" ]]; then
+			EXCH_POLICY=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+		else
+			EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+		fi
 		if [[ $EXCH_POLICY != "" ]]; then
 			echo $EXCH_POLICY > exchange-node-policy.json
 			HZN_NODE_POLICY="exchange-node-policy.json"
@@ -251,6 +261,20 @@ function set_policy_from_exchange(){
 	log_debug "set_policy_from_exchange() end"
 }
 
+# validate that the found credentials, org id, certificate, and exchange url will work to view the org in the exchange
+function validate_exchange(){
+	log_debug "validate_exchange() begin"
+		if [[ "$CERTIFICATE" != "" ]]; then
+			OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+		else
+			OUTPUT=$(curl -fs $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+		fi
+		if [[ "$OUTPUT" == "" ]]; then
+			log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=<specified>"
+			exit 1
+		fi
+	log_debug "validate_exchange() end"
+}
 
 # checks input arguments and env variables specified
 function validate_args(){
@@ -282,18 +306,21 @@ function validate_args(){
     check_empty HZN_ORG_ID "ORG ID"
     get_variable HZN_EXCHANGE_USER_AUTH $CFG
     check_empty HZN_EXCHANGE_USER_AUTH "Exchange User Auth"
+    get_variable NODE_ID $CFG
+    get_variable CERTIFICATE $CFG
+    get_variable HZN_MGMT_HUB_CERT_PATH $CFG
+    if [[ "$CERTIFICATE"=="" ]]; then
+	    if [[ "$HZN_MGMT_HUB_CERT_PATH"!="" ]]; then
+		    CERTIFICATE=$HZN_MGMT_HUB_CERT_PATH
+	    elif [ -f "$CERTIFICATE_DEFAULT" ]; then
+		    CERTIFICATE="$CERTIFICATE_DEFAULT"
+	    fi
+    fi
+    validate_exchange
     get_variable HZN_EXCHANGE_PATTERN $CFG
         if [ -z "$HZN_EXCHANGE_PATTERN" ]; then
                 set_pattern_from_exchange
         fi
-
-
-    get_variable CERTIFICATE $CFG
-	if [ -z "$CERTIFICATE" ]; then
-		if [ -f "$CERTIFICATE_DEFAULT" ]; then
-			CERTIFICATE="$CERTIFICATE_DEFAULT"
-		fi
-	fi
 
     get_variable HZN_NODE_POLICY $CFG
     # check on mutual exclusive params (node policy and pattern name)
@@ -477,8 +504,13 @@ function install_macos() {
 		echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
 			\nHZN_DEVICE_ID=${HOSTNAME}"  | sudo tee "$HZN_CONFIG"
 	else
+		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
+			ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
+		else
+			ABS_CERTIFICATE=${CERTIFICATE}
+		fi
 		echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
-			\nHZN_DEVICE_ID=${HOSTNAME} \nHZN_MGMT_HUB_CERT_PATH=$(pwd)/${CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
+			\nHZN_DEVICE_ID=${HOSTNAME} \nHZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
 	fi
 
         set +x
@@ -491,9 +523,14 @@ function install_macos() {
 			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
 				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g"  "$HZN_CONFIG"
 		else
+			if [[ ${CERTIFICATE:0:1} != "/" ]]; then
+				ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
+			else
+				ABS_CERTIFICATE=${CERTIFICATE}
+			fi
 			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
 				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
-				-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=$(pwd)/${CERTIFICATE}~g" "$HZN_CONFIG"
+				-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" "$HZN_CONFIG"
 		fi
                 set +x
                 log_info "Config updated"
@@ -718,9 +755,14 @@ function install_linux(){
 		sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
 			-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g"  /etc/default/horizon
 	else
+		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
+			ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
+		else
+			ABS_CERTIFICATE=${CERTIFICATE}
+		fi
 		sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
 			-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
-			-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=$(pwd)/${CERTIFICATE}~g" /etc/default/horizon
+			-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" /etc/default/horizon
 	fi
         set +x
         log_info "Config updated"
@@ -1283,6 +1325,7 @@ function unzip_install_files() {
 function find_node_id() {
 	log_debug "start find_node_id"
 	if [ -f $NODE_ID_MAPPING_FILE ]; then
+		BATCH_INSTALL=1
 		log_debug "found id mapping file $NODE_ID_MAPPING_FILE"
 		ID_LINE=$(grep $(hostname) "$NODE_ID_MAPPING_FILE" || [[ $? == 1 ]] )
 		if [ -z $ID_LINE ]; then
@@ -1310,7 +1353,7 @@ function find_node_ip_address() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:z:hvl:n:sfw:o:t:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1323,6 +1366,8 @@ while getopts "c:i:j:p:k:u:z:hvl:n:sfw:o:t:" opt; do
 		k) CFG="$OPTARG"
 		;;
 		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
+		;;
+		d) NODE_ID="$OPTARG"
 		;;
 		z) AGENT_INSTALL_ZIP="$OPTARG"
 		;;
@@ -1356,7 +1401,6 @@ if [ -f "$AGENT_INSTALL_ZIP" ]; then
 	find_node_id
 	if [[ $NODE_ID != "" ]]; then
 		log_info "Found node id $NODE_ID"
-		BATCH_INSTALL=1
 	fi
 fi
 
