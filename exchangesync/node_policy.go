@@ -401,6 +401,10 @@ func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObje
 		return nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
 	}
 
+	if err := localNodePolicy.Validate(); err != nil {
+		return nil, err
+	}
+
 	// save it into the exchange and sync the local db with it.
 	if _, err := nodePutPolicyHandler(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), &exchange.ExchangePolicy{ExternalPolicy: *localNodePolicy}); err != nil {
 		return nil, fmt.Errorf("Unable to save node policy in exchange, error %v", err)

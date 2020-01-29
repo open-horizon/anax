@@ -54,10 +54,21 @@ func CreateNodeBuiltInPolicy(availableMem bool, omitGenHwId bool, existingPolicy
 	privileged := false
 	if existingPolicy != nil && existingPolicy.Properties.HasProperty(PROP_NODE_PRIVILEGED) {
 		privProp, _ := existingPolicy.Properties.GetProperty(PROP_NODE_PRIVILEGED)
-		glog.Infof("Found existing policy with %v", privProp)
-		privileged = privProp.Value.(bool)
+		glog.V(5).Infof("Found existing policy with %v", privProp)
+		var ok bool
+		privileged, ok = privProp.Value.(bool)
+		if !ok {
+			if privStr, ok := privProp.Value.(string); ok && (privStr == "true" || privStr == "false") {
+				if privStr == "true" {
+					privileged = true
+				} else if privStr == "false" {
+					privileged = false
+				}
+			} else {
+				glog.V(1).Infof("Value of property %s must be a boolean (true or false).", PROP_NODE_PRIVILEGED)
+			}
+		}
 	}
-
 	hwId := ""
 	if existingPolicy != nil && existingPolicy.Properties.HasProperty(PROP_NODE_HARDWAREID) {
 		hwProp, err := existingPolicy.Properties.GetProperty(PROP_NODE_HARDWAREID)
