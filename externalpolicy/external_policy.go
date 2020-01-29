@@ -33,6 +33,24 @@ func (e *ExternalPolicy) Validate() error {
 		}
 	}
 
+	if e.Properties.HasProperty(PROP_NODE_PRIVILEGED) {
+		privProp, err := e.Properties.GetProperty(PROP_NODE_PRIVILEGED)
+		if err != nil {
+			return err
+		}
+		if _, ok := privProp.Value.(bool); !ok {
+			if privStr, ok := privProp.Value.(string); ok && (privStr == "true" || privStr == "false") {
+				if privStr == "true" {
+					e.Properties.Add_Property(Property_Factory(PROP_NODE_PRIVILEGED, true), true)
+				} else {
+					e.Properties.Add_Property(Property_Factory(PROP_NODE_PRIVILEGED, false), true)
+				}
+			} else {
+				return errors.New(msgPrinter.Sprintf("Property %s must have a boolean value (true or false).", PROP_NODE_PRIVILEGED))
+			}
+		}
+	}
+
 	// Validate the Constraints expression by invoking the plugins.
 	if e != nil && len(e.Constraints) != 0 {
 		_, err := e.Constraints.Validate()
