@@ -309,8 +309,8 @@ function validate_args(){
     get_variable NODE_ID $CFG
     get_variable CERTIFICATE $CFG
     get_variable HZN_MGMT_HUB_CERT_PATH $CFG
-    if [[ "$CERTIFICATE"=="" ]]; then
-	    if [[ "$HZN_MGMT_HUB_CERT_PATH"!="" ]]; then
+    if [[ "$CERTIFICATE" == "" ]]; then
+	    if [[ "$HZN_MGMT_HUB_CERT_PATH" != "" ]]; then
 		    CERTIFICATE=$HZN_MGMT_HUB_CERT_PATH
 	    elif [ -f "$CERTIFICATE_DEFAULT" ]; then
 		    CERTIFICATE="$CERTIFICATE_DEFAULT"
