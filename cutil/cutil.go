@@ -160,7 +160,9 @@ func NativeToEnvVariableMap(envMap map[string]string, varName string, varValue i
 				los = los + e.(string) + " "
 			}
 		}
-		los = los[:len(los)-1]
+		if len(los) > 1 {
+			los = los[:len(los)-1]
+		}
 		envMap[varName] = los
 	default:
 		return errors.New(fmt.Sprintf("unknown variable type %T for variable %v", varValue, varName))
