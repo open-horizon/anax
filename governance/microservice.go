@@ -230,10 +230,14 @@ func (w *GovernanceWorker) GetEnvVarsForServiceDepolyment(msdef *persistence.Mic
 			return nil, fmt.Errorf(logString(fmt.Sprintf("unable to find agreement %v from database.", agreementId)))
 		}
 
-		tcPolicy, err = policy.DemarshalPolicy(ags[0].Proposal)
-		if err != nil {
+		if proposal, err := w.producerPH[ags[0].AgreementProtocol].AgreementProtocolHandler("", "", "").DemarshalProposal(ags[0].Proposal); err != nil {
 			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling proposal from agreement %v, %v", agreementId, err)))
+		} else if pol, err := policy.DemarshalPolicy(proposal.TsAndCs()); err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error demarshalling policy from proposal for agreement %v, %v", agreementId, err)))
+		} else {
+			tcPolicy = pol
 		}
+
 	} else {
 		tcPolicy = nil
 	}
