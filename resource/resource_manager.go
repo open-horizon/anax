@@ -188,12 +188,12 @@ func (r ResourceManager) StopFileSyncService() {
 
 		// Initiate the ESS stop in a go routine in case it hangs.
 		go func() {
-			base.Stop(0)
+			base.Stop(0, true)
 			stopChan <- true
 		}()
 
-		// Give the ESS 3 seconds to shutdown
-		timerChan := time.NewTimer(time.Duration(3) * time.Second).C
+		// Give the ESS 20 seconds to shutdown
+		timerChan := time.NewTimer(time.Duration(20) * time.Second).C
 
 		// Wait for either our timer to expire or for the ESS to indicate that it is stopped.
 		for !done {
@@ -204,7 +204,6 @@ func (r ResourceManager) StopFileSyncService() {
 			case <-stopChan:
 				glog.V(5).Infof(rmLogString(fmt.Sprintf("Embedded ESS Stop completed.")))
 				done = true
-				return
 			}
 		}
 

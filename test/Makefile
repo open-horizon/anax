@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 #Versioning
 DOCKER_EXCH_TAG := 2.6.0
-PKG_URL_BASE := http://pkg.bluehorizon.network/linux/ubuntu
+PKG_URL_BASE := http://169.45.88.181/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
 HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | grep -m 1 'Version:' | awk -F ' |~' '{print $$2}')
