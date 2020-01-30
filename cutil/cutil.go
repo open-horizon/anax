@@ -703,3 +703,13 @@ func FormExchangeId(id string) string {
 	re := regexp.MustCompile(`[$!*,;/?@&~=%]`)
 	return re.ReplaceAllLiteralString(id, "-")
 }
+
+func RemoveArchFromServiceId(sId string) string {
+	sId_no_arch := sId
+	tempA := strings.Split(sId, "_")
+	if len(tempA) >= 3 {
+		sId_no_arch = strings.Join(tempA[:len(tempA)-1], "_")
+	}
+
+	return sId_no_arch
+}

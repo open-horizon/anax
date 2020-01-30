@@ -114,12 +114,19 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		if workload.Arch == "*" {
 			workload.Arch = ""
 		}
+
+		// used for creating sId
+		w_arch := workload.Arch
+		if w_arch == "" {
+			w_arch = "*"
+		}
+
 		if resources.NodeArch != "" {
 			if workload.Arch == "" {
 				workload.Arch = resources.NodeArch
 			} else if resources.NodeArch != workload.Arch {
 				if checkAllSvcs {
-					sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
+					sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, w_arch)
 					sId = fmt.Sprintf("%v/%v", workload.Org, sId)
 					messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Architecture does not match."))
 				}
@@ -196,7 +203,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 				return nil, err
 			}
 			// compatibility check
-			sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, workload.Arch)
+			sId := cutil.FormExchangeIdForService(workload.WorkloadURL, workload.Version, w_arch)
 			sId = fmt.Sprintf("%v/%v", workload.Org, sId)
 			if compatible, reason, _, _, err := CheckPolicyCompatiblility(nPolicy, bPolicy, mergedServicePol, resources.NodeArch, msgPrinter); err != nil {
 				return nil, err

@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -305,18 +306,21 @@ func createCompCheckOutput(pcOutput *CompCheckOutput, privOutput *CompCheckOutpu
 					reason[sId_pc] = rs_privc
 				} else {
 					// add user input compatibility result
-					// for sId_ui, rs_ui := range uiOutput.Reason {
-					// 	if sId_ui == sId_pc {
-					// 		reason[sId_ui] = rs_ui
-					// 	}
-					// }
-					if rs_ui, ok := uiOutput.Reason[sId_pc]; ok {
-						reason[sId_pc] = rs_ui
+					for sId_ui, rs_ui := range uiOutput.Reason {
+						if sId_ui == sId_pc {
+							reason[sId_ui] = rs_ui
+						} else if strings.HasSuffix(sId_pc, "_*") || strings.HasSuffix(sId_pc, "_") || strings.HasSuffix(sId_ui, "_*") || strings.HasSuffix(sId_ui, "_") {
+							// remove the arch parts and compare
+							sId_pc_na := cutil.RemoveArchFromServiceId(sId_pc)
+							sId_ui_na := cutil.RemoveArchFromServiceId(sId_ui)
+							if sId_pc_na == sId_ui_na {
+								reason[sId_ui] = rs_ui
+							}
+						}
 					}
 				}
 			}
 		}
-
 	}
 	ccOutput.Reason = reason
 
