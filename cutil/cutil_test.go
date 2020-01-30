@@ -376,3 +376,30 @@ func Test_ConvertToMB(t *testing.T) {
 	}
 
 }
+
+func Test_RemoveArchFromServiceId(t *testing.T) {
+	no_arch := RemoveArchFromServiceId("mycluster/hello_0.0.1_amd64")
+	if no_arch != "mycluster/hello_0.0.1" {
+		t.Errorf("RemoveArchFromServiceId should have returned 'mycluster/hello_0.0.1' but got: %v", no_arch)
+	}
+
+	no_arch = RemoveArchFromServiceId("mycluster/hello_0.0.1_*")
+	if no_arch != "mycluster/hello_0.0.1" {
+		t.Errorf("RemoveArchFromServiceId should have returned 'mycluster/hello_0.0.1' but got: %v", no_arch)
+	}
+
+	no_arch = RemoveArchFromServiceId("mycluster/hello_0.0.1_")
+	if no_arch != "mycluster/hello_0.0.1" {
+		t.Errorf("RemoveArchFromServiceId should have returned 'mycluster/hello_0.0.1' but got: %v", no_arch)
+	}
+
+	no_arch = RemoveArchFromServiceId("mycluster/hello_0.0.1")
+	if no_arch != "mycluster/hello_0.0.1" {
+		t.Errorf("RemoveArchFromServiceId should have returned 'mycluster/hello_0.0.1' but got: %v", no_arch)
+	}
+
+	no_arch = RemoveArchFromServiceId("mycluster/hello")
+	if no_arch != "mycluster/hello" {
+		t.Errorf("RemoveArchFromServiceId should have returned 'mycluster/hello' but got: %v", no_arch)
+	}
+}

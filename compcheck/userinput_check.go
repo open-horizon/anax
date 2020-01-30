@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/text/message"
+	"strings"
 )
 
 // The input format for the userinput check
@@ -644,7 +645,15 @@ func needHandleService(sId string, services []string) bool {
 	}
 
 	for _, id := range services {
-		if id == sId {
+		if strings.HasSuffix(id, "_*") || strings.HasSuffix(id, "_") {
+			// if the id ends with _*, it means that the id apply to any arch
+			// only compare the part without arch
+			id_no_arch := cutil.RemoveArchFromServiceId(id)
+			sId_no_arch := cutil.RemoveArchFromServiceId(sId)
+			if id_no_arch == sId_no_arch {
+				return true
+			}
+		} else if id == sId {
 			return true
 		}
 	}
