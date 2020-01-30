@@ -377,7 +377,10 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// If the device doesnt support the workload requirements, then remember that we rejected a higher priority workload because of
 			// device requirements not being met. This will cause agreement cancellation to try the highest priority workload again
 			// even if retries have been disabled.
-			if ccOutput.Compatible {
+			if err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+				return
+			} else if ccOutput.Compatible {
 				if err := wi.ProducerPolicy.APISpecs.Supports(*asl); err != nil {
 					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("skipping workload %v because device %v cant support it: %v", workload, wi.Device.Id, err)))
 				} else {
