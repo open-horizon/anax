@@ -317,7 +317,11 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			// the exchange has been out but is now working again.
 			w.Commands <- w.NewReportDeviceStatusCommand()
 
+			// Now that heartbeating is restored, fire the functions to check on exchange state changes. If the node
+			// was offline long enough, the exchange might have pruned changes we needed to see, which means we will
+			// never see them now. So, assume there were some changes we care about.
 			w.Commands <- NewNodeErrorChangeCommand()
+			w.Commands <- NewServiceChangeCommand()
 
 		}
 
