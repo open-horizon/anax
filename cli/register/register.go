@@ -192,9 +192,22 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
 		}
-		msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
-		msgPrinter.Println()
-		cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
+
+		cliutils.SetWhetherUsingApiKey(userPw)
+		userOrg, userAuth := cliutils.TrimOrg(org, userPw)
+		httpCode1 := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), nil, &nodes)
+		if httpCode1 != 200 {
+			// node does not exist, create it
+			msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
+			msgPrinter.Println()
+			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
+		} else {
+			// node exists but the token is new, update the node token
+			msgPrinter.Printf("Upating node token...")
+			msgPrinter.Println()
+			patchNodeReq := cliexchange.NodeExchangePatchToken{Token: nodeToken}
+			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, patchNodeReq)
+		}
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)
 		for _, n := range nodes.Nodes {
@@ -310,6 +323,8 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	} else {
 		// Technically an input file is not required, but it is not the common case, so warn them
 		msgPrinter.Printf("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
+		msgPrinter.Println()
+		msgPrinter.Printf("However, if there is 'useInput' specified in the node already in the exchange, the useInput will be used.")
 		msgPrinter.Println()
 	}
 
