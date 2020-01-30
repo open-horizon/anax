@@ -133,8 +133,12 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 
 		for i := 0; i < len(batches); i++ {
 			for _, obj := range batches[i] {
-				obj := obj
-				go func() {
+
+				// Pass in the iterator object by value so that a copy is made.
+				// This function should not share variables with the main thread unless
+				// those variables are unchanging, or safe to use concuurently on multiple threads.
+				go func(obj common.MetaData) {
+
 					//1. call destination API
 					mmsObjectInfo := MMSObjectInfo{}
 					var objectDests []common.DestinationsStatus
@@ -143,9 +147,9 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 					mmsObjectInfo.ObjectID = obj.ObjectID
 					mmsObjectInfo.Definition = &obj
 
-					urlPath = path.Join("api/v1/objects/", org, obj.ObjectType, obj.ObjectID, "destinations")
+					urlPath := path.Join("api/v1/objects/", org, obj.ObjectType, obj.ObjectID, "destinations")
 
-					httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
+					httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectDests)
 					if httpCode == 404 {
 						cliutils.Verbose(msgPrinter.Sprintf("destination detail for object '%s' of type '%s' not found in org %s", obj.ObjectID, obj.ObjectType, org))
 					}
@@ -159,7 +163,7 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 
 					//3. write the response data to channel c <- mmsObjectInfo
 					c <- mmsObjectInfo
-				}()
+				}(obj)
 
 			}
 
