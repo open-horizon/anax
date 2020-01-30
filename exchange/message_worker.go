@@ -74,6 +74,17 @@ func (w *ExchangeMessageWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewMessageCommand()
 		}
 
+	case *events.NodeHeartbeatStateChangeMessage:
+		msg, _ := incoming.(*events.NodeHeartbeatStateChangeMessage)
+		switch msg.Event().Id {
+		case events.NODE_HEARTBEAT_RESTORED:
+
+			// Now that heartbeating is restored, fire the functions to check on exchange state changes. If the node
+			// was offline long enough, the exchange might have pruned changes we needed to see, which means we will
+			// never see them now. So, assume there were some changes we care about.
+			w.Commands <- NewMessageCommand()
+		}
+
 	default: //nothing
 
 	}

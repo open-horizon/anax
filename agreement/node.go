@@ -134,7 +134,7 @@ func (w *AgreementWorker) checkNodePatternChanges(exchDevice *exchange.Device) {
 }
 
 // Check the node user input changes on the exchange and sync up with
-// the local copy. THe exchange is the master
+// the local copy. The exchange is the master
 func (w *AgreementWorker) checkNodeUserInputChanges(pDevice *persistence.ExchangeDevice) {
 	glog.V(5).Infof(logString(fmt.Sprintf("checking the node user input changes.")))
 

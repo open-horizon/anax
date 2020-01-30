@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
+// The LastUpdated field is explicitly omitted due to a pending change to the datatype of the field.
+// When the field datatype becomes and int, we can add it back.
 type ResourceChange struct {
-	ChangeID    uint64 `json:"changeid,omitempty"`
-	LastUpdated string `json:"lastUpdated,omitempty"`
+	ChangeID uint64 `json:"changeid,omitempty"`
 }
 
 type ExchangeChange struct {
