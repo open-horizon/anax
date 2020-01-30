@@ -92,7 +92,13 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
 
-	builtinPolicyReadOnly, builtinPolicyReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
+	builtinPolicyReadOnly := &externalpolicy.ExternalPolicy{}
+	builtinPolicyReadWrite := &externalpolicy.ExternalPolicy{}
+	if exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID) || (existingPol != nil && existingPol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
+		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
+	} else {
+		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	}
 
 	builtinPolicy := &externalpolicy.ExternalPolicy{}
 	builtinPolicy.MergeWith(builtinPolicyReadOnly, false)
