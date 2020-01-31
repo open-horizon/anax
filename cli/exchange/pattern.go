@@ -112,25 +112,57 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	}
 }
 
-func PatternUpdate(org string, userPw string, pattern string, filePath string) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
+// This function updates an attribute for the given pattern
+func PatternUpdate(org string, credToUse string, pattern string, filePath string) {
 
 	//check for ExchangeUrl early on
 	var exchUrl = cliutils.GetExchangeUrl()
 
-	cliutils.SetWhetherUsingApiKey(userPw)
-
-	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
-
+	cliutils.SetWhetherUsingApiKey(credToUse)
 	var patOrg string
 	patOrg, pattern = cliutils.TrimOrg(org, pattern)
-	if pattern == "*" {
-		pattern = ""
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	//Read in the file
+	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+
+	//verify that the pattern exists
+	var exchPatterns ExchangePatterns
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &exchPatterns)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Pattern %s not found in org %s", pattern, patOrg))
 	}
 
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+patOrg+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 201}, attribute)
-	msgPrinter.Printf("Pattern %s/%s updated in the Horizon exchange.", pattern, patOrg)
+	findPatchType := make(map[string]interface{})
+
+	json.Unmarshal([]byte(attribute), &findPatchType)
+
+	var patch interface{}
+	var err error
+	if _, ok := findPatchType["services"]; ok {
+		patch = make(map[string][]ServiceReference)
+		err = json.Unmarshal([]byte(attribute), &patch)
+	} else if _, ok := findPatchType["userInput"]; ok {
+		patch = make(map[string][]policy.UserInput)
+		err = json.Unmarshal([]byte(attribute), &patch)
+	} else {
+		_, ok := findPatchType["label"]
+		_, ok2 := findPatchType["description"]
+		if ok || ok2 {
+			patch = make(map[string]string)
+			err = json.Unmarshal([]byte(attribute), &patch)
+		} else {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, and userInput."))
+		}
+	}
+
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+	}
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+	msgPrinter.Printf("Pattern %v/%v updated in the Horizon Exchange", patOrg, pattern)
 	msgPrinter.Println()
 }
 
