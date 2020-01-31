@@ -94,22 +94,62 @@ func (e *ExchangeChanges) GetExchangeVersion() string {
 
 // This is the request body for the changes API call.
 type GetExchangeChangesRequest struct {
-	ChangeId    uint64 `json:"changeId"`
-	LastUpdated string `json:"lastUpdated,omitempty"`
-	MaxRecords  int    `json:"maxRecords,omitempty"`
+	ChangeId   uint64 `json:"changeId"`
+	MaxRecords int    `json:"maxRecords,omitempty"`
+}
+
+type ExchangeChangeIDResponse struct {
+	MaxChangeID uint64 `json:"maxChangeId,omitempty"`
 }
 
 // Retrieve the latest changes from the exchange.
-func GetExchangeChanges(ec ExchangeContext, changeId uint64, lastUpdated string, maxRecords int) (*ExchangeChanges, error) {
+func GetExchangeChangeID(ec ExchangeContext) (*ExchangeChangeIDResponse, error) {
 
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v, last updated %v", maxRecords, changeId, lastUpdated)))
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting current max change ID")))
+
+	var resp interface{}
+	resp = new(ExchangeChangeIDResponse)
+
+	// Get resource changes in the exchange
+	targetURL := fmt.Sprintf("%vchanges/maxchangeid", ec.GetExchangeURL())
+
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
+		} else {
+			changeResp := resp.(*ExchangeChangeIDResponse)
+
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found max changes ID %v", changeResp)))
+			return changeResp, nil
+		}
+	}
+}
+
+// Retrieve the latest changes from the exchange.
+func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int) (*ExchangeChanges, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v", maxRecords, changeId)))
 
 	var resp interface{}
 	resp = new(ExchangeChanges)
 	req := GetExchangeChangesRequest{
-		ChangeId:    changeId,
-		LastUpdated: lastUpdated,
-		MaxRecords:  maxRecords,
+		ChangeId:   changeId,
+		MaxRecords: maxRecords,
 	}
 
 	// Get resource changes in the exchange
@@ -136,11 +176,7 @@ func GetExchangeChanges(ec ExchangeContext, changeId uint64, lastUpdated string,
 		} else {
 			changes := resp.(*ExchangeChanges)
 
-			lu := lastUpdated
-			if lu == "" {
-				lu = "<omitted>"
-			}
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v (or last updated %v) with latest change ID %v", len(changes.Changes), changeId, lu, changes.MostRecentChangeID)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v", len(changes.Changes), changeId, changes.MostRecentChangeID)))
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("Raw changes response: %v", changes)))
 			return changes, nil
 		}

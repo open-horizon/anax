@@ -936,6 +936,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					case *ExchangeChanges:
 						return nil, nil
 
+					case *ExchangeChangeIDResponse:
+						return nil, nil
+
 					default:
 						return errors.New(fmt.Sprintf("Unknown type of response object %v (%T) passed to invocation of %v at %v with %v", *resp, *resp, method, url, requestBody)), nil
 					}

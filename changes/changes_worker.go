@@ -5,7 +5,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -28,7 +27,6 @@ type ChangesWorker struct {
 	noMsgCount        int    // How many consecutive polls have returned no changes.
 	agreementReached  bool   // True when ths node has seen at least one agreement.
 	changeID          uint64 // The current change Id in the exchange.
-	changesSince      int64  // Current time when initializing. Used when changed IDs arent known yet.
 	lastHeartbeat     int64  // Last time a heartbeat was successful.
 	heartBeatFailed   bool   // Remember that the heartbeat has failed.
 	noworkDispatch    int64  // The last time the NoWorkHandler was dispatched.
@@ -52,7 +50,6 @@ func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *Chan
 		noMsgCount:       0,
 		agreementReached: false,
 		changeID:         0,
-		changesSince:     0,
 		heartBeatFailed:  false,
 		noworkDispatch:   time.Now().Unix(),
 	}
@@ -104,8 +101,19 @@ func (w *ChangesWorker) Initialize() bool {
 	// up to date with what's in the exchange. If there is previous change state in the local DB, then the change ID
 	// will be non-zero. This logic is placed here (and not the constructor) because we dont want to emit messages
 	// to the message bus from inside the worker constructor.
-	w.changesSince = time.Now().Unix()
 	if w.changeID == 0 && w.GetExchangeToken() != "" {
+
+		// Call the exchange to retrieve the current max change id. Use a custom exchange context that blocks (retries forever)
+		// until we can get the max change ID.
+		ec := exchange.NewCustomExchangeContext(w.EC.Id, w.EC.Token, w.EC.URL, w.EC.CSSURL, w.Config.Collaborators.HTTPClientFactory)
+		if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(ec)(); err != nil {
+			glog.Errorf(chglog(fmt.Sprintf("Error retrieving max change ID, error: %v", err)))
+		} else {
+			w.changeID = maxChangeID.MaxChangeID
+			if err := persistence.SaveExchangeChangeState(w.db, w.changeID); err != nil {
+				glog.Errorf(chglog(fmt.Sprintf("error saving persistent exchange change state, error %v", err)))
+			}
+		}
 		supportedResourceTypes := w.createSupportedResourceTypes(true)
 		w.emitChangeMessages(supportedResourceTypes)
 	}
@@ -223,17 +231,17 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 	w.noworkDispatch = time.Now().Unix()
 
-	// If there is no last known change id, then use the changesSince field.
+	// If there is no last known change id, then we havent initialized yet,so do nothing.
 	maxRecords := 1000
-	changedSince := ""
 	if w.changeID == 0 {
-		changedSince = time.Unix(w.changesSince, 0).Format(cutil.ExchangeTimeFormat)
+		glog.Warningf(chglog(fmt.Sprintf("No starting change ID")))
+		return
 	}
 
-	glog.V(3).Infof(chglog(fmt.Sprintf("looking for changes starting from ID %v, changes since %v", w.changeID, changedSince)))
+	glog.V(3).Infof(chglog(fmt.Sprintf("looking for changes starting from ID %v", w.changeID)))
 
 	// Call the exchange to retrieve any changes since our last known change id.
-	changes, err := exchange.GetHTTPExchangeChangeHandler(w)(w.changeID, changedSince, maxRecords)
+	changes, err := exchange.GetHTTPExchangeChangeHandler(w)(w.changeID, maxRecords)
 
 	// Handle heartbeat state changes and errors. Returns true if there was an error to be handled.
 	if w.handleHeartbeatStateAndError(changes, err) {
@@ -300,7 +308,7 @@ func (w *ChangesWorker) emitChangeMessages(resChanges map[events.EventId]bool) b
 func (w *ChangesWorker) postProcessChanges(changes *exchange.ExchangeChanges, interestingChanges bool) {
 
 	// If there were changes found, even uninteresting changes, we need to keep the most recent change id current.
-	if len(changes.Changes) != 0 {
+	if changes.GetMostRecentChangeID() != 0 {
 		w.changeID = changes.GetMostRecentChangeID() + 1
 		if err := persistence.SaveExchangeChangeState(w.db, w.changeID); err != nil {
 			glog.Errorf(chglog(fmt.Sprintf("error saving persistent exchange change state, error %v", err)))
@@ -435,6 +443,22 @@ func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 
 	// Retrieve the node's heartbeat configuration from the node itself, and update the worker.
 	w.getNodeHeartbeatIntervals()
+
+	// Call the exchange to retrieve the current max change id. Use a custom exchange context that blocks (retries forever)
+	// until we can get the max change ID.
+	ec := exchange.NewCustomExchangeContext(w.EC.Id, w.EC.Token, w.EC.URL, w.EC.CSSURL, w.Config.Collaborators.HTTPClientFactory)
+	if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(ec)(); err != nil {
+		glog.Errorf(chglog(fmt.Sprintf("Error retrieving max change ID, error: %v", err)))
+	} else {
+		w.changeID = maxChangeID.MaxChangeID
+		if err := persistence.SaveExchangeChangeState(w.db, w.changeID); err != nil {
+			glog.Errorf(chglog(fmt.Sprintf("error saving persistent exchange change state, error %v", err)))
+		}
+	}
+
+	// Safety measure to ensure that the agent has the latest info from the exchange.
+	supportedResourceTypes := w.createSupportedResourceTypes(true)
+	w.emitChangeMessages(supportedResourceTypes)
 
 }
 

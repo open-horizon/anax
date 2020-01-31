@@ -391,11 +391,20 @@ func GetHTTPObjectPolicyUpdateReceivedHandler(ec ExchangeContext) ObjectPolicyUp
 	}
 }
 
-// A handler for retrieving chages from the exchange.
-type ExchangeChangeHandler func(changeId uint64, lastUpdated string, maxRecords int) (*ExchangeChanges, error)
+// A handler for retrieving changes from the exchange.
+type ExchangeChangeHandler func(changeId uint64, maxRecords int) (*ExchangeChanges, error)
 
 func GetHTTPExchangeChangeHandler(ec ExchangeContext) ExchangeChangeHandler {
-	return func(changeId uint64, lastUpdated string, maxRecords int) (*ExchangeChanges, error) {
-		return GetExchangeChanges(ec, changeId, lastUpdated, maxRecords)
+	return func(changeId uint64, maxRecords int) (*ExchangeChanges, error) {
+		return GetExchangeChanges(ec, changeId, maxRecords)
+	}
+}
+
+// A handler for retrieving current max change ID from the exchange.
+type ExchangeMaxChangeIDHandler func() (*ExchangeChangeIDResponse, error)
+
+func GetHTTPExchangeMaxChangeIDHandler(ec ExchangeContext) ExchangeMaxChangeIDHandler {
+	return func() (*ExchangeChangeIDResponse, error) {
+		return GetExchangeChangeID(ec)
 	}
 }
