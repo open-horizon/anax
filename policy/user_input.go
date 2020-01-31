@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/semanticversion"
+	"reflect"
 )
 
 type Input struct {
@@ -16,6 +17,20 @@ func (s Input) String() string {
 	return fmt.Sprintf("Name: %v, "+
 		"Value: %v",
 		s.Name, s.Value)
+}
+
+// compare two Input's
+func (s Input) IsSame(input Input) bool {
+	if s.Name != input.Name {
+		return false
+	}
+	if s.Type != "" && input.Type != "" && s.Type != input.Type {
+		return false
+	}
+	if !reflect.DeepEqual(s.Value, input.Value) {
+		return false
+	}
+	return true
 }
 
 type UserInput struct {
@@ -46,6 +61,23 @@ func (s UserInput) Copy() UserInput {
 	}
 
 	return out_ui
+}
+
+// compare the user inputs
+func (s UserInput) IsSame(userInput UserInput) bool {
+	if s.ServiceOrgid != userInput.ServiceOrgid {
+		return false
+	}
+	if s.ServiceUrl != userInput.ServiceUrl {
+		return false
+	}
+	if s.ServiceVersionRange != userInput.ServiceVersionRange {
+		return false
+	}
+	if s.ServiceArch != "" && userInput.ServiceArch != "" && s.ServiceArch != userInput.ServiceArch {
+		return false
+	}
+	return InputArrayIsSame(s.Inputs, userInput.Inputs)
 }
 
 // Get the input given the name of the variable
@@ -220,4 +252,50 @@ func UpdateSettingsWithUserInputs(userInputs []UserInput, existingUserSettings m
 	}
 
 	return userSettings, nil
+}
+
+// compare the UserInput arrays
+func UserInputArrayIsSame(userInput1 []UserInput, userInput2 []UserInput) bool {
+	if len(userInput1) != len(userInput2) {
+		return false
+	}
+
+	if len(userInput1) > 0 {
+		for _, ui1 := range userInput1 {
+			found := false
+			for _, ui2 := range userInput2 {
+				if ui1.IsSame(ui2) {
+					found = true
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// compare two Input arrays
+func InputArrayIsSame(input1 []Input, input2 []Input) bool {
+	if len(input1) != len(input1) {
+		return false
+	}
+
+	if len(input1) > 0 {
+		for _, ui1 := range input1 {
+			found := false
+			for _, ui2 := range input2 {
+				if ui1.IsSame(ui2) {
+					found = true
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+	}
+
+	return true
 }

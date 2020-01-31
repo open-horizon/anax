@@ -297,6 +297,9 @@ func (self *PolicyManager) hasPolicy(org string, matchPolicy *Policy) (bool, err
 		} else if pol.MaxAgreements != matchPolicy.MaxAgreements {
 			errString = fmt.Sprintf("MaxAgreement %v mismatch with %v", pol.MaxAgreements, matchPolicy.MaxAgreements)
 			continue
+		} else if !UserInputArrayIsSame(pol.UserInput, matchPolicy.UserInput) {
+			errString = fmt.Sprintf("UserInput %v mismatch with %v", pol.UserInput, matchPolicy.UserInput)
+			continue
 		} else {
 			errString = ""
 			break

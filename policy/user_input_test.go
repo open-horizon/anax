@@ -308,5 +308,121 @@ func Test_UpdateSettingsWithUserInputs(t *testing.T) {
 	} else if newUI2["var3"] != "val3" {
 		t.Errorf("UpdateSettingsWithUserInputs should return var3=val3 %v", newUI1["var3"])
 	}
+}
 
+func Test_UserInputArrayIsSame(t *testing.T) {
+	svcUserInput1 := UserInput{
+		ServiceOrgid:        "mycomp1",
+		ServiceUrl:          "cpu",
+		ServiceArch:         "amd64",
+		ServiceVersionRange: "[2.0.1,INFINITY)",
+		Inputs:              []Input{Input{Name: "var1", Value: "val1"}, Input{Name: "var2", Value: 10}, Input{Name: "var2", Value: 10.22}},
+	}
+
+	svcUserInput2 := UserInput{
+		ServiceOrgid:        "mycomp2",
+		ServiceUrl:          "cpu",
+		ServiceArch:         "amd64",
+		ServiceVersionRange: "",
+		Inputs:              []Input{Input{Name: "var1", Value: "val11"}, Input{Name: "var2", Type: "list of string", Value: []string{"a", "b", "c"}}, Input{Name: "var3", Value: false}},
+	}
+
+	userInput1 := []UserInput{svcUserInput1, svcUserInput2}
+	userInput2 := []UserInput{svcUserInput2, svcUserInput1}
+	same := UserInputArrayIsSame(userInput1, userInput2)
+	if !same {
+		t.Errorf("UserInputArrayIsSame should have returned true but got false.")
+	}
+
+	userInput1 = []UserInput{svcUserInput1}
+	userInput2 = []UserInput{svcUserInput2}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if same {
+		t.Errorf("UserInputArrayIsSame should have returned false but got true.")
+	}
+
+	userInput1 = []UserInput{}
+	userInput2 = []UserInput{svcUserInput2}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if same {
+		t.Errorf("UserInputArrayIsSame should have returned false but got true.")
+	}
+
+	userInput1 = []UserInput{}
+	userInput2 = []UserInput{}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if !same {
+		t.Errorf("UserInputArrayIsSame should have returned true but got false.")
+	}
+
+	userInput1 = nil
+	userInput2 = []UserInput{}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if !same {
+		t.Errorf("UserInputArrayIsSame should have returned true but got false.")
+	}
+
+	userInput1 = []UserInput{svcUserInput2}
+	userInput2 = nil
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if same {
+		t.Errorf("UserInputArrayIsSame should have returned false but got true.")
+	}
+
+	userInput1 = nil
+	userInput2 = nil
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if !same {
+		t.Errorf("UserInputArrayIsSame should have returned true but got false.")
+	}
+
+	// changed the service ServiceOrgid
+	svcUserInput3 := UserInput{
+		ServiceOrgid:        "mycomp1",
+		ServiceUrl:          "cpu",
+		ServiceArch:         "amd64",
+		ServiceVersionRange: "",
+		Inputs:              []Input{Input{Name: "var1", Value: "val11"}, Input{Name: "var2", Type: "list of string", Value: []string{"a", "b", "c"}}, Input{Name: "var3", Value: false}},
+	}
+	userInput1 = []UserInput{svcUserInput1, svcUserInput2}
+	userInput2 = []UserInput{svcUserInput1, svcUserInput3}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if same {
+		t.Errorf("UserInputArrayIsSame should have returned false but got true.")
+	}
+
+	svcUserInput3 = UserInput{
+		ServiceOrgid:        "mycomp1",
+		ServiceUrl:          "cpu",
+		ServiceArch:         "amd64",
+		ServiceVersionRange: "",
+		Inputs:              []Input{},
+	}
+	userInput1 = []UserInput{svcUserInput2}
+	userInput2 = []UserInput{svcUserInput3}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if same {
+		t.Errorf("UserInputArrayIsSame should have returned false but got true.")
+	}
+
+	svcUserInput2 = UserInput{
+		ServiceOrgid:        "mycomp1",
+		ServiceUrl:          "cpu",
+		ServiceArch:         "amd64",
+		ServiceVersionRange: "",
+		Inputs:              nil,
+	}
+	userInput1 = []UserInput{svcUserInput2}
+	userInput2 = []UserInput{svcUserInput3}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if !same {
+		t.Errorf("UserInputArrayIsSame should have returned true but got false.")
+	}
+
+	userInput1 = []UserInput{svcUserInput2}
+	userInput2 = []UserInput{svcUserInput2}
+	same = UserInputArrayIsSame(userInput1, userInput2)
+	if !same {
+		t.Errorf("UserInputArrayIsSame should have returned true but got false.")
+	}
 }
