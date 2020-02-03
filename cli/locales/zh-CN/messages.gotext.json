@@ -4,7 +4,7 @@
     {
       "id": "unable to set env var 'HORIZON_URL', error {Err}",
       "message": "unable to set env var 'HORIZON_URL', error {Err}",
-      "translation": "无法设置环境变量“HORIZON_URL”，错误：{Err}",
+      "translation": "无法设置环境变量 'HORIZON_URL'，错误：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -20,13 +20,13 @@
     {
       "id": "horizon api agreement output did not include 'agreements' key",
       "message": "horizon api agreement output did not include 'agreements' key",
-      "translation": "Horizon API 协议输出未包括“agreements”键",
+      "translation": "Horizon API 协议输出未包括 'agreements' 键",
       "fuzzy": true
     },
     {
       "id": "horizon api agreement output did not include '{WhichAgreements}' key",
       "message": "horizon api agreement output did not include '{WhichAgreements}' key",
-      "translation": "Horizon API 协议输出未包括“{WhichAgreements}”键",
+      "translation": "Horizon API 协议输出未包括 '{WhichAgreements}' 键",
       "placeholders": [
         {
           "id": "WhichAgreements",
@@ -42,7 +42,7 @@
     {
       "id": "failed to marshal 'agreement list' output: {Err}",
       "message": "failed to marshal 'agreement list' output: {Err}",
-      "translation": "对“agreement list”的输出进行编组失败：{Err}",
+      "translation": "对 'agreement list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -86,7 +86,7 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "message": "failed to marshal 'hzn node list' output: {Err}",
-      "translation": "对“hzn node list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn node list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -102,7 +102,7 @@
     {
       "id": "failed to marshal 'policy list' output: {Err}",
       "message": "failed to marshal 'policy list' output: {Err}",
-      "translation": "对“policy list”的输出进行编组失败：{Err}",
+      "translation": "对 'policy list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -118,7 +118,7 @@
     {
       "id": "Error: The organization '{Org}' does not exist.",
       "message": "Error: The organization '{Org}' does not exist.",
-      "translation": "错误：组织“{Org}”不存在。",
+      "translation": "错误：组织 '{Org}' 不存在。",
       "placeholders": [
         {
           "id": "Org",
@@ -134,7 +134,7 @@
     {
       "id": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
       "message": "Error: Either the organization '{Org}' does not exist or the policy '{Name}' is not hosted by this agbot.",
-      "translation": "错误：组织“{Org}”不存在，或者策略“{Name}”并非由此 agbot 托管。",
+      "translation": "错误：组织 '{Org}' 不存在，或者策略 '{Name}' 并非由此 agbot 托管。",
       "placeholders": [
         {
           "id": "Org",
@@ -158,19 +158,19 @@
     {
       "id": "this command can not be run before running 'hzn register'",
       "message": "this command can not be run before running 'hzn register'",
-      "translation": "此命令不能在运行“hzn register”之前运行",
+      "translation": "此命令不能在运行 'hzn register' 之前运行",
       "fuzzy": true
     },
     {
       "id": "horizon api attributes output did not include 'attributes' key",
       "message": "horizon api attributes output did not include 'attributes' key",
-      "translation": "Horizon API 属性输出未包括“attributes”键",
+      "translation": "Horizon API 属性输出未包括 'attributes' 键",
       "fuzzy": true
     },
     {
       "id": "failed to marshal 'hzn attribute list' output: {Err}",
       "message": "failed to marshal 'hzn attribute list' output: {Err}",
-      "translation": "对“hzn attribute list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn attribute list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -326,7 +326,7 @@
     {
       "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
       "message": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
-      "translation": "已取消注册 Horizon 节点。如果需要，您现在即可再次运行“hzn register...”。",
+      "translation": "已取消注册 Horizon 节点。如果需要，您现在即可再次运行 'hzn register...'。",
       "fuzzy": true
     },
     {
@@ -476,7 +476,7 @@
     {
       "id": "Timeout waiting for node change to 'unconfigured' state.",
       "message": "Timeout waiting for node change to 'unconfigured' state.",
-      "translation": "等待节点切换到“已取消配置”状态时发生超时。",
+      "translation": "等待节点切换到 '已取消配置' 状态时发生超时。",
       "fuzzy": true
     },
     {
@@ -656,7 +656,7 @@
     {
       "id": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' unable to create json object from dependencies, {Err}",
       "message": "'{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' unable to create json object from dependencies, {Err}",
-      "translation": "“{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}”无法根据依赖关系创建 JSON 对象，{Err}",
+      "translation": " '{DEPENDENCYCOMMAND} {DEPENDENCYLISTCOMMAND}' 无法根据依赖关系创建 JSON 对象，{Err}",
       "placeholders": [
         {
           "id": "DEPENDENCYCOMMAND",
@@ -688,7 +688,7 @@
     {
       "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
       "message": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
-      "translation": "无法设置环境变量“HZN_DONT_SUBST_ENV_VARS”，错误：{Err}",
+      "translation": "无法设置环境变量 'HZN_DONT_SUBST_ENV_VARS'，错误：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -704,7 +704,7 @@
     {
       "id": "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
       "message": "Unable to restore env var 'HZN_DONT_SUBST_ENV_VARS', error {Err}",
-      "translation": "无法复原环境变量“HZN_DONT_SUBST_ENV_VARS”，错误：{Err}",
+      "translation": "无法复原环境变量 'HZN_DONT_SUBST_ENV_VARS'，错误：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -1026,7 +1026,7 @@
     {
       "id": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error {Err}",
       "message": "Unable to set env var 'HZN_DONT_SUBST_ENV_VARS' to zero, error {Err}",
-      "translation": "无法将环境变量“HZN_DONT_SUBST_ENV_VARS”设置为零，错误：{Err}",
+      "translation": "无法将环境变量 'HZN_DONT_SUBST_ENV_VARS' 设置为零，错误：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -1416,7 +1416,7 @@
     {
       "id": "'dependency {DEPENDENCYREMOVECOMMAND}' failed to get a list of dependecies. Error {Err}",
       "message": "'dependency {DEPENDENCYREMOVECOMMAND}' failed to get a list of dependecies. Error {Err}",
-      "translation": "“dependency {DEPENDENCYREMOVECOMMAND}”获取依赖关系列表失败。错误：{Err}",
+      "translation": " 'dependency {DEPENDENCYREMOVECOMMAND}' 获取依赖关系列表失败。错误：{Err}",
       "placeholders": [
         {
           "id": "DEPENDENCYREMOVECOMMAND",
@@ -1488,7 +1488,7 @@
     {
       "id": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
       "message": "'dependency {DEPENDENCYREMOVECOMMAND}' dependency not found.",
-      "translation": "找不到“dependency {DEPENDENCYREMOVECOMMAND}”依赖关系。",
+      "translation": "找不到 'dependency {DEPENDENCYREMOVECOMMAND}' 依赖关系。",
       "placeholders": [
         {
           "id": "DEPENDENCYREMOVECOMMAND",
@@ -1664,7 +1664,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
       "message": "'{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' Failed to get the service name from the image name. {Err}",
-      "translation": "“{SERVICECOMMAND} {SERVICECREATIONCOMMAND}”从映像名称中获取服务名称失败。{Err}",
+      "translation": " '{SERVICECOMMAND} {SERVICECREATIONCOMMAND}' 从映像名称中获取服务名称失败。{Err}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -2706,7 +2706,7 @@
     {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "message": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
-      "translation": "必须设置环境变量 {DEVTOOLHZNORG} 或者在 --user-pw 标志上将用户指定为“org/user”",
+      "translation": "必须设置环境变量 {DEVTOOLHZNORG} 或者在 --user-pw 标志上将用户指定为 'org/user' ",
       "placeholders": [
         {
           "id": "DEVTOOLHZNORG",
@@ -2802,7 +2802,7 @@
     {
       "id": "'{ProjectType} {Cmd}' project does not validate. {Derr}",
       "message": "'{ProjectType} {Cmd}' project does not validate. {Derr}",
-      "translation": "“{ProjectType} {Cmd}”项目未通过验证。{Derr}",
+      "translation": " '{ProjectType} {Cmd}' 项目未通过验证。{Derr}",
       "placeholders": [
         {
           "id": "ProjectType",
@@ -2834,7 +2834,7 @@
     {
       "id": "'{ProjectType} {Cmd}' project does not validate. {Verr}",
       "message": "'{ProjectType} {Cmd}' project does not validate. {Verr}",
-      "translation": "“{ProjectType} {Cmd}”项目未通过验证。{Verr}",
+      "translation": " '{ProjectType} {Cmd}' 项目未通过验证。{Verr}",
       "placeholders": [
         {
           "id": "ProjectType",
@@ -2866,7 +2866,7 @@
     {
       "id": "'{ProjectType} {Cmd}' Must specify configuration file type (-t) when a configuration file is specified (-m).",
       "message": "'{ProjectType} {Cmd}' Must specify configuration file type (-t) when a configuration file is specified (-m).",
-      "translation": "“{ProjectType} {Cmd}”：指定有配置文件 (-m) 时，必须指定配置文件类型 (-t)。",
+      "translation": " '{ProjectType} {Cmd}'：指定有配置文件 (-m) 时，必须指定配置文件类型 (-t)。",
       "placeholders": [
         {
           "id": "ProjectType",
@@ -2890,7 +2890,7 @@
     {
       "id": "'{ProjectType} {Cmd}' configuration file {FileRef} error {Err}",
       "message": "'{ProjectType} {Cmd}' configuration file {FileRef} error {Err}",
-      "translation": "“{ProjectType} {Cmd}”配置文件 {FileRef} 错误：{Err}",
+      "translation": " '{ProjectType} {Cmd}' 配置文件 {FileRef} 错误：{Err}",
       "placeholders": [
         {
           "id": "ProjectType",
@@ -2994,7 +2994,7 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "message": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
-      "translation": "“{ProjectType} {Cmd}”无法创建容器工作程序 {Cerr}",
+      "translation": " '{ProjectType} {Cmd}' 无法创建容器工作程序 {Cerr}",
       "placeholders": [
         {
           "id": "ProjectType",
@@ -3066,7 +3066,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”：针对依赖关系 {URL}，发生 {StartErr}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTARTCOMMAND}'：针对依赖关系 {URL}，发生 {StartErr}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -3666,7 +3666,7 @@
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
       "message": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。可能需要运行“docker login ...”，以提供映像注册表的凭证。",
+      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。可能需要运行 'docker login ...'，以提供映像注册表的凭证。",
       "placeholders": [
         {
           "id": "Err",
@@ -3736,7 +3736,7 @@
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
       "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "无法拉取 Docker 映像 {Repository____tag}。找不到 Docker 凭证。如果映像注册表是私有的，您可能需要运行“docker login ...”。错误：{Err}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。找不到 Docker 凭证。如果映像注册表是私有的，您可能需要运行 'docker login ...'。错误：{Err}",
       "placeholders": [
         {
           "id": "Repository____tag",
@@ -3784,7 +3784,7 @@
     {
       "id": "the id can not contain more than 1 '/'",
       "message": "the id can not contain more than 1 '/'",
-      "translation": "标识不得包含多个“/”",
+      "translation": "标识不得包含多个 '/' ",
       "fuzzy": true
     },
     {
@@ -3830,7 +3830,7 @@
     {
       "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
       "message": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "警告：在输入文件中引用了环境变量“{EnvVarName}”，但未在环境中定义该变量。",
+      "translation": "警告：在输入文件中引用了环境变量 '{EnvVarName}'，但未在环境中定义该变量。",
       "placeholders": [
         {
           "id": "EnvVarName",
@@ -3884,7 +3884,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。请运行“systemctl status horizon”，以检查 Horizon 代理程序是否在运行中。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。具体错误为：{Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。具体错误为：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5172,7 +5172,7 @@
     {
       "id": "plugin context must include 'currentDir' as the current directory of the service definition file",
       "message": "plugin context must include 'currentDir' as the current directory of the service definition file",
-      "translation": "插件上下文必须包括“currentDir”来作为服务定义文件的当前目录",
+      "translation": "插件上下文必须包括 'currentDir' 来作为服务定义文件的当前目录",
       "fuzzy": true
     },
     {
@@ -5288,7 +5288,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' not supported for Helm deployments",
-      "translation": "Helm 部署不支持“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”",
+      "translation": "Helm 部署不支持 '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -5312,7 +5312,7 @@
     {
       "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
       "message": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
-      "translation": "对“/service/config”的输出属性 {Attr} 进行编组失败。{Err}",
+      "translation": "对 '/service/config' 的输出属性 {Attr} 进行编组失败。{Err}",
       "placeholders": [
         {
           "id": "Attr",
@@ -5336,7 +5336,7 @@
     {
       "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
       "message": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
-      "translation": "将“/service/config”输出属性 {Attr} 转换为它的原始类型失败。{Err}",
+      "translation": "将 '/service/config' 输出属性 {Attr} 转换为它的原始类型失败。{Err}",
       "placeholders": [
         {
           "id": "Attr",
@@ -5360,7 +5360,7 @@
     {
       "id": "failed to marshal 'hzn service list' output: {Err}",
       "message": "failed to marshal 'hzn service list' output: {Err}",
-      "translation": "对“hzn service list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn service list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5534,7 +5534,7 @@
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
       "message": "failed to marshal 'hzn service registered' output: {Err}",
-      "translation": "对“hzn service registered”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn service registered' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5550,7 +5550,7 @@
     {
       "id": "failed to marshal 'hzn service configstate' output: {Err}",
       "message": "failed to marshal 'hzn service configstate' output: {Err}",
-      "translation": "对“hzn service configstate”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn service configstate' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5660,7 +5660,7 @@
     {
       "id": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
       "message": "Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.",
-      "translation": "已成功发送服务暂挂请求，请使用“hzn agreement”和“docker ps”来确保移除相关协议和服务容器。这可能需要几分钟时间。",
+      "translation": "已成功发送服务暂挂请求，请使用 'hzn agreement' 和 'docker ps' 来确保移除相关协议和服务容器。这可能需要几分钟时间。",
       "fuzzy": true
     },
     {
@@ -5682,7 +5682,7 @@
     {
       "id": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
       "message": "Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.",
-      "translation": "已成功发送服务恢复请求，请使用“hzn agreement”和“docker ps”来确保启动相关协议和服务容器。这可能需要几分钟时间。",
+      "translation": "已成功发送服务恢复请求，请使用 'hzn agreement' 和 'docker ps' 来确保启动相关协议和服务容器。这可能需要几分钟时间。",
       "fuzzy": true
     },
     {
@@ -6025,7 +6025,7 @@
     {
       "id": "service should be in format service-org/service-name",
       "message": "service should be in format service-org/service-name",
-      "translation": "service 应该为“服务组织/服务名称”格式",
+      "translation": "service 应该为 '服务组织/服务名称' 格式",
       "fuzzy": true
     },
     {
@@ -6049,7 +6049,7 @@
     {
       "id": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
       "message": "expirationTimeBefore should be specified 'now' or timestamp in RC3339 format: yyyy-MM-ddTHH:mm:ssZ",
-      "translation": "expirationTimeBefore 应该指定为“now”或 RC3339 格式的时间戳记：yyyy-MM-ddTHH:mm:ssZ",
+      "translation": "expirationTimeBefore 应该指定为 'now' 或 RC3339 格式的时间戳记：yyyy-MM-ddTHH:mm:ssZ",
       "fuzzy": true
     },
     {
@@ -6071,7 +6071,7 @@
     {
       "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "message": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
-      "translation": "在组织 {Org} 中找不到类型为“{ObjectType}”的对象“{ObjectID}”的目标详细信息",
+      "translation": "在组织 {Org} 中找不到类型为 '{ObjectType}' 的对象 '{ObjectID}' 的目标详细信息",
       "placeholders": [
         {
           "id": "ObjectID",
@@ -6173,7 +6173,7 @@
     {
       "id": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
       "message": "The list of destinations as an array of pattern:nodeId pairs that should receive this object.",
-      "translation": "应接收此对象的目标列表，以“模式:节点标识”对的数组形式指定。",
+      "translation": "应接收此对象的目标列表，以 '模式:节点标识' 对的数组形式指定。",
       "fuzzy": true
     },
     {
@@ -6239,7 +6239,7 @@
     {
       "id": "Set to '*' to indcate services of any hardware architecture.",
       "message": "Set to '*' to indcate services of any hardware architecture.",
-      "translation": "设置为“*”表示任何硬件体系结构的服务。",
+      "translation": "设置为 '*' 表示任何硬件体系结构的服务。",
       "fuzzy": true
     },
     {
@@ -6423,7 +6423,7 @@
     {
       "id": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
       "message": "object '{ObjId}' of type '{ObjType}' not found in org {Org}",
-      "translation": "在组织 {Org} 中找不到类型为“{ObjType}”的对象“{ObjId}”",
+      "translation": "在组织 {Org} 中找不到类型为 '{ObjType}' 的对象 '{ObjId}' ",
       "placeholders": [
         {
           "id": "ObjId",
@@ -7319,7 +7319,7 @@
     {
       "id": "failed to marshal 'hzn eventlog list' output: {Err}",
       "message": "failed to marshal 'hzn eventlog list' output: {Err}",
-      "translation": "对“hzn eventlog list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn eventlog list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7341,7 +7341,7 @@
     {
       "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
       "message": "failed to marshal 'hzn eventlog surface' output: {Err}",
-      "translation": "对“hzn eventlog surface”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn eventlog surface' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7565,7 +7565,7 @@
     {
       "id": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
       "message": "Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).\n\nEnvironment Variables:\n  HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.\n      This can facilitate using a remote Horizon Agent via an ssh tunnel.\n  HZN_EXCHANGE_URL:  Override the URL that the 'hzn exchange' sub-commands use\n      to communicate with the Horizon Exchange, for example\n      https://exchange.bluehorizon.network/api/v1. (By default hzn will ask the\n      Horizon Agent for the URL.)\n  HZN_ORG_ID:  Default value for the 'hzn exchange -o' flag,\n      to specify the organization ID'.\n  HZN_EXCHANGE_USER_AUTH:  Default value for the 'hzn exchange -u' or 'hzn\n\t  register -u' flag, in the form '[org/]user:pw'. Notice that HZN_ORG_ID can be set\n\t  if org is omitted when HZN_EXCHANGE_USER_AUTH is set.\n  HZN_FSS_CSSURL:  Override the URL that the 'hzn mms' sub-commands use\n      to communicate with the Horizon Model Management Service, for example\n      https://exchange.bluehorizon.network/css/. (By default hzn will ask the\n      Horizon Agent for the URL.)\n\n  All these environment variables and ones mentioned in the command help can be\n  specified in user's configuration file: ~/.hzn/hzn.json with JSON format.\n  For example:\n  {Com____}",
-      "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅“环境变量”一节以覆盖该位置）。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供“hzn exchange”子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID：“hzn exchange -o”标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH：“hzn exchange -u”或“hzn\n\t  register -u”标志的缺省值，其格式为“[org/]user:pw”。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供“hzn mms”子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}",
+      "translation": "Horizon 代理程序的命令行界面。大部分子命令使用位于缺省位置 http://localhost 的 Horizon 代理程序 API（请参阅 '环境变量' 一节以覆盖该位置）。\n\n环境变量：\n  HORIZON_URL：覆盖供 hzn 用于连接 Horizon 代理程序 API 的 URL。\n      这便于您通过 SSH 隧道使用远程 Horizon 代理程序。\n  HZN_EXCHANGE_URL：覆盖供 'hzn exchange' 子命令用来与 Horizon Exchange\n通信的 URL，例如，\nhttps://exchange.bluehorizon.network/api/v1。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n  HZN_ORG_ID： 'hzn exchange -o' 标志的缺省值，\n用于指定组织标识。\n  HZN_EXCHANGE_USER_AUTH： 'hzn exchange -u' 或 'hzn\n\t  register -u' 标志的缺省值，其格式为 '[org/]user:pw'。 请注意，如果设置 HZN_EXCHANGE_USER_AUTH 时\n\t省略组织，那么可以设置 HZN_ORG_ID。\n  HZN_FSS_CSSURL：覆盖供 'hzn mms' 子命令用于与\n Horizon 模型管理服务进行通信的 URL，例如\n      https://exchange.bluehorizon.network/css/。 （缺省情况下，hzn 将向\nHorizon 代理程序查询该 URL。）\n\n  所有这些环境变量以及命令帮助中提及的变量都可以在用户配置文件 ~/.hzn/hzn.json 中\n使用 JSON 格式指定。\n  例如：\n  {Com____}",
       "placeholders": [
         {
           "id": "Com____",
@@ -7647,7 +7647,7 @@
     {
       "id": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
       "message": "Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)",
-      "translation": "显示 Horizon Exchange 中的用户资源。（通常，您只能显示自己的用户。如果该用户不存在，您会看到“凭证无效”错误。）",
+      "translation": "显示 Horizon Exchange 中的用户资源。（通常，您只能显示自己的用户。如果该用户不存在，您会看到 '凭证无效' 错误。）",
       "fuzzy": true
     },
     {
@@ -7731,7 +7731,7 @@
     {
       "id": "Skip the 'are you sure?' prompt.",
       "message": "Skip the 'are you sure?' prompt.",
-      "translation": "跳过“是否确定？”提示。",
+      "translation": "跳过 '是否确定？' 提示。",
       "fuzzy": true
     },
     {
@@ -7779,7 +7779,7 @@
     {
       "id": "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.",
       "message": "Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.",
-      "translation": "电子邮件地址。仅在以下情况下需要指定：-u 标志中指定的用户不存在，并且已指定“public”组织。如果这些条件成立，我们将创建该用户，并加入此值作为电子邮件地址属性。",
+      "translation": "电子邮件地址。仅在以下情况下需要指定：-u 标志中指定的用户不存在，并且已指定 'public' 组织。如果这些条件成立，我们将创建该用户，并加入此值作为电子邮件地址属性。",
       "fuzzy": true
     },
     {
@@ -8319,7 +8319,7 @@
     {
       "id": "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.",
       "message": "Overwrite the existing version if the service exists in the exchange. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "覆盖现有版本（如果该服务存在于 Exchange 中）。这将跳过“您确定要覆盖吗”提示。",
+      "translation": "覆盖现有版本（如果该服务存在于 Exchange 中）。这将跳过 '您确定要覆盖吗' 提示。",
       "fuzzy": true
     },
     {
@@ -8517,7 +8517,7 @@
     {
       "id": "Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template.",
       "message": "Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template.",
-      "translation": "在 Horizon Exchange 中添加或替换业务策略。使用“hzn exchange business new”可以建立空的业务策略模板。",
+      "translation": "在 Horizon Exchange 中添加或替换业务策略。使用 'hzn exchange business new' 可以建立空的业务策略模板。",
       "fuzzy": true
     },
     {
@@ -8529,7 +8529,7 @@
     {
       "id": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.",
       "message": "Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'.",
-      "translation": "在 Horizon Exchange 中更新现有策略的一个属性。支持的属性是“hzn exchange business new”命令所示策略定义中的顶级属性。",
+      "translation": "在 Horizon Exchange 中更新现有策略的一个属性。支持的属性是 'hzn exchange business new' 命令所示策略定义中的顶级属性。",
       "fuzzy": true
     },
     {
@@ -8601,7 +8601,7 @@
     {
       "id": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
       "message": "Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them.",
-      "translation": "为此模式创建输入文件模板，该模板填写后即可用于“hzn register”命令。这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。",
+      "translation": "为此模式创建输入文件模板，该模板填写后即可用于 'hzn register' 命令。这将检查指定的模式所使用的服务，并确定它们所需的节点所有者输入。",
       "fuzzy": true
     },
     {
@@ -8625,13 +8625,13 @@
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
       "message": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
-      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。如果该模式来自不同于该节点的另一组织，请使用“other_org/pattern”格式。",
+      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。",
       "fuzzy": true
     },
     {
       "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
       "message": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
-      "translation": "编写模板文件所针对的体系结构。（Horizon 会忽略模式中体系结构不同于目标系统的服务。）体系结构必须是目标系统上“hzn node list”所返回的体系结构。",
+      "translation": "编写模板文件所针对的体系结构。（Horizon 会忽略模式中体系结构不同于目标系统的服务。）体系结构必须是目标系统上 'hzn node list' 所返回的体系结构。",
       "fuzzy": true
     },
     {
@@ -8661,7 +8661,7 @@
     {
       "id": "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.",
       "message": "Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.",
-      "translation": "电子邮件地址。仅在以下情况下需要指定：该节点资源尚不存在于 Horizon Exchange 中，-u 标志中指定的用户不存在，并且已指定“public”组织。如果所有这些条件都成立，我们将创建该用户，并加入此值作为电子邮件地址属性。",
+      "translation": "电子邮件地址。仅在以下情况下需要指定：该节点资源尚不存在于 Horizon Exchange 中，-u 标志中指定的用户不存在，并且已指定 'public' 组织。如果所有这些条件都成立，我们将创建该用户，并加入此值作为电子邮件地址属性。",
       "fuzzy": true
     },
     {
@@ -8679,7 +8679,7 @@
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag.",
       "message": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag.",
-      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。如果该模式来自不同于该节点的另一组织，请使用“other_org/pattern”格式。与 <nodeorg> 和 <pattern> 自变量以及 --policy 标志互斥。",
+      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。与 <nodeorg> 和 <pattern> 自变量以及 --policy 标志互斥。",
       "fuzzy": true
     },
     {
@@ -8697,7 +8697,7 @@
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.",
       "message": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.",
-      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。如果该模式来自不同于该节点的另一组织，请使用“other_org/pattern”格式。与 -o、-p 和 --policy 互斥。",
+      "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。与 -o、-p 和 --policy 互斥。",
       "fuzzy": true
     },
     {
@@ -8781,7 +8781,7 @@
     {
       "id": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
       "message": "Overwrite the existing files. It will skip the 'do you want to overwrite' prompt.",
-      "translation": "覆盖现有文件。这将跳过“您确定要覆盖吗”提示。",
+      "translation": "覆盖现有文件。这将跳过 '您确定要覆盖吗' 提示。",
       "fuzzy": true
     },
     {
@@ -8877,7 +8877,7 @@
     {
       "id": "The new constraints or properties in the format '{Constraintsconstraint_list}' or '{Propertiesproperty_list}'.",
       "message": "The new constraints or properties in the format '{Constraintsconstraint_list}' or '{Propertiesproperty_list}'.",
-      "translation": "新的约束或属性，其格式为“{Constraintsconstraint_list}”或“{Propertiesproperty_list}”。",
+      "translation": "新的约束或属性，其格式为 '{Constraintsconstraint_list}' 或 '{Propertiesproperty_list}'。",
       "placeholders": [
         {
           "id": "Constraintsconstraint_list",
@@ -9087,7 +9087,7 @@
     {
       "id": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
       "message": "Cancel 1 or all of the active agreements this edge node has made with a Horizon agreement bot. Usually an agbot will immediately negotiated a new agreement. If you want to cancel all agreements and not have this edge accept new agreements, run 'hzn unregister'.",
-      "translation": "取消此边缘节点与 Horizon 协议 bot 议定的 1 个或全部活动协议。通常，agbot 将立即协商新协议。如果要取消所有协议，而且不希望此边缘节点接受新协议，请运行“hzn unregister”。",
+      "translation": "取消此边缘节点与 Horizon 协议 bot 议定的 1 个或全部活动协议。通常，agbot 将立即协商新协议。如果要取消所有协议，而且不希望此边缘节点接受新协议，请运行 'hzn unregister'。",
       "fuzzy": true
     },
     {
@@ -9183,7 +9183,7 @@
     {
       "id": "Skip the 'Are you sure?' prompt.",
       "message": "Skip the 'Are you sure?' prompt.",
-      "translation": "跳过“是否确定？”提示。",
+      "translation": "跳过 '是否确定？' 提示。",
       "fuzzy": true
     },
     {
@@ -9237,13 +9237,13 @@
     {
       "id": "Change the configuration state to 'suspend' for a service.",
       "message": "Change the configuration state to 'suspend' for a service.",
-      "translation": "将服务的配置状态更改为“暂挂”。",
+      "translation": "将服务的配置状态更改为 '暂挂'。",
       "fuzzy": true
     },
     {
       "id": "Change the configuration state to 'active' for a service.",
       "message": "Change the configuration state to 'active' for a service.",
-      "translation": "将服务的配置状态更改为“活动”。",
+      "translation": "将服务的配置状态更改为 '活动'。",
       "fuzzy": true
     },
     {
@@ -9297,7 +9297,7 @@
     {
       "id": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
       "message": "Also remove all the previous registration information. Use it only after the 'hzn unregister' command failed. Please capture the logs by running 'hzn eventlog list -a -l' command before using this flag.",
-      "translation": "同时移除所有的先前注册信息。只有在“hzn unregister”命令失败后，才应使用此标志。在使用此标志之前，请通过运行“hzn eventlog list -a -l”命令捕获日志。",
+      "translation": "同时移除所有的先前注册信息。只有在 'hzn unregister' 命令失败后，才应使用此标志。在使用此标志之前，请通过运行 'hzn eventlog list -a -l' 命令捕获日志。",
       "fuzzy": true
     },
     {
@@ -9339,7 +9339,7 @@
     {
       "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
       "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "选定项字符串。此标志可以重复指定，这表示“AND”。每个标志的格式都应该是 attribute=value、attribute~value、\"attribute>value\" 或 \"attribute<value\"，其中“~”表示包含。公共属性名称包括 timestamp、severity、message、event_code、source_type、agreement_id、service_url 等等。使用“-l”标志可查看所有属性名称。",
+      "translation": "选定项字符串。此标志可以重复指定，这表示 'AND'。每个标志的格式都应该是 attribute=value、attribute~value、\"attribute>value\" 或 \"attribute<value\"，其中 '~' 表示包含。公共属性名称包括 timestamp、severity、message、event_code、source_type、agreement_id、service_url 等等。使用 '-l' 标志可查看所有属性名称。",
       "fuzzy": true
     },
     {
@@ -9363,7 +9363,7 @@
     {
       "id": "Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.",
       "message": "Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.",
-      "translation": "Horizon 项目元数据所在的目录。省略此标志时，将使用当前目录下名为“horizon”的子目录。",
+      "translation": "Horizon 项目元数据所在的目录。省略此标志时，将使用当前目录下名为 'horizon' 的子目录。",
       "fuzzy": true
     },
     {
@@ -9393,13 +9393,13 @@
     {
       "id": "The version of the service. If this flag is omitted, '0.0.1' is used.",
       "message": "The version of the service. If this flag is omitted, '0.0.1' is used.",
-      "translation": "服务的版本。省略此标志时，将使用“0.0.1”。",
+      "translation": "服务的版本。省略此标志时，将使用 '0.0.1'。",
       "fuzzy": true
     },
     {
       "id": "The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.",
       "message": "The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.",
-      "translation": "不含服务版本标记的 Docker 容器映像基本名称。此命令会将体系结构和版本添加到基本名称中，以构造最终的映像名称。格式为“basename_arch:serviceversion”。在指定有“--noImageGen”标志的情况下，此标志可以重复指定，以指定多个映像。",
+      "translation": "不含服务版本标记的 Docker 容器映像基本名称。此命令会将体系结构和版本添加到基本名称中，以构造最终的映像名称。格式为 'basename_arch:serviceversion'。在指定有 '--noImageGen' 标志的情况下，此标志可以重复指定，以指定多个映像。",
       "fuzzy": true
     },
     {
@@ -9723,7 +9723,7 @@
     {
       "id": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
       "message": "List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.",
-      "translation": "列示使用了将给定服务作为目标的策略的 MMS 对象。服务以“服务组织/服务名称”格式指定。",
+      "translation": "列示使用了将给定服务作为目标的策略的 MMS 对象。服务以 '服务组织/服务名称' 格式指定。",
       "fuzzy": true
     },
     {
@@ -9777,7 +9777,7 @@
     {
       "id": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
       "message": "Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command.",
-      "translation": "显示一个空的对象元数据模板，该模板可以进行填写，并作为“hzn mms object publish”命令上的 -m 选项来传递。",
+      "translation": "显示一个空的对象元数据模板，该模板可以进行填写，并作为 'hzn mms object publish' 命令上的 -m 选项来传递。",
       "fuzzy": true
     },
     {
@@ -9807,7 +9807,7 @@
     {
       "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
       "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "translation": "要发布的对象的定义。可以使用“hzn mss object new”命令来获取空白模板。",
+      "translation": "要发布的对象的定义。可以使用 'hzn mss object new' 命令来获取空白模板。",
       "fuzzy": true
     },
     {
@@ -9889,7 +9889,7 @@
     {
       "id": "failed to marshal 'hzn agreement list' output: {Err}",
       "message": "failed to marshal 'hzn agreement list' output: {Err}",
-      "translation": "对“hzn agreement list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn agreement list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10499,7 +10499,7 @@
         "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
       ],
       "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "注销节点出错。节点必须处于“已配置”或“正在配置”状态才能取消配置。",
+      "translation": "注销节点出错。节点必须处于 '已配置' 或 '正在配置' 状态才能取消配置。",
       "fuzzy": true
     },
     {
@@ -10607,7 +10607,7 @@
         "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
       ],
       "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "节点配置出错。节点必须处于“已配置”或“正在配置”状态才能将状态更改为 {Arg_1}。",
+      "translation": "节点配置出错。节点必须处于 '已配置' 或 '正在配置' 状态才能将状态更改为 {Arg_1}。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -10625,7 +10625,7 @@
         "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
       ],
       "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "不支持节点状态从“{Arg_1}”过渡到“{Arg_2}”。",
+      "translation": "不支持节点状态从 '{Arg_1}' 过渡到 '{Arg_2}'。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -11541,7 +11541,7 @@
     {
       "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
       "message": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "在业务策略中找不到“arch”为 {NodeArch} 的服务。",
+      "translation": "在业务策略中找不到 'arch' 为 {NodeArch} 的服务。",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -12255,7 +12255,7 @@
     {
       "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
       "message": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "在业务策略或模式中找不到“arch”为 {NodeArch} 的服务。",
+      "translation": "在业务策略或模式中找不到 'arch' 为 {NodeArch} 的服务。",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -12959,7 +12959,7 @@
     {
       "id": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
       "message": "The service versions that these inputs apply to. Omit or specify \"[0.0.0,INFINITY)\" to mean all versions.",
-      "translation": "这些输入所应用于的服务版本。省略或指定“[0.0.0,INFINITY)”表示所有版本。",
+      "translation": "这些输入所应用于的服务版本。省略或指定 \"[0.0.0,INFINITY)\" 表示所有版本。",
       "fuzzy": true
     },
     {
@@ -13193,7 +13193,7 @@
     {
       "id": "failed to marshal 'exchange agbot list' output: {Err}",
       "message": "failed to marshal 'exchange agbot list' output: {Err}",
-      "translation": "对“exchange agbot list”的输出进行编组失败：{Err}",
+      "translation": "对 'exchange agbot list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13209,7 +13209,7 @@
     {
       "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
       "message": "agbot '{Agbot}' not found in org {AgbotOrg}",
-      "translation": "在组织 {AgbotOrg} 中找不到 agbot“{Agbot}”",
+      "translation": "在组织 {AgbotOrg} 中找不到 agbot '{Agbot}' ",
       "placeholders": [
         {
           "id": "Agbot",
@@ -13239,7 +13239,7 @@
     {
       "id": "pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' not found in agbot '{Agbot}'",
       "message": "pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' not found in agbot '{Agbot}'",
-      "translation": "在 agbot“{Agbot}”中找不到组织为“{PatternOrg}”且节点组织为“{NodeOrg}”的模式“{Pattern}”",
+      "translation": "在 agbot '{Agbot}' 中找不到组织为 '{PatternOrg}' 且节点组织为 '{NodeOrg}' 的模式 '{Pattern}' ",
       "placeholders": [
         {
           "id": "Pattern",
@@ -13279,7 +13279,7 @@
     {
       "id": "Pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' already exists in agbot '{Agbot}'",
       "message": "Pattern '{Pattern}' with org '{PatternOrg}' and node org '{NodeOrg}' already exists in agbot '{Agbot}'",
-      "translation": "在 agbot“{Agbot}”中已存在组织为“{PatternOrg}”且节点组织为“{NodeOrg}”的模式“{Pattern}”",
+      "translation": "在 agbot '{Agbot}' 中已存在组织为 '{PatternOrg}' 且节点组织为 '{NodeOrg}' 的模式 '{Pattern}' ",
       "placeholders": [
         {
           "id": "Pattern",
@@ -13319,7 +13319,7 @@
     {
       "id": "Adding Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot will start looking for nodes that are compatible with this policy.",
       "message": "Adding Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot will start looking for nodes that are compatible with this policy.",
-      "translation": "正在将业务策略组织“{PolOrg}”添加到 agbot“{Agbot}”。该 agbot 将开始查找与此策略兼容的节点。",
+      "translation": "正在将业务策略组织 '{PolOrg}' 添加到 agbot '{Agbot}'。该 agbot 将开始查找与此策略兼容的节点。",
       "placeholders": [
         {
           "id": "PolOrg",
@@ -13343,7 +13343,7 @@
     {
       "id": "Business policy org {PolOrg}' already exists in agbot '{Agbot}'",
       "message": "Business policy org {PolOrg}' already exists in agbot '{Agbot}'",
-      "translation": "业务策略组织“{PolOrg}”已存在于 agbot“{Agbot}”中。",
+      "translation": "业务策略组织 '{PolOrg}' 已存在于 agbot '{Agbot}' 中。",
       "placeholders": [
         {
           "id": "PolOrg",
@@ -13367,7 +13367,7 @@
     {
       "id": "Removing Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot is no longer looking for nodes that are compatible with this policy.",
       "message": "Removing Business policy org {PolOrg}' to agbot '{Agbot}'. The agbot is no longer looking for nodes that are compatible with this policy.",
-      "translation": "正在将业务策略组织“{PolOrg}”从 agbot“{Agbot}”中移除。该 agbot 不再查找与此策略兼容的节点。",
+      "translation": "正在将业务策略组织 '{PolOrg}' 从 agbot '{Agbot}' 中移除。该 agbot 不再查找与此策略兼容的节点。",
       "placeholders": [
         {
           "id": "PolOrg",
@@ -13415,7 +13415,7 @@
     {
       "id": "failed to marshal 'hzn exchange business listpolicy' output: {Err}",
       "message": "failed to marshal 'hzn exchange business listpolicy' output: {Err}",
-      "translation": "对“hzn exchange business listpolicy”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange business listpolicy' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13745,7 +13745,7 @@
     {
       "id": "Set to '*' to use services of any hardware architecture.",
       "message": "Set to '*' to use services of any hardware architecture.",
-      "translation": "设置为“*”表示使用任何硬件体系结构的服务。",
+      "translation": "设置为 '*' 表示使用任何硬件体系结构的服务。",
       "fuzzy": true
     },
     {
@@ -13799,7 +13799,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
-      "translation": "对“hzn exchange catalog servicelist -l”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange catalog servicelist -l' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13815,7 +13815,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
-      "translation": "对“hzn exchange catalog servicelist -s”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange catalog servicelist -s' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13831,7 +13831,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
-      "translation": "对“hzn exchange catalog servicelist”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange catalog servicelist' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13847,7 +13847,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
-      "translation": "对“hzn exchange catalog patternlist -l”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange catalog patternlist -l' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13863,7 +13863,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
-      "translation": "对“hzn exchange catalog patternlist -s”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange catalog patternlist -s' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13879,7 +13879,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
-      "translation": "对“hzn exchange catalog patternlist”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange catalog patternlist' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13895,7 +13895,7 @@
     {
       "id": "failed to marshal 'exchange node list' output: {Err}",
       "message": "failed to marshal 'exchange node list' output: {Err}",
-      "translation": "对“exchange node list”的输出进行编组失败：{Err}",
+      "translation": "对 'exchange node list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13911,7 +13911,7 @@
     {
       "id": "node '{Node}' not found in org {NodeOrg}",
       "message": "node '{Node}' not found in org {NodeOrg}",
-      "translation": "在组织 {NodeOrg} 中找不到节点“{Node}”",
+      "translation": "在组织 {NodeOrg} 中找不到节点 '{Node}' ",
       "placeholders": [
         {
           "id": "Node",
@@ -13977,7 +13977,7 @@
     {
       "id": "user '{Org}/{User}' does not exist with the specified password or -e was not specified to be able to create it in the 'public' org.",
       "message": "user '{Org}/{User}' does not exist with the specified password or -e was not specified to be able to create it in the 'public' org.",
-      "translation": "不存在具有所指定密码的用户“{Org}/{User}”，或者未指定 -e，无法在“public”组织中创建该用户。",
+      "translation": "不存在具有所指定密码的用户 '{Org}/{User}'，或者未指定 -e，无法在 'public' 组织中创建该用户。",
       "placeholders": [
         {
           "id": "Org",
@@ -14001,7 +14001,7 @@
     {
       "id": "key '{OrgAndCredsorg_nodeId}' not found in exchange nodes output",
       "message": "key '{OrgAndCredsorg_nodeId}' not found in exchange nodes output",
-      "translation": "在 Exchange 节点输出中找不到键“{OrgAndCredsorg_nodeId}”",
+      "translation": "在 Exchange 节点输出中找不到键 '{OrgAndCredsorg_nodeId}' ",
       "placeholders": [
         {
           "id": "OrgAndCredsorg_nodeId",
@@ -14265,7 +14265,7 @@
     {
       "id": "node '{NodeOrg}/{Node}' not found.",
       "message": "node '{NodeOrg}/{Node}' not found.",
-      "translation": "找不到节点“{NodeOrg}/{Node}”。",
+      "translation": "找不到节点 '{NodeOrg}/{Node}'。",
       "placeholders": [
         {
           "id": "NodeOrg",
@@ -14513,7 +14513,7 @@
     {
       "id": "failed to marshal 'hzn exchange node listerrors' output: {Err}",
       "message": "failed to marshal 'hzn exchange node listerrors' output: {Err}",
-      "translation": "对“hzn exchange node listerrors”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange node listerrors' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -14567,7 +14567,7 @@
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
       "message": "failed to marshal 'exchange pattern list' output: {Err}",
-      "translation": "对“exchange pattern list”的输出进行编组失败：{Err}",
+      "translation": "对 'exchange pattern list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -14583,7 +14583,7 @@
     {
       "id": "pattern '{Pattern}' not found in org {PatOrg}",
       "message": "pattern '{Pattern}' not found in org {PatOrg}",
-      "translation": "在组织 {PatOrg} 中找不到模式“{Pattern}”",
+      "translation": "在组织 {PatOrg} 中找不到模式 '{Pattern}' ",
       "placeholders": [
         {
           "id": "Pattern",
@@ -14607,7 +14607,7 @@
     {
       "id": "failed to marshal 'hzn exchange pattern list' output: {Err}",
       "message": "failed to marshal 'hzn exchange pattern list' output: {Err}",
-      "translation": "对“hzn exchange pattern list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange pattern list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -14839,7 +14839,7 @@
     {
       "id": "key '{Org____pattern}' not found in resources returned from exchange",
       "message": "key '{Org____pattern}' not found in resources returned from exchange",
-      "translation": "在从 Exchange 返回的资源中找不到键“{Org____pattern}",
+      "translation": "在从 Exchange 返回的资源中找不到键 '{Org____pattern}",
       "placeholders": [
         {
           "id": "Org____pattern",
@@ -14981,7 +14981,7 @@
     {
       "id": "key '{KeyName}' not found",
       "message": "key '{KeyName}' not found",
-      "translation": "找不到键“{KeyName}”",
+      "translation": "找不到键 '{KeyName}' ",
       "placeholders": [
         {
           "id": "KeyName",
@@ -14997,7 +14997,7 @@
     {
       "id": "failed to marshal 'hzn exchange service list' output: {Err}",
       "message": "failed to marshal 'hzn exchange service list' output: {Err}",
-      "translation": "对“hzn exchange service list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange service list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -15013,7 +15013,7 @@
     {
       "id": "service '{Service}' not found in org {SvcOrg}",
       "message": "service '{Service}' not found in org {SvcOrg}",
-      "translation": "在组织 {SvcOrg} 中找不到服务“{Service}”",
+      "translation": "在组织 {SvcOrg} 中找不到服务 '{Service}' ",
       "placeholders": [
         {
           "id": "Service",
@@ -15075,7 +15075,7 @@
     {
       "id": "the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null",
       "message": "the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null",
-      "translation": "“deploymentSignature”字段不为空，但被忽略，因为“deployment”字段为 null",
+      "translation": " 'deploymentSignature' 字段不为空，但被忽略，因为 'deployment' 字段为 null",
       "fuzzy": true
     },
     {
@@ -15103,13 +15103,13 @@
     {
       "id": "the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty",
       "message": "the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty",
-      "translation": "“deployment”字段是非空字符串，这意味着此服务已预先进行签名，但“deploymentSignature”字段为空",
+      "translation": " 'deployment' 字段是非空字符串，这意味着此服务已预先进行签名，但 'deploymentSignature' 字段为空",
       "fuzzy": true
     },
     {
       "id": "'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)",
       "message": "'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)",
-      "translation": "“deployment”字段不是有效类型。它必须是 JSON 对象或字符串（对于预先签名情况）",
+      "translation": " 'deployment' 字段不是有效类型。它必须是 JSON 对象或字符串（对于预先签名情况）",
       "fuzzy": true
     },
     {
@@ -15155,7 +15155,7 @@
     {
       "id": "Error: registry-token value of '{RegTok}' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.",
       "message": "Error: registry-token value of '{RegTok}' is not in the required format: registry:user:token. Not storing that in the Horizon exchange.",
-      "translation": "错误：注册表令牌值“{RegTok}”不具有所需的格式：registry:user:token。未将该值存储在 Horizon Exchange 中。",
+      "translation": "错误：注册表令牌值 '{RegTok}' 不具有所需的格式：registry:user:token。未将该值存储在 Horizon Exchange 中。",
       "placeholders": [
         {
           "id": "RegTok",
@@ -15285,7 +15285,7 @@
     {
       "id": "service '{Svcorg}/{Service}' not found.",
       "message": "service '{Svcorg}/{Service}' not found.",
-      "translation": "找不到服务“{Svcorg}/{Service}”。",
+      "translation": "找不到服务 '{Svcorg}/{Service}'。",
       "placeholders": [
         {
           "id": "Svcorg",
@@ -15309,7 +15309,7 @@
     {
       "id": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
       "message": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
-      "translation": "对“hzn exchange service listpolicy”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn exchange service listpolicy' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -15385,7 +15385,7 @@
     {
       "id": "user '{TrimPrefixtheUser_}' not found in org {Org}",
       "message": "user '{TrimPrefixtheUser_}' not found in org {Org}",
-      "translation": "在组织 {Org} 中找不到用户“{TrimPrefixtheUser_}”",
+      "translation": "在组织 {Org} 中找不到用户 '{TrimPrefixtheUser_}' ",
       "placeholders": [
         {
           "id": "TrimPrefixtheUser_",
@@ -15409,7 +15409,7 @@
     {
       "id": "failed to marshal 'exchange user list' output: {Err}",
       "message": "failed to marshal 'exchange user list' output: {Err}",
-      "translation": "对“exchange user list”的输出进行编组失败：{Err}",
+      "translation": "对 'exchange user list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -15559,7 +15559,7 @@
     {
       "id": "failed to marshal 'hzn metering list' output: {Err}",
       "message": "failed to marshal 'hzn metering list' output: {Err}",
-      "translation": "对“hzn metering list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn metering list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -15671,7 +15671,7 @@
     {
       "id": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
       "message": "this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first.",
-      "translation": "此 Horizon 节点已注册或正在进行注册。如果要以不同方式进行注册，请先运行“hzn unregister”。",
+      "translation": "此 Horizon 节点已注册或正在进行注册。如果要以不同方式进行注册，请先运行 'hzn unregister'。",
       "fuzzy": true
     },
     {
@@ -15753,7 +15753,7 @@
     {
       "id": "Using node ID '{NodeId}' from the Horizon agent",
       "message": "Using node ID '{NodeId}' from the Horizon agent",
-      "translation": "正在使用来自 Horizon 代理程序的节点标识“{NodeId}”",
+      "translation": "正在使用来自 Horizon 代理程序的节点标识 '{NodeId}' ",
       "placeholders": [
         {
           "id": "NodeId",
@@ -15781,7 +15781,7 @@
     {
       "id": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
       "message": "node '{Org}/{NodeId}' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.",
-      "translation": "在 Exchange 中不存在具有所指定令牌的节点“{Org}/{NodeId}”，未指定 -u 标志来提供 Exchange 用户凭证以创建/更新该节点。",
+      "translation": "在 Exchange 中不存在具有所指定令牌的节点 '{Org}/{NodeId}'，未指定 -u 标志来提供 Exchange 用户凭证以创建/更新该节点。",
       "placeholders": [
         {
           "id": "Org",
@@ -15905,7 +15905,7 @@
     {
       "id": "pattern '{Patorg}/{Patname}' not found from the exchange.",
       "message": "pattern '{Patorg}/{Patname}' not found from the exchange.",
-      "translation": "在该 Exchange 中找不到模式“{Patorg}/{Patname}”。",
+      "translation": "在该 Exchange 中找不到模式 '{Patorg}/{Patname}'。",
       "placeholders": [
         {
           "id": "Patorg",
@@ -15985,7 +15985,7 @@
     {
       "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "message": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "注册失败，原因：{Matches0}。请更新输入文件 {InputFile} 中的 services 一节。请运行“hzn unregister”，然后再次运行“hzn register...”",
+      "translation": "注册失败，原因：{Matches0}。请更新输入文件 {InputFile} 中的 services 一节。请运行 'hzn unregister'，然后再次运行 'hzn register...' ",
       "placeholders": [
         {
           "id": "Matches0",
@@ -16021,7 +16021,7 @@
     {
       "id": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "message": "{Errstring}. Please define variables for service {Matches2} in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "{Errstring}。请在输入文件 {InputFile} 中定义用于服务 {Matches2} 的变量。请运行“hzn unregister”，然后再次运行“hzn register...”",
+      "translation": "{Errstring}。请在输入文件 {InputFile} 中定义用于服务 {Matches2} 的变量。请运行 'hzn unregister'，然后再次运行 'hzn register...' ",
       "placeholders": [
         {
           "id": "Errstring",
@@ -16053,7 +16053,7 @@
     {
       "id": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
       "message": "{Errstring}. Please create an input file, define variables for service {Matches2}. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.",
-      "translation": "{Errstring}。请创建输入文件，并定义用于服务 {Matches2} 的变量。请运行“hzn unregister”，然后再次运行“hzn register...”并使用 -f 标志指定输入文件。",
+      "translation": "{Errstring}。请创建输入文件，并定义用于服务 {Matches2} 的变量。请运行 'hzn unregister'，然后再次运行 'hzn register...' 并使用 -f 标志指定输入文件。",
       "placeholders": [
         {
           "id": "Errstring",
@@ -16083,7 +16083,7 @@
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "message": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
-      "translation": "Horizon 节点已注册。工作负载协议协商应该会很快开始。运行“hzn agreement list”来查看。",
+      "translation": "Horizon 节点已注册。工作负载协议协商应该会很快开始。运行 'hzn agreement list' 来查看。",
       "fuzzy": true
     },
     {
@@ -16101,7 +16101,7 @@
     {
       "id": "invalid version range '{Vr}': {Err}",
       "message": "invalid version range '{Vr}': {Err}",
-      "translation": "版本范围“{Vr}”无效：{Err}",
+      "translation": "版本范围 '{Vr}' 无效：{Err}",
       "placeholders": [
         {
           "id": "Vr",
@@ -16301,7 +16301,7 @@
     {
       "id": "did not find pattern '{PatKey}' as expected",
       "message": "did not find pattern '{PatKey}' as expected",
-      "translation": "找不到期望的模式“{PatKey}”",
+      "translation": "找不到期望的模式 '{PatKey}' ",
       "placeholders": [
         {
           "id": "PatKey",
@@ -16635,7 +16635,7 @@
     {
       "id": "Currently, there are {Lenags} active agreements on this node. Use `hzn agreement list' to see the agreements that have been formed so far.",
       "message": "Currently, there are {Lenags} active agreements on this node. Use `hzn agreement list' to see the agreements that have been formed so far.",
-      "translation": "当前，此节点上有 {Lenags} 个活动协议。使用“hzn agreement list”以查看目前尚未形成的协议。",
+      "translation": "当前，此节点上有 {Lenags} 个活动协议。使用 'hzn agreement list' 以查看目前尚未形成的协议。",
       "placeholders": [
         {
           "id": "Lenags",
@@ -16663,13 +16663,13 @@
     {
       "id": "Use the 'hzn deploycheck all' command to verify that node, service, pattern and policy configuration is compatible.",
       "message": "Use the 'hzn deploycheck all' command to verify that node, service, pattern and policy configuration is compatible.",
-      "translation": "使用“hzn deploycheck all”命令以验证节点、服务、模式和策略配置兼容。",
+      "translation": "使用 'hzn deploycheck all' 命令以验证节点、服务、模式和策略配置兼容。",
       "fuzzy": true
     },
     {
       "id": "The following errors were found in the node's event log and are related to {Org}/{WaitService}. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.",
       "message": "The following errors were found in the node's event log and are related to {Org}/{WaitService}. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.",
-      "translation": "在节点的事件日志中找到以下错误并且这些错误与 {Org}/{WaitService} 相关。使用“hzn eventlog list -s severity=error -l”以查看错误的完整详细信息。",
+      "translation": "在节点的事件日志中找到以下错误并且这些错误与 {Org}/{WaitService} 相关。使用 'hzn eventlog list -s severity=error -l' 以查看错误的完整详细信息。",
       "placeholders": [
         {
           "id": "Org",
@@ -16815,7 +16815,7 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "message": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
-      "translation": "警告：未能解析映像路径“{Image}”。不会将其推送到 Docker 注册表，而只是将其按原样包括在“deployment”字段中。",
+      "translation": "警告：未能解析映像路径 '{Image}'。不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。",
       "placeholders": [
         {
           "id": "Image",
@@ -16831,7 +16831,7 @@
     {
       "id": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
       "message": "Using '{NewImage}' in 'deployment' field instead of '{Image}'",
-      "translation": "在“deployment”字段中，正在使用“{NewImage}”代替“{Image}”",
+      "translation": "在 'deployment' 字段中，正在使用 '{NewImage}' 代替 '{Image}' ",
       "placeholders": [
         {
           "id": "NewImage",
@@ -16855,13 +16855,13 @@
     {
       "id": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
       "message": "each service defined under 'deployment.services' must be a json object (with strings as the keys)",
-      "translation": "在“deployment.services”下定义的每个服务都必须是 JSON 对象（以字符串作为键）",
+      "translation": "在 'deployment.services' 下定义的每个服务都必须是 JSON 对象（以字符串作为键）",
       "fuzzy": true
     },
     {
       "id": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
       "message": "service '{SvcName}' defined under 'deployment.services' does not have mandatory 'image' field",
-      "translation": "在“deployment.services”下定义的服务“{SvcName}”没有必需的“image”字段",
+      "translation": "在 'deployment.services' 下定义的服务 '{SvcName}' 没有必需的 'image' 字段",
       "placeholders": [
         {
           "id": "SvcName",
@@ -16877,7 +16877,7 @@
     {
       "id": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
       "message": "service '{SvcName}' defined under 'deployment.services' has unrecognized field '{K}'. See https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
-      "translation": "在“deployment.services”下定义的服务“{SvcName}”有一个无法识别的字段“{K}”。请参阅 https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
+      "translation": "在 'deployment.services' 下定义的服务 '{SvcName}' 有一个无法识别的字段 '{K}'。请参阅 https://github.com/open-horizon/anax/blob/master/doc/deployment_string.md",
       "placeholders": [
         {
           "id": "SvcName",
@@ -16901,7 +16901,7 @@
     {
       "id": "service '{SvcName}' defined under 'deployment.services' has a malformed ports value {DepSvck}, error {Err}",
       "message": "service '{SvcName}' defined under 'deployment.services' has a malformed ports value {DepSvck}, error {Err}",
-      "translation": "在“deployment.services”下定义的服务“{SvcName}”有一个格式不正确的端口值 {DepSvck}，错误 {Err}",
+      "translation": "在 'deployment.services' 下定义的服务 '{SvcName}' 有一个格式不正确的端口值 {DepSvck}，错误 {Err}",
       "placeholders": [
         {
           "id": "SvcName",
@@ -16933,7 +16933,7 @@
     {
       "id": "service '{SvcName}' defined under 'deployment.services' is mapping a port {PortBinding} to the default Horizon API port {AnaxAPIPortDefault}. This service will fail when deployed on a node which has not changed the default Horizon API port.",
       "message": "service '{SvcName}' defined under 'deployment.services' is mapping a port {PortBinding} to the default Horizon API port {AnaxAPIPortDefault}. This service will fail when deployed on a node which has not changed the default Horizon API port.",
-      "translation": "在“deployment.services”下定义的服务“{SvcName}”正在将端口 {PortBinding} 映射到缺省 Horizon API 端口 {AnaxAPIPortDefault}。在未更改缺省 Horizon API 端口的节点上部署时，此服务将失败。",
+      "translation": "在 'deployment.services' 下定义的服务 '{SvcName}' 正在将端口 {PortBinding} 映射到缺省 Horizon API 端口 {AnaxAPIPortDefault}。在未更改缺省 Horizon API 端口的节点上部署时，此服务将失败。",
       "placeholders": [
         {
           "id": "SvcName",
@@ -16965,19 +16965,19 @@
     {
       "id": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
       "message": "the 'deployment' field must contain the 'services' field, whose value must be a json object (with strings as the keys)",
-      "translation": "“deployment”字段必须包含“services”字段，该字段的值必须是 JSON 对象（以字符串作为键）",
+      "translation": " 'deployment' 字段必须包含 'services' 字段，该字段的值必须是 JSON 对象（以字符串作为键）",
       "fuzzy": true
     },
     {
       "id": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
       "message": "the 'deployment' field must contain either the native Horizon deployment config or the Helm deployment config, whose value must be a json object (with strings as the keys)",
-      "translation": "“deployment”字段必须包含本机 Horizon 部署配置或 Helm 部署配置，该配置的值必须是 JSON 对象（以字符串作为键）",
+      "translation": " 'deployment' 字段必须包含本机 Horizon 部署配置或 Helm 部署配置，该配置的值必须是 JSON 对象（以字符串作为键）",
       "fuzzy": true
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start file sync service, {Sserr}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法启动文件同步服务，{Sserr}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法启动文件同步服务，{Sserr}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -17009,7 +17009,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to get service dependencies, {Derr}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法获取服务依赖关系，{Derr}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法获取服务依赖关系，{Derr}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -17047,7 +17047,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法启动服务依赖关系，{Perr}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法启动服务依赖关系，{Perr}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -17079,7 +17079,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法生成测试协议标识，{Aerr}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法生成测试协议标识，{Aerr}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -17111,7 +17111,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
       "message": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTOPCOMMAND}”无法停止服务依赖关系，{Err}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTOPCOMMAND}' 无法停止服务依赖关系，{Err}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -17143,7 +17143,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to stop file sync service, {Sserr}",
-      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法停止文件同步服务，{Sserr}",
+      "translation": " '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法停止文件同步服务，{Sserr}",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -17181,7 +17181,7 @@
     {
       "id": "failed to marshal 'hzn status -l' output: {Err}",
       "message": "failed to marshal 'hzn status -l' output: {Err}",
-      "translation": "对“hzn status -l”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn status -l' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -17197,7 +17197,7 @@
     {
       "id": "failed to marshal 'hzn status' output: {Err}",
       "message": "failed to marshal 'hzn status' output: {Err}",
-      "translation": "对“hzn status”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn status' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -17539,7 +17539,7 @@
     {
       "id": "failed to marshal 'key list' output: {Err}",
       "message": "failed to marshal 'key list' output: {Err}",
-      "translation": "对“key list”的输出进行编组失败：{Err}",
+      "translation": "对 'key list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -17555,7 +17555,7 @@
     {
       "id": "horizon api trust output did not include 'pem' key",
       "message": "horizon api trust output did not include 'pem' key",
-      "translation": "Horizon API 信任输出未包括“pem”键",
+      "translation": "Horizon API 信任输出未包括 'pem' 键",
       "fuzzy": true
     },
     {
@@ -17757,7 +17757,7 @@
     {
       "id": "Public key '{KeyName}' removed from the Horizon agent.",
       "message": "Public key '{KeyName}' removed from the Horizon agent.",
-      "translation": "已从 Horizon 代理程序中移除公用密钥“{KeyName}”。",
+      "translation": "已从 Horizon 代理程序中移除公用密钥 '{KeyName}'。",
       "placeholders": [
         {
           "id": "KeyName",
@@ -17867,7 +17867,7 @@
     {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
       "message": "failed to marshal 'hzn policy list' output: {Err}",
-      "translation": "对“hzn policy list”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn policy list' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -17941,7 +17941,7 @@
     {
       "id": "failed to marshal 'hzn policy compatible' output: {Err}",
       "message": "failed to marshal 'hzn policy compatible' output: {Err}",
-      "translation": "对“hzn policy compatible”的输出进行编组失败：{Err}",
+      "translation": "对 'hzn policy compatible' 的输出进行编组失败：{Err}",
       "placeholders": [
         {
           "id": "Err",

@@ -4140,7 +4140,7 @@
     },
     {
       "id": "separated by boolean operators AND (&&) or OR (||).",
-      "translation": "ブール演算子 AND (&&) または OR (||) で区切ります。"
+      "translation": "ブール演算子 AND (&&) または OR (||) で区切ってください。"
     },
     {
       "id": "A list of userInput variables to set when the service runs, listed by service.",
