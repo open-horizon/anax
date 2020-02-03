@@ -48,7 +48,7 @@
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。可能需要运行“docker login ...”，以提供映像注册表的凭证。"
+      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。可能需要运行 'docker login ...'，以提供映像注册表的凭证。"
     },
     {
       "id": "unable to push docker image {Repository____tag}: {Err}",
@@ -64,7 +64,7 @@
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "无法拉取 Docker 映像 {Repository____tag}。找不到 Docker 凭证。如果映像注册表是私有的，您可能需要运行“docker login ...”。错误：{Err}"
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。找不到 Docker 凭证。如果映像注册表是私有的，您可能需要运行 'docker login ...'。错误：{Err}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
@@ -72,7 +72,7 @@
     },
     {
       "id": "the id can not contain more than 1 '/'",
-      "translation": "标识不得包含多个“/”"
+      "translation": "标识不得包含多个 '/' "
     },
     {
       "id": "reading stdin failed: {Err}",
@@ -84,7 +84,7 @@
     },
     {
       "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "警告：在输入文件中引用了环境变量“{EnvVarName}”，但未在环境中定义该变量。"
+      "translation": "警告：在输入文件中引用了环境变量 '{EnvVarName}'，但未在环境中定义该变量。"
     },
     {
       "id": "Error reading input, error {Err}",
@@ -100,7 +100,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。请运行“systemctl status horizon”，以检查 Horizon 代理程序是否在运行中。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。具体错误为：{Err}"
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。具体错误为：{Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -440,7 +440,7 @@
     },
     {
       "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "在业务策略中找不到“arch”为 {NodeArch} 的服务。"
+      "translation": "在业务策略中找不到 'arch' 为 {NodeArch} 的服务。"
     },
     {
       "id": "No services found in the business policy.",
@@ -616,7 +616,7 @@
     },
     {
       "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "在业务策略或模式中找不到“arch”为 {NodeArch} 的服务。"
+      "translation": "在业务策略或模式中找不到 'arch' 为 {NodeArch} 的服务。"
     },
     {
       "id": "No services found in the business policy or pattern.",
@@ -772,7 +772,7 @@
     },
     {
       "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-      "translation": "在数据库中将协议 {Arg_1} 标记为“已终止”出错：{Arg_2}。"
+      "translation": "在数据库中将协议 {Arg_1} 标记为 '已终止' 出错：{Arg_2}。"
     },
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
@@ -1164,7 +1164,7 @@
     },
     {
       "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "注销节点出错。节点必须处于“已配置”或“正在配置”状态才能取消配置。"
+      "translation": "注销节点出错。节点必须处于 '已配置' 或 '正在配置' 状态才能取消配置。"
     },
     {
       "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
@@ -1192,11 +1192,11 @@
     },
     {
       "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "节点配置出错。节点必须处于“已配置”或“正在配置”状态才能将状态更改为 {Arg_1}。"
+      "translation": "节点配置出错。节点必须处于 '已配置' 或 '正在配置' 状态才能将状态更改为 {Arg_1}。"
     },
     {
       "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "不支持节点状态从“{Arg_1}”过渡到“{Arg_2}”。"
+      "translation": "不支持节点状态从 '{Arg_1}' 过渡到 '{Arg_2}'。"
     },
     {
       "id": "Failed get user input from local db. {Arg_1}",

@@ -13769,7 +13769,7 @@
     {
       "id": "separated by boolean operators AND (&&) or OR (||).",
       "message": "separated by boolean operators AND (&&) or OR (||).",
-      "translation": "ブール演算子 AND (&&) または OR (||) で区切ります。",
+      "translation": "ブール演算子 AND (&&) または OR (||) で区切ってください。",
       "fuzzy": true
     },
     {
