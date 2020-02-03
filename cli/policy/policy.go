@@ -30,11 +30,9 @@ func Update(fileName string) {
 	readInputFile(fileName, ep)
 
 	msgPrinter := i18n.GetMessagePrinter()
-	msgPrinter.Printf("Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.")
-	msgPrinter.Println()
 	cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep)
 
-	msgPrinter.Printf("Horizon node policy updated.")
+	msgPrinter.Printf("Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 
 }
@@ -61,11 +59,9 @@ func Remove(force bool) {
 	}
 
 	msgPrinter := i18n.GetMessagePrinter()
-	msgPrinter.Printf("Removing Horizon node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
-	msgPrinter.Println()
 	cliutils.HorizonDelete("node/policy", []int{200, 204}, []int{}, false)
 
-	msgPrinter.Printf("Horizon node policy deleted.")
+	msgPrinter.Printf("Removing Horizon node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 }
 
