@@ -329,7 +329,7 @@ function validate_args(){
 	# if a node policy is non-empty, check if the file exists
 	if [[ ! -z  $HZN_NODE_POLICY ]]; then
 		check_exist f "$HZN_NODE_POLICY" "The node policy"
-        elif [ -z "$HZN_EXCHANGE_PATTERN" ]; then
+        elif [[ "$HZN_EXCHANGE_PATTERN" == "" ]] ; then
                 set_policy_from_exchange
 	fi
 
@@ -556,13 +556,11 @@ function install_macos() {
         else
 	        log_info "${CONFIG_MAC} file doesn't exist, creating..."
             set -x
-            if [[ ! -f "$(dirname "$CONFIG_MAC")" ]]; then
-              mkdir "$(dirname "$CONFIG_MAC")"
-            fi
+            mkdir -p "$(dirname "$CONFIG_MAC")"
 		if [ -z "$CERTIFICATE" ]; then
 			echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"}" > "$CONFIG_MAC"
 		else
-			echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"\n  \"HZN_MGMT_HUB_CERT_PATH\": \"$(pwd)/"$CERTIFICATE"\"}" > "$CONFIG_MAC"
+			echo -e "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\",\n  \"HZN_MGMT_HUB_CERT_PATH\": \"$(pwd)/"$CERTIFICATE"\"}" > "$CONFIG_MAC"
 		fi
             set +x
             log_info "Config created"
@@ -868,6 +866,24 @@ function process_node(){
 	# Checking node state
 	NODE_STATE=$(hzn node list | jq -r .configstate.state)
 	WORKLOADS=$(hzn agreement list | jq -r .[])
+	if [[ "$NODE_ID" = "" ]] || [[ ! $OVERWRITE_NODE = "true" ]]; then
+		NODE_ID=$(hzn node list | jq -r .id)
+		log_notify "Registering node with existing id $NODE_ID"
+	fi
+	if [[ "$HZN_EXCHANGE_PATTERN" == "" ]] && [[ "$HZN_NODE_POLICY" == "" ]] && [[ ! "$OVERWRITE_NODE" == "true" ]]; then
+		LOCAL_PATTERN=$(hzn node list | jq -r .pattern)
+		if [[ "$LOCAL_PATTERN" != "null" ]] && [[ "$LOCAL_PATTERN" != "" ]]; then
+			HZN_EXCHANGE_PATTERN=$LOCAL_PATTERN
+		fi
+		if [[ "$HZN_EXCHANGE_PATTERN" = "" ]]; then
+			hzn policy list > local-node-policy.json
+			HZN_NODE_POLICY="local-node-policy.json"
+			log_info "Registering node with existing policy $(hzn policy list)"
+		else
+			log_info "Registering node with existing pattern $HZN_EXCHANGE_PATTERN"
+		fi
+	fi
+
 
 	if [ "$NODE_STATE" = "configured" ]; then
 		# node is registered
@@ -898,10 +914,7 @@ function process_node(){
 			log_notify "The node currently has workload(s) (check them with hzn agreement list)"
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has been specified"
-				if [ ! "$OVERWRITE_NODE" = true ] ; then
-					if [ $BATCH_INSTALL -eq 1 ]; then
-						exit 1
-					fi
+				if [[ ! "$OVERWRITE_NODE" = "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
 					read RESPONSE
 					if [ ! "$RESPONSE" == 'y' ]; then
@@ -917,7 +930,7 @@ function process_node(){
 				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
-				if [ ! "$OVERWRITE_NODE" = true && "$BATCH_INSTALL" -eq 0 ] ; then
+				if [[ "$OVERWRITE_NODE" != "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
 					if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
@@ -1119,8 +1132,12 @@ function add_autocomplete() {
     fi
 
     if [[ ! -z "$AUTOCOMPLETE" ]]; then
-        grep -q "^source ${AUTOCOMPLETE}" ~/.${SHELL_FILE}rc || \
+    	if [ -f ~/.${SHELL_FILE}rc ]; then
+            grep -q "^source ${AUTOCOMPLETE}" ~/.${SHELL_FILE}rc || \
             echo "source ${AUTOCOMPLETE}" >> ~/.${SHELL_FILE}rc
+    	else
+	    echo "source ${AUTOCOMPLETE}" > ~/.${SHELL_FILE}rc
+    	fi
     else
         log_info "There's no an autocomplete script expected, skipping it..."
     fi
@@ -1288,11 +1305,7 @@ function check_node_state() {
 		local NODE_STATE=$(hzn node list | jq -r .configstate.state)
 		log_info "Current node state is: ${NODE_STATE}"
 
-		if [ "$NODE_STATE" = "configured" -a !$OVERWRITE ]; then
-			if [ $BATCH_INSTALL -eq 1 ]; then
-				log_notify "Node is already configured."
-				exit 1
-			fi
+		if [ $BATCH_INSTALL -eq 0 ] && [[ "$NODE_STATE" = "configured" ]] && [[ ! $OVERWRITE = "true" ]]; then
 			# node is configured need to ask what to do
 			log_notify "Your node is registered"
 			echo "Do you want to overwrite the current node configuration?[y/N]:"
