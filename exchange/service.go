@@ -44,6 +44,16 @@ func (sd ServiceDependency) String() string {
 	return fmt.Sprintf("{URL: %v, Org: %v, Version: %v, VersionRange: %v, Arch: %v}", sd.URL, sd.Org, sd.Version, sd.VersionRange, sd.Arch)
 }
 
+func (sd ServiceDependency) GetVersionRange() string {
+	if sd.VersionRange != "" {
+		return sd.VersionRange
+	} else if sd.Version != "" {
+		return sd.Version
+	} else {
+		return "[0.0.0,INFINITY)"
+	}
+}
+
 // This type is used to describe a configuration variable that the node owner/user has to set before the
 // service is able to execute on the edge node.
 type UserInput struct {
