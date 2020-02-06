@@ -1355,9 +1355,9 @@ function find_node_id() {
 			find_node_ip_address
 			for IP in $(echo $NODE_IP); do
 				ID_LINE=$(grep "$IP" "$NODE_ID_MAPPING_FILE" || [[ $? == 1 ]] )
-				if [ ! -z $ID_LINE ];then break; fi
+				if [[ ! "$ID_LINE" = "" ]];then break; fi
 			done
-			if [ ! -z $ID_LINE ]; then
+			if [[ ! "$ID_LINE" = "" ]]; then
 				NODE_ID=$(echo $ID_LINE | cut -d "," -f 2)
 			else
 				log_notify "Failed to find node id in mapping file $NODE_ID_MAPPING_FILE with $(hostname) or $NODE_IP"
