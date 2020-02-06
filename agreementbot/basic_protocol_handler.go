@@ -39,7 +39,8 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				mmsObjMgr:        mmsObjMgr,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
-			Work:        make(chan AgreementWork),
+			// Allow the main agbot thread to quickly distribute work in batches and then continue processing on the main thread.
+			Work:        make(chan AgreementWork, cfg.GetAgbotAgreementBatchSize()*2),
 		}
 	} else {
 		return nil

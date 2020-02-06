@@ -71,3 +71,6 @@ const AgbotMessageKeyCheck_DEFAULT = 60
 
 // The Default anax API port number
 const AnaxAPIPortDefault = "8510"
+
+// The default agreement batch size
+const AgbotAgreementBatchSize_DEFAULT = 200
