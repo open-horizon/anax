@@ -7,9 +7,9 @@ set -e
 SCRIPT_VERSION="1.1.0"
 
 SUPPORTED_OS=( "macos" "linux" )
-SUPPORTED_LINUX_DISTRO=( "ubuntu" "raspbian" )
-SUPPORTED_LINUX_VERSION=( "bionic" "xenial" "stretch" )
-SUPPORTED_ARCH=( "amd64" "arm64" "armhf" "ppc64el" )
+SUPPORTED_LINUX_DISTRO=( "ubuntu" "raspbian" "debian" )
+SUPPORTED_LINUX_VERSION=( "bionic" "buster" "xenial" "stretch" )
+SUPPORTED_ARCH=( "amd64" "arm64" "armhf" )
 
 # Defaults
 PKG_PATH="."
@@ -875,7 +875,7 @@ function process_node(){
 	# Checking node state
 	NODE_STATE=$(hzn node list | jq -r .configstate.state)
 	WORKLOADS=$(hzn agreement list | jq -r .[])
-	if [[ "$NODE_ID" = "" ]] || [[ ! $OVERWRITE_NODE = "true" ]]; then
+	if [[ "$NODE_ID" == "" ]] && [[ ! $OVERWRITE_NODE == "true" ]]; then
 		NODE_ID=$(hzn node list | jq -r .id)
 		log_notify "Registering node with existing id $NODE_ID"
 	fi
