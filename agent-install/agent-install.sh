@@ -71,9 +71,9 @@ function version() {
 # Exit handling
 function quit(){
   case $1 in
-    1) echo -e "Exiting..."; exit 1
+    1) echo "Exiting..."; exit 1
     ;;
-    2) echo -e "Input error, exiting..."; exit 2
+    2) echo "Input error, exiting..."; exit 2
     ;;
     *) exit
     ;;
@@ -122,7 +122,7 @@ function now() {
 
 function log() {
     if [ $VERBOSITY -ge $1 ]; then
-        echo -e `now` "$2" | fold -w80 -s
+        echo `now` "$2" | fold -w80 -s
     fi
 }
 
@@ -503,7 +503,7 @@ function install_macos() {
 	    log_info "Creating ${HZN_CONFIG} file..."
         set -x
 	if [ -z "$CERTIFICATE" ]; then
-		echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
+		printf "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
 			\nHZN_DEVICE_ID=${HOSTNAME}"  | sudo tee "$HZN_CONFIG"
 	else
 		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
@@ -511,7 +511,7 @@ function install_macos() {
 		else
 			ABS_CERTIFICATE=${CERTIFICATE}
 		fi
-		echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
+		printf "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
 			\nHZN_DEVICE_ID=${HOSTNAME} \nHZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
 	fi
 
