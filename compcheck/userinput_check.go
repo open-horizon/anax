@@ -447,7 +447,7 @@ func VerifyUserInputForServiceDef(sDef common.AbstractServiceFile,
 	service_map := map[string]ServiceDefinition{}
 	if sDef.GetRequiredServices() != nil && len(sDef.GetRequiredServices()) != 0 {
 		for _, sDep := range sDef.GetRequiredServices() {
-			if vExp, err := semanticversion.Version_Expression_Factory(sDep.Version); err != nil {
+			if vExp, err := semanticversion.Version_Expression_Factory(sDep.GetVersionRange()); err != nil {
 				return false, "", sDef, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.Version, err)), COMPCHECK_GENERAL_ERROR)
 			} else {
 				if s_map, s_def, s_id, err := serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
@@ -645,7 +645,7 @@ func needHandleService(sId string, services []string) bool {
 	}
 
 	for _, id := range services {
-		if strings.HasSuffix(id, "_*") || strings.HasSuffix(id, "_") {
+		if strings.HasSuffix(id, "_*") || strings.HasSuffix(id, "_") || strings.HasSuffix(sId, "_*") || strings.HasSuffix(sId, "_") {
 			// if the id ends with _*, it means that the id apply to any arch
 			// only compare the part without arch
 			id_no_arch := cutil.RemoveArchFromServiceId(id)
