@@ -658,6 +658,9 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 		glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", consumerPolicy, err)
 	} else {
 
+		// Clear flag for full work queue message
+		skippingForFullWorkQueue := false
+
 		for _, dev := range *devices {
 
 			glog.V(3).Infof("AgreementBotWorker picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)
@@ -707,11 +710,20 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 				continue
 			} else if !w.consumerPH[protocol].AcceptCommand(cmd) {
 				glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
+			} else if len(w.consumerPH[protocol].WorkQueue()) >= int(w.Config.GetAgbotAgreementBatchSize()) {
+				glog.V(5).Infof("AgreementBotWorker skipping device id %v, work queue is full: %v", dev.Id, len(w.consumerPH[protocol].WorkQueue()))
+				skippingForFullWorkQueue = true
 			} else {
 				w.consumerPH[protocol].HandleMakeAgreement(cmd, w.consumerPH[protocol])
 				glog.V(5).Infof("AgreementBotWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
 			}
 		}
+
+		// If we skipped nodes because the workqueue is full, put out a message about it.
+		if skippingForFullWorkQueue {
+			glog.V(3).Infof("AgreementBotWorker skipped devices because work queue is full: %v", w.Config.GetAgbotAgreementBatchSize())
+		}
+
 	}
 }
 
@@ -919,6 +931,10 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string, p
 			} else {
 				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangePatternResponse).Devices))
 				dev := resp.(*exchange.SearchExchangePatternResponse).Devices
+				if len(dev) > int(w.Config.GetAgbotAgreementBatchSize()) {
+					dev = dev[:w.Config.GetAgbotAgreementBatchSize()]
+				}
+				glog.V(3).Infof("AgreementBotWorker processing %v devices.", len(dev))
 				return &dev, nil
 			}
 		}
@@ -964,6 +980,11 @@ func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string, p
 			} else {
 				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchBusinessPolResponse).Devices))
 				dev := resp.(*exchange.SearchExchBusinessPolResponse).Devices
+				if len(dev) > int(w.Config.GetAgbotAgreementBatchSize()) {
+					dev = dev[:w.Config.GetAgbotAgreementBatchSize()]
+				}
+				glog.V(3).Infof("AgreementBotWorker processing %v devices.", len(dev))
+
 				return &dev, nil
 			}
 		}
