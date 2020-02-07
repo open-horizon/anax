@@ -1421,6 +1421,7 @@ done
 if [ -f "$AGENT_INSTALL_ZIP" ]; then
 	unzip_install_files
 	find_node_id
+	NODE_ID=$(echo "$NODE_ID" | sed -e 's/^[[:space:]]*//' | sed -e 's/[[:space:]]*$//' )
 	if [[ $NODE_ID != "" ]]; then
 		log_info "Found node id $NODE_ID"
 	fi
