@@ -83,12 +83,12 @@ const (
 	// service downgrade
 	EL_GOV_START_DOWNGRADE_FOR_AG                 = "Start downgrading service %v/%v version %v because service for agreement failed to start."
 	EL_GOV_START_DOWNGRADE                        = "Start downgrading service %v/%v version %v because service failed to start."
-	EL_GOV_START_DOWNGRADE_BECAUSW_UPGRADE_FAILED = "Start downgrading service %v/%v version %v because upgrade failed."
+	EL_GOV_START_DOWNGRADE_BECAUSE_UPGRADE_FAILED = "Start downgrading service %v/%v version %v because upgrading failed."
 	EL_GOV_FAILED_DOWNGRADE                       = "Failed to downgrade service %v/%v version %v, error: %v"
-	EL_GOV_COMPLETE_DOWNGRADE                     = "Complete downgrading service %v/%v from version %v to version %v."
+	EL_GOV_COMPLETE_DOWNGRADE                     = "Completed downgrading service %v/%v from version %v to version %v."
 	EL_GOV_ERR_FIND_SDEF_FOR_DOWNGRADE            = "Error finding the new service definition to downgrade to for %v/%v version %v key %v. error: %v"
 	EL_GOV_ERR_NO_VERSION_TO_DOWNGRADE            = "Could not find lower version to downgrade for %v/%v version %v."
-	EL_GOV_ERR_DOWNGRADE_FROM                     = "Error downgrading service %v/%v from version %v to version %v. Eror: %v"
+	EL_GOV_ERR_DOWNGRADE_FROM                     = "Error downgrading service %v/%v from version %v to version %v. Error: %v"
 	EL_GOV_ERR_DOWNGRADE                          = "Error downgrading service %v/%v version %v. %v"
 
 	// service retry
@@ -193,7 +193,7 @@ func MarkI18nMessages() {
 	// service downgrade
 	msgPrinter.Sprintf(EL_GOV_START_DOWNGRADE_FOR_AG)
 	msgPrinter.Sprintf(EL_GOV_START_DOWNGRADE)
-	msgPrinter.Sprintf(EL_GOV_START_DOWNGRADE_BECAUSW_UPGRADE_FAILED)
+	msgPrinter.Sprintf(EL_GOV_START_DOWNGRADE_BECAUSE_UPGRADE_FAILED)
 	msgPrinter.Sprintf(EL_GOV_FAILED_DOWNGRADE)
 	msgPrinter.Sprintf(EL_GOV_COMPLETE_DOWNGRADE)
 	msgPrinter.Sprintf(EL_GOV_ERR_FIND_SDEF_FOR_DOWNGRADE)

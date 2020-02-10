@@ -27,7 +27,7 @@ func WaitForService(org string, waitService string, waitTimeout int) {
 	// 1. Wait for the /service API to return a service with url that matches the input
 	// 2. While waiting, report when at least 1 agreement is formed
 
-	msgPrinter.Printf("Waiting for %v seconds for service %v/%v to start...", waitTimeout, org, waitService)
+	msgPrinter.Printf("Waiting for up to %v seconds for service %v/%v to start...", waitTimeout, org, waitService)
 	msgPrinter.Println()
 
 	// Save the most recent set of services here.

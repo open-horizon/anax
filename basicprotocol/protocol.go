@@ -380,7 +380,7 @@ func DecodeReasonCode(code uint64) string {
 		CANCEL_MS_IMAGE_LOAD_FAILURE:    "dependent service image loading failed",
 		CANCEL_MS_IMAGE_FETCH_FAILURE:   "dependent service image fetching failed",
 		CANCEL_MS_UPGRADE_REQUIRED:      "required by dependent service upgrade process",
-		CANCEL_MS_DOWNGRADE_REQUIRED:    "dependent service failed, need downgrading to lower version",
+		CANCEL_MS_DOWNGRADE_REQUIRED:    "dependent service failed, need to downgrade to lower version",
 		CANCEL_IMAGE_DATA_ERROR:         "image data error",
 		CANCEL_IMAGE_FETCH_FAILURE:      "image fetching failed",
 		CANCEL_IMAGE_FETCH_AUTH_FAILURE: "authorization failed for image fetching",
