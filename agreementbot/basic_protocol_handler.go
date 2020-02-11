@@ -40,7 +40,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			// Allow the main agbot thread to quickly distribute work in batches and then continue processing on the main thread.
-			Work:        make(chan AgreementWork, cfg.GetAgbotAgreementBatchSize()*2),
+			Work: make(chan AgreementWork, cfg.GetAgbotAgreementBatchSize()*2),
 		}
 	} else {
 		return nil

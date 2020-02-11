@@ -43,6 +43,8 @@ const (
 	EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH = "Unable to retrieve the service configuration state for node resource %v from the exchange, error %v"
 	EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB  = "Unable to retrieve the saved node exchange pattern from the local database. %v"
 	EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB   = "Unable to save the new node exchange pattern %v to the local database. Error: %v"
+	EL_AG_TERM_UNABLE_SYNC_CONTAINERS            = "anax terminating, unable to sync up containers."
+	EL_AG_TERM_UNABLE_SYNC_AGS                   = "anax terminating, unable to complete agreement sync up. %v"
 )
 
 // This is does nothing useful at run time.
@@ -69,6 +71,8 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH)
 	msgPrinter.Sprintf(EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB)
 	msgPrinter.Sprintf(EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB)
+	msgPrinter.Sprintf(EL_AG_TERM_UNABLE_SYNC_CONTAINERS)
+	msgPrinter.Sprintf(EL_AG_TERM_UNABLE_SYNC_AGS)
 }
 
 // must be safely-constructed!!
@@ -253,6 +257,11 @@ func (w *AgreementWorker) Initialize() bool {
 		} else if w.containerSyncUpSucessful {
 			break
 		} else {
+			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up containers.")))
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_FATAL,
+				persistence.NewMessageMeta(EL_AG_TERM_UNABLE_SYNC_CONTAINERS),
+				persistence.EC_ERROR_CONTAINER_SYNC_ON_INIT,
+				w.GetExchangeId(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern, "")
 			panic(logString(fmt.Sprintf("Terminating, unable to sync up containers")))
 		}
 	}
@@ -275,12 +284,15 @@ func (w *AgreementWorker) Initialize() bool {
 		// while the device was down. We will also check to make sure that policies havent changed. If they have, then
 		// we will cancel agreements and allow them to re-negotiate.
 		if err := w.syncOnInit(); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up, error: %v", err)))
-			panic(logString(fmt.Sprintf("Terminating, unable to complete agreement sync up, error: %v", err)))
+			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up. %v", err)))
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_FATAL,
+				persistence.NewMessageMeta(EL_AG_TERM_UNABLE_SYNC_AGS, err.Error()),
+				persistence.EC_ERROR_AGREEMENT_SYNC_ON_INIT,
+				w.GetExchangeId(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern, "")
+			panic(logString(fmt.Sprintf("Terminating, unable to complete agreement sync up. %v", err)))
 		} else {
 			w.Messages() <- events.NewDeviceAgreementsSyncedMessage(events.DEVICE_AGREEMENTS_SYNCED, true)
 		}
-
 	}
 
 	// Publish what we have for the world to see
@@ -477,7 +489,7 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	// get the exchange node and save it locally
 	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w)); err != nil {
-		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v", err)))
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v. If the exchange url is changed, please run 'hzn unregister -D' command to clean up the local node before starting horizon service.", err)))
 	}
 
 	// setup the user input. exchange is the master.

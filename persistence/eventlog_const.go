@@ -7,6 +7,7 @@ const (
 	SEVERITY_INFO  = "info"
 	SEVERITY_WARN  = "warning"
 	SEVERITY_ERROR = "error"
+	SEVERITY_FATAL = "fatal"
 )
 
 // source type for eventlog
@@ -24,6 +25,13 @@ const (
 	EC_DATABASE_ERROR       = "database_error"
 	EC_API_USER_INPUT_ERROR = "api_user_input_error"
 	EC_EXCHANGE_ERROR       = "exchange_error"
+
+	// initialization
+	EC_ERROR_CONTAINER_SYNC_ON_INIT = "error_container_sync_on_init"
+	EC_ERROR_AGREEMENT_SYNC_ON_INIT = "error_agreement_sync_on_init"
+	EC_ERROR_ACCESS_STORAGE_DIR     = "error_access_storage_dir"
+	EC_ERROR_CREATE_IPTABLE_CLIENT  = "error_create_iptable_client"
+	EC_ERROR_CREATE_DOCKER_CLIENT   = "error_create_docker_client"
 
 	// node configuration/registration
 	EC_START_NODE_CONFIG_REG    = "start_node_configuration_registration"
