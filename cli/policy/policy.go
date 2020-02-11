@@ -25,11 +25,27 @@ func List() {
 }
 
 func Update(fileName string) {
+	msgPrinter := i18n.GetMessagePrinter()
 
 	ep := new(externalpolicy.ExternalPolicy)
 	readInputFile(fileName, ep)
 
-	msgPrinter := i18n.GetMessagePrinter()
+	readOnlyBuiltIns := []string{externalpolicy.PROP_NODE_CPU, externalpolicy.PROP_NODE_ARCH, externalpolicy.PROP_NODE_MEMORY, externalpolicy.PROP_NODE_HARDWAREID}
+	includedBuiltIns := ""
+	for _, builtInProp := range readOnlyBuiltIns {
+		if ep.Properties.HasProperty(builtInProp) {
+			if includedBuiltIns == "" {
+				includedBuiltIns = builtInProp
+			} else {
+				includedBuiltIns = fmt.Sprintf("%s, %s", includedBuiltIns, builtInProp)
+			}
+		}
+	}
+	if includedBuiltIns != "" {
+		msgPrinter.Printf("Warning: built-in properties %v are read-only. The given value will be ignored.", includedBuiltIns)
+		msgPrinter.Println()
+	}
+
 	cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep)
 
 	msgPrinter.Printf("Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.")
