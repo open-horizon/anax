@@ -235,7 +235,7 @@ func ObjectNew(org string) {
 		`      {`,
 		`        "name": "",`,
 		`        "value": null,`,
-		`        "type": ""           /* ` + msgPrinter.Sprintf("Valid types are string, bool, int, float, list of string (comma separated), version.") + ` */`,
+		`        "type": ""           /* ` + msgPrinter.Sprintf("Valid types are string, bool, int, float, list of strings (comma separated), version.") + ` */`,
 		`                             /* ` + msgPrinter.Sprintf("Type can be omitted if the type is discernable from the value, e.g. unquoted true is boolean.") + ` */`,
 		`      }`,
 		`    ],`,

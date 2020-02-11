@@ -298,7 +298,7 @@ func Test_not_satisfy_simple1(t *testing.T) {
 		}
 	}
 
-	prop_list = `[{"name":"prop1", "value":"a, b, c", "type":"list of string"}]`
+	prop_list = `[{"name":"prop1", "value":"a, b, c", "type":"list of strings"}]`
 	simple_and = `{"and":[{"name":"prop1", "value":"2,z,arch","op":"in"}]}`
 
 	if rp = create_RP(simple_and, t); rp != nil {
@@ -744,7 +744,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	}
 
 	rp_list = `{"or":[{"name":"prop1", "value":"abc"}]}`
-	prop_list = `[{"name":"prop1", "value":"abc,def,ghi", "type":"list of string"}]`
+	prop_list = `[{"name":"prop1", "value":"abc,def,ghi", "type":"list of strings"}]`
 
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
@@ -755,7 +755,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	}
 
 	rp_list = `{"or":[{"name":"prop1", "value":"a, b, c", "op":"in"}]}`
-	prop_list = `[{"name":"prop1", "value":"a, b, c, d", "type":"list of string"}]`
+	prop_list = `[{"name":"prop1", "value":"a, b, c, d", "type":"list of strings"}]`
 
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {
@@ -766,7 +766,7 @@ func Test_complex_IsSatisfiedBy(t *testing.T) {
 	}
 
 	rp_list = `{"or":[{"name":"prop1", "value":"a, b, c", "op":"in"}]}`
-	prop_list = `[{"name":"prop1", "value":"5, b, def", "type":"list of string"}]`
+	prop_list = `[{"name":"prop1", "value":"5, b, def", "type":"list of strings"}]`
 
 	if rp := create_RP(rp_list, t); rp != nil {
 		if pa := create_property_list(prop_list, t); pa != nil {

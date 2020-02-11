@@ -48,7 +48,7 @@ func Test_Validate_Failed1(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Error finding an expression in eggs == \"truck load\" || certification == \"USDA, Organic\". Error was: Property type list of string can only use operator 'in'." {
+	} else if err.Error() != "Error finding an expression in eggs == \"truck load\" || certification == \"USDA, Organic\". Error was: Property type list of strings can only use operator 'in'." {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 
@@ -61,7 +61,7 @@ func Test_Validate_Failed1(t *testing.T) {
 		t.Errorf("Validation should fail but did not, err: %v", err)
 	} else if err == nil {
 		t.Errorf("Validation should fail and return err, but didn't")
-	} else if err.Error() != "Error finding an expression in hello == \"'hi world', 'test'\". Error was: Property type list of string can only use operator 'in'." {
+	} else if err.Error() != "Error finding an expression in hello == \"'hi world', 'test'\". Error was: Property type list of strings can only use operator 'in'." {
 		t.Errorf("Error message: %v is not the expected error message", err)
 	}
 }

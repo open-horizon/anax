@@ -506,7 +506,7 @@ else
   echo -e "found expected response: $RES"
 fi
 
-# wrong variable type (int) in the variables section for a list of string
+# wrong variable type (int) in the variables section for a list of strings
 read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
@@ -528,7 +528,7 @@ EOF
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering testservice service config with wrong variable type int for list of string"
+echo "Registering testservice service config with wrong variable type int for list of strings"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]
@@ -546,7 +546,7 @@ else
   echo -e "found expected response: $RES"
 fi
 
-# wrong variable type (array numbers) in the variables section for a list of string
+# wrong variable type (array numbers) in the variables section for a list of strings
 read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/testservice",
@@ -568,7 +568,7 @@ EOF
 
 echo -e "\n\n[D] testservice service config payload: $snsconfig"
 
-echo "Registering testservice service config with wrong variable type []int for list of string"
+echo "Registering testservice service config with wrong variable type []int for list of strings"
 
 RES=$(echo "$snsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- "$ANAX_API/service/config")
 if [ "$RES" == "" ]

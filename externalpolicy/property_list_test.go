@@ -83,8 +83,8 @@ func Test_PropertyList_compatible(t *testing.T) {
 		}
 	}
 
-	p1 = `[{"name":"prop1","value":"a,b,c","type":"list of string"},{"name":"prop2","value":"val2"}]`
-	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"b,a,c","type":"list of string"}]`
+	p1 = `[{"name":"prop1","value":"a,b,c","type":"list of strings"},{"name":"prop2","value":"val2"}]`
+	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"b,a,c","type":"list of strings"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
 			if err := pl1.Compatible_With(pl2, false); err != nil {
@@ -129,8 +129,8 @@ func Test_PropertyList_incompatible(t *testing.T) {
 		}
 	}
 
-	p1 = `[{"name":"prop1","value":"a,b,c","type":"list of string"},{"name":"prop2","value":"val2"}]`
-	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"a,b,d","type":"list of string"}]`
+	p1 = `[{"name":"prop1","value":"a,b,c","type":"list of strings"},{"name":"prop2","value":"val2"}]`
+	p2 = `[{"name":"prop2","value":"val2"},{"name":"prop1","value":"a,b,d","type":"list of strings"}]`
 	if pl1 = create_PropertyList(p1, t); pl1 != nil {
 		if pl2 = create_PropertyList(p2, t); pl2 != nil {
 			if err := pl1.Compatible_With(pl2, false); err == nil {
@@ -170,7 +170,7 @@ func Test_Validate_valid(t *testing.T) {
 		}
 	}
 
-	p1 = `[{"name":"prop1","value":"val1,val2,val4","type":"list of string"}]`
+	p1 = `[{"name":"prop1","value":"val1,val2,val4","type":"list of strings"}]`
 	if pl1 := create_PropertyList(p1, t); pl1 != nil {
 		if err := pl1.Validate(); err != nil {
 			t.Errorf("Error: %v has only valid properties but gave error: %v\n", p1, err)
