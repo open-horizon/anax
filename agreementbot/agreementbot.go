@@ -676,7 +676,7 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 			}
 
 			// If the device is not ready to make agreements yet, then skip it.
-			if len(dev.PublicKey) == 0 || string(dev.PublicKey) == "" {
+			if dev.PublicKey == "" {
 				glog.V(5).Infof("AgreementBotWorker skipping device id %v, node is not ready to exchange messages", dev.Id)
 				continue
 			}

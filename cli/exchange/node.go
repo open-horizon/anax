@@ -216,7 +216,7 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 				skipReEval = true
 			}
 
-			if exchNode.PublicKey != nil && len(exchNode.PublicKey) != 0 && !skipReEval {
+			if exchNode.PublicKey != "" && !skipReEval {
 				msgPrinter.Printf("Device will re-evaluate all agreements based on the update. Existing agreements might be cancelled and re-negotiated.")
 				msgPrinter.Println()
 			}

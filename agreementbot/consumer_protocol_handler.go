@@ -2,6 +2,7 @@ package agreementbot
 
 import (
 	"encoding/json"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
@@ -566,9 +567,11 @@ func (b *BaseConsumerProtocolHandler) GetDeviceMessageEndpoint(deviceId string, 
 
 	if dev, err := b.getDevice(deviceId, workerId); err != nil {
 		return "", nil, err
+	} else if publicKeyBytes, err := base64.StdEncoding.DecodeString(dev.PublicKey); err != nil {
+		return "", nil, errors.New(fmt.Sprintf("Error decoding device publicKey for %s, %v", deviceId, err))
 	} else {
 		glog.V(5).Infof(BCPHlogstring2(workerId, fmt.Sprintf("retrieved device %v msg endpoint from exchange %v", deviceId, dev.MsgEndPoint)))
-		return dev.MsgEndPoint, dev.PublicKey, nil
+		return dev.MsgEndPoint, publicKeyBytes, nil
 	}
 
 }
