@@ -428,6 +428,23 @@ func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.Servic
 			if err != nil && !quiet {
 				return nil, err
 			}
+			for _, inputSvcDef := range cc.Service {
+				exchSvcDef := exchange.ServiceDefinition{URL: inputSvcDef.GetURL()}
+				if _, ok := inputSvcDef.Deployment.(string); ok {
+					exchSvcDef.Deployment = inputSvcDef.Deployment.(string)
+				} else {
+					depByte, err := json.Marshal(inputSvcDef.Deployment)
+					if err != nil {
+						return nil, err
+					}
+					exchSvcDef.Deployment = string(depByte)
+				}
+				if allSvcs == nil {
+					allSvcs = &map[string]exchange.ServiceDefinition{fmt.Sprintf("%s/%s", inputSvcDef.GetOrg(), inputSvcDef.GetURL()): exchSvcDef}
+				} else {
+					(*allSvcs)[fmt.Sprintf("%s/%s", inputSvcDef.GetOrg(), inputSvcDef.GetURL())] = exchSvcDef
+				}
+			}
 			workLoadPriv, err, privWorkloads := servicesRequirePrivilege(allSvcs, msgPrinter)
 			if err != nil {
 				return nil, err
