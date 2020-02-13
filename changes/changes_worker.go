@@ -24,6 +24,7 @@ type ChangesWorker struct {
 	pollMinInterval   int    // The minimum time to wait between polls to the exchange.
 	pollMaxInterval   int    // The maximum time to wait between polls to the exchange.
 	pollAdjustment    int    // The amount to increase the polling time, each time it is increased.
+	pollInitTime      int64  // THe time when the polling starts 10sec interval
 	noMsgCount        int    // How many consecutive polls have returned no changes.
 	agreementReached  bool   // True when ths node has seen at least one agreement.
 	changeID          uint64 // The current change Id in the exchange.
@@ -47,6 +48,7 @@ func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *Chan
 		pollMinInterval:  config.ExchangeMessagePollInterval_DEFAULT,
 		pollMaxInterval:  config.ExchangeMessagePollMaxInterval_DEFAULT,
 		pollAdjustment:   config.ExchangeMessagePollIncrement_DEFAULT,
+		pollInitTime:     0,
 		noMsgCount:       0,
 		agreementReached: false,
 		changeID:         0,
@@ -88,6 +90,11 @@ func (w *ChangesWorker) Messages() chan events.Message {
 }
 
 func (w *ChangesWorker) Initialize() bool {
+
+	// setting up the polling initial time
+	if w.GetExchangeToken() != "" {
+		w.pollInitTime = time.Now().Unix()
+	}
 
 	// If there are already agreements, then we can allow the polling interval to grow. If not, the first agreement
 	// that gets made will allow the poller interval to grow.
@@ -403,7 +410,7 @@ func (w *ChangesWorker) updatePollingInterval(msgReceived bool) {
 		return
 	}
 
-	if !w.agreementReached || (w.pollInterval >= w.pollMaxInterval) {
+	if (!w.agreementReached && (w.pollInitTime == 0 || time.Since(time.Unix(w.pollInitTime, 0)).Seconds() < float64(w.Config.Edge.InitialPollingBuffer))) || (w.pollInterval >= w.pollMaxInterval) {
 		return
 	}
 
@@ -440,6 +447,9 @@ func (w *ChangesWorker) resetPollingInterval() {
 func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 	msg := cmd.Msg
 	w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), newLimitedRetryHTTPFactory(w.Config.Collaborators.HTTPClientFactory))
+
+	// set up initial polling time
+	w.pollInitTime = time.Now().Unix()
 
 	// Retrieve the node's heartbeat configuration from the node itself, and update the worker.
 	w.getNodeHeartbeatIntervals()
