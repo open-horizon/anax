@@ -523,7 +523,8 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 	if msgs, err := w.getMessages(); err != nil {
 		glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to retrieve exchange messages, error: %v", err))
 	} else {
-		// Loop through all the returned messages and process them
+		// Loop through all the returned messages and process them until we fill up the work queue.
+		fullWorkQueue := false
 		for _, msg := range msgs {
 
 			glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker reading message %v from the exchange", msg.MsgId))
@@ -556,12 +557,24 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 				} else if err := w.consumerPH[msgProtocol].DispatchProtocolMessage(cmd, w.consumerPH[msgProtocol]); err != nil {
 					DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
 				}
+
+				// Stop processing messages if we reach the limit on the size of the internal channel.
+				if len(w.consumerPH[msgProtocol].WorkQueue()) >= int(w.Config.GetAgbotAgreementBatchSize()) {
+					glog.V(3).Infof("AgreementBotWorker work queue is full: %v", len(w.consumerPH[msgProtocol].WorkQueue()))
+					fullWorkQueue = true
+				}
+
 			}
 
 			// If anything went wrong trying to decrypt the message or verify its origin, etc, just delete it. These errors aren't
 			// expected to be retryable.
 			if deleteMessage {
 				DeleteMessage(msg.MsgId, w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL(), w.httpClient)
+			}
+
+			// If we've filled up the work queue, stop processing messages
+			if fullWorkQueue {
+				break
 			}
 
 		}
