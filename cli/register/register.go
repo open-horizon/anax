@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"net/http"
@@ -57,6 +58,12 @@ func ReadInputFile(filePath string, inputFileStruct *InputFile) {
 	}
 }
 
+func ReadInputFileWithPolicyInputFormat(filePath string, inputFileList *[]policy.UserInput) error {
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+	err := json.Unmarshal(newBytes, inputFileList)
+	return err
+}
+
 type ExchangeNodes struct {
 	LastIndex int                        `json:"lastIndex"`
 	Nodes     map[string]exchange.Device `json:"nodes"`
@@ -91,10 +98,16 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
 	inputFileStruct := InputFile{}
+	policyInputFileList := []policy.UserInput{}
+	usePolicyInputFormat := true
 	if inputFile != "" {
 		msgPrinter.Printf("Reading input file %s...", inputFile)
 		msgPrinter.Println()
-		ReadInputFile(inputFile, &inputFileStruct)
+		err := ReadInputFileWithPolicyInputFormat(inputFile, &policyInputFileList)
+		if err != nil {
+			usePolicyInputFormat = false
+			ReadInputFile(inputFile, &inputFileStruct)
+		}
 	}
 
 	// read and verify the node policy if it specified
@@ -275,49 +288,61 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 
 	// Process the input file and call /attribute, /service/config to set the specified variables
 	if inputFile != "" {
-		// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
-		// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
-		attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
-		if len(inputFileStruct.Global) > 0 {
-			msgPrinter.Printf("Setting global variables...")
-			msgPrinter.Println()
-		}
-		for _, g := range inputFileStruct.Global {
-			attr.Type = &g.Type
-			attr.ServiceSpecs = &g.ServiceSpecs
-			attr.Mappings = &g.Variables
+		if !usePolicyInputFormat {
+			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
 
-			// set HostOnly to true for these 2 types
-			switch g.Type {
-			case "HTTPSBasicAuthAttributes", "DockerRegistryAuthAttributes":
-				host_only := true
-				attr.HostOnly = &host_only
+			// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
+			// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
+			attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
+			if len(inputFileStruct.Global) > 0 {
+				msgPrinter.Printf("Setting global variables...")
+				msgPrinter.Println()
 			}
-			cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
-		}
+			for _, g := range inputFileStruct.Global {
+				attr.Type = &g.Type
+				attr.ServiceSpecs = &g.ServiceSpecs
+				attr.Mappings = &g.Variables
 
-		// Set the service variables
-		attr = api.NewAttribute("UserInputAttributes", "service", false, false, map[string]interface{}{}) // we reuse this for each service
-		emptyStr := ""
-		service := api.Service{Name: &emptyStr} // we reuse this too
-		if len(inputFileStruct.Services) > 0 {
-			msgPrinter.Printf("Setting service variables...")
-			msgPrinter.Println()
-		}
-		for _, m := range inputFileStruct.Services {
-			service.Org = &m.Org
-			service.Url = &m.Url
-			service.VersionRange = &m.VersionRange
-			attr.Mappings = &m.Variables
-			attrSlice := []api.Attribute{*attr}
-			service.Attributes = &attrSlice
-			httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200, 400}, service)
-			if httpCode == 400 {
-				if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile))
+				// set HostOnly to true for these 2 types
+				switch g.Type {
+				case "HTTPSBasicAuthAttributes", "DockerRegistryAuthAttributes":
+					host_only := true
+					attr.HostOnly = &host_only
 				}
+				cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
+			}
+
+			// Set the service variables
+			attr = api.NewAttribute("UserInputAttributes", "service", false, false, map[string]interface{}{}) // we reuse this for each service
+			emptyStr := ""
+			service := api.Service{Name: &emptyStr} // we reuse this too
+			if len(inputFileStruct.Services) > 0 {
+				msgPrinter.Printf("Setting service variables...")
+				msgPrinter.Println()
+			}
+			for _, m := range inputFileStruct.Services {
+				service.Org = &m.Org
+				service.Url = &m.Url
+				service.VersionRange = &m.VersionRange
+				attr.Mappings = &m.Variables
+				attrSlice := []api.Attribute{*attr}
+				service.Attributes = &attrSlice
+				httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200, 400}, service)
+				if httpCode == 400 {
+					if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile))
+					}
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Error setting service variables from user input file: %v", respBody)
+				}
+			}
+		} else {
+			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
+			// use policy.UserInput struct
+			httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, policyInputFileList)
+			if httpCode == 400 {
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Error setting service variables from user input file: %v", respBody)
 			}
+
 		}
 
 	} else {
