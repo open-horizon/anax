@@ -216,7 +216,7 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
 			},
 			AgreementBot: AGConfig{
-				MessageKeyCheck: AgbotMessageKeyCheck_DEFAULT,
+				MessageKeyCheck:    AgbotMessageKeyCheck_DEFAULT,
 				AgreementBatchSize: AgbotAgreementBatchSize_DEFAULT,
 			},
 		}

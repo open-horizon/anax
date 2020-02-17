@@ -48,6 +48,9 @@ const (
 	EL_CONT_CLEAN_OLD_CONTAINER_ERROR         = "Error cleaning up old containers before starting up new containers for %v. Error: %v"
 	EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC       = "Failed to get a list of parent containers for service retry for %v. %v"
 	EL_CONT_FAIL_RESTORE_NW_WITH_PARENT       = "Failed to restoring the network connection with the parents for service %v. %v"
+	EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR    = "anax terminating. Unable to access service storage direcotry specified in config: %v. %v"
+	EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT   = "anax terminating. Failed to instantiate iptables client. %v"
+	EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT    = "anax terminating. Failed to instantiate docker client. %v"
 )
 
 // This is does nothing useful at run time.
@@ -70,6 +73,9 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_CONT_CLEAN_OLD_CONTAINER_ERROR)
 	msgPrinter.Sprintf(EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC)
 	msgPrinter.Sprintf(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT)
+	msgPrinter.Sprintf(EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR)
+	msgPrinter.Sprintf(EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT)
+	msgPrinter.Sprintf(EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT)
 }
 
 /*
@@ -467,16 +473,28 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 	if config.Edge.ServiceStorage != "" {
 		if err := unix.Access(config.Edge.ServiceStorage, unix.W_OK); err != nil {
 			glog.Errorf("Unable to access service storage dir: %v. Error: %v", config.Edge.ServiceStorage, err)
-			panic("Unable to access service storage dir specified in config")
+			eventlog.LogNodeEvent(db, persistence.SEVERITY_FATAL,
+				persistence.NewMessageMeta(EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR, config.Edge.ServiceStorage, err.Error()),
+				persistence.EC_ERROR_ACCESS_STORAGE_DIR,
+				"", "", "", "")
+			panic(fmt.Sprintf("Terminating, unable to access service storage dir specified in config: %v. %v", config.Edge.ServiceStorage, err))
 		}
 	}
 
 	if ipt, err := iptables.New(); err != nil {
 		glog.Errorf("Failed to instantiate iptables Client: %v", err)
-		panic("Unable to instantiate iptables Client")
+		eventlog.LogNodeEvent(db, persistence.SEVERITY_FATAL,
+			persistence.NewMessageMeta(EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT, err.Error()),
+			persistence.EC_ERROR_CREATE_IPTABLE_CLIENT,
+			"", "", "", "")
+		panic(fmt.Sprintf("Terminating, unable to instantiate iptables Client. %v", err))
 	} else if client, err := docker.NewClient(config.Edge.DockerEndpoint); err != nil {
 		glog.Errorf("Failed to instantiate docker Client: %v", err)
-		panic("Unable to instantiate docker Client")
+		eventlog.LogNodeEvent(db, persistence.SEVERITY_FATAL,
+			persistence.NewMessageMeta(EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT, err.Error()),
+			persistence.EC_ERROR_CREATE_DOCKER_CLIENT,
+			"", "", "", "")
+		panic(fmt.Sprintf("Terminating, unable to instantiate docker Client. %v", err))
 	} else {
 
 		pattern := ""
