@@ -352,7 +352,7 @@ RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
 echo -e "\n${PREFIX} test input: node user input, pattern and services."
-CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json --service input_files/compcheck/service_locgps.json"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json --service input_files/compcheck/service_locgps.json --node-pol input_files/compcheck/node_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""

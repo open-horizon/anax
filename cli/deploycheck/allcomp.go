@@ -52,7 +52,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
 	// formalize node id or get node policy
 	bUseLocalNodeForPolicy := false
 	bUseLocalNodeForUI := false
-	if bp != nil {
+	if bp != nil || pattern != nil || patternId != "" {
 		if nodePolFile != "" {
 			// read the node policy from file
 			var np externalpolicy.ExternalPolicy
@@ -157,16 +157,6 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 	} else {
 		if patternId == "" && patternFile == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified."))
-		}
-	}
-
-	// make sure no node and service policy files are specified for the pattern case.
-	if !useBPol {
-		if nodePolFile != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--node-pol, -p and -P are mutually exclusive."))
-		}
-		if servicePolFile != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--service-pol, -p and -P are mutually exclusive."))
 		}
 	}
 
