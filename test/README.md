@@ -100,6 +100,7 @@ Here is a full description of all the variables you can use to setup the test th
 -`export AGBOT_NAME="Agbot Name"`
 -`export API_KEY="Main Org API Key"`
 -`export AGBOT_SAPI_URL="Agbot Secure API URL"`
+-`export ICP_HOST_IP="IP address of ICP Host"` If required to be added to hosts file only!
 -`export CERT_LOC=1` 1 for if cert is used. 0 if cert is not being used.
 -put css.crt file in test directory if using cert with ICP or DEV
 -put agbotapi.crt file in test directory
