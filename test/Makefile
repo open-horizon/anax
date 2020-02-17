@@ -181,6 +181,7 @@ run-exchange-db: test-network
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-e POSTGRES_DB=$(EXCHDB_NAME) \
 		-e POSTGRES_USER=$(EXCHDB_USER) \
+		-e POSTGRES_HOST_AUTH_METHOD=trust \
 		-t $(DOCKER_EXCHDB_INAME):$(DOCKER_EXCHDB_TAG)
 
 clean:
