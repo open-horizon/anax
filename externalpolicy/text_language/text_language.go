@@ -186,7 +186,7 @@ func (p *TextConstraintLanguagePlugin) GetNextOperator(expression string) (strin
 	return "", expression, fmt.Errorf("No control operator found. Expecting one of AND,&&,OR,||. Found: %v", expression)
 }
 
-// 1. == is supported for all types except list of string, which would use 'in'.
+// 1. == is supported for all types except list of strings, which would use 'in'.
 // 2. for numeric types, the operators ==, <, >, <=, >= are supported
 // 3. false and true are the only valid values for a boolean type
 // 4. for string types, a quoted string, inside which is a list of comma separated strings provide acceptable values
@@ -204,7 +204,7 @@ func validOpValuePair(name string, op string, opType rune, val interface{}, valT
 			return fmt.Errorf("Version range can only use operator 'in'.")
 		}
 		if lexMap["ListStr"] == valType {
-			return fmt.Errorf("Property type list of string can only use operator 'in'.")
+			return fmt.Errorf("Property type list of strings can only use operator 'in'.")
 		}
 	}
 	if lexMap["OpComp"] == opType {
@@ -214,7 +214,7 @@ func validOpValuePair(name string, op string, opType rune, val interface{}, valT
 	}
 	if lexMap["OpIn"] == opType {
 		if lexMap["ListStr"] != valType && lexMap["QuoteStr"] != valType && lexMap["VersRange"] != valType && lexMap["Vers"] != valType {
-			return fmt.Errorf("The 'in' operator can only be used for types version and list of string")
+			return fmt.Errorf("The 'in' operator can only be used for types version and list of strings")
 		}
 		if lexMap["VersRange"] == valType {
 			// Using the factory function to validate version ranges

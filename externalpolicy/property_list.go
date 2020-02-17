@@ -16,7 +16,7 @@ const (
 	BOOLEAN_TYPE    = "boolean"
 	INTEGER_TYPE    = "int"
 	FLOAT_TYPE      = "float"
-	LIST_TYPE       = "list of string"
+	LIST_TYPE       = "list of strings"
 	UNDECLARED_TYPE = ""
 )
 
@@ -203,7 +203,7 @@ func (self *PropertyList) Validate() error {
 		declaredType := property.Type
 
 		if !isValidPropertyType(declaredType) {
-			return fmt.Errorf(msgPrinter.Sprintf("Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of string.", property.Name, declaredType))
+			return fmt.Errorf(msgPrinter.Sprintf("Property %s has invalid property type %s. Allowed property types are: version, string, int, boolean, float, and list of strings.", property.Name, declaredType))
 		}
 
 		switch actualType := property.Value.(type) {
