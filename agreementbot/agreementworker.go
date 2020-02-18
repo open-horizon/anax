@@ -630,7 +630,10 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 		// Find the saved agreement in the database. The returned agreement might be archived. If it's archived, then it is our agreement
 		// so we will delete the protocol msg.
 		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
+			// A DB error occurred so we dont know if this is our agreement or not. Leave it alone until the agbot is restarted
+			// or until the DB error is resolved.
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
+			sendReply = false
 		} else if agreement != nil && agreement.Archived {
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("reply %v is for a cancelled agreement %v, deleting reply message.", wi.MessageId, reply.AgreementId())))
 		} else if agreement == nil {
@@ -821,6 +824,7 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 		// so we will delete the protocol msg, but we will ignore the ack msg.
 		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v, error: %v", drAck.AgreementId(), err)))
+			deleteMessage = false
 		} else if ag != nil && ag.Archived {
 			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("Data received Ack is for a cancelled agreement %v, deleting ack message.", drAck.AgreementId())))
 		} else if ag == nil {
@@ -929,6 +933,7 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	// Find the agreement record
 	if ag, err := b.db.FindSingleAgreementByAgreementId(agreementId, cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
+		return false
 	} else if ag == nil {
 		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))
 	} else {
