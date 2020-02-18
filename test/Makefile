@@ -52,6 +52,7 @@ DOCKER_CSS_TAG := testing$(BRANCH_NAME)
 DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 AGBOT_SAPI_URL ?= https://localhost:8083
+ICP_HOST_IP ?= 0
 
 ifndef verbose
 .SILENT:
@@ -112,6 +113,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "AGBOT_NAME=$(AGBOT_NAME)" \
 		-e "AGBOT_SAPI_URL=$(AGBOT_SAPI_URL)" \
+		-e "ICP_HOST_IP=$(ICP_HOST_IP)" \
 		-e "DOCKER_REG_CNAME=$(DOCKER_REG_CNAME)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \

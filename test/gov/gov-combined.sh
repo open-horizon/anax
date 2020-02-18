@@ -102,6 +102,16 @@ EXCH_URL="${EXCH_APP_HOST}"
 mkdir -p /var/horizon
 mkdir -p /var/horizon/.colonus
 
+# update host file if needed
+if [ "$ICP_HOST_IP" != "0" ]
+then
+  echo "Updating hosts file."
+  HOST_NAME_ICP=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g'`
+  HOST_NAME=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g'`
+  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
+  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
+fi
+
 # Build an old anax if we need it
 if [ "$OLDANAX" == "1" ] || [ "$OLDAGBOT" == "1" ]
 then
