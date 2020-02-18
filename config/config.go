@@ -64,6 +64,7 @@ type Config struct {
 	SurfaceErrorTimeoutS             int       // How long surfaced errors will remain active after they're created. Default is no timeout
 	SurfaceErrorCheckIntervalS       int       // Deprecated. Used to be how often the node will check for errors that are no longer active and update the exchange. Default is 15 seconds
 	SurfaceErrorAgreementPersistentS int       // How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
+	InitialPollingBuffer             int       // the number of seconds to wait before increasing the polling interval while there is no agreement on the node.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -269,6 +270,11 @@ func Read(file string) (*HorizonConfig, error) {
 			config.Edge.DefaultServiceRetryDuration = 600
 		}
 
+		// default InitialPollingBuffer
+		if config.Edge.InitialPollingBuffer == 0 {
+			config.Edge.InitialPollingBuffer = 120
+		}
+
 		// add a slash at the back of the ExchangeUrl
 		if config.Edge.ExchangeURL != "" {
 			config.Edge.ExchangeURL = strings.TrimRight(config.Edge.ExchangeURL, "/") + "/"
@@ -281,6 +287,7 @@ func Read(file string) (*HorizonConfig, error) {
 		if config.Edge.PolicyPath != "" {
 			config.Edge.PolicyPath = strings.TrimRight(config.Edge.PolicyPath, "/") + "/"
 		}
+
 		if config.AgreementBot.PolicyPath != "" {
 			config.AgreementBot.PolicyPath = strings.TrimRight(config.AgreementBot.PolicyPath, "/") + "/"
 		}
@@ -345,6 +352,7 @@ func (con *Config) String() string {
 		", DefaultServiceRetryDuration: %v"+
 		", NodeCheckIntervalS: %v"+
 		", FileSyncService: {%v}"+
+		", InitialPollingBuffer: {%v}"+
 		", BlockchainAccountId: %v"+
 		", BlockchainDirectoryAddress %v",
 		con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet,
@@ -354,7 +362,7 @@ func (con *Config) String() string {
 		con.ExchangeMessagePollMaxInterval, con.ExchangeMessagePollIncrement, con.UserPublicKeyPath, con.ReportDeviceStatus,
 		con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances,
 		con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.NodeCheckIntervalS, con.FileSyncService.String(),
-		con.BlockchainAccountId, con.BlockchainDirectoryAddress)
+		con.InitialPollingBuffer, con.BlockchainAccountId, con.BlockchainDirectoryAddress)
 }
 
 func (agc *AGConfig) String() string {
