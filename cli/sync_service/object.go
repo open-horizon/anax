@@ -362,8 +362,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 
 }
 
-// Upload an object to the MMS. The user can provide a copy of the object's metadata in a file, or they can simply provide
-// object id and type.
+// Delete an object in the MMS.
 func ObjectDelete(org string, userPw string, objType string, objId string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()

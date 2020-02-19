@@ -540,6 +540,10 @@ Environment Variables:
 	mmsObjectDeleteCmd := mmsObjectCmd.Command("delete", msgPrinter.Sprintf("Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes."))
 	mmsObjectDeleteType := mmsObjectDeleteCmd.Flag("type", msgPrinter.Sprintf("The type of the object to delete.")).Short('t').Required().String()
 	mmsObjectDeleteId := mmsObjectDeleteCmd.Flag("id", msgPrinter.Sprintf("The id of the object to delete.")).Short('i').Required().String()
+	mmsObjectDownloadCmd := mmsObjectCmd.Command("download", msgPrinter.Sprintf("Download data of the given object in the Horizon Model Management Service."))
+	mmsObjectDownloadType := mmsObjectDownloadCmd.Flag("type", msgPrinter.Sprintf("The type of the object to download data. This flag must be used with -i.")).Short('t').Required().String()
+	mmsObjectDownloadId := mmsObjectDownloadCmd.Flag("id", msgPrinter.Sprintf("The id of the object to download data. This flag must be used with -t.")).Short('i').Required().String()
+	mmsObjectDownloadFile := mmsObjectDownloadCmd.Flag("file", msgPrinter.Sprintf("The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory")).Short('f').String()
 
 	app.VersionFlag = nil
 
@@ -883,5 +887,7 @@ Environment Variables:
 		sync_service.ObjectPublish(*mmsOrg, *mmsUserPw, *mmsObjectPublishType, *mmsObjectPublishId, *mmsObjectPublishPat, *mmsObjectPublishDef, *mmsObjectPublishObj)
 	case mmsObjectDeleteCmd.FullCommand():
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
+	case mmsObjectDownloadCmd.FullCommand():
+		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile)
 	}
 }
