@@ -68,3 +68,6 @@ const ExchangeMessagePollIncrement_DEFAULT = 10
 
 // The Default interval at which the agbot verifies that its message key is present in the exchange.
 const AgbotMessageKeyCheck_DEFAULT = 60
+
+// The default agreement batch size
+const AgbotAgreementBatchSize_DEFAULT = 200

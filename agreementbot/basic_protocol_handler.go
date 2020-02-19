@@ -39,7 +39,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				mmsObjMgr:        mmsObjMgr,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
-			Work:        make(chan AgreementWork),
+			Work:        make(chan AgreementWork, cfg.GetAgbotAgreementBatchSize()*2),
 		}
 	} else {
 		return nil

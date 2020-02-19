@@ -183,13 +183,21 @@ type BaseWorker struct {
 }
 
 func NewBaseWorker(name string, cfg *config.HorizonConfig, ec *BaseExchangeContext) BaseWorker {
+	commandQueueSize := 200
+	// In order for agbot worker threads to be able to send events, the command queue on the agbot worker
+	// has to be large enough to handle messages queued to the command handler from every worker for each
+	// node in the batch.
+	if cfg.GetAgbotAgreementBatchSize() != 0 {
+		commandQueueSize = int(cfg.GetAgbotAgreementBatchSize() * 5)
+	}
+
 	return BaseWorker{
 		Name: name,
 		Manager: Manager{
 			Config:   cfg,
 			Messages: make(chan events.Message),
 		},
-		Commands:         make(chan Command, 200),
+		Commands:         make(chan Command, commandQueueSize),
 		DeferredCommands: make([]Command, 0, 10),
 		DeferredDelay:    10,
 		SubWorkers:       make(map[string]*SubWorker),
