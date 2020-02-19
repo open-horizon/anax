@@ -102,6 +102,7 @@ type AGConfig struct {
 	CSSURL                        string           // The URL used to access the CSS.
 	CSSSSLCert                    string           // The path to the client side SSL certificate for the CSS.
 	MMSGarbageCollectionInterval  int64            // The amount of time to wait between MMS object cache garbage collection scans.
+	AgreementBatchSize            uint64           // The number of nodes that the agbot will process in a batch.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -138,6 +139,10 @@ func (c *HorizonConfig) GetAgbotCSSURL() string {
 
 func (c *HorizonConfig) GetAgbotCSSCert() string {
 	return c.AgreementBot.CSSSSLCert
+}
+
+func (c *HorizonConfig) GetAgbotAgreementBatchSize() uint64 {
+	return c.AgreementBot.AgreementBatchSize
 }
 
 func getDefaultBase() string {
@@ -191,7 +196,8 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
 			},
 			AgreementBot: AGConfig{
-				MessageKeyCheck: AgbotMessageKeyCheck_DEFAULT,
+				MessageKeyCheck:    AgbotMessageKeyCheck_DEFAULT,
+				AgreementBatchSize: AgbotAgreementBatchSize_DEFAULT,
 			},
 		}
 
@@ -366,11 +372,12 @@ func (agc *AGConfig) String() string {
 		", PurgeArchivedAgreementHours: %v"+
 		", CheckUpdatedPolicyS: %v"+
 		", CSSURL: %v"+
-		", CSSSSLCert: %v",
+		", CSSSSLCert: %v"+
+		", AgreementBatchSize: %v",
 		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
 		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
 		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
 		agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeVersionCheckIntervalM, agc.ExchangeId,
 		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
-		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert)
+		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize)
 }
