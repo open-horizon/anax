@@ -61,7 +61,7 @@ func Add(filePath string) {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("Error unmarshaling userInput json file: %v", err))
 	}
 
-	cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, inputs)
+	cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, inputs, true)
 	msgPrinter.Printf("Horizon node user inputs updated.")
 	msgPrinter.Println()
 }
@@ -79,7 +79,7 @@ func Update(filePath string) {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("Error unmarshaling userInput json file: %v", err))
 	}
 
-	cliutils.HorizonPutPost(http.MethodPatch, "node/userinput", []int{200, 201}, inputs)
+	cliutils.HorizonPutPost(http.MethodPatch, "node/userinput", []int{200, 201}, inputs, true)
 	msgPrinter.Printf("Horizon node user inputs updated.")
 	msgPrinter.Println()
 }

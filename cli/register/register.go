@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
+	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -19,7 +20,9 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // These structs are used to parse the registration input file. These are also used by the hzn dev code.
@@ -129,6 +132,18 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	} else {
 		msgPrinter.Printf("Horizon Exchange base URL: %s", exchUrlBase)
 		msgPrinter.Println()
+	}
+
+	timeout := 60
+	var timeoutStr string
+	cliutils.WithDefaultEnvVar(&timeoutStr, "HZN_REGISTER_HTTP_TIMEOUT")
+	if timeoutStr != "" {
+		if val, err := strconv.Atoi(timeoutStr); err != nil {
+			timeout = val
+		} else {
+			msgPrinter.Printf("Failed to read value for HZN_REGISTER_HTTP_TIMEOUT from config file. Continuing with default value.")
+			msgPrinter.Println()
+		}
 	}
 
 	// Get node info from anax
@@ -279,11 +294,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
 	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
-	httpCode, _ = cliutils.HorizonPutPost(http.MethodPost, "node", []int{201, 200, cliutils.ANAX_ALREADY_CONFIGURED}, nd)
-	if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
-		// Note: I wanted to make `hzn register` idempotent, but the anax api doesn't support changing existing settings once in configuring state (to maintain internal consistency).
-		//		And i can't query ALL the existing settings to make sure they are what we were going to set, because i can't query the node token.
-		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
+
+	err := CreateNode(nd, timeout)
+	if err != nil {
+		msgPrinter.Printf("Error initializing the node: %v", err)
+		msgPrinter.Println()
+		RegistrationFailure()
 	}
 
 	// Process the input file and call /attribute, /service/config to set the specified variables
@@ -309,7 +325,13 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 					host_only := true
 					attr.HostOnly = &host_only
 				}
-				cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
+				//cliutils.HorizonPutPost(http.MethodPost, "attribute", []int{201, 200}, attr)
+				err := SetUserInput(timeout, "attribute", attr)
+				if err != nil {
+					msgPrinter.Printf("Error setting user input variables: %v", err)
+					msgPrinter.Println()
+					RegistrationFailure()
+				}
 			}
 
 			// Set the service variables
@@ -327,22 +349,23 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 				attr.Mappings = &m.Variables
 				attrSlice := []api.Attribute{*attr}
 				service.Attributes = &attrSlice
-				httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{201, 200, 400}, service)
-				if httpCode == 400 {
-					if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile))
-					}
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Error setting service variables from user input file: %v", respBody)
+				err, _ := SetServiceConfig(timeout, inputFile, service)
+				if err != nil {
+					msgPrinter.Printf("Error encountered while setting service variables: %v", err)
+					msgPrinter.Println()
+					RegistrationFailure()
 				}
 			}
 		} else {
 			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
 			// use policy.UserInput struct
-			httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, policyInputFileList)
-			if httpCode == 400 {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "Error setting service variables from user input file: %v", respBody)
+			//httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, policyInputFileList)
+			err := SetUserInput(timeout, "node/userinput", policyInputFileList)
+			if err != nil {
+				msgPrinter.Printf("Error setting user input variables: %v", err)
+				msgPrinter.Println()
+				RegistrationFailure()
 			}
-
 		}
 
 	} else {
@@ -356,19 +379,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	// Set the pattern and register the node
 	msgPrinter.Printf("Changing Horizon state to configured to register this node with Horizon...")
 	msgPrinter.Println()
-	configuredStr := "configured"
-	configState := api.Configstate{State: &configuredStr}
-	httpCode, respBody := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState)
-	if httpCode == 400 {
-		if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
-			err_string := fmt.Sprintf("Registration failed because %v", matches[0])
-			if inputFile != "" {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("%v. Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", err_string, matches[2], inputFile))
-			} else {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("%v. Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", err_string, matches[2]))
-			}
-		}
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", respBody)
+	err = SetConfigState(timeout, inputFile)
+	if err != nil {
+		msgPrinter.Printf("Error setting node state to configured: %v", err)
+		msgPrinter.Println()
+		RegistrationFailure()
 	}
 
 	// Now drop into the long wait for a service to get started on the node.
@@ -384,6 +399,213 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		msgPrinter.Println()
 	}
 
+}
+
+// RegistrationFailure attempts to unregister the node if a critical error is encountered during registration.
+// This function will not return. It ends with a call to cliutils.Fatal
+func RegistrationFailure() {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Printf("Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.")
+	msgPrinter.Println("")
+
+	retries := 3
+	for i := 0; i < retries; i++ {
+		unregister.DeleteHorizonNode(false, false, 15)
+		err := unregister.CheckNodeConfigState(15)
+		if err == nil {
+			break
+		}
+		if i < retries-1 {
+			msgPrinter.Printf("Error unregistering node. Retrying.")
+			msgPrinter.Println()
+			time.Sleep(time.Second * 5)
+		} else {
+			msgPrinter.Printf("Failed to unregister node. Attempting a deep clean of the node.")
+			msgPrinter.Println()
+			unregister.DeleteHorizonNode(false, true, 15)
+			err = unregister.CheckNodeConfigState(15)
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Failed to deep clean the node. %v", err))
+			}
+		}
+	}
+
+	cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Registration failed. Node sucessfully returned to unregistered state."))
+}
+
+// CreateNode will create the node locally during registration.
+// Timeout is the seconds to wait before returning an error if the call does not return
+func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	c := make(chan string, 1)
+	go func() {
+		httpCode, _, err := cliutils.HorizonPutPost(http.MethodPost, "node", []int{}, nodeDevice, false)
+		if err != nil {
+			c <- err.Error()
+		}
+		c <- fmt.Sprintf("%d", httpCode)
+	}()
+
+	channelWait := 15
+	totalWait := timeout
+
+	for {
+		select {
+		case httpReturn := <-c:
+			if httpCode, err := strconv.Atoi(httpReturn); err == nil {
+				if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
+					cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
+				} else if httpCode == 200 || httpCode == 201 {
+					return nil
+				} else {
+					return fmt.Errorf(msgPrinter.Sprintf("Bad error code %d from creating node locally.", httpCode))
+				}
+			} else {
+				return fmt.Errorf(httpReturn)
+			}
+		case <-time.After(time.Duration(timeout) * time.Second):
+			totalWait = totalWait - channelWait
+			if totalWait <= 0 {
+				return fmt.Errorf(msgPrinter.Sprintf("Call to anax to create node timed out."))
+			}
+		}
+	}
+}
+
+// SetUserInput sets the given user inputs locally on the node.
+// The timeout is the seconds to wait before returning an error if the call does not return.
+func SetUserInput(timeout int, resource string, value interface{}) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	c := make(chan string, 1)
+	go func() {
+		_, _, err := cliutils.HorizonPutPost(http.MethodPost, resource, []int{200, 201}, value, false)
+		if err != nil {
+			c <- err.Error()
+		} else {
+			c <- "done"
+		}
+	}()
+
+	channelWait := 15
+	totalWait := timeout
+	for {
+		select {
+		case httpReturn := <-c:
+			if httpReturn == "done" {
+				return nil
+			} else {
+				return fmt.Errorf(httpReturn)
+			}
+		case <-time.After(time.Duration(channelWait) * time.Second):
+			totalWait = totalWait - channelWait
+			if totalWait <= 0 {
+				return fmt.Errorf(msgPrinter.Sprintf("Call to %s timed out.", resource))
+			}
+		}
+	}
+}
+
+// SetServiceConfig sets the service variables provided at registration locally in the node.
+// timeout parameter is the time in seconds to wait before returning an error if the call does not return.
+func SetServiceConfig(timeout int, inputFile string, value interface{}) (error, int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	c := make(chan string, 1)
+	go func() {
+		httpCode, respBody, err := cliutils.HorizonPutPost(http.MethodPost, "service/config", []int{200, 201, 400}, value, false)
+		if err != nil {
+			c <- err.Error()
+		}
+		if httpCode == 400 {
+			if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 {
+				c <- msgPrinter.Sprintf("Registration failed because %v Please update the services section in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", matches[0], inputFile)
+			}
+			c <- msgPrinter.Sprintf("Error setting service variables from user input file: %v", respBody)
+		}
+		c <- "done"
+	}()
+
+	channelWait := 15
+	totalWait := timeout
+
+	for {
+		select {
+		case output := <-c:
+			if output == "done" {
+				return nil, 0
+			}
+			return fmt.Errorf(output), cliutils.CLI_INPUT_ERROR
+		case <-time.After(time.Duration(channelWait) * time.Second):
+			totalWait = totalWait - channelWait
+			if totalWait <= 0 {
+				return fmt.Errorf(msgPrinter.Sprintf("Call to set service config resource timed out.")), cliutils.INTERNAL_ERROR
+			}
+		}
+	}
+}
+
+// SetConfigState changes the node config state to configured.
+// timeout parameter is the time in seconds to wait before returning an error if the call does not return
+func SetConfigState(timeout int, inputFile string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	c := make(chan string, 1)
+	go func() {
+		configuredStr := "configured"
+		configState := api.Configstate{State: &configuredStr}
+		httpCode, respBody, err := cliutils.HorizonPutPost(http.MethodPut, "node/configstate", []int{201, 200, 400}, configState, false)
+		if err != nil {
+			c <- err.Error()
+		}
+		if matches := parseRegisterInputError(respBody); matches != nil && len(matches) > 2 && httpCode == 400 {
+			err_string := fmt.Sprintf("Registration failed because %v", matches[0])
+			if inputFile != "" {
+				c <- msgPrinter.Sprintf("%v. Please define variables for service %v in the input file %v. Run 'hzn unregister' and then 'hzn register...' again", err_string, matches[2], inputFile)
+			} else {
+				c <- msgPrinter.Sprintf("%v. Please create an input file, define variables for service %v. Run 'hzn unregister' and then 'hzn register...' again with the -f flag to specify the input file.", err_string, matches[2])
+			}
+		} else if httpCode == 400 {
+			c <- respBody
+		} else {
+			c <- "done"
+		}
+	}()
+
+	channelWait := 15
+	totalWait := timeout
+
+	for {
+		select {
+		case output := <-c:
+			if output == "done" {
+				cliutils.Verbose("Call to node to change state to configured executed sucessfully.")
+				return nil
+			} else {
+				return fmt.Errorf("%v", output)
+			}
+
+		case <-time.After(time.Duration(channelWait) * time.Second):
+			totalWait = totalWait - channelWait
+			if totalWait <= 0 {
+				cliutils.Verbose("Timeout on the call to update node config state. Checking if it is updated.")
+				state := api.Configstate{}
+				cliutils.HorizonGet("node/configstate", []int{200, 201}, &state, true)
+				if *state.State == "unconfigured" {
+					cliutils.Verbose("Node state is unconfigured.")
+					return nil
+				}
+				return fmt.Errorf("Timeout waiting for node config state call to return.")
+			}
+			cliutils.Verbose(msgPrinter.Sprintf("Waiting for node config state update call to return. %d seconds until timeout.", totalWait))
+		}
+	}
 }
 
 func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string) (string, string) {

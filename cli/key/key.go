@@ -136,7 +136,7 @@ func Import(pubKeyFile string) {
 
 	bodyBytes := cliutils.ReadFile(pubKeyFile)
 	baseName := filepath.Base(pubKeyFile)
-	cliutils.HorizonPutPost(http.MethodPut, "trust/"+baseName, []int{201, 200}, bodyBytes)
+	cliutils.HorizonPutPost(http.MethodPut, "trust/"+baseName, []int{201, 200}, bodyBytes, true)
 }
 
 func Remove(keyName string) {

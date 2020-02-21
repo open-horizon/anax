@@ -67,6 +67,9 @@ type HorizonCliConfig struct {
 	HZN_DEV_FSS_MONGO_IMAGE string `json:"HZN_DEV_FSS_MONGO_IMAGE,omitempty"`
 	HZN_DEV_FSS_WORKING_DIR string `json:"HZN_DEV_FSS_WORKING_DIR,omitempty"`
 
+	// the timeout variable for calls to the node that occur during registration
+	HZN_REGISTER_HTTP_TIMEOUT string `json:"HZN_REGISTER_HTTP_TIMEOUT,omitempty"`
+
 	// used to substitute the env variables in a file
 	MetadataVars map[string]string `json:"MetadataVars,omitempty"`
 }

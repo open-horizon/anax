@@ -311,7 +311,7 @@ func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl str
 		ConfigState: exchange.SERVICE_CONFIGSTATE_SUSPENDED,
 	}
 
-	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput)
+	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput, true)
 
 	msgPrinter.Printf("Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.")
 	msgPrinter.Println()
@@ -347,7 +347,7 @@ func Resume(applyAll bool, serviceOrg string, serviceUrl string) {
 		ConfigState: exchange.SERVICE_CONFIGSTATE_ACTIVE,
 	}
 
-	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput)
+	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput, true)
 
 	msgPrinter.Printf("Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.")
 	msgPrinter.Println()
