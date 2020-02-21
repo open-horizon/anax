@@ -5,7 +5,7 @@ services:
 
 branches:
   only:
-  - master
+  - v4.0
 
 language: go
 

@@ -12,7 +12,7 @@ SHELL := /bin/bash
 # Set branch name to the name of the branch to which this file belongs. This must be updated
 # when a new branch is created. Development on the main (master) branch should leave this variable empty.
 # DO NOT set this variable to the branch in which you are doing development work.
-BRANCH_NAME ?= ""
+BRANCH_NAME ?= "-v4.0"
 
 EXECUTABLE := $(shell basename $$PWD)
 CLI_EXECUTABLE := cli/hzn
@@ -26,7 +26,7 @@ DEFAULT_UI = api/static/index.html
 CLI_TEMP_EXECUTABLE := cli/hzn.tmp
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.23.10$(BRANCH_NAME)
+DOCKER_IMAGE_VERSION ?= 2.24.18$(BRANCH_NAME)
 DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
 DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing$(BRANCH_NAME)
