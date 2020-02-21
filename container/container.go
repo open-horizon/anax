@@ -1094,7 +1094,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	} else {
 		// The volume has been specified in the binds section of the deployment config in the WorkloadConfigureCommand and
 		// ContainerConfigureCommand command handler section.
-		// No need to create volume separately here because docker will automatically create it if it does not exist.
+		// The volume will be created later if it does not exist.
 	}
 
 	// Create the MMS authentication credentials for this container. The only time we need the service version to be
@@ -1158,6 +1158,14 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 	}
 
+	// create the volumes that do not exist yet, The user specified volumes are owned by anax and will be
+	// removed during the unregistration process.
+	// The 'workloadRWStorageDir' volume will be removed when the agreement is canceled.
+	for serviceName, servicePair := range servicePairs {
+		if err := b.createDockerVolumesForContainer(serviceName, agreementId, &servicePair); err != nil {
+			return nil, err
+		}
+	}
 	// finished pre-processing
 
 	// process shared by finding existing or creating new then hooking up "private" in pattern to the shared by adding two endpoints. Note! a shared container is not in the agreement bridge it came from
@@ -1519,7 +1527,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(lc.ServicePathElement.URL), lc.ServicePathElement.Org)
 		sVer := lc.ServicePathElement.Version
 
-		// Get the container started.
+		// Get the container started
 		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
 			log_str := EL_CONT_START_CONTAINER_ERROR_FOR_AG
 			if lc.IsRetry {
@@ -1714,9 +1722,18 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 // function which periodically checks to ensure that all containers are running.
 func (b *ContainerWorker) syncupResources() {
 
-	// for multiple anax instances case, do nothing because we do not want to remove containers that
-	// belong to other anax instances
+	// For multiple anax instances case, we do not want to remove containers that
+	// belong to other anax instances. But we need to remove the docker volumes
+	// that were created by current instance and no longer used by itself and other 
+	// instances.
 	if b.Config.Edge.MultipleAnaxInstances {
+		// remove the leftover docker volumes created by this instance of anax
+		// when the node is not registered.
+		if b.GetExchangeToken() == "" {
+			if err := DeleteLeftoverDockerVolumes(b.db, b.Config); err != nil {
+				glog.Errorf("Container worker sync resources. %v", err)
+			}
+		}
 		glog.V(3).Infof("ContainerWorker: multiple anax instances enabled. will not cleanup left over containers.")
 		b.Messages() <- events.NewDeviceContainersSyncedMessage(events.DEVICE_CONTAINERS_SYNCED, true)
 		return
@@ -1840,6 +1857,12 @@ func (b *ContainerWorker) syncupResources() {
 			}
 		}
 
+	}
+	// remove the leftover docker volumes created by anax
+	if b.GetExchangeToken() == "" {
+		if err := DeleteLeftoverDockerVolumes(b.db, b.Config); err != nil {
+			glog.Errorf("Container worker sync resources. %v", err)
+		}
 	}
 
 	glog.V(3).Infof("ContainerWorker done syncing docker resources, successful: %v.", outcome)
@@ -2378,6 +2401,136 @@ func hasValidBindPermissions(binds []string) error {
 			// is not enabled then the bind will not be allowed (because the bind is asking for rw permission).
 			if m&2 == 0 {
 				return errors.New(fmt.Sprintf("Write permission for bind to %v is denied", containerVol[0]))
+			}
+		}
+	}
+	return nil
+}
+
+// get the volumes specified in the service config and create the volumes if they do not exist.
+func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, agreementId string, servicePair *servicePair) error {
+	if servicePair == nil || servicePair.serviceConfig == nil {
+		return nil
+	}
+
+	binds := servicePair.serviceConfig.HostConfig.Binds
+
+	// get all the existing docker volumes
+	volumes_docker, err := b.client.ListVolumes(docker.ListVolumesOptions{})
+	if err != nil {
+		return fmt.Errorf("Failed to get the docker volumes. %v", err)
+	}
+
+	workloadRWStorageDir, _ := b.workloadStorageDir(agreementId)
+
+	// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
+	for _, bind := range binds {
+		containerVol := strings.Split(bind, ":")
+		// The volume name does not contain slashes
+		if len(containerVol) != 0 && !strings.Contains(containerVol[0], "/") {
+			// check if the volume exists already
+			vol_name := containerVol[0]
+
+			// check if the volume is the workload storage, then skip it because it will be created automatically by docker
+			// and it will be removed by other parts of the code
+			if vol_name == workloadRWStorageDir {
+				continue
+			}
+
+			bExists := false
+			if volumes_docker != nil {
+				for _, v_docker := range volumes_docker {
+					if v_docker.Name == vol_name {
+						bExists = true
+						break
+					}
+				}
+			}
+
+			if !bExists {
+				// create the volume if it does not exist
+				vOption := docker.CreateVolumeOptions{
+					Name:   vol_name,
+					Driver: "local",
+					Labels: map[string]string{
+						LABEL_PREFIX + ".service_name": serviceName,
+						LABEL_PREFIX + ".agreement_id": agreementId,
+						LABEL_PREFIX + ".owner":        "openhorizon"},
+				}
+
+				if _, err := b.client.CreateVolume(vOption); err != nil {
+					return fmt.Errorf("Failed to create the docker volume %v for service %v. %v", vol_name, serviceName, err)
+				} else {
+					glog.V(3).Infof("Volume %v created for service %v.", vol_name, serviceName)
+
+					// same the volume in local db so that it can be cleaned up at unregistration time
+					// Ling todo - only save the ones that are specified by the user in binds.
+					if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
+						return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+// Delete the docker volumes that are created by anax
+func DeleteLeftoverDockerVolumes(db *bolt.DB, config *config.HorizonConfig) error {
+	glog.V(3).Infof("Cleaning up leftover docker volumes created by anax.")
+
+	// get leftover volume names from local db
+	cvs, err := persistence.FindAllUndeletedContainerVolumes(db)
+	if err != nil {
+		return fmt.Errorf("Error retrieving undeleted container volumes from local db. %v", err)
+	} else if cvs == nil || len(cvs) == 0 {
+		// nothing to remove
+		glog.V(3).Infof("The cleanup process found no leftover docker volumes in the local db.")
+		return nil
+	}
+
+	if client, err := docker.NewClient(config.Edge.DockerEndpoint); err != nil {
+		return fmt.Errorf("Failed to instantiate docker Client: %v", err)
+	} else {
+		// check existing docker volumes
+		volumes_docker, err := client.ListVolumes(docker.ListVolumesOptions{})
+		if err != nil {
+			return fmt.Errorf("Failed to get the docker volumes. %v", err)
+		} else if volumes_docker == nil || len(volumes_docker) == 0 {
+			// no docker volumes
+			glog.V(3).Infof("The cleanup process found no docker volumes.")
+			return nil
+		}
+
+		for _, cv := range cvs {
+
+			// make sure the volume still exists and it has openhorizon as the owner
+			found := false
+			for _, dv := range volumes_docker {
+				if cv.Name == dv.Name {
+					if dv.Labels != nil && dv.Labels[LABEL_PREFIX+".owner"] == "openhorizon" {
+						found = true
+						break
+					}
+				}
+			}
+
+			// remove the volume and remove it from the local db
+			if found {
+				if err := client.RemoveVolume(cv.Name); err != nil {
+					// failure to delete the volume should not prevent the process from going on
+					glog.Errorf("Container sync resources. Failed to delete docker volume %v. %v", cv.Name, err)
+				} else if err := persistence.ArchiveContainerVolumes(db, &cv); err != nil {
+					return err
+				} else {
+					glog.V(3).Infof("Docker volume %v is removed in cleanup process.", cv.Name)
+				}
+			} else {
+				glog.V(3).Infof("The leftover docker volume name %v is found in the local db but the volume is not in docker or it is not created by anax. It will be archived in loval db.", cv.Name)
+				if err := persistence.ArchiveContainerVolumes(db, &cv); err != nil {
+					return err
+				}
 			}
 		}
 	}

@@ -341,7 +341,7 @@ func FindEventLogWithKey(db *bolt.DB, key string) (*EventLog, error) {
 	}
 }
 
-// filter on MicroserviceDefinition
+// filter on EventLog
 type EventLogFilter func(EventLog) bool
 
 // filter on severity
