@@ -469,7 +469,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sIds[0], err)))
 					return
-				} else {
+				} else if len(cph.WorkQueue()) < int(b.config.GetAgbotAgreementBatchSize()) {
 					cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sIds[0], string(polString)))
 				}
 			}
