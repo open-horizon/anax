@@ -186,14 +186,14 @@ Environment Variables:
 	exAgbotDPPatOrg := exAgbotDelPatCmd.Arg("patternorg", msgPrinter.Sprintf("The organization of the pattern to remove.")).Required().String()
 	exAgbotDPPat := exAgbotDelPatCmd.Arg("pattern", msgPrinter.Sprintf("The name of the pattern to remove.")).Required().String()
 	exAgbotDPNodeOrg := exAgbotDelPatCmd.Arg("nodeorg", msgPrinter.Sprintf("The organization of the nodes that should be searched. Defaults to patternorg.")).String()
-	exAgbotListPolicyCmd := exAgbotCmd.Command("listbusinesspol", msgPrinter.Sprintf("Display the business policies that this agbot is serving."))
-	exAgbotPol := exAgbotListPolicyCmd.Arg("agbot", msgPrinter.Sprintf("The agbot to list serving business policies for.")).Required().String()
-	exAgbotAddPolCmd := exAgbotCmd.Command("addbusinesspol", msgPrinter.Sprintf("Add this business policy to the list of policies this agbot is serving. Currently only support adding all the business polycies from an organization."))
-	exAgbotAPolAg := exAgbotAddPolCmd.Arg("agbot", msgPrinter.Sprintf("The agbot to add the business policy to.")).Required().String()
-	exAgbotAPPolOrg := exAgbotAddPolCmd.Arg("policyorg", msgPrinter.Sprintf("The organization of the business policy to add.")).Required().String()
-	exAgbotDelPolCmd := exAgbotCmd.Command("removebusinesspol", msgPrinter.Sprintf("Remove this business policy from the list of policies this agbot is serving. Currently only support removing all the business polycies from an organization."))
-	exAgbotDPolAg := exAgbotDelPolCmd.Arg("agbot", msgPrinter.Sprintf("The agbot to remove the business policy from.")).Required().String()
-	exAgbotDPPolOrg := exAgbotDelPolCmd.Arg("policyorg", msgPrinter.Sprintf("The organization of the business policy to remove.")).Required().String()
+	exAgbotListPolicyCmd := exAgbotCmd.Command("listdeploymentpol", msgPrinter.Sprintf("Display the deployment policies that this agbot is serving.")).Alias("listbusinesspol")
+	exAgbotPol := exAgbotListPolicyCmd.Arg("agbot", msgPrinter.Sprintf("The agbot to list serving deployment policies for.")).Required().String()
+	exAgbotAddPolCmd := exAgbotCmd.Command("adddeploymentpol", msgPrinter.Sprintf("Add this deployment policy to the list of policies this agbot is serving. Currently only support adding all the deployment policies from an organization.")).Alias("addbusinesspol")
+	exAgbotAPolAg := exAgbotAddPolCmd.Arg("agbot", msgPrinter.Sprintf("The agbot to add the deployment policy to.")).Required().String()
+	exAgbotAPPolOrg := exAgbotAddPolCmd.Arg("policyorg", msgPrinter.Sprintf("The organization of the deployment policy to add.")).Required().String()
+	exAgbotDelPolCmd := exAgbotCmd.Command("removedeploymentpol", msgPrinter.Sprintf("Remove this deployment policy from the list of policies this agbot is serving. Currently only support removing all the deployment policies from an organization.")).Alias("removebusinesspol")
+	exAgbotDPolAg := exAgbotDelPolCmd.Arg("agbot", msgPrinter.Sprintf("The agbot to remove the deployment policy from.")).Required().String()
+	exAgbotDPPolOrg := exAgbotDelPolCmd.Arg("policyorg", msgPrinter.Sprintf("The organization of the deployment policy to remove.")).Required().String()
 
 	exPatternCmd := exchangeCmd.Command("pattern", msgPrinter.Sprintf("List and manage patterns in the Horizon Exchange"))
 	exPatternListCmd := exPatternCmd.Command("list", msgPrinter.Sprintf("Display the pattern resources from the Horizon Exchange."))
@@ -272,24 +272,24 @@ Environment Variables:
 	exServiceRemovePolicyService := exServiceRemovePolicyCmd.Arg("service", msgPrinter.Sprintf("Remove policy for this service.")).Required().String()
 	exServiceRemovePolicyForce := exServiceRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
-	exBusinessCmd := exchangeCmd.Command("business", msgPrinter.Sprintf("List and manage business policies in the Horizon Exchange."))
-	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", msgPrinter.Sprintf("Display the business policies from the Horizon Exchange."))
+	exBusinessCmd := exchangeCmd.Command("deployment", msgPrinter.Sprintf("List and manage deployment policies in the Horizon Exchange.")).Alias("business")
+	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", msgPrinter.Sprintf("Display the deployment policies from the Horizon Exchange."))
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
-	exBusinessListPolicyLong := exBusinessListPolicyCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the business policies.")).Short('l').Bool()
+	exBusinessListPolicyLong := exBusinessListPolicyCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about the deployment policies.")).Short('l').Bool()
 	exBusinessListPolicyPolicy := exBusinessListPolicyCmd.Arg("policy", msgPrinter.Sprintf("List just this one policy. Use <org>/<policy> to specify a public policy in another org, or <org>/ to list all of the public policies in another org.")).String()
-	exBusinessNewPolicyCmd := exBusinessCmd.Command("new", msgPrinter.Sprintf("Display an empty business policy template that can be filled in."))
-	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", msgPrinter.Sprintf("Add or replace a business policy in the Horizon Exchange. Use 'hzn exchange business new' for an empty business policy template."))
+	exBusinessNewPolicyCmd := exBusinessCmd.Command("new", msgPrinter.Sprintf("Display an empty deployment policy template that can be filled in."))
+	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", msgPrinter.Sprintf("Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template."))
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to add or overwrite.")).Required().String()
 	exBusinessAddPolicyJsonFile := exBusinessAddPolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
-	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy", msgPrinter.Sprintf("Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange business new'."))
+	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy", msgPrinter.Sprintf("Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'."))
 	exBusinessUpdatePolicyIdTok := exBusinessUpdatePolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessUpdatePolicyPolicy := exBusinessUpdatePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to be updated in the Horizon Exchange.")).Required().String()
-	exBusinessUpdatePolicyJsonFile := exBusinessUpdatePolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path to the json file containing the updated business policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
-	exBusinessRemovePolicyCmd := exBusinessCmd.Command("removepolicy", msgPrinter.Sprintf("Remove the business policy in the Horizon Exchange."))
+	exBusinessUpdatePolicyJsonFile := exBusinessUpdatePolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
+	exBusinessRemovePolicyCmd := exBusinessCmd.Command("removepolicy", msgPrinter.Sprintf("Remove the deployment policy in the Horizon Exchange."))
 	exBusinessRemovePolicyIdTok := exBusinessRemovePolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessRemovePolicyForce := exBusinessRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
-	exBusinessRemovePolicyPolicy := exBusinessRemovePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the business policy to be removed.")).Required().String()
+	exBusinessRemovePolicyPolicy := exBusinessRemovePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the deployment policy to be removed.")).Required().String()
 
 	exCatalogCmd := exchangeCmd.Command("catalog", msgPrinter.Sprintf("List all public services/patterns in all orgs that have orgType: IBM."))
 	exCatalogServiceListCmd := exCatalogCmd.Command("servicelist", msgPrinter.Sprintf("Display all public services in all orgs that have orgType: IBM."))
@@ -357,33 +357,39 @@ Environment Variables:
 	deploycheckCmd := app.Command("deploycheck", msgPrinter.Sprintf("Check deployment compatibility."))
 	deploycheckOrg := deploycheckCmd.Flag("org", msgPrinter.Sprintf("The Horizon exchange organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	deploycheckUserPw := deploycheckCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon exchange user credential to query exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH will be used as a default. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
-	deploycheckCheckAll := deploycheckCmd.Flag("check-all", msgPrinter.Sprintf("Show the compatibility status of all the service versions referenced in the business policy.")).Short('c').Bool()
+	deploycheckCheckAll := deploycheckCmd.Flag("check-all", msgPrinter.Sprintf("Show the compatibility status of all the service versions referenced in the deployment policy.")).Short('c').Bool()
 	deploycheckLong := deploycheckCmd.Flag("long", msgPrinter.Sprintf("Show policies and userinput used for the compatibility checking.")).Short('l').Bool()
 	policyCompCmd := deploycheckCmd.Command("policy", msgPrinter.Sprintf("Check policy compatibility."))
-	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy will be checked for compatibility.")).Short('a').String()
+	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.")).Short('a').String()
 	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n.")).String()
-	policyCompBPolId := policyCompCmd.Flag("business-pol-id", msgPrinter.Sprintf("The Horizon exchange business policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
-	policyCompBPolFile := policyCompCmd.Flag("business-pol", msgPrinter.Sprintf("The JSON input file name containing the business policy. Mutually exclusive with -b.")).Short('B').String()
-	policyCompSPolFile := policyCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.")).String()
+	policyCompBPolId := policyCompCmd.Flag("business-pol-id", "").Hidden().String()
+	policyCompDepPolId := policyCompCmd.Flag("deployment-pol-id", msgPrinter.Sprintf("The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
+	policyCompBPolFile := policyCompCmd.Flag("business-pol", "").Hidden().String()
+	policyCompDepPolFile := policyCompCmd.Flag("deployment-pol", msgPrinter.Sprintf("The JSON input file name containing the Deployment policy. Mutually exclusive with -b.")).Short('B').String()
+	policyCompSPolFile := policyCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the exchange for the service defined in the deployment policy.")).String()
 	userinputCompCmd := deploycheckCmd.Command("userinput", msgPrinter.Sprintf("Check user input compatibility."))
-	userinputCompNodeArch := userinputCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.")).Short('a').String()
+	userinputCompNodeArch := userinputCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
 	userinputCompNodeId := userinputCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	userinputCompNodeUIFile := userinputCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n.")).String()
-	userinputCompBPolId := userinputCompCmd.Flag("business-pol-id", msgPrinter.Sprintf("The Horizon exchange business policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
-	userinputCompBPolFile := userinputCompCmd.Flag("business-pol", msgPrinter.Sprintf("The JSON input file name containing the business policy. Mutually exclusive with -b, -p and -P.")).Short('B').String()
-	userinputCompSvcFile := userinputCompCmd.Flag("service", msgPrinter.Sprintf("(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.")).Strings()
+	userinputCompBPolId := userinputCompCmd.Flag("business-pol-id", "").Hidden().String()
+	userinputCompDepPolId := userinputCompCmd.Flag("deployment-pol-id", msgPrinter.Sprintf("The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
+	userinputCompBPolFile := userinputCompCmd.Flag("business-pol", "").Hidden().String()
+	userinputCompDepPolFile := userinputCompCmd.Flag("deployment-pol", msgPrinter.Sprintf("The JSON input file name containing the deployment policy. Mutually exclusive with -b, -p and -P.")).Short('B').String()
+	userinputCompSvcFile := userinputCompCmd.Flag("service", msgPrinter.Sprintf("(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.")).Strings()
 	userinputCompPatternId := userinputCompCmd.Flag("pattern-id", msgPrinter.Sprintf("The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('p').String()
 	userinputCompPatternFile := userinputCompCmd.Flag("pattern", msgPrinter.Sprintf("The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.")).Short('P').String()
 	allCompCmd := deploycheckCmd.Command("all", msgPrinter.Sprintf("Check all compatibilities for a deployment."))
-	allCompNodeArch := allCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the business policy or pattern will be checked for compatibility.")).Short('a').String()
+	allCompNodeArch := allCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
 	allCompNodeId := allCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	allCompNodePolFile := allCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.")).String()
 	allCompNodeUIFile := allCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n.")).String()
-	allCompBPolId := allCompCmd.Flag("business-pol-id", msgPrinter.Sprintf("The Horizon exchange business policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
-	allCompBPolFile := allCompCmd.Flag("business-pol", msgPrinter.Sprintf("The JSON input file name containing the business policy. Mutually exclusive with -b, -p and -P.")).Short('B').String()
-	allCompSPolFile := allCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the exchange for the service defined in the business policy.")).String()
-	allCompSvcFile := allCompCmd.Flag("service", msgPrinter.Sprintf("(optional) The JSON input file name containing the service definition. If omitted, the service defined in the business policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.")).Strings()
+	allCompBPolId := allCompCmd.Flag("business-pol-id", "").Hidden().String()
+	allCompDepPolId := allCompCmd.Flag("deployment-pol-id", msgPrinter.Sprintf("The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('b').String()
+	allCompBPolFile := allCompCmd.Flag("business-pol", "").Hidden().String()
+	allCompDepPolFile := allCompCmd.Flag("deployment-pol", msgPrinter.Sprintf("The JSON input file name containing the deployment policy. Mutually exclusive with -b, -p and -P.")).Short('B').String()
+	allCompSPolFile := allCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the exchange for the service defined in the deployment policy.")).String()
+	allCompSvcFile := allCompCmd.Flag("service", msgPrinter.Sprintf("(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the exchange. This flag can be repeated to specify different versions of the service.")).Strings()
 	allCompPatternId := allCompCmd.Flag("pattern-id", msgPrinter.Sprintf("The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('p').String()
 	allCompPatternFile := allCompCmd.Flag("pattern", msgPrinter.Sprintf("The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.")).Short('P').String()
 
@@ -610,13 +616,13 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceAddPolicyIdTok)
 		case "service removepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceRemovePolicyIdTok)
-		case "business listpolicy":
+		case "deployment listpolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessListPolicyIdTok)
-		case "business updatepolicy":
+		case "deployment updatepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessUpdatePolicyIdTok)
-		case "business addpolicy":
+		case "deployment addpolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessAddPolicyIdTok)
-		case "business removepolicy":
+		case "deployment removepolicy":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exBusinessRemovePolicyIdTok)
 		case "version":
 			credToUse = cliutils.GetExchangeAuthVersion(*exUserPw)
@@ -637,6 +643,24 @@ Environment Variables:
 	if strings.HasPrefix(fullCmd, "deploycheck") {
 		deploycheckOrg = cliutils.WithDefaultEnvVar(deploycheckOrg, "HZN_ORG_ID")
 		deploycheckUserPw = cliutils.WithDefaultEnvVar(deploycheckUserPw, "HZN_EXCHANGE_USER_AUTH")
+		if *policyCompBPolId == "" {
+			policyCompBPolId = policyCompDepPolId
+		}
+		if *policyCompBPolFile == "" {
+			policyCompBPolFile = policyCompDepPolFile
+		}
+		if *userinputCompBPolId == "" {
+			userinputCompBPolId = userinputCompDepPolId
+		}
+		if *userinputCompBPolFile == "" {
+			userinputCompBPolFile = userinputCompDepPolFile
+		}
+		if *allCompBPolId == "" {
+			allCompBPolId = allCompDepPolId
+		}
+		if *allCompBPolFile == "" {
+			allCompBPolFile = allCompDepPolFile
+		}
 	}
 
 	// For the mms command family, make sure that org and exchange credentials are specified in some way.

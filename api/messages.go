@@ -67,7 +67,7 @@ const (
 	EL_API_START_SVC_AUTO_CONFIG      = "Start service auto configuration for %v/%v."
 	EL_API_COMPLETE_SVC_CONFIG        = "Complete service configuration for %v/%v."
 	EL_API_COMPLETE_SVC_AUTO_CONFIG   = "Complete service auto configuration for %v/%v."
-	EL_API_ERR_MISS_VAR_IN_SVC_CONFIG = "Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
+	EL_API_ERR_MISS_VAR_IN_SVC_CONFIG = "Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable."
 
 	// from api_service.go
 	EL_API_ERR_CONFIG_SVC                  = "Error configuring service %v. %v"

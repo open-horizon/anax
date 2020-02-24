@@ -225,9 +225,9 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 	} else {
 		// If we get here, it means that no workload is found in the bp that matches the required node arch.
 		if resources.NodeArch != "" {
-			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the business policy.", resources.NodeArch))
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the deployment policy.", resources.NodeArch))
 		} else {
-			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the business policy."))
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the deployment policy."))
 		}
 
 		return NewCompCheckOutput(false, messages, resources), nil
@@ -250,7 +250,7 @@ func CheckPolicyCompatiblility(nodePolicy *policy.Policy, businessPolicy *policy
 
 	// check business policy
 	if businessPolicy == nil {
-		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Business policy cannot be null.")), COMPCHECK_INPUT_ERROR)
+		return false, "", nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// check merged service policy
@@ -411,16 +411,16 @@ func processBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler,
 			var err1 error
 			pPolicy, err1 = inputBP.GenPolicyFromBusinessPolicy(bpId)
 			if err1 != nil {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy: %v", bpId, err1)), COMPCHECK_CONVERSION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert deployment policy %v to internal policy: %v", bpId, err1)), COMPCHECK_CONVERSION_ERROR)
 			}
 			return inputBP, pPolicy, nil
 		} else {
 			// validate the input policy
 			if err := inputBP.Validate(); err != nil {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Validation failure for business policy %v. %v", bpId, err)), COMPCHECK_VALIDATION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Validation failure for deployment policy %v. %v", bpId, err)), COMPCHECK_VALIDATION_ERROR)
 			}
 			if inputBP.Service.ServiceVersions == nil || len(inputBP.Service.ServiceVersions) == 0 {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the given business policy %v.", bpId)), COMPCHECK_VALIDATION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the given deployment policy %v.", bpId)), COMPCHECK_VALIDATION_ERROR)
 			}
 			return inputBP, nil, nil
 		}
@@ -431,11 +431,11 @@ func processBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler,
 			return nil, nil, err1
 		}
 		if bPolicy.Service.ServiceVersions == nil || len(bPolicy.Service.ServiceVersions) == 0 {
-			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the business policy %v.", pPolicy.Header.Name)), COMPCHECK_VALIDATION_ERROR)
+			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No services specified in the deployment policy %v.", pPolicy.Header.Name)), COMPCHECK_VALIDATION_ERROR)
 		}
 		return bPolicy, pPolicy, nil
 	} else {
-		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither business policy nor business policy id is specified.")), COMPCHECK_INPUT_ERROR)
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither deployment policy nor deployment policy id is specified.")), COMPCHECK_INPUT_ERROR)
 	}
 }
 
@@ -448,21 +448,21 @@ func GetBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpI
 
 	// check input
 	if bpId == "" {
-		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Business policy id is empty.")), COMPCHECK_INPUT_ERROR)
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy id is empty.")), COMPCHECK_INPUT_ERROR)
 	} else {
 		bpOrg := exchange.GetOrg(bpId)
 		if bpOrg == "" {
-			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Organization is not specified in the business policy id: %v.", bpId)), COMPCHECK_INPUT_ERROR)
+			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Organization is not specified in the deployment policy id: %v.", bpId)), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
 	// get poicy from the exchange
 	exchPols, err := getBusinessPolicies(exchange.GetOrg(bpId), exchange.GetId(bpId))
 	if err != nil {
-		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to get business policy for %v, %v", bpId, err)), COMPCHECK_EXCHANGE_ERROR)
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to get deployment policy for %v, %v", bpId, err)), COMPCHECK_EXCHANGE_ERROR)
 	}
 	if exchPols == nil || len(exchPols) == 0 {
-		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No business policy found for this id %v.", bpId)), COMPCHECK_INPUT_ERROR)
+		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No deployment policy found for this id %v.", bpId)), COMPCHECK_INPUT_ERROR)
 	}
 
 	// convert the business policy to internal policy format
@@ -472,7 +472,7 @@ func GetBusinessPolicy(getBusinessPolicies exchange.BusinessPoliciesHandler, bpI
 		if convert {
 			pPolicy, err := bPol.GenPolicyFromBusinessPolicy(polId)
 			if err != nil {
-				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert business policy %v to internal policy format: %v", bpId, err)), COMPCHECK_CONVERSION_ERROR)
+				return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to convert deployment policy %v to internal policy format: %v", bpId, err)), COMPCHECK_CONVERSION_ERROR)
 			}
 			return &bPol, pPolicy, nil
 		} else {
@@ -598,14 +598,14 @@ func MergeFullServicePolicyToBusinessPolicy(businessPolicy *policy.Policy, servi
 	}
 
 	if businessPolicy == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The given business policy should not be null.")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The given deployment policy should not be null.")), COMPCHECK_INPUT_ERROR)
 	}
 	if servicePolicy == nil {
 		return businessPolicy, nil
 	}
 
 	if pPolicy, err := policy.MergePolicyWithExternalPolicy(businessPolicy, servicePolicy); err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error merging business policy with service policy. %v", err)), COMPCHECK_MERGING_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error merging deployment policy with service policy. %v", err)), COMPCHECK_MERGING_ERROR)
 	} else {
 		return pPolicy, nil
 	}
@@ -621,7 +621,7 @@ func MergeServicePolicyToBusinessPolicy(getServiceResolvedDef exchange.ServiceDe
 	}
 
 	if businessPol == nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The business policy should not be null.")), COMPCHECK_INPUT_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The deployment policy should not be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
 	// add built-in service properties to the service policy
@@ -643,7 +643,7 @@ func MergeServicePolicyToBusinessPolicy(getServiceResolvedDef exchange.ServiceDe
 		}
 		svcPriv := svcPrivProp.Value.(bool)
 		if svcPriv && !declPriv {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Business policy %s cannot have %s=true when referring to a service that requires privilege to run.", businessPol.Header, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy %s cannot have %s=true when referring to a service that requires privilege to run.", businessPol.Header, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_INPUT_ERROR)
 		}
 	}
 	//merge service policy

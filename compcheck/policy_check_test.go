@@ -76,7 +76,7 @@ func Test_processBusinessPolicy(t *testing.T) {
 	// test no id, no pol
 	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler, "", nil, true, nil); err == nil {
 		t.Errorf("processBusinessPolicy should have returned error but not")
-	} else if !strings.Contains(err.Error(), "Neither business policy nor business policy id is specified.") {
+	} else if !strings.Contains(err.Error(), "Neither deployment policy nor deployment policy id is specified.") {
 		t.Errorf("processBusinessPolicy returned wrong error message: %v", err)
 	} else if bPolicy != nil {
 		t.Errorf("processBusinessPolicy have returned nul business policy but got: %v", bPolicy)
@@ -85,7 +85,7 @@ func Test_processBusinessPolicy(t *testing.T) {
 	}
 	if bPolicy, pPolicy, err := processBusinessPolicy(bHandler, "", nil, false, nil); err == nil {
 		t.Errorf("processBusinessPolicy should have returned error but not")
-	} else if !strings.Contains(err.Error(), "Neither business policy nor business policy id is specified.") {
+	} else if !strings.Contains(err.Error(), "Neither deployment policy nor deployment policy id is specified.") {
 		t.Errorf("processBusinessPolicy returned wrong error message: %v", err)
 	} else if bPolicy != nil {
 		t.Errorf("processBusinessPolicy have returned nul business policy but got: %v", bPolicy)
@@ -574,8 +574,8 @@ func Test_policyCompatible_Error(t *testing.T) {
 		getSelectedServicesHandler(nil), getServiceHandler(), getServiceDefResolverHandler(),
 		&input, true, msgPrinter); err == nil {
 		t.Errorf("policyCompatible should not have returned nil")
-	} else if !strings.Contains(err.Error(), "Unable to get business policy") {
-		t.Errorf("policyCompatible should have returned 'Unable to get business policy' error but got: %v", err)
+	} else if !strings.Contains(err.Error(), "Unable to get deployment policy") {
+		t.Errorf("policyCompatible should have returned 'Unable to get deployment policy' error but got: %v", err)
 	}
 
 	// error getting service policy from the exchange
@@ -767,8 +767,8 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 	}
 	if _, _, _, _, err := CheckPolicyCompatiblility(intNPol, nil, mergedSPol, "arm64", msgPrinter); err == nil {
 		t.Errorf("CheckPolicyCompatiblility should not have returned nil error")
-	} else if err.Error() != "Business policy cannot be null." {
-		t.Errorf("CheckPolicyCompatiblility should return 'Business policy cannot be null.' error but got: %v", err)
+	} else if err.Error() != "Deployment policy cannot be null." {
+		t.Errorf("CheckPolicyCompatiblility should return 'Deployment policy cannot be null.' error but got: %v", err)
 	}
 	if _, _, _, _, err := CheckPolicyCompatiblility(intNPol, intBPol, nil, "arm64", msgPrinter); err == nil {
 		t.Errorf("CheckPolicyCompatiblility should not have returned nil error")

@@ -190,7 +190,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 	} else {
 		if input.PatternId == "" && input.Pattern == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
 		}
 	}
 
@@ -218,9 +218,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	}
 	if serviceRefs == nil || len(serviceRefs) == 0 {
 		if resources.NodeArch != "" {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions with architecture %v specified in the business policy or pattern.", resources.NodeArch)), COMPCHECK_VALIDATION_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions with architecture %v specified in the deployment policy or pattern.", resources.NodeArch)), COMPCHECK_VALIDATION_ERROR)
 		} else {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions specified in the business policy or pattern.")), COMPCHECK_VALIDATION_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No service versions specified in the deployment policy or pattern.")), COMPCHECK_VALIDATION_ERROR)
 		}
 	}
 
@@ -357,9 +357,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		return NewCompCheckOutput(overall_compatible, messages, resources), nil
 	} else {
 		if resources.NodeArch != "" {
-			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the business policy or pattern.", resources.NodeArch))
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the deployment policy or pattern.", resources.NodeArch))
 		} else {
-			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the business policy or pattern."))
+			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("No services found in the deployment policy or pattern."))
 		}
 
 		return NewCompCheckOutput(false, messages, resources), nil
@@ -572,17 +572,17 @@ func validateServiceWithBPolicy(service common.AbstractServiceFile, bPolicy *bus
 
 	// make sure url is same
 	if service.GetURL() != bPolicy.Service.Name {
-		return fmt.Errorf(msgPrinter.Sprintf("Service URL %v does not match the service URL %v specified in the business policy.", service.GetURL(), bPolicy.Service.Name))
+		return fmt.Errorf(msgPrinter.Sprintf("Service URL %v does not match the service URL %v specified in the deployment policy.", service.GetURL(), bPolicy.Service.Name))
 	}
 
 	if service.GetOrg() != bPolicy.Service.Org {
-		return fmt.Errorf(msgPrinter.Sprintf("Service Org %v does not match the service org %v specified in the business policy.", service.GetOrg(), bPolicy.Service.Org))
+		return fmt.Errorf(msgPrinter.Sprintf("Service Org %v does not match the service org %v specified in the deployment policy.", service.GetOrg(), bPolicy.Service.Org))
 	}
 
 	// make sure arch is same
 	if bPolicy.Service.Arch != "" && bPolicy.Service.Arch != "*" {
 		if service.GetArch() != bPolicy.Service.Arch {
-			return fmt.Errorf(msgPrinter.Sprintf("Service architecure %v does not match the service architectrure %v specified in the business policy.", service.GetArch(), bPolicy.Service.Arch))
+			return fmt.Errorf(msgPrinter.Sprintf("Service architecure %v does not match the service architectrure %v specified in the deployment policy.", service.GetArch(), bPolicy.Service.Arch))
 		}
 	}
 
@@ -597,7 +597,7 @@ func validateServiceWithBPolicy(service common.AbstractServiceFile, bPolicy *bus
 		}
 
 		if !found {
-			return fmt.Errorf(msgPrinter.Sprintf("Service version %v does not match any service versions specified in the business policy.", service.GetVersion()))
+			return fmt.Errorf(msgPrinter.Sprintf("Service version %v does not match any service versions specified in the deployment policy.", service.GetVersion()))
 		}
 	}
 	return nil
