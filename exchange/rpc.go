@@ -88,7 +88,7 @@ type SearchResultDevice struct {
 	Name        string         `json:"name"`
 	Services    []Microservice `json:"services"`
 	MsgEndPoint string         `json:"msgEndPoint"`
-	PublicKey   []byte         `json:"publicKey"`
+	PublicKey   string         `json:"publicKey"`
 }
 
 func (d SearchResultDevice) String() string {
@@ -139,7 +139,7 @@ type Device struct {
 	MsgEndPoint        string             `json:"msgEndPoint"`
 	SoftwareVersions   SoftwareVersion    `json:"softwareVersions"`
 	LastHeartbeat      string             `json:"lastHeartbeat"`
-	PublicKey          []byte             `json:"publicKey"`
+	PublicKey          string             `json:"publicKey"`
 	Arch               string             `json:"arch"`
 	UserInput          []policy.UserInput `json:"userInput"`
 	HeartbeatIntv      HeartbeatIntervals `json:"heartbeatIntervals,omitempty"`

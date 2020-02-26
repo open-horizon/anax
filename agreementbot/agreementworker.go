@@ -2,6 +2,7 @@ package agreementbot
 
 import (
 	"encoding/json"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
@@ -556,8 +557,12 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcIds, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
+		// Decoding device publicKey to []byte
+	} else if publicKeyBytes, err := base64.StdEncoding.DecodeString(wi.Device.PublicKey); err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error decoding device publicKey for node: %s, %v", wi.Device.Id, err)))
+
 		// Create message target for protocol message
-	} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, wi.Device.PublicKey, wi.Device.MsgEndPoint); err != nil {
+	} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, publicKeyBytes, wi.Device.MsgEndPoint); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 
 		// Initiate the protocol
