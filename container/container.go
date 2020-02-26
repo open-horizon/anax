@@ -706,15 +706,17 @@ func serviceStart(client *docker.Client,
 			return fail(container, serviceName, err)
 		}
 	}
-	for _, cfg := range sharedEndpoints {
-		glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
-		err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
-			Container:      container.ID,
-			EndpointConfig: cfg,
-			Force:          true,
-		})
-		if err != nil {
-			return fail(container, serviceName, err)
+	if serviceConfig.HostConfig.NetworkMode != "host" {
+		for _, cfg := range sharedEndpoints {
+			glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
+			err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
+				Container:      container.ID,
+				EndpointConfig: cfg,
+				Force:          true,
+			})
+			if err != nil {
+				return fail(container, serviceName, err)
+			}
 		}
 	}
 
