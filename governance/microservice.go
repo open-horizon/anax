@@ -802,7 +802,7 @@ func (w *GovernanceWorker) handleMicroserviceUpgrade(msdef_id string) {
 
 				// rollback the microservice to lower version
 				eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-					persistence.NewMessageMeta(EL_GOV_START_DOWNGRADE_BECAUSW_UPGRADE_FAILED, new_msdef.Org, new_msdef.SpecRef, new_msdef.Version),
+					persistence.NewMessageMeta(EL_GOV_START_DOWNGRADE_BECAUSE_UPGRADE_FAILED, new_msdef.Org, new_msdef.SpecRef, new_msdef.Version),
 					persistence.EC_START_DOWNGRADE_SERVICE,
 					"", new_msdef.SpecRef, new_msdef.Org, new_msdef.Version, new_msdef.Arch, []string{})
 				if err := w.RollbackMicroservice(new_msdef); err != nil {
