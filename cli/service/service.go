@@ -85,37 +85,46 @@ func List() {
 
 func Log(serviceName string, tailing bool) {
 	msgPrinter := i18n.GetMessagePrinter()
-	refUrl := serviceName
-	// Get the list of running services from the agent.
-	type AllServices struct {
-		Instances map[string][]api.MicroserviceInstanceOutput `json:"instances"` // The service instances that are running
-	}
-	var runningServices AllServices
-	cliutils.HorizonGet("service", []int{200}, &runningServices, false)
-	// Search the list of services to find one that matches the input service name. The service's instance Id
-	// is what appears in the syslog, so we need to save that.
-	serviceFound := false
-	var instanceId string
-	for _, serviceInstance := range runningServices.Instances["active"] {
-		if strings.Contains(serviceInstance.SpecRef, refUrl) {
-			instanceId = serviceInstance.InstanceId
-			serviceFound = true
-			msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
-			msgPrinter.Println()
-			if tailing {
-				msgPrinter.Printf("Use ctrl-C to terminate this command.")
-				msgPrinter.Println()
-			}
-			break
-		}
-	}
-	if !serviceFound {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
-	}
-	if runtime.GOOS == "darwin" {
-		LogMac(instanceId, tailing)
+
+	// if node is not registered
+	horDevice := api.HorizonDevice{}
+	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+	if horDevice.Org == nil || *horDevice.Org == "" {
+		msgPrinter.Printf("The node is not registered.")
+		msgPrinter.Println()
 	} else {
-		LogLinux(instanceId, tailing)
+		refUrl := serviceName
+		// Get the list of running services from the agent.
+		type AllServices struct {
+			Instances map[string][]api.MicroserviceInstanceOutput `json:"instances"` // The service instances that are running
+		}
+		var runningServices AllServices
+		cliutils.HorizonGet("service", []int{200}, &runningServices, false)
+		// Search the list of services to find one that matches the input service name. The service's instance Id
+		// is what appears in the syslog, so we need to save that.
+		serviceFound := false
+		var instanceId string
+		for _, serviceInstance := range runningServices.Instances["active"] {
+			if strings.Contains(serviceInstance.SpecRef, refUrl) {
+				instanceId = serviceInstance.InstanceId
+				serviceFound = true
+				msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
+				msgPrinter.Println()
+				if tailing {
+					msgPrinter.Printf("Use ctrl-C to terminate this command.")
+					msgPrinter.Println()
+				}
+				break
+			}
+		}
+		if !serviceFound {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
+		}
+		if runtime.GOOS == "darwin" {
+			LogMac(instanceId, tailing)
+		} else {
+			LogLinux(instanceId, tailing)
+		}
 	}
 	return
 }
