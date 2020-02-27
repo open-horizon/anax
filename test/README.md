@@ -21,7 +21,7 @@ And depending on which PATTERN is chosen, a series of workload containers
 - Install make and jq
   - `apt update && apt install -y make jq`
 - Install golang version 1.10.* ...
-  - `curl https://dl.google.com/go/go1.11.4.linux-amd64.tar.gz | tar -xzf- -C /usr/local/`
+  - `curl https://dl.google.com/go/go1.14.linux-amd64.tar.gz | tar -xzf- -C /usr/local/`
   - `export PATH=$PATH:/usr/local/go/bin` (and modify your ~/.bashrc file with the same)
 - If you are developing/making changes to anax, install govendor (you can skip this step if you're just building/running tests)
   - `export GOPATH=</your/go/path>`
