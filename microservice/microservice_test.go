@@ -313,7 +313,7 @@ func getVariableDeviceHandler(mss []exchange.Microservice, ss []exchange.Microse
 			MsgEndPoint:        "",
 			SoftwareVersions:   nil,
 			LastHeartbeat:      "now",
-			PublicKey:          nil,
+			PublicKey:          "",
 		}
 		return &d, nil
 	}
