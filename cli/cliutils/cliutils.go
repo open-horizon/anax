@@ -657,12 +657,12 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 
 // HorizonPutPost runs a PUT or POST to the anax api to create or update a resource.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}) (httpCode int, resp_body string) {
+func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body interface{}, exitOnErr bool) (httpCode int, resp_body string, err error) {
 	url := GetHorizonUrlBase() + "/" + urlSuffix
 	apiMsg := method + " " + url
 	Verbose(apiMsg)
 	if IsDryRun() {
-		return 201, ""
+		return 201, "", nil
 	}
 	httpClient := GetHTTPClient(0)
 
@@ -684,16 +684,20 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	default:
 		var err error
 		jsonBytes, err = json.Marshal(body)
-		if err != nil {
+		if exitOnErr && err != nil {
 			Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal body for %s: %v", apiMsg, err))
+		} else if err != nil {
+			return 0, "", err
 		}
 	}
 	requestBody := bytes.NewBuffer(jsonBytes)
 
 	// Create the request and run it
 	req, err := http.NewRequest(method, url, requestBody)
-	if err != nil {
+	if exitOnErr && err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
+	} else if err != nil {
+		return 0, "", err
 	}
 	req.Header.Add("Accept", "application/json")
 	if bodyIsBytes {
@@ -702,8 +706,10 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 		req.Header.Add("Content-Type", "application/json")
 	}
 	resp, err := httpClient.Do(req)
-	if err != nil {
+	if err != nil && exitOnErr {
 		printHorizonRestError(apiMsg, err)
+	} else if err != nil {
+		return 0, "", err
 	}
 
 	// Process the response
@@ -713,7 +719,11 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 
 	resp_body = GetRespBodyAsString(resp.Body)
 	if !isGoodCode(httpCode, goodHttpCodes) {
-		Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body))
+		if exitOnErr {
+			Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body))
+		} else {
+			return 0, "", fmt.Errorf(msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, resp_body))
+		}
 	}
 	return
 }

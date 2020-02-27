@@ -46,7 +46,7 @@ func Update(fileName string) {
 		msgPrinter.Println()
 	}
 
-	cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep)
+	cliutils.HorizonPutPost(http.MethodPost, "node/policy", []int{201, 200}, ep, true)
 
 	msgPrinter.Printf("Updating Horizon node policy and re-evaluating all agreements based on this node policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
@@ -54,7 +54,7 @@ func Update(fileName string) {
 }
 
 func Patch(patch string) {
-	cliutils.HorizonPutPost(http.MethodPatch, "node/policy", []int{201, 200}, patch)
+	cliutils.HorizonPutPost(http.MethodPatch, "node/policy", []int{201, 200}, patch, true)
 
 	msgPrinter := i18n.GetMessagePrinter()
 	msgPrinter.Printf("Horizon node policy updated.")
