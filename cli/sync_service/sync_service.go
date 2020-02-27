@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -25,6 +26,7 @@ const NETWORK_NAME = "hzn-dev"
 const MONGO_NAME = "mongo"
 const CSS_NAME = "css-api"
 const ESS_NAME = "ess-api"
+const CSS_INITIAL_WAITING_TIME = 10
 
 func Start(cw *container.ContainerWorker, org string, configFiles []string, configType string) error {
 
@@ -46,6 +48,38 @@ func Start(cw *container.ContainerWorker, org string, configFiles []string, conf
 
 	// Wait a few seconds to give the CSS a chance to initialize itself.
 	time.Sleep(time.Second * 2)
+
+	// Get this host's IP address because that's where the CSS is listening.
+        hostIP := os.Getenv("HZN_DEV_HOST_IP")
+        if hostIP == "" {
+                hostIP = "localhost"
+        }
+
+	// Call CSS /status API to check if CSS is ready (retry for 10 seconds)
+	if err := checkCSSStatus(org, CSS_INITIAL_WAITING_TIME); err != nil {
+		cliutils.Verbose(msgPrinter.Sprintf("Error checking CSS status: %v", err))
+
+		// Stop and remove the CSS container.
+		if err := stopContainer(dc, makeLabelName(CSS_NAME)); err != nil {
+			return errors.New(msgPrinter.Sprintf("Unable to stop %v, error %v, please stop manually, Remove the css image and try 'hzn dev service start' again", makeLabelName(CSS_NAME), err))
+		}
+
+		// remove the image
+		if err := removeImage(getFSSImageName(), getFSSImageTagName(), dc); err != nil {
+			return errors.New(msgPrinter.Sprintf("Unable to remove CSS image, err: %v", err))
+		}
+
+		// pull CSS image again try again and start CSS container
+		if err := startCSS(dc, network); err != nil {
+			return errors.New(msgPrinter.Sprintf("Unable to start CSS with new pulled image, error %v", err))
+		}
+
+		// Wait a few seconds to give the CSS a chance to initialize itself.
+		time.Sleep(time.Second * 2)
+		if err := checkCSSStatus(org, CSS_INITIAL_WAITING_TIME); err != nil {
+			return errors.New(msgPrinter.Sprintf("CSS is not running correctly with new pulled image, exit."))
+		}
+	}
 
 	// Load the input file objects into the CSS
 	if err := loadCSS(org, configType, configFiles); err != nil {
@@ -126,6 +160,24 @@ func getImage(imageName string, tagName string, dc *docker.Client) error {
 		}
 	}
 
+	return nil
+}
+
+// remove image. Ignore error if image does not exist
+func removeImage(imageName string, tagName string, dc *docker.Client) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	name := fmt.Sprintf("%v:%v", imageName, tagName)
+	cliutils.Verbose(msgPrinter.Sprintf("Removing docker image %v.", name))
+	if err := dc.RemoveImage(name); err != nil {
+		cliutils.Verbose(msgPrinter.Sprintf("RemoveImageErr: %v", err))
+		if err.Error() != fmt.Sprintf("Error: No such image: %s", name) {
+			return errors.New(msgPrinter.Sprintf("unable to remove CSS image: %s, please manually remove it 'docker rmi %s'", name, name))
+		}
+	} else {
+		cliutils.Verbose(msgPrinter.Sprintf("Docker image %v removed.", name))
+	}
 	return nil
 }
 
@@ -529,4 +581,58 @@ func makeLabel(name string) map[string]string {
 	lm := make(map[string]string)
 	lm[makeLabelName(name)] = ""
 	return lm
+}
+
+func checkCSSStatus(org string, timeout int) error {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Get this host's IP address because that's where the CSS is listening.
+	hostIP := os.Getenv("HZN_DEV_HOST_IP")
+	if hostIP == "" {
+		hostIP = "localhost"
+	}
+
+	// Form the CSS URL
+	url := fmt.Sprintf("http://%v:%v/api/v1/health", hostIP, getCSSPort())
+	apiMsg := http.MethodGet + " " + url
+	cliutils.Verbose(apiMsg)
+
+	httpClient := cliutils.GetHTTPClient(0)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return errors.New(msgPrinter.Sprintf("unable to create get CSS status request, error %v", err))
+	}
+	req.SetBasicAuth(org+"/hzndev", "password")
+
+	c := make(chan string, 1)
+
+	go func() {
+		resp, err := httpClient.Do(req)
+		if err != nil {
+			c <- err.Error()
+		}
+		respCode := 0
+		if resp != nil {
+			respCode = resp.StatusCode
+		}
+		c <- fmt.Sprintf("%d", respCode)
+	}()
+
+	for {
+		select {
+		case httpCodeString := <-c:
+			httpCode, err := strconv.Atoi(httpCodeString)
+			cliutils.Verbose(msgPrinter.Sprintf("Received HTTP code: %d", httpCode))
+
+			if err == nil {
+				if httpCode == 200 {
+					return nil
+				}
+			}
+		case <-time.After(time.Duration(timeout) * time.Second):
+			return fmt.Errorf(msgPrinter.Sprintf("CSS status is not ready after waiting %d seconds, timeout", timeout))
+		}
+
+	}
+
 }
