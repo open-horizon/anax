@@ -303,6 +303,12 @@
 			"revisionTime": "2018-10-24T03:25:40Z"
 		},
 		{
+			"checksumSHA1": "v9Vp0GrNfvfWzhlLz18oqnu959E=",
+			"path": "github.com/docker/docker/pkg/jsonmessage",
+			"revision": "bc1c0c7a8a9c183fdb58e915fdd7370cea8c004a",
+			"revisionTime": "2020-02-27T19:25:31Z"
+		},
+		{
 			"checksumSHA1": "EXiIm2xIL7Ds+YsQUx8Z3eUYPtI=",
 			"path": "github.com/docker/docker/pkg/longpath",
 			"revision": "785fe99bdb7c004acd57d5d65d57ceb256d87ef1",
@@ -375,6 +381,18 @@
 			"revisionTime": "2018-10-24T03:25:40Z"
 		},
 		{
+			"checksumSHA1": "XRmmAW8XT4s/T5aWgyJ/zoZ6UDY=",
+			"path": "github.com/docker/docker/pkg/term",
+			"revision": "bc1c0c7a8a9c183fdb58e915fdd7370cea8c004a",
+			"revisionTime": "2020-02-27T19:25:31Z"
+		},
+		{
+			"checksumSHA1": "TcF/eOWcG/6Knb6pbJgcwLoIwaw=",
+			"path": "github.com/docker/docker/pkg/term/windows",
+			"revision": "bc1c0c7a8a9c183fdb58e915fdd7370cea8c004a",
+			"revisionTime": "2020-02-27T19:25:31Z"
+		},
+		{
 			"checksumSHA1": "o5HARVNMp3IXHA9mbhGB++5HBMY=",
 			"path": "github.com/docker/docker/pkg/useragent",
 			"revision": "785fe99bdb7c004acd57d5d65d57ceb256d87ef1",
@@ -435,28 +453,10 @@
 			"revisionTime": "2019-05-28T20:21:53Z"
 		},
 		{
-			"checksumSHA1": "IEqgM4mo76X+D7FsZsModdbfFaY=",
+			"checksumSHA1": "OJU6AQm3tW/Oy6XPY7h5QtI/+dE=",
 			"path": "github.com/fsouza/go-dockerclient",
-			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
-			"revisionTime": "2018-10-16T22:24:07Z"
-		},
-		{
-			"checksumSHA1": "YJ7WR4AVtD2ykYJr+1mTtazkma0=",
-			"path": "github.com/fsouza/go-dockerclient/internal/archive",
-			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
-			"revisionTime": "2018-10-16T22:24:07Z"
-		},
-		{
-			"checksumSHA1": "l+Fkt3j/lhaae3/4c9mPwFfEOMU=",
-			"path": "github.com/fsouza/go-dockerclient/internal/jsonmessage",
-			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
-			"revisionTime": "2018-10-16T22:24:07Z"
-		},
-		{
-			"checksumSHA1": "vdjeVhnepWyw3H4g9pVTVACDfV0=",
-			"path": "github.com/fsouza/go-dockerclient/internal/term",
-			"revision": "623c4c4b51ec7507502197470dbfbcf77ae877b3",
-			"revisionTime": "2018-10-16T22:24:07Z"
+			"revision": "6b08daccc3a365d66114466bef85a2da20b9c05b",
+			"revisionTime": "2020-02-25T19:57:30Z"
 		},
 		{
 			"checksumSHA1": "O1v7ZY6psIKMtE2Ma/hp1myzM2o=",
@@ -539,6 +539,12 @@
 			"path": "github.com/mattn/go-shellwords",
 			"revision": "3c0603ff9671145648171317c30371d805656003",
 			"revisionTime": "2018-10-23T06:56:52Z"
+		},
+		{
+			"checksumSHA1": "OfTtsGbmK3BBWGvGfXJ1BV3fzmY=",
+			"path": "github.com/morikuni/aec",
+			"revision": "39771216ff4c63d11f5e604076f9c45e8be1067b",
+			"revisionTime": "2017-01-13T03:34:06Z"
 		},
 		{
 			"checksumSHA1": "ZI/y5uYPRv/fRAIoJWeyBkUnwzQ=",
