@@ -152,11 +152,11 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 	if businessPolId != "" || businessPolFile != "" {
 		useBPol = true
 		if patternId != "" || patternFile != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify either bussiness policy or pattern."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify either deployment policy or pattern."))
 		}
 	} else {
 		if patternId == "" && patternFile == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither deployment policy nor pattern is specified."))
 		}
 	}
 
@@ -221,7 +221,7 @@ func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolF
 	orgToUse := org
 	if useNodeId || useBPolId || useSPolId || usePatternId || useSId {
 		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, business policy and service policy."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy and service policy."))
 		} else {
 			// get the org from credToUse
 			if org == "" {
@@ -301,7 +301,7 @@ func getBusinessPolicy(defaultOrg string, credToUse string, businessPolId string
 		// get business policy from file
 		newBytes := cliconfig.ReadJsonFileWithLocalConfig(businessPolFile)
 		if err := json.Unmarshal(newBytes, &bp); err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal business policy json input file %s: %v", businessPolFile, err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal deployment policy json input file %s: %v", businessPolFile, err))
 		}
 	} else {
 		// get business policy from the exchange
@@ -310,7 +310,7 @@ func getBusinessPolicy(defaultOrg string, credToUse string, businessPolId string
 
 		httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(polId), cliutils.OrgAndCreds(defaultOrg, credToUse), []int{200, 404}, &policyList)
 		if httpCode == 404 || policyList.BusinessPolicy == nil || len(policyList.BusinessPolicy) == 0 {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Business policy not found for %v/%v", polOrg, polId))
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Deployment policy not found for %v/%v", polOrg, polId))
 		} else {
 			for _, exchPol := range policyList.BusinessPolicy {
 				bp = exchPol.GetBusinessPolicy()

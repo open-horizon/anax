@@ -195,7 +195,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 	} else {
 		if ccInput.PatternId == "" && ccInput.Pattern == nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither deployment policy nor pattern is specified.")), COMPCHECK_INPUT_ERROR)
 		}
 	}
 

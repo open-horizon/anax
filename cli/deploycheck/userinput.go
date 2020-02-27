@@ -173,11 +173,11 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 	if businessPolId != "" || businessPolFile != "" {
 		useBPol = true
 		if patternId != "" || patternFile != "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify either bussiness policy or pattern."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify either deployment policy or pattern."))
 		}
 	} else {
 		if patternId == "" && patternFile == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither bussiness policy nor pattern is specified."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither deployment policy nor pattern is specified."))
 		}
 	}
 
@@ -210,7 +210,7 @@ func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string
 	orgToUse := org
 	if useNodeId || useBPolId || usePatternId || useSId {
 		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, business policy and service policy."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy and service policy."))
 		} else {
 			// get the org from credToUse
 			if org == "" {
@@ -362,7 +362,7 @@ func checkServiceDefsForBPol(bp *businesspolicy.BusinessPolicy, serviceDefs []co
 				}
 			}
 			if !found {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the business policy requirement.", sdef.Org, sdef.URL, sdef.Arch, sdef.Version, svcDefFiles[i]))
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the deployment policy requirement.", sdef.Org, sdef.URL, sdef.Arch, sdef.Version, svcDefFiles[i]))
 			}
 		}
 	}

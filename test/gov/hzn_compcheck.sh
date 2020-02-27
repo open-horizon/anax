@@ -22,7 +22,7 @@ function results {
   if [ ! -z "$2" ]; then
     res=$(echo "$1" | grep "$2")
     if [ $? -ne 0 ]; then
-      echo -e "Error: the response should have contained \"$2\", but not. "
+      echo -e "Error: the response should have contained \"$2\", but did not. "
       exit 2
     fi
   fi
@@ -31,7 +31,7 @@ function results {
   if [ ! -z "$3" ]; then
     res=$(echo "$1" | grep "$3")
     if [ $? -ne 0 ]; then
-      echo -e "Error: the response should have contained \"$3\", but not. "
+      echo -e "Error: the response should have contained \"$3\", but did not. "
       exit 2
     fi
   fi
@@ -118,7 +118,7 @@ echo -e "\n${PREFIX} test input: wrong business policy id"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstestxxx"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "Business policy not found for"
+results "$RES" "Deployment policy not found for"
 
 echo -e "\n${PREFIX} test input: node org and business org missing, they pick up org from the user cred."
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n an12345 -b bp_gpstest"
@@ -148,13 +148,13 @@ echo -e "\n${PREFIX} test input: node policy, business policy and service policy
 CMD="hzn deploycheck policy -a arm64 --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-check_comp_results "$RES" "false" "Service with 'arch' arm64 cannot be found in the business policy"
+check_comp_results "$RES" "false" "Service with 'arch' arm64 cannot be found in the deployment policy"
 
 echo -e "\n${PREFIX} test input: node id, business policy. wrong arch"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n an12345 -B input_files/compcheck/business_pol_gpstest2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-check_comp_results "$RES" "false" "Service with 'arch' amd64 cannot be found in the business policy"
+check_comp_results "$RES" "false" "Service with 'arch' amd64 cannot be found in the deployment policy"
 
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. not compatible"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy2.json"
@@ -231,7 +231,7 @@ echo -e "\n${PREFIX} test input: wrong business policy id"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstestxxx"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "Business policy not found for"
+results "$RES" "Deployment policy not found for"
 
 echo -e "\n${PREFIX} test input: wrong pattern id"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -p e2edev@somecomp.com/slocxxx"
@@ -285,19 +285,19 @@ echo -e "\n${PREFIX} test input: node policy, business policy and service policy
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -a arm64 --node-ui input_files/compcheck/node_ui.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "No service versions with architecture arm64 specified in the business policy or pattern"
+results "$RES" "No service versions with architecture arm64 specified in the deployment policy or pattern"
 
 echo -e "\n${PREFIX} test input: node user input, pattern and services. wrong arch"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -a arm64 --node-ui input_files/compcheck/node_ui.json -P input_files/compcheck/pattern_sloc.json --service input_files/compcheck/service_location.json --service input_files/compcheck/service_locgps.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "No service versions with architecture arm64 specified in the business policy or pattern"
+results "$RES" "No service versions with architecture arm64 specified in the deployment policy or pattern"
 
 echo -e "\n${PREFIX} test input: node id, business policy. wrong arch"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -n an12345 -B input_files/compcheck/business_pol_gpstest2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "No service versions with architecture amd64 specified in the business policy or pattern"
+results "$RES" "No service versions with architecture amd64 specified in the deployment policy or pattern"
 
 echo -e "\n${PREFIX} test input: node user input, business policy and service. not compatible"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json"

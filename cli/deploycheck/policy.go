@@ -154,7 +154,7 @@ func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, n
 	orgToUse := org
 	if useNodeId || useBPolId || useSPolId {
 		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, business policy and service policy."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy and service policy."))
 		} else {
 			// get the org from credToUse
 			if org == "" {

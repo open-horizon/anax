@@ -42,7 +42,7 @@ function results {
   if [ ! -z "$3" ]; then
     res=$(echo "$1" | grep "$3")
     if [ $? -ne 0 ]; then
-      echo -e "Error: the response should have contained \"$3\", but not. "
+      echo -e "Error: the response should have contained \"$3\", but did not. "
       exit 2
     fi
   fi
@@ -153,7 +153,7 @@ EOF
     "business_policy_id": "userdev/bp_gpstestxxx"
   }
 EOF
-  run_and_check "$api" "$comp_input" "400" "No business policy found"
+  run_and_check "$api" "$comp_input" "400" "No deployment policy found"
 
   echo -e "\n${PREFIX} test /${api}. Input: wrong org id"
   read -d '' comp_input <<EOF
