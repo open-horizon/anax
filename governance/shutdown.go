@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
@@ -136,6 +137,12 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
+	// remove the docker volumes that are created by anax
+	if err := container.DeleteLeftoverDockerVolumes(w.db, w.Config); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
 	// Tell the system that node quiesce is complete without error. The API worker might be waiting for this message.
 	// All the workers in the system will start quiescing as a result of this message.
 	w.Messages() <- events.NewNodeShutdownCompleteMessage(events.UNCONFIGURE_COMPLETE, errorMessage)
@@ -195,6 +202,12 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 
 	// change the device node pattern
 	if err := w.updateHorizonDevice(dev, new_pattern); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
+	// remove the docker volumes that are created by anax
+	if err := container.DeleteLeftoverDockerVolumes(w.db, w.Config); err != nil {
 		w.completedWithError(logString(err.Error()))
 		return
 	}
