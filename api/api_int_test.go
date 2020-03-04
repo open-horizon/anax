@@ -1,12 +1,11 @@
 // +build integration
-// +build go1.9
+// +build go1.14
 
 package api
 
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -29,10 +28,6 @@ import (
 	"github.com/open-horizon/rsapss-tool/listkeys"
 	"github.com/stretchr/testify/assert"
 )
-
-func init() {
-	flag.Parse()
-}
 
 func handleResp(r *http.Response, expectedStatus int) ([]byte, error) {
 	if r.StatusCode != expectedStatus {

@@ -129,7 +129,7 @@ func UpdateConfigstate(cfg *Configstate,
 		for _, apiSpec := range *common_apispec_list {
 
 			// get the user input for this service
-			ui_merged, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
+			ui_merged, _, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
 			if err != nil {
 				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, apiSpec.Org, apiSpec.SpecRef, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err)), nil, nil
@@ -153,7 +153,7 @@ func UpdateConfigstate(cfg *Configstate,
 			}
 
 			// get the user input for this service
-			ui_merged, err := policy.FindUserInput(service.ServiceURL, service.ServiceOrg, "", service.ServiceArch, mergedUserInput)
+			ui_merged, _, err := policy.FindUserInput(service.ServiceURL, service.ServiceOrg, "", service.ServiceArch, mergedUserInput)
 			if err != nil {
 				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, service.ServiceOrg, service.ServiceURL, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", service.ServiceOrg, service.ServiceURL, err)), nil, nil
@@ -283,14 +283,14 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wV
 	if err != nil {
 		return false, fmt.Errorf(apiLogString(fmt.Sprintf("Failed get user input from local db. %v", err)))
 	}
-	if ui, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, nodeUserInput); err != nil {
+	if ui, _, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, nodeUserInput); err != nil {
 		return false, fmt.Errorf("Failed to find preferences for service %v/%v  from the local user input, error: %v", wOrg, wUrl, err)
 	} else if ui != nil {
 		return true, nil
 	}
 
 	// try to get the default from pattern
-	if ui, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, patternUserInput); err != nil {
+	if ui, _, err := policy.FindUserInput(wUrl, wOrg, wVersion, sd.Arch, patternUserInput); err != nil {
 		return false, fmt.Errorf("Failed to find preferences for service %v/%v  from the pattern userInput section, error: %v", wOrg, wUrl, err)
 	} else if ui != nil {
 		return true, nil
