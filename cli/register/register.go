@@ -442,9 +442,11 @@ func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
 
 	c := make(chan string, 1)
 	go func() {
-		httpCode, _, err := cliutils.HorizonPutPost(http.MethodPost, "node", []int{}, nodeDevice, false)
+		httpCode, body, err := cliutils.HorizonPutPost(http.MethodPost, "node", []int{}, nodeDevice, false)
 		if err != nil {
 			c <- err.Error()
+		} else if httpCode != 200 && httpCode != 201 && body != "" {
+			c <- msgPrinter.Sprintf("%v", body)
 		}
 		c <- fmt.Sprintf("%d", httpCode)
 	}()
@@ -458,10 +460,10 @@ func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
 			if httpCode, err := strconv.Atoi(httpReturn); err == nil {
 				if httpCode == cliutils.ANAX_ALREADY_CONFIGURED {
 					cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("this Horizon node is already registered or in the process of being registered. If you want to register it differently, run 'hzn unregister' first."))
-				} else if httpCode == 200 || httpCode == 201 {
-					return nil
+				} else if httpCode != 200 && httpCode != 201 {
+					return fmt.Errorf("Bad HTTP code %d returned from node.", httpCode)
 				} else {
-					return fmt.Errorf(msgPrinter.Sprintf("Bad error code %d from creating node locally.", httpCode))
+					return nil
 				}
 			} else {
 				return fmt.Errorf(httpReturn)
