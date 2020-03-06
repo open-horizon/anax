@@ -32,6 +32,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"runtime"
 )
 
 func main() {
@@ -56,6 +57,12 @@ func main() {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// the sample file direcory is different between Liunx and mac
+	sample_dir := "/usr/horizon/samples"
+	if runtime.GOOS == "darwin" {
+		sample_dir = "/Users/Shared/horizon-cli/samples"
+	}
 
 	// Command flags and args - see https://github.com/alecthomas/kingpin
 	app := kingpin.New("hzn", msgPrinter.Sprintf(`Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
@@ -201,7 +208,7 @@ Environment Variables:
 	exPattern := exPatternListCmd.Arg("pattern", msgPrinter.Sprintf("List just this one pattern. Use <org>/<pat> to specify a public pattern in another org, or <org>/ to list all of the public patterns in another org.")).String()
 	exPatternLong := exPatternListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the patterns, show the entire resource of each pattern, instead of just the name.")).Short('l').Bool()
 	exPatternPublishCmd := exPatternCmd.Command("publish", msgPrinter.Sprintf("Sign and create/update the pattern resource in the Horizon Exchange."))
-	exPatJsonFile := exPatternPublishCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See /usr/horizon/samples/pattern.json. Specify -f- to read from stdin.")).Short('f').Required().String()
+	exPatJsonFile := exPatternPublishCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the pattern in the Horizon exchange. See %v/pattern.json. Specify -f- to read from stdin.", sample_dir)).Short('f').Required().String()
 	exPatKeyFile := exPatternPublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the pattern. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.")).Short('k').ExistingFile()
 	exPatPubPubKeyFile := exPatternPublishCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of public key file (that corresponds to the private key) that should be stored with the pattern, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the pattern. The Horizon Agent needs to import the public key to verify the signature.")).Short('K').ExistingFile()
 	exPatName := exPatternPublishCmd.Flag("pattern-name", msgPrinter.Sprintf("The name to use for this pattern in the Horizon exchange. If not specified, will default to the base name of the file path specified in -f.")).Short('p').String()
@@ -230,7 +237,7 @@ Environment Variables:
 	exServiceListNodeIdTok := exServiceListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exServiceLong := exServiceListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the services, show the entire resource of each services, instead of just the name.")).Short('l').Bool()
 	exServicePublishCmd := exServiceCmd.Command("publish", msgPrinter.Sprintf("Sign and create/update the service resource in the Horizon Exchange."))
-	exSvcJsonFile := exServicePublishCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See /usr/horizon/samples/service.json. Specify -f- to read from stdin.")).Short('f').Required().String()
+	exSvcJsonFile := exServicePublishCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See %v/service.json. Specify -f- to read from stdin.", sample_dir)).Short('f').Required().String()
 	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.")).Short('k').ExistingFile()
 	exSvcPubPubKeyFile := exServicePublishCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of public key file (that corresponds to the private key) that should be stored with the service, to be used by the Horizon Agent to verify the signature. If both this and -k flags are not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If HZN_PUBLIC_KEY_FILE is not set, ~/.hzn/keys/service.public.pem is the default. If -k is specified and this flag is not specified, then no public key file will be stored with the service. The Horizon Agent needs to import the public key to verify the signature.")).Short('K').ExistingFile()
 	exSvcPubDontTouchImage := exServicePublishCmd.Flag("dont-change-image-tag", msgPrinter.Sprintf("The image paths in the deployment field have regular tags and should not be changed to sha256 digest values. The image will not get automatically uploaded to the repository. This should only be used during development when testing new versions often.")).Short('I').Bool()
@@ -311,7 +318,7 @@ Environment Variables:
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
 	email := registerCmd.Flag("email", msgPrinter.Sprintf("Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.")).Short('e').String()
-	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See /usr/horizon/samples/node_reg_input.json and /usr/horizon/samples/more-examples.json. Specify -f- to read from stdin.")).Short('f').String() // not using ExistingFile() because it can be - for stdin
+	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See %v/node_reg_input.json and %v/more-examples.json. Specify -f- to read from stdin.", sample_dir, sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
 
 	nodeOrgFlag := registerCmd.Flag("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('o').String()
 	patternFlag := registerCmd.Flag("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag. ")).Short('p').String()

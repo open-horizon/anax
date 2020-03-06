@@ -259,6 +259,7 @@ $(MAC_PKG): temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	@echo "Producing Mac pkg horizon-cli"
 	mkdir -p pkg/mac/build pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1 pkg/mac/horizon-cli/etc/horizon
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
+	cp -Rapv cli/samples pkg/mac/horizon-cli/
 	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
 	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
