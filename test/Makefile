@@ -21,7 +21,6 @@ HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | 
 
 TEST_VARS ?= NOLOOP=1 TEST_PATTERNS=sall
 # TEST_VARS ?= NOLOOP=1 NOCANCEL=1
-APPSTORE = $(shell echo $(TEST_VARS) | awk -F "APPSTORE=" '{print $$2}' | cut -c1)
 
 # msghub
 MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB_API_KEY)'
@@ -60,8 +59,8 @@ endif
 
 all: default
 default: build
-stop: appstore-stop clean
-build: version-check agbot-image exchange-db-image exchange-image minikube-setup css-mongo-db-image
+stop: clean
+build: version-check agbot-image exchange-db-image exchange-image css-mongo-db-image
 build-remote: version-check agbot-image
 run: test
 distclean: realclean
@@ -96,8 +95,6 @@ run-agbot: agbot-docker-prereqs test-network
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
 		-v ~/.docker:/home/agbotuser/.docker \
-		-v ~/.kube:/root/.kube \
-		-v ~/.minikube:$(HOME)/.minikube \
 		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
 		-v /var/wiotp-edge/persist/:/var/wiotp-edge/persist/ \
 		-v /tmp/ess-auth/:/tmp/ess-auth/:rw \
@@ -276,44 +273,17 @@ exchange-db-image:
 exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
-test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css appstore-start run-agbot
+test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
-test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg appstore-start run-agbot copy-cert
+test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg run-agbot copy-cert
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
 copy-cert:
 	cp css.crt $(AGBOT_TEMPFS)/certs/css.crt
 	cp agbotapi.crt $(AGBOT_TEMPFS)/certs/agbotapi.crt
-
-minikube-setup:
-	@echo "Setting up minikube"
-	if [ ! -f /usr/local/bin/kubectl ]; then \
-		touch minikube-setup-by-test; \
-		./scripts/setup_minikube.sh; \
-		./scripts/stop_minikube.sh; \
-	else \
-		echo "Skipping minikube setup, already done"; \
-	fi
-
-minikube-start: minikube-setup
-	@echo "Starting minikube"
-	./scripts/start_minikube.sh
-
-minikube-stop:
-	@echo "Stopping minikube"
-	./scripts/stop_minikube.sh
-
-minikube-clean: minikube-stop
-	@echo "Cleaning up minikube"
-	if [ -f minikube-setup-by-test ]; then \
-		./scripts/remove_minikube.sh; \
-		rm -f minikube-setup-by-test; \
-	else \
-		echo "Skipping minikube cleanup, minikube was not setup by the test environment"; \
-	fi
 
 css-mongo-db-image:
 	docker pull $(DOCKER_CSSDB_INAME):$(DOCKER_CSSDB_TAG)
@@ -349,17 +319,5 @@ run-css: run-mongo-db
 		-v $(AGBOT_TEMPFS)/certs/:/certs/ \
 		-t $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)
 
-appstore-start:
-	if [ "$(APPSTORE)" = "1" ]; then \
-		echo "Starting app store"; \
-		docker run -d --rm --name app-store -p 9001:9001 -e EXCHANGE_URL=$(DOCKER_EXCH) -e CSS_URL=$(CSS_URL) -e CERT_LOC=$(CERT_LOC) -e EXCH_ROOTPW=$(EXCH_ROOTPW) -e AGBOT_NAME=$(AGBOT_NAME) --network "$(DOCKER_TEST_NETWORK)" registry.ng.bluemix.net/rj-dev/app-store:0.7.0; \
-		docker run -d --rm --name app-store-ui -p 9015:9015 --network "$(DOCKER_TEST_NETWORK)" -e NODE_ENV=production -e APP_STORE_CONTAINER_NAME=app-store -e APP_STORE_CONTAINER_PORT=9001 registry.ng.bluemix.net/rj-dev/app-store-ui:0.11.0; \
-	fi
-
-appstore-stop:
-	@echo "Stopping app store"
-	-@docker stop app-store-ui 2>/dev/null || true
-	-@docker stop app-store 2>/dev/null || true
-
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image minikube-setup minikube-start minikube-stop minikube-clean appstore-start appstore-stop css-mongo-db-image run-mongo-db run-css copy-cert
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image css-mongo-db-image run-mongo-db run-css copy-cert
 #.SILENT: clean
