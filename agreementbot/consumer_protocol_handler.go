@@ -1,8 +1,8 @@
 package agreementbot
 
 import (
-	"encoding/json"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"

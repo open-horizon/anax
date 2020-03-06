@@ -610,7 +610,7 @@ func getMergedUserInput(patternUserInput []policy.UserInput, svcUrl, svcOrg, svc
 	}
 
 	// get the user input for this service
-	ui_merged, err := policy.FindUserInput(svcUrl, svcOrg, "", svcArch, mergedUserInput)
+	ui_merged, _, err := policy.FindUserInput(svcUrl, svcOrg, "", svcArch, mergedUserInput)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", svcOrg, svcUrl, err)
 	}

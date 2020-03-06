@@ -196,12 +196,15 @@ func MergeUserInputArrays(ui1, ui2 []UserInput, deepMerge bool) []UserInput {
 // Get the user input that fits this given service spec
 // if arch is an empty string, it means any arch.
 // if service version is an empty string, it means any version is be ok.
-func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []UserInput) (*UserInput, error) {
+func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []UserInput) (*UserInput, int, error) {
 	if userInput == nil || len(userInput) == 0 {
-		return nil, nil
+		return nil, -1, nil
 	}
 
+	index := -1
 	for _, u1 := range userInput {
+		index++
+
 		if u1.ServiceOrgid == svcOrg && u1.ServiceUrl == svcName && (u1.ServiceArch == svcArch || u1.ServiceArch == "" || svcArch == "") {
 
 			if svcVersion != "" {
@@ -209,20 +212,20 @@ func FindUserInput(svcName, svcOrg, svcVersion, svcArch string, userInput []User
 					u1.ServiceVersionRange = "[0.0.1,INFINITY)"
 				}
 				if vExp, err := semanticversion.Version_Expression_Factory(u1.ServiceVersionRange); err != nil {
-					return nil, fmt.Errorf("Wrong version string %v specified in user input for service %v/%v %v %v, error %v", u1.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch, err)
+					return nil, -1, fmt.Errorf("Wrong version string %v specified in user input for service %v/%v %v %v, error %v", u1.ServiceVersionRange, svcOrg, svcName, svcVersion, svcArch, err)
 				} else if inRange, err := vExp.Is_within_range(svcVersion); err != nil {
-					return nil, fmt.Errorf("Error checking version range %v in user input for service %v/%v %v %v . %v", vExp, svcOrg, svcName, svcVersion, svcArch, err)
+					return nil, -1, fmt.Errorf("Error checking version range %v in user input for service %v/%v %v %v . %v", vExp, svcOrg, svcName, svcVersion, svcArch, err)
 				} else if !inRange {
 					continue
 				}
 			}
 
 			u_tmp := UserInput(u1)
-			return &u_tmp, nil
+			return &u_tmp, index, nil
 		}
 	}
 
-	return nil, nil
+	return nil, -1, nil
 }
 
 // Gets the and update the existing settings if the name does not exist.

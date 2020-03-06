@@ -208,7 +208,7 @@ func Test_FindUserInput(t *testing.T) {
 
 	userInput := []UserInput{svcUserInput1, svcUserInput2}
 
-	u1, err := FindUserInput("cpu", "mycomp2", "1.0.0", "amd64", userInput)
+	u1, _, err := FindUserInput("cpu", "mycomp2", "1.0.0", "amd64", userInput)
 	if err != nil {
 		t.Errorf("FindUserInput should not return errror but got %v", err)
 	} else if u1 == nil {
@@ -219,14 +219,14 @@ func Test_FindUserInput(t *testing.T) {
 		t.Errorf("FindUserInput should return the user input with org id mycomp2 but got %v", u1.ServiceOrgid)
 	}
 
-	u2, err := FindUserInput("cpu", "mycomp1", "1.0.0", "amd64", userInput)
+	u2, _, err := FindUserInput("cpu", "mycomp1", "1.0.0", "amd64", userInput)
 	if err != nil {
 		t.Errorf("FindUserInput should not return errror but got %v", err)
 	} else if u2 != nil {
 		t.Errorf("FindUserInput should return nil but it did not. %v", u2)
 	}
 
-	u3, err := FindUserInput("cpu", "mycomp1", "3.0.0", "amd64", userInput)
+	u3, _, err := FindUserInput("cpu", "mycomp1", "3.0.0", "amd64", userInput)
 	if err != nil {
 		t.Errorf("FindUserInput should not return errror but got %v", err)
 	} else if u3 == nil {
@@ -237,19 +237,21 @@ func Test_FindUserInput(t *testing.T) {
 		t.Errorf("FindUserInput should return the user input with org id mycomp2 but got %v", u3.ServiceOrgid)
 	}
 
-	_, err = FindUserInput("cpu", "mycomp1", "x.0.0", "amd64", userInput)
+	_, index, err := FindUserInput("cpu", "mycomp1", "x.0.0", "amd64", userInput)
 	if err == nil {
 		t.Errorf("FindUserInput should return errror but did not.")
+	} else if index != -1 {
+		t.Errorf("FindUserInput should return index as -1 but did not.")
 	}
 
-	u5, err := FindUserInput("cpu2", "mycomp1", "1.0.0", "amd64", userInput)
+	u5, _, err := FindUserInput("cpu2", "mycomp1", "1.0.0", "amd64", userInput)
 	if err != nil {
 		t.Errorf("FindUserInput should not return errror but got %v", err)
 	} else if u5 != nil {
 		t.Errorf("FindUserInput should return nil but it did not. %v", u5)
 	}
 
-	u6, err := FindUserInput("cpu", "mycomp2", "", "", userInput)
+	u6, index, err := FindUserInput("cpu", "mycomp2", "", "", userInput)
 	if err != nil {
 		t.Errorf("FindUserInput should not return errror but got %v", err)
 	} else if u6 == nil {
@@ -258,6 +260,8 @@ func Test_FindUserInput(t *testing.T) {
 		t.Errorf("FindUserInput should return the user input with 3 variables but got %v", len(u6.Inputs))
 	} else if u6.ServiceOrgid != "mycomp2" {
 		t.Errorf("FindUserInput should return the user input with org id mycomp2 but got %v", u6.ServiceOrgid)
+	} else if index != 1 {
+		t.Errorf("FindUserInput should return index as 1 but did not.")
 	}
 }
 

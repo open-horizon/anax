@@ -1724,7 +1724,7 @@ func (b *ContainerWorker) syncupResources() {
 
 	// For multiple anax instances case, we do not want to remove containers that
 	// belong to other anax instances. But we need to remove the docker volumes
-	// that were created by current instance and no longer used by itself and other 
+	// that were created by current instance and no longer used by itself and other
 	// instances.
 	if b.Config.Edge.MultipleAnaxInstances {
 		// remove the leftover docker volumes created by this instance of anax

@@ -431,7 +431,7 @@ func ValidateUserInput(sdef *exchange.ServiceDefinition, serviceOrg string, merg
 	}
 
 	// get the merged user input for this service, it is from node userinput and pattern user input
-	mergedSvcUI, err := policy.FindUserInput(sdef.URL, serviceOrg, "", sdef.Arch, mergedUserInput)
+	mergedSvcUI, _, err := policy.FindUserInput(sdef.URL, serviceOrg, "", sdef.Arch, mergedUserInput)
 	if err != nil {
 		return fmt.Errorf("Failed to find user input for service %v/%v from the merged user input, error: %v", serviceOrg, sdef.URL, err)
 	}

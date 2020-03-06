@@ -50,10 +50,10 @@ func Start(cw *container.ContainerWorker, org string, configFiles []string, conf
 	time.Sleep(time.Second * 2)
 
 	// Get this host's IP address because that's where the CSS is listening.
-        hostIP := os.Getenv("HZN_DEV_HOST_IP")
-        if hostIP == "" {
-                hostIP = "localhost"
-        }
+	hostIP := os.Getenv("HZN_DEV_HOST_IP")
+	if hostIP == "" {
+		hostIP = "localhost"
+	}
 
 	// Call CSS /status API to check if CSS is ready (retry for 10 seconds)
 	if err := checkCSSStatus(org, CSS_INITIAL_WAITING_TIME); err != nil {
