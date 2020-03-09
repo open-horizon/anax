@@ -47,6 +47,18 @@ type InitiateAgreement struct {
 	ServicePolicies        map[string]externalpolicy.ExternalPolicy // cached service polices, keyed by service id. it is a subset of the service versions in the consumer policy file
 }
 
+func NewInitiateAgreement(pPolicy policy.Policy, cPolicy policy.Policy, org string, device exchange.SearchResultDevice, cpName string, sPols map[string]externalpolicy.ExternalPolicy) AgreementWork {
+	return InitiateAgreement{
+		workType:           INITIATE,
+		ProducerPolicy:     pPolicy,
+		ConsumerPolicy:     cPolicy,
+		Org:                org,
+		Device:             device,
+		ConsumerPolicyName: cpName,
+		ServicePolicies:    sPols,
+	}
+}
+
 func (c InitiateAgreement) String() string {
 	res := ""
 	res += fmt.Sprintf("Workitem: %v,  Org: %v\n", c.workType, c.Org)
@@ -71,6 +83,16 @@ type HandleReply struct {
 	MessageId    int
 }
 
+func NewHandleReply(reply abstractprotocol.ProposalReply, senderId string, senderPubKey []byte, messageId int) AgreementWork {
+	return HandleReply{
+		workType:     REPLY,
+		Reply:        reply,
+		SenderId:     senderId,
+		SenderPubKey: senderPubKey,
+		MessageId:    messageId,
+	}
+}
+
 func (c HandleReply) String() string {
 	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Reply: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Reply, c.SenderPubKey)
 }
@@ -86,6 +108,16 @@ type HandleDataReceivedAck struct {
 	SenderId     string // exchange Id of sender
 	SenderPubKey []byte
 	MessageId    int
+}
+
+func NewHandleDataReceivedAck(ack string, senderId string, senderPubKey []byte, messageId int) AgreementWork {
+	return HandleDataReceivedAck{
+		workType:     DATARECEIVEDACK,
+		Ack:          ack,
+		SenderId:     senderId,
+		SenderPubKey: senderPubKey,
+		MessageId:    messageId,
+	}
 }
 
 func (c HandleDataReceivedAck) String() string {
@@ -108,12 +140,32 @@ func (c CancelAgreement) Type() string {
 	return c.workType
 }
 
+func NewCancelAgreement(agId string, protocol string, reason uint, messageId int) AgreementWork {
+	return CancelAgreement{
+		workType:    CANCEL,
+		AgreementId: agId,
+		Protocol:    protocol,
+		Reason:      reason,
+		MessageId:   messageId,
+	}
+}
+
 type HandleWorkloadUpgrade struct {
 	workType    string
 	AgreementId string
 	Protocol    string
 	Device      string
 	PolicyName  string
+}
+
+func NewHandleWorkloadUpgrade(agId string, protocol string, device string, policyName string) AgreementWork {
+	return HandleWorkloadUpgrade{
+		workType:    WORKLOAD_UPGRADE,
+		AgreementId: agId,
+		Device:      device,
+		Protocol:    protocol,
+		PolicyName:  policyName,
+	}
 }
 
 func (c HandleWorkloadUpgrade) Type() string {
@@ -136,12 +188,25 @@ type ObjectPolicyChange struct {
 	Event    events.MMSObjectPolicyMessage
 }
 
+func NewObjectPolicyChange(event events.MMSObjectPolicyMessage) AgreementWork {
+	return ObjectPolicyChange{
+		workType: MMS_OBJECT_POLICY,
+		Event:    event,
+	}
+}
+
 func (c ObjectPolicyChange) Type() string {
 	return c.workType
 }
 
 type StopWorker struct {
 	workType string
+}
+
+func NewStopWorker() AgreementWork {
+	return StopWorker{
+		workType: STOP,
+	}
 }
 
 func (c StopWorker) String() string {
@@ -515,9 +580,8 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshaling service policy for service %v. %v", sIds[0], err)))
 					return
-				} else if len(cph.WorkQueue()) < int(b.config.GetAgbotAgreementBatchSize()) {
-					cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sIds[0], string(polString)))
 				}
+				cph.SendEventMessage(events.NewCacheServicePolicyMessage(events.CACHE_SERVICE_POLICY, wi.Org, wi.ConsumerPolicyName, sIds[0], string(polString)))
 			}
 
 			// The device seems to support the required API specs, so augment the consumer policy file with the workload

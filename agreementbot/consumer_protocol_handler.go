@@ -30,7 +30,7 @@ type ConsumerProtocolHandler interface {
 	Name() string
 	AcceptCommand(cmd worker.Command) bool
 	AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler
-	WorkQueue() chan AgreementWork
+	WorkQueue() *PrioritizedWorkQueue
 	DispatchProtocolMessage(cmd *NewProtocolMessageCommand, cph ConsumerProtocolHandler) error
 	PersistAgreement(wi *InitiateAgreement, proposal abstractprotocol.Proposal, workerID string) error
 	PersistReply(reply abstractprotocol.ProposalReply, pol *policy.Policy, workerID string) error
@@ -183,26 +183,15 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMessageCommand, cph ConsumerProtocolHandler) error {
 
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received inbound exchange message.")))
+
 	// Figure out what kind of message this is
 	if reply, rerr := cph.AgreementProtocolHandler("", "", "").ValidateReply(string(cmd.Message)); rerr == nil {
-		agreementWork := HandleReply{
-			workType:     REPLY,
-			Reply:        reply,
-			SenderId:     cmd.From,
-			SenderPubKey: cmd.PubKey,
-			MessageId:    cmd.MessageId,
-		}
-		cph.WorkQueue() <- agreementWork
+		agreementWork := NewHandleReply(reply, cmd.From, cmd.PubKey, cmd.MessageId)
+		cph.WorkQueue().InboundHigh() <- &agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued reply message")))
 	} else if _, aerr := cph.AgreementProtocolHandler("", "", "").ValidateDataReceivedAck(string(cmd.Message)); aerr == nil {
-		agreementWork := HandleDataReceivedAck{
-			workType:     DATARECEIVEDACK,
-			Ack:          string(cmd.Message),
-			SenderId:     cmd.From,
-			SenderPubKey: cmd.PubKey,
-			MessageId:    cmd.MessageId,
-		}
-		cph.WorkQueue() <- agreementWork
+		agreementWork := NewHandleDataReceivedAck(string(cmd.Message), cmd.From, cmd.PubKey, cmd.MessageId)
+		cph.WorkQueue().InboundHigh() <- &agreementWork
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
 	} else if can, cerr := cph.AgreementProtocolHandler("", "", "").ValidateCancel(string(cmd.Message)); cerr == nil {
 		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
@@ -213,14 +202,8 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		} else if ag.DeviceId != cmd.From {
 			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("cancel ignored, cancel message for %v came from id %v but agreement is with %v", can.AgreementId(), cmd.From, ag.DeviceId)))
 		} else {
-			agreementWork := CancelAgreement{
-				workType:    CANCEL,
-				AgreementId: can.AgreementId(),
-				Protocol:    can.Protocol(),
-				Reason:      can.Reason(),
-				MessageId:   cmd.MessageId,
-			}
-			cph.WorkQueue() <- agreementWork
+			agreementWork := NewCancelAgreement(can.AgreementId(), can.Protocol(), can.Reason(), cmd.MessageId)
+			cph.WorkQueue().InboundHigh() <- &agreementWork
 			glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued cancel message")))
 		}
 	} else if exerr := cph.HandleExtensionMessage(cmd); exerr == nil {
@@ -236,13 +219,8 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 func (b *BaseConsumerProtocolHandler) HandleAgreementTimeout(cmd *AgreementTimeoutCommand, cph ConsumerProtocolHandler) {
 
 	glog.V(5).Infof(BCPHlogstring(b.Name(), "received agreement cancellation."))
-	agreementWork := CancelAgreement{
-		workType:    CANCEL,
-		AgreementId: cmd.AgreementId,
-		Protocol:    cmd.Protocol,
-		Reason:      cmd.Reason,
-	}
-	cph.WorkQueue() <- agreementWork
+	agreementWork := NewCancelAgreement(cmd.AgreementId, cmd.Protocol, cmd.Reason, 0)
+	cph.WorkQueue().InboundHigh() <- &agreementWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), "queued agreement cancellation"))
 
 }
@@ -305,13 +283,8 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedComm
 					}
 
 					// Queue up a cancellation command for this agreement.
-					agreementWork := CancelAgreement{
-						workType:    CANCEL,
-						AgreementId: ag.CurrentAgreementId,
-						Protocol:    ag.AgreementProtocol,
-						Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
-					}
-					cph.WorkQueue() <- agreementWork
+					agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED), 0)
+					cph.WorkQueue().InboundHigh() <- &agreementWork
 
 				}
 			}
@@ -361,13 +334,8 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePol
 				}
 
 				// Queue up a cancellation command for this agreement.
-				agreementWork := CancelAgreement{
-					workType:    CANCEL,
-					AgreementId: ag.CurrentAgreementId,
-					Protocol:    ag.AgreementProtocol,
-					Reason:      cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED),
-				}
-				cph.WorkQueue() <- agreementWork
+				agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED), 0)
+				cph.WorkQueue().InboundHigh() <- &agreementWork
 
 			}
 		}
@@ -378,11 +346,8 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePol
 
 func (b *BaseConsumerProtocolHandler) HandleMMSObjectPolicy(cmd *MMSObjectPolicyEventCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received object policy change command.")))
-	agreementWork := ObjectPolicyChange{
-		workType: MMS_OBJECT_POLICY,
-		Event:    cmd.Msg,
-	}
-	cph.WorkQueue() <- agreementWork
+	agreementWork := NewObjectPolicyChange(cmd.Msg)
+	cph.WorkQueue().InboundHigh() <- &agreementWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued object policy change command.")))
 }
 
@@ -405,54 +370,30 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 		if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 		}
-		agreementWork := CancelAgreement{
-			workType:    CANCEL,
-			AgreementId: ag.CurrentAgreementId,
-			Protocol:    ag.AgreementProtocol,
-			Reason:      cph.GetTerminationCode(reason),
-		}
-		cph.WorkQueue() <- agreementWork
+		agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(reason), 0)
+		cph.WorkQueue().InboundHigh() <- &agreementWork
 	} else {
 		// Non-HA device or agreement without workload priority in the policy, re-make the agreement.
 		// Delete this workload usage record so that a new agreement will be made starting from the highest priority workload
 		if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
 			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 		}
-		agreementWork := CancelAgreement{
-			workType:    CANCEL,
-			AgreementId: ag.CurrentAgreementId,
-			Protocol:    ag.AgreementProtocol,
-			Reason:      cph.GetTerminationCode(reason),
-		}
-		cph.WorkQueue() <- agreementWork
+		agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(reason), 0)
+		cph.WorkQueue().InboundHigh() <- &agreementWork
 	}
 }
 
 func (b *BaseConsumerProtocolHandler) HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received workload upgrade command.")))
-	upgradeWork := HandleWorkloadUpgrade{
-		workType:    WORKLOAD_UPGRADE,
-		AgreementId: cmd.Msg.AgreementId,
-		Device:      cmd.Msg.DeviceId,
-		Protocol:    cmd.Msg.AgreementProtocol,
-		PolicyName:  cmd.Msg.PolicyName,
-	}
-	cph.WorkQueue() <- upgradeWork
+	upgradeWork := NewHandleWorkloadUpgrade(cmd.Msg.AgreementId, cmd.Msg.AgreementProtocol, cmd.Msg.DeviceId, cmd.Msg.PolicyName)
+	cph.WorkQueue().InboundHigh() <- &upgradeWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued workload upgrade command.")))
 }
 
 func (b *BaseConsumerProtocolHandler) HandleMakeAgreement(cmd *MakeAgreementCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received make agreement command.")))
-	agreementWork := InitiateAgreement{
-		workType:           INITIATE,
-		ProducerPolicy:     cmd.ProducerPolicy,
-		ConsumerPolicy:     cmd.ConsumerPolicy,
-		Org:                cmd.Org,
-		Device:             cmd.Device,
-		ConsumerPolicyName: cmd.ConsumerPolicyName,
-		ServicePolicies:    cmd.ServicePolicies,
-	}
-	cph.WorkQueue() <- agreementWork
+	agreementWork := NewInitiateAgreement(cmd.ProducerPolicy, cmd.ConsumerPolicy, cmd.Org, cmd.Device, cmd.ConsumerPolicyName, cmd.ServicePolicies)
+	cph.WorkQueue().InboundLow() <- &agreementWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued make agreement command.")))
 }
 
@@ -460,9 +401,8 @@ func (b *BaseConsumerProtocolHandler) HandleStopProtocol(cph ConsumerProtocolHan
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received stop protocol command.")))
 
 	for ix := 0; ix < b.config.AgreementBot.AgreementWorkers; ix++ {
-		work := new(StopWorker)
-		work.workType = STOP
-		cph.WorkQueue() <- *work
+		work := NewStopWorker()
+		cph.WorkQueue().InboundHigh() <- &work
 	}
 
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued %x stop protocol commands.", b.config.AgreementBot.AgreementWorkers)))
@@ -645,7 +585,9 @@ func (c *BaseConsumerProtocolHandler) CanSendMeterRecord(ag *persistence.Agreeme
 }
 
 func (b *BaseConsumerProtocolHandler) SendEventMessage(event events.Message) {
-	b.messages <- event
+	if len(b.messages) < int(b.config.GetAgbotAgreementBatchSize()) {
+		b.messages <- event
+	}
 }
 
 // The list of termination reasons that should be supported by all agreement protocols. The caller can pass these into

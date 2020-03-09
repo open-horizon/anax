@@ -20,7 +20,7 @@ import (
 type BasicProtocolHandler struct {
 	*BaseConsumerProtocolHandler
 	agreementPH *basicprotocol.ProtocolHandler
-	Work        chan AgreementWork // outgoing commands for the workers
+	Work        *PrioritizedWorkQueue
 }
 
 func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr *MMSObjectPolicyManager) *BasicProtocolHandler {
@@ -39,8 +39,8 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				mmsObjMgr:        mmsObjMgr,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
-			// Allow the main agbot thread to quickly distribute work in batches and then continue processing on the main thread.
-			Work: make(chan AgreementWork, cfg.GetAgbotAgreementBatchSize()*2),
+			// Allow the main agbot thread to distribute protocol msgs and agreement handling to the worker pool.
+			Work: NewPrioritizedWorkQueue(cfg.GetAgbotAgreementBatchSize()),
 		}
 	} else {
 		return nil
@@ -77,7 +77,7 @@ func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name st
 	return c.agreementPH
 }
 
-func (c *BasicProtocolHandler) WorkQueue() chan AgreementWork {
+func (c *BasicProtocolHandler) WorkQueue() *PrioritizedWorkQueue {
 	return c.Work
 }
 
@@ -206,27 +206,16 @@ func (b *BasicProtocolHandler) PostReply(agreementId string, proposal abstractpr
 
 func (b *BasicProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageCommand) error {
 	glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("received inbound exchange message.")))
+
 	// Figure out what kind of message this is
 	if verify, perr := b.agreementPH.ValidateAgreementVerify(string(cmd.Message)); perr == nil {
-		agreementWork := BAgreementVerification{
-			workType:     AGREEMENT_VERIFICATION,
-			Verify:       *verify,
-			SenderId:     cmd.From,
-			SenderPubKey: cmd.PubKey,
-			MessageId:    cmd.MessageId,
-		}
-		b.WorkQueue() <- agreementWork
+		agreementWork := NewBAgreementVerification(verify, cmd.From, cmd.PubKey, cmd.MessageId)
+		b.WorkQueue().InboundHigh() <- &agreementWork
 		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify message")))
 
 	} else if verifyr, perr := b.agreementPH.ValidateAgreementVerifyReply(string(cmd.Message)); perr == nil {
-		agreementWork := BAgreementVerificationReply{
-			workType:     AGREEMENT_VERIFICATION_REPLY,
-			VerifyReply:  *verifyr,
-			SenderId:     cmd.From,
-			SenderPubKey: cmd.PubKey,
-			MessageId:    cmd.MessageId,
-		}
-		b.WorkQueue() <- agreementWork
+		agreementWork := NewBAgreementVerificationReply(verifyr, cmd.From, cmd.PubKey, cmd.MessageId)
+		b.WorkQueue().InboundHigh() <- &agreementWork
 		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify reply message")))
 
 	} else {
