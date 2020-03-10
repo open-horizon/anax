@@ -84,32 +84,18 @@ func (a SearchExchangeMSRequest) String() string {
 }
 
 type SearchResultDevice struct {
-	Id          string         `json:"id"`
-	Name        string         `json:"name"`
-	Services    []Microservice `json:"services"`
-	MsgEndPoint string         `json:"msgEndPoint"`
-	PublicKey   string         `json:"publicKey"`
+	Id          string `json:"id"`
+	NodeType    string `json:"nodeType"`
+	MsgEndPoint string `json:"msgEndPoint"`
+	PublicKey   string `json:"publicKey"`
 }
 
 func (d SearchResultDevice) String() string {
-	return fmt.Sprintf("Id: %v, Name: %v, Services: %v, MsgEndPoint: %v", d.Id, d.Name, d.Services, d.MsgEndPoint)
+	return fmt.Sprintf("Id: %v, NodeType: %v, MsgEndPoint: %v", d.Id, d.NodeType, d.MsgEndPoint)
 }
 
 func (d SearchResultDevice) ShortString() string {
-	str := fmt.Sprintf("Id: %v, Name: %v, MsgEndPoint: %v, Service URLs:", d.Id, d.Name, d.MsgEndPoint)
-	for _, ms := range d.Services {
-		str += fmt.Sprintf("%v,", ms.Url)
-	}
-	return str
-}
-
-type SearchExchangeMSResponse struct {
-	Devices   []SearchResultDevice `json:"nodes"`
-	LastIndex int                  `json:"lastIndex"`
-}
-
-func (r SearchExchangeMSResponse) String() string {
-	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+	return d.String()
 }
 
 // This function creates the exchange search message body.
@@ -134,6 +120,7 @@ type Device struct {
 	Token              string             `json:"token"`
 	Name               string             `json:"name"`
 	Owner              string             `json:"owner"`
+	NodeType           string             `json:"nodeType"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
@@ -146,11 +133,11 @@ type Device struct {
 }
 
 func (d Device) String() string {
-	return fmt.Sprintf("Name: %v, Owner: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
+	return fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern: %v, LastHeartbeat: %v, RegisteredServices: %v, MsgEndPoint: %v, Arch: %v, UserInput: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.RegisteredServices, d.MsgEndPoint, d.Arch, d.UserInput, d.HeartbeatIntv)
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v, RegisteredServices URLs:", d.Name, d.Owner, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
+	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v, RegisteredServices URLs:", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -315,6 +302,7 @@ type SoftwareVersion map[string]string
 type PutDeviceRequest struct {
 	Token              string             `json:"token"`
 	Name               string             `json:"name"`
+	NodeType           string             `json:"nodeType"`
 	Pattern            string             `json:"pattern"`
 	RegisteredServices []Microservice     `json:"registeredServices"`
 	MsgEndPoint        string             `json:"msgEndPoint"`
@@ -325,11 +313,11 @@ type PutDeviceRequest struct {
 }
 
 func (p PutDeviceRequest) String() string {
-	return fmt.Sprintf("Token: %v, Name: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
+	return fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, RegisteredServices %v, MsgEndPoint %v, SoftwareVersions %v, PublicKey %x, Arch: %v, UserInput: %v", "*****", p.Name, p.NodeType, p.RegisteredServices, p.MsgEndPoint, p.SoftwareVersions, p.PublicKey, p.Arch, p.UserInput)
 }
 
 func (p PutDeviceRequest) ShortString() string {
-	str := fmt.Sprintf("Token: %v, Name: %v, MsgEndPoint %v, Arch: %v, SoftwareVersions %v", "*****", p.Name, p.MsgEndPoint, p.Arch, p.SoftwareVersions)
+	str := fmt.Sprintf("Token: %v, Name: %v, NodeType: %v, MsgEndPoint %v, Arch: %v, SoftwareVersions %v", "*****", p.Name, p.NodeType, p.MsgEndPoint, p.Arch, p.SoftwareVersions)
 	str += ", Service URLs: "
 	for _, ms := range p.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
@@ -339,6 +327,7 @@ func (p PutDeviceRequest) ShortString() string {
 
 // Please patch one field at a time.
 type PatchDeviceRequest struct {
+	NodeType           string              `json:"nodeType,omitempty"`
 	UserInput          *[]policy.UserInput `json:"userInput,omitempty"`
 	Pattern            string              `json:"pattern,omitempty"`
 	Arch               string              `json:"arch,omitempty"`
@@ -346,7 +335,7 @@ type PatchDeviceRequest struct {
 }
 
 func (p PatchDeviceRequest) String() string {
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v", p.UserInput, p.RegisteredServices, p.Pattern)
+	return fmt.Sprintf("NodeType: %v, UserInput: %v, RegisteredServices: %v, Pattern: %v", p.NodeType, p.UserInput, p.RegisteredServices, p.Pattern)
 }
 
 type PostMessage struct {
@@ -866,9 +855,6 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						} else {
 							return nil, nil
 						}
-
-					case *SearchExchangeMSResponse:
-						return nil, nil
 
 					case *SearchExchangePatternResponse:
 						return nil, nil

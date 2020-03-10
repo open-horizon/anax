@@ -12,6 +12,10 @@ import (
 
 const DEVICES = "devices"
 
+// device types
+const DEVICE_TYPE_DEVICE = "device"
+const DEVICE_TYPE_CLUSTER = "cluster"
+
 const CONFIGSTATE_UNCONFIGURING = "unconfiguring"
 const CONFIGSTATE_UNCONFIGURED = "unconfigured"
 const CONFIGSTATE_CONFIGURING = "configuring"
@@ -49,6 +53,7 @@ type ExchangeDevice struct {
 	Org                string      `json:"organization"`
 	Pattern            string      `json:"pattern"`
 	Name               string      `json:"name"`
+	NodeType           string      `json:"nodeType"`
 	Token              string      `json:"token"`
 	TokenLastValidTime uint64      `json:"token_last_valid_time"`
 	TokenValid         bool        `json:"token_valid"`
@@ -64,14 +69,14 @@ func (e ExchangeDevice) String() string {
 		tokenShadow = "unset"
 	}
 
-	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, %v", e.Org, tokenShadow, e.Name, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.Config)
+	return fmt.Sprintf("Org: %v, Token: <%s>, Name: %v, NodeType: %v, TokenLastValidTime: %v, TokenValid: %v, Pattern: %v, %v", e.Org, tokenShadow, e.Name, e.NodeType, e.TokenLastValidTime, e.TokenValid, e.Pattern, e.Config)
 }
 
 func (e ExchangeDevice) GetId() string {
 	return fmt.Sprintf("%v/%v", e.Org, e.Id)
 }
 
-func newExchangeDevice(id string, token string, name string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string) (*ExchangeDevice, error) {
+func newExchangeDevice(id string, token string, name string, nodeType string, tokenLastValidTime uint64, ha bool, org string, pattern string, configstate string) (*ExchangeDevice, error) {
 	if id == "" || token == "" || name == "" || tokenLastValidTime == 0 || org == "" {
 		return nil, errors.New("Cannot create exchange device, illegal arguments")
 	}
@@ -90,6 +95,7 @@ func newExchangeDevice(id string, token string, name string, tokenLastValidTime 
 	return &ExchangeDevice{
 		Id:                 id,
 		Name:               name,
+		NodeType:           nodeType,
 		Token:              token,
 		TokenLastValidTime: tokenLastValidTime,
 		TokenValid:         true,
@@ -132,6 +138,17 @@ func (e *ExchangeDevice) SetConfigstate(db *bolt.DB, deviceId string, state stri
 	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
 		d.Config.State = state
 		d.Config.LastUpdateTime = uint64(time.Now().Unix())
+		return &d
+	})
+}
+
+func (e *ExchangeDevice) SetNodeType(db *bolt.DB, deviceId string, nodeType string) (*ExchangeDevice, error) {
+	if deviceId == "" || nodeType == "" {
+		return nil, errors.New("The argument deviceId or nodeType cannot be empty.")
+	}
+
+	return updateExchangeDevice(db, e, deviceId, false, func(d ExchangeDevice) *ExchangeDevice {
+		d.NodeType = nodeType
 		return &d
 	})
 }
@@ -197,6 +214,11 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 				mod.Config.LastUpdateTime = update.Config.LastUpdateTime
 			}
 
+			// Update the node type
+			if mod.NodeType != update.NodeType {
+				mod.NodeType = update.NodeType
+			}
+
 			// Update the pattern
 			if mod.Pattern != update.Pattern {
 				mod.Pattern = update.Pattern
@@ -218,7 +240,7 @@ func updateExchangeDevice(db *bolt.DB, self *ExchangeDevice, deviceId string, in
 }
 
 // always assumed the given token is valid at the time of call
-func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha bool, organization string, pattern string, configstate string) (*ExchangeDevice, error) {
+func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, nodeType string, ha bool, organization string, pattern string, configstate string) (*ExchangeDevice, error) {
 
 	if id == "" || token == "" || name == "" || organization == "" || configstate == "" {
 		return nil, errors.New("Argument null and must not be")
@@ -242,7 +264,7 @@ func SaveNewExchangeDevice(db *bolt.DB, id string, token string, name string, ha
 		return nil, fmt.Errorf("Duplicate record found in devices for %v.", name)
 	}
 
-	exDevice, err := newExchangeDevice(id, token, name, uint64(time.Now().Unix()), ha, organization, pattern, configstate)
+	exDevice, err := newExchangeDevice(id, token, name, nodeType, uint64(time.Now().Unix()), ha, organization, pattern, configstate)
 
 	if err != nil {
 		return nil, err

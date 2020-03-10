@@ -54,7 +54,7 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	}
 }
 
-func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, nodeName string) {
+func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, nodeName string, nodeType string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -86,7 +86,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, 
 	exchUrlBase := cliutils.GetExchangeUrl()
 
 	// Assume the user exists and try to create the node, but handle the error cases
-	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch} // we only need to set the token
+	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, NodeType: nodeType, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch} // we only need to set the token
 	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
 	if httpCode == 401 {
 		// Invalid creds means the user doesn't exist, or pw is wrong, try to create it if we are in the public org
@@ -173,10 +173,17 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 			verifyNodeUserInput(org, credToUse, node, nId, ui)
 			patch[k] = ui
 
+		} else if k == "nodeType" {
+			nodeType := ""
+			if err := json.Unmarshal(bytes, &nodeType); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal nodeType attribute input %s: %v", v, err))
+			} else {
+				patch[k] = nodeType
+			}
 		} else if k == "pattern" {
 			pattern := ""
 			if err := json.Unmarshal(bytes, &pattern); err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", v, err))
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal pattern attribute input %s: %v", v, err))
 			} else {
 				patch[k] = pattern
 			}

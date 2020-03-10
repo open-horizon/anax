@@ -44,7 +44,7 @@ func Test_FindCSForOutput1(t *testing.T) {
 
 	theOrg := "myorg"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, theOrg, "apattern", persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -79,7 +79,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -145,7 +145,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -208,7 +208,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "cluster", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -289,7 +289,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -371,7 +371,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -433,7 +433,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}
@@ -497,7 +497,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "cluster", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}

@@ -91,7 +91,7 @@ func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.Externa
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
+func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodeType string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -111,6 +111,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			usePolicyInputFormat = false
 			ReadInputFile(inputFile, &inputFileStruct)
 		}
+	}
+
+	// the default node type is 'device'
+	if nodeType == "" {
+		nodeType = persistence.DEVICE_TYPE_DEVICE
 	}
 
 	// read and verify the node policy if it specified
@@ -228,7 +233,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			// node does not exist, create it
 			msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
 			msgPrinter.Println()
-			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
+			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName, nodeType)
 		} else {
 			// node exists but the token is new, update the node token
 			msgPrinter.Printf("Upating node token...")
@@ -293,7 +298,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	msgPrinter.Println()
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
-	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, NodeType: &nodeType, HA: &falseVal} //todo: support HA config
 
 	err := CreateNode(nd, timeout)
 	if err != nil {
