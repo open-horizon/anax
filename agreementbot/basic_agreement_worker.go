@@ -55,6 +55,16 @@ type BAgreementVerification struct {
 	MessageId    int
 }
 
+func NewBAgreementVerification(verify *basicprotocol.BAgreementVerify, from string, senderPubKey []byte, messageId int) AgreementWork {
+	return BAgreementVerification{
+		workType:     AGREEMENT_VERIFICATION,
+		Verify:       *verify,
+		SenderId:     from,
+		SenderPubKey: senderPubKey,
+		MessageId:    messageId,
+	}
+}
+
 func (b BAgreementVerification) Type() string {
 	return b.workType
 }
@@ -85,6 +95,16 @@ type BAgreementVerificationReply struct {
 	MessageId    int
 }
 
+func NewBAgreementVerificationReply(verifyr *basicprotocol.BAgreementVerifyReply, senderId string, senderPubKey []byte, messageId int) AgreementWork {
+	return BAgreementVerificationReply{
+		workType:     AGREEMENT_VERIFICATION_REPLY,
+		VerifyReply:  *verifyr,
+		SenderId:     senderId,
+		SenderPubKey: senderPubKey,
+		MessageId:    messageId,
+	}
+}
+
 func (b BAgreementVerificationReply) Type() string {
 	return b.workType
 }
@@ -105,12 +125,18 @@ func (b BAgreementVerificationReply) String() string {
 
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
-func (a *BasicAgreementWorker) start(work chan AgreementWork, random *rand.Rand) {
+
+func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Rand) {
 
 	worker.GetWorkerStatusManager().SetSubworkerStatus("BasicProtocolHandler", a.workerID, worker.STATUS_STARTED)
 	for {
 		glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("blocking for work")))
-		workItem := <-work // block waiting for work
+		workItemPtr := <-work.Receive() // block waiting for work
+		if workItemPtr == nil {
+			glog.V(3).Infof(bwlogstring(a.workerID, fmt.Sprintf("received nil work item")))
+			continue
+		}
+		workItem := *workItemPtr
 		glog.V(2).Infof(bwlogstring(a.workerID, fmt.Sprintf("received work: %v", workItem)))
 
 		if workItem.Type() == INITIATE {
