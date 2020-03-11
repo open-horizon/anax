@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+// service types, they are node defined in the exchange.
+// they are derived from the Deployment and ClusterDeployment attributes of a service definition.
+const SERVICE_TYPE_DEVICE = "device"
+const SERVICE_TYPE_CLUSTER = "cluster"
+const SERVICE_TYPE_BOTH = "both"
+
 // Types and functions used to work with the exchange's service objects.
 
 // This type is used to abstract the various edge node hardware requirements. The schema is left wide open.
@@ -75,23 +81,23 @@ const MS_SHARING_MODE_SINGLETON = "singleton"
 const MS_SHARING_MODE_MULTIPLE = "multiple"
 
 type ServiceDefinition struct {
-	Owner                string              `json:"owner,omitempty"`
-	Label                string              `json:"label"`
-	Description          string              `json:"description"`
-	Documentation        string              `json:"documentation"`
-	Public               bool                `json:"public"`
-	URL                  string              `json:"url"`
-	Version              string              `json:"version"`
-	Arch                 string              `json:"arch"`
-	Sharable             string              `json:"sharable"`
-	MatchHardware        HardwareRequirement `json:"matchHardware"`
-	RequiredServices     []ServiceDependency `json:"requiredServices"`
-	UserInputs           []UserInput         `json:"userInput"`
-	Deployment           string              `json:"deployment"`
-	DeploymentSignature  string              `json:"deploymentSignature"`
-	ClusterDeployment    string              `json:"clusterDeployment"`
-	ClusterDeploymentSig string              `json:"clusterDeploymentSignature"`
-	LastUpdated          string              `json:"lastUpdated,omitempty"`
+	Owner                      string              `json:"owner,omitempty"`
+	Label                      string              `json:"label"`
+	Description                string              `json:"description"`
+	Documentation              string              `json:"documentation"`
+	Public                     bool                `json:"public"`
+	URL                        string              `json:"url"`
+	Version                    string              `json:"version"`
+	Arch                       string              `json:"arch"`
+	Sharable                   string              `json:"sharable"`
+	MatchHardware              HardwareRequirement `json:"matchHardware"`
+	RequiredServices           []ServiceDependency `json:"requiredServices"`
+	UserInputs                 []UserInput         `json:"userInput"`
+	Deployment                 string              `json:"deployment"`
+	DeploymentSignature        string              `json:"deploymentSignature"`
+	ClusterDeployment          string              `json:"clusterDeployment"`          // used for cluster node type
+	ClusterDeploymentSignature string              `json:"clusterDeploymentSignature"` // used for cluster node type
+	LastUpdated                string              `json:"lastUpdated,omitempty"`
 }
 
 func (s ServiceDefinition) String() string {
@@ -109,11 +115,11 @@ func (s ServiceDefinition) String() string {
 		"Deployment: %v, "+
 		"DeploymentSignature: %v, "+
 		"ClusterDeployment: %v, "+
-		"ClusterDeploymentSig: %v, "+
+		"ClusterDeploymentSignature: %v, "+
 		"LastUpdated: %v",
 		s.Owner, s.Label, s.Description, s.Public, s.URL, s.Version, s.Arch, s.Sharable,
 		s.MatchHardware, s.RequiredServices, s.UserInputs,
-		s.Deployment, s.DeploymentSignature, s.ClusterDeployment, s.ClusterDeploymentSig,
+		s.Deployment, s.DeploymentSignature, s.ClusterDeployment, s.ClusterDeploymentSignature,
 		s.LastUpdated)
 }
 
@@ -170,7 +176,7 @@ func (s *ServiceDefinition) GetClusterDeployment() string {
 }
 
 func (s *ServiceDefinition) GetClusterDeploymentSignature() string {
-	return s.ClusterDeploymentSig
+	return s.ClusterDeploymentSignature
 }
 
 func (s *ServiceDefinition) HasDependencies() bool {
@@ -183,6 +189,18 @@ func (s *ServiceDefinition) GetServiceDependencies() *[]ServiceDependency {
 
 func (s *ServiceDefinition) GetVersion() string {
 	return s.Version
+}
+
+func (s *ServiceDefinition) GetServiceType() string {
+	sType := SERVICE_TYPE_DEVICE
+	if s.ClusterDeployment != "" {
+		if s.Deployment == "" {
+			sType = SERVICE_TYPE_CLUSTER
+		} else {
+			sType = SERVICE_TYPE_BOTH
+		}
+	}
+	return sType
 }
 
 type GetServicesResponse struct {

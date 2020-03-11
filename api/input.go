@@ -92,6 +92,7 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 		Org:                &pDevice.Org,
 		Pattern:            &pDevice.Pattern,
 		Name:               &pDevice.Name,
+		NodeType:           &pDevice.NodeType,
 		TokenValid:         &pDevice.TokenValid,
 		TokenLastValidTime: &pDevice.TokenLastValidTime,
 		HA:                 &pDevice.HA,

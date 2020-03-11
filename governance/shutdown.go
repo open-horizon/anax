@@ -239,6 +239,7 @@ func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 	}
 	pdr.SoftwareVersions = exDev.SoftwareVersions
 	pdr.MsgEndPoint = exDev.MsgEndPoint
+	pdr.NodeType = exDev.NodeType
 
 	if keepUI {
 		pdr.UserInput = exDev.UserInput

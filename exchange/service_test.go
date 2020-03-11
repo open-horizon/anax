@@ -10,25 +10,27 @@ import (
 
 func TestServiceString1(t *testing.T) {
 	s := ServiceDefinition{
-		Owner:               "testOwner",
-		Label:               "service def",
-		Description:         "a test",
-		Public:              false,
-		URL:                 "http://test.company.com/service1",
-		Version:             "1.0.0",
-		Arch:                "amd64",
-		Sharable:            MS_SHARING_MODE_SINGLETON,
-		MatchHardware:       HardwareRequirement{},
-		RequiredServices:    []ServiceDependency{},
-		UserInputs:          []UserInput{},
-		Deployment:          `{"services":{}}`,
-		DeploymentSignature: "xyzpdq=",
-		LastUpdated:         "today",
+		Owner:                      "testOwner",
+		Label:                      "service def",
+		Description:                "a test",
+		Public:                     false,
+		URL:                        "http://test.company.com/service1",
+		Version:                    "1.0.0",
+		Arch:                       "amd64",
+		Sharable:                   MS_SHARING_MODE_SINGLETON,
+		MatchHardware:              HardwareRequirement{},
+		RequiredServices:           []ServiceDependency{},
+		UserInputs:                 []UserInput{},
+		Deployment:                 `{"services":{}}`,
+		DeploymentSignature:        "xyzpdq=",
+		ClusterDeployment:          `{}`,
+		ClusterDeploymentSignature: "abcdef=",
+		LastUpdated:                "today",
 	}
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: none, RequiredServices: [], UserInputs: [], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: none, RequiredServices: [], UserInputs: [], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, ClusterDeployment: {}, ClusterDeploymentSignature: abcdef=, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -75,14 +77,16 @@ func TestServiceString2(t *testing.T) {
 				DefaultValue: "three",
 			},
 		},
-		Deployment:          `{"services":{}}`,
-		DeploymentSignature: "xyzpdq=",
-		LastUpdated:         "today",
+		Deployment:                 `{"services":{}}`,
+		DeploymentSignature:        "xyzpdq=",
+		ClusterDeployment:          `{}`,
+		ClusterDeploymentSignature: "abcdef=",
+		LastUpdated:                "today",
 	}
 	str := s.String()
 	t.Log(str)
 
-	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, VersionRange: , Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, VersionRange: , Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, LastUpdated: today`
+	expected := `Owner: testOwner, Label: service def, Description: a test, Public: false, URL: http://test.company.com/service1, Version: 1.0.0, Arch: amd64, Sharable: singleton, MatchHardware: {dev:/dev/dev1}, RequiredServices: [{URL: http://my.com/ms/ms1, Org: otherOrg, Version: 1.5.0, VersionRange: , Arch: amd64} {URL: http://my.com/ms/ms2, Org: otherOrg, Version: 2.7, VersionRange: , Arch: amd64}], UserInputs: [{Name: name, :Label: a ui, Type: string, DefaultValue: } {Name: name2, :Label: another ui, Type: string, DefaultValue: three}], Deployment: {"services":{}}, DeploymentSignature: xyzpdq=, ClusterDeployment: {}, ClusterDeploymentSignature: abcdef=, LastUpdated: today`
 	if str != expected {
 		t.Errorf("String() output expected: %v", expected)
 	}
@@ -130,9 +134,11 @@ func TestServiceString3(t *testing.T) {
 				DefaultValue: "three",
 			},
 		},
-		Deployment:          `{"services":{}}`,
-		DeploymentSignature: "xyzpdq=",
-		LastUpdated:         "today",
+		Deployment:                 `{"services":{}}`,
+		DeploymentSignature:        "xyzpdq=",
+		ClusterDeployment:          `{}`,
+		ClusterDeploymentSignature: "abcdef=",
+		LastUpdated:                "today",
 	}
 	str := s.ShortString()
 	t.Log(str)

@@ -13,6 +13,7 @@ type AbstractServiceFile interface {
 	GetURL() string
 	GetVersion() string
 	GetArch() string
+	GetServiceType() string // device, cluster or both
 	GetRequiredServices() []exchange.ServiceDependency
 	GetUserInputs() []exchange.UserInput
 	NeedsUserInput() bool
@@ -104,20 +105,22 @@ type ServiceChoiceFile struct {
 
 // This is used when reading json file the user gives us as input to create the service
 type ServiceFile struct {
-	Org                 string                       `json:"org"` // optional
-	Label               string                       `json:"label"`
-	Description         string                       `json:"description"`
-	Public              bool                         `json:"public"`
-	Documentation       string                       `json:"documentation"`
-	URL                 string                       `json:"url"`
-	Version             string                       `json:"version"`
-	Arch                string                       `json:"arch"`
-	Sharable            string                       `json:"sharable"`
-	MatchHardware       map[string]interface{}       `json:"matchHardware,omitempty"`
-	RequiredServices    []exchange.ServiceDependency `json:"requiredServices"`
-	UserInputs          []exchange.UserInput         `json:"userInput"`
-	Deployment          interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
-	DeploymentSignature string                       `json:"deploymentSignature,omitempty"`
+	Org                  string                       `json:"org"` // optional
+	Label                string                       `json:"label"`
+	Description          string                       `json:"description"`
+	Public               bool                         `json:"public"`
+	Documentation        string                       `json:"documentation"`
+	URL                  string                       `json:"url"`
+	Version              string                       `json:"version"`
+	Arch                 string                       `json:"arch"`
+	Sharable             string                       `json:"sharable"`
+	MatchHardware        map[string]interface{}       `json:"matchHardware,omitempty"`
+	RequiredServices     []exchange.ServiceDependency `json:"requiredServices"`
+	UserInputs           []exchange.UserInput         `json:"userInput"`
+	Deployment           interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
+	DeploymentSignature  string                       `json:"deploymentSignature,omitempty"`
+	ClusterDeployment    string                       `json:"clusterDeployment"`
+	ClusterDeploymentSig string                       `json:"clusterDeploymentSignature"`
 }
 
 func (sf *ServiceFile) GetOrg() string {
@@ -155,6 +158,18 @@ func (s *ServiceFile) NeedsUserInput() bool {
 		}
 	}
 	return false
+}
+
+func (s *ServiceFile) GetServiceType() string {
+	sType := exchange.SERVICE_TYPE_DEVICE
+	if s.ClusterDeployment != "" {
+		if s.Deployment == "" {
+			sType = exchange.SERVICE_TYPE_CLUSTER
+		} else {
+			sType = exchange.SERVICE_TYPE_BOTH
+		}
+	}
+	return sType
 }
 
 // Returns true if the service definition userinputs define the variable.

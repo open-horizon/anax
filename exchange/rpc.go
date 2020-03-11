@@ -84,14 +84,13 @@ func (a SearchExchangeMSRequest) String() string {
 }
 
 type SearchResultDevice struct {
-	Id          string `json:"id"`
-	NodeType    string `json:"nodeType"`
-	MsgEndPoint string `json:"msgEndPoint"`
-	PublicKey   string `json:"publicKey"`
+	Id        string `json:"id"`
+	NodeType  string `json:"nodeType"`
+	PublicKey string `json:"publicKey"`
 }
 
 func (d SearchResultDevice) String() string {
-	return fmt.Sprintf("Id: %v, NodeType: %v, MsgEndPoint: %v", d.Id, d.NodeType, d.MsgEndPoint)
+	return fmt.Sprintf("Id: %v, NodeType: %v", d.Id, d.NodeType)
 }
 
 func (d SearchResultDevice) ShortString() string {
