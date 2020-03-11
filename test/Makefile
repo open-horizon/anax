@@ -160,7 +160,7 @@ run-exchange: run-exchange-db test-network $(EXCH_TEMPFS)/config.json
 	@echo "Handling $(DOCKER_EXCH_CNAME)"
 	docker/docker_run.bash "$(DOCKER_EXCH_CNAME)" \
 		docker run -d \
-		-p 127.0.0.1:8080:8080 \
+		-p 127.0.0.1:8090:8080 \
 		--name "$(DOCKER_EXCH_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v $(EXCH_TEMPFS)/config.json:/etc/horizon/exchange/config.json:ro \
@@ -185,6 +185,8 @@ run-exchange-db: test-network
 
 clean:
 	@echo -e "\nStarting cleanup"
+	@echo "Clean up kube environment"
+	gov/stop_kube.sh
 	@echo "Shutdown anax cleanly"
 	-@curl -sSLX DELETE http://localhost:8510/node 2>/dev/null || true
 	@echo "Removing agbot container"
@@ -274,6 +276,8 @@ exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
 test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
+	@echo -e  "\nSetting up agent in kube"
+	gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE)
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 

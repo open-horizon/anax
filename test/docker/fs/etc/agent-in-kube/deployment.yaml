@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: ibm-edge-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      containers:
+      - name: anax
+        image: agent-in-kube:local
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8510
+        securityContext:
+          allowPrivilegeEscalation: true
+        env:
+        - name: DOCKER_NAME
+          value: "horizon1"

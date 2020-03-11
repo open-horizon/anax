@@ -40,14 +40,6 @@ then
     exit 1
 fi
 
-# Create the Helm package.
-./helm_package.sh ${EXCH_URL} ${E2EDEV_ADMIN_AUTH}
-if [ $? -ne 0 ]
-then
-    echo -e "helm package creation failed."
-    exit 1
-fi
-
 KEY_TEST_DIR="/tmp/keytest"
 mkdir -p $KEY_TEST_DIR
 
@@ -135,14 +127,14 @@ echo -e "Register arm test service:"
 results "$RES"
 
 # Helm service
-VERS="1.0.0"
-echo -e "Register Helm service $VERS:"
-hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
-if [ $? -ne 0 ]
-then
-    echo -e "hzn exchange service publish failed for Helm service."
-    exit 2
-fi
+# VERS="1.0.0"
+# echo -e "Register Helm service $VERS:"
+# hzn exchange service publish -I -u root/root:${EXCH_ROOTPW} -o IBM -f /root/helm/hello/external/horizon/service.definition.json -k $KEY_TEST_DIR/*private.key
+# if [ $? -ne 0 ]
+# then
+#     echo -e "hzn exchange service publish failed for Helm service."
+#     exit 2
+# fi
 
 # cpu service - needed by the hzn dev tests and the location top level service as a 3rd level dependency.
 VERS="1.2.2"
@@ -918,53 +910,53 @@ echo -e "Register gps service pattern $VERS:"
 results "$RES"
 
 # shelm test pattern
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  MHI=90
-  CAS=60
-else
-  MHI=600
-  CAS=600
-fi
+# if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+#   MHI=90
+#   CAS=60
+# else
+#   MHI=600
+#   CAS=600
+# fi
 
-VERS="1.0.0"
-read -d '' sdef <<EOF
-{
-  "label": "Helm Test",
-  "description": "a Helm Test pattern",
-  "public": true,
-  "services": [
-    {
-      "serviceUrl":"http://my.company.com/services/helm-service",
-      "serviceOrgid":"IBM",
-      "serviceArch":"amd64",
-      "serviceVersions":[
-        {
-          "version":"$VERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{},
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI,
-        "check_agreement_status": $CAS
-      }
-    }
-  ],
-  "agreementProtocols": [
-    {
-      "name": "Basic"
-    }
-  ]
-}
-EOF
-echo -e "Register Helm service pattern $VERS:"
+# VERS="1.0.0"
+# read -d '' sdef <<EOF
+# {
+#   "label": "Helm Test",
+#   "description": "a Helm Test pattern",
+#   "public": true,
+#   "services": [
+#     {
+#       "serviceUrl":"http://my.company.com/services/helm-service",
+#       "serviceOrgid":"IBM",
+#       "serviceArch":"amd64",
+#       "serviceVersions":[
+#         {
+#           "version":"$VERS",
+#           "deployment_overrides":"",
+#           "deployment_overrides_signature":"",
+#           "priority":{},
+#           "upgradePolicy": {}
+#         }
+#       ],
+#       "dataVerification": {},
+#       "nodeHealth": {
+#         "missing_heartbeat_interval": $MHI,
+#         "check_agreement_status": $CAS
+#       }
+#     }
+#   ],
+#   "agreementProtocols": [
+#     {
+#       "name": "Basic"
+#     }
+#   ]
+# }
+# EOF
+# echo -e "Register Helm service pattern $VERS:"
 
-  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
+#   RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
 
-results "$RES"
+# results "$RES"
 
 # susehello test pattern
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
