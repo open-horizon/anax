@@ -1,4 +1,4 @@
-sudo: true
+dist: bionic
 
 services:
   - docker

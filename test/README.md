@@ -27,6 +27,10 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `export GOPATH=</your/go/path>`
   - `go get -u github.com/kardianos/govendor`
   - `export ANAX_SOURCE=</path/to/anax>`
+- Set up a single node k8s for testing, follow the instructions here:
+  - https://microk8s.io/docs/
+  - make sure you install from the 1.14 channel: `sudo snap install microk8s --classic --channel=1.14/stable`
+  - see also https://microk8s.io/docs/setting-snap-channel when deciding when to upgrade to a newer Kubernetes
 - Clone this repo  
   - `git clone git@github.com:open-horizon/anax.git`
 - Build the anax binary, the agbot base image, and pull the exchange images
@@ -93,7 +97,7 @@ Here is a full description of all the variables you can use to setup the test th
  - Does all the above, plus removes the agbot and exchange base images, our docker test network, and all dangling docker images
  - NOTE: This is the only 'clean' command which requires re-running `make`
 
- ### Remote environment testing
+### Remote environment testing
 -`export DOCKER_EXCH="Exchange's URL"`
 -`export CSS_URL="CSS's URL"`
 -`export EXCH_ROOTPW="Exchange Root PW"`
