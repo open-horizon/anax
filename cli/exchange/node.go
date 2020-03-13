@@ -675,7 +675,7 @@ func ValidateUserInput(org string, credToUse string, userInput policy.UserInput,
 			}
 			// add toplevel service back to servDefmap
 			servDefmap[tlServiceId] = *tlService
-			fmt.Printf("****************** tlServiceId is: %s ***********************\n", tlServiceId)
+			//fmt.Printf("****************** tlServiceId is: %s ***********************\n", tlServiceId)
 
 			// servId is in format: serviceOrg/serviceUrl/serviceArch/serviceVersion
 			for servId, serviceDef := range servDefmap {
@@ -689,8 +689,9 @@ func ValidateUserInput(org string, credToUse string, userInput policy.UserInput,
 				}
 
 				serviceInfos := strings.Split(servId, "/")
-				if len(serviceInfos) != 4 {
+				if len(serviceInfos) == 0 {
 					errorString = msgPrinter.Sprintf("Failed to get service informaton for %s", servId)
+					return false, warningMessage, errors.New(errorString)
 				}
 
 				respServiceOrg := serviceInfos[0]
@@ -863,11 +864,11 @@ func getUserInputWithEmptyDefaultValue(getServiceHandler exchange.ServiceHandler
 			}
 			// add toplevel service back to servDefmap
 			servDefmap[tlServiceId] = *tlService
-			fmt.Printf("****************** tlServiceId is: %s ***********************\n", tlServiceId)
+			//fmt.Printf("****************** tlServiceId is: %s ***********************\n", tlServiceId)
 
 			for serviceId, serviceDef := range servDefmap {
 				serviceInfos := strings.Split(serviceId, "/")
-				if len(serviceInfos) != 4 {
+				if len(serviceInfos) == 0 {
 					return nil, errors.New(msgPrinter.Sprintf("Failed to get service informaton for %s", serviceId))
 				}
 
