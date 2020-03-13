@@ -13,10 +13,16 @@ spec:
       labels:
         app: agent
     spec:
+      volumes:
+      - name: agent-vol
+        emptyDir: {}
       containers:
       - name: anax
         image: agent-in-kube:local
         imagePullPolicy: Never
+        volumeMounts:
+          - mountPath: /var/horizon
+            name: agent-vol
         ports:
         - containerPort: 8510
         securityContext:
