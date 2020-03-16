@@ -174,11 +174,16 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// Verify the pattern org if the patter is not in the same org as the device.
 
-	// Check the node on the exchange to see if there is a pattern already defined for the node
+	// Check the node on the exchange to see if there is a pattern already defined for the node.
+	// Check if the node type on the exchange is the same as the given node type
 	exchDevice, err1 := getDeviceHandler(deviceId, *device.Token)
 	if err1 != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error getting device %v from the exchange. %v", deviceId, err1))), nil, nil
 	} else {
+		if *device.NodeType != exchDevice.NodeType {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("the exchange node type '%v' is different from the given node type '%v'.", exchDevice.NodeType, *device.NodeType), "device.nodeType")), nil, nil
+		}
+
 		if exchDevice != nil && exchDevice.Pattern != "" {
 			_, _, exchange_pattern := persistence.GetFormatedPatternString(exchDevice.Pattern, *device.Org)
 
@@ -233,15 +238,6 @@ func CreateHorizonDevice(device *HorizonDevice,
 	pdr.Arch = cutil.ArchString()
 	if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error adding architecture for the exchange node. %v", err))), nil, nil
-	}
-
-	// update the node type for the exchange node
-	if *device.NodeType != exchDevice.NodeType {
-		pdr = exchange.PatchDeviceRequest{}
-		pdr.NodeType = *device.NodeType
-		if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
-			return errorhandler(NewSystemError(fmt.Sprintf("error adding node type for the exchange node. %v", err))), nil, nil
-		}
 	}
 
 	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device

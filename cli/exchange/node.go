@@ -54,7 +54,11 @@ func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	}
 }
 
-func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, nodeName string, nodeType string) {
+// Create a node with the given information.
+// The function will check if the node exists. If it exists, then only the token will be updated.
+// If checkNode is false, it means that the node existance has been check somewhere else, the function will
+// assume the node does not exist.
+func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName string, nodeType string, checkNode bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -85,24 +89,48 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, 
 	cliutils.SetWhetherUsingApiKey(userPw)
 	exchUrlBase := cliutils.GetExchangeUrl()
 
-	// Assume the user exists and try to create the node, but handle the error cases
-	putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, NodeType: nodeType, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch} // we only need to set the token
-	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
-	if httpCode == 401 {
-		// Invalid creds means the user doesn't exist, or pw is wrong, try to create it if we are in the public org
-		user, pw := cliutils.SplitIdToken(userPw)
-		if org == "public" && email != "" {
-			// In the public org we can create a user anonymously, so try that
-			msgPrinter.Printf("User %s/%s does not exist in the exchange with the specified password, creating it...", org, user)
-			msgPrinter.Println()
-			postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: false, Email: email}
-			httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrlBase, "orgs/"+org+"/users/"+user, "", []int{201}, postUserReq)
+	// validate the node type
+	if nodeType != "" && nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Wrong node type specified: %v. It must be 'device' or 'cluster'.", nodeType))
+	}
 
-			// User created, now try to create the node again
-			httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReq)
-		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("user '%s/%s' does not exist with the specified password or -e was not specified to be able to create it in the 'public' org.", org, user))
+	//Check if the node exists or not
+	var nodes ExchangeNodes
+	nodeExists := false
+	if checkNode {
+		httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200, 404, 401}, &nodes)
+		if httpCode == 401 {
+			// Invalid creds means the user doesn't exist, or pw is wrong
+			user, _ := cliutils.SplitIdToken(userPw)
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("user '%s' does not exist with the specified password.", user))
+		} else if httpCode == 200 {
+			nodeExists = true
 		}
+	}
+
+	var httpCode int
+	if nodeExists {
+		msgPrinter.Printf("Node %v exists. Only the node token will be updated.", nodeId)
+		msgPrinter.Println()
+		if arch != "" || nodeType != "" {
+			msgPrinter.Printf("The node arch and node type will be ignored if they are specified.")
+			msgPrinter.Println()
+		}
+		patchNodeReq := NodeExchangePatchToken{Token: nodeToken}
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, patchNodeReq)
+	} else {
+		// create the node with given node type
+		if nodeType == "" {
+			nodeType = persistence.DEVICE_TYPE_DEVICE
+		}
+		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, NodeType: nodeType, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch}
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
+	}
+
+	if httpCode == 401 {
+		// Invalid creds means the user doesn't exist, or pw is wrong
+		user, _ := cliutils.SplitIdToken(userPw)
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("user '%s' does not exist with the specified password.", user))
 	} else if httpCode == 403 {
 		// Access denied means the node exists and is owned by another user. Figure out who and tell the user
 		var nodesOutput exchange.GetDevicesResponse
@@ -113,6 +141,14 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, email string, arch string, 
 			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in exchange nodes output", cliutils.OrgAndCreds(org, nodeId)))
 		}
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("can not update existing node %s because it is owned by another user (%s)", nodeId, ourNode.Owner))
+	} else if httpCode == 201 {
+		if nodeExists {
+			msgPrinter.Printf("Node %v updated.", nodeId)
+			msgPrinter.Println()
+		} else {
+			msgPrinter.Printf("Node %v created.", nodeId)
+			msgPrinter.Println()
+		}
 	}
 }
 
@@ -172,14 +208,6 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 
 			verifyNodeUserInput(org, credToUse, node, nId, ui)
 			patch[k] = ui
-
-		} else if k == "nodeType" {
-			nodeType := ""
-			if err := json.Unmarshal(bytes, &nodeType); err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal nodeType attribute input %s: %v", v, err))
-			} else {
-				patch[k] = nodeType
-			}
 		} else if k == "pattern" {
 			pattern := ""
 			if err := json.Unmarshal(bytes, &pattern); err != nil {

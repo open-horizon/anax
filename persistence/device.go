@@ -321,6 +321,10 @@ func FindExchangeDevice(db *bolt.DB) (*ExchangeDevice, error) {
 			_, _, pattern := GetFormatedPatternString(devices[0].Pattern, devices[0].Org)
 			devices[0].Pattern = pattern
 		}
+
+		if devices[0].NodeType == "" {
+			devices[0].NodeType = DEVICE_TYPE_DEVICE
+		}
 		return &devices[0], nil
 	} else {
 		return nil, nil

@@ -18,6 +18,7 @@ import (
 	_ "github.com/open-horizon/anax/cli/helm_deployment"
 	_ "github.com/open-horizon/anax/cli/i18n_messages"
 	"github.com/open-horizon/anax/cli/key"
+	_ "github.com/open-horizon/anax/cli/kube_deployment"
 	"github.com/open-horizon/anax/cli/metering"
 	_ "github.com/open-horizon/anax/cli/native_deployment"
 	"github.com/open-horizon/anax/cli/node"
@@ -133,10 +134,9 @@ Environment Variables:
 	exNodeLong := exNodeListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the nodes, show the entire resource of each node, instead of just the name.")).Short('l').Bool()
 	exNodeCreateCmd := exNodeCmd.Command("create", msgPrinter.Sprintf("Create the node resource in the Horizon Exchange."))
 	exNodeCreateNodeIdTok := exNodeCreateCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be created. The node ID must be unique within the organization.")).Short('n').PlaceHolder("ID:TOK").String()
-	exNodeCreateNodeEmail := exNodeCreateCmd.Flag("email", msgPrinter.Sprintf("Your email address. Only needs to be specified if: the user specified in the -u flag does not exist, and you specified the 'public' org. If these things are true we will create the user and include this value as the email attribute.")).Short('e').String()
 	exNodeCreateNodeArch := exNodeCreateCmd.Flag("arch", msgPrinter.Sprintf("Your node architecture. If not specified, arch will leave blank.")).Short('a').String()
 	exNodeCreateNodeName := exNodeCreateCmd.Flag("name", msgPrinter.Sprintf("The name of your node")).Short('m').String()
-	exNodeCreateNodeType := exNodeCreateCmd.Flag("node-type", msgPrinter.Sprintf("The type of your node. The valid values are: device, cluster. If omitted, the default is device.")).Short('T').String()
+	exNodeCreateNodeType := exNodeCreateCmd.Flag("node-type", msgPrinter.Sprintf("The type of your node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists, only the node token will be updated.")).Short('T').Default("device").String()
 	exNodeCreateNode := exNodeCreateCmd.Arg("node", msgPrinter.Sprintf("The node to be created.")).String()
 	exNodeCreateToken := exNodeCreateCmd.Arg("token", msgPrinter.Sprintf("The token the new node should have.")).String()
 	exNodeUpdateCmd := exNodeCmd.Command("update", msgPrinter.Sprintf("Update an attribute of the node in the Horizon Exchange."))
@@ -317,9 +317,8 @@ Environment Variables:
 	registerCmd := app.Command("register", msgPrinter.Sprintf("Register this edge node with Horizon."))
 	nodeIdTok := registerCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.")).Short('n').PlaceHolder("ID:TOK").String()
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
-	nodeType := registerCmd.Flag("node-type", msgPrinter.Sprintf("The type of the node. The valid values are: device, cluster. If omitted, the default is device.")).Short('T').String()
+	nodeType := registerCmd.Flag("node-type", msgPrinter.Sprintf("The type of the node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists.")).Short('T').Default("device").String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
-	email := registerCmd.Flag("email", msgPrinter.Sprintf("Your email address. Only needs to be specified if: the node resource does not yet exist in the Horizon exchange, and the user specified in the -u flag does not exist, and you specified the 'public' org. If all of these things are true we will create the user and include this value as the email attribute.")).Short('e').String()
 	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See %v/node_reg_input.json and %v/more-examples.json. Specify -f- to read from stdin.", sample_dir, sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
 
 	nodeOrgFlag := registerCmd.Flag("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('o').String()
@@ -729,7 +728,7 @@ Environment Variables:
 	case exNodeUpdateCmd.FullCommand():
 		exchange.NodeUpdate(*exOrg, credToUse, *exNodeUpdateNode, *exNodeUpdateJsonFile)
 	case exNodeCreateCmd.FullCommand():
-		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeEmail, *exNodeCreateNodeArch, *exNodeCreateNodeName, *exNodeCreateNodeType)
+		exchange.NodeCreate(*exOrg, *exNodeCreateNodeIdTok, *exNodeCreateNode, *exNodeCreateToken, *exUserPw, *exNodeCreateNodeArch, *exNodeCreateNodeName, *exNodeCreateNodeType, true)
 	case exNodeSetTokCmd.FullCommand():
 		exchange.NodeSetToken(*exOrg, credToUse, *exNodeSetTokNode, *exNodeSetTokToken)
 	case exNodeConfirmCmd.FullCommand():
@@ -815,7 +814,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *email, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodeType, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodeType, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():
