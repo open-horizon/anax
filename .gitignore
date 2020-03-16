@@ -22,3 +22,4 @@ minikube-setup-by-test
 /cli/locales/*/out.gotext.json
 /i18n_messages/catalog.go
 /cli/i18n_messages/catalog.go
+go.sum

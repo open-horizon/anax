@@ -157,17 +157,17 @@ deps: pkgdeps i18n-catalog
 
 noi18n: pkgdeps all-nodeps
 
-$(EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
+$(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(EXECUTABLE); 
+	    $(COMPILE_ARGS) go build -o $(EXECUTABLE);
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
 	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The preferred exchange version is $$exch_pref_ver"
 
-$(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
+$(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
@@ -189,15 +189,15 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathli
 				HZN_LANG=$$loc $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
 			done && \
 	  		rm $(CLI_TEMP_EXECUTABLE); \
-	fi		
+	fi
 
-$(CSS_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
+$(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
 
-$(ESS_EXECUTABLE): $(shell find . -name '*.go' -not -path './vendor/*') gopathlinks
+$(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
@@ -430,7 +430,7 @@ fss-package: ess-docker-image css-docker-image
 
 clean: mostlyclean i18n-clean
 	@echo "Clean"
-	find ./vendor -maxdepth 1 -not -path ./vendor -and -not -iname "vendor.json" -print0 | xargs -0 rm -Rf
+	rm -f ./go.sum
 ifneq ($(TMPGOPATH),$(GOPATH))
 	rm -rf $(TMPGOPATH)
 endif
@@ -457,18 +457,9 @@ ess-clean:
 	-docker rmi $(ESS_UBI_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_UBI_IMAGE_STG) 2> /dev/null || :
 
-pkgdeps: $(TMPGOPATH)/bin/govendor
+pkgdeps:
 	@echo "Fetching dependencies"
-	cd $(PKGPATH) && \
-		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
-			govendor sync
-
-$(TMPGOPATH)/bin/govendor: gopathlinks
-	if [ ! -e "$(TMPGOPATH)/bin/govendor" ]; then \
-		echo "Fetching govendor"; \
-		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
-			go get -u github.com/kardianos/govendor; \
-	fi
+	go mod tidy
 
 i18n-catalog: pkgdeps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
@@ -526,13 +517,13 @@ install:
 
 format:
 	@echo "Formatting all Golang source code with gofmt"
-	find . -name '*.go' -not -path './vendor/*' -exec gofmt -l -w {} \;
+	find . -name '*.go' -exec gofmt -l -w {} \;
 
 lint: gopathlinks
 	@echo "Checking source code for style issues and statically-determinable errors"
-	-golint ./... | grep -v "vendor/"
+	-golint ./...
 	-cd $(PKGPATH) && \
-		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go vet $(shell find . -not -path './vendor/*' -iname '*.go' -print | xargs dirname | sort | uniq | xargs) 2>&1 | grep -vP "^exit.*"
+		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go vet $(shell find . -iname '*.go' -print | xargs dirname | sort | uniq | xargs) 2>&1 | grep -vP "^exit.*"
 
 pull: deps
 
