@@ -1,0 +1,216 @@
+#!/bin/bash
+
+# Script to start, restart, and stop anax inside a docker container
+
+# Note: this trap won't run while we are blocking on a foreground cmd, so when we start anax, we will have to run it in background and use wait.
+trap trapHandler SIGTERM
+
+# Note: the check for dont-unregister-on-exit is so we can do a restart/update of anax w/o unregistering.
+trapHandler() {
+	touch $HOME/container-stopping
+	if [[ -f "/root/dont-unregister-on-exit" ]]; then
+		echo "Exiting without unregistering, because in the process of a restart/update..."
+		exit 0
+	else
+		echo "Unregistering..."
+		/usr/bin/hzn unregister -f
+		echo "Done. Exiting..."
+		exit 0
+	fi
+}
+
+ANAX_LOG_LEVEL=${ANAX_LOG_LEVEL:-3}
+
+usage() {
+	echo "Usage: $0 {start|restart|status|block}"
+	exit 1
+}
+
+cmd="$1"
+
+# Check the exit status of the previously run command and exit if nonzero
+checkrc() {
+  if [[ $1 -ne 0 ]]; then
+  	if [[ -n "$2" ]]; then
+  		fromStr="from: $2"
+  	else
+  		fromStr="from the last command"
+  	fi
+    echo "Error: exit code $1 $fromStr"
+    exit $1
+  fi
+}
+
+defaultEnv() {
+	# Update several fields in anax.json
+	anaxJsonFile='/etc/horizon/anax.json'
+	echo "Modifying $anaxJsonFile for anax-in-container..."
+
+	# Read the json object in /etc/horizon/anax.json
+	anaxJson=$(jq . $anaxJsonFile)
+	checkrc $? "read anax.json"
+	cp $anaxJsonFile $anaxJsonFile.orig
+	checkrc $? "back up anax.json"
+
+	# Anax must be listening on port 8510 of all interfaces for it to be published to the host by docker (we will only publish it to 127.0.0.1 on the host)
+	anaxJson=$(jq ".Edge.APIListen = \"0.0.0.0:8510\" " <<< $anaxJson)
+	checkrc $? "change APIListen"
+
+	# Since they are running anax in a container, assume they could run multiple anax containers
+	anaxJson=$(jq ".Edge.MultipleAnaxInstances = true" <<< $anaxJson)
+	checkrc $? "change MultipleAnaxInstances"
+
+	# Configure anax running on mac host, if applicable
+	# The Mac can not mount the /var/run/docker.sock unix socket into the container. So on the host you must use a cmd like this to have the docker engine listen on a port:
+	#    socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
+	# Then on docker run use -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:2375 so the anax container can connect to that.
+	if [[ -z "$ANAX_DOCKER_ENDPOINT" && -n "$MAC_HOST" ]]; then
+		# for backward compat (this was the old way)
+		ANAX_DOCKER_ENDPOINT="tcp://$MAC_HOST:2375"
+	fi
+	if [[ -n "$ANAX_DOCKER_ENDPOINT" ]]; then
+	  anaxJson=$(jq ".Edge.DockerEndpoint = \"$ANAX_DOCKER_ENDPOINT\" " <<< $anaxJson)
+	  checkrc $? "change DockerEndpoint"
+	fi
+
+	# not needed as of 2.19.0...
+	#if [[ -d /private/var/tmp/horizon/service_storage ]]; then
+	  # Also can't mount /var, but can mount anything under /private
+	  #anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
+	  #checkrc $? "change ServiceStorage"
+	#fi
+
+	if [[ "${DEPLOYMENT_TYPE}" -ne "cluster" ]]; then
+		# setup fss domain socket path and ess auth path
+		if [[ -z "${DOCKER_NAME}" ]]; then
+			DOCKER_NAME="horizon1"
+		fi
+		if [[ "${HOST_OS}" == "mac" ]]; then
+			base_host_dir="/private/var/tmp/horizon/${DOCKER_NAME}"
+			mkdir -p /private/var/tmp
+			ln -s /var/tmp/horizon /private/var/tmp/horizon
+		else
+			base_host_dir="/var/tmp/horizon/${DOCKER_NAME}"
+		fi
+
+		if [[ -d ${base_host_dir}/ess-auth ]]; then
+			anaxJson=$(jq ".Edge.FileSyncService.AuthenticationPath = \"${base_host_dir}/ess-auth\" " <<< $anaxJson)
+			checkrc $? "change FileSyncService.AuthenticationPath"
+		fi
+		if [[ -d ${base_host_dir}/fss-domain-socket ]]; then
+			anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"${base_host_dir}/fss-domain-socket/essapi.sock\" " <<< $anaxJson)
+			checkrc $? "change FileSyncService.APIListen"
+		fi
+	else
+	    	hostname=$(hostname)
+        	anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"$hostname\" " <<< $anaxJson)
+		checkrc $? "change FileSyncService.APIListen"
+		
+		anaxJson=$(jq ".Edge.FileSyncService.APIProtocol = \"https\" " <<< $anaxJson)
+		checkrc $? "change FileSyncService.APIProtocol"
+
+		anaxJson=$(jq ".Edge.PublicKeyPath = \"\"" <<< $anaxJson)
+		checkrc $? "change PublicKeyPath"
+
+		anaxJson=$(jq ".Edge.CACertsPath = \"\"" <<< $anaxJson)
+		checkrc $? "change CACertsPath"
+		
+	fi
+
+	# Write the new json back to the file
+	echo "$anaxJson" > $anaxJsonFile
+	checkrc $? "write anax.json"
+}
+
+block() {
+	echo "Sleeping forever..."
+	while :; do sleep 2073600; done    # block forever w/o starting anax so the container stays up, and you can exec in, start anax manually, and debug
+}
+
+start() {
+	# Handle special case environments
+	if [[ "$1" == "block" ]]; then
+		block   # a special case to just sleep forever so we can get into the container and examine it
+	fi
+
+	# Source and export the variables in /etc/default/horizon. This file was either put there by the deb pkg,
+	# or mounted over by the launching horizon-container script
+	if [[ -f /etc/default/horizon ]]; then
+		echo "Sourcing/exporting /etc/default/horizon"
+		set -a   # automatically export all variable assignments
+		source /etc/default/horizon
+		checkrc $? "source /etc/default/horizon"
+		set +a   # undo
+	fi
+
+    # Do the config that is specific to running anax in a container, but needed for all environments, unless we want to define it ourselves
+    if [[ -z "$HZN_KEEP_CONFIG" ]]; then
+    	defaultEnv
+    fi
+
+	# Now repeatedly run anax...
+	numInvocations=0
+	while true; do
+		((numInvocations++))
+		anaxCmd="/usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json"
+		echo "$anaxCmd"
+		# We run this in the background and wait on it using wait, because that's the only way for traps to get control immediately
+		$anaxCmd &
+		pid=$!
+		wait $pid
+		if [[ $? -gt 128 ]]; then
+			# This means a signal interrupted wait. If it was sigterm, then our trap will run immediately, clean up, and exit.
+			# Else, we should go back to waiting on anax
+			wait $pid
+		fi
+		echo "Anax run number $numInvocations ended with exit code $?." >&2
+		if [[ -f $HOME/container-stopping ]]; then
+			echo "The docker container is stopping, so not respawning anax." >&2
+			break
+		fi
+		if [[ -n "$HZN_MAX_INVOCATIONS" && $numInvocations -ge $HZN_MAX_INVOCATIONS ]]; then
+			echo "The number of times anax has been invoked is >= HZN_MAX_INVOCATIONS ($HZN_MAX_INVOCATIONS), so not respawning anax." >&2
+			break
+		fi
+		echo "Respawning anax..." >&2
+		sleep 1		# in case the cmd above is failing, this loop won't consume 100% cpu
+	done
+}
+
+# Note: the way to stop anax w/o it restarting is to stop the container
+#stopanax() {
+#	killall /usr/horizon/bin/anax
+#}
+
+restart() {
+	killall anax 		# the start function will automatically restart it
+	#stopanax
+	#start
+}
+
+psg() {
+	ps aux|head -1
+	ps aux|grep -i $*|grep -v 'grep -'
+}
+
+status() {
+	psg /usr/horizon/bin/anax
+}
+
+# Main....
+case "$cmd" in
+	start)
+		start
+		;;
+	# stop)
+		# stopanax
+		# ;;
+	restart)
+		restart
+		;;
+	status)
+		status
+		;;
+	*)
+		usage
+esac
