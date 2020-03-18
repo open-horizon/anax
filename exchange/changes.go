@@ -34,11 +34,18 @@ func (e ExchangeChange) String() string {
 }
 
 // constants for resource type values
-const RESOURCE_NODE_MSG = "nodemsgs"        // A message was delivered to the node
-const RESOURCE_NODE = "node"                // A change was made to the node
-const RESOURCE_NODE_POLICY = "nodepolicies" // A change was made to the node policy
-const RESOURCE_NODE_ERROR = "nodeerrors"    // A change was made to the node errors
-const RESOURCE_SERVICE = "service"          // A change was made to a service
+const RESOURCE_NODE_MSG = "nodemsgs"                     // A message was delivered to the node
+const RESOURCE_AGBOT_MSG = "agbotmsgs"                   // A message was delivered to the agbot
+const RESOURCE_NODE = "node"                             // A change was made to the node
+const RESOURCE_AGBOT = "agbot"                           // A change was made to the agbot
+const RESOURCE_NODE_POLICY = "nodepolicies"              // A change was made to the node policy
+const RESOURCE_NODE_ERROR = "nodeerrors"                 // A change was made to the node errors
+const RESOURCE_SERVICE = "service"                       // A change was made to a service
+const RESOURCE_AGBOT_SERVED_POLICY = "agbotbusinesspols" // A served deployment policy change occurred
+const RESOURCE_AGBOT_SERVED_PATTERN = "agbotpatterns"    // A served pattern change occurred
+const RESOURCE_AGBOT_PATTERN = "pattern"                 // A pattern change occurred
+const RESOURCE_AGBOT_POLICY = "policy"                   // A policy change occurred
+const RESOURCE_AGBOT_SERVICE_POLICY = "servicepolicies"  // A service policy changed
 
 // functions for interrogating change types
 func (e ExchangeChange) IsMessage(node string) bool {
@@ -46,9 +53,19 @@ func (e ExchangeChange) IsMessage(node string) bool {
 	return changeNode == node && e.Resource == RESOURCE_NODE_MSG
 }
 
+func (e ExchangeChange) IsAgbotMessage(agbot string) bool {
+	changeAgbot := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+	return changeAgbot == agbot && e.Resource == RESOURCE_AGBOT_MSG
+}
+
 func (e ExchangeChange) IsNode(node string) bool {
 	changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
 	return changeNode == node && e.Resource == RESOURCE_NODE
+}
+
+func (e ExchangeChange) IsAgbot(agbot string) bool {
+	changeAgbot := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+	return changeAgbot == agbot && e.Resource == RESOURCE_AGBOT
 }
 
 func (e ExchangeChange) IsNodePolicy(node string) bool {
@@ -63,6 +80,28 @@ func (e ExchangeChange) IsNodeError(node string) bool {
 
 func (e ExchangeChange) IsService() bool {
 	return e.Resource == RESOURCE_SERVICE
+}
+
+func (e ExchangeChange) IsAgbotServedPolicy(agbot string) bool {
+	changeAgbot := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+	return changeAgbot == agbot && e.Resource == RESOURCE_AGBOT_SERVED_POLICY
+}
+
+func (e ExchangeChange) IsAgbotServedPattern(agbot string) bool {
+	changeAgbot := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+	return changeAgbot == agbot && e.Resource == RESOURCE_AGBOT_SERVED_PATTERN
+}
+
+func (e ExchangeChange) IsPattern() bool {
+	return e.Resource == RESOURCE_AGBOT_PATTERN
+}
+
+func (e ExchangeChange) IsDeploymentPolicy() bool {
+	return e.Resource == RESOURCE_AGBOT_POLICY
+}
+
+func (e ExchangeChange) IsServicePolicy() bool {
+	return e.Resource == RESOURCE_AGBOT_SERVICE_POLICY
 }
 
 // This is the struct we get back from the exchange API call.
@@ -94,15 +133,16 @@ func (e *ExchangeChanges) GetExchangeVersion() string {
 
 // This is the request body for the changes API call.
 type GetExchangeChangesRequest struct {
-	ChangeId   uint64 `json:"changeId"`
-	MaxRecords int    `json:"maxRecords,omitempty"`
+	ChangeId   uint64   `json:"changeId"`
+	MaxRecords int      `json:"maxRecords,omitempty"`
+	Orgs       []string `json:"orgList,omitempty"`
 }
 
 type ExchangeChangeIDResponse struct {
 	MaxChangeID uint64 `json:"maxChangeId,omitempty"`
 }
 
-// Retrieve the latest changes from the exchange.
+// Retrieve the latest change ID from the exchange.
 func GetExchangeChangeID(ec ExchangeContext) (*ExchangeChangeIDResponse, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting current max change ID")))
@@ -141,15 +181,16 @@ func GetExchangeChangeID(ec ExchangeContext) (*ExchangeChangeIDResponse, error) 
 }
 
 // Retrieve the latest changes from the exchange.
-func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int) (*ExchangeChanges, error) {
+func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int, orgList []string) (*ExchangeChanges, error) {
 
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v", maxRecords, changeId)))
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v in orgs %v", maxRecords, changeId, orgList)))
 
 	var resp interface{}
 	resp = new(ExchangeChanges)
 	req := GetExchangeChangesRequest{
 		ChangeId:   changeId,
 		MaxRecords: maxRecords,
+		Orgs:       orgList,
 	}
 
 	// Get resource changes in the exchange
@@ -176,7 +217,7 @@ func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int) (*E
 		} else {
 			changes := resp.(*ExchangeChanges)
 
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v", len(changes.Changes), changeId, changes.MostRecentChangeID)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v in orgs %v", len(changes.Changes), changeId, changes.MostRecentChangeID, orgList)))
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("Raw changes response: %v", changes)))
 			return changes, nil
 		}

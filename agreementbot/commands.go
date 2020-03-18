@@ -261,3 +261,102 @@ func NewMMSObjectPolicyEventCommand(msg *events.MMSObjectPolicyMessage) *MMSObje
 		Msg: *msg,
 	}
 }
+
+// ==============================================================================================================
+type MessageCommand struct {
+	Msg events.ExchangeChangeMessage
+}
+
+func (e MessageCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewMessageCommand(msg *events.ExchangeChangeMessage) *MessageCommand {
+	return &MessageCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type PatternChangeCommand struct {
+	Msg events.ExchangeChangeMessage
+}
+
+func (e PatternChangeCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewPatternChangeCommand(msg *events.ExchangeChangeMessage) *PatternChangeCommand {
+	return &PatternChangeCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type PolicyChangeCommand struct {
+	Msg events.ExchangeChangeMessage
+}
+
+func (e PolicyChangeCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewPolicyChangeCommand(msg *events.ExchangeChangeMessage) *PolicyChangeCommand {
+	return &PolicyChangeCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type ServicePolicyChangeCommand struct {
+	Msg events.ExchangeChangeMessage
+}
+
+func (e ServicePolicyChangeCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewServicePolicyChangeCommand(msg *events.ExchangeChangeMessage) *ServicePolicyChangeCommand {
+	return &ServicePolicyChangeCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type ObjectPoliciesChangeCommand struct {
+	Msg events.MMSObjectPoliciesMessage
+}
+
+func (e ObjectPoliciesChangeCommand) ShortString() string {
+	return e.Msg.ShortString()
+}
+
+func NewObjectPoliciesChangeCommand(msg *events.MMSObjectPoliciesMessage) *ObjectPoliciesChangeCommand {
+	return &ObjectPoliciesChangeCommand{
+		Msg: *msg,
+	}
+}
+
+// ==============================================================================================================
+type ServedPatternCommand struct {
+}
+
+func (e ServedPatternCommand) ShortString() string {
+	return "ServedPatternCommand"
+}
+
+func NewServedPatternCommand() *ServedPatternCommand {
+	return &ServedPatternCommand{}
+}
+
+// ==============================================================================================================
+type ServedPolicyCommand struct {
+}
+
+func (e ServedPolicyCommand) ShortString() string {
+	return "ServedPolicyCommand"
+}
+
+func NewServedPolicyCommand() *ServedPolicyCommand {
+	return &ServedPolicyCommand{}
+}

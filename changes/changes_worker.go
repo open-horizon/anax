@@ -248,7 +248,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	glog.V(3).Infof(chglog(fmt.Sprintf("looking for changes starting from ID %v", w.changeID)))
 
 	// Call the exchange to retrieve any changes since our last known change id.
-	changes, err := exchange.GetHTTPExchangeChangeHandler(w)(w.changeID, maxRecords)
+	changes, err := exchange.GetHTTPExchangeChangeHandler(w)(w.changeID, maxRecords, nil)
 
 	// Handle heartbeat state changes and errors. Returns true if there was an error to be handled.
 	if w.handleHeartbeatStateAndError(changes, err) {

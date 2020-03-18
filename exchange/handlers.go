@@ -392,11 +392,11 @@ func GetHTTPObjectPolicyUpdateReceivedHandler(ec ExchangeContext) ObjectPolicyUp
 }
 
 // A handler for retrieving changes from the exchange.
-type ExchangeChangeHandler func(changeId uint64, maxRecords int) (*ExchangeChanges, error)
+type ExchangeChangeHandler func(changeId uint64, maxRecords int, orgList []string) (*ExchangeChanges, error)
 
 func GetHTTPExchangeChangeHandler(ec ExchangeContext) ExchangeChangeHandler {
-	return func(changeId uint64, maxRecords int) (*ExchangeChanges, error) {
-		return GetExchangeChanges(ec, changeId, maxRecords)
+	return func(changeId uint64, maxRecords int, orgList []string) (*ExchangeChanges, error) {
+		return GetExchangeChanges(ec, changeId, maxRecords, orgList)
 	}
 }
 
@@ -406,5 +406,23 @@ type ExchangeMaxChangeIDHandler func() (*ExchangeChangeIDResponse, error)
 func GetHTTPExchangeMaxChangeIDHandler(ec ExchangeContext) ExchangeMaxChangeIDHandler {
 	return func() (*ExchangeChangeIDResponse, error) {
 		return GetExchangeChangeID(ec)
+	}
+}
+
+// A handler for retrieving which deployment policies (in which orgs) an agbot is serving.
+type AgbotServedDeploymentPolicyHandler func() (map[string]ServedBusinessPolicy, error)
+
+func GetHTTPAgbotServedDeploymentPolicy(ec ExchangeContext) AgbotServedDeploymentPolicyHandler {
+	return func() (map[string]ServedBusinessPolicy, error) {
+		return GetAgbotDeploymentPols(ec)
+	}
+}
+
+// A handler for retrieving which patterns (in which orgs) an agbot is serving.
+type AgbotServedPatternHandler func() (map[string]ServedPattern, error)
+
+func GetHTTPAgbotServedPattern(ec ExchangeContext) AgbotServedPatternHandler {
+	return func() (map[string]ServedPattern, error) {
+		return GetAgbotPatterns(ec)
 	}
 }
