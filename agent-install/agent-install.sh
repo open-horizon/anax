@@ -59,8 +59,6 @@ where:
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
 EndOfMessage
-
-quit 1
 }
 
 function version() {
@@ -539,42 +537,7 @@ function install_macos() {
         fi
     fi
 
-    CONFIG_MAC=~/.hzn/hzn.json
-    log_info "Configuring hzn..."
-    if [[ ! -z "${HZN_EXCHANGE_URL}" ]] && [[ ! -z "${HZN_FSS_CSSURL}" ]]; then
-	    if [ -z "$CERTIFICATE" ]; then
-	        if [[ ${CERTIFICATE:0:1} != "/" ]]; then
-		    ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
-	        else
-		    ABS_CERTIFICATE=${CERTIFICATE}
-	        fi
-    	    fi
-        if [[ -f "$CONFIG_MAC" ]]; then
-	        log_info "${CONFIG_MAC} config file exists, updating..."
-            set -x
-		if [ -z "$CERTIFICATE" ]; then
-			sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
-				-e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|"  "$CONFIG_MAC"
-		else
-			sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
-				-e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|" \
-				-e "s|\"HZN_MGMT_HUB_CERT_PATH\": \"[^ ]*\"|\"HZN_MGMT_HUB_CERT_PATH\": \""$ABS_CERTIFICATE"\"|" "$CONFIG_MAC"
-		fi
-            set +x
-            log_info "Config updated"
-        else
-	        log_info "${CONFIG_MAC} file doesn't exist, creating..."
-            set -x
-            mkdir -p "$(dirname "$CONFIG_MAC")"
-		if [ -z "$CERTIFICATE" ]; then
-			printf "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"\n}" > "$CONFIG_MAC"
-		else
-			printf "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\",\n  \"HZN_MGMT_HUB_CERT_PATH\": \""$ABS_CERTIFICATE"\"\n}" > "$CONFIG_MAC"
-		fi
-            set +x
-            log_info "Config created"
-        fi
-    fi
+    # DELETED config file (~/.hzn/hzn.json) creation 
 
 	start_horizon_service
 
@@ -1355,7 +1318,7 @@ function find_node_id() {
 			find_node_ip_address
 			for IP in $(echo $NODE_IP); do
 				ID_LINE=$(grep "$IP" "$NODE_ID_MAPPING_FILE" || [[ $? == 1 ]] )
-				if [[ ! "$ID_LINE" = "" ]];then break; fi
+				if [[ ! "$ID_LINE" = "" ]]; then break; fi
 			done
 			if [[ ! "$ID_LINE" = "" ]]; then
 				NODE_ID=$(echo $ID_LINE | cut -d "," -f 2)
@@ -1371,7 +1334,11 @@ function find_node_id() {
 }
 
 function find_node_ip_address() {
-	NODE_IP=$(hostname -I)
+	if [[ "$OS" == "macos" ]]; then
+        NODE_IP=$(ipconfig getifaddr en0)
+    else
+        NODE_IP=$(hostname -I)
+    fi
 }
 
 # Accept the parameters from command line
@@ -1393,7 +1360,7 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 		;;
 		z) AGENT_INSTALL_ZIP="$OPTARG"
 		;;
-		h) help
+		h) help; exit 0
 		;;
 		v) version
 		;;
@@ -1411,9 +1378,9 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 		;;
 		t) APT_REPO_BRANCH="$OPTARG"
 		;;
-		\?) echo "Invalid option: -$OPTARG"; help
+		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
-		:) echo "Option -$OPTARG requires an argument"; help
+		:) echo "Option -$OPTARG requires an argument"; help; exit 1
 		;;
 	esac
 done
