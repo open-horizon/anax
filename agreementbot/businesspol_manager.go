@@ -620,7 +620,7 @@ func (pm *BusinessPolicyManager) AddServicePolicy(businessPolOrg string, busines
 			pm.eventChannel <- events.NewServicePolicyChangedMessage(events.SERVICE_POLICY_CHANGED, businessPolOrg, businessPolName, serviceId, policyString)
 		}
 
-		// check if there are other business policies using the samve service policy, we need to update them too
+		// check if there are other business policies using the same service policy, we need to update them too
 		for org, orgMap := range pm.OrgPolicies {
 			if orgMap == nil {
 				continue

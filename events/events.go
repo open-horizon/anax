@@ -92,16 +92,24 @@ const (
 	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
 
 	// Object Policy related
-	OBJECT_POLICY_NEW     EventId = "OBJECT_POLICY_NEW"
-	OBJECT_POLICY_CHANGED EventId = "OBJECT_POLICY_CHANGED"
-	OBJECT_POLICY_DELETED EventId = "OBJECT_POLICY_DELETED"
+	OBJECT_POLICY_NEW       EventId = "OBJECT_POLICY_NEW"
+	OBJECT_POLICY_CHANGED   EventId = "OBJECT_POLICY_CHANGED"
+	OBJECT_POLICY_DELETED   EventId = "OBJECT_POLICY_DELETED"
+	OBJECT_POLICIES_CHANGED EventId = "OBJECT_POLICIES_CHANGED"
 
 	// Exchange change related
-	CHANGE_MESSAGE_TYPE     EventId = "EXCHANGE_CHANGE_MESSAGE"
-	CHANGE_NODE_TYPE        EventId = "EXCHANGE_CHANGE_NODE"
-	CHANGE_NODE_POLICY_TYPE EventId = "EXCHANGE_CHANGE_NODE_POLICY"
-	CHANGE_NODE_ERROR_TYPE  EventId = "EXCHANGE_CHANGE_NODE_ERROR"
-	CHANGE_SERVICE_TYPE     EventId = "EXCHANGE_CHANGE_SERVICE"
+	CHANGE_MESSAGE_TYPE           EventId = "EXCHANGE_CHANGE_MESSAGE"
+	CHANGE_AGBOT_MESSAGE_TYPE     EventId = "EXCHANGE_CHANGE_AGBOT_MESSAGE"
+	CHANGE_NODE_TYPE              EventId = "EXCHANGE_CHANGE_NODE"
+	CHANGE_NODE_POLICY_TYPE       EventId = "EXCHANGE_CHANGE_NODE_POLICY"
+	CHANGE_NODE_ERROR_TYPE        EventId = "EXCHANGE_CHANGE_NODE_ERROR"
+	CHANGE_SERVICE_TYPE           EventId = "EXCHANGE_CHANGE_SERVICE"
+	CHANGE_DEPLOYMENT_POLICY_TYPE EventId = "EXCHANGE_CHANGE_DEPLOYMENT_POLICY"
+	CHANGE_SERVICE_POLICY_TYPE    EventId = "EXCHANGE_CHANGE_SERVICE_POLICY"
+	CHANGE_AGBOT_SERVED_POLICY    EventId = "EXCHANGE_CHANGE_AGBOT_SERVED_POLICY"
+	CHANGE_AGBOT_SERVED_PATTERN   EventId = "EXCHANGE_CHANGE_AGBOT_SERVED_PATTERN"
+	CHANGE_AGBOT_PATTERN          EventId = "EXCHANGE_CHANGE_AGBOT_PATTERN"
+	CHANGE_AGBOT_POLICY           EventId = "EXCHANGE_CHANGE_AGBOT_POLICY"
 )
 
 type EndContractCause string
@@ -1850,8 +1858,35 @@ func NewMMSObjectPolicyMessage(id EventId, np interface{}, op interface{}) *MMSO
 	}
 }
 
+type MMSObjectPoliciesMessage struct {
+	event    Event
+	Policies interface{} // Holds a list of exchange.ObjectDestinationPolicy
+}
+
+func (w *MMSObjectPoliciesMessage) Event() Event {
+	return w.event
+}
+
+func (w *MMSObjectPoliciesMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *MMSObjectPoliciesMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Policies: %v", w.event, w.Policies)
+}
+
+func NewMMSObjectPoliciesMessage(id EventId, np interface{}) *MMSObjectPoliciesMessage {
+	return &MMSObjectPoliciesMessage{
+		event: Event{
+			Id: id,
+		},
+		Policies: np,
+	}
+}
+
 type ExchangeChangeMessage struct {
-	event Event
+	event  Event
+	change interface{}
 }
 
 func (w *ExchangeChangeMessage) Event() Event {
@@ -1863,7 +1898,15 @@ func (w *ExchangeChangeMessage) String() string {
 }
 
 func (w *ExchangeChangeMessage) ShortString() string {
-	return fmt.Sprintf("Event: %v", w.event)
+	return fmt.Sprintf("Event: %v, Change: %v", w.event, w.change)
+}
+
+func (w *ExchangeChangeMessage) SetChange(c interface{}) {
+	w.change = c
+}
+
+func (w *ExchangeChangeMessage) GetChange() interface{} {
+	return w.change
 }
 
 func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {

@@ -3,6 +3,7 @@ package exchange
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"time"
 )
 
 type Agbot struct {
@@ -118,4 +119,47 @@ func CreateAgbotPublicKeyPatch(keyPath string) *PatchAgbotPublicKey {
 	}
 
 	return pdr
+}
+
+func GetAgbotDeploymentPols(ec ExchangeContext) (map[string]ServedBusinessPolicy, error) {
+
+	var resp interface{}
+	resp = new(GetAgbotsBusinessPolsResponse)
+	targetURL := ec.GetExchangeURL() + "orgs/" + GetOrg(ec.GetExchangeId()) + "/agbots/" + GetId(ec.GetExchangeId()) + "/businesspols"
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(err.Error()))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			pols := resp.(*GetAgbotsBusinessPolsResponse).BusinessPols
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("retrieved agbot serviced deployment policy names from exchange %v", pols)))
+			return pols, nil
+		}
+	}
+}
+
+func GetAgbotPatterns(ec ExchangeContext) (map[string]ServedPattern, error) {
+
+	var resp interface{}
+	resp = new(GetAgbotsPatternsResponse)
+	targetURL := ec.GetExchangeURL() + "orgs/" + GetOrg(ec.GetExchangeId()) + "/agbots/" + GetId(ec.GetExchangeId()) + "/patterns"
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(err.Error()))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(tpErr.Error()))
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			pats := resp.(*GetAgbotsPatternsResponse).Patterns
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("retrieved agbot served patterns from exchange %v", pats)))
+			return pats, nil
+		}
+	}
+
 }
