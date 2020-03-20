@@ -76,10 +76,16 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 		} else {
 			glog.V(5).Infof(kwlog(fmt.Sprintf("LaunchContext(%T): %v", lc, lc)))
 
+			// ignore the native deployment
+			if lc.ContainerConfig().Deployment != "" {
+				glog.V(5).Infof(kwlog(fmt.Sprintf("ignoring non-Kube deployment.")))
+				return true
+			}
+
 			// Check the deployment to check if it is a kube deployment
-			deploymentConfig := lc.ContainerConfig().Deployment
+			deploymentConfig := lc.ContainerConfig().ClusterDeployment
 			if kd, err := persistence.GetKubeDeployment(deploymentConfig); err != nil {
-				glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube deployment: %v", err)))
+				glog.Errorf(kwlog(fmt.Sprintf("error getting kune deployment configuration: %v", err)))
 				return true
 			} else if _, err := persistence.AgreementDeploymentStarted(w.db, lc.AgreementId, lc.AgreementProtocol, kd); err != nil {
 				glog.Errorf(kwlog(fmt.Sprintf("received error updating database deployment state, %v", err)))
@@ -99,7 +105,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 
 		kdc, ok := cmd.Deployment.(*persistence.KubeDeploymentConfig)
 		if !ok {
-			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-kube deployment %v", cmd.Deployment)))
+			glog.Warningf(kwlog(fmt.Sprintf("ignoring non-Kube cancelation command %v", cmd)))
 			return true
 		} else if err := w.uninstallKubeOperator(kdc); err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("failed to uninstall kube operator %v", cmd.Deployment)))

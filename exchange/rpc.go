@@ -97,6 +97,14 @@ func (d SearchResultDevice) ShortString() string {
 	return d.String()
 }
 
+func (d *SearchResultDevice) GetNodeType() string {
+	if d.NodeType == "" {
+		return persistence.DEVICE_TYPE_DEVICE
+	} else {
+		return d.NodeType
+	}
+}
+
 // This function creates the exchange search message body.
 func CreateSearchMSRequest() *SearchExchangeMSRequest {
 
@@ -141,6 +149,14 @@ func (d Device) ShortString() string {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
+}
+
+func (d *Device) GetNodeType() string {
+	if d.NodeType == "" {
+		return persistence.DEVICE_TYPE_DEVICE
+	} else {
+		return d.NodeType
+	}
 }
 
 type GetDevicesResponse struct {

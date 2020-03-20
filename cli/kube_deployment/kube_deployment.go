@@ -37,9 +37,9 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 
 	// Grab the kube operator file from the deployment config. The file might be relative to the
 	// service definition file.
-	operatorFilePath := dep["kube_operator"].(string)
+	operatorFilePath := dep["operator_image"].(string)
 	if operatorFilePath = filepath.Clean(operatorFilePath); operatorFilePath == "." {
-		return true, "", "", errors.New(msgPrinter.Sprintf("cleaned %v resulted in an empty string.", dep["kube_operator"].(string)))
+		return true, "", "", errors.New(msgPrinter.Sprintf("cleaned %v resulted in an empty string.", dep["operator_image"].(string)))
 	}
 
 	if currentDir, ok := (ctx.Get("currentDir")).(string); !ok {
@@ -50,9 +50,9 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 
 	// Get the base 64 encoding of the kube operator, and put it into the deployment config.
 	if b64, err := ConvertFileToB64String(operatorFilePath); err != nil {
-		return true, "", "", errors.New(msgPrinter.Sprintf("unable to read kube operator %v, error %v", dep["kube_operator"], err))
+		return true, "", "", errors.New(msgPrinter.Sprintf("unable to read kube operator %v, error %v", dep["operator_image"], err))
 	} else {
-		dep["kube_operator"] = b64
+		dep["operator_image"] = b64
 	}
 
 	// Stringify and sign the deployment string.
@@ -84,12 +84,12 @@ func (p *KubeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
 
 	if dc, ok := dep.(map[string]interface{}); !ok {
 		return false, nil
-	} else if c, ok := dc["kube_operator"]; !ok {
+	} else if c, ok := dc["operator_image"]; !ok {
 		return false, nil
 	} else if ca, ok := c.(string); !ok {
-		return true, errors.New(msgPrinter.Sprintf("kube_operator must have a string type value, has %T", c))
+		return true, errors.New(msgPrinter.Sprintf("operator_image must have a string type value, has %T", c))
 	} else if len(ca) == 0 {
-		return true, errors.New(msgPrinter.Sprintf("kube_operator must be non-empty strings"))
+		return true, errors.New(msgPrinter.Sprintf("operator_image must be non-empty strings"))
 	} else {
 		return true, nil
 	}

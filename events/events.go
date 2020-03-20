@@ -173,24 +173,30 @@ func (s ImageDockerAuth) String() string {
 }
 
 type ContainerConfig struct {
-	Deployment          string            `json:"deployment"`           // A stringified (and escaped) JSON structure.
-	DeploymentSignature string            `json:"deployment_signature"` // Digital signature of the Deployment string.
-	DeploymentUserInfo  string            `json:"deployment_user_info"`
-	Overrides           string            `json:"overrides"`
-	ImageDockerAuths    []ImageDockerAuth `json:"image_auths"`
+	Deployment                 string            `json:"deployment"`           // A stringified (and escaped) JSON structure.
+	DeploymentSignature        string            `json:"deployment_signature"` // Digital signature of the Deployment string.
+	DeploymentUserInfo         string            `json:"deployment_user_info"`
+	ClusterDeployment          string            `json:"cluster_deployment"`           // A stringified (and escaped) JSON structure.
+	ClusterDeploymentSignature string            `json:"cluster_deployment_signature"` // Digital signature of the ClusterDeployment string.
+	Overrides                  string            `json:"overrides"`
+	ImageDockerAuths           []ImageDockerAuth `json:"image_auths"`
 }
 
 func (c ContainerConfig) String() string {
-	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, Overrides: %v, ImageDockerAuths: %v", c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.Overrides, c.ImageDockerAuths)
+	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, ClusterDeployment: %v, ClusterDeploymentSignature: %v, Overrides: %v, ImageDockerAuths: %v",
+		c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.ClusterDeployment, c.ClusterDeploymentSignature, c.Overrides, c.ImageDockerAuths)
 }
 
-func NewContainerConfig(deployment string, deploymentSignature string, deploymentUserInfo string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
+func NewContainerConfig(deployment string, deploymentSignature string, deploymentUserInfo string,
+	clusterDeployment string, clusterDeploymentSignature string, overrides string, imageDockerAuths []ImageDockerAuth) *ContainerConfig {
 	return &ContainerConfig{
-		Deployment:          deployment,
-		DeploymentSignature: deploymentSignature,
-		DeploymentUserInfo:  deploymentUserInfo,
-		Overrides:           overrides,
-		ImageDockerAuths:    imageDockerAuths,
+		Deployment:                 deployment,
+		DeploymentSignature:        deploymentSignature,
+		DeploymentUserInfo:         deploymentUserInfo,
+		ClusterDeployment:          clusterDeployment,
+		ClusterDeploymentSignature: clusterDeploymentSignature,
+		Overrides:                  overrides,
+		ImageDockerAuths:           imageDockerAuths,
 	}
 }
 

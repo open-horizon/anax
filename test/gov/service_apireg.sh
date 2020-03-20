@@ -508,7 +508,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
       }
     }
   },
-  "deploymentSignature":""
+  "deploymentSignature":"",
+  "clusterDeployment": {
+    "operator_image": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+  },
+  "clusterDeploymentSignature": ""
 }
 EOF
 echo -e "Register IBM/netspeed service $VERS:"
@@ -575,7 +579,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
       }
     }
   },
-  "deploymentSignature":""
+  "deploymentSignature":"",
+  "clusterDeployment": {
+    "operator_image": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+  },
+  "clusterDeploymentSignature": ""
 }
 EOF
 echo -e "Register e2edev@somecomp.com/netspeed service $VERS:"
@@ -744,6 +752,34 @@ then
     echo -e "hzn exchange service publish failed for PWS."
     exit 2
 fi
+
+VERS="1.0.0"
+cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
+{
+  "label":"Cluster service test for x86_64",
+  "description":"Cluster Service Test service1",
+  "public":true,
+  "sharable":"multiple",
+  "url":"k8s-service1",
+  "version":"$VERS",
+  "arch":"amd64",
+  "requiredServices":[
+  ],
+  "clusterDeployment": {
+    "operator_image": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+  },
+  "clusterDeploymentSignature": ""
+}
+EOF
+
+echo -e "Register k8s-service1 $VERS:"
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key
+if [ $? -ne 0 ]
+then
+    echo -e "hzn exchange service publish failed for k8s-service1."
+    exit 2
+fi
+
 
 echo -e "Listing services:"
 hzn exchange service list -o e2edev@somecomp.com
@@ -1213,6 +1249,7 @@ LOCVERS1="2.0.6"
 LOCVERS2="2.0.7"
 GPSVERS="1.0.0"
 UHSVERS="1.0.0"
+K8SVERS="1.0.0"
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   MHI_240=240
   MHI_180=180
@@ -1429,6 +1466,22 @@ read -d '' msdef <<EOF
         "missing_heartbeat_interval": $MHI_90,
         "check_agreement_status": $CAS_60
       }
+    },
+    {
+      "serviceUrl":"k8s-service1",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$K8SVERS",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {}
     }
   ],
   "agreementProtocols": [
@@ -1967,6 +2020,44 @@ echo -e "Register business policy for usehelllo:"
   RES=$(echo "$bphellodef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
 
 results "$RES"
+
+read -d '' bpk8ssvc1def <<EOF
+{
+  "label": "business policy for k8s-service1",
+  "description": "for gpstest",
+  "service": {
+    "name": "k8s-service1",
+    "org": "e2edev@somecomp.com",
+    "arch": "amd64",
+    "serviceVersions": [
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+     ]
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NOK8S",
+          "value": false
+      }
+  ],
+  "constraints": [
+    "purpose == network-testing"
+  ]
+}
+EOF
+echo -e "Register business policy for gpstest:"
+
+  RES=$(echo "$bpk8ssvc1def" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_k8s" | jq -r '.')
+
+results "$RES"
+
 
 # ======================= Service Policies that use top level services ======================
 read -d '' nspoldef <<EOF

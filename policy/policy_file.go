@@ -422,7 +422,7 @@ func (self *Policy) Is_Self_Consistent(keyFileNames []string,
 		// If the workloads use different API specs, return the error. API specs can differ by version from one workload to
 		// another but they cant differ by architecture, nor can one workload require an API spec that is not required
 		// by another workload in this policy file.
-		if workloadOrServiceResolver != nil && workload.WorkloadURL != "" && workload.Deployment == "" {
+		if workloadOrServiceResolver != nil && workload.WorkloadURL != "" && workload.Deployment == "" && workload.ClusterDeployment == "" {
 			if ix == 0 {
 				if firstASRL, err := workloadOrServiceResolver(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err == nil {
 					referencedApiSpecRefs = firstASRL

@@ -106,6 +106,14 @@ func newExchangeDevice(id string, token string, name string, nodeType string, to
 	}, nil
 }
 
+func (e *ExchangeDevice) GetNodeType() string {
+	if e.NodeType == "" {
+		return DEVICE_TYPE_DEVICE
+	} else {
+		return e.NodeType
+	}
+}
+
 // a convenience function b/c we know there is really only one device
 func (e *ExchangeDevice) InvalidateExchangeToken(db *bolt.DB) (*ExchangeDevice, error) {
 	exchDev, err := FindExchangeDevice(db)

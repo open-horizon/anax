@@ -234,7 +234,23 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking self consistency of TsAndCs, %v", err)))
 			err_log_event = fmt.Sprintf("Received error checking self consistency of TsAndCs: %v", err)
 			handled = true
-		} else if pmatch, err := w.MatchPattern(tcPolicy); err != nil {
+		} else if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
+			err_log_event = fmt.Sprintf("Device is not configured to accept agreement yet.")
+			handled = true
+		} else if dev == nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving device from db: %v", err)))
+			err_log_event = fmt.Sprintf("Received error retrieving device from db: %v", err)
+			handled = true
+		} else if nmatch, err := w.MatchNodeType(tcPolicy, dev); err != nil {
+			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking node type match, %v", err)))
+			err_log_event = fmt.Sprintf("Received error checking node type match, %v", err)
+			handled = true
+		} else if !nmatch {
+			glog.Errorf(BPPHlogString(w.Name(), "node type matching failed, ignoring proposal"))
+			err_log_event = "Node type matching failed, ignoring proposal"
+			handled = true
+		} else if pmatch, err := w.MatchPattern(tcPolicy, dev); err != nil {
 			glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("received error checking pattern name match, %v", err)))
 			err_log_event = fmt.Sprintf("Received error checking pattern name match, %v", err)
 			handled = true
@@ -358,12 +374,44 @@ func (w *BaseProducerProtocolHandler) saveSigningKeys(pol *policy.Policy) error 
 	return nil
 }
 
+// check if the proposal the correct deployment configuration provided for this node
+func (w *BaseProducerProtocolHandler) MatchNodeType(tcPolicy *policy.Policy, dev *persistence.ExchangeDevice) (bool, error) {
+	if dev == nil {
+		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
+	} else if tcPolicy.Workloads == nil || len(tcPolicy.Workloads) == 0 {
+		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("no workload is supplied in the proposal.")))
+		return false, nil
+	} else {
+		// make sure that the deployment configuration match the node type
+		nodeType := dev.GetNodeType()
+		workload := tcPolicy.Workloads[0]
+		if nodeType == persistence.DEVICE_TYPE_DEVICE {
+			if workload.Deployment == "" {
+				if workload.ClusterDeployment == "" {
+					glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("no deployment configuration is provided.")))
+				} else {
+					glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("wrong deployment configuration is provided for the node type '%v'.", nodeType)))
+				}
+				return false, nil
+			}
+		} else if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+			if workload.ClusterDeployment == "" {
+				if workload.Deployment == "" {
+					glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("no cluster deployment configuration is provided.")))
+				} else {
+					glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("wrong deployment configuration is provided for the node type '%v'.", nodeType)))
+				}
+			}
+		}
+
+		glog.V(5).Infof(BPPHlogString(w.Name(), fmt.Sprintf("workload has the correct deployment for the node type '%v'", nodeType)))
+		return true, nil
+	}
+}
+
 // check if the proposal has the same pattern
-func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy) (bool, error) {
-	// get the pattern reg from the device
-	if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
-		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error retrieving device from db: %v", err)))
-	} else if dev == nil {
+func (w *BaseProducerProtocolHandler) MatchPattern(tcPolicy *policy.Policy, dev *persistence.ExchangeDevice) (bool, error) {
+	if dev == nil {
 		return false, fmt.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("device is not configured to accept agreement yet.")))
 	} else {
 		// the patter id from the proposal is in the format of org/pattern,
