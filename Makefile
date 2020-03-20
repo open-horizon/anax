@@ -25,9 +25,11 @@ DEFAULT_UI = api/static/index.html
 # used for creating hzn man pages
 CLI_TEMP_EXECUTABLE := cli/hzn.tmp
 
+DOCKER_IMAGE_REPO ?= openhorizon
+
 ANAX_CONTAINER_DIR := anax-in-container
 DOCKER_IMAGE_VERSION ?= 2.23.10$(BRANCH_NAME)
-DOCKER_IMAGE_BASE = openhorizon/$(arch)_anax
+DOCKER_IMAGE_BASE = $(DOCKER_IMAGE_REPO)/$(arch)_anax
 DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing$(BRANCH_NAME)
 DOCKER_IMAGE_PROD = $(DOCKER_IMAGE_BASE):stable$(BRANCH_NAME)
@@ -39,13 +41,23 @@ DOCKER_MAYBE_CACHE ?= --no-cache
 I18N_OUT_GOTEXT_FILES := locales/*/out.gotext.json
 I18N_CATALOG_FILE := i18n_messages/catalog.go
 
-AGBOT_IMAGE_BASE=openhorizon/$(arch)_agbot
+AGBOT_IMAGE_BASE=$(DOCKER_IMAGE_REPO)/$(arch)_agbot
 AGBOT_IMAGE = $(AGBOT_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
 AGBOT_IMAGE_STG = $(AGBOT_IMAGE_BASE):testing$(BRANCH_NAME)
 AGBOT_IMAGE_PROD = $(AGBOT_IMAGE_BASE):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 AGBOT_IMAGE_LATEST = $(AGBOT_IMAGE_BASE):latest$(BRANCH_NAME)
 
+# anax container running in kubernetes
+ANAX_K8S_CONTAINER_DIR := anax-in-k8s
+ANAX_K8S_IMAGE_BASE = $(DOCKER_IMAGE_BASE)_k8s
+ANAX_K8S_IMAGE_STG = $(ANAX_K8S_IMAGE_BASE):testing$(BRANCH_NAME)
+ANAX_K8S_IMAGE_PROD = $(ANAX_K8S_IMAGE_BASE):stable$(BRANCH_NAME)
+
+# for redhat ubi
+ANAX_K8S_UBI_IMAGE_NAME = $(ANAX_K8S_IMAGE_BASE)_ubi
+ANAX_K8S_UBI_IMAGE_STG = $(ANAX_K8S_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
+ANAX_K8S_UBI_IMAGE_PROD = $(ANAX_K8S_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
 
 # Variables that control packaging the file sync service containers
 FSS_OVERRIDE ?= ""
@@ -56,7 +68,7 @@ CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
 CSS_IMAGE_VERSION ?= 1.1.0$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
-CSS_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service
+CSS_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
 CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing$(BRANCH_NAME)
 CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -64,7 +76,7 @@ CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
 CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest$(BRANCH_NAME)
 
 # for redhat ubi
-CSS_UBI_IMAGE_NAME = openhorizon/$(arch)_cloud-sync-service_ubi
+CSS_UBI_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_cloud-sync-service_ubi
 CSS_UBI_IMAGE = $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION)
 CSS_UBI_IMAGE_STG = $(CSS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
 CSS_UBI_IMAGE_PROD = $(CSS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -77,7 +89,7 @@ ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
 ESS_IMAGE_VERSION ?= 1.1.0$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
-ESS_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service
+ESS_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
 ESS_IMAGE_STG = $(ESS_IMAGE_NAME):testing$(BRANCH_NAME)
 ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -85,7 +97,7 @@ ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
 ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest$(BRANCH_NAME)
 
 # for redhat ubi
-ESS_UBI_IMAGE_NAME = openhorizon/$(arch)_edge-sync-service_ubi
+ESS_UBI_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_edge-sync-service_ubi
 ESS_UBI_IMAGE = $(ESS_UBI_IMAGE_NAME):$(ESS_IMAGE_VERSION)
 ESS_UBI_IMAGE_STG = $(ESS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
 ESS_UBI_IMAGE_PROD = $(ESS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -344,6 +356,33 @@ promote-agbot:
 	docker push $(AGBOT_IMAGE_LATEST)
 
 promote-mac-pkg-and-docker: promote-mac-pkg promote-docker promote-agbot
+
+anax-k8s-image:
+	rm -rf $(ANAX_K8S_CONTAINER_DIR)/bin/*
+	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)/bin 
+	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)/bin
+	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
+	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile .
+	@echo "Producing ANAX K8S docker image $(ANAX_K8S_UBI_IMAGE_STG)"
+	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_UBI_IMAGE_STG) -f Dockerfile.ubi .
+	
+anax-k8s-push-only:	
+	@echo "Push anax k8s docker image $(ANAX_K8S_IMAGE_STG)"
+	docker push $(ANAX_K8S_IMAGE_STG)
+	@echo "Push anax k8s docker iamge $(ANAX_K8S_UBI_IMAGE_STG)"
+	docker push $(ANAX_K8S_UBI_IMAGE_STG)
+
+anax-k8s-promote:
+	@echo "Promoting $(ANAX_K8S_IMAGE_STG)"
+	docker pull $(ANAX_K8S_IMAGE_STG)
+	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_PROD)
+	docker push $(ANAX_K8S_IMAGE_PROD)
+	@echo "Promoting $(ANAX_K8S_UBI_IMAGE_STG)"
+	docker pull $(ANAX_K8S_UBI_IMAGE_STG)
+	docker tag $(ANAX_K8S_UBI_IMAGE_STG) $(ANAX_K8S_UBI_IMAGE_PROD)
+	docker push $(ANAX_K8S_UBI_IMAGE_PROD)
+
+anax-k8s-package: anax-k8s-image anax-k8s-push-only
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"

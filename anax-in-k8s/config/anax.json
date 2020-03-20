@@ -1,0 +1,33 @@
+{
+  "Edge": {
+    "APIListen": "127.0.0.1:8510",
+    "DBPath": "/var/horizon/",
+    "GethURL": "http://127.0.0.1:8545",
+    "DockerEndpoint": "unix:///var/run/docker.sock",
+    "StaticWebContent": "/usr/horizon/web/",
+    "PublicKeyPath": "/etc/horizon/trust/mtn-publicKey.pem",
+    "TrustSystemCACerts": true,
+    "CACertsPath": "/etc/horizon/trust/horizon.pem",
+    "DefaultCPUSet": "",
+    "ServiceStorage": "",
+    "ExchangeURL": "",
+    "PolicyPath": "/etc/horizon/policy.d/",
+    "ExchangeHeartbeat": 60,
+    "ExchangeVersionCheckIntervalM": 720,
+    "ExchangeMessageTTL": 1800,
+    "AgreementTimeoutS": 600,
+    "ReportDeviceStatus": true,
+    "TrustCertUpdatesFromOrg": true,
+    "TrustDockerAuthFromOrg": true,
+    "ServiceUpgradeCheckIntervalS": 300,
+    "MultipleAnaxInstances": false,
+    "FileSyncService": {
+      "CSSURL": ""
+    }
+  },
+  "ArchSynonyms": {
+    "x86_64": "amd64",
+    "armhf": "arm",
+    "aarch64": "arm64"
+  }
+}
