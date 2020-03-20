@@ -75,11 +75,13 @@ type MicroserviceDefinition struct {
 	DownloadURL                  string               `json:"downloadUrl"`
 	MatchHardware                HardwareMatch        `json:"matchHardware"`
 	UserInputs                   []UserInput          `json:"userInput"`
-	Workloads                    []WorkloadDeployment `json:"workloads"`            // Only used by old microservice definitions
-	Public                       bool                 `json:"public"`               // Used by only services, indicates if the definition is public or not.
-	RequiredServices             []ServiceDependency  `json:"requiredServices"`     // Used only by services, the list of services that this service depends on.
-	Deployment                   string               `json:"deployment"`           // Used only by services, the deployment configuration of the implementation packages.
-	DeploymentSignature          string               `json:"deployment_signature"` // Used only by services, the signature of the deployment configuration.
+	Workloads                    []WorkloadDeployment `json:"workloads"`                  // Only used by old microservice definitions
+	Public                       bool                 `json:"public"`                     // Used by only services, indicates if the definition is public or not.
+	RequiredServices             []ServiceDependency  `json:"requiredServices"`           // Used only by services, the list of services that this service depends on.
+	Deployment                   string               `json:"deployment"`                 // Used only by services, the deployment configuration of the implementation packages.
+	DeploymentSignature          string               `json:"deployment_signature"`       // Used only by services, the signature of the deployment configuration.
+	ClusterDeployment            string               `json:"clusterDeployment"`          // used for cluster node type
+	ClusterDeploymentSignature   string               `json:"clusterDeploymentSignature"` // used for cluster node type
 	LastUpdated                  string               `json:"lastUpdated"`
 	Archived                     bool                 `json:"archived"`
 	Name                         string               `json:"name"`                  //the sensor_name passed in from the POST /service call
@@ -118,6 +120,8 @@ func (w MicroserviceDefinition) String() string {
 		"RequiredServices: %v, "+
 		"Deployment: %v, "+
 		"DeploymentSignature: %v, "+
+		"ClusterDeployment: %v, "+
+		"ClusterDeploymentSignature: %v, "+
 		"LastUpdated: %v, "+
 		"Archived: %v, "+
 		"Name: %v, "+
@@ -136,7 +140,8 @@ func (w MicroserviceDefinition) String() string {
 		"UpgradeNewMsId: %v, "+
 		"MetadataHash: %v",
 		w.Id, w.Owner, w.Label, w.Description, w.SpecRef, w.Org, w.Version, w.Arch, w.Sharable, w.DownloadURL,
-		w.MatchHardware, w.UserInputs, w.Workloads, w.Public, w.RequiredServices, w.Deployment, w.DeploymentSignature, w.LastUpdated,
+		w.MatchHardware, w.UserInputs, w.Workloads, w.Public, w.RequiredServices,
+		w.Deployment, w.DeploymentSignature, w.ClusterDeployment, w.ClusterDeploymentSignature, w.LastUpdated,
 		w.Archived, w.Name, w.RequestedArch, w.UpgradeVersionRange, w.AutoUpgrade, w.ActiveUpgrade,
 		w.UpgradeStartTime, w.UpgradeMsUnregisteredTime, w.UpgradeAgreementsClearedTime, w.UpgradeExecutionStartTime, w.UpgradeMsReregisteredTime,
 		w.UpgradeFailedTime, w.UngradeFailureReason, w.UngradeFailureDescription, w.UpgradeNewMsId, w.MetadataHash)

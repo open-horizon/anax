@@ -99,6 +99,12 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	// Compensate for old service definition files
 	svcFile.SupportVersionRange()
 
+	// validate the service attributes
+	ec := cliutils.GetUserExchangeContext(org, userPw)
+	if err := common.ValidateService(exchange.GetHTTPServiceDefResolverHandler(ec), &svcFile, msgPrinter); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Error validating the input service: %v", err))
+	}
+
 	SignAndPublish(&svcFile, org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage, registryTokens, !overwrite)
 
 	// create service policy if servicePolicyFilePath is defined
@@ -123,51 +129,9 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 
 	svcInput := exchange.ServiceDefinition{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
-	// The deployment field can be json object (map), string (for pre-signed), or nil
-	switch dep := sf.Deployment.(type) {
-	case nil:
-		svcInput.Deployment = ""
-		if sf.DeploymentSignature != "" {
-			cliutils.Warning(msgPrinter.Sprintf("the 'deploymentSignature' field is non-blank, but being ignored, because the 'deployment' field is null"))
-		}
-		svcInput.DeploymentSignature = ""
-
-	case map[string]interface{}:
-		// We know we need to sign the deployment config, so make sure a real key file was provided.
-		keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
-
-		// Construct and sign the deployment string.
-		msgPrinter.Printf("Signing service...")
-		msgPrinter.Println()
-
-		// Setup the Plugin context with variables that might be needed by 1 or more of the plugins.
-		ctx := plugin_registry.NewPluginContext()
-		ctx.Add("currentDir", filepath.Dir(jsonFilePath))
-		ctx.Add("dontTouchImage", dontTouchImage)
-		ctx.Add("pullImage", pullImage)
-
-		// Allow the right plugin to sign the deployment configuration.
-		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, keyFilePath, ctx)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to sign deployment config: %v", err))
-		}
-
-		// Update the exchange service input object with the deployment string and sig, so that the service
-		// can be created in the exchange.
-		svcInput.Deployment = depStr
-		svcInput.DeploymentSignature = sig
-
-	case string:
-		// Means this service is pre-signed
-		if sf.Deployment != "" && sf.DeploymentSignature == "" {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("the 'deployment' field is a non-empty string, which implies this service is pre-signed, but the 'deploymentSignature' field is empty"))
-		}
-		svcInput.Deployment = dep
-		svcInput.DeploymentSignature = sf.DeploymentSignature
-
-	default:
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("'deployment' field is invalid type. It must be either a json object or a string (for pre-signed)"))
-	}
+	baseDir := filepath.Dir(jsonFilePath)
+	svcInput.Deployment, svcInput.DeploymentSignature = SignDeployment(sf.Deployment, sf.DeploymentSignature, baseDir, false, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage)
+	svcInput.ClusterDeployment, svcInput.ClusterDeploymentSignature = SignDeployment(sf.ClusterDeployment, sf.ClusterDeploymentSignature, baseDir, true, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage)
 
 	// Create or update resource in the exchange
 	exchId := cutil.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
@@ -241,6 +205,66 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	return
 }
 
+func SignDeployment(deployment interface{}, deploymentSignature string, baseDir string, isCluster bool, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool) (string, string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// tags for related filed name in the service, for proper output messages
+	tag_d := "deployment"
+	tag_dsig := "deploymentSignature"
+	if isCluster {
+		tag_d = "clusterDeployment"
+		tag_dsig = "clusterDeploymentSignature"
+	}
+
+	// The deployment field can be json object (map), string (for pre-signed), or nil
+	var newDeployment, newDeploymentSignature string
+	switch dep := deployment.(type) {
+	case nil:
+		deployment = ""
+		if deploymentSignature != "" {
+			cliutils.Warning(msgPrinter.Sprintf("the '%v' field is non-blank, but being ignored, because the '%v' field is null", tag_dsig, tag_d))
+		}
+		newDeploymentSignature = ""
+
+	case map[string]interface{}:
+		// We know we need to sign the deployment config, so make sure a real key file was provided.
+		keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+
+		// Construct and sign the deployment string.
+		msgPrinter.Printf("Signing service...")
+		msgPrinter.Println()
+
+		// Setup the Plugin context with variables that might be needed by 1 or more of the plugins.
+		ctx := plugin_registry.NewPluginContext()
+		ctx.Add("currentDir", baseDir)
+		ctx.Add("dontTouchImage", dontTouchImage)
+		ctx.Add("pullImage", pullImage)
+
+		// Allow the right plugin to sign the deployment configuration.
+		depStr, sig, err := plugin_registry.DeploymentConfigPlugins.SignByOne(dep, keyFilePath, ctx)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to sign deployment config: %v", err))
+		}
+
+		newDeployment = depStr
+		newDeploymentSignature = sig
+
+	case string:
+		// Means this service is pre-signed
+		if deployment != "" && deploymentSignature == "" {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("the '%v' field is a non-empty string, which implies this service is pre-signed, but the '%v' field is empty", tag_d, tag_dsig))
+		}
+		newDeployment = dep
+		newDeploymentSignature = deploymentSignature
+
+	default:
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("'%v' field is invalid type. It must be either a json object or a string (for pre-signed)", tag_d))
+	}
+
+	return newDeployment, newDeploymentSignature
+}
+
 // ServiceVerify verifies the deployment strings of the specified service resource in the exchange.
 // The userPw can be the userId:password auth or the nodeId:token auth.
 func ServiceVerify(org, userPw, service, keyFilePath string) {
@@ -267,13 +291,27 @@ func ServiceVerify(org, userPw, service, keyFilePath string) {
 	//take default key if empty, make sure the key exists
 	keyFilePath = cliutils.VerifySigningKeyInput(keyFilePath, true)
 
-	verified, err := verify.Input(keyFilePath, svc.DeploymentSignature, []byte(svc.Deployment))
-	if err != nil {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("error verifying deployment string with %s: %v", keyFilePath, err))
-	} else if !verified {
-		msgPrinter.Printf("Deployment string was not signed with the private key associated with this public key %v.", keyFilePath)
-		msgPrinter.Println()
-		someInvalid = true
+	// verify the deployment
+	if svc.Deployment != "" {
+		verified, err := verify.Input(keyFilePath, svc.DeploymentSignature, []byte(svc.Deployment))
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("error verifying deployment string with %s: %v", keyFilePath, err))
+		} else if !verified {
+			msgPrinter.Printf("Deployment string was not signed with the private key associated with this public key %v.", keyFilePath)
+			msgPrinter.Println()
+			someInvalid = true
+		}
+	}
+	// verify the cluster deployment
+	if svc.ClusterDeployment != "" {
+		verified, err := verify.Input(keyFilePath, svc.ClusterDeploymentSignature, []byte(svc.ClusterDeployment))
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("error verifying cluster deployment string with %s: %v", keyFilePath, err))
+		} else if !verified {
+			msgPrinter.Printf("Cluster deployment string was not signed with the private key associated with this public key %v.", keyFilePath)
+			msgPrinter.Println()
+			someInvalid = true
+		}
 	}
 	// else if they all turned out to be valid, we will tell them that at the end
 

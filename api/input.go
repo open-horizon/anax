@@ -26,6 +26,7 @@ type HorizonDevice struct {
 	Org                *string      `json:"organization"`
 	Pattern            *string      `json:"pattern"` // a simple name, not prefixed with the org
 	Name               *string      `json:"name,omitempty"`
+	NodeType           *string      `json:"nodeType,omitempty"`
 	Token              *string      `json:"token,omitempty"`
 	TokenLastValidTime *uint64      `json:"token_last_valid_time,omitempty"`
 	TokenValid         *bool        `json:"token_valid,omitempty"`
@@ -55,6 +56,11 @@ func (h HorizonDevice) String() string {
 		name = *h.Name
 	}
 
+	nodeType := "not set"
+	if h.NodeType != nil {
+		nodeType = *h.NodeType
+	}
+
 	cred := "not set"
 	if h.Token != nil && *h.Token != "" {
 		cred = "set"
@@ -75,7 +81,7 @@ func (h HorizonDevice) String() string {
 		ha = *h.HA
 	}
 
-	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, %v", id, org, pat, name, cred, tlvt, tv, ha, h.Config)
+	return fmt.Sprintf("Id: %v, Org: %v, Pattern: %v, Name: %v, NodeType: %v, Token: [%v], TokenLastValidTime: %v, TokenValid: %v, HA: %v, %v", id, org, pat, name, nodeType, cred, tlvt, tv, ha, h.Config)
 }
 
 // This is a type conversion function but note that the token field within the persistent
@@ -86,6 +92,7 @@ func ConvertFromPersistentHorizonDevice(pDevice *persistence.ExchangeDevice) *Ho
 		Org:                &pDevice.Org,
 		Pattern:            &pDevice.Pattern,
 		Name:               &pDevice.Name,
+		NodeType:           &pDevice.NodeType,
 		TokenValid:         &pDevice.TokenValid,
 		TokenLastValidTime: &pDevice.TokenLastValidTime,
 		HA:                 &pDevice.HA,

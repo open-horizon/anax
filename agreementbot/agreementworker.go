@@ -626,7 +626,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error decoding device publicKey for node: %s, %v", wi.Device.Id, err)))
 
 		// Create message target for protocol message
-	} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, publicKeyBytes, wi.Device.MsgEndPoint); err != nil {
+	} else if mt, err := exchange.CreateMessageTarget(wi.Device.Id, nil, publicKeyBytes, ""); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating message target: %v", err)))
 
 		// Initiate the protocol

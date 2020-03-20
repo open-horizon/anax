@@ -149,6 +149,12 @@ func CreateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewAPIUserInputError("null and must not be", "device.token")), nil, nil
 	}
 
+	// the default node type is 'device'
+	if device.NodeType == nil || *device.NodeType == "" {
+		np := persistence.DEVICE_TYPE_DEVICE
+		device.NodeType = &np
+	}
+
 	// HA validation. Since the HA declaration is a boolean, there is nothing to validate for HA.
 
 	// make sure current exchange version meet the requirement
@@ -168,10 +174,16 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// Verify the pattern org if the patter is not in the same org as the device.
 
-	// Check the node on the exchange to see if there is a pattern already defined for the node
-	if exchDevice, err := getDeviceHandler(deviceId, *device.Token); err != nil {
-		return errorhandler(NewSystemError(fmt.Sprintf("Error getting device %v from the exchange. %v", deviceId, err))), nil, nil
+	// Check the node on the exchange to see if there is a pattern already defined for the node.
+	// Check if the node type on the exchange is the same as the given node type
+	exchDevice, err1 := getDeviceHandler(deviceId, *device.Token)
+	if err1 != nil {
+		return errorhandler(NewSystemError(fmt.Sprintf("Error getting device %v from the exchange. %v", deviceId, err1))), nil, nil
 	} else {
+		if *device.NodeType != exchDevice.NodeType {
+			return errorhandler(NewAPIUserInputError(fmt.Sprintf("the exchange node type '%v' is different from the given node type '%v'.", exchDevice.NodeType, *device.NodeType), "device.nodeType")), nil, nil
+		}
+
 		if exchDevice != nil && exchDevice.Pattern != "" {
 			_, _, exchange_pattern := persistence.GetFormatedPatternString(exchDevice.Pattern, *device.Org)
 
@@ -212,15 +224,13 @@ func CreateHorizonDevice(device *HorizonDevice,
 		haDevice = true
 	}
 
-	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, haDevice, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURING)
+	pDev, err := persistence.SaveNewExchangeDevice(db, *device.Id, *device.Token, *device.Name, *device.NodeType, haDevice, *device.Org, *device.Pattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error persisting new device registration: %v", err))), nil, nil
 	}
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Create node updated: %v", pDev)))
 
-	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
-	// object suitable for output (external consumption). Specifically the token is omitted.
 	exDev := ConvertFromPersistentHorizonDevice(pDev)
 
 	// update the arch for the exchange node
@@ -230,6 +240,8 @@ func CreateHorizonDevice(device *HorizonDevice,
 		return errorhandler(NewSystemError(fmt.Sprintf("error adding architecture for the exchange node. %v", err))), nil, nil
 	}
 
+	// Return 2 device objects, the first is the fully populated newly created device object. The second is a device
+	// object suitable for output (external consumption). Specifically the token is omitted.
 	return false, device, exDev
 }
 

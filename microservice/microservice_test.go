@@ -191,7 +191,7 @@ func TestUnregisterServiceExchange(t *testing.T) {
 	url := "network"
 
 	// save device in db
-	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, false, org, "netspeed-amd64", "configuring")
+	_, err = persistence.SaveNewExchangeDevice(db, "mydevice", device_token, device_name, "device", false, org, "netspeed-amd64", "configuring")
 	assert.Nil(t, err, fmt.Sprintf("should not return error, but got this: %v", err))
 
 	err = UnregisterMicroserviceExchange(getVariableDeviceHandler(nil, nil),

@@ -91,7 +91,7 @@ func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.Externa
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
+func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodeType string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -211,6 +211,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 		nodeName = nodeId
 	}
 
+	// validate the node type
+	if nodeType != "" && nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Wrong node type specified: %v. It must be 'device' or 'cluster'.", nodeType))
+	}
+
 	// See if the node exists in the exchange, and create if it doesn't
 	var nodes ExchangeNodes
 	exchangePattern := ""
@@ -228,18 +233,41 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 			// node does not exist, create it
 			msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
 			msgPrinter.Println()
-			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, email, anaxArch, nodeName)
+			if nodeType == "" {
+				// default node type
+				nodeType = persistence.DEVICE_TYPE_DEVICE
+			}
+			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, anaxArch, nodeName, nodeType, false)
 		} else {
 			// node exists but the token is new, update the node token
 			msgPrinter.Printf("Upating node token...")
 			msgPrinter.Println()
 			patchNodeReq := cliexchange.NodeExchangePatchToken{Token: nodeToken}
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, patchNodeReq)
+			for _, n := range nodes.Nodes {
+				exchangePattern = n.Pattern
+
+				// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
+				if nodeType != "" && nodeType != n.NodeType {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The given node type '%v' does not match the existing node type '%v'. Changing the node type is not supported.", nodeType, n.NodeType))
+				} else {
+					nodeType = n.NodeType
+				}
+				break
+			}
 		}
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)
+		msgPrinter.Println()
 		for _, n := range nodes.Nodes {
 			exchangePattern = n.Pattern
+
+			// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
+			if nodeType != "" && nodeType != n.NodeType {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The given node type '%v' does not match the existing node type '%v'. Changing the node type is not supported.", nodeType, n.NodeType))
+			} else {
+				nodeType = n.NodeType
+			}
 			break
 		}
 		msgPrinter.Println()
@@ -289,11 +317,11 @@ func DoIt(org, pattern, nodeIdTok, userPw, email, inputFile string, nodeOrgFromF
 	}
 
 	// Initialize the Horizon device (node)
-	msgPrinter.Printf("Initializing the Horizon node...")
+	msgPrinter.Printf("Initializing the Horizon node with node type '%v'...", nodeType)
 	msgPrinter.Println()
 	//nd := Node{Id: nodeId, Token: nodeToken, Org: org, Pattern: pattern, Name: nodeId, HA: false}
 	falseVal := false
-	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, HA: &falseVal} //todo: support HA config
+	nd := api.HorizonDevice{Id: &nodeId, Token: &nodeToken, Org: &org, Pattern: &pattern, Name: &nodeName, NodeType: &nodeType, HA: &falseVal} //todo: support HA config
 
 	err := CreateNode(nd, timeout)
 	if err != nil {
