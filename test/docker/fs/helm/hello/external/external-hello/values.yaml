@@ -1,5 +1,0 @@
-# Default values for externally visible hello service.
-
-helloVar: external
-helloInternalPort: 8347
-helloExternalPort: 8100

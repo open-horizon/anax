@@ -28,7 +28,7 @@ type EstablishedAgreement_Old struct {
 	AgreementDataReceivedTime    uint64   `json:"agreement_data_received_time"`
 	// One of the following 2 fields are set when the worker that owns deployment for this agreement, starts deploying the services in the agreement.
 	CurrentDeployment               map[string]ServiceConfig `json:"current_deployment"`  // Native Horizon deployment config goes here, mutually exclusive with the extended deployment field. This field is set before the imagefetch worker starts the workload.
-	ExtendedDeployment              map[string]interface{}   `json:"extended_deployment"` // All non-native deployment configs go here. This field is set before the helm worker installs the release.
+	ExtendedDeployment              map[string]interface{}   `json:"extended_deployment"` // All non-native deployment configs go here.
 	Proposal                        string                   `json:"proposal"`
 	ProposalSig                     string                   `json:"proposal_sig"`           // the proposal currently in effect
 	AgreementProtocol               string                   `json:"agreement_protocol"`     // the agreement protocol being used. It is also in the proposal.
