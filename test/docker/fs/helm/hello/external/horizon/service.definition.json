@@ -1,0 +1,18 @@
+{
+    "org": "IBM",
+    "label": "Helm service",
+    "description": "Test service in a Helm package",
+    "public": true,
+    "url": "http://my.company.com/services/helm-service",
+    "version": "1.0.0",
+    "arch": "amd64",
+    "sharable": "multiple",
+    "matchHardware": {},
+    "requiredServices": [],
+    "userInput": [],
+    "deployment": {
+        "chart_archive": "../external-hello-1.0.0.tgz",
+        "release_name": "release1"
+    },
+    "deploymentSignature": ""
+}

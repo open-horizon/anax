@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-hello
+  labels:
+    app: external-hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: external-hello
+  template:
+    metadata:
+      labels:
+        app: external-hello
+    spec:
+      containers:
+      - name: external-hello-container
+        image: hello:1.0
+        ports:
+        - containerPort: {{ .Values.helloInternalPort }}
+        env:
+        - name: HELLO_VAR
+          value: {{ quote .Values.helloVar }}
+        - name: HELLO_PORT
+          value: {{ quote .Values.helloInternalPort }}
+

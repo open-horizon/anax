@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/cli/eventlog"
 	"github.com/open-horizon/anax/cli/exchange"
+	_ "github.com/open-horizon/anax/cli/helm_deployment"
 	_ "github.com/open-horizon/anax/cli/i18n_messages"
 	"github.com/open-horizon/anax/cli/key"
 	_ "github.com/open-horizon/anax/cli/kube_deployment"

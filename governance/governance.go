@@ -1470,7 +1470,6 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		lc := new(events.AgreementLaunchContext)
 		lc.Configure = *cc
 		lc.AgreementId = proposal.AgreementId()
-		lc.AgreementProtocol = protocol
 
 		// get environmental settings for the workload
 
@@ -1507,6 +1506,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
 
 			lc.EnvironmentAdditions = &envAdds
+			lc.AgreementProtocol = protocol
 
 			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
 			deps := serviceDef.GetServiceDependencies()

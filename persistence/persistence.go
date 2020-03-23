@@ -190,11 +190,15 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 // Return either the CurrentDeployment or the ExtendedDeployment, depending on which is set, in a form that
 // implements the DeploymentConfig interface.
 func (a *EstablishedAgreement) GetDeploymentConfig() DeploymentConfig {
-	if a.CurrentDeployment != nil && len(a.CurrentDeployment) > 0 {
+
+	// If the native deployment config is in use, then create that object and return it.
+	if len(a.CurrentDeployment) > 0 {
 		nd := new(NativeDeploymentConfig)
 		nd.Services = a.CurrentDeployment
 		return nd
-	} else if a.ExtendedDeployment != nil && len(a.ExtendedDeployment) > 0 {
+
+		// The extended deployment config must be in use, so return it.
+	} else {
 		cd := new(KubeDeploymentConfig)
 		if err := cd.FromPersistentForm(a.ExtendedDeployment); err != nil {
 			glog.Errorf("Unable to convert deployment %v to persistent form, error %v", a.ExtendedDeployment, err)

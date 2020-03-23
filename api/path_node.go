@@ -180,11 +180,6 @@ func CreateHorizonDevice(device *HorizonDevice,
 	if err1 != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("Error getting device %v from the exchange. %v", deviceId, err1))), nil, nil
 	} else {
-		// the exchange should always return a non-empty node type. But just in case it does not, 'device' is default.
-		if exchDevice.NodeType == "" {
-			exchDevice.NodeType = persistence.DEVICE_TYPE_DEVICE
-		}
-		// the device should have the same node type as the exchange node
 		if *device.NodeType != exchDevice.NodeType {
 			return errorhandler(NewAPIUserInputError(fmt.Sprintf("the exchange node type '%v' is different from the given node type '%v'.", exchDevice.NodeType, *device.NodeType), "device.nodeType")), nil, nil
 		}
