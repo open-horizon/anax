@@ -391,6 +391,28 @@ function version_gt() {
 	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
+function create_config() {
+	log_info "Found variables HZN_EXCHANGE_URL and HZN_FSS_CSSURL, updating horizon config..."
+    set -x
+    if [ -z "$CERTIFICATE" ]; then
+        sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+            -e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" "$HZN_CONFIG"
+    else
+        if [[ ${CERTIFICATE:0:1} != "/" ]]; then
+            ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
+        else
+            ABS_CERTIFICATE=${CERTIFICATE}
+        fi
+        sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+            -e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
+            -e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" "$HZN_CONFIG"
+    fi
+        set +x
+        log_info "Config updated"
+    fi
+	
+}
+
 function install_macos() {
     log_debug "install_macos() begin"
 
@@ -445,9 +467,9 @@ function install_macos() {
 		else
 			# compare version for installing and what we have
 			log_info "Comparing agent and packages versions..."
-			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ]; then
+			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ] && [ ! "$OVERWRITE" = true ]; then
 				log_info "Versions are equal: agent is ${AGENT_VERSION} and packages are ${PACKAGE_VERSION}. Don't need to install"
-			else
+			else				
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] ; then
@@ -536,8 +558,6 @@ function install_macos() {
                 log_info "Config updated"
         fi
     fi
-
-    # DELETED config file (~/.hzn/hzn.json) creation 
 
 	start_horizon_service
 
@@ -647,7 +667,7 @@ function install_linux(){
 			PACKAGE_VERSION=$(ls ${PACKAGES} | grep horizon-cli | cut -d'_' -f2 | cut -d'~' -f1)
 			log_info "The packages version is ${PACKAGE_VERSION}"
 			log_info "Comparing agent and packages versions..."
-			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ]; then
+			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ] && [ ! "$OVERWRITE" = true ]; then
 				log_notify "Versions are equal: agent is ${AGENT_VERSION} and packages are ${PACKAGE_VERSION}. Don't need to install"
 			else
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION" ; then
