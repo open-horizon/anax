@@ -2,6 +2,10 @@
 
 set -x
 
+NAME_SPACE="ibm-edge-agent"
+CONFIGMAP_NAME="agent-configmap-horizon"
+SECRET_NAME="agent-secret-cert"
+
 isRoot=$(id -u)
 cprefix="sudo -E"
 if [ "${isRoot}" == "0" ]
@@ -21,13 +25,21 @@ if [ $RC -ne 0 ]; then echo "microk8s not running, nothing to clean up."; exit 0
 # Undeploy everything from the microk8s environment.
 #
 echo "Undeploy the agent and related constructs"
-$cprefix microk8s.kubectl delete deployment agent -n ibm-edge-agent
+$cprefix microk8s.kubectl delete deployment agent -n ${NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting agent deployment: $RC"; fi
 
-$cprefix microk8s.kubectl delete namespace ibm-edge-agent
+$cprefix microk8s.kubectl delete configmap ${CONFIGMAP_NAME} -n ${NAME_SPACE}
 RC=$?
-if [ $RC -ne 0 ]; then echo "Error deleting agent namespace: $RC"; fi
+if [ $RC -ne 0 ]; then echo "Error deleting configmap ${CONFIGMAP_NAME}: $RC"; fi
+
+$cprefix microk8s.kubectl delete secret ${SECRET_NAME} -n ${NAME_SPACE}
+RC=$?
+if [ $RC -ne 0 ]; then echo "Error deleting secret ${SECRET_NAME}: $RC"; fi
+
+$cprefix microk8s.kubectl delete namespace ${NAME_SPACE}
+RC=$?
+if [ $RC -ne 0 ]; then echo "Error deleting agent namespace ${NAME_SPACE}: $RC"; fi
 
 $cprefix microk8s.ctr image remove docker.io/library/agent-in-kube:local
 RC=$?
@@ -40,10 +52,5 @@ echo "Stopping Kube test environment"
 $cprefix microk8s.stop
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error stopping microk8s: $RC"; fi
-
-#
-# Delete the special agent in kube container image.
-#
-docker rmi agent-in-kube:local
 
 set +x

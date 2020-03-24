@@ -26,6 +26,7 @@ DEFAULT_UI = api/static/index.html
 CLI_TEMP_EXECUTABLE := cli/hzn.tmp
 
 DOCKER_IMAGE_REPO ?= openhorizon
+ANAX_K8S_OVERRIDE ?= ""
 
 ANAX_CONTAINER_DIR := anax-in-container
 DOCKER_IMAGE_VERSION ?= 2.23.10$(BRANCH_NAME)
@@ -51,8 +52,10 @@ AGBOT_IMAGE_LATEST = $(AGBOT_IMAGE_BASE):latest$(BRANCH_NAME)
 # anax container running in kubernetes
 ANAX_K8S_CONTAINER_DIR := anax-in-k8s
 ANAX_K8S_IMAGE_BASE = $(DOCKER_IMAGE_BASE)_k8s
+ANAX_K8S_IMAGE_VERSION ?= placeholder
 ANAX_K8S_IMAGE_STG = $(ANAX_K8S_IMAGE_BASE):testing$(BRANCH_NAME)
 ANAX_K8S_IMAGE_PROD = $(ANAX_K8S_IMAGE_BASE):stable$(BRANCH_NAME)
+ANAX_K8S_IMAGE_E2E = agent-in-kube:local
 
 # for redhat ubi
 ANAX_K8S_UBI_IMAGE_NAME = $(ANAX_K8S_IMAGE_BASE)_ubi
@@ -358,31 +361,32 @@ promote-agbot:
 promote-mac-pkg-and-docker: promote-mac-pkg promote-docker promote-agbot
 
 anax-k8s-image:
-	rm -rf $(ANAX_K8S_CONTAINER_DIR)/bin/*
-	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)/bin 
-	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)/bin
-	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
+	rm -rf $(ANAX_K8S_CONTAINER_DIR)/anax
+	rm -rf $(ANAX_K8S_CONTAINER_DIR)/hzn
+	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR) 
+	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
+	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG) and also tag with $(ANAX_K8S_IMAGE_E2E)"
 	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile .
+	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_E2E)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_UBI_IMAGE_STG)"
 	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_UBI_IMAGE_STG) -f Dockerfile.ubi .
-	
-anax-k8s-push-only:	
-	@echo "Push anax k8s docker image $(ANAX_K8S_IMAGE_STG)"
-	docker push $(ANAX_K8S_IMAGE_STG)
-	@echo "Push anax k8s docker iamge $(ANAX_K8S_UBI_IMAGE_STG)"
-	docker push $(ANAX_K8S_UBI_IMAGE_STG)
 
-anax-k8s-promote:
-	@echo "Promoting $(ANAX_K8S_IMAGE_STG)"
-	docker pull $(ANAX_K8S_IMAGE_STG)
-	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_PROD)
-	docker push $(ANAX_K8S_IMAGE_PROD)
-	@echo "Promoting $(ANAX_K8S_UBI_IMAGE_STG)"
-	docker pull $(ANAX_K8S_UBI_IMAGE_STG)
-	docker tag $(ANAX_K8S_UBI_IMAGE_STG) $(ANAX_K8S_UBI_IMAGE_PROD)
-	docker push $(ANAX_K8S_UBI_IMAGE_PROD)
-
-anax-k8s-package: anax-k8s-image anax-k8s-push-only
+anax-k8s-package: anax-k8s-image
+	@echo "Packaging anax-k8s container"
+	if [[ $(shell tools/image-exists $(DOCKER_IMAGE_REPO) $(ANAX_K8S_IMAGE_BASE) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
+		echo "Pushing anax-k8s docker image $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
+		docker push $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
+		docker push $(ANAX_K8S_IMAGE_STG); \
+	else \
+		echo "anax-k8s container $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION) already present in $(DOCKER_IMAGE_REPO)"; \
+	fi
+	if [[ $(shell tools/image-exists $(DOCKER_IMAGE_REPO) $(ANAX_K8S_UBI_IMAGE_NAME) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
+		echo "Pushing anax-k8s docker image $(ANAX_K8S_UBI_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
+		docker push $(ANAX_K8S_UBI_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
+		docker push $(ANAX_K8S_UBI_IMAGE_STG); \
+	else \
+		echo "anax-k8s container $(ANAX_K8S_UBI_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(DOCKER_IMAGE_REPO)"; \
+	fi
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
@@ -467,7 +471,7 @@ fss-package: ess-docker-image css-docker-image
 		echo "File sync service container $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
 
-clean: mostlyclean i18n-clean
+clean: mostlyclean i18n-clean anax-k8s-clean
 	@echo "Clean"
 	rm -f ./go.sum
 ifneq ($(TMPGOPATH),$(GOPATH))
@@ -495,6 +499,13 @@ ess-clean:
 	-docker rmi $(ESS_IMAGE_STG) 2> /dev/null || :
 	-docker rmi $(ESS_UBI_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_UBI_IMAGE_STG) 2> /dev/null || :
+
+anax-k8s-clean:
+	rm -f $(ANAX_K8S_CONTAINER_DIR)/hzn
+	rm -f $(ANAX_K8S_CONTAINER_DIR)/anax
+	-docker rmi $(ANAX_K8S_IMAGE_STG) 2> /dev/null || :
+	-docker rmi $(ANAX_K8S_IMAGE_E2E) 2> /dev/null || :
+	-docker rmi $(ANAX_K8S_UBI_IMAGE_STG) 2> /dev/null || :
 
 pkgdeps:
 	@echo "Fetching dependencies"

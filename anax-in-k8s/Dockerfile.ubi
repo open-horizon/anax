@@ -25,8 +25,8 @@ WORKDIR /home/anaxuser
 COPY script/* /home/anaxuser/
 COPY config/* /etc/horizon/
 
-ADD bin/* /usr/horizon/bin/
-ADD bin/* /usr/bin/
+ADD anax /usr/horizon/bin/
+ADD hzn /usr/bin/
 
 RUN chown -R ${UID}:${GID} /var /etc /usr /home/anaxuser
 

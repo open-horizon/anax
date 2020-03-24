@@ -16,13 +16,24 @@ spec:
       volumes:
       - name: agent-vol
         emptyDir: {}
+      - name: agent-etc-vol
+        configMap:
+          name: agent-configmap-horizon
+      - name: agent-cert-vol
+        secret:
+          secretName: agent-secret-cert
       containers:
       - name: anax
         image: agent-in-kube:local
         imagePullPolicy: Never
         volumeMounts:
-          - mountPath: /var/horizon
-            name: agent-vol
+        - mountPath: /var/horizon
+          name: agent-vol
+        - mountPath: /etc/default/horizon
+          subPath: horizon
+          name: agent-etc-vol
+        - mountPath: /etc/default/cert
+          name: agent-cert-vol
         ports:
         - containerPort: 8510
         securityContext:
@@ -30,3 +41,9 @@ spec:
         env:
         - name: DOCKER_NAME
           value: "horizon1"
+        - name: HZN_ORG_ID
+          value: "userdev"
+        - name: HZN_EXCHANGE_USER_AUTH
+          value: "userdev/userdevadmin:userdevadminpw"
+        - name: HZN_SSL_SKIP_VERIFY
+          value: "'true'"
