@@ -1407,6 +1407,25 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		lc := cmd.ContainerLaunchContext
 
+		// Verify that the agreements related to this container are still active.
+		// Create a new filter for agreements.
+		notTerminatedFilter := func() persistence.EAFilter {
+			return func(a persistence.EstablishedAgreement) bool {
+				return a.AgreementCreationTime != 0 && a.AgreementTerminatedTime == 0
+			}
+		}
+
+		for _, ag := range lc.GetAgreementIds() {
+			glog.V(5).Infof("ContainerWorker checking agreement %v", ag)
+
+			if ags, err := persistence.FindEstablishedAgreementsAllProtocols(b.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter(), persistence.IdEAFilter(ag), notTerminatedFilter()}); err != nil {
+				glog.Errorf("Unable to retrieve agreement %v from database, error %v", ag, err)
+			} else if len(ags) != 1 {
+				glog.Infof("Ignoring the configure event for agreement %v, the agreement is no longer active.", ag)
+				return true
+			}
+		}
+
 		// Locate dependency containers (if there are any) so that this new container will be added to their docker network.
 		ms_children_networks := make(map[string]docker.ContainerNetwork)
 

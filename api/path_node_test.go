@@ -843,10 +843,11 @@ func getBasicDevice(org string, pattern string) *HorizonDevice {
 func getExchangeDevice(pattern string) exchange.DeviceHandler {
 	return func(id string, token string) (*exchange.Device, error) {
 		return &exchange.Device{
-			Token:   token,
-			Name:    id,
-			Owner:   "someone",
-			Pattern: pattern,
+			Token:    token,
+			Name:     id,
+			Owner:    "someone",
+			Pattern:  pattern,
+			NodeType: "device",
 		}, nil
 	}
 }
