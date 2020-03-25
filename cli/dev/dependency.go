@@ -818,7 +818,7 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		}
 		cliutils.Verbose(msgPrinter.Sprintf("The image docker auths for the service %v/%v are: %v", org, surl, img_auths))
 
-		cc := events.NewContainerConfig(serviceDef.Deployment, serviceDef.DeploymentSignature, "", "", img_auths)
+		cc := events.NewContainerConfig(serviceDef.Deployment, serviceDef.DeploymentSignature, "", "", "", "", img_auths)
 
 		// get the images
 		if err := getContainerImages(cc, currentUIs); err != nil {

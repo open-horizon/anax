@@ -32,6 +32,11 @@ const ASYNC_CANCEL = "ASYNC_CANCEL"
 const MMS_OBJECT_POLICY = "MMS_OBJECT_POLICY"
 const STOP = "PROTOCOL_WORKER_STOP"
 
+// device types. make the duplicates here so that agbot does not have dependency on
+// the edge side persistence
+const DEVICE_TYPE_DEVICE = "device"
+const DEVICE_TYPE_CLUSTER = "cluster"
+
 type AgreementWork interface {
 	Type() string
 }
@@ -312,6 +317,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		exchangeDev = theDev
 	}
 
+	// get the node type for later use
+	nodeType := wi.Device.GetNodeType()
+
 	// There could be more than 1 workload version in the consumer policy, and each version might NOT require the exact same
 	// services/microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
 	// each workload and whether or not this workload has been tried before. Also, iterate the loop more than once if we choose
@@ -398,9 +406,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
-		// Do not make proposals for services without a deployment configuration.
-		if workloadDetails.GetDeployment() == "" {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for service %v/%v %v because it has no deployment configuration.", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version)))
+		// Do not make proposals for services without a deployment configuration got its node type.
+		if nodeType == DEVICE_TYPE_DEVICE && workloadDetails.GetDeployment() == "" {
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v because it has no deployment configuration.", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version)))
+			return
+		}
+		if nodeType == DEVICE_TYPE_CLUSTER && workloadDetails.GetClusterDeployment() == "" {
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with cluster node %v for service %v/%v %v because it has no cluster deployment configuration.", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version)))
 			return
 		}
 
@@ -592,8 +604,13 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 			// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
 			// the workload/service in the policy.
-			workload.Deployment = workloadDetails.GetDeployment()
-			workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
+			if nodeType == DEVICE_TYPE_CLUSTER {
+				workload.ClusterDeployment = workloadDetails.GetClusterDeployment()
+				workload.ClusterDeploymentSignature = workloadDetails.GetClusterDeploymentSignature()
+			} else {
+				workload.Deployment = workloadDetails.GetDeployment()
+				workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
+			}
 
 			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
 		}

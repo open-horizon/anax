@@ -25,7 +25,7 @@ cat <<EOF > /tmp/node_policy.json
   ],
   "constraints": [
     "iame2edev == true",
-    "NONS==false || NOGPS == true || NOLOC == true || NOPWS == true || NOHELLO == true"
+    "NONS==false || NOGPS == true || NOLOC == true || NOPWS == true || NOHELLO == true || NOK8S == true"
   ]
 }
 EOF

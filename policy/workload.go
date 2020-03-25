@@ -57,7 +57,9 @@ type Workload struct {
 	Deployment                   string           `json:"deployment,omitempty"`
 	DeploymentSignature          string           `json:"deployment_signature,omitempty"`
 	DeploymentUserInfo           string           `json:"deployment_user_info,omitempty"`
-	WorkloadPassword             string           `json:"workload_password,omitempty"`              // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+	WorkloadPassword             string           `json:"workload_password,omitempty"` // The password used to create the bcrypt hash that is passed to the workload so that the workload can verify the caller
+	ClusterDeployment            string           `json:"cluster_deployment,omitempty"`
+	ClusterDeploymentSignature   string           `json:"cluster_deployment_signature,omitempty"`
 	Priority                     WorkloadPriority `json:"priority,omitempty"`                       // The highest priority workload is tried first for an agrement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
 	WorkloadURL                  string           `json:"workloadUrl,omitempty"`                    // Added with MS split, refers to a workload definition in the exchange
 	Org                          string           `json:"organization,omitempty"`                   // Added woth org support, refers to the organization where the workload is defined
@@ -73,6 +75,8 @@ func (w Workload) String() string {
 		"DeploymentSignature: %v, "+
 		"DeploymentUserInfo: %v, "+
 		"Workload Password: %v, "+
+		"ClusterDeployment: %v, "+
+		"ClusterDeploymentSignature: %v, "+
 		"Workload URL: %v, "+
 		"Org: %v, "+
 		"Version: %v, "+
@@ -80,6 +84,7 @@ func (w Workload) String() string {
 		"Deployment Overrides: %v, "+
 		"Deployment Overrides Signature: %v",
 		w.Priority, w.Deployment, w.DeploymentSignature, w.DeploymentUserInfo, w.WorkloadPassword,
+		w.ClusterDeployment, w.ClusterDeploymentSignature,
 		w.WorkloadURL, w.Org, w.Version, w.Arch, w.DeploymentOverrides, w.DeploymentOverridesSignature)
 }
 
@@ -119,7 +124,9 @@ func (wl Workload) IsSame(compare Workload) bool {
 	if wl.WorkloadURL == "" {
 		return wl.Deployment == compare.Deployment &&
 			wl.DeploymentSignature == compare.DeploymentSignature &&
-			wl.DeploymentUserInfo == compare.DeploymentUserInfo
+			wl.DeploymentUserInfo == compare.DeploymentUserInfo &&
+			wl.ClusterDeployment == compare.ClusterDeployment &&
+			wl.ClusterDeploymentSignature == compare.ClusterDeploymentSignature
 
 	} else {
 		return wl.WorkloadURL == compare.WorkloadURL &&
@@ -164,6 +171,14 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 		}
 	}
 
+	if w.ClusterDeployment != "" {
+		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.ClusterDeploymentSignature, []byte(w.ClusterDeployment)); !verified {
+			return fmt.Errorf("Error verifying cluster deployment signature: %v for deployment: %v, Error: %v", w.ClusterDeploymentSignature, w.ClusterDeployment, failed_map)
+		} else {
+			glog.Infof("Cluster deployment verification successful with RSA pubkey in file: %v", fn_success)
+		}
+	}
+
 	if w.DeploymentOverrides == "" {
 		return nil
 	} else {
@@ -174,7 +189,6 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 		}
 		return nil
 	}
-
 }
 
 func (w Workload) HasEmptyPriority() bool {

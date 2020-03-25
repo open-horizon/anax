@@ -189,7 +189,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 			}
 
 			// Fire an event to the torrent worker so that it will download the container
-			cc := events.NewContainerConfig(ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", img_auths)
+			cc := events.NewContainerConfig(ms_workload.Deployment, ms_workload.DeploymentSignature, ms_workload.DeploymentUserInfo, "", "", "", img_auths)
 
 			// convert the user input from the service attributes, user input from policy and node to env variables
 			envAdds, err := w.GetEnvVarsForServiceDepolyment(msdef, ms_instance, agreementId)

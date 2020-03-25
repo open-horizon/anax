@@ -585,6 +585,9 @@ test-ci: gopathlinks
 # N.B. this doesn't run ci tests, the ones that require CI system setup
 check: deps lint test test-integration
 
+check-noi18n: pkgdeps lint test test-integration
+
+
 # build sequence diagrams
 diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonSequenceDiagram.txt

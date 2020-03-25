@@ -17,10 +17,10 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/governance"
-	"github.com/open-horizon/anax/helm"
 	"github.com/open-horizon/anax/i18n"
 	_ "github.com/open-horizon/anax/i18n_messages"
 	"github.com/open-horizon/anax/imagefetch"
+	"github.com/open-horizon/anax/kube_operator"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/resource"
@@ -168,7 +168,7 @@ func main() {
 		workers.Add(exchange.NewExchangeMessageWorker("ExchangeMessages", cfg, db))
 		workers.Add(container.NewContainerWorker("Container", cfg, db, authm))
 		workers.Add(imagefetch.NewImageFetchWorker("ImageFetch", cfg, db))
-		workers.Add(helm.NewHelmWorker("Helm", cfg, db))
+		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
 	}

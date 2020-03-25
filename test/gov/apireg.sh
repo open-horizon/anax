@@ -84,6 +84,11 @@ if [ "$NOHELLO" == "1" ]; then
 else
     constraint2="$constraint2 || NOHELLO == false"
 fi
+if [ "$NOK8S" == "1" ]; then 
+    constraint2="$constraint2 || NOK8S == true"
+else
+    constraint2="$constraint2 || NOK8S == false"
+fi
 
 read -d '' newhznpolicy <<EOF
 {

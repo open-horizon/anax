@@ -22,8 +22,11 @@ func GetKubeDeployment(deployStr string) (*KubeDeploymentConfig, error) {
 	err := json.Unmarshal([]byte(deployStr), kd)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling deployment config as KubeDeployment: %v", err)
+	} else if kd.Yaml_Archive == "" {
+		return nil, fmt.Errorf("required field 'yaml_archive' is missing in the deployment string.")
+	} else if kd.Operator_Image == "" {
+		return nil, fmt.Errorf("required field 'operator_image' is missing in the deployment string.")
 	}
-
 	return kd, nil
 }
 
@@ -51,5 +54,13 @@ func (k *KubeDeploymentConfig) ToPersistentForm() (map[string]interface{}, error
 }
 
 func (k *KubeDeploymentConfig) IsNative() bool {
+	return false
+}
+
+// Check if the deployment is a kube deployment or not
+func IsKube(dep map[string]interface{}) bool {
+	if _, ok := dep["yaml_archive"]; ok {
+		return true
+	}
 	return false
 }

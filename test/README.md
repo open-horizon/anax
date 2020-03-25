@@ -70,6 +70,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOGPS=1 - dont register the gpstest service.
 - NOLOC=1 - dont register the location service.
 - NOPWS=1 - dont register the weather service. This is a good workload to run when iterating code because it is simple and reliable, it wont get in your way.
+- NOK8S=1 - dont register the k8s-service1. 
 - NOANAX=1 - anax is started for API tests but is then stopped and is NOT restarted to run workloads.
 - NOAGBOT=1 - the agbot is never started.
 - HA=1 - register 2 devices (and the workload services) as an HA pair. You will get 2 anax device processes in the container.

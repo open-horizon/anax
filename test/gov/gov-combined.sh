@@ -70,7 +70,7 @@ function run_delete_loops {
       echo -e "Verifying policy based workload deployment"
       echo -e "No cancellation setting is $NOCANCEL"
       if [ "$NOCANCEL" != "1" ]; then
-        if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ]; then
+        if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] ||  "$NOK8S" == "1" ]; then
           echo "Skipping agreement verification"
           sleep 30
         else
@@ -86,7 +86,7 @@ function run_delete_loops {
       else
         echo -e "Cancellation tests are disabled"
       fi
-      if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ]; then
+      if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
         echo "Skipping agreement verification"
       else
         ./verify_agreements.sh
@@ -618,7 +618,7 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
-  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ] && [ "$NOLOOP" == "1" ] && [ "$NONS" == "" ] && [ "$NOGPS" == "" ] && [ "$NOPWS" == "" ] && [ "$NOLOC" == "" ] && [ "$NOHELLO" == "" ] && "$NOK8S" == "" ]; then
     ./verify_surfaced_error.sh
     if [ $? -ne 0 ]; then echo "Verify surfaced error failure."; exit 1; fi
   fi

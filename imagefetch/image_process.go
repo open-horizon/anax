@@ -251,8 +251,15 @@ func (b *ImageFetchWorker) CommandHandler(command worker.Command) bool {
 		} else {
 			glog.V(5).Infof("LaunchContext(%T): %v", lc, lc)
 
+			// ignore the cluster deployment
+			if lc.ContainerConfig().ClusterDeployment != "" {
+				glog.V(5).Infof("Image fetching process ignoring the cluster deployment.")
+				return true
+			}
+
 			// Check the deployment string to see if it's a native Horizon deployment. If not, ignore the event.
 			deploymentConfig := lc.ContainerConfig().Deployment
+
 			if _, err := containermessage.GetNativeDeployment(deploymentConfig); err != nil {
 				glog.Warningf("Ignoring deployment: %v", err)
 				return true
