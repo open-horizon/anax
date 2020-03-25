@@ -11,6 +11,7 @@ import (
 	"fmt"
 	dockerclient "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/rsapss-tool/sign"
@@ -1605,3 +1606,36 @@ func getString(v interface{}) string {
 	return fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(v)))
 }
 */
+
+// This function is used in the service publish command to pull the docker image.
+// It  the image name with the digest.
+func GetNewDockerImageName(image string, dontTouchImage bool, pullImage bool) string {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	domain, path, tag, digest := cutil.ParseDockerImagePath(image)
+	Verbose(msgPrinter.Sprintf("%s parsed into: domain=%s, path=%s, tag=%s", image, domain, path, tag))
+	if path == "" {
+		msgPrinter.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.", image)
+		msgPrinter.Println()
+	} else if digest == "" {
+		// This image has a tag, or default tag.
+		// We are going to push images to the docker repo only if the user wants us to update the digest of the image.
+		if !dontTouchImage {
+			// Push it, get the repo digest, and modify the imagePath to use the digest.
+			client := NewDockerClient()
+			digest := ""
+			if pullImage {
+				digest = PullDockerImage(client, domain, path, tag) // this will error out if pull fails
+			} else {
+				digest = PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
+			}
+			if domain != "" {
+				domain = domain + "/"
+			}
+			newImage := domain + path + "@" + digest
+			return newImage
+		}
+	}
+	return image
+}

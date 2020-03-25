@@ -32,48 +32,32 @@ func (p *NativeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFileP
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	var client *dockerclient.Client
-
 	if owned, err := p.Validate(dep); !owned || err != nil {
 		return owned, "", "", err
 	}
 
 	// Since the deployment config has been validated as ours, we can assume it is structured correctly.
 	services := dep["services"].(map[string]interface{})
+	var dontTouchImage, pullImage, ok bool
+	dontTouchImage, ok = (ctx.Get("dontTouchImage")).(bool)
+	if !ok {
+		dontTouchImage = false
+	}
+	pullImage, ok = (ctx.Get("pullImage")).(bool)
+	if !ok {
+		pullImage = false
+	}
 
 	for _, svc := range services {
 		service := svc.(map[string]interface{})
 		image := service["image"].(string)
 
-		domain, path, tag, digest := cutil.ParseDockerImagePath(image)
-		cliutils.Verbose(msgPrinter.Sprintf("%s parsed into: domain=%s, path=%s, tag=%s", image, domain, path, tag))
-		if path == "" {
-			msgPrinter.Printf("Warning: could not parse image path '%v'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.", image)
+		newImage := cliutils.GetNewDockerImageName(image, dontTouchImage, pullImage)
+		if newImage != image {
+			msgPrinter.Printf("Using '%s' in 'deployment' field instead of '%s'", newImage, image)
 			msgPrinter.Println()
-		} else if digest == "" {
-			// This image has a tag, or default tag.
-			// We are going to push images to the docker repo only if the user wants us to update the digest of the image.
-			if dontTouchImage, ok := (ctx.Get("dontTouchImage")).(bool); !ok || !dontTouchImage {
-				// Push it, get the repo digest, and modify the imagePath to use the digest.
-				if client == nil {
-					client = cliutils.NewDockerClient()
-				}
-				digest := ""
-				if pullImage, ok := (ctx.Get("pullImage")).(bool); ok && pullImage {
-					digest = cliutils.PullDockerImage(client, domain, path, tag) // this will error out if pull fails
-				} else {
-					digest = cliutils.PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
-				}
-				if domain != "" {
-					domain = domain + "/"
-				}
-				newImage := domain + path + "@" + digest
-				msgPrinter.Printf("Using '%s' in 'deployment' field instead of '%s'", newImage, image)
-				msgPrinter.Println()
-				service["image"] = newImage
-			}
+			service["image"] = newImage
 		}
-
 	}
 
 	// Now that we have uploaded images and possibly modified the deployment config, we can stringify it and sign it.

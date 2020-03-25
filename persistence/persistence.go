@@ -197,13 +197,19 @@ func (a *EstablishedAgreement) GetDeploymentConfig() DeploymentConfig {
 		nd.Services = a.CurrentDeployment
 		return nd
 
-		// The extended deployment config must be in use, so return it.
-	} else {
+		// The extended deployment config must be in use, so return it. It could be kube or helm.
+	} else if IsKube(a.ExtendedDeployment) {
 		cd := new(KubeDeploymentConfig)
 		if err := cd.FromPersistentForm(a.ExtendedDeployment); err != nil {
-			glog.Errorf("Unable to convert deployment %v to persistent form, error %v", a.ExtendedDeployment, err)
+			glog.Errorf("Unable to convert kube deployment %v to persistent form, error %v", a.ExtendedDeployment, err)
 		}
 		return cd
+	} else if IsHelm(a.ExtendedDeployment) {
+		hd := new(HelmDeploymentConfig)
+		if err := hd.FromPersistentForm(a.ExtendedDeployment); err != nil {
+			glog.Errorf("Unable to convert helm deployment %v to persistent form, error %v", a.ExtendedDeployment, err)
+		}
+		return hd
 	}
 
 	return nil
