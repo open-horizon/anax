@@ -5,6 +5,10 @@ set -x
 AGBOT_TEMPFS=$1
 ANAX_SOURCE=$2
 
+NAME_SPACE="ibm-edge-agent"
+CONFIGMAP_NAME="agent-configmap-horizon"
+SECRET_NAME="agent-secret-cert"
+
 isRoot=$(id -u)
 cprefix="sudo -E"
 if [ "${isRoot}" == "0" ]
@@ -42,7 +46,7 @@ then
 fi
 
 # Artificial delay that seems to allow time for microk8s to start.
-sleep 2
+sleep 5
 
 #
 # Make sure the necessary services are available in kube.
@@ -85,23 +89,17 @@ fi
 EX_IP=${EX_IP} CSS_IP=${CSS_IP} envsubst < "${AGBOT_TEMPFS}/etc/agent-in-kube/horizon.env" > "${AGBOT_TEMPFS}/etc/agent-in-kube/horizon"
 if [ $? -ne 0 ]; then echo "Failure configuring agent env var file"; exit 1; fi
 
-echo "Generate agent config file based on local network configuration"
-EX_IP=${EX_IP} CSS_IP=${CSS_IP} envsubst < "${AGBOT_TEMPFS}/etc/agent-in-kube/anax.config.tmpl" > "${AGBOT_TEMPFS}/etc/agent-in-kube/anax.config"
-if [ $? -ne 0 ]; then echo "Failure configuring agent config file"; exit 1; fi
+echo "Enable kube dns"
+$cprefix microk8s.enable dns
+RC=$?
+if [ $RC -ne 0 ]
+then
+        echo "Failure enabling kube dns: $RC"
+        exit 1
+fi
 
 #
-# Build a special agent container for testing the agent within Kube.
-#
-echo "Build agent in kube container for e2edev environment"
-# Use of the latest tag on this container will cause problems with containerd as used by microk8s, thus local was chosen.
-saved=$PWD
-cd ${AGBOT_TEMPFS}/etc/agent-in-kube
-docker build --no-cache -t agent-in-kube:local -f ./Dockerfile .
-if [ $? -ne 0 ]; then echo "Failure bulding agent container"; exit 1; fi
-cd ${saved}
-
-#
-# Copy the special agent container into the local kube container registry so that kube knows where to find it.
+# Copy the agent container into the local kube container registry so that kube knows where to find it.
 #
 echo "Move agent container into microk8s container registry"
 docker save agent-in-kube:local > /tmp/agent-in-kube.tar
@@ -121,7 +119,7 @@ fi
 # Now start deploying the agent, running in it's own namespace.
 #
 echo "Create namespace for the agent"
-$cprefix microk8s.kubectl create namespace ibm-edge-agent
+$cprefix microk8s.kubectl create namespace ${NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -129,6 +127,31 @@ then
 	$cprefix microk8s.kubectl get namespaces
 	exit 1
 fi
+
+# Create a configmap based on ${AGBOT_TEMPFS}/etc/agent-in-kube/horizon
+echo "Create configmap to mount horizon env file"
+$cprefix microk8s.kubectl create configmap ${CONFIGMAP_NAME} --from-file=${AGBOT_TEMPFS}/etc/agent-in-kube/horizon -n ${NAME_SPACE}
+RC=$?
+if [ $RC -ne 0 ]
+then
+	echo "Failure creating configmap '${CONFIGMAP_NAME}' to mount horizon env file: $RC"
+	$cprefix microk8s.kubectl get configmap ${CONFIGMAP_NAME} -n ${NAME_SPACE}
+	exit 1
+fi
+
+
+# Create a secret based on ${AGBOT_TEMPFS}/etc/agent-in-kube/hub.crt
+echo "Create secret to mount cert file"
+$cprefix microk8s.kubectl create secret generic ${SECRET_NAME} --from-file=${AGBOT_TEMPFS}/etc/agent-in-kube/hub.crt -n ${NAME_SPACE}
+RC=$?
+if [ $RC -ne 0 ]
+then
+	echo "Failure creating secret '${SECRET_NAME}' to mount cert file: $RC"
+	$cprefix microk8s.kubectl get secret ${SECRET_NAME} -n ${NAME_SPACE}
+	exit 1
+fi
+
+sleep 2
 
 echo "Deploy the agent"
 # Debug help - microk8s.kubectl describe pod <pod-name> -n ibm-edge-agent

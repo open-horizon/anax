@@ -23,4 +23,5 @@ minikube-setup-by-test
 /i18n_messages/catalog.go
 /cli/i18n_messages/catalog.go
 go.sum
-/anax-in-k8s/bin/*
+/anax-in-k8s/hzn
+/anax-in-k8s/anax
