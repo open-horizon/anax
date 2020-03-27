@@ -21,7 +21,7 @@ Because Horizon uses the Docker API to start the containers, many of the fields 
     - `image`: the docker image to be downloaded from the Horizon image server. The same name:tag format as used for `docker pull`.
     - `privileged`: `{true|false}` - set to true if the container needs privileged mode. When set to true, the service can only be deployed to nodes with property openhorizon.allowPrivileged set to true.
     - `cap_add`: `["SYS_ADMIN"]` - grant an individual authority to the container. See https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities for a list of capabilities that can be added.
-    - `environment`: `["FOO=bar","FOO2=bar2"]` - environment variables that should be set in the container.
+    - `environment`: `["FOO=bar","FOO2=bar2"]` - (deprecated) environment variables that should be set in the container.
     - `devices`: `["/dev/bus/usb/001/001:/dev/bus/usb/001/001",...]` - device files that should be made available to the container.
     - `binds`: `["/outside/container_path:/inside/container_path1:rw","docker_volume_name:/inside/container_path2:ro"...]` - directories from the host or docker volumes that should be bind mounted in the container. Equivalent to the `docker run --volume` flag. If the first field is not in the directory format, it will be treated as a docker volume. The directory or the docker volume will be created on the host if it does not exist when the containers starts. The last field is the mount options. `ro` means readonly, `rw` means read/write (default).
     - `tmpfs`: `{"/app":""}` - There is no source for tmpfs mounts. It creates a tmpfs mount at /app
@@ -40,15 +40,12 @@ A deployment string JSON would look like this:
     "gps": {
       "image": "openhorizon/x86/gps:2.0.3",
       "privileged": true,
-      "environment": [
-        "FOO=bar"
-      ],
       "devices": [
         "/dev/bus/usb/001/001:/dev/bus/usb/001/001"
       ],
       "binds": [
         "/tmp/testdata:/tmp/mydata:ro",
-        "myvolume1:/tmp/mydata2"       
+        "myvolume1:/tmp/mydata2"
       ],
       "tmpfs": {
         "/app":""
@@ -68,5 +65,5 @@ A deployment string JSON would look like this:
 When stringified, the above example would look like:
 
 ```
-"deployment": "{\"services\":{\"gps\":{\"image\":\"openhorizon/x86/gps:2.0.3\",\"privileged\":true,\"environment\":[\"FOO=bar\"],\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"],\"binds\":[\"/tmp/testdata:/tmp/mydata:ro\",\"myvolume1:/tmp/mydata2\"],\"tmpfs\":{\"/app\":\"\"},\"ports\":[{\"HostPort\":\"5200:6414/tcp\",\"HostIP\":\"0.0.0.0\"}]}}}"
+"deployment": "{\"services\":{\"gps\":{\"image\":\"openhorizon/x86/gps:2.0.3\",\"privileged\":true,\"devices\":[\"/dev/bus/usb/001/001:/dev/bus/usb/001/001\"],\"binds\":[\"/tmp/testdata:/tmp/mydata:ro\",\"myvolume1:/tmp/mydata2\"],\"tmpfs\":{\"/app\":\"\"},\"ports\":[{\"HostPort\":\"5200:6414/tcp\",\"HostIP\":\"0.0.0.0\"}]}}}"
 ```

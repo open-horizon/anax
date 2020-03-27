@@ -27,32 +27,35 @@ body:
 | name | subfield | type | description |
 | ---- | ---- |----| ---------------- |
 | configuration||json| the configuration data.  |
-|  |exchange_api| string | the url for the exchange being used by the Horizon agent. |
+| |exchange_api| string | the url for the exchange being used by the Horizon agent. |
 | |exchange_version | string | the current version of the exchange being used. |
 | |required_minimum_exchange_version | string | the required minimum version for the exchange. |
 | |preferred_exchange_version | string | the preferred version for the exchange in order to use all the horizon functions. |
+| |mms_api| string | the url for the model management system. |
 | |architecture | string | the hardware architecture of the node as returned from the Go language API runtime.GOARCH. |
+| |horizon_version | string | The current version of the horiozn running on this node. |
 | connectivity || json | whether or not the node has network connectivity with some remote sites. |
 
 **Example:**
 ```
-curl -s http://localhost/status | jq '.'
-[
-  {
-    "configuration": {
-      "exchange_api": "https://exchange.staging.bluehorizon.network/api/v1/",
-      "exchange_version": "1.55.0",
-      "required_minimum_exchange_version": "1.49.0",
-      "preferred_exchange_version": "1.55.0",
-      "architecture": "amd64",
-      "horizon_version": "2.17.2"
-    },
-    "connectivity": {
-      "firmware.bluehorizon.network": true,
-      "images.bluehorizon.network": true
-    }
-  }
-]
+curl -s http://localhost:8510/status | jq '.'
+{
+  "configuration": {
+    "exchange_api": "http://exchange-api:8080/v1/",
+    "exchange_version": "2.15.1",
+    "required_minimum_exchange_version": "2.15.1",
+    "preferred_exchange_version": "2.15.1",
+    "mms_api": "https://css-api:9443",
+    "architecture": "amd64",
+    "horizon_version": "2.24.5"
+  },
+  "connectivity": {
+    "firmware.bluehorizon.network": true,
+    "images.bluehorizon.network": true
+  },
+  "liveHealth": null
+}
+
 
 
 ```
@@ -83,28 +86,31 @@ body:
 
 **Example:**
 ```
-curl -s  http://localhost/status/workers |jq
+curl -s  http://localhost:8510/status/workers |jq
 {
   "workers": {
     "AgBot": {
       "name": "AgBot",
-      "status": "initialization failed",
+      "status": "terminated",
       "subworker_status": {}
     },
     "Agreement": {
       "name": "Agreement",
       "status": "initialized",
-      "subworker_status": {
-        "HeartBeat": "started"
-      }
+      "subworker_status": {}
     },
     "Container": {
       "name": "Container",
       "status": "initialized",
       "subworker_status": {}
     },
-    "Exchange": {
-      "name": "Exchange",
+    "ExchangeChanges": {
+      "name": "ExchangeChanges",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "ExchangeMessages": {
+      "name": "ExchangeMessages",
       "status": "initialized",
       "subworker_status": {}
     },
@@ -112,36 +118,53 @@ curl -s  http://localhost/status/workers |jq
       "name": "Governance",
       "status": "initialized",
       "subworker_status": {
-        "BlockchainGovernor": "started",
         "ContainerGovernor": "started",
-        "MicroserviceGovernor": "started"
+        "MicroserviceGovernor": "started",
+        "SurfaceExchErrors": "started"
       }
     },
     "ImageFetch": {
       "name": "ImageFetch",
       "status": "initialized",
       "subworker_status": {}
+    },
+    "Kube": {
+      "name": "Kube",
+      "status": "initialized",
+      "subworker_status": {}
+    },
+    "Resource": {
+      "name": "Resource",
+      "status": "initialized",
+      "subworker_status": {}
     }
   },
   "worker_status_log": [
-    "2018-05-02 19:25:02 Worker ImageFetch: started.",
-    "2018-05-02 19:25:02 Worker ImageFetch: initialized.",
-    "2018-05-02 19:25:02 Worker AgBot: started.",
-    "2018-05-02 19:25:02 Worker AgBot: initialization failed.",
-    "2018-05-02 19:25:02 Worker Agreement: started.",
-    "2018-05-02 19:25:02 Worker Governance: started.",
-    "2018-05-02 19:25:02 Worker Exchange: started.",
-    "2018-05-02 19:25:02 Worker Container: started.",
-    "2018-05-02 19:25:03 Worker Container: initialized.",
-    "2018-05-02 19:25:07 Worker Agreement: initialized.",
-    "2018-05-02 20:17:35 Worker Agreement: subworker HeartBeat added.",
-    "2018-05-02 20:17:35 Worker Agreement: subworker HeartBeat started.",
-    "2018-05-02 20:17:38 Worker Exchange: initialized.",
-    "2018-05-02 20:17:38 Worker Governance: subworker ContainerGovernor added.",
-    "2018-05-02 20:17:38 Worker Governance: subworker MicroserviceGovernor added.",
-    "2018-05-02 20:17:38 Worker Governance: initialized.",
-    "2018-05-02 20:17:38 Worker Governance: subworker MicroserviceGovernor started.",
-    "2018-05-02 20:17:38 Worker Governance: subworker ContainerGovernor started.",
+    "2020-03-27 19:06:07 Worker AgBot: started.",
+    "2020-03-27 19:06:07 Worker AgBot: initialization failed.",
+    "2020-03-27 19:06:07 Worker Agreement: started.",
+    "2020-03-27 19:06:07 Worker Governance: started.",
+    "2020-03-27 19:06:07 Worker ExchangeMessages: started.",
+    "2020-03-27 19:06:07 Worker ExchangeMessages: initialized.",
+    "2020-03-27 19:06:07 Worker Container: started.",
+    "2020-03-27 19:06:07 Worker AgBot: terminated.",
+    "2020-03-27 19:06:07 Worker ImageFetch: started.",
+    "2020-03-27 19:06:07 Worker ImageFetch: initialized.",
+    "2020-03-27 19:06:07 Worker Kube: started.",
+    "2020-03-27 19:06:07 Worker Kube: initialized.",
+    "2020-03-27 19:06:07 Worker Resource: started.",
+    "2020-03-27 19:06:07 Worker Resource: initialized.",
+    "2020-03-27 19:06:07 Worker ExchangeChanges: started.",
+    "2020-03-27 19:06:07 Worker ExchangeChanges: initialized.",
+    "2020-03-27 19:06:07 Worker Container: initialized.",
+    "2020-03-27 19:06:12 Worker Agreement: initialized.",
+    "2020-03-27 19:19:32 Worker Governance: subworker SurfaceExchErrors added.",
+    "2020-03-27 19:19:32 Worker Governance: subworker ContainerGovernor added.",
+    "2020-03-27 19:19:32 Worker Governance: subworker MicroserviceGovernor added.",
+    "2020-03-27 19:19:32 Worker Governance: subworker SurfaceExchErrors started.",
+    "2020-03-27 19:19:32 Worker Governance: subworker ContainerGovernor started.",
+    "2020-03-27 19:19:32 Worker Governance: subworker MicroserviceGovernor started.",
+    "2020-03-27 19:19:32 Worker Governance: initialized."
   ]
 }
 
@@ -170,6 +193,7 @@ body:
 | organization | string | the agent's organization. |
 | pattern | string | the pattern that will be deployed on the node. |
 | name | string | the user readable name for the agent.  |
+| nodeType | string | the node type. Valid values are 'device' and 'cluster'.  |
 | token_valid | bool| whether the agent's exchange token is valid or not. |
 | token_last_valid_time | uint64 | the time stamp when the agent's token was last valid. |
 | ha | bool | whether the node is part of an HA group or not. |
@@ -177,12 +201,13 @@ body:
 
 **Example:**
 ```
-curl -s http://localhost/node | jq '.'
+curl -s http://localhost:8510/node | jq '.'
 {
   "id": "myvs1",
   "organization": "mycompany",
   "pattern": "netspeed-amd64",
   "name": "mydevice",
+  "nodeType": "device",
   "token_last_valid_time": 1508174346,
   "token_valid": true,
   "ha": false,
@@ -227,7 +252,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
       "pattern": "pat3",
       "name": "mydevice",
       "token": "dfjskjdsfkj"
-    }'  http://localhost/node
+    }'  http://localhost:8510/node
 
 ```
 
@@ -257,7 +282,7 @@ code:
 curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
       "id": "mydevice",
       "token": "kj123idifdfjsklj"
-    }'  http://localhost/node
+    }'  http://localhost:8510/node
 
 ```
 
@@ -286,7 +311,7 @@ none
 
 **Example:**
 ```
-curl -s -w "%{http_code}" -X DELETE "http://localhost/node?block=true&removeNode=false"
+curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node?block=true&removeNode=false"
 ```
 
 
@@ -314,7 +339,7 @@ body:
 **Example:**
 
 ```
-curl -s http://localhost/node/configstate |jq '.'
+curl -s http://localhost:8510/node/configstate |jq '.'
 {
   "state": "configured",
   "last_update_time": 1510174292
@@ -350,7 +375,7 @@ none
 ```
 curl -s -w "%{http_code}" -X PUT -H 'Content-Type: application/json'  -d '{
        "state": "configured"
-    }'  http://localhost/node/configstate
+    }'  http://localhost:8510/node/configstate
 
 ```
 
@@ -391,7 +416,7 @@ attribute
 
 **Example:**
 ```
-curl -s http://localhost/attribute | jq '.'
+curl -s http://localhost:8510/attribute | jq '.'
 {
   "attributes": [
     {
@@ -459,7 +484,7 @@ curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json' -d '{
       }
     ]
   }
-}'  http://localhost/attribute
+}'  http://localhost:8510/attribute
 
 ```
 
@@ -493,7 +518,7 @@ body:
 
 **Example:**
 ```
-curl -s -w "%{http_code}" http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
+curl -s -w "%{http_code}" http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
 {
   "attributes": [
     {
@@ -569,7 +594,7 @@ curl -s -w "%{http_code}" -X PUT -d '{
       "mappings": {
         "foo": "bar"
       }
-    }' http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
+    }' http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
 
 ```
 
@@ -597,7 +622,7 @@ body:
 
 **Example:**
 ```
-curl -s -w "%{http_code}" -X DELETE http://localhost/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
+curl -s -w "%{http_code}" -X DELETE http://localhost:8510/attribute/0d5762bf-67a6-49ff-8ff9-c0fd32a8699f | jq '.'
 
 ```
 
@@ -718,7 +743,7 @@ service instance:
 
 **Example:**
 ```
-curl http://localhost/service |jq '.config'
+curl http://localhost:8510/service |jq '.config'
 [
   {
     "sensor_url": "https://bluehorizon.network/services/netspeed",
@@ -762,7 +787,7 @@ curl http://localhost/service |jq '.config'
 ```
 
 ```
-curl http://localhost/service |jq '.definitions.active'
+curl http://localhost:8510/service |jq '.definitions.active'
 [
   {
     "record_id": "1",
@@ -828,7 +853,7 @@ curl http://localhost/service |jq '.definitions.active'
 ```
 
 ```
-curl http://localhost/service |jq '.instances.active'
+curl http://localhost:8510/service |jq '.instances.active'
 [
   {
     "ref_url": "https://bluehorizon.network/services/location",
@@ -931,7 +956,7 @@ body:
 
 **Example:**
 ```
-curl http://localhost/service/config |jq 
+curl http://localhost:8510/service/config |jq 
 "config": [
   {
     "sensor_url": "https://bluehorizon.network/services/netspeed",
@@ -1033,7 +1058,7 @@ read -d '' nsconfig <<EOF
 }
 EOF
 
-echo "$nsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- http://localhost/service/config
+echo "$nsconfig" | curl -sS -X POST -H "Content-Type: application/json" --data @- http://localhost:8510/service/config
 
 ```
 
@@ -1062,7 +1087,7 @@ body:
 
 **Example:**
 ```
-curl http://localhost/service/configstate |jq
+curl http://localhost:8510/service/configstate |jq
 {
   "configstates": [
     {
@@ -1108,7 +1133,7 @@ code:
 
 **Example:**
 ```
-curl -sS -X POST -H "Content-Type: application/json" --data '{"url": "myservice", "org": "myorg", "configstate": "suspended"}' http://localhost/service/configstate
+curl -sS -X POST -H "Content-Type: application/json" --data '{"url": "myservice", "org": "myorg", "configstate": "suspended"}' http://localhost:8510/service/configstate
 
 ```
 
@@ -1143,7 +1168,7 @@ Note: The policy also contains other fields that are unused and therefore not do
 
 **Example:**
 ```
-curl http://localhost/service/policy | jq '.'
+curl http://localhost:8510/service/policy | jq '.'
 {
   "Policy for IBM_netspeed": {
     "header": {
@@ -1231,6 +1256,7 @@ body:
 | agreement_protocol | | string | the name of the agreement protocol being used. |
 | protocol_version | | int | the version of the agreement protocol being used. |
 | current_deployment | | json | contains the deployment configuration for the workload. The key is the name of the workload and the value is the result of the [/containers/<id> docker remote API call](https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/inspect-a-container) for the workload container. Please refer to the link for details. |
+| extended_deployment | | json | contains the deployment configuration for the cluster node. It contains the image and the operator for deploying a Kubernetes application.  |
 | metering_notification | | json |  the most recent metering notification received. It includes the amount, metering start time, data missed time, consumer address, consumer signature etc. |
 | workload_to_run | | json |  the service to run for this agreement.  |
 | | url | json |  the url of the service. |
@@ -1241,7 +1267,7 @@ body:
 
 **Example:**
 ```
-curl -s http://localhost/agreement | jq '.'
+curl -s http://localhost:8510/agreement | jq '.'
 {
   "agreements": {
     "active": [
@@ -1300,6 +1326,7 @@ curl -s http://localhost/agreement | jq '.'
             }
           }
         },
+        "extended_deployment": null,
         "proposal"...",
         "proposal_sig": "174f67d343fcb0241e9bd8c01ef93f9cb17e1eb434f0234af6e5a3afcd227d93229bb97d26a2b9fae706aa3e5f2521a8dc48503405d682f319cc8925dcc3c34c01",
         "agreement_protocol": "Basic",
@@ -1359,7 +1386,7 @@ none
 
 **Example:**
 ```
-curl -X DELETE -s http://localhost/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
+curl -X DELETE -s http://localhost:8510/agreement/a70042dd17d2c18fa0c9f354bf1b560061d024895cadd2162a0768687ed55533
 
 ```
 
@@ -1389,7 +1416,7 @@ body:
 
 **Examples:**
 ```
-curl -s http://localhost/trust | jq  '.'
+curl -s http://localhost:8510/trust | jq  '.'
 {
   "pem": [
     "Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem",
@@ -1400,7 +1427,7 @@ curl -s http://localhost/trust | jq  '.'
 
 Verbose output:
 ```
-curl -s 'http://localhost/trust?verbose=true' | jq  '.'
+curl -s 'http://localhost:8510/trust?verbose=true' | jq  '.'
 {
   "pem": [
     {
@@ -1423,7 +1450,7 @@ curl -s 'http://localhost/trust?verbose=true' | jq  '.'
 
 Retrieve RSA PSS public key from a particular enclosing x509 certificate suitable for shell redirection to a .pem file:
 ```
-curl -s 'http://localhost/trust?verbose=true' | jq -r '.pem[] | select(.serial_number == "1e:05:72:c9:f2:8c:5e:9a:0d:af:a1:47:41:66:5c:3c:fd:80:b5:80")'
+curl -s 'http://localhost:8510/trust?verbose=true' | jq -r '.pem[] | select(.serial_number == "1e:05:72:c9:f2:8c:5e:9a:0d:af:a1:47:41:66:5c:3c:fd:80:b5:80")'
 -----BEGIN CERTIFICATE-----
 MIIE5DCCAsygAwIBAgIUHgVyyfKMXpoNr6FHQWZcPP2AtYAwDQYJKoZIhvcNAQEL
 BQAwGzENMAsGA1UEChMETFVMWjEKMAgGA1UEAxMBKjAeFw0xODAxMTUxMzA5MDBa
@@ -1462,7 +1489,7 @@ The contents of the requested file.
 
 **Example:**
 ```
-curl -s http://localhost/trust/Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem > Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem
+curl -s http://localhost:8510/trust/Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem > Horizon-2111fe38d0aad1887dec4e1b7fb5e083fde3a393-public.pem
 ```
 
 #### **API:** PUT  /trust/{filename}
@@ -1487,7 +1514,7 @@ none
 
 **Example:**
 ```
-curl -T ~/.rsapsstool/keypairs/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem http://localhost/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
+curl -T ~/.rsapsstool/keypairs/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem http://localhost:8510/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```
 
@@ -1513,7 +1540,7 @@ none
 
 **Example:**
 ```
-curl -s -X DELETE http://localhost/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
+curl -s -X DELETE http://localhost:8510/trust/SomeOrg-6458f6e1efcbe13d5c567bd7c815ecfd0ea5459f-public.pem
 
 ```
 
@@ -1547,7 +1574,7 @@ body:
 **Example:**
 
 ```
-http://localhost/eventlog
+curl -s http://localhost:8510/eventlog | jq '.'
 [
   {
     "record_id": "270",
@@ -1608,7 +1635,7 @@ http://localhost/eventlog
 
 
 ```
-http://localhost/eventlog?source_type=node&message=~Complete
+curl -s http://localhost:8510/eventlog?source_type=node&message=~Complete | jq '.'
 [
   {
     "record_id": "271",
@@ -1657,7 +1684,7 @@ body:
 **Example:**
 
 ```
-http://localhost/eventlog/all
+curl -s http://localhost:8510/eventlog/all | jq '.'
 [
   {
     "record_id": "1",
@@ -1690,5 +1717,351 @@ http://localhost/eventlog/all
 
   ....
 
+```
+
+### 8. Node User Input
+#### **API:** GET  /node/userinput
+---
+
+Get the node's user input for the service configurations. The user input on the local node is alway in sync with the user input for the node on the exchange. 
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| serviceOrgid   | string | the organization of the service. |
+| serviceUrl | string | the url of the service. |
+| serviceArch | string | the architecture of the service. |
+| serviceVersionRange | string | the version range of the service that the configuration applies to. The serviceVersionRange is in OSGI version format. The default is [0.0.0,INFINITY). |
+| inputs | json| an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+
+**Example:**
+
+```
+curl -s http://localhost:8510/node/userinput |jq
+[
+  {
+    "serviceOrgid": "userdev",
+    "serviceUrl": "mytest1",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "[0.0.1,INFINITY)",
+    "inputs": [
+      {
+        "name": "var1",
+        "value": "aString"
+      },
+      {
+        "name": "var2",
+        "value": 22.2
+      }
+    ]
+  },
+  {
+    "serviceOrgid": "userdev",
+    "serviceUrl": "mytest2",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "[2.0.1,INFINITY)",
+    "inputs": [
+      {
+        "name": "city_name",
+        "value": "New York"
+      }
+    ]
+  }
+]
+````
+
+#### **API:** POST  /node/userinput
+---
+
+Set the node's user input for the service configuration. The node on the exchange will be updated too with the new user input.
+
+**Parameters:**
+
+body:
+
+The bosy is an array of the following: 
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| serviceOrgid   | string | the organization of the service. |
+| serviceUrl | string | the url of the service. |
+| serviceArch | string | the architecture of the service. |
+| serviceVersionRange | string | the version range of the service that the configuration applies to. The serviceVersionRange is in OSGI version format. The default is [0.0.0,INFINITY). |
+| inputs | json| an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+
+
+**Response:**
+
+code:
+
+* 201 -- success
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '[
+  {
+    "serviceOrgid": "userdev",
+    "serviceUrl": "mytest",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "[0.0.1,INFINITY)",
+    "inputs": [
+      {
+        "name": "city_name",
+        "value": "New York"
+      }
+    ]
+  }
+]'  http://localhost:8510/node/userinput |jq '.'
+
+```
+
+#### **API:** PATCH  /node/userinput
+---
+
+Patch the node's user input for the service configuration. The node on the exchange will be updated too with the new user input. 
+
+**Parameters:**
+
+body:
+
+The bosy is an array of the following: 
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| serviceOrgid   | string | the organization of the service. |
+| serviceUrl | string | the url of the service. |
+| serviceArch | string | the architecture of the service. |
+| serviceVersionRange | string | the version range of the service that the configuration applies to. The serviceVersionRange is in OSGI version format. The default is [0.0.0,INFINITY). |
+| inputs | json| an array of name and value pairs where the name is the variable name and the value is the variable value for service configuration. |
+
+
+**Response:**
+
+code:
+
+* 201 -- success
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '[
+  {
+    "serviceOrgid": "userdev",
+    "serviceUrl": "mytest2",
+    "serviceArch": "amd64",
+    "serviceVersionRange": "[2.0.1,INFINITY)",
+    "inputs": [
+      {
+        "name": "my_var",
+        "value": "aString"
+      }
+    ]
+  }
+
+]'  http://localhost:8510/node/userinput | jq '.'
+
+```
+
+#### **API:** DELETE  /node/usrinput
+---
+
+Delete the node's user input for service configuration. The exchange copy of the node's user input will also be deleted.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+
+* 204 -- success
+
+body:
+
+none
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node/userinput" | jq '.'
+204
+```
+
+### 9. Node Policy
+#### **API:** GET  /node/policy
+---
+
+Get the node policy. The local node policy is alway in sync with the node policy on the exchange. 
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+* 200 -- success
+
+body:
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| properties   | array | an array of the name-value pairs to describe the policy properties. |
+| constraints | string | an array of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (\|\|). |
+
+**Example:**
+
+```
+curl -s http://localhost:8510/node/policy |jq '.'
+{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "network-testing"
+    },
+    {
+      "name": "group",
+      "value": "bluenode"
+    },
+    {
+      "name": "openhorizon.cpu",
+      "value": 2
+    },
+    {
+      "name": "openhorizon.arch",
+      "value": "amd64"
+    },
+    {
+      "name": "openhorizon.memory",
+      "value": 3946
+    },
+    {
+      "name": "openhorizon.hardwareId",
+      "value": "abcdefg"
+    },
+    {
+      "name": "openhorizon.allowPrivileged",
+      "value": false
+    }
+  ],
+  "constraints": [
+    "iame2edev == true"
+    "prop1 == value && prop2 == 2"
+  ]
+}
+
+````
+
+#### **API:** POST  /node/policy
+---
+
+Set the node policy. The node on the exchange will be updated too with the new policy. Properties openhorizon.cpu, openhorizon.arch, openhorizon.memory, penhorizon.hardwareId are buit-in properties which cannot be changed. When openhorizon.allowPrivileged is set to true the service container is allowed to run in the 'privileged' mode if it chooses to. The default value for openhorizon.allowPrivileged is false.
+
+**Parameters:**
+
+body:
+
+The bosy is an array of the following: 
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| properties   | array | an array of the name-value pairs to describe the policy properties. |
+| constraints | string | an array of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (\|\|). |
+
+
+**Response:**
+
+code:
+
+* 201 -- success
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X POST -H 'Content-Type: application/json'  -d '{
+  "properties": [
+    {
+      "name": "purpose",
+      "value": "network-testing"
+    },
+    {
+      "name": "group",
+      "value": "bluenode"
+    }
+  ],
+  "constraints": [
+    "iame2edev == true",
+    "MyVar==2"
+  ]
+}'  http://localhost:8510/node/policy  | jq '.'
+
+```
+
+#### **API:** PATCH  /node/policy
+---
+
+Patch the properties or the constraints for the node policy. The node on the exchange will be updated too with the new patch. Properties openhorizon.cpu, openhorizon.arch, openhorizon.memory, penhorizon.hardwareId are buit-in properties which cannot be changed. When openhorizon.allowPrivileged is set to true the service container is allowed to run in the 'privileged' mode if it chooses to. The default value for openhorizon.allowPrivileged is false.
+
+
+**Parameters:**
+
+body:
+
+The bosy is an array of the following: 
+
+| name | type | description |
+| ---- | ---- | ---------------- |
+| properties   | array | an array of the name-value pairs to describe the policy properties. |
+| constraints | string | an array of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (\|\|). |
+
+
+**Response:**
+
+code:
+
+* 201 -- success
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X PATCH -H 'Content-Type: application/json'  -d '{
+  "constraints": [
+    "iame2edev == false",
+    "MyVar==3"
+  ]
+}'  http://localhost:8510/node/policy | jq '.'
+
+```
+
+#### **API:** DELETE  /node/policy
+---
+
+Delete the node policy. The exchange copy of the node policy will also be deleted.
+
+**Parameters:**
+
+none
+
+**Response:**
+
+code:
+
+* 204 -- success
+
+body:
+
+none
+
+**Example:**
+```
+curl -s -w "%{http_code}" -X DELETE "http://localhost:8510/node/policy" | jq '.'
+204
 ```
 

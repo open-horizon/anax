@@ -192,12 +192,23 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	// of publishing a service will also cause the docker images used by the service to be pushed to a docker repo. The dontTouchImage flag tells
 	// the publish command to skip pushing the images.
 	if dontTouchImage {
-		if imageList, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(sf.Deployment); err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get container images from deployment: %v", err))
-		} else if len(imageList) > 0 {
+		imageMap := map[string]bool{}
+		for _, deployment := range []interface{}{sf.Deployment, sf.ClusterDeployment} {
+			if deployment != nil && deployment != "" {
+				if images, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(deployment); err != nil {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get container images from deployment or cluster deployment string: %v", err))
+				} else if images != nil {
+					for _, img := range images {
+						imageMap[img] = true
+					}
+				}
+			}
+		}
+
+		if len(imageMap) > 0 {
 			msgPrinter.Printf("If you haven't already, push your docker images to the registry:")
 			msgPrinter.Println()
-			for _, image := range imageList {
+			for image, _ := range imageMap {
 				fmt.Printf("  docker push %s\n", image)
 			}
 		}

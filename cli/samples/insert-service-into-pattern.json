@@ -6,16 +6,6 @@
       "serviceVersions": [
         {
           "version": "2.5",
-          "deployment_overrides": {
-            "services": {
-              "netspeed5": {
-                "environment": [
-                  "USE_NEW_STAGING_URL=false"
-                ]
-              }
-            }
-          },
-          "deployment_overrides_signature": "",
           "priority": {
             "priority_value": 50,
             "retries": 1,

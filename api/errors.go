@@ -34,6 +34,23 @@ func NewAPIUserInputError(err string, input string) *APIUserInputError {
 	}
 }
 
+// TypeMismatchError is for node type and service type mismatch.
+type TypeMismatchError struct {
+	Err   string `json:"error"`
+	Input string `json:"input,omitempty"`
+}
+
+func (e TypeMismatchError) Error() string {
+	return fmt.Sprintf("Input: %v, Error: %v", e.Input, e.Err)
+}
+
+func NewTypeMismatchError(err string, input string) *TypeMismatchError {
+	return &TypeMismatchError{
+		Err:   err,
+		Input: input,
+	}
+}
+
 // MSMissingVariableConfigError is for problems found with microservice configuration where the microservice definition
 // requires 1 or more input variables to be set but 1 or more of those variables has not been set.
 type MSMissingVariableConfigError struct {
@@ -165,6 +182,11 @@ func GetHTTPErrorHandler(w http.ResponseWriter) ErrorHandler {
 			switch err.(type) {
 			case *APIUserInputError:
 				apiErr := err.(*APIUserInputError)
+				writeInputErr(w, http.StatusBadRequest, apiErr)
+
+			case *TypeMismatchError:
+				tmmErr := err.(*TypeMismatchError)
+				apiErr := NewAPIUserInputError(tmmErr.Err, tmmErr.Input)
 				writeInputErr(w, http.StatusBadRequest, apiErr)
 
 			case *MSMissingVariableConfigError:
