@@ -363,7 +363,7 @@ promote-mac-pkg-and-docker: promote-mac-pkg promote-docker promote-agbot
 anax-k8s-image:
 	rm -rf $(ANAX_K8S_CONTAINER_DIR)/anax
 	rm -rf $(ANAX_K8S_CONTAINER_DIR)/hzn
-	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR) 
+	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG) and also tag with $(ANAX_K8S_IMAGE_E2E)"
 	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile .
@@ -525,6 +525,9 @@ i18n-translation: deps i18n-catalog all-nodeps
 
 
 $(TMPGOPATH)/bin/gotext: gopathlinks
+	if [ ! -e $(GOPATH)/bin ]; then \
+		mkdir $(GOPATH)/bin; \
+	fi
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
