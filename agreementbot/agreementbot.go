@@ -55,6 +55,9 @@ type AgreementBotWorker struct {
 	MMSObjectPM        *MMSObjectPolicyManager
 	servedPatterns     map[string]exchange.ServedPattern
 	servedPolicies     map[string]exchange.ServedBusinessPolicy
+	lastSearchComplete bool
+	lastSearchTime     uint64
+	searchThread       chan bool
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
@@ -63,18 +66,21 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 
 	baseWorker := worker.NewBaseWorker(name, cfg, ec)
 	worker := &AgreementBotWorker{
-		BaseWorker:       baseWorker,
-		db:               db,
-		httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		consumerPH:       make(map[string]ConsumerProtocolHandler),
-		ready:            false,
-		PatternManager:   NewPatternManager(),
-		NHManager:        NewNodeHealthManager(),
-		GovTiming:        DVState{},
-		shutdownStarted:  false,
-		lastAgMakingTime: 0,
-		servedPatterns:   make(map[string]exchange.ServedPattern),
-		servedPolicies:   make(map[string]exchange.ServedBusinessPolicy),
+		BaseWorker:         baseWorker,
+		db:                 db,
+		httpClient:         cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		consumerPH:         make(map[string]ConsumerProtocolHandler),
+		ready:              false,
+		PatternManager:     NewPatternManager(),
+		NHManager:          NewNodeHealthManager(),
+		GovTiming:          DVState{},
+		shutdownStarted:    false,
+		lastAgMakingTime:   0,
+		servedPatterns:     make(map[string]exchange.ServedPattern),
+		servedPolicies:     make(map[string]exchange.ServedBusinessPolicy),
+		lastSearchComplete: true,
+		lastSearchTime:     0,
+		searchThread:       make(chan bool, 10),
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -614,13 +620,27 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 	}
 	glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
 
-	// If shutdown has not started then keep looking for nodes to make agreements with.
+	// If shutdown has not started then keep looking for nodes to make agreements with. This can be a very long running and
+	// expensive operation so it will be dispatched onto a separate go thread.
 	// If shutdown has started then we will stop making new agreements. Instead we will look for agreements that have not yet completed
 	// the agreement protocol process. If there are any, then we will hold the quiesce from completing.
 	if !w.ShutdownStarted() {
-		glog.V(3).Infof("AgreementBotWorker Polling Exchange.")
-		w.findAndMakeAgreements()
-		glog.V(3).Infof("AgreementBotWorker Done Polling Exchange.")
+
+		// If the search has completed, remember it and log the completion.
+		select {
+		case w.lastSearchComplete = <-w.searchThread:
+			glog.V(3).Infof("AgreementBotWorker Done Polling Exchange.")
+		default:
+			glog.V(5).Infof("AgreementBotWorker waiting for search results.")
+		}
+
+		// If a search has not been started recently, start one now.
+		if w.lastSearchComplete && ((uint64(time.Now().Unix()) - w.lastSearchTime) >= uint64(w.Config.AgreementBot.NewContractIntervalS)) {
+			w.lastSearchTime = uint64(time.Now().Unix())
+			glog.V(3).Infof("AgreementBotWorker Polling Exchange.")
+			w.lastSearchComplete = false
+			go w.findAndMakeAgreements()
+		}
 
 	} else {
 		// Find all agreements that are not yet finalized. This filter will return only agreements that are still in an agreement protocol
@@ -674,7 +694,7 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 // Go through all the patterns and business polices and make agreements.
 func (w *AgreementBotWorker) findAndMakeAgreements() {
 	// current timestamp to be saved as the last agreement making cycle start time later.
-	currentAgMakingStartTime := uint64(time.Now().Unix())
+	currentAgMakingStartTime := uint64(time.Now().Unix()) - 1
 
 	// get a list of all the pattern orgs this agbot is serving
 	allOrgs := w.pm.GetAllPolicyOrgs()
@@ -692,8 +712,9 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 		}
 	}
 
-	// the current agreement making cycle is done, save the timestamp.
+	// The current agreement making cycle is done, save the timestamp and tell the main thread that it's done.
 	w.lastAgMakingTime = currentAgMakingStartTime
+	w.searchThread <- true
 }
 
 // Search the exchange and make agreements with any device that is eligible based on the policies we have and
