@@ -19,13 +19,12 @@ And depending on which PATTERN is chosen, a series of workload containers
 - Install docker
   - `curl https://get.docker.com/ | sh`
 - Install make and jq
-  - `apt update && apt install -y make jq`
+  - `apt update && apt install -y make jq build-essential`
 - Install golang version 1.14.* ...
   - `curl https://dl.google.com/go/go1.14.linux-amd64.tar.gz | tar -xzf- -C /usr/local/`
   - `export PATH=$PATH:/usr/local/go/bin` (and modify your ~/.bashrc file with the same)
-- If you are developing/making changes to anax, install govendor (you can skip this step if you're just building/running tests)
+- GOPATH cannot be set to the same path as GOROOT
   - `export GOPATH=</your/go/path>`
-  - `go get -u github.com/kardianos/govendor`
   - `export ANAX_SOURCE=</path/to/anax>`
 - Set up a single node k8s for testing, follow the instructions here:
   - https://microk8s.io/docs/
@@ -70,7 +69,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOGPS=1 - dont register the gpstest service.
 - NOLOC=1 - dont register the location service.
 - NOPWS=1 - dont register the weather service. This is a good workload to run when iterating code because it is simple and reliable, it wont get in your way.
-- NOK8S=1 - dont register the k8s-service1. 
+- NOK8S=1 - dont register the k8s-service1.
 - NOANAX=1 - anax is started for API tests but is then stopped and is NOT restarted to run workloads.
 - NOAGBOT=1 - the agbot is never started.
 - HA=1 - register 2 devices (and the workload services) as an HA pair. You will get 2 anax device processes in the container.
