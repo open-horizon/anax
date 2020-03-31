@@ -166,9 +166,9 @@ ifndef verbose
 endif
 
 all: deps all-nodeps
-all-nodeps: gopathlinks $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
+all-nodeps: gopathlinks gofolders $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
-deps: pkgdeps i18n-catalog
+deps: gofolders pkgdeps i18n-catalog
 
 noi18n: pkgdeps all-nodeps
 
@@ -511,6 +511,9 @@ pkgdeps:
 	@echo "Fetching dependencies"
 	go mod tidy
 
+gofolders:
+	mkdir -p $(GOPATH)/pkg $(GOPATH)/bin
+
 i18n-catalog: pkgdeps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	cd $(PKGPATH) && \
@@ -525,9 +528,6 @@ i18n-translation: deps i18n-catalog all-nodeps
 
 
 $(TMPGOPATH)/bin/gotext: gopathlinks
-	if [ ! -e $(GOPATH)/bin ]; then \
-		mkdir $(GOPATH)/bin; \
-	fi
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
