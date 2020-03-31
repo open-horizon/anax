@@ -65,6 +65,7 @@ ANAX_K8S_UBI_IMAGE_PROD = $(ANAX_K8S_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
 # Variables that control packaging the file sync service containers
 FSS_OVERRIDE ?= ""
 FSS_REGISTRY ?= "dockerhub"
+ANAX_K8S_REGISTRY = $(FSS_REGISTRY)
 
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
@@ -373,14 +374,14 @@ anax-k8s-image:
 
 anax-k8s-package: anax-k8s-image
 	@echo "Packaging anax-k8s container"
-	if [[ $(shell tools/image-exists $(DOCKER_IMAGE_REPO) $(ANAX_K8S_IMAGE_BASE) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
+	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(ANAX_K8S_IMAGE_BASE) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
 		echo "Pushing anax-k8s docker image $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
 		docker push $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
 		docker push $(ANAX_K8S_IMAGE_STG); \
 	else \
 		echo "anax-k8s container $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION) already present in $(DOCKER_IMAGE_REPO)"; \
 	fi
-	if [[ $(shell tools/image-exists $(DOCKER_IMAGE_REPO) $(ANAX_K8S_UBI_IMAGE_NAME) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
+	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(ANAX_K8S_UBI_IMAGE_NAME) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
 		echo "Pushing anax-k8s docker image $(ANAX_K8S_UBI_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
 		docker push $(ANAX_K8S_UBI_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
 		docker push $(ANAX_K8S_UBI_IMAGE_STG); \
