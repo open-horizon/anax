@@ -273,6 +273,13 @@ func CreateService(service *Service,
 		}
 	}
 
+	// make sure that the node type and the service type match
+	nodeType := pDevice.GetNodeType()
+	serviceType := sdef.GetServiceType()
+	if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+		return errorhandler(NewTypeMismatchError(fmt.Sprintf("Type mismatch. The service %v/%v is for '%v' node type but the current node type is '%v'.", *service.Org, *service.Url, serviceType, nodeType), "service")), nil, nil
+	}
+
 	// Convert the service definition to a persistent format so that it can be saved to the db.
 	msdef, err = microservice.ConvertServiceToPersistent(sdef, *service.Org)
 	if err != nil {

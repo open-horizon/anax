@@ -208,7 +208,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	myOrg := "myorg"
 	myPattern := "mypattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "cluster", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, myOrg, myPattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}

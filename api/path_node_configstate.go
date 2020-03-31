@@ -204,7 +204,9 @@ func configureService(service *Service,
 	passthruHandler := GetPassThroughErrorHandler(&createServiceError)
 
 	create_service_error_handler := func(err error) bool {
-		if !strings.Contains(err.Error(), "Duplicate registration") {
+		if strings.Contains(err.Error(), "Type mismatch") {
+			LogServiceEvent(db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_IGNORE_TYPE_MISMATCH, err.Error()), persistence.EC_SERVICE_CONFIG_IGNORE_TYPE_MISMATCH, service)
+		} else if !strings.Contains(err.Error(), "Duplicate registration") {
 			LogServiceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_SVC_CONF, *service.Url, err.Error()), persistence.EC_ERROR_SERVICE_CONFIG, service)
 		}
 		return passthruHandler(err)
@@ -235,6 +237,10 @@ func configureService(service *Service,
 		// to configure any of the required services before calling the configstate API.
 		case *DuplicateServiceError:
 			glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found duplicate service %v %v, overwriting the version range to %v.", *service.Url, *service.Org, "[0.0.0,INFINITY)")))
+
+		// This occurs when a patterns contains a service that does not match the node type. Ignore it.
+		case *TypeMismatchError:
+			glog.V(3).Infof(apiLogString(fmt.Sprintf("Configstate autoconfig found service type not match the node type for service %v %v, ignoring it.", *service.Url, *service.Org)))
 
 		default:
 			return errorhandler(NewSystemError(fmt.Sprintf("unexpected error returned from service create (%T) %v", createServiceError, createServiceError)))

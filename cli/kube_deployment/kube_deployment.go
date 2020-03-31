@@ -90,11 +90,24 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 }
 
 func (p *KubeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, []string, error) {
-	return true, []string{}, nil
+	var imageList []string
+	if owned, err := p.Validate(dep); !owned || err != nil {
+		return owned, imageList, err
+	}
+
+	// the Validate has verified the operator_image field
+	dc := dep.(map[string]interface{})
+	image := dc["operator_image"].(string)
+	imageList = append(imageList, image)
+
+	return true, imageList, nil
 }
 
 func (p *KubeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interface{} {
-	return map[string]interface{}{}
+	return map[string]interface{}{
+		"yaml_archive":   "",
+		"operator_image": "",
+	}
 }
 
 func (p *KubeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {

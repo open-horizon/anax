@@ -63,10 +63,11 @@ const (
 	EC_NODE_HEARTBEAT_RESTORED = "node_heartbeat_restored"
 
 	// service configuration
-	EC_START_SERVICE_CONFIG    = "start_service_configuration"
-	EC_SERVICE_CONFIG_COMPLETE = "service_configuration_complete"
-	EC_ERROR_SERVICE_CONFIG    = "error_service_configuration"
-	EC_WARNING_SERVICE_CONFIG  = "warning_service_configuration"
+	EC_START_SERVICE_CONFIG                = "start_service_configuration"
+	EC_SERVICE_CONFIG_COMPLETE             = "service_configuration_complete"
+	EC_ERROR_SERVICE_CONFIG                = "error_service_configuration"
+	EC_WARNING_SERVICE_CONFIG              = "warning_service_configuration"
+	EC_SERVICE_CONFIG_IGNORE_TYPE_MISMATCH = "ignore_type_mismatch"
 
 	// service config state
 	EC_START_CHANGING_SERVICE_CONFIGSTATE    = "start_changing_service_configuration_state"

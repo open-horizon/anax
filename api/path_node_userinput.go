@@ -43,10 +43,11 @@ func UpdateNodeUserInput(userInput []policy.UserInput,
 		return errorhandler(nil, NewNotFoundError("Exchange registration not recorded. Complete account and node registration with an exchange and then record node registration using this API's /node path.", "node")), nil, nil
 	}
 
-	// verify userinput: 1) service exist, 2) variables definied in the service, otherwise return true but give warning message 3) values have correct type
+	// verify userinput: 1) service exist, 2) service type matches the node type,
+	// 3) variables definied in the service, otherwise return true but give warning message 4) values have correct type
 	validated := false
 	for _, u := range userInput {
-		validated, err = ValidateUserInput(u, getService)
+		validated, err = ValidateUserInput(pDevice, u, getService)
 		if !validated {
 			return errorhandler(nil, NewAPIUserInputError(fmt.Sprintf("Unable to validate node userInput, error: %v", err), "node.userinput")), nil, nil
 		} else if err != nil { // validate == true, but give back warning error message
@@ -82,7 +83,7 @@ func PatchNodeUserInput(patchObject []policy.UserInput,
 	// verify userinput: 1) service exist, 2) variables definied in the service, otherwise return true but give warning message 3) values have correct type
 	validated := false
 	for _, u := range patchObject {
-		validated, err = ValidateUserInput(u, getService)
+		validated, err = ValidateUserInput(pDevice, u, getService)
 		if !validated {
 			return errorhandler(nil, NewAPIUserInputError(fmt.Sprintf("Unable to validate node userInput, error: %v", err), "node.userinput")), nil, nil
 		} else if err != nil { // validate == true, but give back warning error message
@@ -143,8 +144,9 @@ func DeleteNodeUserInput(errorhandler DeviceErrorHandler, db *bolt.DB,
 	return false, []*events.NodeUserInputMessage{nodeUserInputUpdated}
 }
 
-// Validate 1) service exist; 2) variables defined in the service; 3) values have correct type
-func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHandler) (bool, error) {
+// Validate 1) service exist; 2) service type matches the node type
+// 3) variables defined in the service; 4) values have correct type
+func ValidateUserInput(pDevice *persistence.ExchangeDevice, userInput policy.UserInput, getService exchange.ServiceHandler) (bool, error) {
 	glog.V(3).Infof(apiLogString(fmt.Sprintf("Start validate userinput .... \n")))
 	serviceOrg := userInput.ServiceOrgid
 	serviceUrl := userInput.ServiceUrl
@@ -185,6 +187,13 @@ func ValidateUserInput(userInput policy.UserInput, getService exchange.ServiceHa
 	} else if err != nil {
 		errorString = fmt.Sprintf("Error from get exchange service: %v \n", err)
 		return false, errors.New(errorString)
+	}
+
+	// make sure that the node type and the service type match
+	nodeType := pDevice.GetNodeType()
+	serviceType := sdef.GetServiceType()
+	if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+		return false, fmt.Errorf("The service %v/%v is for '%v' node type but the current node type is '%v'.", serviceOrg, serviceUrl, serviceType, nodeType)
 	}
 
 	// compare ServiceDefinition.Userinput (array) with userInput.Inputs (array)

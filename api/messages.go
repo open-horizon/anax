@@ -52,6 +52,7 @@ const (
 	EL_API_COMPLETE_NODE_REG          = "Complete node configuration/registration for node %v."
 	EL_API_ERR_SVC_CONF               = "Error in service configuration for %v. %v"
 	EL_API_ERR_GET_SREFS_FOR_PATTERN  = "Error getting service references for pattern %v. %v"
+	EL_API_IGNORE_TYPE_MISMATCH       = "Ignoring service. %v"
 
 	// from path_node_policy.go
 	EL_API_NEW_NODE_POL     = "New node policy: %v"
@@ -130,6 +131,7 @@ func MarkI18nMessages() {
 	msgPrinter.Sprintf(EL_API_COMPLETE_NODE_REG)
 	msgPrinter.Sprintf(EL_API_ERR_SVC_CONF)
 	msgPrinter.Sprintf(EL_API_ERR_GET_SREFS_FOR_PATTERN)
+	msgPrinter.Sprintf(EL_API_IGNORE_TYPE_MISMATCH)
 
 	// from path_node_policy.go
 	msgPrinter.Sprintf(EL_API_NEW_NODE_POL)

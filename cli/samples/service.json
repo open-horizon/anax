@@ -24,10 +24,7 @@
   "deployment": {
     "services": {
       "cpu2wiotp": {
-        "image": "openhorizon/example_wl_x86_cpu2wiotp:1.1.3",
-        "environment": [
-          "WIOTP_DOMAIN=internetofthings.ibmcloud.com"
-        ]
+        "image": "openhorizon/example_wl_x86_cpu2wiotp:1.1.3"
       }
     }
   }
