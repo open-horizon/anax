@@ -1,4 +1,4 @@
-# Edge node agent-install
+# Edge node agent-install 
 
 ## Overview
 
@@ -92,7 +92,7 @@ Command line flags override the corresponding environment variables or config fi
 
 `-v` - show version
 
-`-l` - logging verbosity level (0-5, 5 is verbose; default is 3.)
+`-l` - logging verbosity level (0: silent, 1: critical, 2: error, 3: warning, 4: info, 5: debug), the default is (3: warning)
 
 ## Package Tree
 
@@ -151,3 +151,4 @@ The script relies on an installation packages tree with the following directory 
         ├── horizon-cli-2.24.17.pkg
         └── horizon-cli.crt
 ```
+

@@ -55,12 +55,11 @@ where:
     -f          - install older version without prompt. overwrite configured node without prompt.
     -w          - wait for the named service to start executing on this node
     -o          - specify an org id for the service specified with '-w'
+    -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
 EndOfMessage
-
-quit 1
 }
 
 function version() {
@@ -190,7 +189,7 @@ function validate_mutual_ex() {
 
 	log_debug "validate_mutual_ex() begin"
 
-	if [[ ! -z "${!1}" && ! -z "${!2}" ]]; then
+	if [[ -n "${!1}" && -n "${!2}" ]]; then
 		echo "Both ${1}=${!1} and ${2}=${!2} mutually exlusive parameters are defined, exiting..."
 		exit 1
 	fi
@@ -223,7 +222,7 @@ function set_pattern_from_exchange(){
         		HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
 		fi
 		if [[ $CERTIFICATE != "" ]]; then
-			EXCH_OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH ) || true
+			EXCH_OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
 		else
 			EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
 		fi
@@ -328,13 +327,13 @@ function validate_args(){
 	validate_mutual_ex "HZN_NODE_POLICY" "HZN_EXCHANGE_PATTERN"
 
 	# if a node policy is non-empty, check if the file exists
-	if [[ ! -z  $HZN_NODE_POLICY ]]; then
+	if [[ -n  $HZN_NODE_POLICY ]]; then
 		check_exist f "$HZN_NODE_POLICY" "The node policy"
         elif [[ "$HZN_EXCHANGE_PATTERN" == "" ]] ; then
                 set_policy_from_exchange
 	fi
 
-    if [[ -z "$WAIT_FOR_SERVICE_ORG" ]] && [[ ! -z "$WAIT_FOR_SERVICE" ]]; then
+    if [[ -z "$WAIT_FOR_SERVICE_ORG" ]] && [[ -n "$WAIT_FOR_SERVICE" ]]; then
     	log_error "Must specify service with -w to use with -o organization. Ignoring -o flag."
 	unset WAIT_FOR_SERVICE_ORG
     fi
@@ -373,7 +372,7 @@ function check_installed() {
         log_notify "${2} not found. Attempting to install with ${3}"
         set -x
         $3 install "$2"
-        set +x
+        { set +x; } 2>/dev/null
       fi
       if command -v "$1" >/dev/null 2>&1; then
         log_info "${2} is now installed"
@@ -393,6 +392,30 @@ function version_gt() {
 	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 
+# create /etc/default/horizon file for mac or linux
+function create_config() {
+    if [[ -n "${HZN_EXCHANGE_URL}" ]] && [[ -n "${HZN_FSS_CSSURL}" ]]; then
+            log_info "Found environment variables HZN_EXCHANGE_URL and HZN_FSS_CSSURL, updating horizon config..."
+            set -x
+		if [ -z "$CERTIFICATE" ]; then
+			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" /etc/default/horizon
+		else
+			if [[ ${CERTIFICATE:0:1} != "/" ]]; then
+				sudo mv $CERTIFICATE /etc/horizon/
+				ABS_CERTIFICATE=/etc/horizon/agent-install.crt
+			else
+				ABS_CERTIFICATE=${CERTIFICATE}
+			fi
+			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
+				-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" /etc/default/horizon
+		fi
+            { set +x; } 2>/dev/null
+            log_info "Config updated"
+    fi
+}
+
 function install_macos() {
     log_debug "install_macos() begin"
 
@@ -408,12 +431,14 @@ function install_macos() {
     set -x
 
     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${PACKAGES}/${MAC_PACKAGE_CERT}
-    set +x
+    { set +x; } 2>/dev/null
 	if [[ "$CERTIFICATE" != "" ]]; then
 		log_info "Configuring an edge node to trust the ICP certificate ..."
 		set -x
+		sudo mv $CERTIFICATE /private/etc/horizon/agent-install.crt
+		CERTIFICATE=/private/etc/horizon/agent-install.crt
 		sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$CERTIFICATE"
-		set +x
+		{ set +x; } 2>/dev/null
 	fi
 
 	PKG_NAME=$(find . -name "horizon-cli*\.pkg" | sort -V | tail -n 1 | cut -d "/" -f 2)
@@ -443,13 +468,13 @@ function install_macos() {
 			log_info "Something's wrong. Can't get the agent verison, installing it..."
 			set -x
 	        sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
-	        set +x
+	        { set +x; } 2>/dev/null
 		else
 			# compare version for installing and what we have
 			log_info "Comparing agent and packages versions..."
-			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ]; then
+			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ] && [ ! "$OVERWRITE" = true ]; then
 				log_info "Versions are equal: agent is ${AGENT_VERSION} and packages are ${PACKAGE_VERSION}. Don't need to install"
-			else
+			else				
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] ; then
@@ -466,13 +491,13 @@ function install_macos() {
 					log_notify "Installing older packages ${PACKAGE_VERSION}..."
 					set -x
         			sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
-        			set +x
+        			{ set +x; } 2>/dev/null
 				else
 					log_info "Installed agent is ${AGENT_VERSION}, package is ${PACKAGE_VERSION}"
 					log_notify "Installing newer package (${PACKAGE_VERSION}) ..."
 					set -x
         			sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
-        			set +x
+        			{ set +x; } 2>/dev/null
 				fi
 			fi
 		fi
@@ -480,7 +505,7 @@ function install_macos() {
         log_notify "hzn not found, installing it..."
         set -x
         sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
-        set +x
+        { set +x; } 2>/dev/null
 	fi
 
 	start_horizon_service
@@ -498,7 +523,7 @@ function install_macos() {
 		    log_info "The directory ${HZN_CONFIG_DIR} doesn't exist, creating..."
             set -x
 		    sudo mkdir -p "$HZN_CONFIG_DIR"
-            set +x
+            { set +x; } 2>/dev/null
 	    fi
 	    log_info "Creating ${HZN_CONFIG} file..."
         set -x
@@ -507,7 +532,9 @@ function install_macos() {
 			\nHZN_DEVICE_ID=${HOSTNAME}"  | sudo tee "$HZN_CONFIG"
 	else
 		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
-			ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
+			#ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
+			sudo mv $CERTIFICATE /private/etc/horizon/
+			ABS_CERTIFICATE=/private/etc/horizon/agent-install.crt
 		else
 			ABS_CERTIFICATE=${CERTIFICATE}
 		fi
@@ -515,65 +542,10 @@ function install_macos() {
 			\nHZN_DEVICE_ID=${HOSTNAME} \nHZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
 	fi
 
-        set +x
+        { set +x; } 2>/dev/null
         log_info "Config created"
     else
-        if [[ ! -z "${HZN_EXCHANGE_URL}" ]] && [[ ! -z "${HZN_FSS_CSSURL}" ]]; then
-                log_info "Found environment variables HZN_EXCHANGE_URL and HZN_FSS_CSSURL, updating horizon config..."
-                set -x
-		if [ -z "$CERTIFICATE" ]; then
-			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g"  "$HZN_CONFIG"
-		else
-			if [[ ${CERTIFICATE:0:1} != "/" ]]; then
-				ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
-			else
-				ABS_CERTIFICATE=${CERTIFICATE}
-			fi
-			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
-				-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" "$HZN_CONFIG"
-		fi
-                set +x
-                log_info "Config updated"
-        fi
-    fi
-
-    CONFIG_MAC=~/.hzn/hzn.json
-    log_info "Configuring hzn..."
-    if [[ ! -z "${HZN_EXCHANGE_URL}" ]] && [[ ! -z "${HZN_FSS_CSSURL}" ]]; then
-	    if [ -z "$CERTIFICATE" ]; then
-	        if [[ ${CERTIFICATE:0:1} != "/" ]]; then
-		    ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
-	        else
-		    ABS_CERTIFICATE=${CERTIFICATE}
-	        fi
-    	    fi
-        if [[ -f "$CONFIG_MAC" ]]; then
-	        log_info "${CONFIG_MAC} config file exists, updating..."
-            set -x
-		if [ -z "$CERTIFICATE" ]; then
-			sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
-				-e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|"  "$CONFIG_MAC"
-		else
-			sed -i.bak -e "s|\"HZN_EXCHANGE_URL\": \"[^ ]*\",|\"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",|" \
-				-e "s|\"HZN_FSS_CSSURL\": \"[^ ]*\"|\"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"|" \
-				-e "s|\"HZN_MGMT_HUB_CERT_PATH\": \"[^ ]*\"|\"HZN_MGMT_HUB_CERT_PATH\": \""$ABS_CERTIFICATE"\"|" "$CONFIG_MAC"
-		fi
-            set +x
-            log_info "Config updated"
-        else
-	        log_info "${CONFIG_MAC} file doesn't exist, creating..."
-            set -x
-            mkdir -p "$(dirname "$CONFIG_MAC")"
-		if [ -z "$CERTIFICATE" ]; then
-			printf "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\"\n}" > "$CONFIG_MAC"
-		else
-			printf "{\n  \"HZN_EXCHANGE_URL\": \""$HZN_EXCHANGE_URL"\",\n  \"HZN_FSS_CSSURL\": \""$HZN_FSS_CSSURL"\",\n  \"HZN_MGMT_HUB_CERT_PATH\": \""$ABS_CERTIFICATE"\"\n}" > "$CONFIG_MAC"
-		fi
-            set +x
-            log_info "Config created"
-        fi
+        create_config
     fi
 
 	start_horizon_service
@@ -606,7 +578,7 @@ function install_linux(){
     fi
 
 	log_info "Checking if the agent port ${ANAX_PORT} is free..."
-	if [ ! -z "$(netstat -nlp | grep \":$ANAX_PORT \")" ]; then
+	if [ -n "$(netstat -nlp | grep \":$ANAX_PORT \")" ]; then
 		log_info "Something is running on ${ANAX_PORT}..."
 		if [ -z "$(netstat -nlp | grep \":$ANAX_PORT \" | grep anax)" ]; then
 			log_notify "It's not anax, please free the port in order to install horizon, exiting..."
@@ -623,7 +595,7 @@ function install_linux(){
     log_info "Updating OS..."
     set -x
     apt update
-    set +x
+    { set +x; } 2>/dev/null
     log_info "Checking if curl is installed..."
     if command -v curl >/dev/null 2>&1; then
 		log_info "curl found"
@@ -631,7 +603,7 @@ function install_linux(){
         log_info "curl not found, installing it..."
         set -x
         apt install -y curl
-        set +x
+        { set +x; } 2>/dev/null
         log_info "curl installed"
 	fi
 
@@ -641,16 +613,16 @@ function install_linux(){
         log_info "jq not found, installing it..."
         set -x
         apt install -y jq
-        set +x
+        { set +x; } 2>/dev/null
         log_info "jq installed"
 	fi
 
-    if [[ ! -z "$PKG_APT_REPO" ]]; then
-	    if [[ ! -z "$PKG_APT_KEY" ]]; then
+    if [[ -n "$PKG_APT_REPO" ]]; then
+	    if [[ -n "$PKG_APT_KEY" ]]; then
 		    log_info "Adding key $PKG_APT_KEY"
 		    set -x
 		    apt-key add "$PKG_APT_KEY"
-		    set +x
+		    { set +x; } 2>/dev/null
 	    fi
 	    if [[ -z "$APT_REPO_BRANCH" ]]; then
 		    APT_REPO_BRANCH="updates"
@@ -659,7 +631,7 @@ function install_linux(){
 	    set -x
 	    add-apt-repository "deb $PKG_APT_REPO ${CODENAME}-$APT_REPO_BRANCH main"
 	    apt-get install bluehorizon -y -f
-	    set +x
+	    { set +x; } 2>/dev/null
     else
     	log_info "Checking if hzn is installed..."
     	if command -v hzn >/dev/null 2>&1; then
@@ -674,17 +646,17 @@ function install_linux(){
 	        set +e
 	        dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
 	        set -e
-	        set +x
+	        { set +x; } 2>/dev/null
         	log_notify "Resolving any dependency errors..."
         	set -x
         	apt update && apt-get install -y -f
-        	set +x
+        	{ set +x; } 2>/dev/null
 		else
 			# compare version for installing and what we have
 			PACKAGE_VERSION=$(ls ${PACKAGES} | grep horizon-cli | cut -d'_' -f2 | cut -d'~' -f1)
 			log_info "The packages version is ${PACKAGE_VERSION}"
 			log_info "Comparing agent and packages versions..."
-			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ]; then
+			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ] && [ ! "$OVERWRITE" = true ]; then
 				log_notify "Versions are equal: agent is ${AGENT_VERSION} and packages are ${PACKAGE_VERSION}. Don't need to install"
 			else
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION" ; then
@@ -705,11 +677,11 @@ function install_linux(){
 		        	set +e
 		        	dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
 		        	set -e
-		        	set +x
+		        	{ set +x; } 2>/dev/null
 		        	log_notify "Resolving any dependency errors..."
 		        	set -x
 		        	apt update && apt-get install -y -f
-		        	set +x
+		        	{ set +x; } 2>/dev/null
 				else
 					log_info "Installed agent is ${AGENT_VERSION}, package is ${PACKAGE_VERSION}"
 					log_notify "Installing newer package (${PACKAGE_VERSION}) ..."
@@ -717,11 +689,11 @@ function install_linux(){
 		        	set +e
 		        	dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
 		        	set -e
-		        	set +x
+		        	{ set +x; } 2>/dev/null
 		        	log_notify "Resolving any dependency errors..."
 		        	set -x
 		        	apt update && apt-get install -y -f
-		        	set +x
+		        	{ set +x; } 2>/dev/null
 				fi
 			fi
 		fi
@@ -731,11 +703,11 @@ function install_linux(){
         set +e
         dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
         set -e
-        set +x
+        { set +x; } 2>/dev/null
         log_notify "Resolving any dependency errors..."
         set -x
         apt update && apt-get install -y -f
-        set +x
+        { set +x; } 2>/dev/null
 	fi
     fi
 
@@ -755,30 +727,12 @@ function install_linux(){
 
     check_exist f "/etc/default/horizon" "horizon configuration"
     # The /etc/default/horizon creates upon horizon deb packages installation
-    if [[ ! -z "${HZN_EXCHANGE_URL}" ]] && [[ ! -z "${HZN_FSS_CSSURL}" ]]; then
-        log_info "Found variables HZN_EXCHANGE_URL and HZN_FSS_CSSURL, updating horizon config..."
-        set -x
-	if [ -z "$CERTIFICATE" ]; then
-		sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-			-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g"  /etc/default/horizon
-	else
-		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
-			ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
-		else
-			ABS_CERTIFICATE=${CERTIFICATE}
-		fi
-		sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-			-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
-			-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" /etc/default/horizon
-	fi
-        set +x
-        log_info "Config updated"
-    fi
+    create_config
 
     log_info "Restarting the service..."
     set -x
     systemctl restart horizon.service
-    set +x
+    { set +x; } 2>/dev/null
 
     start_anax_service_check=`date +%s`
 
@@ -814,7 +768,7 @@ function start_horizon_service(){
 		    	log_info "Starting horizon services..."
 		    	set -x
 		    	horizon-container start
-		    	set +x
+		    	{ set +x; } 2>/dev/null
 			else
 				# horizon services are shutdown but the container exists
 				docker start horizon1
@@ -856,7 +810,7 @@ function stop_horizon_service(){
 			log_info "Stopping the Horizon services container...."
 			set -x
             horizon-container stop
-            set +x
+            { set +x; } 2>/dev/null
         fi
 	else
         log_notify "horizon-container not found, hzn is not installed or its installation is broken, exiting..."
@@ -902,17 +856,17 @@ function process_node(){
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has not been specified, skipping registration..."
 		 	else
-				if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
+				if [[ -n "$HZN_EXCHANGE_PATTERN" ]]; then
 					log_info "There's no workloads running, but ${HZN_EXCHANGE_PATTERN} pattern has been specified"
 					log_info "Unregistering the node and register it again with the new ${HZN_EXCHANGE_PATTERN} pattern..."
 				fi
-				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
+				if [[ -n "$HZN_NODE_POLICY" ]]; then
 					log_info "There's no workloads running, but ${HZN_NODE_POLICY} node policy has been specified"
 					log_info "Unregistering the node and register it again with the new ${HZN_NODE_POLICY} node policy..."
 				fi
 				set -x
     			hzn unregister -rf
-    			set +x
+    			{ set +x; } 2>/dev/null
 				# if mac, need to stop the horizon services container
 				if [[ "$OS" == "macos" ]]; then
 					stop_horizon_service
@@ -933,17 +887,17 @@ function process_node(){
 				fi
 				log_notify "Unregistering the node and register it again without pattern or node policy..."
 			else
-				if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
+				if [[ -n "$HZN_EXCHANGE_PATTERN" ]]; then
 					log_notify "${HZN_EXCHANGE_PATTERN} pattern has been specified"
 				fi
-				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
+				if [[ -n "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
 				if [[ "$OVERWRITE_NODE" != "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
-					if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
+					if [[ -n "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
-					if [[ ! -z "$HZN_NODE_POLICY" ]]; then
+					if [[ -n "$HZN_NODE_POLICY" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_NODE_POLICY} node policy, continue?[y/N]:"
 					fi
 					read RESPONSE
@@ -952,16 +906,16 @@ function process_node(){
 						exit
 					fi
 				fi
-				if [[ ! -z "$HZN_EXCHANGE_PATTERN" ]]; then
+				if [[ -n "$HZN_EXCHANGE_PATTERN" ]]; then
 					log_notify "Unregistering the node and register it again with the new ${HZN_EXCHANGE_PATTERN} pattern..."
 				fi
-				if [[ ! -z "$HZN_NODE_POLICY" ]]; then
+				if [[ -n "$HZN_NODE_POLICY" ]]; then
 					log_notify "Unregistering the node and register it again with the new ${HZN_NODE_POLICY} node policy..."
 				fi
 			fi
 		 	set -x
     		hzn unregister -rf
-    		set +x
+    		{ set +x; } 2>/dev/null
 			# if mac, need to stop the horizon services container
 			if [[ "$OS" == "macos" ]]; then
 				stop_horizon_service
@@ -1020,12 +974,12 @@ function create_node(){
 
     set -x
     hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
-    set +x
+    { set +x; } 2>/dev/null
 
     log_notify "Verifying a node..."
     set -x
     hzn exchange node confirm -n "$HZN_EXCHANGE_NODE_AUTH" -o "$HZN_ORG_ID"
-    set +x
+    { set +x; } 2>/dev/null
 
     log_debug "create_node() end"
 }
@@ -1061,24 +1015,24 @@ function registration() {
         		log_info "Neither a pattern nor node policy were not specified, registering without it..."
             		set -x
             		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
-            		set +x
+            		{ set +x; } 2>/dev/null
                 else
         		log_info "Node policy ${HZN_NODE_POLICY} was specified, registering..."
             		set -x
             		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
-            		set +x
+            		{ set +x; } 2>/dev/null
                 fi
         else
         	if [[ -z "${3}" ]]; then
         			log_info "Registering node with ${2} pattern"
             		set -x
             		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
-            		set +x
+            		{ set +x; } 2>/dev/null
         	else
         		log_info "Pattern ${2} and policy ${3} were specified. However, pattern registration will override the policy, registering..."
             		set -x
            	 	hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
-            		set +x
+            		{ set +x; } 2>/dev/null
                 fi
         fi
     fi
@@ -1140,7 +1094,7 @@ function add_autocomplete() {
         AUTOCOMPLETE="/usr/local/share/horizon/hzn_bash_autocomplete.sh"
     fi
 
-    if [[ ! -z "$AUTOCOMPLETE" ]]; then
+    if [[ -n "$AUTOCOMPLETE" ]]; then
     	if [ -f ~/.${SHELL_FILE}rc ]; then
             grep -q "^source ${AUTOCOMPLETE}" ~/.${SHELL_FILE}rc || \
             echo "source ${AUTOCOMPLETE}" >> ~/.${SHELL_FILE}rc
@@ -1171,7 +1125,7 @@ function detect_os() {
     log_debug "detect_os() end"
 }
 
-# detects linux distributive name, version, and codename
+# detects linux distribution name, version, and codename
 function detect_distro() {
     log_debug "detect_distro() begin"
 
@@ -1199,7 +1153,7 @@ function detect_distro() {
         CODENAME=$(echo ${VERSION} | sed -e 's/.*(\(.*\))/\1/')
     fi
 
-    log_info "Detected distributive is ${DISTRO}, verison is ${VER}, codename is ${CODENAME}"
+    log_info "Detected distribution is ${DISTRO}, verison is ${VER}, codename is ${CODENAME}"
 
     log_debug "detect_distro() end"
 }
@@ -1228,7 +1182,7 @@ function detect_arch() {
     log_debug "detect_arch() end"
 }
 
-# checks if OS/distributive/codename/arch is supported
+# checks if OS/distribution/codename/arch is supported
 function check_support() {
     log_debug "check_support() begin"
 
@@ -1258,7 +1212,7 @@ function check_requirements() {
 
     if [ "$OS" = "linux" ]; then
         detect_distro
-        log_info "Checking support of detected Linux distributive..."
+        log_info "Checking support of detected Linux distribution..."
         check_support "${SUPPORTED_LINUX_DISTRO[*]}" "$DISTRO"
         log_info "Checking support of detected Linux version/codename..."
         check_support "${SUPPORTED_LINUX_VERSION[*]}" "$CODENAME"
@@ -1317,14 +1271,8 @@ function check_node_state() {
 		if [ $BATCH_INSTALL -eq 0 ] && [[ "$NODE_STATE" = "configured" ]] && [[ ! $OVERWRITE = "true" ]]; then
 			# node is configured need to ask what to do
 			log_notify "Your node is registered"
-			echo "Do you want to overwrite the current node configuration?[y/N]:"
-			read RESPONSE
-			if [ "$RESPONSE" == 'y' ]; then
-				OVERWRITE_NODE=true
-				log_notify "The configuration will be overwritten..."
-			else
-				log_notify "You might be asked for overwrite confirmations later..."
-			fi
+			OVERWRITE_NODE=true
+			log_notify "The configuration will be overwritten..."
 		elif [[ "$NODE_STATE" = "unconfigured" ]]; then
 			# node is unconfigured
 			log_info "The node is in unconfigured state, continuing..."
@@ -1355,7 +1303,7 @@ function find_node_id() {
 			find_node_ip_address
 			for IP in $(echo $NODE_IP); do
 				ID_LINE=$(grep "$IP" "$NODE_ID_MAPPING_FILE" || [[ $? == 1 ]] )
-				if [[ ! "$ID_LINE" = "" ]];then break; fi
+				if [[ ! "$ID_LINE" = "" ]]; then break; fi
 			done
 			if [[ ! "$ID_LINE" = "" ]]; then
 				NODE_ID=$(echo $ID_LINE | cut -d "," -f 2)
@@ -1371,7 +1319,11 @@ function find_node_id() {
 }
 
 function find_node_ip_address() {
-	NODE_IP=$(hostname -I)
+	if [[ "$OS" == "macos" ]]; then
+        NODE_IP=$(ipconfig getifaddr en0)
+    else
+        NODE_IP=$(hostname -I)
+    fi
 }
 
 # Accept the parameters from command line
@@ -1393,7 +1345,7 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 		;;
 		z) AGENT_INSTALL_ZIP="$OPTARG"
 		;;
-		h) help
+		h) help; exit 0
 		;;
 		v) version
 		;;
@@ -1411,12 +1363,18 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 		;;
 		t) APT_REPO_BRANCH="$OPTARG"
 		;;
-		\?) echo "Invalid option: -$OPTARG"; help
+		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
-		:) echo "Option -$OPTARG requires an argument"; help
+		:) echo "Option -$OPTARG requires an argument"; help; exit 1
 		;;
 	esac
 done
+
+# Temporary patch to accept -d id:token
+if [[ $NODE_ID =~ : && -n ${NODE_ID#*:} ]]; then   # tests if NODE_ID contains a colon and there is text after it
+ 	HZN_EXCHANGE_NODE_AUTH="$NODE_ID"
+ 	NODE_ID=${NODE_ID%%:*}   # strip the text after the colon
+fi
 
 if [ -f "$AGENT_INSTALL_ZIP" ]; then
 	unzip_install_files
@@ -1437,7 +1395,7 @@ check_requirements
 check_node_state
 
 if [[ "$OS" == "linux" ]]; then
-	echo `now` "Detection results: OS is ${OS}, distributive is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
+	echo `now` "Detection results: OS is ${OS}, distribution is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
 	install_${OS} ${OS} ${DISTRO} ${CODENAME} ${ARCH}
 elif [[ "$OS" == "macos" ]]; then
 	echo `now` "Detection results: OS is ${OS}"
