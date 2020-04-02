@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/text/message"
 	"strings"
@@ -61,6 +62,7 @@ func NewCompCheckError(err error, errCode int) *CompCheckError {
 type CompCheck struct {
 	NodeId         string                         `json:"node_id,omitempty"`
 	NodeArch       string                         `json:"node_arch,omitempty"`
+	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
 	NodePolicy     *externalpolicy.ExternalPolicy `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
@@ -72,8 +74,8 @@ type CompCheck struct {
 }
 
 func (p CompCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
-		p.NodeId, p.NodeArch, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
 
 }
 
@@ -102,6 +104,7 @@ func NewCompCheckOutput(compatible bool, reason map[string]string, input *CompCh
 type CompCheckResource struct {
 	NodeId         string                                   `json:"node_id,omitempty"`
 	NodeArch       string                                   `json:"node_arch,omitempty"`
+	NodeType       string                                   `json:"node_type,omitempty"`
 	NodePolicy     *externalpolicy.ExternalPolicy           `json:"node_policy,omitempty"`
 	NodeUserInput  []policy.UserInput                       `json:"node_user_input,omitempty"`
 	BusinessPolId  string                                   `json:"business_policy_id,omitempty"`
@@ -113,8 +116,8 @@ type CompCheckResource struct {
 }
 
 func (p CompCheckResource) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
-		p.NodeId, p.NodeArch, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodePolicy: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, ServicePolicy: %v, Service: %v",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodePolicy, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.ServicePolicy, p.Service)
 
 }
 
@@ -122,6 +125,7 @@ func NewCompCheckResourceFromUICheck(uiInput *UserInputCheck) *CompCheckResource
 	var rsrc CompCheckResource
 	rsrc.NodeId = uiInput.NodeId
 	rsrc.NodeArch = uiInput.NodeArch
+	rsrc.NodeType = uiInput.NodeType
 	rsrc.NodeUserInput = uiInput.NodeUserInput
 	rsrc.BusinessPolId = uiInput.BusinessPolId
 	rsrc.BusinessPolicy = uiInput.BusinessPolicy
@@ -144,6 +148,7 @@ func NewCompCheckResourceFromPolicyCheck(uiInput *PolicyCheck) *CompCheckResourc
 	var rsrc CompCheckResource
 	rsrc.NodeId = uiInput.NodeId
 	rsrc.NodeArch = uiInput.NodeArch
+	rsrc.NodeType = uiInput.NodeType
 	rsrc.NodePolicy = uiInput.NodePolicy
 	rsrc.BusinessPolId = uiInput.BusinessPolId
 	rsrc.BusinessPolicy = uiInput.BusinessPolicy
@@ -152,6 +157,14 @@ func NewCompCheckResourceFromPolicyCheck(uiInput *PolicyCheck) *CompCheckResourc
 	rsrc.ServicePolicy = map[string]externalpolicy.ExternalPolicy{}
 	if uiInput.ServicePolicy != nil {
 		rsrc.ServicePolicy["AllServices"] = *uiInput.ServicePolicy
+	}
+
+	// change the service type to from ServiceFile to AbstractServiceFile
+	if uiInput.Service != nil {
+		rsrc.Service = []common.AbstractServiceFile{}
+		for _, svc := range uiInput.Service {
+			rsrc.Service = append(rsrc.Service, &svc)
+		}
 	}
 
 	return &rsrc
@@ -251,6 +264,7 @@ func createUserInputCheckInput(ccInput *CompCheck, pcOutput *CompCheckOutput, ms
 	// get some policies from the policy check output so that we do not need to get to the exchange to get them again.
 	uiCheckInput.NodeId = pcOutput.Input.NodeId
 	uiCheckInput.NodeArch = pcOutput.Input.NodeArch
+	uiCheckInput.NodeType = pcOutput.Input.NodeType
 	uiCheckInput.BusinessPolId = pcOutput.Input.BusinessPolId
 	uiCheckInput.BusinessPolicy = pcOutput.Input.BusinessPolicy
 
@@ -328,6 +342,7 @@ func createCompCheckOutput(pcOutput *CompCheckOutput, privOutput *CompCheckOutpu
 	ccInput := CompCheckResource{}
 	ccInput.NodeId = uiOutput.Input.NodeId
 	ccInput.NodeArch = uiOutput.Input.NodeArch
+	ccInput.NodeType = uiOutput.Input.NodeType
 	ccInput.NodeUserInput = uiOutput.Input.NodeUserInput
 	ccInput.NodePolicy = pcOutput.Input.NodePolicy
 	ccInput.BusinessPolId = uiOutput.Input.BusinessPolId
@@ -514,7 +529,7 @@ func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition
 	}
 
 	for sId, sDef := range *serviceDefs {
-		if priv, err := deploymentRequiresPrivilege(sDef.GetDeployment(), msgPrinter); err != nil {
+		if priv, err := deploymentRequiresPrivilege(sDef.GetDeploymentString(), msgPrinter); err != nil {
 			return false, err, nil
 		} else if priv {
 			reqPriv = true
@@ -545,4 +560,34 @@ func deploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Pr
 		}
 	}
 	return false, nil
+}
+
+// verifies the input node type has valid value and it matches the exchange node type.
+func VerifyNodeType(nodeType string, exchNodeType string, nodeId string, msgPrinter *message.Printer) (string, error) {
+	if nodeType != "" {
+		if nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
+			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Invalid node type: %v. It must be 'device' or 'cluster'.", nodeType)), COMPCHECK_INPUT_ERROR)
+		} else if exchNodeType != "" && nodeType != exchNodeType {
+			return "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node type '%v' does not match the node type '%v' from the node %v.", nodeType, exchNodeType, nodeId)), COMPCHECK_INPUT_ERROR)
+		}
+		return nodeType, nil
+	} else {
+		if exchNodeType != "" {
+			return exchNodeType, nil
+		} else {
+			return persistence.DEVICE_TYPE_DEVICE, nil
+		}
+	}
+}
+
+// Check if the node type is compatible with the serivce
+func CheckTypeCompatibility(nodeType string, serviceDef common.AbstractServiceFile, msgPrinter *message.Printer) (bool, string) {
+	if (nodeType == "" || nodeType == persistence.DEVICE_TYPE_DEVICE) && common.DeploymentIsEmpty(serviceDef.GetDeployment()) {
+		return false, msgPrinter.Sprintf("Service does not have deployment configuration for node type 'device'.")
+	}
+	if nodeType == persistence.DEVICE_TYPE_CLUSTER && common.DeploymentIsEmpty(serviceDef.GetClusterDeployment()) {
+		return false, msgPrinter.Sprintf("Service does not have cluster deployment configuration for node type 'cluster'.")
+	}
+
+	return true, ""
 }

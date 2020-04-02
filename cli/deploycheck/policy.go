@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
@@ -21,15 +22,16 @@ func readExternalPolicyFile(filePath string, inputFileStruct *externalpolicy.Ext
 }
 
 // check if the policies are compatible
-func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, checkAllSvcs bool, showDetail bool) {
+func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string, nodeType string, nodePolFile string, businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
-	userOrg, credToUse, nId, useNodeId := verifyPolicyCompatibleParamters(org, userPw, nodeId, nodePolFile, businessPolId, businessPolFile, servicePolFile)
+	userOrg, credToUse, nId, useNodeId, serviceDefs := verifyPolicyCompatibleParameters(org, userPw, nodeId, nodeType, nodePolFile, businessPolId, businessPolFile, servicePolFile, svcDefFiles)
 
 	policyCheckInput := compcheck.PolicyCheck{}
 	policyCheckInput.NodeArch = nodeArch
+	policyCheckInput.NodeType = nodeType
 
 	// formalize node id or get node policy
 	bUseLocalNode := false
@@ -70,6 +72,15 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 		policyCheckInput.ServicePolicy = &sp
 	}
 
+	// put the given service defs into the uiCheckInput
+	if serviceDefs != nil || len(serviceDefs) != 0 {
+		// check if the given service files specify correct services.
+		// Other parts will be checked later by the compcheck package.
+		checkServiceDefsForBPol(bp, serviceDefs, svcDefFiles)
+
+		policyCheckInput.Service = serviceDefs
+	}
+
 	cliutils.Verbose(msgPrinter.Sprintf("Using compatibility checking input: %v", policyCheckInput))
 
 	// get exchange context
@@ -102,10 +113,13 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 
 // make sure -n and --node-pol, -b and -B, pairs are mutually compatible.
 // get default credential, node id and org if they are not set.
-func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, nodePolFile string,
-	businessPolId string, businessPolFile string, servicePolFile string) (string, string, string, bool) {
+func verifyPolicyCompatibleParameters(org string, userPw string, nodeId string, nodeType string, nodePolFile string,
+	businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string) (string, string, string, bool, []common.ServiceFile) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure the node type has correct value
+	ValidateNodeType(nodeType)
 
 	useNodeId := false
 	nodeIdToUse := nodeId
@@ -149,12 +163,18 @@ func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, n
 		useSPolId = true
 	}
 
+	if businessPolId != "" && svcDefFiles != nil && len(svcDefFiles) > 0 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-b and --service are mutually exclusive."))
+	}
+
+	useSId, serviceDefs := useExchangeForServiceDef(svcDefFiles)
+
 	// if user credential is not given, then use the node auth env HZN_EXCHANGE_NODE_AUTH if it is defined.
 	credToUse := cliutils.WithDefaultEnvVar(&userPw, "HZN_EXCHANGE_NODE_AUTH")
 	orgToUse := org
-	if useNodeId || useBPolId || useSPolId {
+	if useNodeId || useBPolId || useSPolId || useSId {
 		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy and service policy."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy, service and service policy."))
 		} else {
 			// get the org from credToUse
 			if org == "" {
@@ -169,5 +189,5 @@ func verifyPolicyCompatibleParamters(org string, userPw string, nodeId string, n
 		}
 	}
 
-	return orgToUse, *credToUse, nodeIdToUse, useNodeId
+	return orgToUse, *credToUse, nodeIdToUse, useNodeId, serviceDefs
 }

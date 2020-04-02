@@ -20,6 +20,8 @@ type AbstractServiceFile interface {
 	GetRequiredServices() []exchange.ServiceDependency
 	GetUserInputs() []exchange.UserInput
 	NeedsUserInput() bool
+	GetDeployment() interface{}
+	GetClusterDeployment() interface{}
 }
 
 type AbstractPatternFile interface {
@@ -163,6 +165,14 @@ func (s *ServiceFile) NeedsUserInput() bool {
 	return false
 }
 
+func (sf *ServiceFile) GetDeployment() interface{} {
+	return sf.Deployment
+}
+
+func (sf *ServiceFile) GetClusterDeployment() interface{} {
+	return sf.ClusterDeployment
+}
+
 // Get the service type
 // Check for nil, "" and {} for deployment and cluster deployment.
 func (s *ServiceFile) GetServiceType() string {
@@ -297,4 +307,25 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 	}
 
 	return nil
+}
+
+// check if the deployment is empty. The following cases are considered empty in JSON:
+// "deployment": {}
+// "deployment": null
+// "deployment": ""
+func DeploymentIsEmpty(deployment interface{}) bool {
+	switch deployment.(type) {
+	case nil:
+		return true
+	case map[string]interface{}:
+		if len(deployment.(map[string]interface{})) == 0 {
+			return true
+		}
+	case string:
+		if deployment.(string) == "" {
+			return true
+		}
+	}
+
+	return false
 }

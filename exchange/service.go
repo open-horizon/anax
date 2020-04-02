@@ -163,7 +163,7 @@ func (s *ServiceDefinition) PopulateDefaultUserInput(envAdds map[string]string) 
 	}
 }
 
-func (s *ServiceDefinition) GetDeployment() string {
+func (s *ServiceDefinition) GetDeploymentString() string {
 	return s.Deployment
 }
 
@@ -171,7 +171,7 @@ func (s *ServiceDefinition) GetDeploymentSignature() string {
 	return s.DeploymentSignature
 }
 
-func (s *ServiceDefinition) GetClusterDeployment() string {
+func (s *ServiceDefinition) GetClusterDeploymentString() string {
 	return s.ClusterDeployment
 }
 

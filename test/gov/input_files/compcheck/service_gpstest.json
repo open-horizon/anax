@@ -1,0 +1,28 @@
+{
+  "label": "GPSTest for x86_64",
+  "description": "GPS Test service",
+  "documentation": "",
+  "public": true,
+  "url": "https://bluehorizon.network/services/gpstest",
+  "version": "1.0.0",
+  "arch": "amd64",
+  "sharable": "multiple",
+  "matchHardware": {},
+  "requiredServices": [
+    {
+      "url": "https://bluehorizon.network/service-gps",
+      "org": "IBM",
+      "version": "1.0.0",
+      "versionRange": "1.0.0",
+      "arch": "amd64"
+    }
+  ],
+  "userInput": [],
+  "deployment": {
+    "services": {
+      "gpstest": {
+        "image": "openhorizon/amd64_cpu:1.2.2"
+      }
+    }
+  }
+}

@@ -52,7 +52,7 @@ function check_comp_results {
   reason=$(echo $1 | jq -r ".reason")
 
   if [ "$comp" != "$2" ]; then
-    echo "Expexted compatible be $2 but got $comp."
+    echo "Expected compatible be $2 but got $comp."
     exit 2
   fi
 
@@ -138,14 +138,20 @@ echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
-echo -e "\n${PREFIX} test input: node policy, business policy and service policy. No user cred needed"
-CMD="hzn deploycheck policy --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy.json"
+echo -e "\n${PREFIX} test input: node policy, business policy, service policy and service"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy.json --service input_files/compcheck/service_gpstest.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "true" ""
 
+echo -e "\n${PREFIX} test input: node policy, business policy and service policy. Incompatible. Type mismatch"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -t cluster --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy.json"
+echo "$CMD"
+RES=$($CMD 2>&1)
+check_comp_results "$RES" "false" "Service does not have cluster deployment configuration for node type 'cluster'"
+
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. wrong arch"
-CMD="hzn deploycheck policy -a arm64 --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH  -a arm64 --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Service with 'arch' arm64 cannot be found in the deployment policy"
@@ -401,6 +407,24 @@ CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/
 echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Policy Incompatible"
+
+echo -e "\n${PREFIX} test service type checking. Compatible"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -p e2edev@somecomp.com/sall"
+echo "$CMD"
+RES=$($CMD 2>&1 | grep -v 'Neither node id')
+check_comp_results "$RES" "true" "Service does not have deployment configuration for node type 'device'"
+
+echo -e "\n${PREFIX} test service type checking, pattern. Incompatible"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -p e2edev@somecomp.com/sk8s"
+echo "$CMD"
+RES=$($CMD 2>&1 | grep -v 'Neither node id')
+check_comp_results "$RES" "false" "Service does not have deployment configuration for node type 'device'"
+
+echo -e "\n${PREFIX} test service type checking, business policy. Incompatible"
+CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -b bp_k8s"
+echo "$CMD"
+RES=$($CMD 2>&1 | grep -v 'Neither node id')
+check_comp_results "$RES" "false" "Service does not have deployment configuration for node type 'device'"
 
 
 echo -e "\n${PREFIX} complete test\n"
