@@ -510,10 +510,16 @@ anax-k8s-clean:
 
 pkgdeps:
 	@echo "Fetching dependencies"
-	go mod tidy
+	cd $(PKGPATH) && \
+		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH;\
+		go mod tidy
 
 gofolders:
-	mkdir -p $(GOPATH)/pkg $(GOPATH)/bin
+ifneq ($(GOPATH),$(TMPGOPATH))
+	if [ ! -z $(GOPATH) ]; then \
+		mkdir -p $(GOPATH)/pkg $(GOPATH)/bin; \
+	fi
+endif
 
 i18n-catalog: pkgdeps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"

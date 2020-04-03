@@ -24,7 +24,7 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `curl https://dl.google.com/go/go1.14.linux-amd64.tar.gz | tar -xzf- -C /usr/local/`
   - `export PATH=$PATH:/usr/local/go/bin` (and modify your ~/.bashrc file with the same)
 - GOPATH cannot be set to the same path as GOROOT
-  - `export GOPATH=</your/go/path>`
+  - `export GOPATH=</your/go/path>` (typically $HOME/go)
   - `export ANAX_SOURCE=</path/to/anax>`
 - Set up a single node k8s for testing, follow the instructions here:
   - https://microk8s.io/docs/
