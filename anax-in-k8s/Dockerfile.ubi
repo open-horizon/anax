@@ -14,13 +14,15 @@ RUN microdnf install --nodocs -y shadow-utils \
 RUN mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon \
     && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
 
-RUN adduser agentuser -f -1 -c "agent user,1,2,3"
+RUN adduser agentuser -u 1000 -U -f -1 -c "agent user,1,2,3"
 
 COPY script/* /home/agentuser/
 COPY config/* /etc/horizon/
 
 ADD anax /usr/horizon/bin/
 ADD hzn /usr/bin/
+
+RUN chown -R agentuser:agentuser /home/agentuser /etc/horizon
 
 USER agentuser
 WORKDIR /home/agentuser

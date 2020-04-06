@@ -4,6 +4,7 @@
 
 set -e
 
+
 SCRIPT_VERSION="1.1.0"
 
 SUPPORTED_OS=( "macos" "linux" )
@@ -22,6 +23,19 @@ AGENT_INSTALL_ZIP="agent-install-files.tar.gz"
 NODE_ID_MAPPING_FILE="node-id-mapping.csv"
 CERTIFICATE_DEFAULT="agent-install.crt"
 BATCH_INSTALL=0
+DEPLOY_TYPE="device" # "cluster" for deploy on edge cluster
+
+# agent deployment
+SERVICE_ACCOUNT_NAME="agent-service-account"
+CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
+NAMESPACE="openhorizon-agent"
+SECRET_NAME="openhorizon-agent-secrets"
+CONFIGMAP_NAME="openhorizon-agent-config"
+PVC_NAME="openhorizon-agent-pvc"
+RESOURCE_READY=0
+GET_RESOURCE_MAX_TRY=5
+POD_ID=""
+
 
 VERBOSITY=3 # Default logging verbosity
 
@@ -56,6 +70,7 @@ where:
     -w          - wait for the named service to start executing on this node
     -o          - specify an org id for the service specified with '-w'
     -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
+    -D		- specify deploy type (device, cluster. If not specifed, uses device by default). 
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -132,7 +147,7 @@ function get_variable() {
 
 	if ! [ -z "${!1}" ]; then
 		# if env/command line variable is defined, using it
-		if [[ $1 == *"AUTH"* ]]; then
+		if [[ $1 == *"AUTH"* ]] || [[ $1 == *"TOKEN"* ]]; then
 			log_notify "Using variable from environment/command line, ${1}"
 		else
 			log_notify "Using variable from environment/command line, ${1} is ${!1}"
@@ -148,7 +163,7 @@ function get_variable() {
 				# found variable in the config file
 				ref=${1}
 				IFS= read -r "$ref" <<<"$(grep ${1} ${2} | cut -d'=' -f2 | cut -d'"' -f2)"
-                if [[ $1 == *"AUTH"* ]]; then
+                if [[ $1 == *"AUTH"* ]] || [[ $1 == *"TOKEN"* ]]; then
                     log_notify "Using variable from the config file ${2}, ${1}"
                 else
 				    log_notify "Using variable from the config file ${2}, ${1} is ${!1}"
@@ -263,15 +278,22 @@ function set_policy_from_exchange(){
 # validate that the found credentials, org id, certificate, and exchange url will work to view the org in the exchange
 function validate_exchange(){
 	log_debug "validate_exchange() begin"
-		if [[ "$CERTIFICATE" != "" ]]; then
-			OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
-		else
-			OUTPUT=$(curl -fs $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
-		fi
-		if [[ "$OUTPUT" == "" ]]; then
-			log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=<specified>"
-			exit 1
-		fi
+	if [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
+		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
+	else
+		AUTH=$HZN_EXCHANGE_USER_AUTH
+	fi
+
+	if [[ "$CERTIFICATE" != "" ]]; then
+            	OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $AUTH) || true
+	else
+		OUTPUT=$(curl -fs $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $AUTH) || true
+	fi
+		
+	if [[ "$OUTPUT" == "" ]]; then
+		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=<specified>"
+		exit 1
+	fi
 	log_debug "validate_exchange() end"
 }
 
@@ -281,18 +303,27 @@ function validate_args(){
 
     log_info "Checking script arguments..."
 
-    # preliminary check for script arguments
-    check_empty "$PKG_PATH" "path to installation packages"
-    if [[ ${PKG_PATH:0:4} == "http" ]]; then
+    if [ "${DEPLOY_TYPE}" == "device" ]; then
+    	# preliminary check for script arguments
+    	check_empty "$PKG_PATH" "path to installation packages"
+    	if [[ ${PKG_PATH:0:4} == "http" ]]; then
 	    PKG_APT_REPO="$PKG_PATH"
 	    if [[ "${PKG_APT_REPO: -1}" == "/" ]]; then
 		    PKG_APT_REPO=$(echo "$PKG_APT_REPO" | sed 's/\/$//')
 	    fi
 	    PKG_PATH="."
-    else
+    	else
 	    PKG_PATH=$(echo "$PKG_PATH" | sed 's/\/$//')
 	    check_exist d "$PKG_PATH" "The package installation"
+    	fi
+    else
+        # check kubectl is available
+	kubectl --help > /dev/null 2>&1
+	if [ $? -ne 0 ]; then
+            log_notify "kubectl is not available, please install kubectl and ensure that it is found on your \$PATH. Exiting..."
+	fi
     fi
+
     check_empty "$SKIP_REGISTRATION" "registration flag"
     log_info "Check finished successfully"
 
@@ -307,6 +338,27 @@ function validate_args(){
     get_variable HZN_EXCHANGE_USER_AUTH $CFG
     check_empty HZN_EXCHANGE_USER_AUTH "Exchange User Auth"
     get_variable NODE_ID $CFG
+
+    if [ "${DEPLOY_TYPE}" == "cluster" ]; then
+	if [[ "$NODE_ID" == "" ]]; then
+		log_notify "The NODE_ID value is empty. Please set NODE_ID to edge cluster name in agent-install.cfg or as environment variable. Exiting..."
+		exit 1
+	fi
+
+	get_variable USE_EDGE_CLUSTER_REGISTRY $CFG
+	if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+		get_variable EDGE_CLUSTER_REGISTRY_USERNAME $CFG
+		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Username"
+		get_variable EDGE_CLUSTER_REGISTRY_TOKEN $CFG
+		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Token"
+		get_variable EDGE_CLUSTER_REGISTRY_REPO $CFG
+		check_empty EDGE_CLUSTER_REGISTRY_REPO "Edge Cluster Registry Repo"
+		get_variable EDGE_CLUSTER_STORAGE_CLASS $CFG
+		if [[ "$EDGE_CLUSTER_STORAGE_CLASS" == "" ]]; then
+			EDGE_CLUSTER_STORAGE_CLASS="gp2"
+		fi
+	fi
+    fi
     get_variable CERTIFICATE $CFG
     get_variable HZN_MGMT_HUB_CERT_PATH $CFG
     if [[ "$CERTIFICATE" == "" ]]; then
@@ -316,9 +368,10 @@ function validate_args(){
 		    CERTIFICATE="$CERTIFICATE_DEFAULT"
 	    fi
     fi
+
     validate_exchange
     get_variable HZN_EXCHANGE_PATTERN $CFG
-        if [ -z "$HZN_EXCHANGE_PATTERN" ]; then
+        if [ -z "$HZN_EXCHANGE_PATTERN" ] && [ "${DEPLOY_TYPE}" == "device" ]; then
                 set_pattern_from_exchange
         fi
 
@@ -329,13 +382,15 @@ function validate_args(){
 	# if a node policy is non-empty, check if the file exists
 	if [[ -n  $HZN_NODE_POLICY ]]; then
 		check_exist f "$HZN_NODE_POLICY" "The node policy"
-        elif [[ "$HZN_EXCHANGE_PATTERN" == "" ]] ; then
+        elif [[ "$HZN_EXCHANGE_PATTERN" == "" ]] && [ "${DEPLOY_TYPE}" == "device" ]; then
                 set_policy_from_exchange
 	fi
 
-    if [[ -z "$WAIT_FOR_SERVICE_ORG" ]] && [[ -n "$WAIT_FOR_SERVICE" ]]; then
-    	log_error "Must specify service with -w to use with -o organization. Ignoring -o flag."
-	unset WAIT_FOR_SERVICE_ORG
+    if [ "${DEPLOY_TYPE}" == "device" ]; then
+    	if [[ -z "$WAIT_FOR_SERVICE_ORG" ]] && [[ -n "$WAIT_FOR_SERVICE" ]]; then
+    		log_error "Must specify service with -w to use with -o organization. Ignoring -o flag."
+		unset WAIT_FOR_SERVICE_ORG
+    	fi
     fi
 
     log_info "Check finished successfully"
@@ -358,6 +413,15 @@ function show_config() {
     echo "HZN_ORG_ID=${HZN_ORG_ID}"
     echo "HZN_EXCHANGE_USER_AUTH=<specified>"
     echo "Verbosity is ${VERBOSITY}"
+    echo "NODE_ID"=${NODE_ID}
+    echo "Agent in Edge Cluster config:"
+    echo "Using Edge Cluster Registry: ${USE_EDGE_CLUSTER_REGISTRY}"
+    if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
+	echo "Edge Cluster Registry Repo: ${EDGE_CLUSTER_REGISTRY_REPO}"
+	echo "Edge Cluster Registry Username: ${EDGE_CLUSTER_REGISTRY_USERNAME}"
+	echo "Edge Cluster Registry Token: <specified>"
+	echo "Edge Cluster Storage Class: ${EDGE_CLUSTER_STORAGE_CLASS}"
+    fi
 
     log_debug "show_config() end"
 }
@@ -938,27 +1002,34 @@ function process_node(){
 function create_node(){
 	log_debug "create_node() begin"
 
-    NODE_NAME=$HOSTNAME
+    if [ "${DEPLOY_TYPE}" == "cluster" ]; then
+	NODE_NAME=$NODE_ID
+    else
+	NODE_NAME=$HOSTNAME
+    fi
+
     log_info "Node name is $NODE_NAME"
     if [ -z "$HZN_EXCHANGE_NODE_AUTH" ]; then
         log_info "HZN_EXCHANGE_NODE_AUTH is not defined, creating it..."
-        if [[ "$OS" == "linux" ]]; then
-            if [ -f /etc/default/horizon ]; then
-              if [[ "$NODE_ID" == "" ]]; then
-                log_info "Getting node id from /etc/default/horizon file..."
-                NODE_ID=$(grep HZN_DEVICE_ID /etc/default/horizon |cut -d'=' -f2)
-                if [[ "$NODE_ID" == "" ]]; then
-                    NODE_ID=$HOSTNAME
-                fi
-              fi
-            else
-                log_info "Cannot detect node id as /etc/default/horizon cannot be found, using ${NODE_NAME} hostname instead"
-                NODE_ID=$NODE_NAME
-            fi
-        elif [[ "$OS" == "macos" ]]; then
-            log_info "Using hostname as node id..."
-            NODE_ID=$NODE_NAME
-        fi
+        if [ "${DEPLOY_TYPE}" == "device" ]; then
+		if [[ "$OS" == "linux" ]]; then
+            		if [ -f /etc/default/horizon ]; then
+              			if [[ "$NODE_ID" == "" ]]; then
+                			log_info "Getting node id from /etc/default/horizon file..."
+                			NODE_ID=$(grep HZN_DEVICE_ID /etc/default/horizon |cut -d'=' -f2)
+                			if [[ "$NODE_ID" == "" ]]; then
+                    				NODE_ID=$HOSTNAME
+                			fi
+              			fi
+            		else
+                		log_info "Cannot detect node id as /etc/default/horizon cannot be found, using ${NODE_NAME} hostname instead"
+                		NODE_ID=$NODE_NAME
+            		fi
+        	elif [[ "$OS" == "macos" ]]; then
+            		log_info "Using hostname as node id..."
+            		NODE_ID=$NODE_NAME
+        	fi
+	fi
         log_info "Node id is $NODE_ID"
 
         log_info "Generating node token..."
@@ -970,16 +1041,28 @@ function create_node(){
         log_notify "Found HZN_EXCHANGE_NODE_AUTH variable, using it..."
     fi
 
-    log_notify "Creating a node..."
+    if [ "${DEPLOY_TYPE}" == "device" ]; then
+    	log_notify "Creating a node..."
 
-    set -x
-    hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
-    { set +x; } 2>/dev/null
+    	set -x
+   	hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
+    	{ set +x; } 2>/dev/null
 
-    log_notify "Verifying a node..."
-    set -x
-    hzn exchange node confirm -n "$HZN_EXCHANGE_NODE_AUTH" -o "$HZN_ORG_ID"
-    { set +x; } 2>/dev/null
+    	log_notify "Verifying a node..."
+    	set -x
+    	hzn exchange node confirm -n "$HZN_EXCHANGE_NODE_AUTH" -o "$HZN_ORG_ID"
+    	{ set +x; } 2>/dev/null
+    elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+	log_notify "Creating a node..."
+	EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
+	HZN_EX_NODE_CREATE_CMD="hzn exchange node create -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
+	log_info "AGENT POD ID: ${POD_ID}"
+	kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CREATE_CMD}"
+
+	log_notify "Verifying a node..."
+	HZN_EX_NODE_CFM_CMD="hzn exchange node confirm -n \"$HZN_EXCHANGE_NODE_AUTH\" -o \"$HZN_ORG_ID\""
+	kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CFM_CMD}"
+    fi
 
     log_debug "create_node() end"
 }
@@ -988,23 +1071,30 @@ function create_node(){
 function registration() {
 	log_debug "registration() begin"
 
-	NODE_STATE=$(hzn node list | jq -r .configstate.state)
+	if [ "${DEPLOY_TYPE}" == "device" ]; then
+		NODE_STATE=$(hzn node list | jq -r .configstate.state)
 
-	if [ "$NODE_STATE" = "configured" ]; then
-		log_info "Node is registered already, skipping registration..."
-		return 0
-	fi
+		if [ "$NODE_STATE" = "configured" ]; then
+			log_info "Node is registered already, skipping registration..."
+			return 0
+		fi
 
-	WAIT_FOR_SERVICE_ARG=""
-	if [[ "$WAIT_FOR_SERVICE" != "" ]]; then
-		if [[ "$WAIT_FOR_SERVICE_ORG" != "" ]]; then
-			WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE --serviceorg $WAIT_FOR_SERVICE_ORG "
-		else
-			WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE "
+		WAIT_FOR_SERVICE_ARG=""
+		if [[ "$WAIT_FOR_SERVICE" != "" ]]; then
+			if [[ "$WAIT_FOR_SERVICE_ORG" != "" ]]; then
+				WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE --serviceorg $WAIT_FOR_SERVICE_ORG "
+			else
+				WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE "
+			fi
 		fi
 	fi
 
-    NODE_NAME=$HOSTNAME
+	if [ "${DEPLOY_TYPE}" == "device" ]; then
+    		NODE_NAME=$HOSTNAME
+	elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+		NODE_NAME=$NODE_ID
+		EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
+	fi
     log_info "Node name is $NODE_NAME"
     if [ "$1" = true ] ; then
         log_notify "Skipping registration as it was specified with -s"
@@ -1013,26 +1103,72 @@ function registration() {
         if [[ -z "${2}" ]]; then
         	if [[ -z "${3}" ]]; then
         		log_info "Neither a pattern nor node policy were not specified, registering without it..."
-            		set -x
-            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
-            		{ set +x; } 2>/dev/null
+            		if [ "${DEPLOY_TYPE}" == "device" ]; then
+				set -x
+            			hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
+            			{ set +x; } 2>/dev/null
+			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+				HZN_REGISTER_CMD="hzn register -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
+				log_info "AGENT POD ID: ${POD_ID}"
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+			fi
                 else
         		log_info "Node policy ${HZN_NODE_POLICY} was specified, registering..."
-            		set -x
-            		hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
-            		{ set +x; } 2>/dev/null
+            		if [ "${DEPLOY_TYPE}" == "device" ]; then
+				set -x
+            			hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
+            			{ set +x; } 2>/dev/null
+			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+				# copy policy file to /home/agentuser inside k8s container
+				log_info "Copying policy file $3 to pod container..."
+				POLICY_CONTENT=$(cat $3 | sed 's/\r/\n/')
+				POLICY_FILE_NAME=$(basename "$3")
+				POLICY_FILE_IN_POD="/home/agentuser/${POLICY_FILE_NAME}"
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
+
+				# check if policy file exists
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "ls ${POLICY_FILE_IN_POD}"
+				if [ $? -ne 0 ]; then
+					log_notify "Failed to copy policy file $3 into pod container, existing..."
+					exit 1
+				else
+					log_info "Copied policy file $3 to ${POLICY_FILE_IN_POD} inside pod container"
+				fi
+
+				HZN_REGISTER_CMD="hzn register -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\" --policy \"$POLICY_FILE_IN_POD\""
+				log_info "AGENT POD ID: ${POD_ID}"
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+			fi
                 fi
         else
         	if [[ -z "${3}" ]]; then
-        			log_info "Registering node with ${2} pattern"
-            		set -x
-            		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
-            		{ set +x; } 2>/dev/null
+        		log_info "Registering node with ${2} pattern"
+			if [ "${DEPLOY_TYPE}" == "device" ]; then
+            			set -x
+            			hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
+            			{ set +x; } 2>/dev/null
+			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+				HZN_REGISTER_CMD="hzn register -p \"$2\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
+				log_info "AGENT POD ID: ${POD_ID}"
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+			fi
         	else
         		log_info "Pattern ${2} and policy ${3} were specified. However, pattern registration will override the policy, registering..."
-            		set -x
-           	 	hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
-            		{ set +x; } 2>/dev/null
+            		if [ "${DEPLOY_TYPE}" == "device" ]; then
+				set -x
+           	 		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
+            			{ set +x; } 2>/dev/null
+			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+				log_info "Copying policy file $3 to pod container..."
+				POLICY_CONTENT=$(cat $3)
+				POLICY_FILE_NAME=$(basename "$3")
+				POLICY_FILE_IN_POD="/home/agentuser/${POLICY_FILE_NAME}"
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
+
+				HZN_REGISTER_CMD="hzn register -p \"$2\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\" --policy \"$POLICY_FILE_IN_POD\""
+				log_info "AGENT POD ID: ${POD_ID}"
+				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+			fi
                 fi
         fi
     fi
@@ -1326,8 +1462,356 @@ function find_node_ip_address() {
     fi
 }
 
+function check_node_exist() {
+    log_debug "check_node_exist() begin"
+
+    if [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
+        EXCH_CREDS=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
+    else
+        EXCH_CREDS=$HZN_EXCHANGE_USER_AUTH
+    fi
+
+    if [[ $CERTIFICATE != "" ]]; then
+        EXCH_OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $EXCH_CREDS) || true
+        else
+                EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $EXCH_CREDS) || true
+        fi
+
+        if [[ "$EXCH_OUTPUT" != "" ]]; then
+                EXCH_NODE_TYPE=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].nodeType' | sed 's/"//g')
+                if [[ "$EXCH_NODE_TYPE" = "device" ]]; then
+                	log_notify "Node id ${NODE_ID} is already been created as nodeType Device"
+            		exit 1
+        	else
+            		log_notify "Node id ${NODE_ID} is already been created as nodeType Clutser"
+			exit 1
+                fi
+        fi
+
+    log_debug "check_node_exist() end"
+}
+
+function getImageInfo() {
+    log_debug "getImageInfo() begin"
+    
+    tar xvzf amd64_anax_k8s_ubi.tar.gz
+    if [ $? -ne 0 ]; then
+        log_notify "failed to uncompress agent image from amd64_anax_k8s_ubi.tar.gz, exiting..."
+        exit 1
+    fi
+
+    LOADED_IMAGE_MESSAGE=$(docker load --input amd64_anax_k8s_ubi.tar)
+    AGENT_IMAGE=$(echo $LOADED_IMAGE_MESSAGE|awk -F': ' '{print $2}')
+    REPO_NAME=$(echo $AGENT_IMAGE|awk -F':' '{print $1}'|awk -F'/' '{print $1}')
+    IMAGE_NAME=$(echo $AGENT_IMAGE|awk -F':' '{print $1}'|awk -F'/' '{print $2}')
+    IMAGE_TAG=$(echo $AGENT_IMAGE|awk -F':' '{print $2}')
+    log_info "Got agent image: $AGENT_IMAGE"
+
+    log_debug "getImageInfo() end"
+}
+
+function pushImageToEdgeClusterRegistry() {
+    log_debug "pushImageToEdgeClusterRegistry() begin"
+    echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin
+    if [ $? -ne 0 ]; then
+        log_notify "Failed to login to edge cluster's registry, exiting..."
+        exit 1
+    fi
+
+    EDGE_CLUSTER_IMAGE_FULL_NAME=${EDGE_CLUSTER_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
+    docker tag ${AGENT_IMAGE} ${EDGE_CLUSTER_IMAGE_FULL_NAME}
+    docker push ${EDGE_CLUSTER_IMAGE_FULL_NAME}
+    if [ $? -ne 0 ]; then
+        log_notify "Failed to push image ${EDGE_CLUSTER_IMAGE_FULL_NAME} to edge cluster's registry, exiting..."
+        exit 1
+    fi
+    log_info "successfully pushed image $EDGE_CLUSTER_IMAGE_FULL_NAME to edge cluster registry"
+    
+    log_debug "pushImageToEdgeClusterRegistry() end"
+}
+
+function generate_installation_files() {
+    log_debug "generate_installation_files() begin"
+
+    log_info "Preparing horizon environment file."
+    generate_horizon_env
+    log_info "Horizon environment file is done."
+    
+    log_info "Preparing kubernete persistentVolumeClaim file"
+    prepare_k8s_pvc_file
+    log_info "kubernete persistentVolumeClaim file are done."
+
+    log_info "Preparing kubernete development files"
+    prepare_k8s_development_file
+    log_info "kubernete development files are done."
+
+    log_debug "generate_installation_files() end"
+}
+
+function generate_horizon_env() {
+    log_debug "generate_horizon_env() begin"
+    hzn_env_file="horizon"
+    if [ -e $hzn_env_file ]; then
+        log_info "$hzn_env_file already exists."
+	echo "Do you want to overwrite $hzn_env_file?[y/N]:"
+	read RESPONSE
+	if [ "$RESPONSE" == 'y' ]; then
+		rm $hzn_env_file
+		if [ $? -ne 0 ]; then
+			log_notify "Failed to remove $hzn_env_file, please remove mannually. Exiting..."
+			exit 1
+		else
+			log_notify "$hzn_env_file removed."
+		fi
+		create_horizon_env
+	else
+		log_notify "Agent install will continue and use the existing $hzn_env_file"
+	fi
+    else
+        create_horizon_env
+    fi
+
+    log_debug "generate_horizon_env() end"
+}
+
+function create_horizon_env() {
+    log_debug "create_horizon_env() begin"
+    cert_name=$(basename ${CERTIFICATE})
+    echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >> $hzn_env_file
+    echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >> $hzn_env_file
+    echo "HZN_DEVICE_ID=${NODE_ID}" >> $hzn_env_file
+    echo "HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/$cert_name" >> $hzn_env_file
+    echo "HZN_AGENT_PORT=8510" >> $hzn_env_file
+    log_debug "create_horizon_env() end"
+}
+
+function cleanup_cluster_config_files() {
+    log_debug "cleanup_cluster_config_files() begin"
+    rm $hzn_env_file
+    if [ $? -ne 0 ]; then
+	    log_notify "Failed to remove $hzn_env_file, please remove mannually"
+    fi
+    log_debug "cleanup_cluster_config_files() end"
+}
+
+function prepare_k8s_development_file() {
+    log_debug "prepare_k8s_development_file() begin"
+
+    cp deployment-template.yml deployment.yml
+
+    if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
+    	sed -i -e "s/__ImageRepo__/${EDGE_CLUSTER_REGISTRY_REPO}/g" deployment.yml
+    else
+        sed -i -e "s/__ImageRepo__/${REPO_NAME}/g" deployment.yml
+    fi
+    sed -i -e "s/__ImageName__/${IMAGE_NAME}/g" deployment.yml
+    sed -i -e "s/__ImageTag__/${IMAGE_TAG}/g" deployment.yml
+    sed -i -e "s/__OrgId__/\"${HZN_ORG_ID}\"/g" deployment.yml
+    rm deployment-template.yml
+
+    log_debug "prepare_k8s_development_file() end"
+}
+
+function prepare_k8s_pvc_file() {
+	log_debug "prepare_k8s_pvc_file() begin"
+
+	cp persistentClaim-template.yml persistentClaim.yml
+	sed -i -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim.yml
+	rm persistentClaim-template.yml
+
+	log_debug "prepare_k8s_pvc_file() end"
+}
+
+function create_cluster_resources() {
+	log_debug "create_cluster_resources() begin"
+	
+	create_namespace
+	sleep 2
+	create_service_account
+	create_secret
+	create_configmap
+	create_persistent_volume
+		
+	log_debug "create_cluster_resources() end"
+}
+
+function create_namespace() {
+    log_debug "create_namespace() begin"
+    # check if namespace exist, if not, create
+    log_info "checking if namespace exist..."
+    kubectl get namespace ${NAMESPACE} 2>/dev/null
+    if [ $? -ne 0 ]; then
+        log_info "namespace ${NAMESPACE} does not exist, creating..."
+        log_debug "command: kubectl create namespace ${NAMESPACE}"
+        kubectl create namespace ${NAMESPACE}
+        if [ $? -ne 0 ]; then
+            log_notify "Failed to create namespace ${NAMESPACE}, exiting..."
+            exit 1
+        fi
+    else
+        log_info "namespace ${NAMESPACE} exists, skip creating namespace"
+    fi
+
+    log_debug "create_namespace() end"
+}
+
+function create_service_account() {
+	log_debug "create_service_account() begin"
+	kubectl create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${NAMESPACE}
+	if [ $? -ne 0 ]; then
+        log_notify "Failed to create service account ${SERVICE_ACCOUNT_NAME}, exiting..."
+        exit 1
+    fi
+	log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} created"
+
+	log_info "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
+	kubectl create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
+	if [ $? -ne 0 ]; then
+        log_notify "Failed to create clusterrolebinding for ${NAMESPACE}:${SERVICE_ACCOUNT_NAME}, exiting..."
+        exit 1
+    fi
+	log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} created"
+
+	log_debug "create_service_account() end"
+}
+
+function create_secret() {
+    log_debug "create_secrets() begin"
+
+    log_info "creating secret for cert file..."
+    kubectl create secret generic ${SECRET_NAME} --from-file=${CERTIFICATE} -n ${NAMESPACE}
+    if [ $? -ne 0 ]; then
+        log_notify "Failed to create secret ${SECRET_NAME} from cert file ${CERTIFICATE}, exiting..."
+        exit 1
+    fi
+    log_info "secret ${SECRET_NAME} created"
+
+    log_debug "create_secrets() end"
+}
+
+function create_configmap() {
+    log_debug "create_configmap() begin"
+    log_info "create configmap from horizon.env..."
+    kubectl create configmap ${CONFIGMAP_NAME} --from-file=horizon -n ${NAMESPACE}
+    if [ $? -ne 0 ]; then
+        log_notify "Failed to create configmap ${CONFIGMAP_NAME} from horizon file, exiting..."
+        exit 1
+    fi
+    log_info "configmap ${CONFIGMAP_NAME} created."
+
+    log_debug "create_configmap() end"
+}
+
+function create_persistent_volume() {
+    log_debug "create_persistent_volume() begin"
+
+    log_info "creating persistent volume claim..."
+    kubectl apply -f persistentClaim.yml -n ${NAMESPACE}
+    if [ $? -ne 0 ]; then
+        log_notify "Failed to create persistent volume claim, exiting..."
+        exit 1
+    fi
+    log_info "persistent volume claim created"
+
+    log_debug "create_persistent_volume() end"
+}
+
+function check_resources_for_deployment() {
+    log_debug "check_resource_for_deployment() begin"
+    # check secrets/configmap/persistent/images
+    kubectl get secret ${SECRET_NAME} -n ${NAMESPACE} > /dev/null
+    secret_ready=$?
+
+    kubectl get configmap ${CONFIGMAP_NAME} -n ${NAMESPACE} > /dev/null
+    configmap_ready=$?
+
+    kubectl get pvc ${PVC_NAME} -n ${NAMESPACE} > /dev/null
+    pvc_ready=$?
+
+    if [[ ${secret_ready} -eq 0 ]] && [[ ${configmap_ready} -eq 0 ]] && [[ ${pvc_ready} -eq 0 ]]; then
+        RESOURCE_READY=1
+    else
+        RESOURCE_READY=0
+    fi
+
+    log_debug "check_resource_for_deployment() end"
+}
+
+function create_deployment() {
+    log_debug "create_deployment() begin"
+    # check_resources_for_deployment()
+    # deploy
+    log_info "creating deployment..."
+    kubectl apply -f deployment.yml -n ${NAMESPACE}
+    if [ $? -ne 0 ]; then
+        log_notify "Failed to create deployment, exiting..."
+        exit 1
+    fi
+
+    log_debug "create_deployment() end"
+}
+
+function check_deployment_status() {
+    log_debug "check_resource_for_deployment() begin"
+    DEP_STATUS=$(kubectl rollout status --timeout=30s deployment/agent -n ${NAMESPACE} | grep "successfully rolled out" )
+    if [ -z "$DEP_STATUS" ]; then
+        log_notify "Deployment rollout status failed"
+        exit 1
+    fi
+    log_debug "check_resource_for_deployment() end"
+}
+
+function get_pod_id() {
+    log_debug "get_pod_id() begin"
+    POD_ID=$(kubectl get pod -n ${NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+    if [ -n "${POD_ID}" ]; then
+        log_info "get pod: ${POD_ID}"
+    else
+        log_notify "Failed to get pod id"
+        exit 1
+    fi
+    log_debug "get_pod_id() end"
+}
+
+function install_cluster() {
+	check_node_exist
+
+	getImageInfo
+
+	# get image from ocp registry and push to cluster's registry
+	if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
+		pushImageToEdgeClusterRegistry
+	fi
+
+	# generate files based on templates
+	generate_installation_files
+
+	# create cluster namespace and resources
+	create_cluster_resources
+
+	while [ -z ${RESOURCE_READY} ] && [ ${GET_RESOURCE_MAX_TRY} -gt 0 ]
+	do
+		check_resources_for_deployment
+		count=$((GET_RESOURCE_MAX_TRY-1))
+		GET_RESOURCE_MAX_TRY=$count
+	done
+
+	# get pod information
+	create_deployment
+	check_deployment_status
+	get_pod_id
+
+	create_node
+
+	# register
+	registration "$SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+
+	cleanup_cluster_config_files
+
+}
+
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1363,6 +1847,8 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 		;;
 		t) APT_REPO_BRANCH="$OPTARG"
 		;;
+		D) DEPLOY_TYPE="$OPTARG"
+		;;
 		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
 		:) echo "Option -$OPTARG requires an argument"; help; exit 1
@@ -1389,17 +1875,27 @@ fi
 validate_args "$*" "$#"
 # showing current configuration
 show_config
-# checking if the requirements are met
-check_requirements
 
-check_node_state
+echo `now` "deploy type is: ${DEPLOY_TYPE}"
+if [ "${DEPLOY_TYPE}" == "device" ]; then
+	# checking if the requirements are met
+	check_requirements
 
-if [[ "$OS" == "linux" ]]; then
-	echo `now` "Detection results: OS is ${OS}, distribution is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
-	install_${OS} ${OS} ${DISTRO} ${CODENAME} ${ARCH}
-elif [[ "$OS" == "macos" ]]; then
-	echo `now` "Detection results: OS is ${OS}"
-	install_${OS}
+	check_node_state
+
+	if [[ "$OS" == "linux" ]]; then
+		echo `now` "Detection results: OS is ${OS}, distribution is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
+		install_${OS} ${OS} ${DISTRO} ${CODENAME} ${ARCH}
+	elif [[ "$OS" == "macos" ]]; then
+		echo `now` "Detection results: OS is ${OS}"
+		install_${OS}
+	fi
+
+	add_autocomplete
+elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+	echo `now` "Install agent on edge cluster"
+	set +e
+	install_cluster
+else
+	echo `now` "deploy type only support 'device' or 'cluster'"
 fi
-
-add_autocomplete
