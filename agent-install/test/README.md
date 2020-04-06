@@ -7,6 +7,7 @@ This script:
 * Gets specified packages distributives
 * Verifies installation and functionality of the `agent-install.sh` script
 * Can be used for cluster heatchcheck
+* Checks if the `agent-install.sh` script performs switching from one configuration to another (it doesn't require any (re)installation but makes changes in the agent configuration so it's set up against new environment)
 
 ## Requirements
 
@@ -35,10 +36,10 @@ The script uses the same configuration file as the `agent-install.sh` does.
 
 The config file should contain:
 ```bash
-HZN_EXCHANGE_URL="https://<ICP_IP>:8443/ec-exchange/v1/"
-HZN_FSS_CSSURL="https://<ICP_IP>:8443/ec-css/"
-HZN_ORG_ID="<your_ICP_cluster>"
-HZN_EXCHANGE_USER_AUTH="iamapikey:<your_ICP_API_key>"
+HZN_EXCHANGE_URL="https://<MGMT_HUB>:8443/ec-exchange/v1/"
+HZN_FSS_CSSURL="https://<MGMT_HUB>:8443/ec-css/"
+HZN_ORG_ID="<your_MGMT_HUB_cluster>"
+HZN_EXCHANGE_USER_AUTH="iamapikey:<your_MGMT_HUB_API_key>"
 HZN_EXCHANGE_PATTERN="IBM/pattern-ibm.helloworld"
 ```
 
