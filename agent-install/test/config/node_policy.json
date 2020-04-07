@@ -1,0 +1,9 @@
+{
+  "properties": [
+    { "name": "model", "value": "Thingamajig ULTRA" },
+    { "name": "serial", "value": 9123456 },
+    { "name": "configuration", "value": "Mark-II-PRO" }
+  ],
+  "constraints": [
+  ]
+}
