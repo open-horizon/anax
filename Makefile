@@ -169,9 +169,9 @@ endif
 all: deps all-nodeps
 all-nodeps: gopathlinks gofolders $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
-deps: gofolders pkgdeps i18n-catalog
+deps: gofolders i18n-catalog
 
-noi18n: pkgdeps all-nodeps
+noi18n: all-nodeps
 
 $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
@@ -508,12 +508,6 @@ anax-k8s-clean:
 	-docker rmi $(ANAX_K8S_IMAGE_E2E) 2> /dev/null || :
 	-docker rmi $(ANAX_K8S_UBI_IMAGE_STG) 2> /dev/null || :
 
-pkgdeps:
-	@echo "Fetching dependencies"
-	cd $(PKGPATH) && \
-		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH;\
-		go mod tidy
-
 gofolders:
 ifneq ($(GOPATH),$(TMPGOPATH))
 	if [ ! -z $(GOPATH) ]; then \
@@ -521,7 +515,7 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 	fi
 endif
 
-i18n-catalog: pkgdeps $(TMPGOPATH)/bin/gotext
+i18n-catalog: $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
@@ -606,7 +600,7 @@ test-ci: gopathlinks
 # N.B. this doesn't run ci tests, the ones that require CI system setup
 check: deps lint test test-integration
 
-check-noi18n: pkgdeps lint test test-integration
+check-noi18n: lint test test-integration
 
 
 # build sequence diagrams
