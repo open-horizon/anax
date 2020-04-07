@@ -11,6 +11,7 @@ SECRET_NAME="agent-secret-cert"
 
 isRoot=$(id -u)
 cprefix="sudo -E"
+
 if [ "${isRoot}" == "0" ]
 then
 	cprefix=""
@@ -25,24 +26,24 @@ RC=$?
 if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
-	$cprefix sudo snap install microk8s --classic --channel=1.14/stable
+	sudo snap install microk8s --classic --channel=1.14/stable
 	IRC=$?
 	if [ $IRC -ne 0 ]; then echo "Unable to install microk8s: $IRC"; exit 1; fi
 
-	#
-	# Wait for ready status
-	#
-	echo "Waiting for Kube test environment to start"
-	$cprefix microk8s.status --wait-ready
-	RC=$?
-	if [ $RC -ne 0 ]
-	then
-		echo "Error waiting for microk8s to initialize: $RC"
-		$cprefix microk8s.status
-		$cprefix microk8s.inspect
-		exit 1
-	fi
+fi
 
+#
+# Wait for ready status
+#
+echo "Waiting for Kube test environment to start"
+$cprefix microk8s.status --wait-ready
+RC=$?
+if [ $RC -ne 0 ]
+then
+	echo "Error waiting for microk8s to initialize: $RC"
+	$cprefix microk8s.status
+	$cprefix microk8s.inspect
+	exit 1
 fi
 
 # Artificial delay that seems to allow time for microk8s to start.
@@ -105,8 +106,23 @@ echo "Move agent container into microk8s container registry"
 docker save agent-in-kube:local > /tmp/agent-in-kube.tar
 if [ $? -ne 0 ]; then echo "Failure tar-ing agent container to file"; exit 1; fi
 
+#
+# Wait for containerd to start
+#
+echo "Waiting for containerd to start..."
+while :
+do
+	if $cprefix [ -e "/var/snap/microk8s/common/run/containerd.sock" ]
+	then
+		break
+	else
+		echo "still waiting for /var/snap/microk8s/common/run/containerd.sock"
+		sleep 5
+	fi
+done
+
 # Debug help - microk8s.ctr images ls
-$cprefix microk8s.ctr -n k8s.io image import /tmp/agent-in-kube.tar
+$cprefix microk8s.ctr image import /tmp/agent-in-kube.tar
 RC=$?
 if [ $RC -ne 0 ]
 then

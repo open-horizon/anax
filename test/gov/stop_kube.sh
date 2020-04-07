@@ -17,9 +17,11 @@ fi
 # Check if microk8s is running.
 #
 echo "Preparing to cleanup Kube test environment"
-$cprefix microk8s.status
+OUT=$($cprefix microk8s.status)
 RC=$?
 if [ $RC -ne 0 ]; then echo "microk8s not running, nothing to clean up."; exit 0; fi
+
+if [[ $OUT == *"microk8s is not running."* ]]; then echo "microk8s not running, nothing to clean up."; exit 0; fi
 
 #
 # Undeploy everything from the microk8s environment.
