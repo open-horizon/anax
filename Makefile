@@ -510,7 +510,7 @@ anax-k8s-clean:
 
 gofolders:
 ifneq ($(GOPATH),$(TMPGOPATH))
-	if [ ! -z $(GOPATH) ]; then \
+	if [ ! -z $(GOPATH) ] && [ -w $(GOPATH) ] && [ -d $(GOPATH) ]; then \
 		mkdir -p $(GOPATH)/pkg $(GOPATH)/bin; \
 	fi
 endif
