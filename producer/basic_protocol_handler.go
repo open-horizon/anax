@@ -48,7 +48,7 @@ func (c *BasicProtocolHandler) String() string {
 		"PM: %v, "+
 		"DB: %v, "+
 		"Agreement PH: %v",
-		c.name, c.ec.GetExchangeId(), c.ec.GetExchangeToken(), c.pm, c.db, c.agreementPH)
+		c.name, c.ec.GetExchangeId(), "********", c.pm, c.db, c.agreementPH)
 }
 
 func (c *BasicProtocolHandler) AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler {

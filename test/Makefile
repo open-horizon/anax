@@ -281,7 +281,7 @@ exchange-image:
 
 test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
 	@echo -e  "\nSetting up agent in kube"
-	gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE)
+	gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW)
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 

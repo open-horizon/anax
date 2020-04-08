@@ -3,7 +3,9 @@ package kube_operator
 import (
 	"archive/tar"
 	"compress/gzip"
+	"encoding/base64"
 	"fmt"
+	"github.com/golang/glog"
 	yaml "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -28,7 +30,11 @@ import (
 
 const (
 	// TEST NAMESPACE
-	ANAX_NAMESPACE = "ibm-edge"
+	ANAX_NAMESPACE = "openhorizon-agent"
+	// Name for the env var config map. Only characters allowed: [a-z] "." and "-"
+	HZN_ENV_VARS = "hzn-env-vars"
+	// Variable that contains the name of the config map
+	HZN_ENV_KEY = "HZN_ENV_VARS"
 
 	K8S_ROLE_TYPE           = "Role"
 	K8S_ROLEBINDING_TYPE    = "RoleBinding"
@@ -49,6 +55,11 @@ type APIObjects struct {
 
 type KubeClient struct {
 	Client *kubernetes.Clientset
+}
+
+type OperatorStatus struct {
+	Name   string
+	Status interface{}
 }
 
 func NewKubeConfig() (*rest.Config, error) {
@@ -88,10 +99,14 @@ func NewCRDClient() (*apiv1beta1client.ApiextensionsV1beta1Client, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, imageName string) error {
+func (c KubeClient) Install(tar string, envVars map[string]string, agId string) error {
 	// Read the yaml files from the commpressed tar files
-	r := strings.NewReader(tar)
-	yamls, err := getYamlFromTarGz(r)
+	yamls, err := getYamlFromTarGz(tar)
+	if err != nil {
+		return err
+	}
+
+	mapName, err := c.CreateConfigMap(envVars, agId)
 	if err != nil {
 		return err
 	}
@@ -100,12 +115,17 @@ func (c KubeClient) Install(tar string, imageName string) error {
 	if err != nil {
 		return err
 	}
+
+	if len(customResources) != 1 {
+		return fmt.Errorf("Expected one custom resource in deployment. Got %d", len(customResources))
+	}
 	// Sort the k8s api objects by kind
 	apiObjMap := sortAPIObjects(k8sObjs)
 
 	// Create the role types in the cluster
 	for _, roleDef := range apiObjMap[K8S_ROLE_TYPE] {
 		newRole := roleDef.Object.(*rbacv1.Role)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating role %v", newRole)))
 		_, err := c.Client.RbacV1().Roles(ANAX_NAMESPACE).Create(newRole)
 		if err != nil {
 			return err
@@ -114,6 +134,7 @@ func (c KubeClient) Install(tar string, imageName string) error {
 	// Create the rolebinding types in the cluster
 	for _, roleBindingDef := range apiObjMap[K8S_ROLEBINDING_TYPE] {
 		newRoleBinding := roleBindingDef.Object.(*rbacv1.RoleBinding)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating rolebinding %v", newRoleBinding)))
 		_, err := c.Client.RbacV1().RoleBindings(ANAX_NAMESPACE).Create(newRoleBinding)
 		if err != nil {
 			return err
@@ -122,6 +143,7 @@ func (c KubeClient) Install(tar string, imageName string) error {
 	// Create the serviceaccount types in the cluster
 	for _, svcAcctDef := range apiObjMap[K8S_SERVICEACCOUNT_TYPE] {
 		newSvcAcct := svcAcctDef.Object.(*corev1.ServiceAccount)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating service account %v", newSvcAcct)))
 		_, err := c.Client.CoreV1().ServiceAccounts(ANAX_NAMESPACE).Create(newSvcAcct)
 		if err != nil {
 			return err
@@ -130,7 +152,9 @@ func (c KubeClient) Install(tar string, imageName string) error {
 	// Create the deployment types in the cluster
 	for _, dep := range apiObjMap[K8S_DEPLOYMENT_TYPE] {
 		newDep := dep.Object.(*appsv1.Deployment)
-		_, err := c.Client.AppsV1().Deployments(ANAX_NAMESPACE).Create(newDep)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating deployment %v", newDep)))
+		newDepWithEnv := addConfigMapVarToDeploymentObject(*newDep, mapName)
+		_, err := c.Client.AppsV1().Deployments(ANAX_NAMESPACE).Create(&newDepWithEnv)
 		if err != nil {
 			return err
 		}
@@ -145,6 +169,7 @@ func (c KubeClient) Install(tar string, imageName string) error {
 			return err
 		}
 		crds := apiClient.CustomResourceDefinitions()
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", newCRD)))
 		_, err = crds.Create(newCRD)
 		if err != nil {
 			return err
@@ -167,31 +192,26 @@ func (c KubeClient) Install(tar string, imageName string) error {
 
 		unstructCr := unstructured.Unstructured{Object: newCr}
 
-		// the cluster has to create the endpoint for the custom resource, this can take some time. giving it 90 seconds for now. should probably be configurable
-		i := 0
-		for i < 3 {
+		// the cluster has to create the endpoint for the custom resource, this can take some time
+		glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", newCr)))
+		for {
 			_, err := crClient.Namespace(ANAX_NAMESPACE).Create(&unstructCr, metav1.CreateOptions{})
 			if err != nil {
-				if i == 2 {
-					return err
-				}
-				time.Sleep(time.Second * 30)
+				time.Sleep(time.Second * 5)
 			} else {
 				break
 			}
-
-			i++
 		}
 	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("all operator objects installed")))
 
 	return nil
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Uninstall(tar string, imageName string) error {
+func (c KubeClient) Uninstall(tar string, agId string) error {
 	// Read the yaml files from the commpressed tar files
-	r := strings.NewReader(tar)
-	yamls, err := getYamlFromTarGz(r)
+	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
 		return err
 	}
@@ -203,10 +223,17 @@ func (c KubeClient) Uninstall(tar string, imageName string) error {
 	// Sort the k8s api objects by kind
 	apiObjMap := sortAPIObjects(k8sObjs)
 
+	configMapName := fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting config map %v", configMapName)))
+	// Delete the agreement config map
+	c.Client.CoreV1().ConfigMaps(ANAX_NAMESPACE).Delete(configMapName, &metav1.DeleteOptions{})
+
 	// Delete the custom resource definitions from the cluster
 	kindToGVRMap := map[string]schema.GroupVersionResource{}
 	for _, crd := range apiObjMap[K8S_CRD_TYPE] {
 		newCRD := crd.Object.(*v1beta1.CustomResourceDefinition)
+
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", newCRD.ObjectMeta.Name)))
 
 		// CRD's need a different client
 		apiClient, err := NewCRDClient()
@@ -216,7 +243,7 @@ func (c KubeClient) Uninstall(tar string, imageName string) error {
 		crds := apiClient.CustomResourceDefinitions()
 		err = crds.Delete(newCRD.ObjectMeta.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			return err
+			glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", newCRD.ObjectMeta.Name, err)))
 		}
 		kindToGVRMap[newCRD.Spec.Names.Kind] = schema.GroupVersionResource{Resource: newCRD.Spec.Names.Plural, Group: newCRD.Spec.Group, Version: newCRD.Spec.Version}
 	}
@@ -234,45 +261,137 @@ func (c KubeClient) Uninstall(tar string, imageName string) error {
 		}
 		crClient := dynClient.Resource(kindToGVRMap[newCr["kind"].(string)])
 
+		var newCrName string
+		if metaInterf, ok := newCr["metadata"]; ok {
+			if metaMap, ok := metaInterf.(map[string]interface{}); ok {
+				if metaMapName, ok := metaMap["name"]; ok {
+					newCrName = fmt.Sprintf("%v", metaMapName)
+				} else {
+					glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", newCr)))
+				}
+			} else {
+				glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", newCr)))
+			}
+		} else {
+			glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", newCr)))
+		}
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
 		// the cluster has to create the endpoint for the custom resource, this can take some time. giving it 90 seconds for now. should probably be configurable
-		err = crClient.Namespace(ANAX_NAMESPACE).Delete(newCr["metadata"].(map[string]interface{})["name"].(string), &metav1.DeleteOptions{})
+		err = crClient.Namespace(ANAX_NAMESPACE).Delete(newCrName, &metav1.DeleteOptions{})
 		if err != nil {
-			return err
+			glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
 		}
 	}
 	// Delete the deployment types in the cluster
 	for _, dep := range apiObjMap[K8S_DEPLOYMENT_TYPE] {
 		newDep := dep.Object.(*appsv1.Deployment)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting deployment %s", newDep.ObjectMeta.Name)))
 		err := c.Client.AppsV1().Deployments(ANAX_NAMESPACE).Delete(newDep.ObjectMeta.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			return err
+			glog.Errorf(kwlog(fmt.Sprintf("unable to delete deployment %s. Error: %v", newDep.ObjectMeta.Name, err)))
 		}
 	}
 	// Delete the serviceaccount types in the cluster
 	for _, svcAcctDef := range apiObjMap[K8S_SERVICEACCOUNT_TYPE] {
 		newSvcAcct := svcAcctDef.Object.(*corev1.ServiceAccount)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting service account %s", newSvcAcct.ObjectMeta.Name)))
 		err := c.Client.CoreV1().ServiceAccounts(ANAX_NAMESPACE).Delete(newSvcAcct.ObjectMeta.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			return err
+			glog.Errorf(kwlog(fmt.Sprintf("unable to service account %s. Error: %v", newSvcAcct.ObjectMeta.Name, err)))
 		}
 	}
 	// Delete the rolebinding types in the cluster
 	for _, roleBindingDef := range apiObjMap[K8S_ROLEBINDING_TYPE] {
 		newRoleBinding := roleBindingDef.Object.(*rbacv1.RoleBinding)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting role binding %s", newRoleBinding.ObjectMeta.Name)))
 		err := c.Client.RbacV1().RoleBindings(ANAX_NAMESPACE).Delete(newRoleBinding.ObjectMeta.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			return err
+			glog.Errorf(kwlog(fmt.Sprintf("unable to role binding %s. Error: %v", newRoleBinding.ObjectMeta.Name, err)))
 		}
 	}
 	// Delete the role types in the cluster
 	for _, roleDef := range apiObjMap[K8S_ROLE_TYPE] {
 		newRole := roleDef.Object.(*rbacv1.Role)
+		glog.V(3).Infof(kwlog(fmt.Sprintf("deleting role %s", newRole.ObjectMeta.Name)))
 		err := c.Client.RbacV1().Roles(ANAX_NAMESPACE).Delete(newRole.ObjectMeta.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			return err
+			glog.Errorf(kwlog(fmt.Sprintf("unable to role %s. Error: %v", newRole.ObjectMeta.Name, err)))
 		}
 	}
+	glog.V(3).Infof(kwlog(fmt.Sprintf("Completed removal of all operator objects from the cluster.")))
 	return nil
+}
+
+func (c KubeClient) Status(tar string) (*OperatorStatus, error) {
+	// Read the yaml files from the commpressed tar files
+	yamls, err := getYamlFromTarGz(tar)
+	if err != nil {
+		return nil, err
+	}
+	// Convert the yaml files to kubernetes objects
+	k8sObjs, customResources, err := getK8sObjectFromYaml(yamls, nil)
+	if err != nil {
+		return nil, err
+	}
+	// Sort the k8s api objects by kind
+	apiObjMap := sortAPIObjects(k8sObjs)
+
+	kindToGVRMap := map[string]schema.GroupVersionResource{}
+	for _, crd := range apiObjMap[K8S_CRD_TYPE] {
+		crdDef := crd.Object.(*v1beta1.CustomResourceDefinition)
+
+		kindToGVRMap[crdDef.Spec.Names.Kind] = schema.GroupVersionResource{Resource: crdDef.Spec.Names.Plural, Group: crdDef.Spec.Group, Version: crdDef.Spec.Version}
+	}
+
+	if len(customResources) != 1 {
+		return nil, fmt.Errorf("Expected one custom resource in deployment. Got %d", len(customResources))
+	}
+
+	crStr := customResources[0]
+	cr := make(map[string]interface{})
+	yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+	crMap := makeAllKeysStrings(cr).(map[string]interface{})
+
+	dynClient, err := NewDynamicKubeClient()
+	if err != nil {
+		return nil, err
+	}
+	crClient := dynClient.Resource(kindToGVRMap[fmt.Sprintf("%v", crMap["kind"])])
+	name := fmt.Sprintf("%v", crMap["metadata"].(map[string]interface{})["name"])
+	res, err := crClient.Namespace(ANAX_NAMESPACE).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	retStatus := OperatorStatus{}
+	retStatus.Name = name
+	if status, ok := res.Object["status"]; ok {
+		retStatus.Status = status
+	}
+
+	return &retStatus, nil
+}
+
+// CreateConfigMap will create a config map with the provided environment variable map
+func (c KubeClient) CreateConfigMap(envVars map[string]string, agId string) (string, error) {
+	hznEnvConfigMap := corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId)}, Data: envVars}
+	res, err := c.Client.CoreV1().ConfigMaps(ANAX_NAMESPACE).Create(&hznEnvConfigMap)
+	if err != nil {
+		return "", err
+	}
+	return res.ObjectMeta.Name, nil
+}
+
+// add a reference to the envvar config map to the deployment
+func addConfigMapVarToDeploymentObject(deployment appsv1.Deployment, configMapName string) appsv1.Deployment {
+	hznEnvVar := corev1.EnvVar{Name: HZN_ENV_KEY, Value: configMapName}
+	i := len(deployment.Spec.Template.Spec.Containers) - 1
+	for i >= 0 {
+		newEnv := append(deployment.Spec.Template.Spec.Containers[i].Env, hznEnvVar)
+		deployment.Spec.Template.Spec.Containers[i].Env = newEnv
+		i--
+	}
+	return deployment
 }
 
 // recursively go over the given interface to ensure any map keys are strings
@@ -345,8 +464,15 @@ func getK8sObjectFromYaml(yamlFiles []YamlFile, sch *runtime.Scheme) ([]APIObjec
 }
 
 // Read the compressed tar file from the operator deployments section
-func getYamlFromTarGz(r io.Reader) ([]YamlFile, error) {
+func getYamlFromTarGz(deploymentString string) ([]YamlFile, error) {
 	files := []YamlFile{}
+
+	archiveData, err := base64.StdEncoding.DecodeString(deploymentString)
+	if err != nil {
+		return files, err
+	}
+	r := strings.NewReader(string(archiveData))
+
 	zipReader, err := gzip.NewReader(r)
 	if err != nil {
 		return files, err

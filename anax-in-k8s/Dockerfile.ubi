@@ -6,7 +6,7 @@ RUN microdnf update -y --nodocs && microdnf clean all
 # shadow-utils contains groupadd and adduser commands
 RUN microdnf install --nodocs -y shadow-utils \
     && microdnf install --nodocs -y openssl ca-certificates \
-    && microdnf install -y wget iptables vim-minimal procps \
+    && microdnf install -y wget iptables vim-minimal procps tar \
     && wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
     && chmod +x ./jq \
     && mv jq /usr/bin

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent
-  namespace: ibm-edge-agent
+  namespace: openhorizon-agent
 spec:
   replicas: 1
   selector:
