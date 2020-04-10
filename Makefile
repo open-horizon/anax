@@ -52,7 +52,7 @@ AGBOT_IMAGE_LATEST = $(AGBOT_IMAGE_BASE):latest$(BRANCH_NAME)
 # anax container running in kubernetes
 ANAX_K8S_CONTAINER_DIR := anax-in-k8s
 ANAX_K8S_IMAGE_BASE = $(DOCKER_IMAGE_BASE)_k8s
-ANAX_K8S_IMAGE_VERSION ?= placeholder
+ANAX_K8S_IMAGE_VERSION ?= $(DOCKER_IMAGE_VERSION)
 ANAX_K8S_UBI_IMAGE_NAME = $(ANAX_K8S_IMAGE_BASE)_ubi
 ANAX_K8S_UBI_IMAGE_STG = $(ANAX_K8S_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
 ANAX_K8S_UBI_IMAGE_PROD = $(ANAX_K8S_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -360,13 +360,14 @@ anax-k8s-image: anax-k8s-clean
 	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_UBI_IMAGE_STG)"
-	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_UBI_IMAGE_STG) -f Dockerfile.ubi .
+	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_UBI_IMAGE_STG) -f Dockerfile.ubi . && \
+	docker tag $(ANAX_K8S_UBI_IMAGE_STG) $(ANAX_K8S_UBI_IMAGE_NAME):$(ANAX_K8S_IMAGE_VERSION)
 
 anax-k8s-package: anax-k8s-image
 	@echo "Packaging anax-k8s container"
 	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(ANAX_K8S_UBI_IMAGE_NAME) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
-		echo "Pushing anax-k8s docker image $(ANAX_K8S_UBI_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
-		docker push $(ANAX_K8S_UBI_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
+		echo "Pushing anax-k8s docker image $(ANAX_K8S_UBI_IMAGE_NAME):$(ANAX_K8S_IMAGE_VERSION)"; \
+		docker push $(ANAX_K8S_UBI_IMAGE_NAME):$(ANAX_K8S_IMAGE_VERSION); \
 		docker push $(ANAX_K8S_UBI_IMAGE_STG); \
 	else \
 		echo "anax-k8s container $(ANAX_K8S_UBI_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(DOCKER_IMAGE_REPO)"; \
