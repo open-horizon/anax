@@ -41,87 +41,6 @@ checkrc() {
   fi
 }
 
-defaultEnv() {
-	# Update several fields in anax.json
-	anaxJsonFile='/etc/horizon/anax.json'
-	echo "Modifying $anaxJsonFile for anax-in-container..."
-
-	# Read the json object in /etc/horizon/anax.json
-	anaxJson=$(jq . $anaxJsonFile)
-	checkrc $? "read anax.json"
-	cp $anaxJsonFile $anaxJsonFile.orig
-	checkrc $? "back up anax.json"
-
-	# Anax must be listening on port 8510 of all interfaces for it to be published to the host by docker (we will only publish it to 127.0.0.1 on the host)
-	anaxJson=$(jq ".Edge.APIListen = \"0.0.0.0:8510\" " <<< $anaxJson)
-	checkrc $? "change APIListen"
-
-	# Since they are running anax in a container, assume they could run multiple anax containers
-	anaxJson=$(jq ".Edge.MultipleAnaxInstances = true" <<< $anaxJson)
-	checkrc $? "change MultipleAnaxInstances"
-
-	# Configure anax running on mac host, if applicable
-	# The Mac can not mount the /var/run/docker.sock unix socket into the container. So on the host you must use a cmd like this to have the docker engine listen on a port:
-	#    socat TCP-LISTEN:2375,reuseaddr,fork UNIX-CONNECT:/var/run/docker.sock &
-	# Then on docker run use -e ANAX_DOCKER_ENDPOINT=tcp://host.docker.internal:2375 so the anax container can connect to that.
-	if [[ -z "$ANAX_DOCKER_ENDPOINT" && -n "$MAC_HOST" ]]; then
-		# for backward compat (this was the old way)
-		ANAX_DOCKER_ENDPOINT="tcp://$MAC_HOST:2375"
-	fi
-	if [[ -n "$ANAX_DOCKER_ENDPOINT" ]]; then
-	  anaxJson=$(jq ".Edge.DockerEndpoint = \"$ANAX_DOCKER_ENDPOINT\" " <<< $anaxJson)
-	  checkrc $? "change DockerEndpoint"
-	fi
-
-	# not needed as of 2.19.0...
-	#if [[ -d /private/var/tmp/horizon/service_storage ]]; then
-	  # Also can't mount /var, but can mount anything under /private
-	  #anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
-	  #checkrc $? "change ServiceStorage"
-	#fi
-
-	if [[ "${DEPLOYMENT_TYPE}" -ne "cluster" ]]; then
-		# setup fss domain socket path and ess auth path
-		if [[ -z "${DOCKER_NAME}" ]]; then
-			DOCKER_NAME="horizon1"
-		fi
-		if [[ "${HOST_OS}" == "mac" ]]; then
-			base_host_dir="/private/var/tmp/horizon/${DOCKER_NAME}"
-			mkdir -p /private/var/tmp
-			ln -s /var/tmp/horizon /private/var/tmp/horizon
-		else
-			base_host_dir="/var/tmp/horizon/${DOCKER_NAME}"
-		fi
-
-		if [[ -d ${base_host_dir}/ess-auth ]]; then
-			anaxJson=$(jq ".Edge.FileSyncService.AuthenticationPath = \"${base_host_dir}/ess-auth\" " <<< $anaxJson)
-			checkrc $? "change FileSyncService.AuthenticationPath"
-		fi
-		if [[ -d ${base_host_dir}/fss-domain-socket ]]; then
-			anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"${base_host_dir}/fss-domain-socket/essapi.sock\" " <<< $anaxJson)
-			checkrc $? "change FileSyncService.APIListen"
-		fi
-	else
-	    	hostname=$(hostname)
-        	anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"$hostname\" " <<< $anaxJson)
-		checkrc $? "change FileSyncService.APIListen"
-		
-		anaxJson=$(jq ".Edge.FileSyncService.APIProtocol = \"https\" " <<< $anaxJson)
-		checkrc $? "change FileSyncService.APIProtocol"
-
-		anaxJson=$(jq ".Edge.PublicKeyPath = \"\"" <<< $anaxJson)
-		checkrc $? "change PublicKeyPath"
-
-		anaxJson=$(jq ".Edge.CACertsPath = \"\"" <<< $anaxJson)
-		checkrc $? "change CACertsPath"
-		
-	fi
-
-	# Write the new json back to the file
-	echo "$anaxJson" > $anaxJsonFile
-	checkrc $? "write anax.json"
-}
-
 block() {
 	echo "Sleeping forever..."
 	while :; do sleep 2073600; done    # block forever w/o starting anax so the container stays up, and you can exec in, start anax manually, and debug
@@ -142,11 +61,6 @@ start() {
 		checkrc $? "source /etc/default/horizon"
 		set +a   # undo
 	fi
-
-    # Do the config that is specific to running anax in a container, but needed for all environments, unless we want to define it ourselves
-    if [[ -z "$HZN_KEEP_CONFIG" ]]; then
-    	defaultEnv
-    fi
 
 	# Now repeatedly run anax...
 	numInvocations=0

@@ -1,12 +1,9 @@
 package api
 
 import (
-	"fmt"
-	"net/http"
-
-	"github.com/golang/glog"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/worker"
+	"net/http"
 )
 
 func (a *API) status(w http.ResponseWriter, r *http.Request) {
@@ -14,10 +11,6 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 
 		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
-
-		if err := apicommon.WriteConnectionStatus(info); err != nil {
-			glog.Errorf(apiLogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
-		}
 
 		writeResponse(w, info, http.StatusOK)
 	case "OPTIONS":

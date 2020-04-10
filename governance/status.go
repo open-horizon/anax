@@ -16,8 +16,6 @@ import (
 	"time"
 )
 
-var HORIZON_SERVERS = [...]string{"firmware.bluehorizon.network", "images.bluehorizon.network"}
-
 type ContainerStatus struct {
 	Name    string `json:"name"`
 	Image   string `json:"image"`
@@ -53,7 +51,7 @@ func (w WorkloadStatus) String() string {
 }
 
 type DeviceStatus struct {
-	Connectivity map[string]bool  `json:"connectivity"` //  hosts and whether this device can reach them or not
+	Connectivity map[string]bool  `json:"connectivity,omitempty"` //  hosts and whether this device can reach them or not
 	Services     []WorkloadStatus `json:"services"`
 	LastUpdated  string           `json:"lastUpdated,omitempty"`
 }
@@ -82,18 +80,6 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 
 	w.deviceStatus = nil
 	var device_status DeviceStatus
-
-	// get connectivity
-	connect := make(map[string]bool, 0)
-	for _, host := range HORIZON_SERVERS {
-		if err := cutil.CheckConnectivity(host); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Error checking connectivity for %s: %v", host, err)))
-			connect[host] = false
-		} else {
-			connect[host] = true
-		}
-	}
-	device_status.Connectivity = connect
 
 	// get docker containers
 	containers := make([]docker.APIContainers, 0)

@@ -476,10 +476,6 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 		}
 		info.LiveHealth = health
 
-		if err := apicommon.WriteConnectionStatus(info); err != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get connectivity status: %v", err)))
-		}
-
 		writeResponse(w, info, http.StatusOK)
 	case "OPTIONS":
 		w.Header().Set("Allow", "GET, OPTIONS")

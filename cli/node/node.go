@@ -32,7 +32,7 @@ type NodeAndStatus struct {
 	Config             Configstate `json:"configstate"`           // removed omitempty
 	// from apicommon.Info
 	Configuration *apicommon.Configuration `json:"configuration"`
-	Connectivity  map[string]bool          `json:"connectivity"`
+	Connectivity  map[string]bool          `json:"connectivity,omitempty"`
 }
 
 // CopyNodeInto copies the node info into our output struct and converts times in the process
@@ -59,7 +59,6 @@ func (n *NodeAndStatus) CopyNodeInto(horDevice *api.HorizonDevice) {
 func (n *NodeAndStatus) CopyStatusInto(status *apicommon.Info) {
 	//todo: I don't like having to repeat all of these fields, hard to maintain. Maybe use reflection?
 	n.Configuration = status.Configuration
-	n.Connectivity = status.Connectivity
 }
 
 func List() {

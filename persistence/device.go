@@ -114,6 +114,10 @@ func (e *ExchangeDevice) GetNodeType() string {
 	}
 }
 
+func (e *ExchangeDevice) IsEdgeCluster() bool {
+	return e.NodeType == DEVICE_TYPE_CLUSTER
+}
+
 // a convenience function b/c we know there is really only one device
 func (e *ExchangeDevice) InvalidateExchangeToken(db *bolt.DB) (*ExchangeDevice, error) {
 	exchDev, err := FindExchangeDevice(db)

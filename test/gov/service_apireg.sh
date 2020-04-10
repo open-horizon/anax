@@ -776,7 +776,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
 EOF
 
 echo -e "Register k8s-service1 $VERS:"
-hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_k8s1.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for k8s-service1."
