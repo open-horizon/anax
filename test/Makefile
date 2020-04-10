@@ -48,6 +48,7 @@ DOCKER_CSSDB_INAME := mongo
 DOCKER_CSSDB_TAG := 4.0.6
 DOCKER_CSS_INAME := openhorizon/amd64_cloud-sync-service
 DOCKER_CSS_TAG := testing$(BRANCH_NAME)
+DOCKER_ANAX_K8S_INAME := openhorizon/amd64_anax_k8s_ubi:testing
 DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 AGBOT_SAPI_URL ?= https://localhost:8083
@@ -238,10 +239,13 @@ test-network:
 
 $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
-	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image && make anax-k8s-image
+	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
 
 agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	@echo "Configuring agbot prerequisites"
+	if [[ "$(shell docker images -q $(DOCKER_ANAX_K8S_INAME) 2>/dev/null)" == "" ]]; then \
+		cd $(ANAX_SOURCE) && make anax-k8s-image; \
+	fi
 	mkdir -p /tmp/ess-store/ /tmp/ess-auth/ /tmp/service_storage/ /tmp/hzndev/
 	mkdir -p $(AGBOT_TEMPFS)/usr/local/bin $(AGBOT_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin

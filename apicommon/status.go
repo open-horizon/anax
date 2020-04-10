@@ -28,7 +28,7 @@ type HealthTimestamps struct {
 
 type Info struct {
 	Configuration *Configuration    `json:"configuration"`
-	Connectivity  map[string]bool   `json:"connectivity"`
+	Connectivity  map[string]bool   `json:"connectivity,omitempty"`
 	LiveHealth    *HealthTimestamps `json:"liveHealth"`
 }
 
@@ -55,7 +55,6 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
 		},
-		Connectivity: map[string]bool{},
 	}
 }
 

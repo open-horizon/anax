@@ -1,7 +1,7 @@
 package resource
 
 import (
-	// "errors"
+	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
@@ -119,6 +119,19 @@ func (w *ResourceWorker) NoWorkHandler() {
 // not using a pattern, then we will hard code the destination type of the node. The destination type is not important
 // when services and models are being placed on nodes by policy, thus we can hard code it.
 func (w *ResourceWorker) handleNodeConfigCommand(cmd *NodeConfigCommand) error {
+
+	// For now, the model management system and therefore the embedded ESS is disabled when the agent is running
+	// on an edge cluster.
+	if dev, err := persistence.FindExchangeDevice(w.db); err != nil {
+		glog.Errorf(reslog(fmt.Sprintf("Error reading device from local DB: %v", err)))
+		return err
+	} else if dev == nil {
+		return errors.New("no device object in local DB")
+	} else if dev.IsEdgeCluster() {
+		return nil
+	}
+
+	// Start the embedded ESS this edge device.
 	destinationType := cmd.msg.Pattern()
 	if destinationType == "" {
 		destinationType = "openhorizon/openhorizon.edgenode"

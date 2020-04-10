@@ -24,7 +24,7 @@ spec:
           secretName: agent-secret-cert
       containers:
       - name: anax
-        image: agent-in-kube:local
+        image: openhorizon/amd64_anax_k8s_ubi:testing
         imagePullPolicy: Never
         volumeMounts:
         - mountPath: /var/horizon
@@ -46,4 +46,6 @@ spec:
         - name: HZN_EXCHANGE_USER_AUTH
           value: "userdev/userdevadmin:userdevadminpw"
         - name: HZN_SSL_SKIP_VERIFY
-          value: "'true'"
+          value: "1"
+        - name: ANAX_LOG_LEVEL
+          value: "5"
