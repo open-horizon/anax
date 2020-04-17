@@ -510,8 +510,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   },
   "deploymentSignature":"",
   "clusterDeployment": {
-    "yaml_archive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar",
-    "operator_image": "openhorizon/amd64_cpu:1.2.2"
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
   },
   "clusterDeploymentSignature": ""
 }
@@ -582,8 +581,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   },
   "deploymentSignature":"",
   "clusterDeployment": {
-    "yaml_archive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar",
-    "operator_image": "openhorizon/amd64_cpu:1.2.2"
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
   },
   "clusterDeploymentSignature": ""
 }
@@ -768,9 +766,8 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
   "requiredServices":[
   ],
   "clusterDeployment": {
-    "yaml_archive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar",
-    "operator_image": "openhorizon/amd64_cpu:1.2.2"
-  },
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+   },
   "clusterDeploymentSignature": ""
 }
 EOF
