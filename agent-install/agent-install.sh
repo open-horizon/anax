@@ -1324,7 +1324,7 @@ function find_node_ip_address() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
