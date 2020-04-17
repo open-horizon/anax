@@ -6,13 +6,12 @@ import (
 )
 
 type KubeDeploymentConfig struct {
-	Yaml_Archive   string `json:"yaml_archive"`
-	Operator_Image string `json:"operator_image"`
+	OperatorYamlArchive   string `json:"operatorYamlArchive"`
 }
 
 func (k *KubeDeploymentConfig) ToString() string {
 	if k != nil {
-		return fmt.Sprintf("Operator_Image: %v Yaml_Archive: %v", k.Operator_Image, k.Yaml_Archive)
+		return fmt.Sprintf("OperatorYamlArchive: %v", k.OperatorYamlArchive)
 	}
 	return ""
 }
@@ -22,10 +21,8 @@ func GetKubeDeployment(deployStr string) (*KubeDeploymentConfig, error) {
 	err := json.Unmarshal([]byte(deployStr), kd)
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshaling deployment config as KubeDeployment: %v", err)
-	} else if kd.Yaml_Archive == "" {
-		return nil, fmt.Errorf("required field 'yaml_archive' is missing in the deployment string.")
-	} else if kd.Operator_Image == "" {
-		return nil, fmt.Errorf("required field 'operator_image' is missing in the deployment string.")
+	} else if kd.OperatorYamlArchive == "" {
+		return nil, fmt.Errorf("required field 'operatorYamlArchive' is missing in the deployment string.")
 	}
 	return kd, nil
 }
@@ -59,7 +56,7 @@ func (k *KubeDeploymentConfig) IsNative() bool {
 
 // Check if the deployment is a kube deployment or not
 func IsKube(dep map[string]interface{}) bool {
-	if _, ok := dep["yaml_archive"]; ok {
+	if _, ok := dep["operatorYamlArchive"]; ok {
 		return true
 	}
 	return false

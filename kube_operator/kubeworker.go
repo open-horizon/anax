@@ -139,13 +139,15 @@ func (w *KubeWorker) getLaunchContext(launchContext interface{}) *events.Agreeme
 }
 
 func (w *KubeWorker) processKubeOperator(launchContext *events.AgreementLaunchContext, kd *persistence.KubeDeploymentConfig) error {
-	glog.V(5).Infof(kwlog(fmt.Sprintf("begin install of Kube Deployment %v", kd.Operator_Image)))
+	// TODO M: Ling changed kd.Operator_Image to kd so that the code can compile. Please fix this place
+	glog.V(5).Infof(kwlog(fmt.Sprintf("begin install of Kube Deployment %v", kd)))
 	// Start install here
 	return nil
 }
 
 func (w *KubeWorker) uninstallKubeOperator(kd *persistence.KubeDeploymentConfig) error {
-	glog.V(5).Infof(kwlog(fmt.Sprintf("begin uninstall of Kube Deployment %v", kd.Operator_Image)))
+	// TODO M: Ling changed kd.Operator_Image to kd so that the code can compile. Please fix this place
+	glog.V(5).Infof(kwlog(fmt.Sprintf("begin uninstall of Kube Deployment %v", kd)))
 	// Start uninstall here
 	return nil
 }

@@ -37,9 +37,9 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 
 	// Grab the kube operator file from the deployment config. The file might be relative to the
 	// service definition file.
-	operatorFilePath := dep["yaml_archive"].(string)
+	operatorFilePath := dep["operatorYamlArchive"].(string)
 	if operatorFilePath = filepath.Clean(operatorFilePath); operatorFilePath == "." {
-		return true, "", "", errors.New(msgPrinter.Sprintf("cleaned %v resulted in an empty string.", dep["yaml_archive"].(string)))
+		return true, "", "", errors.New(msgPrinter.Sprintf("cleaned %v resulted in an empty string.", dep["operatorYamlArchive"].(string)))
 	}
 
 	if currentDir, ok := (ctx.Get("currentDir")).(string); !ok {
@@ -50,28 +50,9 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 
 	// Get the base 64 encoding of the kube operator, and put it into the deployment config.
 	if b64, err := ConvertFileToB64String(operatorFilePath); err != nil {
-		return true, "", "", errors.New(msgPrinter.Sprintf("unable to read kube operator %v, error %v", dep["yaml_archive"], err))
+		return true, "", "", errors.New(msgPrinter.Sprintf("unable to read kube operator %v, error %v", dep["operatorYamlArchive"], err))
 	} else {
-		dep["yaml_archive"] = b64
-	}
-
-	// handle image pulling
-	image := dep["operator_image"].(string)
-	var dontTouchImage, pullImage, ok bool
-	dontTouchImage, ok = (ctx.Get("dontTouchImage")).(bool)
-	if !ok {
-		dontTouchImage = false
-	}
-	pullImage, ok = (ctx.Get("pullImage")).(bool)
-	if !ok {
-		pullImage = false
-	}
-
-	newImage := cliutils.GetNewDockerImageName(image, dontTouchImage, pullImage)
-	if newImage != image {
-		msgPrinter.Printf("Using '%s' in 'operator_image' field instead of '%s'", newImage, image)
-		msgPrinter.Println()
-		dep["operator_image"] = newImage
+		dep["operatorYamlArchive"] = b64
 	}
 
 	// Stringify and sign the deployment string.
@@ -90,23 +71,13 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 }
 
 func (p *KubeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, []string, error) {
-	var imageList []string
-	if owned, err := p.Validate(dep); !owned || err != nil {
-		return owned, imageList, err
-	}
-
-	// the Validate has verified the operator_image field
-	dc := dep.(map[string]interface{})
-	image := dc["operator_image"].(string)
-	imageList = append(imageList, image)
-
-	return true, imageList, nil
+	owned, err := p.Validate(dep)
+	return owned, []string{}, err
 }
 
 func (p *KubeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interface{} {
 	return map[string]interface{}{
-		"yaml_archive":   "",
-		"operator_image": "",
+		"operatorYamlArchive":   "",
 	}
 }
 
@@ -116,16 +87,12 @@ func (p *KubeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
 
 	if dc, ok := dep.(map[string]interface{}); !ok {
 		return false, nil
-	} else if c, ok := dc["yaml_archive"]; !ok {
-		return false, nil
-	} else if r, ok := dc["operator_image"]; !ok {
+	} else if c, ok := dc["operatorYamlArchive"]; !ok {
 		return false, nil
 	} else if ca, ok := c.(string); !ok {
-		return true, errors.New(msgPrinter.Sprintf("yaml_archive must have a string type value, has %T", c))
-	} else if rn, ok := r.(string); !ok {
-		return true, errors.New(msgPrinter.Sprintf("operator_image must have a string type value, has %T", r))
-	} else if len(ca) == 0 || len(rn) == 0 {
-		return true, errors.New(msgPrinter.Sprintf("yaml_archive and operator_image must be non-empty strings"))
+		return true, errors.New(msgPrinter.Sprintf("operatorYamlArchive must have a string type value, has %T", c))
+	} else if len(ca) == 0 {
+		return true, errors.New(msgPrinter.Sprintf("operatorYamlArchive must be non-empty strings"))
 	} else {
 		return true, nil
 	}

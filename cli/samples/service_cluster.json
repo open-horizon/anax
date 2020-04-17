@@ -1,0 +1,13 @@
+{
+  "label": "Sample service for kubernetes cluster application deployment, x86_64",
+  "description": "Sample Horizon service for a kubernetes cluster application.",
+  "public": true,
+  "url": "mySampleService",
+  "version": "1.1.3",
+  "arch": "amd64",
+  "sharable": "singleton",
+  "requiredServices": [],
+  "clusterDeployment": {
+    "operatorYamlArchive": "/filepath/k8s_operator_deployment_files.tar"
+  }
+}
