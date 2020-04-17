@@ -447,7 +447,7 @@ func TestService_GetDeployment(t *testing.T) {
 		LastUpdated:         "today",
 	}
 
-	d := s.GetDeployment()
+	d := s.GetDeploymentString()
 	ds := s.GetDeploymentSignature()
 
 	if d != targetD {

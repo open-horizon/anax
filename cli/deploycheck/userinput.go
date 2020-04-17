@@ -33,18 +33,19 @@ func readUserInputFile(filePath string, inputFileStruct *[]policy.UserInput) {
 }
 
 // check if the user inputs for services are compatible
-func UserInputCompatible(org string, userPw string, nodeId string, nodeArch string, nodeUIFile string,
+func UserInputCompatible(org string, userPw string, nodeId string, nodeArch string, nodeType string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string,
 	svcDefFiles []string, checkAllSvcs bool, showDetail bool) {
 
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
-	userOrg, credToUse, nId, useNodeId, bp, pattern, serviceDefs := verifyUserInputCompatibleParamters(
-		org, userPw, nodeId, nodeUIFile, businessPolId, businessPolFile, patternId, patternFile, svcDefFiles)
+	userOrg, credToUse, nId, useNodeId, bp, pattern, serviceDefs := verifyUserInputCompatibleParameters(
+		org, userPw, nodeId, nodeType, nodeUIFile, businessPolId, businessPolFile, patternId, patternFile, svcDefFiles)
 
 	uiCheckInput := compcheck.UserInputCheck{}
 	uiCheckInput.NodeArch = nodeArch
+	uiCheckInput.NodeType = nodeType
 	uiCheckInput.BusinessPolicy = bp
 	uiCheckInput.PatternId = patternId
 	uiCheckInput.Pattern = pattern
@@ -139,12 +140,15 @@ func validateService(service *common.ServiceFile) error {
 // and -p and -P pairs are mutually exclusive.
 // Business policy and pattern are mutually exclusive.
 // Get default credential, node id and org if they are not set.
-func verifyUserInputCompatibleParamters(org string, userPw string, nodeId string, nodeUIFile string,
+func verifyUserInputCompatibleParameters(org string, userPw string, nodeId string, nodeType string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string,
 	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *common.PatternFile, []common.ServiceFile) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure the node type has correct value
+	ValidateNodeType(nodeType)
 
 	useNodeId := false
 	nodeIdToUse := nodeId

@@ -368,6 +368,7 @@ Environment Variables:
 	deploycheckLong := deploycheckCmd.Flag("long", msgPrinter.Sprintf("Show policies and userinput used for the compatibility checking.")).Short('l').Bool()
 	policyCompCmd := deploycheckCmd.Command("policy", msgPrinter.Sprintf("Check policy compatibility."))
 	policyCompNodeArch := policyCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.")).Short('a').String()
+	policyCompNodeType := policyCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default is 'device'.")).Short('t').Default("device").String()
 	policyCompNodeId := policyCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	policyCompNodePolFile := policyCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n.")).String()
 	policyCompBPolId := policyCompCmd.Flag("business-pol-id", "").Hidden().String()
@@ -375,8 +376,10 @@ Environment Variables:
 	policyCompBPolFile := policyCompCmd.Flag("business-pol", "").Hidden().String()
 	policyCompDepPolFile := policyCompCmd.Flag("deployment-pol", msgPrinter.Sprintf("The JSON input file name containing the Deployment policy. Mutually exclusive with -b.")).Short('B').String()
 	policyCompSPolFile := policyCompCmd.Flag("service-pol", msgPrinter.Sprintf("(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the exchange for the service defined in the deployment policy.")).String()
+	policyCompSvcFile := policyCompCmd.Flag("service", msgPrinter.Sprintf("(optional) The JSON input file name containing the service definition. Mutually exclusive with -b. If omitted, the service referenced in the deployment policy is retrieved from the exchange. This flag can be repeated to specify different versions of the service.")).Strings()
 	userinputCompCmd := deploycheckCmd.Command("userinput", msgPrinter.Sprintf("Check user input compatibility."))
 	userinputCompNodeArch := userinputCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
+	userinputCompNodeType := userinputCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default is 'device'.")).Short('t').Default("device").String()
 	userinputCompNodeId := userinputCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	userinputCompNodeUIFile := userinputCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n.")).String()
 	userinputCompBPolId := userinputCompCmd.Flag("business-pol-id", "").Hidden().String()
@@ -388,6 +391,7 @@ Environment Variables:
 	userinputCompPatternFile := userinputCompCmd.Flag("pattern", msgPrinter.Sprintf("The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.")).Short('P').String()
 	allCompCmd := deploycheckCmd.Command("all", msgPrinter.Sprintf("Check all compatibilities for a deployment."))
 	allCompNodeArch := allCompCmd.Flag("arch", msgPrinter.Sprintf("The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy or pattern will be checked for compatibility.")).Short('a').String()
+	allCompNodeType := allCompCmd.Flag("node-type", msgPrinter.Sprintf("The node type. The valid values are 'device' and 'cluster'. The default is 'device'.")).Short('t').Default("device").String()
 	allCompNodeId := allCompCmd.Flag("node-id", msgPrinter.Sprintf("The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.")).Short('n').String()
 	allCompNodePolFile := allCompCmd.Flag("node-pol", msgPrinter.Sprintf("The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.")).String()
 	allCompNodeUIFile := allCompCmd.Flag("node-ui", msgPrinter.Sprintf("The JSON input file name containing the node user input. Mutually exclusive with -n.")).String()
@@ -835,11 +839,11 @@ Environment Variables:
 	case policyRemoveCmd.FullCommand():
 		policy.Remove(*policyRemoveForce)
 	case policyCompCmd.FullCommand():
-		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompNodeArch, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.PolicyCompatible(*deploycheckOrg, *deploycheckUserPw, *policyCompNodeId, *policyCompNodeArch, *policyCompNodeType, *policyCompNodePolFile, *policyCompBPolId, *policyCompBPolFile, *policyCompSPolFile, *policyCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case userinputCompCmd.FullCommand():
-		deploycheck.UserInputCompatible(*deploycheckOrg, *deploycheckUserPw, *userinputCompNodeId, *userinputCompNodeArch, *userinputCompNodeUIFile, *userinputCompBPolId, *userinputCompBPolFile, *userinputCompPatternId, *userinputCompPatternFile, *userinputCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.UserInputCompatible(*deploycheckOrg, *deploycheckUserPw, *userinputCompNodeId, *userinputCompNodeArch, *userinputCompNodeType, *userinputCompNodeUIFile, *userinputCompBPolId, *userinputCompBPolFile, *userinputCompPatternId, *userinputCompPatternFile, *userinputCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case allCompCmd.FullCommand():
-		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompNodeArch, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
+		deploycheck.AllCompatible(*deploycheckOrg, *deploycheckUserPw, *allCompNodeId, *allCompNodeArch, *allCompNodeType, *allCompNodePolFile, *allCompNodeUIFile, *allCompBPolId, *allCompBPolFile, *allCompPatternId, *allCompPatternFile, *allCompSPolFile, *allCompSvcFile, *deploycheckCheckAll, *deploycheckLong)
 	case agreementListCmd.FullCommand():
 		agreement.List(*listArchivedAgreements, *listAgreementId)
 	case agreementCancelCmd.FullCommand():

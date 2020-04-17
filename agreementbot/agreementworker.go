@@ -407,12 +407,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		// Do not make proposals for services without a deployment configuration got its node type.
-		if nodeType == DEVICE_TYPE_DEVICE && workloadDetails.GetDeployment() == "" {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v because it has no deployment configuration.", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version)))
-			return
-		}
-		if nodeType == DEVICE_TYPE_CLUSTER && workloadDetails.GetClusterDeployment() == "" {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with cluster node %v for service %v/%v %v because it has no cluster deployment configuration.", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version)))
+		t_comp, t_reason := compcheck.CheckTypeCompatibility(nodeType, &compcheck.ServiceDefinition{workload.Org, *workloadDetails}, msgPrinter)
+		if !t_comp {
+			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v. %v", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version, t_reason)))
 			return
 		}
 
@@ -505,7 +502,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			getResolvedServiceDef := exchange.GetHTTPServiceDefResolverHandler(b)
 			getService := exchange.GetHTTPServiceHandler(b)
 			mergedServicePol := compcheck.AddDefaultPropertiesToServicePolicy(servicePol, builtInSvcPol, nil)
-			if mergedServicePol, err = compcheck.SetServicePolicyPrivilege(getResolvedServiceDef, getService, *workload, mergedServicePol, msgPrinter); err != nil {
+			if mergedServicePol, _, _, err = compcheck.SetServicePolicyPrivilege(getResolvedServiceDef, getService, *workload, mergedServicePol, nil, msgPrinter); err != nil {
 				return
 			}
 
@@ -605,10 +602,10 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
 			// the workload/service in the policy.
 			if nodeType == DEVICE_TYPE_CLUSTER {
-				workload.ClusterDeployment = workloadDetails.GetClusterDeployment()
+				workload.ClusterDeployment = workloadDetails.GetClusterDeploymentString()
 				workload.ClusterDeploymentSignature = workloadDetails.GetClusterDeploymentSignature()
 			} else {
-				workload.Deployment = workloadDetails.GetDeployment()
+				workload.Deployment = workloadDetails.GetDeploymentString()
 				workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
 			}
 

@@ -1245,6 +1245,50 @@ echo -e "Register weather service pattern $VERS:"
 
 results "$RES"
 
+# k8s pattern
+if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+  MHI=90
+  CAS=60
+else
+  MHI=600
+  CAS=600
+fi
+K8SVERS="1.0.0"
+read -d '' sdef <<EOF
+{
+  "label": "K8s",
+  "description": "a k8s pattern",
+  "public": true,
+  "services": [
+    {
+      "serviceUrl":"k8s-service1",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$K8SVERS",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {}
+    }
+  ],
+  "agreementProtocols": [
+    {
+      "name": "Basic"
+    }
+  ]
+}
+EOF
+echo -e "Register k8s service pattern $VERS:"
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sk8s" | jq -r '.')
+
+results "$RES"
+
+
 # the sall pattern
 PWSVERS="1.5.0"
 NSVERS="2.3.0"

@@ -20,7 +20,7 @@ import (
 )
 
 // check if the policies are compatible
-func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
+func AllCompatible(org string, userPw string, nodeId string, nodeArch string, nodeType string,
 	nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string,
 	patternId string, patternFile string, servicePolFile string, svcDefFiles []string,
 	checkAllSvcs bool, showDetail bool) {
@@ -28,12 +28,13 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input and get the defaults
-	userOrg, credToUse, nId, useNodeId, bp, pattern, serviceDefs := verifyCompCheckParamters(
-		org, userPw, nodeId, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
+	userOrg, credToUse, nId, useNodeId, bp, pattern, serviceDefs := verifyCompCheckParameters(
+		org, userPw, nodeId, nodeType, nodePolFile, nodeUIFile, businessPolId, businessPolFile,
 		patternId, patternFile, servicePolFile, svcDefFiles)
 
 	compCheckInput := compcheck.CompCheck{}
 	compCheckInput.NodeArch = nodeArch
+	compCheckInput.NodeType = nodeType
 	compCheckInput.BusinessPolicy = bp
 	compCheckInput.PatternId = patternId
 	compCheckInput.Pattern = pattern
@@ -140,12 +141,15 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string,
 // and -p and -P pairs are mutually exclusive.
 // Business policy and pattern are mutually exclusive.
 // Get default credential, node id and org if they are not set.
-func verifyCompCheckParamters(org string, userPw string, nodeId string, nodePolFile string, nodeUIFile string,
+func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeType string, nodePolFile string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string, servicePolFile string,
 	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *common.PatternFile, []common.ServiceFile) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure the node type has correct value
+	ValidateNodeType(nodeType)
 
 	// make sure only specify one: business policy or pattern
 	useBPol := false
@@ -319,4 +323,15 @@ func getBusinessPolicy(defaultOrg string, credToUse string, businessPolId string
 		}
 	}
 	return &bp
+}
+
+// make sure that the node type has correct value.
+func ValidateNodeType(nodeType string) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if nodeType != "" && nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Wrong node type specified: %v. It must be 'device' or 'cluster'.", nodeType))
+	}
+
 }

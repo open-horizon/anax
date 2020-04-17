@@ -17,6 +17,7 @@ import (
 type UserInputCheck struct {
 	NodeId         string                         `json:"node_id,omitempty"`
 	NodeArch       string                         `json:"node_arch,omitempty"`
+	NodeType       string                         `json:"node_type,omitempty"` // can be omitted if node_id is specified
 	NodeUserInput  []policy.UserInput             `json:"node_user_input,omitempty"`
 	BusinessPolId  string                         `json:"business_policy_id,omitempty"`
 	BusinessPolicy *businesspolicy.BusinessPolicy `json:"business_policy,omitempty"`
@@ -27,8 +28,8 @@ type UserInputCheck struct {
 }
 
 func (p UserInputCheck) String() string {
-	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, Service: %v,",
-		p.NodeId, p.NodeArch, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
+	return fmt.Sprintf("NodeId: %v, NodeArch: %v, NodeType: %v, NodeUserInput: %v, BusinessPolId: %v, BusinessPolicy: %v, PatternId: %v, Pattern: %v, Service: %v,",
+		p.NodeId, p.NodeArch, p.NodeType, p.NodeUserInput, p.BusinessPolId, p.BusinessPolicy, p.PatternId, p.Pattern, p.Service)
 }
 
 type ServiceDefinition struct {
@@ -71,6 +72,14 @@ func (s *ServiceDefinition) NeedsUserInput() bool {
 		}
 	}
 	return false
+}
+
+func (s *ServiceDefinition) GetDeployment() interface{} {
+	return s.Deployment
+}
+
+func (s *ServiceDefinition) GetClusterDeployment() interface{} {
+	return s.ClusterDeployment
 }
 
 type Pattern struct {
@@ -159,11 +168,15 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	resources := NewCompCheckResourceFromUICheck(uiInput)
 
 	// get user input from node if node id is specified.
-	var nodeUserInput []policy.UserInput
 	nodeId := input.NodeId
+	var nodeUserInput []policy.UserInput
 	if input.NodeUserInput != nil {
 		nodeUserInput = input.NodeUserInput
-	} else if nodeId != "" {
+	} else if nodeId == "" {
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither node user input nor node id is specified.")), COMPCHECK_INPUT_ERROR)
+	}
+
+	if nodeId != "" {
 		node, err := GetExchangeNode(getDeviceHandler, nodeId, msgPrinter)
 		if err != nil {
 			return nil, err
@@ -175,10 +188,20 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 			resources.NodeArch = node.Arch
 		}
 
-		resources.NodeUserInput = node.UserInput
-		nodeUserInput = node.UserInput
+		resources.NodeType = node.NodeType
+
+		if input.NodeUserInput == nil {
+			resources.NodeUserInput = node.UserInput
+			nodeUserInput = node.UserInput
+		}
+	}
+
+	// verify the input node type value and get the node type for the node from
+	// node id or from the input.
+	if nodeType, err := VerifyNodeType(input.NodeType, resources.NodeType, nodeId, msgPrinter); err != nil {
+		return nil, err
 	} else {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Neither node user input nor node id is specified.")), COMPCHECK_INPUT_ERROR)
+		resources.NodeType = nodeType
 	}
 
 	// make sure only specify one: business policy or pattern
@@ -235,8 +258,9 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 	msg_compatible := msgPrinter.Sprintf("Compatible")
 
 	// go through all the workloads and check if user input is compatible or not
-	service_comp := []common.AbstractServiceFile{}
-	service_incomp := []common.AbstractServiceFile{}
+	service_comp := map[string]common.AbstractServiceFile{}
+	service_incomp := map[string]common.AbstractServiceFile{}
+	svc_type_mismatch := map[string]bool{}
 	overall_compatible := true
 	all_services := []common.AbstractServiceFile{}
 
@@ -258,15 +282,22 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 					} else {
 						all_services = append(all_services, sDefs...)
 
-						if compatible {
+						// check service type and node type compatibility
+						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, sDefs[0], msgPrinter)
+						if !compatible_t {
+							reason = reason_t
+							svc_type_mismatch[sId] = true
+						}
+
+						if compatible && compatible_t {
 							service_compatible = true
-							service_comp = append(service_comp, sDefs[0])
+							service_comp[sId] = sDefs[0]
 							messages[sId] = msg_compatible
 							if !checkAllSvcs {
 								break
 							}
 						} else {
-							service_incomp = append(service_incomp, sDefs[0])
+							service_incomp[sId] = sDefs[0]
 							messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
 						}
 					}
@@ -286,15 +317,22 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 							} else {
 								all_services = append(all_services, sDefs...)
 
-								if compatible {
+								// check service type and node type compatibility
+								compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, sDefs[0], msgPrinter)
+								if !compatible_t {
+									reason = reason_t
+									svc_type_mismatch[sId] = true
+								}
+
+								if compatible && compatible_t {
 									service_compatible = true
-									service_comp = append(service_comp, sDefs[0])
+									service_comp[sId] = sDefs[0]
 									messages[sId] = msg_compatible
 									if !checkAllSvcs {
 										break
 									}
 								} else {
-									service_incomp = append(service_incomp, sDefs[0])
+									service_incomp[sId] = sDefs[0]
 									messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
 								}
 							}
@@ -324,6 +362,8 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 				}
 				if !found {
 					messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service definition not found in the input."))
+					// add a fake service for easy logic later
+					service_incomp[sId] = &ServiceDefinition{}
 				} else {
 					if useSDef.GetOrg() == "" {
 						useSDef.(*common.ServiceFile).Org = serviceRef.ServiceOrg
@@ -333,15 +373,22 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 					} else {
 						all_services = append(all_services, sDefs...)
 
-						if compatible {
+						// check service type and node type compatibility
+						compatible_t, reason_t := CheckTypeCompatibility(resources.NodeType, sDefs[0], msgPrinter)
+						if !compatible_t {
+							reason = reason_t
+							svc_type_mismatch[sId] = true
+						}
+
+						if compatible && compatible_t {
 							service_compatible = true
-							service_comp = append(service_comp, sDefs[0])
+							service_comp[sId] = sDefs[0]
 							messages[sId] = msg_compatible
 							if !checkAllSvcs {
 								break
 							}
 						} else {
-							service_incomp = append(service_incomp, sDefs[0])
+							service_incomp[sId] = sDefs[0]
 							messages[sId] = fmt.Sprintf("%v: %v", msg_incompatible, reason)
 						}
 					}
@@ -349,18 +396,32 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 			}
 		}
 
-		// overall_compatible turn to false if any service is not compatible
-		if !service_compatible {
+		// for policy case, overall_compatible turn to false if any service is not compatible.
+		// for pattern case, cannot turn overall_compatible to false because we need to ignore
+		// the type mismatch case.
+		if overall_compatible && !service_compatible {
+			if useBPol {
+				overall_compatible = false
+			} else if len(service_incomp) != len(svc_type_mismatch) {
+				// some compatibility errors are from non type mismatch
+				overall_compatible = false
+			}
+		}
+	}
+
+	// for the pattern case, if all the services are type mismatch then the overall_compatible should
+	// turn to false
+	if overall_compatible && !useBPol {
+		if len(service_comp) == 0 && len(svc_type_mismatch) > 0 {
 			overall_compatible = false
 		}
 	}
 
-	// If we get here, it means that no workload is found in the bp/pattern that matches the required node arch.
 	if messages != nil && len(messages) != 0 {
 		if overall_compatible {
-			resources.Service = service_comp
+			resources.Service = ServicesFromServiceMap(service_comp)
 		} else {
-			resources.Service = service_incomp
+			resources.Service = ServicesFromServiceMap(service_incomp)
 		}
 
 		// now that all_services are collected, let's check the redundant services specified in the node userinput and
@@ -378,6 +439,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 		return NewCompCheckOutput(overall_compatible, messages, resources), nil
 
 	} else {
+		// If we get here, it means that no workload is found in the bp/pattern that matches the required node arch.
 		if resources.NodeArch != "" {
 			messages["general"] = fmt.Sprintf("%v: %v", msg_incompatible, msgPrinter.Sprintf("Service with 'arch' %v cannot be found in the deployment policy or pattern.", resources.NodeArch))
 		} else {
@@ -908,4 +970,19 @@ func CheckRedundantUserinput(all_services []common.AbstractServiceFile, userInpu
 	}
 
 	return nil
+}
+
+// Returns an array of values from the given map. Remove the fake services which has empty URL. They were added
+// for special cases but need not to show the user.
+func ServicesFromServiceMap(sMap map[string]common.AbstractServiceFile) []common.AbstractServiceFile {
+	services := []common.AbstractServiceFile{}
+	if sMap != nil {
+		for _, s := range sMap {
+			if s.GetURL() != "" {
+				services = append(services, s)
+			}
+		}
+	}
+
+	return services
 }

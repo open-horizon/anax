@@ -5,6 +5,7 @@ package compcheck
 import (
 	"fmt"
 	"github.com/open-horizon/anax/businesspolicy"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -391,7 +392,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 	servicePolicy := createExternalPolicy(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""})
 	businessPolicy := createBusinessPolicy(service, map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop3 == val3", "prop4 == \"some value\""})
 
-	input := PolicyCheck{
+	input0 := PolicyCheck{
 		NodeId:         "",
 		NodeArch:       "",
 		NodePolicy:     nodePolicy,
@@ -412,7 +413,7 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
 		getServicePolicyHandler(map[string]string{}, []string{}),
 		getSelectedServicesHandler(nil), getServiceHandler(), getServiceDefResolverHandler(),
-		&input, true, msgPrinter); err != nil {
+		&input0, true, msgPrinter); err != nil {
 		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
 	} else if !compOutput.Compatible {
 		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
@@ -422,6 +423,87 @@ func Test_policyCompatible_with_Pols(t *testing.T) {
 		t.Errorf("The reason for service %v shoud be %v, but got: %v", sId1, COMPATIBLE, compOutput.Reason[sId1])
 	} else if compOutput.Reason[sId2] != COMPATIBLE {
 		t.Errorf("The reason for service %v shoud be %v, but got: %v", sId2, COMPATIBLE, compOutput.Reason[sId2])
+	}
+
+	// Incompatible, type mismatch
+	input0.NodeType = "cluster"
+	err_string := "Service does not have cluster deployment configuration for node type 'cluster'"
+	// compatible
+	if compOutput, err := policyCompatible(getDeviceHandler(""),
+		getNodePolicyHandler(map[string]string{}, []string{}),
+		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
+		getServicePolicyHandler(map[string]string{}, []string{}),
+		getSelectedServicesHandler(nil), getServiceHandler(), getServiceDefResolverHandler(),
+		&input0, true, msgPrinter); err != nil {
+		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
+	} else if compOutput.Compatible {
+		t.Errorf("policyCompatible should returned compatible but got: %v", compOutput)
+	} else if len(compOutput.Reason) != 2 {
+		t.Errorf("policyCompatible should have returned 2 reason but got : %v", len(compOutput.Reason))
+	} else if !strings.Contains(compOutput.Reason[sId1], err_string) {
+		t.Errorf("The reason for service %v shoud be: %v, but got: %v", sId1, err_string, compOutput.Reason[sId1])
+	} else if !strings.Contains(compOutput.Reason[sId2], err_string) {
+		t.Errorf("The reason for service %v shoud be: %v, but got: %v", sId2, err_string, compOutput.Reason[sId2])
+	}
+
+	// compatible, with service input
+	serviceDef1 := createService(svcUrl, svcOrg, svcVersion1, svcArch1, map[string]map[string]map[string]string{"services": {"cpu": {"image": "cpu:1.2.2"}}}, "")
+	serviceDef2 := createService(svcUrl, svcOrg, svcVersion2, svcArch1, map[string]map[string]map[string]string{"services": {"cpu": {"image": "cpu:1.2.2"}}}, "")
+	input1 := PolicyCheck{
+		NodeId:         "",
+		NodeArch:       "",
+		NodePolicy:     nodePolicy,
+		BusinessPolId:  "",
+		BusinessPolicy: businessPolicy,
+		ServicePolicy:  servicePolicy,
+		Service:        []common.ServiceFile{serviceDef1, serviceDef2},
+	}
+	if compOutput, err := policyCompatible(getDeviceHandler(""),
+		getNodePolicyHandler(map[string]string{}, []string{}),
+		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
+		getServicePolicyHandler(map[string]string{}, []string{}),
+		getSelectedServicesHandler(nil), getServiceHandler(), getServiceDefResolverHandler(),
+		&input1, true, msgPrinter); err != nil {
+		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
+	} else if !compOutput.Compatible {
+		t.Errorf("policyCompatible should have returned compatible but got: %v", compOutput)
+	} else if len(compOutput.Reason) != 2 {
+		t.Errorf("policyCompatible should have returned 2 reason but got : %v.", len(compOutput.Reason))
+	} else if compOutput.Reason[sId1] != COMPATIBLE {
+		t.Errorf("The reason for service %v shoud be %v, but got: %v", sId1, COMPATIBLE, compOutput.Reason[sId1])
+	} else if compOutput.Reason[sId2] != COMPATIBLE {
+		t.Errorf("The reason for service %v shoud be %v, but got: %v", sId2, COMPATIBLE, compOutput.Reason[sId2])
+	}
+
+	// incompatible, type mismatch, with service input
+	serviceDef3 := createService(svcUrl, svcOrg, svcVersion1, svcArch1, nil, "cluster deployment")
+	serviceDef4 := createService(svcUrl, svcOrg, svcVersion2, svcArch1, nil, "cluster deployment")
+	err_string2 := "Service does not have deployment configuration for node type 'device'"
+	input1_1 := PolicyCheck{
+		NodeId:         "",
+		NodeArch:       "",
+		NodePolicy:     nodePolicy,
+		BusinessPolId:  "",
+		BusinessPolicy: businessPolicy,
+		ServicePolicy:  servicePolicy,
+		Service:        []common.ServiceFile{serviceDef3, serviceDef4},
+		NodeType:       "device",
+	}
+	if compOutput, err := policyCompatible(getDeviceHandler(""),
+		getNodePolicyHandler(map[string]string{}, []string{}),
+		getBusinessPolicyHandler(service, map[string]string{}, []string{}),
+		getServicePolicyHandler(map[string]string{}, []string{}),
+		getSelectedServicesHandler(nil), getServiceHandler(), getServiceDefResolverHandler(),
+		&input1_1, true, msgPrinter); err != nil {
+		t.Errorf("policyCompatible should have returned nil error but got: %v", err)
+	} else if compOutput.Compatible {
+		t.Errorf("policyCompatible should returned compatible but got: %v", compOutput)
+	} else if len(compOutput.Reason) != 2 {
+		t.Errorf("policyCompatible should have returned 2 reason but got : %v", len(compOutput.Reason))
+	} else if !strings.Contains(compOutput.Reason[sId1], err_string2) {
+		t.Errorf("The reason for service %v shoud be: %v, but got: %v", sId1, err_string2, compOutput.Reason[sId1])
+	} else if !strings.Contains(compOutput.Reason[sId2], err_string2) {
+		t.Errorf("The reason for service %v shoud be: %v, but got: %v", sId2, err_string2, compOutput.Reason[sId2])
 	}
 
 	// in compatible
@@ -701,7 +783,7 @@ func Test_CheckPolicyCompatiblility(t *testing.T) {
 		t.Errorf("GetNodePolicy should have returned nil error but got: %v", err)
 	}
 
-	mergedSPol, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}), getServiceDefResolverHandler(), getServiceHandler(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter)
+	mergedSPol, _, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop5": "val5", "prop6": "val6"}, []string{"prop4 == \"some value\""}), getServiceDefResolverHandler(), getServiceHandler(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter)
 	if err != nil {
 		t.Errorf("GetServicePolicyWithDefaultProperties should have returned nil error but got: %v", err)
 	}
@@ -887,10 +969,14 @@ func Test_GetServicePolicyWithDefaultProperties(t *testing.T) {
 	sId1 := cutil.FormExchangeIdForService(svcUrl, svcVersion, svcArch)
 	sId1 = fmt.Sprintf("%v/%v", svcOrg, sId1)
 
-	if mergedPol, sPol, sId, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), getServiceDefResolverHandler(), getServiceHandler(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err != nil {
+	if mergedPol, sPol, sDef, sId, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler(map[string]string{"prop1": "val1", "prop2": "val2"}, []string{"prop4 == \"some value\""}), getServiceDefResolverHandler(), getServiceHandler(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err != nil {
 		t.Errorf("GetServicePolicyWithDefaultProperties should have returned nil error but got: %v", err)
 	} else if sId != sId1 {
 		t.Errorf("The servicd id should be %v but got: %v", sId1, sId)
+	} else if sDef == nil {
+		t.Errorf("The returned top service definition should not be null")
+	} else if sDef.URL != svcUrl || sDef.Version != svcVersion || sDef.Arch != svcArch {
+		t.Errorf("Wrong service definition returned. %v", sDef)
 	} else if mergedPol == nil {
 		t.Errorf("The returned merged service policy should not be null")
 	} else if len(mergedPol.Properties) != 8 {
@@ -905,7 +991,7 @@ func Test_GetServicePolicyWithDefaultProperties(t *testing.T) {
 		t.Errorf("The service policy hould not have 1 constraints but got %v", len(sPol.Constraints))
 	}
 
-	if _, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler_Error(), getServiceDefResolverHandler(), getServiceHandler(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err == nil {
+	if _, _, _, _, err := GetServicePolicyWithDefaultProperties(getServicePolicyHandler_Error(), getServiceDefResolverHandler(), getServiceHandler(), svcUrl, svcOrg, svcVersion, svcArch, msgPrinter); err == nil {
 		t.Errorf("GetServicePolicyWithDefaultProperties should have returned error but got nil")
 	}
 }
@@ -1127,6 +1213,11 @@ func createBusinessPolicy(service businesspolicy.ServiceRef, p map[string]string
 	return &bPolicy
 }
 
+func createService(sUrl string, sOrg string, sVersion string, sArch string, deployment interface{}, clusterDeployment interface{}) common.ServiceFile {
+	service := common.ServiceFile{URL: sUrl, Version: sVersion, Arch: sArch, Deployment: deployment, ClusterDeployment: clusterDeployment}
+	return service
+}
+
 // exchange handlers
 func getSelectedServicesHandler(services map[string]exchange.ServiceDefinition) exchange.SelectedServicesHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, error) {
@@ -1150,10 +1241,11 @@ func getSelectedServicesHandler_Error() exchange.SelectedServicesHandler {
 func getDeviceHandler(arch string) exchange.DeviceHandler {
 	return func(id string, token string) (*exchange.Device, error) {
 		dev := exchange.Device{
-			Token: "xxxx",
-			Name:  id,
-			Owner: "me",
-			Arch:  arch,
+			Token:    "xxxx",
+			Name:     id,
+			Owner:    "me",
+			Arch:     arch,
+			NodeType: "device",
 		}
 		return &dev, nil
 	}
@@ -1218,12 +1310,18 @@ func getServicePolicyHandler_Error() exchange.ServicePolicyHandler {
 
 func getServiceHandler() exchange.ServiceHandler {
 	return func(sUrl string, sOrg string, sVersion string, sArch string) (*exchange.ServiceDefinition, string, error) {
-		return nil, "", nil
+		sId := cutil.FormExchangeIdForService(sUrl, sVersion, sArch)
+		sId = fmt.Sprintf("%v/%v", sOrg, sId)
+		service := &exchange.ServiceDefinition{URL: sUrl, Version: sVersion, Arch: sArch, Deployment: "{\"services\":{\"cpu\":{\"image\":\"cpu:1.2.2\"}}}"}
+		return service, sId, nil
 	}
 }
 
 func getServiceDefResolverHandler() exchange.ServiceDefResolverHandler {
 	return func(sUrl string, sOrg string, sVersion string, sArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
-		return map[string]exchange.ServiceDefinition{}, nil, "", nil
+		sId := cutil.FormExchangeIdForService(sUrl, sVersion, sArch)
+		sId = fmt.Sprintf("%v/%v", sOrg, sId)
+		service := &exchange.ServiceDefinition{URL: sUrl, Version: sVersion, Arch: sArch, Deployment: "{\"services\":{\"cpu\":{\"image\":\"cpu:1.2.2\"}}}"}
+		return map[string]exchange.ServiceDefinition{}, service, sId, nil
 	}
 }
