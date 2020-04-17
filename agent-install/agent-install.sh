@@ -72,7 +72,7 @@ where:
     -w          - wait for the named service to start executing on this node
     -o          - specify an org id for the service specified with '-w'
     -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
-    -D		- specify deploy type (device, cluster. If not specifed, uses device by default). 
+    -D		- specify deploy type (device, cluster. If not specifed, uses device by default).
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -291,7 +291,7 @@ function validate_exchange(){
 	else
 		OUTPUT=$(curl -fs $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $AUTH) || true
 	fi
-		
+
 	if [[ "$OUTPUT" == "" ]]; then
 		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=<specified>"
 		exit 1
@@ -540,7 +540,7 @@ function install_macos() {
 			log_info "Comparing agent and packages versions..."
 			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ] && [ ! "$OVERWRITE" = true ]; then
 				log_info "Versions are equal: agent is ${AGENT_VERSION} and packages are ${PACKAGE_VERSION}. Don't need to install"
-			else				
+			else
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
 					if [ ! "$OVERWRITE" = true ] && [[ $SKIP_PROMPT == 'false' ]] ; then
@@ -1490,7 +1490,7 @@ function check_node_exist() {
 
 function getImageInfo() {
     log_debug "getImageInfo() begin"
-    
+
     tar xvzf amd64_anax_k8s_ubi.tar.gz
     if [ $? -ne 0 ]; then
         log_notify "failed to uncompress agent image from amd64_anax_k8s_ubi.tar.gz, exiting..."
@@ -1523,7 +1523,7 @@ function pushImageToEdgeClusterRegistry() {
         exit 1
     fi
     log_info "successfully pushed image $EDGE_CLUSTER_IMAGE_FULL_NAME to edge cluster registry"
-    
+
     log_debug "pushImageToEdgeClusterRegistry() end"
 }
 
@@ -1533,7 +1533,7 @@ function generate_installation_files() {
     log_info "Preparing horizon environment file."
     generate_horizon_env
     log_info "Horizon environment file is done."
-    
+
     log_info "Preparing kubernete persistentVolumeClaim file"
     prepare_k8s_pvc_file
     log_info "kubernete persistentVolumeClaim file are done."
@@ -1621,14 +1621,14 @@ function prepare_k8s_pvc_file() {
 
 function create_cluster_resources() {
 	log_debug "create_cluster_resources() begin"
-	
+
 	create_namespace
 	sleep 2
 	create_service_account
 	create_secret
 	create_configmap
 	create_persistent_volume
-		
+
 	log_debug "create_cluster_resources() end"
 }
 
@@ -1808,7 +1808,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
