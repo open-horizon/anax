@@ -17,6 +17,7 @@ PKG_TREE_IGNORE=false
 SKIP_REGISTRATION=false
 CFG="agent-install.cfg"
 OVERWRITE=false
+SKIP_PROMPT=false
 HZN_NODE_POLICY=""
 AGENT_INSTALL_ZIP="agent-install-files.tar.gz"
 NODE_ID_MAPPING_FILE="node-id-mapping.csv"
@@ -49,10 +50,11 @@ where:
     -n          - path to a node policy file
     -s          - skip registration
     -v          - show version
-    -l          - logging verbosity level (0-5, 5 is verbose)
+    -l          - logging verbosity level (0: silent, 1: critical, 2: error, 3: warning, 4: info, 5: debug), the default is (3: warning)
     -u          - exchange user authorization credentials
     -d          - the id to register this node with
     -f          - install older version without prompt. overwrite configured node without prompt.
+    -b 			- skip any prompts for user input
     -w          - wait for the named service to start executing on this node
     -o          - specify an org id for the service specified with '-w'
     -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
@@ -477,7 +479,7 @@ function install_macos() {
 			else				
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
-					if [ ! "$OVERWRITE" = true ] ; then
+					if [ ! "$OVERWRITE" = true ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 						if [ $BATCH_INSTALL -eq 1 ]; then
 							exit 1
 						fi
@@ -578,24 +580,19 @@ function install_linux(){
     fi
 
 	log_info "Checking if the agent port ${ANAX_PORT} is free..."
-	if [ -n "$(netstat -nlp | grep \":$ANAX_PORT \")" ]; then
+	local netStat=`netstat -nlp | grep $ANAX_PORT`
+	if [[ $netStat == *$ANAX_PORT* ]]; then
 		log_info "Something is running on ${ANAX_PORT}..."
-		if [ -z "$(netstat -nlp | grep \":$ANAX_PORT \" | grep anax)" ]; then
+		if [[ ! $netStat == *anax* ]]; then
 			log_notify "It's not anax, please free the port in order to install horizon, exiting..."
-			netstat -nlp | grep \":$ANAX_PORT \"
 			exit 1
 		else
 			log_info "It's anax, continuing..."
-			netstat -nlp | grep \":$ANAX_PORT \"
 		fi
 	else
 		log_info "Anax port ${ANAX_PORT} is free, continuing..."
 	fi
 
-    log_info "Updating OS..."
-    set -x
-    apt update
-    { set +x; } 2>/dev/null
     log_info "Checking if curl is installed..."
     if command -v curl >/dev/null 2>&1; then
 		log_info "curl found"
@@ -661,7 +658,7 @@ function install_linux(){
 			else
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION" ; then
 					log_notify "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
-					if [ ! "$OVERWRITE" = true ] ; then
+					if [ ! "$OVERWRITE" = true ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 						if [ $BATCH_INSTALL -eq 1 ]; then
 							exit 1
 						fi
@@ -877,7 +874,7 @@ function process_node(){
 			log_notify "The node currently has workload(s) (check them with hzn agreement list)"
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has been specified"
-				if [[ ! "$OVERWRITE_NODE" = "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
+				if [[ ! "$OVERWRITE_NODE" = "true" ]] && [ $BATCH_INSTALL -eq 0 ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
 					read RESPONSE
 					if [ ! "$RESPONSE" == 'y' ]; then
@@ -893,7 +890,7 @@ function process_node(){
 				if [[ -n "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
-				if [[ "$OVERWRITE_NODE" != "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
+				if [[ "$OVERWRITE_NODE" != "true" ]] && [ $BATCH_INSTALL -eq 0 ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 					if [[ -n "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
@@ -1356,6 +1353,8 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:" opt; do
 		s) SKIP_REGISTRATION=true
 		;;
 		f) OVERWRITE=true
+		;;
+		b) SKIP_PROMPT=true
 		;;
 		w) WAIT_FOR_SERVICE="$OPTARG"
 		;;
