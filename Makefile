@@ -25,25 +25,26 @@ DEFAULT_UI = api/static/index.html
 # used for creating hzn man pages
 CLI_TEMP_EXECUTABLE := cli/hzn.tmp
 
-DOCKER_IMAGE_REPO ?= openhorizon
-ANAX_K8S_OVERRIDE ?= ""
+IMAGE_REPO ?= openhorizon
+IMAGE_OVERRIDE ?= ""
 
 ANAX_CONTAINER_DIR := anax-in-container
-DOCKER_IMAGE_VERSION ?= 2.23.10$(BRANCH_NAME)
-DOCKER_IMAGE_BASE = $(DOCKER_IMAGE_REPO)/$(arch)_anax
-DOCKER_IMAGE = $(DOCKER_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
-DOCKER_IMAGE_STG = $(DOCKER_IMAGE_BASE):testing$(BRANCH_NAME)
-DOCKER_IMAGE_PROD = $(DOCKER_IMAGE_BASE):stable$(BRANCH_NAME)
+ANAX_IMAGE_VERSION ?= localbuild
+ANAX_IMAGE_BASE = $(IMAGE_REPO)/$(arch)_anax
+ANAX_IMAGE = $(ANAX_IMAGE_BASE):$(ANAX_IMAGE_VERSION)
+ANAX_IMAGE_STG = $(ANAX_IMAGE_BASE):testing$(BRANCH_NAME)
+ANAX_IMAGE_PROD = $(ANAX_IMAGE_BASE):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
-DOCKER_IMAGE_LATEST = $(DOCKER_IMAGE_BASE):latest$(BRANCH_NAME)
+ANAX_IMAGE_LATEST = $(ANAX_IMAGE_BASE):latest$(BRANCH_NAME)
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
 I18N_OUT_GOTEXT_FILES := locales/*/out.gotext.json
 I18N_CATALOG_FILE := i18n_messages/catalog.go
 
-AGBOT_IMAGE_BASE=$(DOCKER_IMAGE_REPO)/$(arch)_agbot
-AGBOT_IMAGE = $(AGBOT_IMAGE_BASE):$(DOCKER_IMAGE_VERSION)
+AGBOT_IMAGE_BASE=$(IMAGE_REPO)/$(arch)_agbot
+AGBOT_IMAGE_VERSION ?= $(ANAX_IMAGE_VERSION)
+AGBOT_IMAGE = $(AGBOT_IMAGE_BASE):$(AGBOT_IMAGE_VERSION)
 AGBOT_IMAGE_STG = $(AGBOT_IMAGE_BASE):testing$(BRANCH_NAME)
 AGBOT_IMAGE_PROD = $(AGBOT_IMAGE_BASE):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
@@ -51,23 +52,26 @@ AGBOT_IMAGE_LATEST = $(AGBOT_IMAGE_BASE):latest$(BRANCH_NAME)
 
 # anax container running in kubernetes
 ANAX_K8S_CONTAINER_DIR := anax-in-k8s
-ANAX_K8S_IMAGE_BASE = $(DOCKER_IMAGE_BASE)_k8s
-ANAX_K8S_IMAGE_VERSION ?= $(DOCKER_IMAGE_VERSION)
-ANAX_K8S_UBI_IMAGE_NAME = $(ANAX_K8S_IMAGE_BASE)_ubi
-ANAX_K8S_UBI_IMAGE_STG = $(ANAX_K8S_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
-ANAX_K8S_UBI_IMAGE_PROD = $(ANAX_K8S_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
+ANAX_K8S_IMAGE_BASE = $(ANAX_IMAGE_BASE)_k8s
+ANAX_K8S_IMAGE_VERSION ?= $(ANAX_IMAGE_VERSION)
+ANAX_K8S_IMAGE = $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
+ANAX_K8S_IMAGE_STG = $(ANAX_K8S_IMAGE_BASE):testing$(BRANCH_NAME)
+ANAX_K8S_IMAGE_PROD = $(ANAX_K8S_IMAGE_BASE):stable$(BRANCH_NAME)
+ANAX_K8S_IMAGE_LATEST = $(ANAX_K8S_IMAGE_BASE):latest$(BRANCH_NAME)
 
 # Variables that control packaging the file sync service containers
-FSS_OVERRIDE ?= ""
-FSS_REGISTRY ?= "dockerhub"
-ANAX_K8S_REGISTRY = $(FSS_REGISTRY)
+DOCKER_REGISTRY ?= "dockerhub"
+ANAX_K8S_REGISTRY ?= $(DOCKER_REGISTRY)
+FSS_REGISTRY ?= $(DOCKER_REGISTRY)
+ANAX_REGISTRY ?= $(DOCKER_REGISTRY)
+AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
 CSS_IMAGE_VERSION ?= 1.1.0$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
-CSS_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_cloud-sync-service
+CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
 CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing$(BRANCH_NAME)
 CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -75,7 +79,7 @@ CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
 CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest$(BRANCH_NAME)
 
 # for redhat ubi
-CSS_UBI_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_cloud-sync-service_ubi
+CSS_UBI_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service_ubi
 CSS_UBI_IMAGE = $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION)
 CSS_UBI_IMAGE_STG = $(CSS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
 CSS_UBI_IMAGE_PROD = $(CSS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -88,7 +92,7 @@ ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
 ESS_IMAGE_VERSION ?= 1.1.0$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
-ESS_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_edge-sync-service
+ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
 ESS_IMAGE_STG = $(ESS_IMAGE_NAME):testing$(BRANCH_NAME)
 ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -96,7 +100,7 @@ ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
 ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest$(BRANCH_NAME)
 
 # for redhat ubi
-ESS_UBI_IMAGE_NAME = $(DOCKER_IMAGE_REPO)/$(arch)_edge-sync-service_ubi
+ESS_UBI_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service_ubi
 ESS_UBI_IMAGE = $(ESS_UBI_IMAGE_NAME):$(ESS_IMAGE_VERSION)
 ESS_UBI_IMAGE_STG = $(ESS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
 ESS_UBI_IMAGE_PROD = $(ESS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
@@ -309,25 +313,33 @@ macpkginfo:
 	pkgutil --pkg-info $(MAC_PKG_IDENTIFIER)
 	pkgutil --only-files --files $(MAC_PKG_IDENTIFIER)
 
-docker-image:
-	@echo "Producing anax docker image $(DOCKER_IMAGE)"
+anax-image:
+	@echo "Producing anax docker image $(ANAX_IMAGE)"
 	if [[ $(arch) == "amd64" ]]; then \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) --build-arg HORIZON_REPO_CHANNEL=$(BRANCH_NAME)-testing -t $(DOCKER_IMAGE) -f ./Dockerfile.$(arch) . && \
-	  docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_STG); \
+	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
+	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
+	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
+	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_IMAGE) -f Dockerfile.ubi . && \
+	  docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
 agbot-image:
 	@echo "Producing agbot docker image $(AGBOT_IMAGE)"
 	if [[ $(arch) == "amd64" ]]; then \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) --build-arg HORIZON_REPO_CHANNEL=$(BRANCH_NAME)-testing -t $(AGBOT_IMAGE) -f ./Dockerfile_agbot.$(arch) . && \
+	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
+	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
+	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
+	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(AGBOT_IMAGE) -f Dockerfile_agbot.ubi . && \
 	  docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_STG); \
 	else echo "Building the agbot docker image is not supported on $(arch)"; fi
 
 # Pushes the docker image with the staging tag
 docker-push-only:
-	@echo "Pushing anax docker image $(DOCKER_IMAGE)"
-	docker push $(DOCKER_IMAGE)
-	docker push $(DOCKER_IMAGE_STG)
+	@echo "Pushing anax docker image $(ANAX_IMAGE)"
+	docker push $(ANAX_IMAGE)
+	docker push $(ANAX_IMAGE_STG)
 
 agbot-push-only:
 	@echo "Pushing agbot docker image $(AGBOT_IMAGE)"
@@ -336,16 +348,16 @@ agbot-push-only:
 
 docker-push: docker-image docker-push-only agbot-image agbot-push-only
 
-# you must set DOCKER_IMAGE_VERSION to the correct version for promotion to production
-promote-docker:
-	@echo "Promoting $(DOCKER_IMAGE)"
-	docker pull $(DOCKER_IMAGE)
-	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_PROD)
-	docker push $(DOCKER_IMAGE_PROD)
-	docker tag $(DOCKER_IMAGE) $(DOCKER_IMAGE_LATEST)
-	docker push $(DOCKER_IMAGE_LATEST)
+# you must set ANAX_IMAGE_VERSION to the correct version for promotion to production
+promote-anax:
+	@echo "Promoting $(ANAX_IMAGE)"
+	docker pull $(ANAX_IMAGE)
+	docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_PROD)
+	docker push $(ANAX_IMAGE_PROD)
+	docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_LATEST)
+	docker push $(ANAX_IMAGE_LATEST)
 
-# you must set DOCKER_IMAGE_VERSION to the correct version for promotion to production
+# you must set ANAX_IMAGE_VERSION to the correct version for promotion to production
 promote-agbot:
 	@echo "Promoting $(AGBOT_IMAGE)"
 	docker pull $(AGBOT_IMAGE)
@@ -354,23 +366,51 @@ promote-agbot:
 	docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_LATEST)
 	docker push $(AGBOT_IMAGE_LATEST)
 
-promote-mac-pkg-and-docker: promote-mac-pkg promote-docker promote-agbot
+promote-anax-k8s:
+	@echo "Promoting $(ANAX_K8S_IMAGE)"
+	docker pull $(ANAX_K8S_IMAGE)
+	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_PROD)
+	docker push $(ANAX_K8S_IMAGE_PROD)
+	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_LATEST)
+	docker push $(ANAX_K8S_IMAGE_LATEST)
+
+promote-mac-pkg-and-docker: promote-mac-pkg promote-anax promote-agbot promote-css promote-anax-k8s
+
+anax-package: anax-image
+	@echo "Packaging anax image"
+	if [[ $(shell tools/image-exists $(ANAX_REGISTRY) $(ANAX_IMAGE_BASE) $(ANAX_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
+		echo "Pushing anax docker image $(ANAX_IMAGE_BASE):$(ANAX_IMAGE_VERSION)"; \
+		docker push $(ANAX_IMAGE_BASE):$(ANAX_IMAGE_VERSION); \
+		docker push $(ANAX_IMAGE_STG); \
+	else \
+		echo "anax-k8s container $(ANAX_IMAGE_STG):$(ANAX_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
+	fi
+
+agbot-package: agbot-image
+	@echo "Packaging agbot image"
+	if [[ $(shell tools/image-exists $(AGBOT_REGISTRY) $(AGBOT_IMAGE_BASE) $(AGBOT_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
+		echo "Pushing agbot docker image $(AGBOT_IMAGE_BASE):$(AGBOT_IMAGE_VERSION)"; \
+		docker push $(AGBOT_IMAGE_BASE):$(AGBOT_IMAGE_VERSION); \
+		docker push $(AGBOT_IMAGE_STG); \
+	else \
+		echo "anax-k8s container $(AGBOT_IMAGE_STG):$(AGBOT_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
+	fi
 
 anax-k8s-image: anax-k8s-clean
 	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
-	@echo "Producing ANAX K8S docker image $(ANAX_K8S_UBI_IMAGE_STG)"
-	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_UBI_IMAGE_STG) -f Dockerfile.ubi . && \
-	docker tag $(ANAX_K8S_UBI_IMAGE_STG) $(ANAX_K8S_UBI_IMAGE_NAME):$(ANAX_K8S_IMAGE_VERSION)
+	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
+	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi . && \
+	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
 anax-k8s-package: anax-k8s-image
 	@echo "Packaging anax-k8s container"
-	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(ANAX_K8S_UBI_IMAGE_NAME) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(ANAX_K8S_OVERRIDE) != "" ]]; then \
-		echo "Pushing anax-k8s docker image $(ANAX_K8S_UBI_IMAGE_NAME):$(ANAX_K8S_IMAGE_VERSION)"; \
-		docker push $(ANAX_K8S_UBI_IMAGE_NAME):$(ANAX_K8S_IMAGE_VERSION); \
-		docker push $(ANAX_K8S_UBI_IMAGE_STG); \
+	if [[ $(shell tools/image-exists $(ANAX_K8S_REGISTRY) $(ANAX_K8S_IMAGE_BASE) $(ANAX_K8S_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
+		echo "Pushing anax-k8s docker image $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)"; \
+		docker push $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION); \
+		docker push $(ANAX_K8S_IMAGE_STG); \
 	else \
-		echo "anax-k8s container $(ANAX_K8S_UBI_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(DOCKER_IMAGE_REPO)"; \
+		echo "anax-k8s container $(ANAX_K8S_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
 	fi
 
 css-docker-image: css-clean
@@ -381,7 +421,7 @@ css-docker-image: css-clean
 	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(CSS_UBI_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
 	docker tag $(CSS_UBI_IMAGE) $(CSS_UBI_IMAGE_STG); \
 
-css-promote:
+promote-css:
 	@echo "Promoting $(CSS_IMAGE)"
 	docker pull $(CSS_IMAGE)
 	docker tag $(CSS_IMAGE) $(CSS_IMAGE_PROD)
@@ -427,28 +467,28 @@ fss: ess-docker-image css-docker-image
 # when new versions are created. Developers should not use this target.
 fss-package: ess-docker-image css-docker-image
 	@echo "Packaging file sync service containers"
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(FSS_OVERRIDE) != "" ]]; then \
+	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing ESS docker image $(ESS_IMAGE)"; \
 		docker push $(ESS_IMAGE); \
 		docker push $(ESS_IMAGE_STG); \
 	else \
 		echo "File sync service container $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_UBI_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(FSS_OVERRIDE) != "" ]]; then \
+	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_UBI_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing ESS docker image $(ESS_UBI_IMAGE)"; \
 		docker push $(ESS_UBI_IMAGE); \
 		docker push $(ESS_UBI_IMAGE_STG); \
 	else \
 		echo "File sync service container $(ESS_UBI_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(FSS_OVERRIDE) != "" ]]; then \
+	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing CSS docker image $(CSS_IMAGE)"; \
 		docker push $(CSS_IMAGE); \
 		docker push $(CSS_IMAGE_STG); \
 	else \
 		echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_UBI_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(FSS_OVERRIDE) != "" ]]; then \
+	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_UBI_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing CSS docker image $(CSS_UBI_IMAGE)"; \
 		docker push $(CSS_UBI_IMAGE); \
 		docker push $(CSS_UBI_IMAGE_STG); \
@@ -467,7 +507,7 @@ endif
 mostlyclean: css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
-	-docker rmi $(DOCKER_IMAGE) 2> /dev/null || :
+	-docker rmi $(ANAX_IMAGE) 2> /dev/null || :
 	-docker rmi $(AGBOT_IMAGE) 2> /dev/null || :
 
 i18n-clean:
@@ -488,7 +528,7 @@ ess-clean:
 anax-k8s-clean:
 	rm -f $(ANAX_K8S_CONTAINER_DIR)/hzn
 	rm -f $(ANAX_K8S_CONTAINER_DIR)/anax
-	-docker rmi $(ANAX_K8S_UBI_IMAGE_STG) 2> /dev/null || :
+	-docker rmi $(ANAX_K8S_IMAGE_STG) 2> /dev/null || :
 
 gofolders:
 ifneq ($(GOPATH),$(TMPGOPATH))
@@ -594,4 +634,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-docker gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote

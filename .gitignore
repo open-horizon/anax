@@ -25,3 +25,5 @@ minikube-setup-by-test
 go.sum
 /anax-in-k8s/hzn
 /anax-in-k8s/anax
+/anax-in-container/hzn
+/anax-in-container/anax

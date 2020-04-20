@@ -1,0 +1,39 @@
+{
+    "Edge":{},
+    "AgreementBot": {
+        ${DB_CONFIG},
+        "Partitions": "part0",
+        "TxLostDelayTolerationSeconds": 120,
+        "AgreementWorkers": 15,
+        "ProtocolTimeoutS": 120,
+        "AgreementTimeoutS": 600,
+        "NoDataIntervalS": 300,
+        "ActiveAgreementsURL": "",
+        "ActiveAgreementsUser": "",
+        "ActiveAgreementsPW": "",
+        "PolicyPath": "/home/agbotuser/policy.d",
+        "NewContractIntervalS": 10,
+        "ProcessGovernanceIntervalS": 10,
+        "IgnoreContractWithAttribs": "ethereum_account",
+        "ExchangeURL": "${EXCHANGE_URL}",
+        "ExchangeId": "${EXCHANGE_ID}",
+        "ExchangeToken": "${EXCHANGE_TOKEN}",
+        "ExchangeVersionCheckIntervalM": 1,
+        "ExchangeHeartbeat": 60,
+        "ExchangeMessageTTL": 1800,
+        "ActiveDeviceTimeoutS": 180,
+        "DefaultWorkloadPW": "",
+        "MessageKeyPath": "msgKey",
+        "APIListen": "127.0.0.1:8080",
+        "PurgeArchivedAgreementHours": 1,
+        "CheckUpdatedPolicyS": 15,
+        "CSSURL": "${CSS_URL}",
+        "SecureAPIListenHost": "0.0.0.0",
+        "SecureAPIListenPort": "8083"
+    },
+    "ArchSynonyms": {
+        "x86_64": "amd64",
+        "armhf": "arm",
+        "aarch64": "arm64"
+    }
+}

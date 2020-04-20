@@ -103,7 +103,7 @@ fi
 # Copy the agent container into the local kube container registry so that kube knows where to find it.
 #
 echo "Move agent container into microk8s container registry"
-docker save openhorizon/amd64_anax_k8s_ubi:testing > /tmp/agent-in-kube.tar
+docker save openhorizon/amd64_anax_k8s:testing > /tmp/agent-in-kube.tar
 if [ $? -ne 0 ]; then echo "Failure tar-ing agent container to file"; exit 1; fi
 
 #

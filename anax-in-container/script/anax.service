@@ -73,13 +73,6 @@ defaultEnv() {
 	  checkrc $? "change DockerEndpoint"
 	fi
 
-	# not needed as of 2.19.0...
-	#if [[ -d /private/var/tmp/horizon/service_storage ]]; then
-	  # Also can't mount /var, but can mount anything under /private
-	  #anaxJson=$(jq ".Edge.ServiceStorage = \"/private/var/tmp/horizon/service_storage/\" " <<< $anaxJson)
-	  #checkrc $? "change ServiceStorage"
-	#fi
-
 	# setup fss domain socket path and ess auth path
 	if [[ -z "${DOCKER_NAME}" ]]; then
 		DOCKER_NAME="horizon1"
