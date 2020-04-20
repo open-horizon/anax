@@ -2,7 +2,7 @@
 
 set -x
 
-NAME_SPACE="ibm-edge-agent"
+NAME_SPACE="openhorizon-agent"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
 
@@ -24,8 +24,22 @@ if [ $RC -ne 0 ]; then echo "microk8s not running, nothing to clean up."; exit 0
 if [[ $OUT == *"microk8s is not running."* ]]; then echo "microk8s not running, nothing to clean up."; exit 0; fi
 
 #
-# Undeploy everything from the microk8s environment.
+# Stop the agent in k8s gracefully
 #
+echo "Stopping agent in k8s"
+
+POD=$(microk8s.kubectl get pod -l app=agent -n ${NAME_SPACE} -o jsonpath="{.items[0].metadata.name}")
+if [[ ${POD} == "" ]]
+then
+       echo "Unable to find agent POD"
+else
+       microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn unregister -fr
+
+       echo "Stopped agent in k8s."
+fi
+
+echo "Undeploy the agent and related constructs"
+$cprefix microk8s.kubectl delete deployment agent -n ${NAME_SPACE}
 echo "Undeploy the agent and related constructs"
 $cprefix microk8s.kubectl delete deployment agent -n ${NAME_SPACE}
 RC=$?

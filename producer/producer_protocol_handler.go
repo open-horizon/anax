@@ -584,6 +584,10 @@ type ExchangeMessageCommand struct {
 	Msg events.ExchangeDeviceMessage
 }
 
+func (e ExchangeMessageCommand) String() string {
+	return e.Msg.ShortString()
+}
+
 func (e ExchangeMessageCommand) ShortString() string {
 	return e.Msg.ShortString()
 }

@@ -510,7 +510,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   },
   "deploymentSignature":"",
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar.gz"
   },
   "clusterDeploymentSignature": ""
 }
@@ -581,7 +581,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   },
   "deploymentSignature":"",
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar.gz"
   },
   "clusterDeploymentSignature": ""
 }
@@ -766,7 +766,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
   "requiredServices":[
   ],
   "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar"
+    "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar.gz"
    },
   "clusterDeploymentSignature": ""
 }

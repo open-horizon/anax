@@ -1474,65 +1474,64 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		// get environmental settings for the workload
 
-		if workload.Deployment != "" {
-			// The service config variables are stored in the device's attributes.
-			envAdds, err := w.GetServicePreference(workload.WorkloadURL, workload.Org, tcPolicy)
-			if err != nil {
-				glog.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", workload.WorkloadURL, workload.Org, err)))
-				return err
-			}
-
-			// The workload config we have might be from a lower version of the workload. Go to the exchange and
-			// get the metadata for the version we are running and then add in any unset default user inputs.
-			var serviceDef *exchange.ServiceDefinition
-			if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-				return fmt.Errorf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)
-			} else if sDef == nil {
-				return fmt.Errorf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)
-			} else {
-				serviceDef = sDef
-				sDef.PopulateDefaultUserInput(envAdds)
-			}
-
-			cutil.SetPlatformEnvvars(envAdds,
-				config.ENVVAR_PREFIX,
-				proposal.AgreementId(),
-				exchange.GetId(w.GetExchangeId()),
-				exchange.GetOrg(w.GetExchangeId()),
-				workload.WorkloadPassword,
-				w.GetExchangeURL(),
-				w.devicePattern,
-				w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
-				w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
-				strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
-
-			lc.EnvironmentAdditions = &envAdds
-
-			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
-			deps := serviceDef.GetServiceDependencies()
-
-			// Create the service instance dependency path with the workload as the root.
-			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
-
-			eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-				persistence.NewMessageMeta(EL_GOV_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
-				persistence.EC_START_DEPENDENT_SERVICE,
-				*ag)
-
-			if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
-				eventlog.LogAgreementEvent(
-					w.db,
-					persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err.Error()),
-					persistence.EC_ERROR_START_DEPENDENT_SERVICE,
-					*ag)
-				return err
-			} else {
-				// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
-				// the services that are going to be network accessible to the workload container(s).
-				lc.Microservices = ms_specs
-			}
+		// The service config variables are stored in the device's attributes.
+		envAdds, err := w.GetServicePreference(workload.WorkloadURL, workload.Org, tcPolicy)
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error getting environment variables from node settings for %v %v: %v", workload.WorkloadURL, workload.Org, err)))
+			return err
 		}
+
+		// The workload config we have might be from a lower version of the workload. Go to the exchange and
+		// get the metadata for the version we are running and then add in any unset default user inputs.
+		var serviceDef *exchange.ServiceDefinition
+		if _, sDef, _, err := exchange.GetHTTPServiceResolverHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+			return fmt.Errorf("Received error querying exchange for service metadata: %v/%v, error %v", workload.Org, workload.WorkloadURL, err)
+		} else if sDef == nil {
+			return fmt.Errorf("Cound not find service metadata for %v/%v.", workload.Org, workload.WorkloadURL)
+		} else {
+			serviceDef = sDef
+			sDef.PopulateDefaultUserInput(envAdds)
+		}
+
+		cutil.SetPlatformEnvvars(envAdds,
+			config.ENVVAR_PREFIX,
+			proposal.AgreementId(),
+			exchange.GetId(w.GetExchangeId()),
+			exchange.GetOrg(w.GetExchangeId()),
+			workload.WorkloadPassword,
+			w.GetExchangeURL(),
+			w.devicePattern,
+			w.BaseWorker.Manager.Config.GetFileSyncServiceProtocol(),
+			w.BaseWorker.Manager.Config.GetFileSyncServiceAPIListen(),
+			strconv.Itoa(int(w.BaseWorker.Manager.Config.GetFileSyncServiceAPIPort())))
+
+		lc.EnvironmentAdditions = &envAdds
+
+		// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
+		deps := serviceDef.GetServiceDependencies()
+
+		// Create the service instance dependency path with the workload as the root.
+		instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
+
+		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+			persistence.NewMessageMeta(EL_GOV_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+			persistence.EC_START_DEPENDENT_SERVICE,
+			*ag)
+
+		if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
+			eventlog.LogAgreementEvent(
+				w.db,
+				persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err.Error()),
+				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
+				*ag)
+			return err
+		} else {
+			// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
+			// the services that are going to be network accessible to the workload container(s).
+			lc.Microservices = ms_specs
+		}
+
 		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
 			persistence.NewMessageMeta(EL_GOV_START_WORKLOAD_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
 			persistence.EC_START_SERVICE,

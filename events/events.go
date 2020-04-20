@@ -184,7 +184,7 @@ type ContainerConfig struct {
 
 func (c ContainerConfig) String() string {
 	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, ClusterDeployment: %v, ClusterDeploymentSignature: %v, Overrides: %v, ImageDockerAuths: %v",
-		c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, c.ClusterDeployment, c.ClusterDeploymentSignature, c.Overrides, c.ImageDockerAuths)
+		c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, "********", c.ClusterDeploymentSignature, c.Overrides, c.ImageDockerAuths)
 }
 
 func NewContainerConfig(deployment string, deploymentSignature string, deploymentUserInfo string,
@@ -640,7 +640,7 @@ type EdgeRegisteredExchangeMessage struct {
 }
 
 func (e EdgeRegisteredExchangeMessage) String() string {
-	return fmt.Sprintf("event: %v, device_id: %v, token: %v, org: %v, pattern: %v", e.event, e.device_id, e.token, e.org, e.pattern)
+	return fmt.Sprintf("event: %v, device_id: %v, token: %v, org: %v, pattern: %v", e.event, e.device_id, "********", e.org, e.pattern)
 }
 
 func (e EdgeRegisteredExchangeMessage) ShortString() string {

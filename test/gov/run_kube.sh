@@ -5,7 +5,7 @@ set -x
 AGBOT_TEMPFS=$1
 ANAX_SOURCE=$2
 
-NAME_SPACE="ibm-edge-agent"
+NAME_SPACE="openhorizon-agent"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
 
@@ -23,6 +23,7 @@ fi
 echo "Starting Kube test environment"
 $cprefix microk8s.start
 RC=$?
+sleep 2
 if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
@@ -170,8 +171,8 @@ fi
 sleep 2
 
 echo "Deploy the agent"
-# Debug help - microk8s.kubectl describe pod <pod-name> -n ibm-edge-agent
-# Debug help = microk8s.kubectl exec <pod-name> -it -n ibm-edge-agent /bin/bash
+# Debug help = microk8s.kubectl describe pod <pod-name> -n ${NAME_SPACE}
+# Debug help = microk8s.kubectl exec <pod-name> -it -n ${NAME_SPACE} /bin/bash
 $cprefix microk8s.kubectl apply -f ${AGBOT_TEMPFS}/etc/agent-in-kube/deployment.yaml
 RC=$?
 if [ $RC -ne 0 ]
