@@ -46,6 +46,27 @@ block() {
 	while :; do sleep 2073600; done    # block forever w/o starting anax so the container stays up, and you can exec in, start anax manually, and debug
 }
 
+editFSSAPIListen() {
+	echo "Edit FileSyncService.APIListen"
+	anaxJsonFile='/etc/horizon/anax.json'
+	echo "Modifying $anaxJsonFile for anax-in-container..."
+
+	anaxJson=$(jq . $anaxJsonFile)
+	checkrc $? "read anax.json"
+	cp $anaxJsonFile $anaxJsonFile.orig
+	checkrc $? "back up anax.json"
+
+	hostname=$(cat /etc/hostname)
+        anaxJson=$(jq ".Edge.FileSyncService.APIListen = \"$hostname\" " <<< $anaxJson)
+	checkrc $? "change FileSyncService.APIListen"
+
+	anaxJson=$(jq ".Edge.FileSyncService.APIProtocol = \"https\" " <<< $anaxJson)
+	checkrc $? "change FileSyncService.APIProtocol"
+	
+	echo "$anaxJson" > $anaxJsonFile
+	checkrc $? "write anax.json"
+}
+
 start() {
 	# Handle special case environments
 	if [[ "$1" == "block" ]]; then
@@ -61,6 +82,8 @@ start() {
 		checkrc $? "source /etc/default/horizon"
 		set +a   # undo
 	fi
+
+	editFSSAPIListen
 
 	# Now repeatedly run anax...
 	numInvocations=0
