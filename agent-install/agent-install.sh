@@ -5,7 +5,7 @@
 set -e
 
 
-SCRIPT_VERSION="1.1.0"
+SCRIPT_VERSION="1.1.1"
 
 SUPPORTED_OS=( "macos" "linux" )
 SUPPORTED_LINUX_DISTRO=( "ubuntu" "raspbian" "debian" )
