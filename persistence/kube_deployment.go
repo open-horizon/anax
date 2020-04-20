@@ -6,7 +6,7 @@ import (
 )
 
 type KubeDeploymentConfig struct {
-	OperatorYamlArchive   string `json:"operatorYamlArchive"`
+	OperatorYamlArchive string `json:"operatorYamlArchive"`
 }
 
 func (k *KubeDeploymentConfig) ToString() string {

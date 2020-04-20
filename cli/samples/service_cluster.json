@@ -8,6 +8,6 @@
   "sharable": "singleton",
   "requiredServices": [],
   "clusterDeployment": {
-    "operatorYamlArchive": "/filepath/k8s_operator_deployment_files.tar"
+    "operatorYamlArchive": "/filepath/k8s_operator_deployment_files.tar.gz"
   }
 }

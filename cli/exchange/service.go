@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
@@ -14,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"net/http"
 	"os"
@@ -35,7 +37,7 @@ type ServicePolicyFile struct {
 
 // List the the service resources for the given org.
 // The userPw can be the userId:password auth or the nodeId:token auth.
-func ServiceList(credOrg, userPw, service string, namesOnly bool) {
+func ServiceList(credOrg, userPw, service string, namesOnly bool, filePath string, exSvcOpYamlForce bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -45,6 +47,15 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 	if service == "*" {
 		service = ""
 	}
+
+	if service == "" && filePath != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-f can only be used when one service is specified."))
+	}
+
+	if exSvcOpYamlForce && filePath == "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-F can only be used when -f is specified."))
+	}
+
 	if namesOnly && service == "" {
 		// Only display the names
 		var resp exchange.GetServicesResponse
@@ -67,11 +78,44 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool) {
 		if httpCode == 404 && service != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", service, svcOrg))
 		}
-		jsonBytes, err := json.MarshalIndent(services.Services, "", cliutils.JSON_INDENT)
+
+		exchServices := services.Services
+		var clusterDeployment string
+		var svcId string
+		for sId, s := range exchServices {
+			// when only one service is specified, save the ClusterDeployment and service id for later use
+			if service != "" {
+				clusterDeployment = s.ClusterDeployment
+				svcId = sId
+			}
+
+			// only display 100 charactors for ClusterDeployment because it is usually very long
+			if s.ClusterDeployment != "" && len(s.ClusterDeployment) > 100 {
+				if service != "" && !namesOnly {
+					// if user specify a service name and -l is specified, then display all of ClusterDeployment
+					// this will give user a way to examine all of it.
+					continue
+				}
+				s_copy := exchange.ServiceDefinition(s)
+				s_copy.ClusterDeployment = s.ClusterDeployment[0:100] + "..."
+				exchServices[sId] = s_copy
+			}
+		}
+		jsonBytes, err := json.MarshalIndent(exchServices, "", cliutils.JSON_INDENT)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
 		}
 		fmt.Println(string(jsonBytes))
+
+		// save the kube operator yaml archive to file if filePath is specified and one service is specified
+		if filePath != "" {
+			if clusterDeployment == "" {
+				msgPrinter.Printf("Ignoring -f because the clusterDepolyment attribute is empty for this service.")
+				msgPrinter.Println()
+			} else {
+				SaveOpYamlToFile(svcId, clusterDeployment, filePath, exSvcOpYamlForce)
+			}
+		}
 	}
 }
 
@@ -562,4 +606,61 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 // Display an empty service policy template as an object.
 func ServiceNewPolicy() {
 	policy.New()
+}
+
+// Get the Kubernetes operator yaml archive from the cluster deployment string and save it to a file
+func SaveOpYamlToFile(sId string, clusterDeployment string, filePath string, forceOverwrite bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	archiveData := GetOpYamlArchiveFromClusterDepl(clusterDeployment)
+
+	fileName := filePath
+	if info, err := os.Stat(filePath); err == nil && info.IsDir() {
+		_, id := cliutils.TrimOrg("", sId) // remove the org part
+		fileName = filepath.Join(filePath, id+"_operator_yaml.tar.gz")
+	}
+
+	if _, err := os.Stat(fileName); err == nil {
+		if !forceOverwrite {
+			cliutils.ConfirmRemove(msgPrinter.Sprintf("File %v already exists, do you want to overwrite?", fileName))
+		}
+	}
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to create file %v. %v", fileName, err))
+	}
+	defer file.Close()
+
+	if _, err := file.Write(archiveData); err != nil {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save the clusterDeployment operator yaml to file %v. %v", fileName, err))
+	}
+
+	msgPrinter.Printf("The clusterDeployment operator yaml archive is saved to file %v", fileName)
+	msgPrinter.Println()
+}
+
+// This function getst the operator yaml archive (in .tat.gz format) from the clusterDeployment
+// string from a service
+func GetOpYamlArchiveFromClusterDepl(deploymentConfig string) []byte {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// for non cluster type service, return nil
+	if deploymentConfig == "" {
+		return nil
+	}
+
+	if kd, err := persistence.GetKubeDeployment(deploymentConfig); err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("error getting kube deployment configuration: %v", err))
+	} else {
+		archiveData, err := base64.StdEncoding.DecodeString(kd.OperatorYamlArchive)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("error decoding the cluster deployment configuration: %v", err))
+		}
+		return archiveData
+	}
+
+	return nil
 }

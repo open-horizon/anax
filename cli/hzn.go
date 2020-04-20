@@ -235,7 +235,9 @@ Environment Variables:
 	exServiceListCmd := exServiceCmd.Command("list", msgPrinter.Sprintf("Display the service resources from the Horizon Exchange."))
 	exService := exServiceListCmd.Arg("service", msgPrinter.Sprintf("List just this one service. Use <org>/<svc> to specify a public service in another org, or <org>/ to list all of the public services in another org.")).String()
 	exServiceListNodeIdTok := exServiceListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
-	exServiceLong := exServiceListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the services, show the entire resource of each services, instead of just the name.")).Short('l').Bool()
+	exServiceLong := exServiceListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the services, show the entire service definition, instead of just the name. When listing a specific service, show more details.")).Short('l').Bool()
+	exSvcOpYamlFilePath := exServiceListCmd.Flag("op-yaml-file", msgPrinter.Sprintf("The name of the file where the cluster deployment operator yaml archive will be saved. This flag is only used when listing a specific service. This flag is ignored when the service does not have a clusterDeployment attribute.")).Short('f').String()
+	exSvcOpYamlForce := exServiceListCmd.Flag("force", msgPrinter.Sprintf("Skip the 'do you want to overwrite?' prompt when -f is specified and the file exists.")).Short('F').Bool()
 	exServicePublishCmd := exServiceCmd.Command("publish", msgPrinter.Sprintf("Sign and create/update the service resource in the Horizon Exchange."))
 	exSvcJsonFile := exServicePublishCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the service in the Horizon exchange. See %v/service.json and %v/service_cluster.json. Specify -f- to read from stdin.", sample_dir, sample_dir)).Short('f').Required().String()
 	exSvcPrivKeyFile := exServicePublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.")).Short('k').ExistingFile()
@@ -777,7 +779,7 @@ Environment Variables:
 	case exPatternRemKeyCmd.FullCommand():
 		exchange.PatternRemoveKey(*exOrg, *exUserPw, *exPatRemKeyPat, *exPatRemKeyKey)
 	case exServiceListCmd.FullCommand():
-		exchange.ServiceList(*exOrg, credToUse, *exService, !*exServiceLong)
+		exchange.ServiceList(*exOrg, credToUse, *exService, !*exServiceLong, *exSvcOpYamlFilePath, *exSvcOpYamlForce)
 	case exServicePublishCmd.FullCommand():
 		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcPubPullImage, *exSvcRegistryTokens, *exSvcOverwrite, *exSvcPolicyFile)
 	case exServiceVerifyCmd.FullCommand():

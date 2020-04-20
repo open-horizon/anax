@@ -60,7 +60,7 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	}
 
 	if _, err := os.Stat(fileName); err == nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("File %s already exist. Please specify different file path or file name. Or remove file and retry object download", fileName))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("File %s already exists. Please specify different file path or file name. Or remove file and retry object download", fileName))
 	}
 
 	file, err := os.Create(fileName)
@@ -68,11 +68,12 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to create file: %s", fileName))
 	}
 
+	defer file.Close()
+
 	if _, err := file.Write(data); err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to save data for object '%s' of type '%s' to file %s", objId, objType, fileName))
 	}
 
-	defer file.Close()
 	msgPrinter.Printf("Data of object %v saved to file %v", objId, fileName)
 	msgPrinter.Println()
 
