@@ -18,6 +18,7 @@ PKG_TREE_IGNORE=false
 SKIP_REGISTRATION=false
 CFG="agent-install.cfg"
 OVERWRITE=false
+SKIP_PROMPT=false
 HZN_NODE_POLICY=""
 AGENT_INSTALL_ZIP="agent-install-files.tar.gz"
 NODE_ID_MAPPING_FILE="node-id-mapping.csv"
@@ -63,14 +64,15 @@ where:
     -n          - path to a node policy file
     -s          - skip registration
     -v          - show version
-    -l          - logging verbosity level (0-5, 5 is verbose)
+    -l          - logging verbosity level (0: silent, 1: critical, 2: error, 3: warning, 4: info, 5: debug), the default is (3: warning)
     -u          - exchange user authorization credentials
     -d          - the id to register this node with
     -f          - install older version without prompt. overwrite configured node without prompt.
+    -b 			- skip any prompts for user input
     -w          - wait for the named service to start executing on this node
     -o          - specify an org id for the service specified with '-w'
     -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
-    -D		- specify deploy type (device, cluster. If not specifed, uses device by default). 
+    -D		- specify deploy type (device, cluster. If not specifed, uses device by default).
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -289,7 +291,7 @@ function validate_exchange(){
 	else
 		OUTPUT=$(curl -fs $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $AUTH) || true
 	fi
-		
+
 	if [[ "$OUTPUT" == "" ]]; then
 		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=<specified>"
 		exit 1
@@ -538,10 +540,10 @@ function install_macos() {
 			log_info "Comparing agent and packages versions..."
 			if [ "$AGENT_VERSION" = "$PACKAGE_VERSION" ] && [ ! "$OVERWRITE" = true ]; then
 				log_info "Versions are equal: agent is ${AGENT_VERSION} and packages are ${PACKAGE_VERSION}. Don't need to install"
-			else				
+			else
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION"; then
 					log_info "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
-					if [ ! "$OVERWRITE" = true ] ; then
+					if [ ! "$OVERWRITE" = true ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 						if [ $BATCH_INSTALL -eq 1 ]; then
 							exit 1
 						fi
@@ -642,24 +644,19 @@ function install_linux(){
     fi
 
 	log_info "Checking if the agent port ${ANAX_PORT} is free..."
-	if [ -n "$(netstat -nlp | grep \":$ANAX_PORT \")" ]; then
+	local netStat=`netstat -nlp | grep $ANAX_PORT`
+	if [[ $netStat == *$ANAX_PORT* ]]; then
 		log_info "Something is running on ${ANAX_PORT}..."
-		if [ -z "$(netstat -nlp | grep \":$ANAX_PORT \" | grep anax)" ]; then
+		if [[ ! $netStat == *anax* ]]; then
 			log_notify "It's not anax, please free the port in order to install horizon, exiting..."
-			netstat -nlp | grep \":$ANAX_PORT \"
 			exit 1
 		else
 			log_info "It's anax, continuing..."
-			netstat -nlp | grep \":$ANAX_PORT \"
 		fi
 	else
 		log_info "Anax port ${ANAX_PORT} is free, continuing..."
 	fi
 
-    log_info "Updating OS..."
-    set -x
-    apt update
-    { set +x; } 2>/dev/null
     log_info "Checking if curl is installed..."
     if command -v curl >/dev/null 2>&1; then
 		log_info "curl found"
@@ -725,7 +722,7 @@ function install_linux(){
 			else
 				if version_gt "$AGENT_VERSION" "$PACKAGE_VERSION" ; then
 					log_notify "Installed agent ${AGENT_VERSION} is newer than the packages ${PACKAGE_VERSION}"
-					if [ ! "$OVERWRITE" = true ] ; then
+					if [ ! "$OVERWRITE" = true ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 						if [ $BATCH_INSTALL -eq 1 ]; then
 							exit 1
 						fi
@@ -941,7 +938,7 @@ function process_node(){
 			log_notify "The node currently has workload(s) (check them with hzn agreement list)"
 			if [[ -z "$HZN_EXCHANGE_PATTERN" ]] && [[ -z "$HZN_NODE_POLICY" ]]; then
 				log_info "Neither a pattern nor node policy has been specified"
-				if [[ ! "$OVERWRITE_NODE" = "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
+				if [[ ! "$OVERWRITE_NODE" = "true" ]] && [ $BATCH_INSTALL -eq 0 ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 					echo "Do you want to unregister node and register it without pattern or node policy, continue?[y/N]:"
 					read RESPONSE
 					if [ ! "$RESPONSE" == 'y' ]; then
@@ -957,7 +954,7 @@ function process_node(){
 				if [[ -n "$HZN_NODE_POLICY" ]]; then
 					log_notify "${HZN_NODE_POLICY} node policy has been specified"
 				fi
-				if [[ "$OVERWRITE_NODE" != "true" ]] && [ $BATCH_INSTALL -eq 0 ] ; then
+				if [[ "$OVERWRITE_NODE" != "true" ]] && [ $BATCH_INSTALL -eq 0 ] && [[ $SKIP_PROMPT == 'false' ]] ; then
 					if [[ -n "$HZN_EXCHANGE_PATTERN" ]]; then
 						echo "Do you want to unregister and register it with a new ${HZN_EXCHANGE_PATTERN} pattern, continue?[y/N]:"
 					fi
@@ -1493,7 +1490,7 @@ function check_node_exist() {
 
 function getImageInfo() {
     log_debug "getImageInfo() begin"
-    
+
     tar xvzf amd64_anax_k8s_ubi.tar.gz
     if [ $? -ne 0 ]; then
         log_notify "failed to uncompress agent image from amd64_anax_k8s_ubi.tar.gz, exiting..."
@@ -1526,7 +1523,7 @@ function pushImageToEdgeClusterRegistry() {
         exit 1
     fi
     log_info "successfully pushed image $EDGE_CLUSTER_IMAGE_FULL_NAME to edge cluster registry"
-    
+
     log_debug "pushImageToEdgeClusterRegistry() end"
 }
 
@@ -1536,7 +1533,7 @@ function generate_installation_files() {
     log_info "Preparing horizon environment file."
     generate_horizon_env
     log_info "Horizon environment file is done."
-    
+
     log_info "Preparing kubernete persistentVolumeClaim file"
     prepare_k8s_pvc_file
     log_info "kubernete persistentVolumeClaim file are done."
@@ -1624,14 +1621,14 @@ function prepare_k8s_pvc_file() {
 
 function create_cluster_resources() {
 	log_debug "create_cluster_resources() begin"
-	
+
 	create_namespace
 	sleep 2
 	create_service_account
 	create_secret
 	create_configmap
 	create_persistent_volume
-		
+
 	log_debug "create_cluster_resources() end"
 }
 
@@ -1811,7 +1808,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1840,6 +1837,8 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:" opt; do
 		s) SKIP_REGISTRATION=true
 		;;
 		f) OVERWRITE=true
+		;;
+		b) SKIP_PROMPT=true
 		;;
 		w) WAIT_FOR_SERVICE="$OPTARG"
 		;;
