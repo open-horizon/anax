@@ -657,10 +657,10 @@ function install_linux(){
 		log_info "Anax port ${ANAX_PORT} is free, continuing..."
 	fi
 
-    #log_info "Updating OS..."
-    #set -x
-    #apt update
-    #{ set +x; } 2>/dev/null
+    log_info "Updating OS..."
+    set -x
+    apt update
+    { set +x; } 2>/dev/null
     log_info "Checking if curl is installed..."
     if command -v curl >/dev/null 2>&1; then
 		log_info "curl found"
