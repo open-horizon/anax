@@ -85,7 +85,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 			// Check the deployment to check if it is a kube deployment
 			deploymentConfig := lc.ContainerConfig().ClusterDeployment
 			if kd, err := persistence.GetKubeDeployment(deploymentConfig); err != nil {
-				glog.Errorf(kwlog(fmt.Sprintf("error getting kune deployment configuration: %v", err)))
+				glog.Errorf(kwlog(fmt.Sprintf("error getting kube deployment configuration: %v", err)))
 				return true
 			} else if _, err := persistence.AgreementDeploymentStarted(w.db, lc.AgreementId, lc.AgreementProtocol, kd); err != nil {
 				glog.Errorf(kwlog(fmt.Sprintf("received error updating database deployment state, %v", err)))

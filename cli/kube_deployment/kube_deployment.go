@@ -77,7 +77,7 @@ func (p *KubeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, 
 
 func (p *KubeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interface{} {
 	return map[string]interface{}{
-		"operatorYamlArchive":   "",
+		"operatorYamlArchive": "",
 	}
 }
 
