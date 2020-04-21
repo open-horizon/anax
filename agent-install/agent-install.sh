@@ -18,6 +18,7 @@ PKG_TREE_IGNORE=false
 SKIP_REGISTRATION=false
 CFG="agent-install.cfg"
 OVERWRITE=false
+SKIP_PROMPT=false
 HZN_NODE_POLICY=""
 AGENT_INSTALL_ZIP="agent-install-files.tar.gz"
 NODE_ID_MAPPING_FILE="node-id-mapping.csv"
@@ -656,10 +657,10 @@ function install_linux(){
 		log_info "Anax port ${ANAX_PORT} is free, continuing..."
 	fi
 
-    log_info "Updating OS..."
-    set -x
-    apt update
-    { set +x; } 2>/dev/null
+    #log_info "Updating OS..."
+    #set -x
+    #apt update
+    #{ set +x; } 2>/dev/null
     log_info "Checking if curl is installed..."
     if command -v curl >/dev/null 2>&1; then
 		log_info "curl found"
@@ -1811,7 +1812,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1840,6 +1841,8 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:" opt; do
 		s) SKIP_REGISTRATION=true
 		;;
 		f) OVERWRITE=true
+		;;
+		b) SKIP_PROMPT=true
 		;;
 		w) WAIT_FOR_SERVICE="$OPTARG"
 		;;
