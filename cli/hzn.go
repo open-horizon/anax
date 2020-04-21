@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"github.com/open-horizon/anax/cli/sdo"
 	"os"
 	"strings"
 
@@ -563,6 +564,18 @@ Environment Variables:
 	mmsObjectDownloadId := mmsObjectDownloadCmd.Flag("id", msgPrinter.Sprintf("The id of the object to download data. This flag must be used with -t.")).Short('i').Required().String()
 	mmsObjectDownloadFile := mmsObjectDownloadCmd.Flag("file", msgPrinter.Sprintf("The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory")).Short('f').String()
 
+	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
+
+	voucherInspectCmd := voucherCmd.Command("inspect", msgPrinter.Sprintf("Display properties of the SDO ownership voucher."))
+	voucherInspectFile := voucherInspectCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file.")).Required().File()  // returns the file descriptor
+
+	voucherImportCmd := voucherCmd.Command("import", msgPrinter.Sprintf("Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files."))
+	voucherImportFile := voucherImportCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).")).Required().File()  // returns the file descriptor
+	voucherOrg := voucherImportCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	voucherUserPw := voucherImportCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
+	voucherImportExample := voucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy.")).Short('e').String()
+	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e.")).String()
+
 	app.VersionFlag = nil
 
 	/* trying to override the base --version behavior does not work....
@@ -683,6 +696,12 @@ Environment Variables:
 	if strings.HasPrefix(fullCmd, "mms") {
 		mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
+
+	// For the voucher import command family, make sure that org and exchange credentials are specified in some way.
+	if strings.HasPrefix(fullCmd, "voucher import") {
+		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		voucherUserPw = cliutils.RequiredWithDefaultEnvVar(voucherUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
 
 	// key file defaults
@@ -925,5 +944,9 @@ Environment Variables:
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
 		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile)
+	case voucherInspectCmd.FullCommand():
+		sdo.VoucherInspect(*voucherInspectFile)
+	case voucherImportCmd.FullCommand():
+		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy)
 	}
 }

@@ -19,7 +19,7 @@ require (
 	github.com/fsouza/go-dockerclient v1.6.4
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/golang/protobuf v1.4.0 // indirect
-	github.com/google/uuid v1.1.2-0.20190416172445-c2e93f3ae59f // indirect
+	github.com/google/uuid v1.1.2-0.20190416172445-c2e93f3ae59f
 	github.com/gorilla/mux v1.7.4
 	github.com/jgautheron/goconst v0.0.0-20200227150835-cda7ea3bf591 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect

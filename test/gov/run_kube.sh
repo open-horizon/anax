@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ "$NOKUBE" == "1" ]]; then
+  echo "Skipping $0"
+  exit
+fi
+
 set -x
 
 AGBOT_TEMPFS=$1
