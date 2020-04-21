@@ -72,6 +72,7 @@ where:
     -o          - specify an org id for the service specified with '-w'
     -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
     -D		- specify deploy type (device, cluster. If not specifed, uses device by default).
+    -r      - exchange node authorization credentials
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
