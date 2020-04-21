@@ -1812,7 +1812,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:b" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:r" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1850,7 +1850,7 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfw:o:t:D:b" opt; do
 		;;
 		D) DEPLOY_TYPE="$OPTARG"
 		;;
-		b) SKIP_PROMPT=true
+		r) SKIP_PROMPT=true
 		;;
 		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
