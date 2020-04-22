@@ -239,7 +239,7 @@ test-network:
 
 $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
-	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
+	cd $(ANAX_SOURCE) && make clean && make noi18n && make ess-docker-image && make css-docker-image
 
 agbot-docker-prereqs: $(ANAX_SOURCE)/anax
 	@echo "Configuring agbot prerequisites"
@@ -280,6 +280,8 @@ exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
 test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
+	@echo -e  "\nBootstrapping the exchange"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
 	@echo -e  "\nSetting up agent in kube"
 	gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW)
 	@echo -e  "\nStarting tests"
