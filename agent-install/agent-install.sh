@@ -259,14 +259,25 @@ function set_pattern_from_exchange(){
 # create a file for HZN_NODE_POLICY to point to containing the node policy found in the exchange
 function set_policy_from_exchange(){
 	log_debug "set_policy_from_exchange() begin"
-	if [[ "$NODE_ID" != "" ]]; then
+
+	# if USER_AUTH is empty we can use the NODE_AUTH to validate the exchange
+	if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
+		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH
+	elif [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
+		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
+	else
+		AUTH=$HZN_EXCHANGE_USER_AUTH
+	fi
+
+	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
+	if [[ "$nodeID" != "" ]]; then
 		if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
 			HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
 		fi
 		if [[ $CERTIFICATE != "" ]]; then
-			EXCH_POLICY=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+			EXCH_POLICY=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$nodeID/policy -u $AUTH) || true
 		else
-			EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+			EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$nodeID/policy -u $AUTH) || true
 		fi
 		if [[ $EXCH_POLICY != "" ]]; then
 			echo $EXCH_POLICY > exchange-node-policy.json
@@ -1054,8 +1065,8 @@ function create_node(){
     	# check if node exists before creating it
     	echo "Checking if node exists..."
     	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
-        hzn exchange node list $nodeID -n $HZN_EXCHANGE_NODE_AUTH -o $HZN_ORG_ID 2>&1
-     	if [[ $? -ne 0 ]]; then
+    	hzn exchange node list $nodeID -n $HZN_EXCHANGE_NODE_AUTH -o $HZN_ORG_ID 2>&1
+    	if [[ $? -ne 0 ]]; then
     		log_notify "Node ID $nodeID was not found in the excahnge, creating it..."
         	set -x
     		hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
