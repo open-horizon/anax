@@ -5,7 +5,7 @@
 set -e
 
 
-SCRIPT_VERSION="1.1.0"
+SCRIPT_VERSION="1.1.1"
 
 SUPPORTED_OS=( "macos" "linux" )
 SUPPORTED_LINUX_DISTRO=( "ubuntu" "raspbian" "debian" )
@@ -298,7 +298,7 @@ function validate_exchange(){
 	fi
 
 	if [[ "$OUTPUT" == "" ]]; then
-		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=$HZN_EXCHANGE_USER_AUTH"
+		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID, HZN_EXCHANGE_NODE_AUTH=$HZN_EXCHANGE_NODE_AUTH and HZN_EXCHANGE_USER_AUTH=$HZN_EXCHANGE_USER_AUTH"
 		exit 1
 	fi
 	log_debug "validate_exchange() end"
@@ -1054,10 +1054,8 @@ function create_node(){
     	# check if node exists before creating it
     	echo "Checking if node exists..."
     	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
-    	set -x
-    	local output=$((hzn exchange node list $nodeID -n $HZN_EXCHANGE_NODE_AUTH -o $HZN_ORG_ID) 2>&1)
-    	{ set +x; } 2>/dev/null
-    	if [[ $output == *Error* ]]; then
+        hzn exchange node list $nodeID -n $HZN_EXCHANGE_NODE_AUTH -o $HZN_ORG_ID 2>&1
+     	if [[ $? -ne 0 ]]; then
     		log_notify "Node ID $nodeID was not found in the excahnge, creating it..."
         	set -x
     		hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
