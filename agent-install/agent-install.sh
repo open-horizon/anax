@@ -376,8 +376,8 @@ function validate_args(){
 		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Username"
 		get_variable EDGE_CLUSTER_REGISTRY_TOKEN $CFG
 		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Token"
-		get_variable EDGE_CLUSTER_REGISTRY_REPO $CFG
-		check_empty EDGE_CLUSTER_REGISTRY_REPO "Edge Cluster Registry Repo"
+		get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY $CFG
+		check_empty IMAGE_ON_EDGE_CLUSTER_REGISTRY "Image on Edge Cluster Registry"
 		get_variable EDGE_CLUSTER_STORAGE_CLASS $CFG
 		if [[ "$EDGE_CLUSTER_STORAGE_CLASS" == "" ]]; then
 			EDGE_CLUSTER_STORAGE_CLASS="gp2"
@@ -442,9 +442,9 @@ function show_config() {
     echo "Agent in Edge Cluster config:"
     echo "Using Edge Cluster Registry: ${USE_EDGE_CLUSTER_REGISTRY}"
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-	echo "Edge Cluster Registry Repo: ${EDGE_CLUSTER_REGISTRY_REPO}"
 	echo "Edge Cluster Registry Username: ${EDGE_CLUSTER_REGISTRY_USERNAME}"
 	echo "Edge Cluster Registry Token: <specified>"
+	echo "Image On Edge Cluster Registry: ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}"
 	echo "Edge Cluster Storage Class: ${EDGE_CLUSTER_STORAGE_CLASS}"
     fi
 
@@ -1527,9 +1527,6 @@ function getImageInfo() {
 
     LOADED_IMAGE_MESSAGE=$(docker load --input amd64_anax_k8s_ubi.tar)
     AGENT_IMAGE=$(echo $LOADED_IMAGE_MESSAGE|awk -F': ' '{print $2}')
-    REPO_NAME=$(echo $AGENT_IMAGE|awk -F':' '{print $1}'|awk -F'/' '{print $1}')
-    IMAGE_NAME=$(echo $AGENT_IMAGE|awk -F':' '{print $1}'|awk -F'/' '{print $2}')
-    IMAGE_TAG=$(echo $AGENT_IMAGE|awk -F':' '{print $2}')
     log_info "Got agent image: $AGENT_IMAGE"
 
     log_debug "getImageInfo() end"
@@ -1543,14 +1540,13 @@ function pushImageToEdgeClusterRegistry() {
         exit 1
     fi
 
-    EDGE_CLUSTER_IMAGE_FULL_NAME=${EDGE_CLUSTER_REGISTRY_REPO}/${IMAGE_NAME}:${IMAGE_TAG}
-    docker tag ${AGENT_IMAGE} ${EDGE_CLUSTER_IMAGE_FULL_NAME}
-    docker push ${EDGE_CLUSTER_IMAGE_FULL_NAME}
+    docker tag ${AGENT_IMAGE} ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}
+    docker push ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}
     if [ $? -ne 0 ]; then
-        log_notify "Failed to push image ${EDGE_CLUSTER_IMAGE_FULL_NAME} to edge cluster's registry, exiting..."
+        log_notify "Failed to push image ${IMAGE_ON_EDGE_CLUSTER_REGISTRY} to edge cluster's registry, exiting..."
         exit 1
     fi
-    log_info "successfully pushed image $EDGE_CLUSTER_IMAGE_FULL_NAME to edge cluster registry"
+    log_info "successfully pushed image $IMAGE_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
 
     log_debug "pushImageToEdgeClusterRegistry() end"
 }
@@ -1625,13 +1621,11 @@ function prepare_k8s_development_file() {
     cp deployment-template.yml deployment.yml
 
     if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
-    	sed -i -e "s/__ImageRepo__/${EDGE_CLUSTER_REGISTRY_REPO}/g" deployment.yml
+    	sed -i -e "s#__ImagePath__#${IMAGE_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
     else
-        sed -i -e "s/__ImageRepo__/${REPO_NAME}/g" deployment.yml
+        sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
-    sed -i -e "s/__ImageName__/${IMAGE_NAME}/g" deployment.yml
-    sed -i -e "s/__ImageTag__/${IMAGE_TAG}/g" deployment.yml
-    sed -i -e "s/__OrgId__/\"${HZN_ORG_ID}\"/g" deployment.yml
+    sed -i -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment.yml
     rm deployment-template.yml
 
     log_debug "prepare_k8s_development_file() end"
