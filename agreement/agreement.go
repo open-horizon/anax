@@ -249,20 +249,24 @@ func (w *AgreementWorker) Initialize() bool {
 
 	glog.Info(logString(fmt.Sprintf("started")))
 
-	// Block for the container syncup message, to make sure the docker state matches our local DB.
-	for {
-		if w.containerSyncUpEvent == false {
-			time.Sleep(time.Duration(5) * time.Second)
-			glog.V(3).Infof("AgreementWorker waiting for container syncup to be done.")
-		} else if w.containerSyncUpSucessful {
-			break
-		} else {
-			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up containers.")))
-			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_FATAL,
-				persistence.NewMessageMeta(EL_AG_TERM_UNABLE_SYNC_CONTAINERS),
-				persistence.EC_ERROR_CONTAINER_SYNC_ON_INIT,
-				w.GetExchangeId(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern, "")
-			panic(logString(fmt.Sprintf("Terminating, unable to sync up containers")))
+	// Only check for container sync up when DockerEndpoint is set.
+	// If it is not set, the docker client could not be initialized.
+	if w.Config.Edge.DockerEndpoint != "" {
+		// Block for the container syncup message, to make sure the docker state matches our local DB.
+		for {
+			if w.containerSyncUpEvent == false {
+				time.Sleep(time.Duration(5) * time.Second)
+				glog.V(3).Infof("AgreementWorker waiting for container syncup to be done.")
+			} else if w.containerSyncUpSucessful {
+				break
+			} else {
+				glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up containers.")))
+				eventlog.LogNodeEvent(w.db, persistence.SEVERITY_FATAL,
+					persistence.NewMessageMeta(EL_AG_TERM_UNABLE_SYNC_CONTAINERS),
+					persistence.EC_ERROR_CONTAINER_SYNC_ON_INIT,
+					w.GetExchangeId(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern, "")
+				panic(logString(fmt.Sprintf("Terminating, unable to sync up containers")))
+			}
 		}
 	}
 

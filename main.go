@@ -166,8 +166,12 @@ func main() {
 		workers.Add(agreement.NewAgreementWorker("Agreement", cfg, db, pm))
 		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
 		workers.Add(exchange.NewExchangeMessageWorker("ExchangeMessages", cfg, db))
-		workers.Add(container.NewContainerWorker("Container", cfg, db, authm))
-		workers.Add(imagefetch.NewImageFetchWorker("ImageFetch", cfg, db))
+		if containerWorker := container.NewContainerWorker("Container", cfg, db, authm); containerWorker != nil {
+			workers.Add(containerWorker)
+		}
+		if imageWorker := imagefetch.NewImageFetchWorker("ImageFetch", cfg, db); imageWorker != nil {
+			workers.Add(imageWorker)
+		}
 		workers.Add(kube_operator.NewKubeWorker("Kube", cfg, db))
 		workers.Add(resource.NewResourceWorker("Resource", cfg, db, authm))
 		workers.Add(changes.NewChangesWorker("ExchangeChanges", cfg, db))
