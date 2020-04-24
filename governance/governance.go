@@ -53,6 +53,7 @@ type GovernanceWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
 	devicePattern     string
+	deviceType        string
 	pm                *policy.PolicyManager
 	producerPH        map[string]producer.ProducerProtocolHandler
 	deviceStatus      *DeviceStatus
@@ -67,9 +68,11 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 	var ec *worker.BaseExchangeContext
 	var lrec exchange.ExchangeContext
 	pattern := ""
+	deviceType := ""
 	if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
 		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, cfg.Edge.ExchangeURL, cfg.GetCSSURL(), cfg.Collaborators.HTTPClientFactory)
 		pattern = dev.Pattern
+		deviceType = dev.GetNodeType()
 		lrec = newLimitedRetryExchangeContext(ec)
 	}
 
@@ -78,6 +81,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		db:              db,
 		pm:              pm,
 		devicePattern:   pattern,
+		deviceType:      deviceType,
 		producerPH:      make(map[string]producer.ProducerProtocolHandler),
 		deviceStatus:    NewDeviceStatus(),
 		ShuttingDownCmd: nil,
@@ -111,6 +115,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
 		w.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", msg.Org(), msg.DeviceId()), msg.Token(), w.Config.Edge.ExchangeURL, w.Config.GetCSSURL(), w.Config.Collaborators.HTTPClientFactory)
 		w.devicePattern = msg.Pattern()
+		w.deviceType = msg.DeviceType()
 		w.limitedRetryEC = newLimitedRetryExchangeContext(w.EC)
 
 	case *events.EdgeConfigCompleteMessage:

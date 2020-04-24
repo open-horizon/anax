@@ -620,10 +620,7 @@ test-ci: gopathlinks
 		GOPATH=$(TMPGOPATH) $(COMPILE_ARGS) go test -cover -tags=ci $(PKGS)
 
 # N.B. this doesn't run ci tests, the ones that require CI system setup
-check: deps lint test test-integration
-
-check-noi18n: lint test test-integration
-
+check: lint test test-integration
 
 # build sequence diagrams
 diagrams:

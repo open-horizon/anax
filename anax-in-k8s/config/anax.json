@@ -2,7 +2,6 @@
   "Edge": {
     "APIListen": "127.0.0.1:8510",
     "DBPath": "/var/horizon/",
-    "DockerEndpoint": "unix:///var/run/docker.sock",
     "StaticWebContent": "/usr/horizon/web/",
     "PublicKeyPath": "/etc/horizon/trust/mtn-publicKey.pem",
     "TrustSystemCACerts": true,
@@ -19,7 +18,7 @@
     "TrustCertUpdatesFromOrg": true,
     "TrustDockerAuthFromOrg": true,
     "ServiceUpgradeCheckIntervalS": 300,
-    "MultipleAnaxInstances": true,
+    "MultipleAnaxInstances": false,
     "FileSyncService": {}
   },
   "ArchSynonyms": {
