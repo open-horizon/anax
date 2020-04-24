@@ -30,7 +30,7 @@ spec:
           claimName: openhorizon-agent-pvc
       containers:
       - name: anax
-        image: __ImageRepo__/__ImageName__:__ImageTag__
+        image: __ImagePath__
         volumeMounts:
         - mountPath: /etc/default/horizon
           subPath: horizon
