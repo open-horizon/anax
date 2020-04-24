@@ -88,7 +88,7 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 	}
 
 	glog.Info("started the status report to the exchange.")
-	
+
 	w.deviceStatus = nil
 	var device_status DeviceStatus
 
