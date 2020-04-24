@@ -5,7 +5,7 @@
 set -e
 
 
-SCRIPT_VERSION="1.1.0"
+SCRIPT_VERSION="1.1.1"
 
 SUPPORTED_OS=( "macos" "linux" )
 SUPPORTED_LINUX_DISTRO=( "ubuntu" "raspbian" "debian" )
@@ -41,9 +41,9 @@ POD_ID=""
 VERBOSITY=3 # Default logging verbosity
 
 # required parameters and their defaults
-REQUIRED_PARAMS=( "HZN_EXCHANGE_URL" "HZN_FSS_CSSURL" "HZN_ORG_ID" "HZN_EXCHANGE_USER_AUTH" )
+REQUIRED_PARAMS=( "HZN_EXCHANGE_URL" "HZN_FSS_CSSURL" "HZN_ORG_ID" )
 REQUIRED_VALUE_FLAG="REQUIRED_FROM_USER"
-DEFAULTS=( "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" )
+DEFAULTS=( "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" )
 
 # certificate for the CLI package on MacOS
 MAC_PACKAGE_CERT="horizon-cli.crt"
@@ -53,7 +53,7 @@ function help() {
      cat << EndOfMessage
 $(basename "$0") <options> -- installing Horizon software
 where:
-    \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, \$HZN_EXCHANGE_USER_AUTH variables must be defined either in a config file or environment,
+    \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, either \$HZN_EXCHANGE_USER_AUTH or \$HZN_EXCHANGE_NODE_AUTH, variables must be defined either in a config file or environment,
 
     -c          - path to a certificate file
     -k          - path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
@@ -66,6 +66,7 @@ where:
     -v          - show version
     -l          - logging verbosity level (0: silent, 1: critical, 2: error, 3: warning, 4: info, 5: debug), the default is (3: warning)
     -u          - exchange user authorization credentials
+    -a 		- exchange node authorization credentials
     -d          - the id to register this node with
     -f          - install older version without prompt. overwrite configured node without prompt.
     -b 			- skip any prompts for user input
@@ -258,14 +259,25 @@ function set_pattern_from_exchange(){
 # create a file for HZN_NODE_POLICY to point to containing the node policy found in the exchange
 function set_policy_from_exchange(){
 	log_debug "set_policy_from_exchange() begin"
-	if [[ "$NODE_ID" != "" ]]; then
+
+	# if USER_AUTH is empty we can use the NODE_AUTH to validate the exchange
+	if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
+		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH
+	elif [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
+		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
+	else
+		AUTH=$HZN_EXCHANGE_USER_AUTH
+	fi
+
+	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
+	if [[ "$nodeID" != "" ]]; then
 		if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
 			HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
 		fi
 		if [[ $CERTIFICATE != "" ]]; then
-			EXCH_POLICY=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+			EXCH_POLICY=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$nodeID/policy -u $AUTH) || true
 		else
-			EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID/policy -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
+			EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$nodeID/policy -u $AUTH) || true
 		fi
 		if [[ $EXCH_POLICY != "" ]]; then
 			echo $EXCH_POLICY > exchange-node-policy.json
@@ -280,7 +292,11 @@ function set_policy_from_exchange(){
 # validate that the found credentials, org id, certificate, and exchange url will work to view the org in the exchange
 function validate_exchange(){
 	log_debug "validate_exchange() begin"
-	if [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
+
+	# if USER_AUTH is empty we can use the NODE_AUTH to validate the exchange
+	if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
+		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH
+	elif [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
 		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
 	else
 		AUTH=$HZN_EXCHANGE_USER_AUTH
@@ -293,7 +309,7 @@ function validate_exchange(){
 	fi
 
 	if [[ "$OUTPUT" == "" ]]; then
-		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID and HZN_EXCHANGE_USER_AUTH=<specified>"
+		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID, HZN_EXCHANGE_NODE_AUTH=$HZN_EXCHANGE_NODE_AUTH and HZN_EXCHANGE_USER_AUTH=$HZN_EXCHANGE_USER_AUTH"
 		exit 1
 	fi
 	log_debug "validate_exchange() end"
@@ -337,9 +353,16 @@ function validate_args(){
     check_empty HZN_FSS_CSSURL "FSS_CSS URL"
     get_variable HZN_ORG_ID $CFG
     check_empty HZN_ORG_ID "ORG ID"
+    get_variable HZN_EXCHANGE_NODE_AUTH $CFG
+    check_empty HZN_EXCHANGE_NODE_AUTH "Exchange Node Auth"
     get_variable HZN_EXCHANGE_USER_AUTH $CFG
     check_empty HZN_EXCHANGE_USER_AUTH "Exchange User Auth"
     get_variable NODE_ID $CFG
+
+    # If USER_AUTH and NODE_AUTH are unset, exit with error code of 1
+	if [[ -z $HZN_EXCHANGE_USER_AUTH ]] && [[ -z $HZN_EXCHANGE_NODE_AUTH ]]; then
+		help; exit 1
+	fi
 
     if [ "${DEPLOY_TYPE}" == "cluster" ]; then
 	if [[ "$NODE_ID" == "" ]]; then
@@ -1039,16 +1062,21 @@ function create_node(){
     fi
 
     if [ "${DEPLOY_TYPE}" == "device" ]; then
-    	log_notify "Creating a node..."
+    	# check if node exists before creating it
+    	echo "Checking if node exists..."
+    	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
+    	hzn exchange node list $nodeID -n $HZN_EXCHANGE_NODE_AUTH -o $HZN_ORG_ID 2>&1
+    	if [[ $? -ne 0 ]]; then
+    		log_notify "Node ID $nodeID was not found in the excahnge, creating it..."
+        	set -x
+    		hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
+    		{ set +x; } 2>/dev/null
 
-    	set -x
-   	hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
-    	{ set +x; } 2>/dev/null
-
-    	log_notify "Verifying a node..."
-    	set -x
-    	hzn exchange node confirm -n "$HZN_EXCHANGE_NODE_AUTH" -o "$HZN_ORG_ID"
-    	{ set +x; } 2>/dev/null
+    		log_notify "Verifying node..."
+    		set -x
+    		hzn exchange node confirm -n "$HZN_EXCHANGE_NODE_AUTH" -o "$HZN_ORG_ID"
+    		{ set +x; } 2>/dev/null
+		fi
     elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
 	log_notify "Creating a node..."
 	EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
@@ -1808,7 +1836,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:a:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1821,6 +1849,8 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:" opt; do
 		k) CFG="$OPTARG"
 		;;
 		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
+		;;
+		a) HZN_EXCHANGE_NODE_AUTH="$OPTARG"
 		;;
 		d) NODE_ID="$OPTARG"
 		;;
