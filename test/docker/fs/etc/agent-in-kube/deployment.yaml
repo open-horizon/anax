@@ -16,6 +16,8 @@ spec:
       volumes:
       - name: agent-vol
         emptyDir: {}
+      - name: agent-policy-vol
+        emptyDir: {}
       - name: agent-etc-vol
         configMap:
           name: agent-configmap-horizon
@@ -29,6 +31,8 @@ spec:
         volumeMounts:
         - mountPath: /var/horizon
           name: agent-vol
+        - mountPath: /etc/horizon/policy.d
+          name: agent-policy-vol
         - mountPath: /etc/default/horizon
           subPath: horizon
           name: agent-etc-vol

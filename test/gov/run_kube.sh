@@ -4,6 +4,7 @@ set -x
 
 AGBOT_TEMPFS=$1
 ANAX_SOURCE=$2
+EXCH_ROOTPW=$3
 
 NAME_SPACE="openhorizon-agent"
 CONFIGMAP_NAME="agent-configmap-horizon"
@@ -184,3 +185,22 @@ then
 fi
 
 echo "Agent deployed to local kube"
+
+
+sleep 15
+
+echo "Configuring agent for policy"
+
+POD=$($cprefix microk8s.kubectl get pod -l app=agent -n ${NAME_SPACE} -o jsonpath="{.items[0].metadata.name}")
+if [ $POD == "" ]
+then
+	echo "Unable to find agent POD"
+	exit 1
+fi
+
+$cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node.policy.json ${NAME_SPACE}/${POD}:/home/agentuser/.
+
+#$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -T cluster --policy /home/agentuser/node.policy.json -u root/root:${EXCH_ROOTPW}
+$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -T cluster -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
+
+echo "Configured agent for policy, waiting for the agbot to start."
