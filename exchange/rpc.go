@@ -950,12 +950,14 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 
 func IsTransportError(pResp *http.Response, err error) bool {
 	if err != nil {
+		if strings.Contains(err.Error(), ": EOF") {
+			return true
+		}
+
 		l_error_string := strings.ToLower(err.Error())
 		if strings.Contains(l_error_string, "time") && strings.Contains(l_error_string, "out") {
 			return true
 		} else if strings.Contains(l_error_string, "connection") && (strings.Contains(l_error_string, "refused") || strings.Contains(l_error_string, "reset")) {
-			return true
-		} else if strings.Contains(l_error_string, ": EOF") {
 			return true
 		}
 	}
