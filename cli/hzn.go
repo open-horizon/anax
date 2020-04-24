@@ -318,7 +318,6 @@ Environment Variables:
 	registerCmd := app.Command("register", msgPrinter.Sprintf("Register this edge node with Horizon."))
 	nodeIdTok := registerCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.")).Short('n').PlaceHolder("ID:TOK").String()
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
-	nodeType := registerCmd.Flag("node-type", msgPrinter.Sprintf("The type of the node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists.")).Short('T').Default("device").String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
 	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See %v/node_reg_input.json and %v/more-examples.json. Specify -f- to read from stdin.", sample_dir, sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
 
@@ -819,7 +818,7 @@ Environment Variables:
 	case regInputCmd.FullCommand():
 		register.CreateInputFile(*regInputOrg, *regInputPattern, *regInputArch, *regInputNodeIdTok, *regInputInputFile)
 	case registerCmd.FullCommand():
-		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodeType, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
+		register.DoIt(*org, *pattern, *nodeIdTok, *userPw, *inputFile, *nodeOrgFlag, *patternFlag, *nodeName, *nodepolicyFlag, *waitServiceFlag, *waitServiceOrgFlag, *waitTimeoutFlag)
 	case keyListCmd.FullCommand():
 		key.List(*keyName, *keyListAll)
 	case keyCreateCmd.FullCommand():

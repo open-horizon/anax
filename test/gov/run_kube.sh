@@ -200,7 +200,7 @@ fi
 
 $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node.policy.json ${NAME_SPACE}/${POD}:/home/agentuser/.
 
-#$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -T cluster --policy /home/agentuser/node.policy.json -u root/root:${EXCH_ROOTPW}
-$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -T cluster -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
+#$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register --policy /home/agentuser/node.policy.json -u root/root:${EXCH_ROOTPW}
+$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
 
 echo "Configured agent for policy, waiting for the agbot to start."

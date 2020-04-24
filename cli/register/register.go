@@ -17,6 +17,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"os"
 	"regexp"
@@ -91,7 +92,7 @@ func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.Externa
 }
 
 // DoIt registers this node to Horizon with a pattern
-func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodeType string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
+func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag string, patternFromFlag string, nodeName string, nodepolicyFlag string, waitService string, waitOrg string, waitTimeout int) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -212,8 +213,10 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	}
 
 	// validate the node type
-	if nodeType != "" && nodeType != persistence.DEVICE_TYPE_DEVICE && nodeType != persistence.DEVICE_TYPE_CLUSTER {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Wrong node type specified: %v. It must be 'device' or 'cluster'.", nodeType))
+	nodeType := persistence.DEVICE_TYPE_DEVICE
+	_, err1 := rest.InClusterConfig()
+	if err1 == nil {
+		nodeType = persistence.DEVICE_TYPE_CLUSTER
 	}
 
 	// See if the node exists in the exchange, and create if it doesn't
@@ -233,10 +236,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			// node does not exist, create it
 			msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
 			msgPrinter.Println()
-			if nodeType == "" {
-				// default node type
-				nodeType = persistence.DEVICE_TYPE_DEVICE
-			}
 			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, anaxArch, nodeName, nodeType, false)
 		} else {
 			// node exists but the token is new, update the node token
@@ -244,14 +243,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			msgPrinter.Println()
 			patchNodeReq := cliexchange.NodeExchangePatchToken{Token: nodeToken}
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, patchNodeReq)
-			for _, n := range nodes.Nodes {
+			for nId, n := range nodes.Nodes {
 				exchangePattern = n.Pattern
 
 				// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
-				if nodeType != "" && nodeType != n.NodeType {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The given node type '%v' does not match the existing node type '%v'. Changing the node type is not supported.", nodeType, n.NodeType))
-				} else {
-					nodeType = n.NodeType
+				if nodeType != n.GetNodeType() {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the exchange node %v.", nodeType, n.GetNodeType(), nId))
 				}
 				break
 			}
@@ -259,14 +256,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)
 		msgPrinter.Println()
-		for _, n := range nodes.Nodes {
+		for nId, n := range nodes.Nodes {
 			exchangePattern = n.Pattern
 
 			// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
-			if nodeType != "" && nodeType != n.NodeType {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The given node type '%v' does not match the existing node type '%v'. Changing the node type is not supported.", nodeType, n.NodeType))
-			} else {
-				nodeType = n.NodeType
+			if nodeType != n.GetNodeType() {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the exchange node %v.", nodeType, n.GetNodeType(), nId))
 			}
 			break
 		}
