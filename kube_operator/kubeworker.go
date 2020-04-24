@@ -118,8 +118,8 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 
 		kdc, ok := cmd.Deployment.(*persistence.KubeDeploymentConfig)
 		if !ok {
-			glog.Warningf(kwlog("ignoring non-Kube maintenance command: %v, cmd"))
-		} else if err := w.operatorStatus(kdc, "DEPLOYED"); err != nil {
+			glog.Warningf(kwlog("ignoring non-Kube maintenence command: %v, cmd"))
+		} else if err := w.operatorStatus(kdc, "Running", cmd.AgreementId); err != nil {
 			glog.Errorf(kwlog(fmt.Sprintf("%v", err)))
 			w.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementProtocol, cmd.AgreementId, kdc)
 		}
@@ -164,15 +164,24 @@ func (w *KubeWorker) uninstallKubeOperator(kd *persistence.KubeDeploymentConfig,
 	return nil
 }
 
-func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, state string) error {
-	glog.V(3).Infof(kwlog(fmt.Sprintf("begin listing operator status")))
+func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intendedState string, agId string) error {
+	glog.V(5).Infof(kwlog(fmt.Sprintf("begin listing operator status %v", kd)))
 	client, err := NewKubeClient()
 	if err != nil {
 		return err
 	}
-	_, err = client.Status(kd.OperatorYamlArchive)
+	opStatus, err := client.Status(kd.OperatorYamlArchive)
 	if err != nil {
 		return err
+	}
+	retErrorStr := ""
+	for _, container := range opStatus {
+		if container.State != intendedState {
+			retErrorStr = fmt.Sprintf("%s %s", retErrorStr, fmt.Sprintf("Container %s has status %s.", container.Name, container.State))
+		}
+	}
+	if retErrorStr != "" {
+		return fmt.Errorf(retErrorStr)
 	}
 	return nil
 }

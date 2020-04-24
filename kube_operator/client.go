@@ -57,9 +57,16 @@ type KubeClient struct {
 	Client *kubernetes.Clientset
 }
 
-type OperatorStatus struct {
-	Name   string
-	Status interface{}
+type KubeStatus struct {
+	ContainerStatuses []ContainerStatus
+	OperatorStatus    interface{}
+}
+
+type ContainerStatus struct {
+	Name        string
+	Image       string
+	CreatedTime int64
+	State       string
 }
 
 func NewKubeConfig() (*rest.Config, error) {
@@ -110,6 +117,7 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 	if err != nil {
 		return err
 	}
+
 	// Convert the yaml files to kubernetes objects
 	k8sObjs, customResources, err := getK8sObjectFromYaml(yamls, nil)
 	if err != nil {
@@ -248,6 +256,9 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 		kindToGVRMap[newCRD.Spec.Names.Kind] = schema.GroupVersionResource{Resource: newCRD.Spec.Names.Plural, Group: newCRD.Spec.Group, Version: newCRD.Spec.Version}
 	}
 
+	// Delete the agreement config map
+	c.Client.CoreV1().ConfigMaps(ANAX_NAMESPACE).Delete(fmt.Sprintf("%s-%s", HZN_ENV_VARS, agId), &metav1.DeleteOptions{})
+
 	// Delete the custom resources in the cluster
 	for _, crStr := range customResources {
 		cr := make(map[string]interface{})
@@ -321,8 +332,7 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("Completed removal of all operator objects from the cluster.")))
 	return nil
 }
-
-func (c KubeClient) Status(tar string) (*OperatorStatus, error) {
+func (c KubeClient) OperatorStatus(tar string) (interface{}, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -363,13 +373,57 @@ func (c KubeClient) Status(tar string) (*OperatorStatus, error) {
 		return nil, err
 	}
 
-	retStatus := OperatorStatus{}
-	retStatus.Name = name
 	if status, ok := res.Object["status"]; ok {
-		retStatus.Status = status
+		return status, nil
+	} else {
+		return nil, fmt.Errorf("Error status not found")
 	}
 
-	return &retStatus, nil
+}
+func (c KubeClient) Status(tar string) ([]ContainerStatus, error) {
+	// Read the yaml files from the commpressed tar files
+	yamls, err := getYamlFromTarGz(tar)
+	if err != nil {
+		return nil, err
+	}
+	// Convert the yaml files to kubernetes objects
+	k8sObjs, _, err := getK8sObjectFromYaml(yamls, nil)
+	if err != nil {
+		return nil, err
+	}
+	// Sort the k8s api objects by kind
+	apiObjMap := sortAPIObjects(k8sObjs)
+
+	deploymentUnstruct := apiObjMap[K8S_DEPLOYMENT_TYPE]
+	deploymentObj := deploymentUnstruct[0].Object.(*appsv1.Deployment)
+	opName := deploymentObj.Spec.Template.ObjectMeta.Labels["name"]
+
+	podList, err := c.Client.CoreV1().Pods(ANAX_NAMESPACE).List(metav1.ListOptions{LabelSelector: fmt.Sprintf("%s=%s", "name", opName)})
+	if err != nil {
+		return nil, err
+	}
+	if len(podList.Items) < 1 {
+		return nil, nil
+	}
+	pod := podList.Items[0]
+	containerStatuses := []ContainerStatus{}
+
+	for _, status := range pod.Status.ContainerStatuses {
+		newStatus := ContainerStatus{Name: pod.ObjectMeta.Name}
+		newStatus.Image = status.Image
+		newStatus.Name = status.Name
+		if status.State.Running != nil {
+			newStatus.State = "Running"
+			newStatus.CreatedTime = status.State.Running.StartedAt.Time.Unix()
+		} else if status.State.Terminated != nil {
+			newStatus.State = "Terminated"
+			newStatus.CreatedTime = status.State.Terminated.StartedAt.Time.Unix()
+		} else {
+			newStatus.State = "Waiting"
+		}
+		containerStatuses = append(containerStatuses, newStatus)
+	}
+	return containerStatuses, nil
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map
