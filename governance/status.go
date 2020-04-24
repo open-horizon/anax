@@ -76,8 +76,19 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 		return
 	}
 
-	glog.Info("started the status report to the exchange.")
+	// TODO: not reporting the cluster node status for now. will be added later.
+	if w.deviceType == persistence.DEVICE_TYPE_CLUSTER {
+		return
+	}
 
+	// for 'device' node type, it has to have DockerEndpoint set
+	if w.Config.Edge.DockerEndpoint == "" && w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+		glog.Infof("Skip reporting the status to the exchange because DockerEndpoint is not set in the configuration.")
+		return
+	}
+
+	glog.Info("started the status report to the exchange.")
+	
 	w.deviceStatus = nil
 	var device_status DeviceStatus
 

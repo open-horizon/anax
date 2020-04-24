@@ -467,6 +467,12 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 
 func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, am *resource.AuthenticationManager) *ContainerWorker {
 
+	// do not start this container if the the node is registered and the type is cluster
+	dev, _ := persistence.FindExchangeDevice(db)
+	if dev != nil && dev.GetNodeType() == persistence.DEVICE_TYPE_CLUSTER {
+		return nil
+	}
+
 	// If config.Edge.ServiceStorage is not empty, then we assume that the local file system directory will
 	// be used for the storage of the service container.
 	// If config.Edge.ServiceStorage is empty, docker volume will be used instead for the storage of the service container.
@@ -481,39 +487,49 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		}
 	}
 
-	if ipt, err := iptables.New(); err != nil {
+	var err error
+	var ipt *iptables.IPTables
+	var client *docker.Client
+
+	ipt, err = iptables.New()
+	if err != nil {
 		glog.Errorf("Failed to instantiate iptables Client: %v", err)
 		eventlog.LogNodeEvent(db, persistence.SEVERITY_FATAL,
 			persistence.NewMessageMeta(EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT, err.Error()),
 			persistence.EC_ERROR_CREATE_IPTABLE_CLIENT,
 			"", "", "", "")
 		panic(fmt.Sprintf("Terminating, unable to instantiate iptables Client. %v", err))
-	} else if client, err := docker.NewClient(config.Edge.DockerEndpoint); err != nil {
-		glog.Errorf("Failed to instantiate docker Client: %v", err)
-		eventlog.LogNodeEvent(db, persistence.SEVERITY_FATAL,
-			persistence.NewMessageMeta(EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT, err.Error()),
-			persistence.EC_ERROR_CREATE_DOCKER_CLIENT,
-			"", "", "", "")
-		panic(fmt.Sprintf("Terminating, unable to instantiate docker Client. %v", err))
-	} else {
-
-		pattern := ""
-		if dev, _ := persistence.FindExchangeDevice(db); dev != nil {
-			pattern = dev.Pattern
-		}
-		worker := &ContainerWorker{
-			BaseWorker: worker.NewBaseWorker(name, config, nil),
-			db:         db,
-			client:     client,
-			iptables:   ipt,
-			authMgr:    am,
-			pattern:    pattern,
-		}
-		worker.SetDeferredDelay(15)
-
-		worker.Start(worker, 0)
-		return worker
 	}
+
+	if config.Edge.DockerEndpoint != "" {
+		client, err = docker.NewClient(config.Edge.DockerEndpoint)
+		if err != nil {
+			glog.Errorf("Failed to instantiate docker Client: %v", err)
+			eventlog.LogNodeEvent(db, persistence.SEVERITY_FATAL,
+				persistence.NewMessageMeta(EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT, err.Error()),
+				persistence.EC_ERROR_CREATE_DOCKER_CLIENT,
+				"", "", "", "")
+			panic(fmt.Sprintf("Terminating, unable to instantiate docker Client. %v", err))
+		}
+	}
+
+	pattern := ""
+	if dev != nil {
+		pattern = dev.Pattern
+	}
+
+	worker := &ContainerWorker{
+		BaseWorker: worker.NewBaseWorker(name, config, nil),
+		db:         db,
+		client:     client,
+		iptables:   ipt,
+		authMgr:    am,
+		pattern:    pattern,
+	}
+	worker.SetDeferredDelay(15)
+
+	worker.Start(worker, 0)
+	return worker
 }
 
 func (w *ContainerWorker) Messages() chan events.Message {
@@ -526,6 +542,11 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	case *events.EdgeRegisteredExchangeMessage:
 		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
 		w.pattern = msg.Pattern()
+
+		// stop the container worker for the cluster device type
+		if msg.DeviceType() == persistence.DEVICE_TYPE_CLUSTER {
+			w.Commands <- worker.NewTerminateCommand("cluster node")
+		}
 
 	case *events.ImageFetchMessage:
 		msg, _ := incoming.(*events.ImageFetchMessage)
@@ -1743,6 +1764,11 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 // function which periodically checks to ensure that all containers are running.
 func (b *ContainerWorker) syncupResources() {
 
+	if b.Config.Edge.DockerEndpoint == "" {
+		glog.V(3).Infof("ContainerWorker: skip syncupResources. Docker client could be be initialized because DockerEndpoint is not set in the configuration.")
+		return
+	}
+
 	// For multiple anax instances case, we do not want to remove containers that
 	// belong to other anax instances. But we need to remove the docker volumes
 	// that were created by current instance and no longer used by itself and other
@@ -2500,6 +2526,10 @@ func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, ag
 // Delete the docker volumes that are created by anax
 func DeleteLeftoverDockerVolumes(db *bolt.DB, config *config.HorizonConfig) error {
 	glog.V(3).Infof("Cleaning up leftover docker volumes created by anax.")
+
+	if config.Edge.DockerEndpoint == "" {
+		return fmt.Errorf("Docker client cannot be initialized. Please make sure DockerEndpoint is set in the configuration file.")
+	}
 
 	// get leftover volume names from local db
 	cvs, err := persistence.FindAllUndeletedContainerVolumes(db)

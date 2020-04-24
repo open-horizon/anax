@@ -22,16 +22,26 @@ type ImageFetchWorker struct {
 
 func NewImageFetchWorker(name string, config *config.HorizonConfig, db *bolt.DB) *ImageFetchWorker {
 
-	cl, err := docker.NewClient(config.Edge.DockerEndpoint)
-	if err != nil {
-		glog.Errorf("Failed to instantiate docker Client: %v", err)
-		panic("Unable to instantiate docker Client")
+	// do not start this container if the the node is registered and the type is cluster
+	dev, _ := persistence.FindExchangeDevice(db)
+	if dev != nil && dev.GetNodeType() == persistence.DEVICE_TYPE_CLUSTER {
+		return nil
+	}
+
+	var client *docker.Client
+	var err error
+	if config.Edge.DockerEndpoint != "" {
+		client, err = docker.NewClient(config.Edge.DockerEndpoint)
+		if err != nil {
+			glog.Errorf("Failed to instantiate docker Client: %v", err)
+			panic("Unable to instantiate docker Client")
+		}
 	}
 
 	worker := &ImageFetchWorker{
 		BaseWorker: worker.NewBaseWorker(name, config, nil),
 		db:         db,
-		client:     cl,
+		client:     client,
 	}
 
 	worker.Start(worker, 0)
@@ -45,6 +55,13 @@ func (w *ImageFetchWorker) Messages() chan events.Message {
 func (w *ImageFetchWorker) NewEvent(incoming events.Message) {
 
 	switch incoming.(type) {
+	case *events.EdgeRegisteredExchangeMessage:
+		msg, _ := incoming.(*events.EdgeRegisteredExchangeMessage)
+
+		// stop the container worker for the cluster device type
+		if msg.DeviceType() == persistence.DEVICE_TYPE_CLUSTER {
+			w.Commands <- worker.NewTerminateCommand("cluster node")
+		}
 	case *events.AgreementReachedMessage:
 		msg, _ := incoming.(*events.AgreementReachedMessage)
 
@@ -176,6 +193,10 @@ func processDeployment(cfg *config.HorizonConfig, containerConfig events.Contain
 }
 
 func processFetch(cfg *config.HorizonConfig, client *docker.Client, db *bolt.DB, deploymentDesc *containermessage.DeploymentDescription, imageDockerAuths []events.ImageDockerAuth) error {
+	if client == nil {
+		return fmt.Errorf("Docker client is nil. Please make sure DockerEndpoint is set in the configuration file.")
+	}
+
 	dockerAuthConfigurations := make(map[string][]docker.AuthConfiguration, 0)
 
 	var err error
