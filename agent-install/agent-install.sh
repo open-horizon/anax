@@ -1808,7 +1808,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;

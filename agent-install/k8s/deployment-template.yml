@@ -25,7 +25,7 @@ spec:
       - name: agent-cert-volume
         secret:
           secretName: openhorizon-agent-secrets
-      - name: agent-pv-storage
+      - name: agent-pvc-storage
         persistentVolumeClaim:
           claimName: openhorizon-agent-pvc
       containers:
@@ -38,7 +38,11 @@ spec:
         - mountPath: /etc/default/cert
           name: agent-cert-volume
         - mountPath: /var/horizon
-          name: agent-pv-storage
+          name: agent-pvc-storage
+          subPath: horizon
+        - mountPath: /etc/horizon/policy.d
+          name: agent-pvc-storage
+          subPath: policy
         ports:
         - containerPort: 8510
         securityContext:
