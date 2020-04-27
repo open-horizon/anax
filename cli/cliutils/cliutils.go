@@ -170,6 +170,8 @@ func MarshalIndent(v interface{}, errMsg string) string {
 	return string(jsonBytes)
 }
 
+//todo: this function should be removed because it was for WIoTP keys that shouldn't have the org prepended.
+//		The name is also very misleading because it doesn't apply to Cloud IAM api keys.
 // SetWhetherUsingApiKey is a hack because some api keys are global and shouldn't be prepended by the org
 // an api key or device id/token.
 func SetWhetherUsingApiKey(creds string) {
@@ -245,7 +247,6 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	}
 
 	// Get the digest value that docker calculated when pushing the image
-	//fmt.Printf("DEBUG: docker push output is: %s\n", buf.String())
 	reDigest := regexp.MustCompile(`\s+digest:\s+(\S+)\s+size:`)
 	var matches []string
 	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
@@ -303,7 +304,7 @@ func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	// org is the org of the resource being accessed, so if they want to use creds from a different org, the prepend that org to creds before calling this
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" { // leaving this code here, because we might need it for ibm cloud api keys
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" { //todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		return creds
 	}
 	id, _ := SplitIdToken(creds) // only look for the / in the id, because the token is more likely to have special chars
@@ -876,7 +877,7 @@ func GetExchangeUrl() string {
 	}
 
 	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {  //todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
 	}
@@ -904,7 +905,7 @@ func GetExchangeUrlLocation() string {
 	}
 
 	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {  // todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
 	}
@@ -947,7 +948,7 @@ func GetMMSUrl() string {
 	}
 
 	mmsUrl = strings.TrimSuffix(mmsUrl, "/") // anax puts a trailing slash on it
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {  // todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		re := regexp.MustCompile(`edgenode$`)
 		mmsUrl = re.ReplaceAllLiteralString(mmsUrl, "edge")
 	}
@@ -956,11 +957,33 @@ func GetMMSUrl() string {
 	return mmsUrl
 }
 
+// GetSdoSvcUrl returns the url of the Horizon mgmt hub SDO owner service from env var or anax overwrite file
+func GetSdoSvcUrl() string {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	sdoUrl := os.Getenv("HZN_SDO_SVC_URL")
+	if sdoUrl == "" {
+		Verbose(msgPrinter.Sprintf("HZN_SDO_SVC_URL is not set, get it from %s.", ANAX_OVERWRITE_FILE))
+		var err error
+		if sdoUrl, err = GetEnvVarFromFile(ANAX_OVERWRITE_FILE, "HZN_SDO_SVC_URL"); err != nil {
+			Verbose(i18n.GetMessagePrinter().Sprintf("Error getting HZN_SDO_SVC_URL from %v: %v", ANAX_OVERWRITE_FILE, err))
+		} else if sdoUrl == "" {
+			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the HZN_SDO_SVC_URL value from the environment, %s, or one of the hzn.json files", ANAX_OVERWRITE_FILE))
+		}
+	}
+
+	Verbose(msgPrinter.Sprintf("The SDO service url: %v", sdoUrl))
+	return sdoUrl
+}
+
 func printHorizonServiceRestError(horizonService string, apiMethod string, err error) {
 	serviceEnvVarName := "HZN_EXCHANGE_URL"
 	article := "an"
 	if horizonService == "Model Management Service" {
 		serviceEnvVarName = "HZN_FSS_CSSURL"
+		article = "a"
+	} else if horizonService == "SDO Owner Service" {
+		serviceEnvVarName = "HZN_SDO_SVC_URL"
 		article = "a"
 	}
 
@@ -1017,7 +1040,7 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 }
 
 // invoke rest api call with retry
-func invokeRestApi(httpClient *http.Client, method string, url string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
+func InvokeRestApi(httpClient *http.Client, method string, url string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
 
 	if err := TrustIcpCert(httpClient); err != nil {
 		Fatal(FILE_IO_ERROR, err.Error())
@@ -1117,7 +1140,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := invokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
+	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -1173,7 +1196,7 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	}
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
-	resp := invokeRestApi(httpClient, method, url, credentials, body, service, apiMsg)
+	resp := InvokeRestApi(httpClient, method, url, credentials, body, service, apiMsg)
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
@@ -1208,7 +1231,7 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
-	resp := invokeRestApi(httpClient, http.MethodDelete, url, credentials, nil, service, apiMsg)
+	resp := InvokeRestApi(httpClient, http.MethodDelete, url, credentials, nil, service, apiMsg)
 	defer resp.Body.Close()
 
 	// delete never returns a body
