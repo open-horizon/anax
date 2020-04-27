@@ -1,5 +1,9 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
 
+LABEL vendor="IBM"
+LABEL summary="The agent for edge clusters."
+LABEL description="The agent in a container that is used solely for the purpose of running the agent in a kubernetes edge cluster."
+
 # yum is not installed, use microdnf instead
 RUN microdnf update -y --nodocs && microdnf clean all
 
@@ -10,6 +14,10 @@ RUN microdnf install --nodocs -y shadow-utils \
     && wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
     && chmod +x ./jq \
     && mv jq /usr/bin
+
+# add license file
+RUN mkdir -p /licenses
+COPY LICENSE.txt /licenses
 
 RUN mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon \
     && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
