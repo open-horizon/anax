@@ -36,6 +36,8 @@ ANAX_IMAGE_STG = $(ANAX_IMAGE_BASE):testing$(BRANCH_NAME)
 ANAX_IMAGE_PROD = $(ANAX_IMAGE_BASE):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 ANAX_IMAGE_LATEST = $(ANAX_IMAGE_BASE):latest$(BRANCH_NAME)
+ANAX_IMAGE_LABELS ?= --label "name=$(arch)_anax" --label "version=$(ANAX_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
+
 # By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
@@ -49,6 +51,7 @@ AGBOT_IMAGE_STG = $(AGBOT_IMAGE_BASE):testing$(BRANCH_NAME)
 AGBOT_IMAGE_PROD = $(AGBOT_IMAGE_BASE):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 AGBOT_IMAGE_LATEST = $(AGBOT_IMAGE_BASE):latest$(BRANCH_NAME)
+AGBOT_IMAGE_LABELS ?= --label "name=$(arch)_agbot" --label "version=$(AGBOT_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
 # anax container running in kubernetes
 ANAX_K8S_CONTAINER_DIR := anax-in-k8s
@@ -58,6 +61,7 @@ ANAX_K8S_IMAGE = $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 ANAX_K8S_IMAGE_STG = $(ANAX_K8S_IMAGE_BASE):testing$(BRANCH_NAME)
 ANAX_K8S_IMAGE_PROD = $(ANAX_K8S_IMAGE_BASE):stable$(BRANCH_NAME)
 ANAX_K8S_IMAGE_LATEST = $(ANAX_K8S_IMAGE_BASE):latest$(BRANCH_NAME)
+ANAX_K8S_IMAGE_LABELS ?= --label "name=$(arch)_anax_k8s" --label "version=$(ANAX_K8S_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
 # Variables that control packaging the file sync service containers
 DOCKER_REGISTRY ?= "dockerhub"
@@ -77,6 +81,7 @@ CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing$(BRANCH_NAME)
 CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest$(BRANCH_NAME)
+CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$(CSS_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
 # for redhat ubi
 CSS_UBI_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service_ubi
@@ -98,6 +103,8 @@ ESS_IMAGE_STG = $(ESS_IMAGE_NAME):testing$(BRANCH_NAME)
 ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest$(BRANCH_NAME)
+ESS_IMAGE_LABELS ?= --label "name=$(arch)_edge-sync-service" --label "version=$(ESS_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
+
 
 # for redhat ubi
 ESS_UBI_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service_ubi
@@ -106,6 +113,9 @@ ESS_UBI_IMAGE_STG = $(ESS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
 ESS_UBI_IMAGE_PROD = $(ESS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 ESS_UBI_IMAGE_LATEST = $(ESS_UBI_IMAGE_NAME):latest$(BRANCH_NAME)
+
+# license file name
+LICENSE_FILE = LICENSE.txt
 
 # supported locales
 SUPPORTED_LOCALES ?= de  es  fr  it  ja  ko  pt_BR  zh_CN  zh_TW
@@ -276,7 +286,7 @@ $(MAC_PKG): temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
 	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
 	cp -Rapv cli/samples pkg/mac/horizon-cli/
 	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
-	cp LICENSE.txt pkg/mac/horizon-cli/share/horizon
+	cp $(LICENSE_FILE) pkg/mac/horizon-cli/share/horizon
 	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
 	for loc in $(SUPPORTED_LOCALES) ; do \
 		mkdir -p pkg/mac/horizon-cli/share/man/$$loc/man1 && \
@@ -320,7 +330,8 @@ anax-image:
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
 	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_IMAGE) -f Dockerfile.ubi . && \
+	  cp -f $(LICENSE_FILE) $(ANAX_CONTAINER_DIR); \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_LABELS) -t $(ANAX_IMAGE) -f Dockerfile.ubi . && \
 	  docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
@@ -331,7 +342,8 @@ agbot-image:
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
 	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(AGBOT_IMAGE) -f Dockerfile_agbot.ubi . && \
+	  cp -f $(LICENSE_FILE) $(ANAX_CONTAINER_DIR); \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(AGBOT_IMAGE_LABELS) -t $(AGBOT_IMAGE) -f Dockerfile_agbot.ubi . && \
 	  docker tag $(AGBOT_IMAGE) $(AGBOT_IMAGE_STG); \
 	else echo "Building the agbot docker image is not supported on $(arch)"; fi
 
@@ -399,8 +411,9 @@ agbot-package: agbot-image
 anax-k8s-image: anax-k8s-clean
 	cp $(EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
+	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
-	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi . && \
+	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi . && \
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
 anax-k8s-package: anax-k8s-image
@@ -418,7 +431,8 @@ css-docker-image: css-clean
 	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile . && \
 	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG);
 	@echo "Producing CSS docker image $(CSS_UBI_IMAGE)"
-	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(CSS_UBI_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+	cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR)
+	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_UBI_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
 	docker tag $(CSS_UBI_IMAGE) $(CSS_UBI_IMAGE_STG); \
 
 promote-css:
@@ -440,7 +454,8 @@ ess-docker-image: ess-clean
 	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile . && \
 	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG);
 	@echo "Producing ESS docker image $(ESS_UBI_IMAGE)"
-	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ESS_UBI_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+	cp -f $(LICENSE_FILE) $(ESS_CONTAINER_DIR)
+	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_LABELS) -t $(ESS_UBI_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
 	docker tag $(ESS_UBI_IMAGE) $(ESS_UBI_IMAGE_STG); \
 
 ess-promote:
@@ -504,30 +519,46 @@ ifneq ($(TMPGOPATH),$(GOPATH))
 endif
 	rm -rf ./contracts
 
-mostlyclean: css-clean ess-clean
+mostlyclean: anax-container-clean agbot-container-clean css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
-	-docker rmi $(ANAX_IMAGE) 2> /dev/null || :
-	-docker rmi $(AGBOT_IMAGE) 2> /dev/null || :
 
 i18n-clean:
 	rm -f $(I18N_OUT_GOTEXT_FILES) cli/$(I18N_OUT_GOTEXT_FILES) $(I18N_CATALOG_FILE) cli/$(I18N_CATALOG_FILE)
 
 css-clean:
+	rm -f $(CSS_CONTAINER_DIR)/$(LICENSE_FILE)
 	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
 	-docker rmi $(CSS_IMAGE_STG) 2> /dev/null || :
 	-docker rmi $(CSS_UBI_IMAGE) 2> /dev/null || :
 	-docker rmi $(CSS_UBI_IMAGE_STG) 2> /dev/null || :
 
 ess-clean:
+	rm -f $(ESS_CONTAINER_DIR)/$(LICENSE_FILE)
 	-docker rmi $(ESS_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_IMAGE_STG) 2> /dev/null || :
 	-docker rmi $(ESS_UBI_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_UBI_IMAGE_STG) 2> /dev/null || :
 
+anax-container-clean:
+	rm -f $(ANAX_CONTAINER_DIR)/hzn
+	rm -f $(ANAX_CONTAINER_DIR)/anax
+	rm -f $(ANAX_CONTAINER_DIR)/$(LICENSE_FILE)
+	-docker rmi $(ANAX_IMAGE) 2> /dev/null || :
+	-docker rmi $(ANAX_IMAGE_STG) 2> /dev/null || :
+
+agbot-container-clean:
+	rm -f $(ANAX_CONTAINER_DIR)/hzn
+	rm -f $(ANAX_CONTAINER_DIR)/anax
+	rm -f $(ANAX_CONTAINER_DIR)/$(LICENSE_FILE)
+	-docker rmi $(AGBOT_IMAGE) 2> /dev/null || :
+	-docker rmi $(AGBOT_IMAGE_STG) 2> /dev/null || :
+
 anax-k8s-clean:
 	rm -f $(ANAX_K8S_CONTAINER_DIR)/hzn
 	rm -f $(ANAX_K8S_CONTAINER_DIR)/anax
+	rm -f $(ANAX_K8S_CONTAINER_DIR)/$(LICENSE_FILE)
+	-docker rmi $(ANAX_K8S_IMAGE) 2> /dev/null || :
 	-docker rmi $(ANAX_K8S_IMAGE_STG) 2> /dev/null || :
 
 gofolders:

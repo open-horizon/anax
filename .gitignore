@@ -17,7 +17,9 @@ anax/doc/*.png
 /test/docker/fs/hzn/helloms/server
 minikube-setup-by-test
 /css/cloud-sync-service
+/css/LICENSE.txt
 /ess/edge-sync-service
+/ess/LICENSE.txt
 /locales/*/out.gotext.json
 /cli/locales/*/out.gotext.json
 /i18n_messages/catalog.go
@@ -25,5 +27,7 @@ minikube-setup-by-test
 go.sum
 /anax-in-k8s/hzn
 /anax-in-k8s/anax
+/anax-in-k8s/LICENSE.txt
 /anax-in-container/hzn
 /anax-in-container/anax
+/anax-in-container/LICENSE.txt
