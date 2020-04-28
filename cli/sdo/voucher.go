@@ -28,9 +28,9 @@ import (
 
 // Structs for parsing the voucher
 type OhStruct struct {
-	R []interface{} `json:"r"`
-	Guid []byte `json:"g"` // making it type []byte will automatically base64 decode the json value
-	DeviceType string `json:"d"`
+	R          []interface{} `json:"r"`
+	Guid       []byte        `json:"g"` // making it type []byte will automatically base64 decode the json value
+	DeviceType string        `json:"d"`
 }
 type Voucher struct {
 	Oh OhStruct `json:"oh"`
@@ -38,14 +38,14 @@ type Voucher struct {
 
 // Structs for the inspect output
 type InspectDevice struct {
-	Uuid string `json:"uuid"`
+	Uuid       string `json:"uuid"`
 	DeviceType string `json:"deviceType"`
 }
 type InspectVoucher struct {
 	RendezvousUrls []string `json:"rendezvousUrls"`
 }
 type InspectOutput struct {
-	Device InspectDevice `json:"device"`
+	Device  InspectDevice  `json:"device"`
 	Voucher InspectVoucher `json:"voucher"`
 }
 
@@ -84,7 +84,7 @@ func parseVoucherBytes(voucherBytes []byte, outStruct *InspectOutput) error {
 				switch t2 := thing2.(type) {
 				case map[string]interface{}:
 					url := getMapValueOrEmptyStr(t2, "pr") + "://" + getMapValueOrEmptyStr(t2, "dn")
-					port := getMapValueOrEmptyStr(t2, "po")  // Note: there is also a "pow" key that seems to have the same value, not sure the diff
+					port := getMapValueOrEmptyStr(t2, "po") // Note: there is also a "pow" key that seems to have the same value, not sure the diff
 					if port != "" {
 						url += ":" + port
 					}
@@ -116,9 +116,8 @@ func getMapValueOrEmptyStr(myMap map[string]interface{}, key string) string {
 	}
 }
 
-
 type ImportResponse struct {
-	NodeId string `json:"deviceUuid"`
+	NodeId    string `json:"deviceUuid"`
 	NodeToken string `json:"nodeToken"`
 }
 
@@ -129,7 +128,7 @@ func VoucherImport(org string, userCreds string, voucherFile *os.File, example s
 	cliutils.Verbose(msgPrinter.Sprintf("Importing voucher file name: %s", voucherFile.Name()))
 
 	// Check input
-	sdoUrl := cliutils.GetSdoSvcUrl()	// this looks in the environment or /etc/default/horizon, but hzn.go already sourced the hzn.json files
+	sdoUrl := cliutils.GetSdoSvcUrl() // this looks in the environment or /etc/default/horizon, but hzn.go already sourced the hzn.json files
 	if example != "" && policyFilePath != "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("both -e and --policy can not be specified"))
 	}
@@ -161,9 +160,9 @@ func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, vouch
 	msgPrinter := i18n.GetMessagePrinter()
 	tarReader := tar.NewReader(voucherFileReader)
 	for {
-		header, err := tarReader.Next()		// get the next file in the tar, and turn tarReader into a reader for that file
+		header, err := tarReader.Next() // get the next file in the tar, and turn tarReader into a reader for that file
 		if err == io.EOF {
-			break	// this means we hit the end of the tar file
+			break // this means we hit the end of the tar file
 		} else if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading the bytes from %s: %v", voucherFileName, err))
 		}

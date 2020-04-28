@@ -91,7 +91,7 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 
 	// get docker containers
 	containers := make([]docker.APIContainers, 0)
-	if w.deviceType == persistence.DEVICE_TYPE_DEVICE  {
+	if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
 		if client, err := docker.NewClient(w.Config.Edge.DockerEndpoint); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("Failed to instantiate docker Client: %v", err)))
 		} else {

@@ -370,6 +370,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			glog.Errorf(logString(fmt.Sprintf("unable to demarshal exchange device message %v, error %v", cmd.Msg.ExchangeMessage(), err)))
 		} else if there, err := w.messageInExchange(exchangeMsg.MsgId); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to get messages from the exchange, error %v", err)))
+			w.AddDeferredCommand(cmd)
 			return true
 		} else if !there {
 			glog.V(3).Infof(logString(fmt.Sprintf("ignoring message %v, already deleted from the exchange.", exchangeMsg.MsgId)))

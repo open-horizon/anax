@@ -876,8 +876,8 @@ func GetExchangeUrl() string {
 		}
 	}
 
-	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {  //todo: remove because this was for WIoTP keys that shouldn't have the org prepended
+	exchUrl = strings.TrimSuffix(exchUrl, "/")                 // anax puts a trailing slash on it
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" { //todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
 	}
@@ -904,8 +904,8 @@ func GetExchangeUrlLocation() string {
 		}
 	}
 
-	exchUrl = strings.TrimSuffix(exchUrl, "/") // anax puts a trailing slash on it
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {  // todo: remove because this was for WIoTP keys that shouldn't have the org prepended
+	exchUrl = strings.TrimSuffix(exchUrl, "/")                 // anax puts a trailing slash on it
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" { // todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		re := regexp.MustCompile(`edgenode$`)
 		exchUrl = re.ReplaceAllLiteralString(exchUrl, "edge")
 	}
@@ -947,8 +947,8 @@ func GetMMSUrl() string {
 		}
 	}
 
-	mmsUrl = strings.TrimSuffix(mmsUrl, "/") // anax puts a trailing slash on it
-	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" {  // todo: remove because this was for WIoTP keys that shouldn't have the org prepended
+	mmsUrl = strings.TrimSuffix(mmsUrl, "/")                   // anax puts a trailing slash on it
+	if Opts.UsingApiKey || os.Getenv("USING_API_KEY") == "1" { // todo: remove because this was for WIoTP keys that shouldn't have the org prepended
 		re := regexp.MustCompile(`edgenode$`)
 		mmsUrl = re.ReplaceAllLiteralString(mmsUrl, "edge")
 	}
