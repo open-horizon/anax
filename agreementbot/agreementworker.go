@@ -407,7 +407,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		}
 
 		// Do not make proposals for services without a deployment configuration got its node type.
-		t_comp, t_reason := compcheck.CheckTypeCompatibility(nodeType, &compcheck.ServiceDefinition{workload.Org, *workloadDetails}, msgPrinter)
+		t_comp, t_reason := compcheck.CheckTypeCompatibility(nodeType, &compcheck.ServiceDefinition{Org: workload.Org, ServiceDefinition: *workloadDetails}, msgPrinter)
 		if !t_comp {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with node %v for service %v/%v %v. %v", wi.Device.Id, workload.Org, workload.WorkloadURL, workload.Version, t_reason)))
 			return
