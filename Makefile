@@ -175,12 +175,9 @@ ifndef verbose
 .SILENT:
 endif
 
-all: deps all-nodeps
-all-nodeps: gopathlinks gofolders $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
+all: gopathlinks deps $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
 
-deps: gofolders i18n-catalog
-
-noi18n: all-nodeps
+deps: gofolders
 
 $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
@@ -522,6 +519,7 @@ endif
 mostlyclean: anax-container-clean agbot-container-clean css-clean ess-clean
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
+	rm -Rf vendor
 
 i18n-clean:
 	rm -f $(I18N_OUT_GOTEXT_FILES) cli/$(I18N_OUT_GOTEXT_FILES) $(I18N_CATALOG_FILE) cli/$(I18N_CATALOG_FILE)
@@ -570,9 +568,16 @@ endif
 
 i18n-catalog: $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
+	cd $(GOPATH)/src/github.com/open-horizon/anax && \
+		rm -Rf vendor; \
+		go mod vendor; \
+		mv -f go.mod go.mod.save; \
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/update-i18n-messages
+	cd $(GOPATH)/src/github.com/open-horizon/anax && \
+		rm -Rf vendor; \
+		mv -f go.mod.save go.mod; \
 
 i18n-translation: deps i18n-catalog all-nodeps
 	@echo "Copying message files for translation"
