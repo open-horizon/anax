@@ -32,7 +32,7 @@ func (p *NativeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFileP
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	if owned, err := p.Validate(dep); !owned || err != nil {
+	if owned, err := p.Validate(dep, nil); !owned || err != nil {
 		return owned, "", "", err
 	}
 
@@ -79,7 +79,7 @@ func (p *NativeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFileP
 func (p *NativeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, []string, error) {
 
 	var imageList []string
-	if owned, err := p.Validate(dep); !owned || err != nil {
+	if owned, err := p.Validate(dep, nil); !owned || err != nil {
 		return owned, imageList, err
 	}
 
@@ -121,7 +121,12 @@ func (p *NativeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) inte
 	}
 }
 
-func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
+// Return the default cluster config object, which is nil in this case.
+func (p *NativeDeploymentConfigPlugin) DefaultClusterConfig() interface{} {
+	return nil
+}
+
+func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{}) (bool, error) {
 
 	if dc, ok := dep.(map[string]interface{}); !ok {
 		return false, nil
@@ -279,7 +284,7 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 	}
 
 	// Now that we have the service def, we can check if we own the deployment config object.
-	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+	if owned, err := p.Validate(serviceDef.Deployment, nil); !owned || err != nil {
 		return false
 	}
 
@@ -361,7 +366,7 @@ func (p *NativeDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
 	}
 
 	// Now that we have the service def, we can check if we own the deployment config object.
-	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+	if owned, err := p.Validate(serviceDef.Deployment, nil); !owned || err != nil {
 		return false
 	}
 

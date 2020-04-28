@@ -122,10 +122,10 @@ type ServiceFile struct {
 	MatchHardware              map[string]interface{}       `json:"matchHardware,omitempty"`
 	RequiredServices           []exchange.ServiceDependency `json:"requiredServices"`
 	UserInputs                 []exchange.UserInput         `json:"userInput"`
-	Deployment                 interface{}                  `json:"deployment"` // interface{} because pre-signed services can be stringified json
+	Deployment                 interface{}                  `json:"deployment,omitempty"` // interface{} because pre-signed services can be stringified json
 	DeploymentSignature        string                       `json:"deploymentSignature,omitempty"`
-	ClusterDeployment          interface{}                  `json:"clusterDeployment"`
-	ClusterDeploymentSignature string                       `json:"clusterDeploymentSignature"`
+	ClusterDeployment          interface{}                  `json:"clusterDeployment,omitempty"`
+	ClusterDeploymentSignature string                       `json:"clusterDeploymentSignature,omitempty"`
 }
 
 func (sf *ServiceFile) GetOrg() string {

@@ -18,7 +18,7 @@ import (
 	"github.com/open-horizon/anax/cli/exchange"
 	_ "github.com/open-horizon/anax/cli/i18n_messages"
 	"github.com/open-horizon/anax/cli/key"
-	_ "github.com/open-horizon/anax/cli/kube_deployment"
+	"github.com/open-horizon/anax/cli/kube_deployment"
 	"github.com/open-horizon/anax/cli/metering"
 	_ "github.com/open-horizon/anax/cli/native_deployment"
 	"github.com/open-horizon/anax/cli/node"
@@ -475,18 +475,18 @@ Environment Variables:
 	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", msgPrinter.Sprintf("The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.")).Short('o').String()
 	devServiceNewCmdName := devServiceNewCmd.Flag("specRef", msgPrinter.Sprintf("The name of the service. If this flag and the -i flag are omitted, only the skeletal horizon metadata files will be generated.")).Short('s').String()
 	devServiceNewCmdVer := devServiceNewCmd.Flag("ver", msgPrinter.Sprintf("The version of the service. If this flag is omitted, '0.0.1' is used.")).Short('V').String()
-	devServiceNewCmdImage := devServiceNewCmd.Flag("image", msgPrinter.Sprintf("The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified.")).Short('i').Strings()
+	devServiceNewCmdImage := devServiceNewCmd.Flag("image", msgPrinter.Sprintf("The docker container image base name without the version tag for the service. This command will add arch and version to the base name to form the final image name. The format is 'basename_arch:serviceversion'. This flag can be repeated to specify multiple images when '--noImageGen' flag is specified. This flag is ignored for the '--dconfig %v' deployment configuration.", kube_deployment.KUBE_DEPLOYMENT_CONFIG_TYPE)).Short('i').Strings()
 	devServiceNewCmdNoImageGen := devServiceNewCmd.Flag("noImageGen", msgPrinter.Sprintf("Indicates that the image is built somewhere else. No image sample code will be created by this command. If this flag is not specified, files for generating a simple service image will be created under current directory.")).Bool()
 	devServiceNewCmdNoPattern := devServiceNewCmd.Flag("noPattern", msgPrinter.Sprintf("Indicates no pattern definition file will be created.")).Bool()
 	devServiceNewCmdNoPolicy := devServiceNewCmd.Flag("noPolicy", msgPrinter.Sprintf("Indicate no policy file will be created.")).Bool()
-	devServiceNewCmdCfg := devServiceNewCmd.Flag("dconfig", msgPrinter.Sprintf("Indicates the type of deployment that will be used, e.g. native (the default), or helm.")).Short('c').Default("native").String()
-	devServiceStartTestCmd := devServiceCmd.Command("start", msgPrinter.Sprintf("Run a service in a mocked Horizon Agent environment."))
+	devServiceNewCmdCfg := devServiceNewCmd.Flag("dconfig", msgPrinter.Sprintf("Indicates the type of deployment configuration that will be used, native (the default), or %v. This flag can be specified more than once to create a service with more than 1 kind of deployment configuration.", kube_deployment.KUBE_DEPLOYMENT_CONFIG_TYPE)).Short('c').Default("native").Strings()
+	devServiceStartTestCmd := devServiceCmd.Command("start", msgPrinter.Sprintf("Run a service in a mocked Horizon Agent environment. This command is not supported for services using the %v deployment configuration.", kube_deployment.KUBE_DEPLOYMENT_CONFIG_TYPE))
 	devServiceUserInputFile := devServiceStartTestCmd.Flag("userInputFile", msgPrinter.Sprintf("File containing user input values for running a test. If omitted, the userinput file for the project will be used.")).Short('f').String()
 	devServiceConfigFile := devServiceStartTestCmd.Flag("configFile", msgPrinter.Sprintf("File to be made available through the sync service APIs. This flag can be repeated to populate multiple files.")).Short('m').Strings()
 	devServiceConfigType := devServiceStartTestCmd.Flag("type", msgPrinter.Sprintf("The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.")).Short('t').String()
 	devServiceNoFSS := devServiceStartTestCmd.Flag("noFSS", msgPrinter.Sprintf("Do not bring up file sync service (FSS) containers. They are brought up by default.")).Short('S').Bool()
 	devServiceStartCmdUserPw := devServiceStartTestCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
-	devServiceStopTestCmd := devServiceCmd.Command("stop", msgPrinter.Sprintf("Stop a service that is running in a mocked Horizon Agent environment."))
+	devServiceStopTestCmd := devServiceCmd.Command("stop", msgPrinter.Sprintf("Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the %v deployment configuration.", kube_deployment.KUBE_DEPLOYMENT_CONFIG_TYPE))
 	devServiceValidateCmd := devServiceCmd.Command("verify", msgPrinter.Sprintf("Validate the project for completeness and schema compliance."))
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", msgPrinter.Sprintf("File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.")).Short('f').String()
 	devServiceValidateCmdUserPw := devServiceValidateCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()

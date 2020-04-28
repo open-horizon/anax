@@ -5,6 +5,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"path"
@@ -34,7 +35,7 @@ func GetServiceDefinition(directory string, name string) (*common.ServiceFile, e
 
 // Sort of like a constructor, it creates a service definition config object and writes it to the project
 // in the file system.
-func CreateServiceDefinition(directory string, specRef string, imageInfo map[string]string, noImageGen bool, deploymentType string) error {
+func CreateServiceDefinition(directory string, specRef string, imageInfo map[string]string, noImageGen bool, deploymentType []string) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -49,7 +50,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	res.Arch = "$ARCH"
 	res.Description = ""
 	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
-	if noImageGen || specRef == "" {
+	if noImageGen || specRef == "" || !cutil.SliceContains(deploymentType, "native") {
 		res.UserInputs = []exchange.UserInput{
 			exchange.UserInput{
 				Name:         "",
@@ -70,17 +71,19 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	}
 	res.RequiredServices = []exchange.ServiceDependency{}
 
-	// Use the deployment plugin registry to obtain the default deployment config map.
-	if plugin_registry.DeploymentConfigPlugins.HasPlugin(deploymentType) {
-		if deploymentType == "native" {
-			res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig(imageInfo)
+	// Use the deployment plugin registry to obtain the default deployment config objects.
+	for _, dc := range deploymentType {
+		if plugin_registry.DeploymentConfigPlugins.HasPlugin(dc) {
+			if dep := plugin_registry.DeploymentConfigPlugins.Get(dc).DefaultConfig(imageInfo); dep != nil {
+				res.Deployment = dep
+			}
+			if cdep := plugin_registry.DeploymentConfigPlugins.Get(dc).DefaultClusterConfig(); cdep != nil {
+				res.ClusterDeployment = cdep
+			}
 		} else {
-			res.Deployment = plugin_registry.DeploymentConfigPlugins.Get(deploymentType).DefaultConfig(nil)
+			return errors.New(msgPrinter.Sprintf("unknown deployment type: %v", dc))
 		}
-	} else {
-		return errors.New(msgPrinter.Sprintf("unknown deployment type: %v", deploymentType))
 	}
-
 	res.DeploymentSignature = ""
 
 	// Convert the object to JSON and write it into the project.
@@ -112,7 +115,7 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 	} else if sDef.Org == "" {
 		return errors.New(msgPrinter.Sprintf("%v: org must be set.", filePath))
 	} else {
-		if err := plugin_registry.DeploymentConfigPlugins.ValidatedByOne(sDef.Deployment); err != nil {
+		if err := plugin_registry.DeploymentConfigPlugins.ValidatedByOne(sDef.Deployment, sDef.ClusterDeployment); err != nil {
 			return errors.New(msgPrinter.Sprintf("%v: deployment configuration, %v", filePath, err))
 		}
 		for ix, ui := range sDef.UserInputs {

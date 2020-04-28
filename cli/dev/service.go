@@ -20,7 +20,7 @@ const SERVICE_VERIFY_COMMAND = "verify"
 const SERVICE_NEW_DEFAULT_VERSION = "0.0.1"
 
 // Create skeletal horizon metadata files to establish a new service project.
-func ServiceNew(homeDirectory string, org string, specRef string, version string, images []string, noImageGen bool, dconfig string, noPattern bool, noPolicy bool) {
+func ServiceNew(homeDirectory string, org string, specRef string, version string, images []string, noImageGen bool, dconfig []string, noPattern bool, noPolicy bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -97,10 +97,12 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		}
-		cliutils.Verbose(msgPrinter.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_ALL_ARCHES_FILE))
-		err = CreatePatternDefinitionAllArches(dir)
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
+		if cutil.SliceContains(dconfig, "native") {
+			cliutils.Verbose(msgPrinter.Sprintf("Creating pattern definition file: %v/%v", dir, PATTERN_DEFINITION_ALL_ARCHES_FILE))
+			err = CreatePatternDefinitionAllArches(dir)
+			if err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
+			}
 		}
 	}
 
@@ -121,7 +123,7 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 	}
 
 	// create the image related files under current direcotry.
-	if !noImageGen && specRef != "" {
+	if !noImageGen && specRef != "" && cutil.SliceContains(dconfig, "native") {
 		if current_dir, err := os.Getwd(); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 		} else {
@@ -140,7 +142,7 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 }
 
 // verify the input parameter for the 'hzn service new' command.
-func verifyNewServiceInputs(homeDirectory string, org string, specRef string, version string, images []string, noImageGen bool, dconfig string, noPattern bool) (string, error) {
+func verifyNewServiceInputs(homeDirectory string, org string, specRef string, version string, images []string, noImageGen bool, dconfig []string, noPattern bool) (string, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -173,14 +175,16 @@ func verifyNewServiceInputs(homeDirectory string, org string, specRef string, ve
 			}
 		}
 	} else {
-		if specRef != "" {
+		if specRef != "" && cutil.SliceContains(dconfig, "native") {
 			return "", fmt.Errorf(msgPrinter.Sprintf("please specify the image name with -i flag."))
 		}
 	}
 
 	// Make sure that the input deployment config type is supported.
-	if !plugin_registry.DeploymentConfigPlugins.HasPlugin(dconfig) {
-		return "", fmt.Errorf(msgPrinter.Sprintf("unsupported deployment config type: %v", dconfig))
+	for _, dc := range dconfig {
+		if !plugin_registry.DeploymentConfigPlugins.HasPlugin(dc) {
+			return "", fmt.Errorf(msgPrinter.Sprintf("unsupported deployment config type: %v", dconfig))
+		}
 	}
 
 	return dir, nil
