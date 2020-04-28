@@ -15,8 +15,10 @@ import (
 	"path/filepath"
 )
 
+const KUBE_DEPLOYMENT_CONFIG_TYPE="cluster"
+
 func init() {
-	plugin_registry.Register("kube-operator", NewKubeDeploymentConfigPlugin())
+	plugin_registry.Register(KUBE_DEPLOYMENT_CONFIG_TYPE, NewKubeDeploymentConfigPlugin())
 }
 
 type KubeDeploymentConfigPlugin struct {
@@ -31,7 +33,7 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	if owned, err := p.Validate(dep); !owned || err != nil {
+	if owned, err := p.Validate(nil, dep); !owned || err != nil {
 		return owned, "", "", err
 	}
 
@@ -58,34 +60,44 @@ func (p *KubeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 	// Stringify and sign the deployment string.
 	deployment, err := json.Marshal(dep)
 	if err != nil {
-		return true, "", "", errors.New(msgPrinter.Sprintf("failed to marshal cluster deployment string %v, error %v", dep, err))
+		return true, "", "", errors.New(msgPrinter.Sprintf("failed to marshal %v deployment string %v, error %v", KUBE_DEPLOYMENT_CONFIG_TYPE, dep, err))
 	}
 	depStr := string(deployment)
 
 	sig, err := sign.Input(keyFilePath, deployment)
 	if err != nil {
-		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing cluster deployment string with %s: %v", keyFilePath, err))
+		return true, "", "", errors.New(msgPrinter.Sprintf("problem signing %v deployment string with %s: %v", KUBE_DEPLOYMENT_CONFIG_TYPE, keyFilePath, err))
 	}
 
 	return true, depStr, sig, nil
 }
 
 func (p *KubeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, []string, error) {
-	owned, err := p.Validate(dep)
-	return owned, []string{}, err
+	return false, []string{}, nil
 }
 
+// Return the default config object, which is nil in this case.
 func (p *KubeDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interface{} {
+	return nil
+}
+
+// Return the default cluster config object.
+func (p *KubeDeploymentConfigPlugin) DefaultClusterConfig() interface{} {
 	return map[string]interface{}{
 		"operatorYamlArchive": "",
 	}
 }
 
-func (p *KubeDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
+func (p *KubeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{}) (bool, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	if dc, ok := dep.(map[string]interface{}); !ok {
+	// If there is a native deployment config, defer to that plugin.
+	if dep != nil {
+		return false, nil
+	}
+
+	if dc, ok := cdep.(map[string]interface{}); !ok {
 		return false, nil
 	} else if c, ok := dc["operatorYamlArchive"]; !ok {
 		return false, nil
@@ -116,11 +128,15 @@ func (p *KubeDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFi
 	}
 
 	// Now that we have the service def, we can check if we own the deployment config object.
-	if owned, err := p.Validate(serviceDef.ClusterDeployment); !owned || err != nil {
+	// If there is a deployment config that we dont own, then return false, we dont own this service def.
+	// This allows another plugin to claim ownership of the service def and start a test.
+	// Otherwise, if the cluster config is ours, then we own the service but since this plugin doesnt
+	// support start and stop, terminate with a fatal error.
+	if serviceDef.Deployment != nil {
 		return false
+	} else {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' not supported for services using a %v deployment configuration", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, KUBE_DEPLOYMENT_CONFIG_TYPE))
 	}
-
-	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' not supported for Kube operator deployments", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND))
 
 	// For the compiler
 	return true
@@ -141,11 +157,13 @@ func (p *KubeDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
 	}
 
 	// Now that we have the service def, we can check if we own the deployment config object.
-	if owned, err := p.Validate(serviceDef.ClusterDeployment); !owned || err != nil {
+	if serviceDef.Deployment != nil {
+		return false
+	} else if owned, err := p.Validate(serviceDef.Deployment, serviceDef.ClusterDeployment); !owned || err != nil {
 		return false
 	}
 
-	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' not supported for Kube operator deployments", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND))
+	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' not supported for services using a %v deployment configuration", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, KUBE_DEPLOYMENT_CONFIG_TYPE))
 	// For the compiler
 	return true
 }

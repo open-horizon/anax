@@ -29,7 +29,7 @@ func (p *HelmDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	if owned, err := p.Validate(dep); !owned || err != nil {
+	if owned, err := p.Validate(dep, nil); !owned || err != nil {
 		return owned, "", "", err
 	}
 
@@ -71,7 +71,7 @@ func (p *HelmDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFilePat
 // This function does not open the helm chart package contents to try to extract container images.
 // This could be done in the future if necessary for this kind of deployment.
 func (p *HelmDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, []string, error) {
-	owned, err := p.Validate(dep)
+	owned, err := p.Validate(dep, nil)
 	return owned, []string{}, err
 }
 
@@ -82,7 +82,12 @@ func (p *HelmDeploymentConfigPlugin) DefaultConfig(imageInfo interface{}) interf
 	}
 }
 
-func (p *HelmDeploymentConfigPlugin) Validate(dep interface{}) (bool, error) {
+// Return the default cluster config object, which is nil in this case.
+func (p *HelmDeploymentConfigPlugin) DefaultClusterConfig() interface{} {
+	return nil
+}
+
+func (p *HelmDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{}) (bool, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -121,7 +126,7 @@ func (p *HelmDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFi
 	}
 
 	// Now that we have the service def, we can check if we own the deployment config object.
-	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+	if owned, err := p.Validate(serviceDef.Deployment, nil); !owned || err != nil {
 		return false
 	}
 
@@ -146,7 +151,7 @@ func (p *HelmDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
 	}
 
 	// Now that we have the service def, we can check if we own the deployment config object.
-	if owned, err := p.Validate(serviceDef.Deployment); !owned || err != nil {
+	if owned, err := p.Validate(serviceDef.Deployment, nil); !owned || err != nil {
 		return false
 	}
 

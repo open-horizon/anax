@@ -11,7 +11,8 @@ type DeploymentConfigPlugin interface {
 	Sign(dep map[string]interface{}, keyFilePath string, ctx PluginContext) (bool, string, string, error)
 	GetContainerImages(dep interface{}) (bool, []string, error)
 	DefaultConfig(imageInfo interface{}) interface{}
-	Validate(dep interface{}) (bool, error)
+	DefaultClusterConfig() interface{}
+	Validate(dep interface{}, cdep interface{}) (bool, error)
 	StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string) bool
 	StopTest(homeDirectory string) bool
 }
@@ -57,9 +58,9 @@ func (d DeploymentConfigRegistry) GetContainerImages(dep interface{}) ([]string,
 // Ask each plugin to attempt to validate the deployment config. Plugins are called
 // until one of them claims ownership of the deployment config. If no error is
 // returned, then one of the plugins has validated the deployment config.
-func (d DeploymentConfigRegistry) ValidatedByOne(dep interface{}) error {
+func (d DeploymentConfigRegistry) ValidatedByOne(dep interface{}, cdep interface{}) error {
 	for _, p := range d {
-		if owned, err := p.Validate(dep); owned {
+		if owned, err := p.Validate(dep, cdep); owned {
 			return err
 		}
 	}
