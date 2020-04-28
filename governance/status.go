@@ -1,7 +1,6 @@
 package governance
 
 import (
-	"encoding/json"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
@@ -11,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/helm"
+	"github.com/open-horizon/anax/kube_operator"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"time"
@@ -32,12 +32,13 @@ func (w ContainerStatus) String() string {
 }
 
 type WorkloadStatus struct {
-	AgreementId string            `json:"agreementId"`
-	ServiceURL  string            `json:"serviceUrl,omitempty"`
-	Org         string            `json:"orgid,omitempty"`
-	Version     string            `json:"version,omitempty"`
-	Arch        string            `json:"arch,omitempty"`
-	Containers  []ContainerStatus `json:"containerStatus"`
+	AgreementId    string            `json:"agreementId"`
+	ServiceURL     string            `json:"serviceUrl,omitempty"`
+	Org            string            `json:"orgid,omitempty"`
+	Version        string            `json:"version,omitempty"`
+	Arch           string            `json:"arch,omitempty"`
+	Containers     []ContainerStatus `json:"containerStatus"`
+	OperatorStatus interface{}       `json:"operatorStatus,omitempty"`
 }
 
 func (w WorkloadStatus) String() string {
@@ -46,8 +47,9 @@ func (w WorkloadStatus) String() string {
 		"Org: %v, "+
 		"Version: %v, "+
 		"Arch: %v, "+
-		"Containers: %v",
-		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers)
+		"Containers: %v"+
+		"OperatorStatus: %v",
+		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers, w.OperatorStatus)
 }
 
 type DeviceStatus struct {
@@ -73,11 +75,6 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 
 	if !w.Config.Edge.ReportDeviceStatus {
 		glog.Info("ReportDeviceStatus is false. The status report to the exchange is turned off.")
-		return
-	}
-
-	// TODO: not reporting the cluster node status for now. will be added later.
-	if w.deviceType == persistence.DEVICE_TYPE_CLUSTER {
 		return
 	}
 
@@ -109,18 +106,13 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 	} else {
 		device_status.Services = ms_status
 	}
-
 	// report the status to the exchange
-	if jbytes, err := json.Marshal(&device_status); err != nil {
-		glog.V(5).Infof(logString(fmt.Sprintf("Failed to convert the device status %v to json: %v", device_status, err)))
-	} else {
+	w.deviceStatus = &device_status
 
-		w.deviceStatus = &device_status
-		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", string(jbytes[:]))))
+	glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status)))
 
-		if err := w.writeStatusToExchange(&device_status); err != nil {
-			glog.Errorf(logString(err))
-		}
+	if err := w.writeStatusToExchange(&device_status); err != nil {
+		glog.Errorf(logString(err))
 	}
 
 }
@@ -181,11 +173,16 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 			msdef_status.Version = msdef.Version
 			msdef_status.Arch = msdef.Arch
 			msdef_status.Containers = make([]ContainerStatus, 0)
+			deployment, _ := msdef.GetDeployment()
+			opStatus, err := GetOperatorStatus(deployment)
+			if err != nil {
+				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving kube operator status for %s, error: %v", msdef.SpecRef, err)))
+			}
+			msdef_status.OperatorStatus = opStatus
 			if msinsts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), msdefFilter(msdef.Id)}); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
-					deployment, _ := msdef.GetDeployment()
 					if deployment != "" {
 						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), true, containers); err != nil {
 							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))
@@ -230,10 +227,16 @@ func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) 
 						wl_status.Version = wl.Version
 						wl_status.Arch = wl.Arch
 
-						if cstatus, err := GetContainerStatus(wl.Deployment, ag.CurrentAgreementId, false, containers); err != nil {
-							return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding workload status for %v. %v", ag, err)))
+						opStatus, opErr := GetOperatorStatus(wl.Deployment)
+						if opErr == nil {
+							wl_status.OperatorStatus = opStatus
 						} else {
-							wl_status.Containers = append(wl_status.Containers, cstatus...)
+							cstatus, cErr := GetContainerStatus(wl.Deployment, ag.CurrentAgreementId, false, containers)
+							if cErr == nil {
+								wl_status.Containers = append(wl_status.Containers, cstatus...)
+							} else {
+								return nil, fmt.Errorf("Error finding workload status for %v. Container status error %v. Operator status error %v.", ag, cErr, opErr)
+							}
 						}
 						status = append(status, wl_status)
 					}
@@ -292,10 +295,47 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 		}
 		container_status.State = releaseState
 		status = append(status, container_status)
+	} else if kdc, err := persistence.GetKubeDeployment(deployment); err == nil {
+		var container_status ContainerStatus
+
+		if kc, err := kube_operator.NewKubeClient(); err != nil {
+			container_status.State = fmt.Sprintf("Unknown, error: %v", err)
+			status = append(status, container_status)
+		} else {
+			if kubeStatus, err := kc.Status(kdc.OperatorYamlArchive); err != nil {
+				container_status.State = fmt.Sprintf("Unknown, error: %v", err)
+				status = append(status, container_status)
+			} else {
+				for _, container := range kubeStatus {
+					container_status.State = container.State
+					container_status.Name = container.Name
+					container_status.Created = container.CreatedTime
+					container_status.Image = container.Image
+					status = append(status, container_status)
+				}
+			}
+		}
 	} else {
 		return nil, fmt.Errorf(logString(fmt.Sprintf("Error Unmarshalling deployment string %v. %v", deployment, err)))
 	}
 	return status, nil
+}
+
+// GetOperatorStatus will check if the given deployment is for a kube operator and return the operator defined status if it is
+// Will return nil for the interface and no error if the deployment is not for a kube operator
+func GetOperatorStatus(deployment string) (interface{}, error) {
+	if kd, err := persistence.GetKubeDeployment(deployment); err == nil {
+		client, err := kube_operator.NewKubeClient()
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
+		}
+		opStatus, err := client.OperatorStatus(kd.OperatorYamlArchive)
+		if err != nil {
+			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
+		}
+		return opStatus, nil
+	}
+	return nil, nil
 }
 
 // write to the exchange
