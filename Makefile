@@ -568,16 +568,14 @@ endif
 
 i18n-catalog: $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
-	cd $(GOPATH)/src/github.com/open-horizon/anax && \
-		rm -Rf vendor; \
-		go mod vendor; \
-		mv -f go.mod go.mod.save; \
+	rm -Rf vendor; \
+	go mod vendor; \
+	mv -f go.mod go.mod.save; \
 	cd $(PKGPATH) && \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/update-i18n-messages
-	cd $(GOPATH)/src/github.com/open-horizon/anax && \
-		rm -Rf vendor; \
-		mv -f go.mod.save go.mod; \
+	rm -Rf vendor; \
+	mv -f go.mod.save go.mod; \
 
 i18n-translation: deps i18n-catalog all-nodeps
 	@echo "Copying message files for translation"
