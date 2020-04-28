@@ -91,12 +91,14 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 
 	// get docker containers
 	containers := make([]docker.APIContainers, 0)
-	if client, err := docker.NewClient(w.Config.Edge.DockerEndpoint); err != nil {
-		glog.Errorf(logString(fmt.Sprintf("Failed to instantiate docker Client: %v", err)))
-	} else {
-		containers, err = client.ListContainers(docker.ListContainersOptions{})
-		if err != nil {
-			glog.Errorf(logString(fmt.Sprintf("Unable to get list of running containers: %v", err)))
+	if w.deviceType == persistence.DEVICE_TYPE_DEVICE  {
+		if client, err := docker.NewClient(w.Config.Edge.DockerEndpoint); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Failed to instantiate docker Client: %v", err)))
+		} else {
+			containers, err = client.ListContainers(docker.ListContainersOptions{})
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("Unable to get list of running containers: %v", err)))
+			}
 		}
 	}
 

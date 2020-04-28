@@ -20,7 +20,7 @@ Related Projects:
 
 ### Preconditions
 
-* Go version >=1.11 is a required dependency, download it [here](https://golang.org/dl/)
+* Go version >=1.14 is a required dependency, download it [here](https://golang.org/dl/)
 * To execute the lint and other code checkers (`make lint` or `make check`), you must install: `go vet`, `golint`, and `jshint`
 
 ### Operations
@@ -64,6 +64,15 @@ Note that this target is automatically executed when executing targets `check` a
 * Add `"ANAX_LOG_LEVEL=5"` to the `Environment=` configuration in the systemd unit file `/etc/systemd/system/snap.bluehorizon.anax.service`. Note that the value `5` is the classification of most debug log messages, `6` is used for even more granular log messages, something like a 'trace' level.
 * Reload the systemd unit file with `systemctl daemon-reload`.
 * Restart the anax process with `systemctl restart horizon.service`.
+
+### Internationalization
+
+    make i18n-catalog
+    make
+
+Only `hzn` command supports internationalization. To test, set LANG or HZN_LANG enviromental variable. For example:
+
+    HZN_LANG=fr hzn version
 
 #### Development Environment
 
