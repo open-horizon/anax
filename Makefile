@@ -508,7 +508,7 @@ fss-package: ess-docker-image css-docker-image
 		echo "File sync service container $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
 
-clean: mostlyclean i18n-clean anax-k8s-clean
+clean: mostlyclean 
 	@echo "Clean"
 	rm -f ./go.sum
 ifneq ($(TMPGOPATH),$(GOPATH))
@@ -516,12 +516,15 @@ ifneq ($(TMPGOPATH),$(GOPATH))
 endif
 	rm -rf ./contracts
 
-mostlyclean: anax-container-clean agbot-container-clean css-clean ess-clean
+realclean: i18n-clean clean
+
+mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean 
 	@echo "Mostlyclean"
 	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	rm -Rf vendor
 
 i18n-clean:
+	@echo "i18n-clean"
 	rm -f $(I18N_OUT_GOTEXT_FILES) cli/$(I18N_OUT_GOTEXT_FILES) $(I18N_CATALOG_FILE) cli/$(I18N_CATALOG_FILE)
 
 css-clean:
@@ -577,7 +580,7 @@ i18n-catalog: $(TMPGOPATH)/bin/gotext
 	rm -Rf vendor; \
 	mv -f go.mod.save go.mod; \
 
-i18n-translation: deps i18n-catalog all-nodeps
+i18n-translation: deps i18n-catalog
 	@echo "Copying message files for translation"
 	cd $(PKGPATH) && \
 		export PKGPATH=$(PKGPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
@@ -665,4 +668,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
