@@ -94,7 +94,7 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 
 	builtinPolicyReadOnly := &externalpolicy.ExternalPolicy{}
 	builtinPolicyReadWrite := &externalpolicy.ExternalPolicy{}
-	if exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID) || (existingPol != nil && existingPol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
+	if (exchangeNodePolicy != nil && exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) || (existingPol != nil && existingPol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
 		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
 	} else {
 		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
