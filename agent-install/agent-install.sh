@@ -491,7 +491,7 @@ function create_config() {
 				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" /etc/default/horizon
 		else
 			if [[ ${CERTIFICATE:0:1} != "/" ]]; then
-				sudo mv $CERTIFICATE /etc/horizon/
+				sudo mv $CERTIFICATE /etc/horizon/agent-install.crt
 				ABS_CERTIFICATE=/etc/horizon/agent-install.crt
 			else
 				ABS_CERTIFICATE=${CERTIFICATE}
@@ -1061,23 +1061,7 @@ function create_node(){
         log_notify "Found HZN_EXCHANGE_NODE_AUTH variable, using it..."
     fi
 
-    if [ "${DEPLOY_TYPE}" == "device" ]; then
-    	# check if node exists before creating it
-    	echo "Checking if node exists..."
-    	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
-    	hzn exchange node list $nodeID -n $HZN_EXCHANGE_NODE_AUTH -o $HZN_ORG_ID 2>&1
-    	if [[ $? -ne 0 ]]; then
-    		log_notify "Node ID $nodeID was not found in the excahnge, creating it..."
-        	set -x
-    		hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH"
-    		{ set +x; } 2>/dev/null
-
-    		log_notify "Verifying node..."
-    		set -x
-    		hzn exchange node confirm -n "$HZN_EXCHANGE_NODE_AUTH" -o "$HZN_ORG_ID"
-    		{ set +x; } 2>/dev/null
-		fi
-    elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+    if [ "${DEPLOY_TYPE}" == "cluster" ]; then
 	log_notify "Creating a node..."
 	EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
 	HZN_EX_NODE_CREATE_CMD="hzn exchange node create -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
@@ -1658,8 +1642,13 @@ function create_namespace() {
     log_debug "create_namespace() begin"
     # check if namespace exist, if not, create
     log_info "checking if namespace exist..."
+
+    # due to global set -e, need to unset that to allow the script to still run after error 
+    set +e
     kubectl get namespace ${NAMESPACE} 2>/dev/null
-    if [ $? -ne 0 ]; then
+    local ret=$?
+    set -e
+    if [ $ret -ne 0 ]; then
         log_info "namespace ${NAMESPACE} does not exist, creating..."
         log_debug "command: kubectl create namespace ${NAMESPACE}"
         kubectl create namespace ${NAMESPACE}
@@ -1738,6 +1727,7 @@ function create_persistent_volume() {
 function check_resources_for_deployment() {
     log_debug "check_resource_for_deployment() begin"
     # check secrets/configmap/persistent/images
+    set +e
     kubectl get secret ${SECRET_NAME} -n ${NAMESPACE} > /dev/null
     secret_ready=$?
 
@@ -1746,6 +1736,7 @@ function check_resources_for_deployment() {
 
     kubectl get pvc ${PVC_NAME} -n ${NAMESPACE} > /dev/null
     pvc_ready=$?
+    set -e
 
     if [[ ${secret_ready} -eq 0 ]] && [[ ${configmap_ready} -eq 0 ]] && [[ ${pvc_ready} -eq 0 ]]; then
         RESOURCE_READY=1
