@@ -574,8 +574,9 @@ Environment Variables:
 	voucherImportFile := voucherImportCmd.Arg("voucher-file", msgPrinter.Sprintf("The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).")).Required().File() // returns the file descriptor
 	voucherOrg := voucherImportCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	voucherUserPw := voucherImportCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
-	voucherImportExample := voucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy.")).Short('e').String()
-	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e.")).String()
+	voucherImportExample := voucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
+	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
+	voucherImportPattern := voucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
 
 	app.VersionFlag = nil
 
@@ -955,6 +956,6 @@ Environment Variables:
 	case voucherInspectCmd.FullCommand():
 		sdo.VoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():
-		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy)
+		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
 	}
 }

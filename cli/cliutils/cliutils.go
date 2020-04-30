@@ -971,6 +971,7 @@ func GetSdoSvcUrl() string {
 			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the HZN_SDO_SVC_URL value from the environment, %s, or one of the hzn.json files", ANAX_OVERWRITE_FILE))
 		}
 	}
+	sdoUrl = strings.TrimSuffix(sdoUrl, "/")
 
 	Verbose(msgPrinter.Sprintf("The SDO service url: %v", sdoUrl))
 	return sdoUrl

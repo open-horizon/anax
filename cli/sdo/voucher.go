@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/config"
+	anaxExchange "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
@@ -20,7 +21,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -122,15 +122,15 @@ type ImportResponse struct {
 }
 
 // hzn voucher inspect <voucher-file>
-func VoucherImport(org string, userCreds string, voucherFile *os.File, example string, policyFilePath string) {
+func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
 	defer voucherFile.Close()
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Importing voucher file name: %s", voucherFile.Name()))
 
 	// Check input
 	sdoUrl := cliutils.GetSdoSvcUrl() // this looks in the environment or /etc/default/horizon, but hzn.go already sourced the hzn.json files
-	if example != "" && policyFilePath != "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("both -e and --policy can not be specified"))
+	if (example != "" && policyFilePath != "") || (example != "" && patternName != "") || (patternName != "" && policyFilePath != "") {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-e, --policy, and -p are all mutually exclusive (can specify one of them)"))
 	}
 	if policyFilePath != "" {
 		if _, err := os.Stat(policyFilePath); err != nil {
@@ -140,23 +140,23 @@ func VoucherImport(org string, userCreds string, voucherFile *os.File, example s
 
 	// Determine voucher file type, and handle it accordingly
 	if strings.HasSuffix(voucherFile.Name(), ".json") {
-		import1Voucher(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, false)
+		import1Voucher(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName, false)
 	} else if strings.HasSuffix(voucherFile.Name(), ".tar") {
-		importTar(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath)
+		importTar(org, userCreds, sdoUrl, bufio.NewReader(voucherFile), voucherFile.Name(), example, policyFilePath, patternName)
 	} else if strings.HasSuffix(voucherFile.Name(), ".tar.gz") || strings.HasSuffix(voucherFile.Name(), ".tgz") {
 		gzipReader, err := gzip.NewReader(voucherFile)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("reading voucher file %s: %v", voucherFile.Name(), err))
 		}
-		importTar(org, userCreds, sdoUrl, gzipReader, voucherFile.Name(), example, policyFilePath)
+		importTar(org, userCreds, sdoUrl, gzipReader, voucherFile.Name(), example, policyFilePath, patternName)
 	} else if strings.HasSuffix(voucherFile.Name(), ".zip") {
-		importZip(org, userCreds, sdoUrl, voucherFile, example, policyFilePath)
+		importZip(org, userCreds, sdoUrl, voucherFile, example, policyFilePath, patternName)
 	} else {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unsupported voucher file type extension: %s", voucherFile.Name()))
 	}
 }
 
-func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath string) {
+func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	tarReader := tar.NewReader(voucherFileReader)
 	for {
@@ -174,12 +174,12 @@ func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, vouch
 			if strings.HasPrefix(header.Name, ".") || !strings.HasSuffix(header.Name, ".json") {
 				continue
 			}
-			import1Voucher(org, userCreds, sdoUrl, tarReader, header.Name, example, policyFilePath, true)
+			import1Voucher(org, userCreds, sdoUrl, tarReader, header.Name, example, policyFilePath, patternName, true)
 		}
 	}
 }
 
-func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, policyFilePath string) {
+func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, policyFilePath, patternName string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	voucherBytes, err := ioutil.ReadAll(bufio.NewReader(voucherFile))
 	if err != nil {
@@ -197,12 +197,12 @@ func importZip(org, userCreds, sdoUrl string, voucherFile *os.File, example, pol
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("opening file %s within zip for %s: %v", fileInfo.Name, voucherFile.Name(), err))
 		}
-		import1Voucher(org, userCreds, sdoUrl, zipFileReader, fileInfo.Name, example, policyFilePath, true)
+		import1Voucher(org, userCreds, sdoUrl, zipFileReader, fileInfo.Name, example, policyFilePath, patternName, true)
 		zipFileReader.Close()
 	}
 }
 
-func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath string, quieter bool) {
+func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName string, quieter bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Parse the voucher so we can tell them what we are doing
@@ -221,17 +221,17 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	// Import the voucher to the SDO owner service
 	creds := cliutils.OrgAndCreds(org, userCreds)
 	importResponse := ImportResponse{}
-	SdoPostVoucher(filepath.Join(sdoUrl, "voucher"), creds, voucherBytes, &importResponse)
+	SdoPostVoucher(sdoUrl + "/voucher", creds, voucherBytes, &importResponse)
 	if !quieter {
 		msgPrinter.Printf("Voucher imported. Node id: %s, token: %s", importResponse.NodeId, importResponse.NodeToken)
 		msgPrinter.Println()
 	}
 
 	// Pre-create the node resource in the exchange, so it is already there when hzn register is run on the SDO device
-	// Doing the equivalent of: hzn exchange node create -org "org" -n "$nodeId:$nodeToken" -u "user:pw"
+	// Doing the equivalent of: hzn exchange node create -org "org" -n "$nodeId:$nodeToken" -u "user:pw" (with optional pattern)
 	//todo: try to get the device arch from the voucher
-	//todo: modify exchange.NodeCreate() to have option to not output info msgs (only errors)
-	exchange.NodeCreate(org, "", importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", "", persistence.DEVICE_TYPE_DEVICE, true)
+	//exchange.NodeCreate(org, "", importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", "", persistence.DEVICE_TYPE_DEVICE, true)
+	NodeAddDevice(org, importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", patternName, quieter)
 
 	// Create the node policy in the exchange, if they specified it
 	var policyStr string
@@ -245,7 +245,9 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 		policyStr = `{ "properties": [ { "name": "openhorizon.example", "value": "` + example + `" } ] }`
 		cliutils.Verbose(msgPrinter.Sprintf("Using node policy: %s", policyStr))
 	}
-	NodeAddPolicyString(org, userCreds, importResponse.NodeId, policyStr, quieter)
+	if policyStr != "" {
+		NodeAddPolicyString(org, userCreds, importResponse.NodeId, policyStr, quieter)
+	}
 }
 
 // Like cliutils.ExchangePutPost, except it gets a response body on success
@@ -272,13 +274,23 @@ func SdoPostVoucher(url string, creds string, requestBodyBytes []byte, respBody 
 	}
 }
 
+// This is similar to exchange.NodeCreate(), except it can optionally set a pattern
+func NodeAddDevice(org, nodeId, nodeToken, userPw, arch, patternName string, quieter bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+	if !quieter {
+		msgPrinter.Printf("Adding/updating node...")
+		msgPrinter.Println()
+	}
+
+	putNodeReqBody := anaxExchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, NodeType: persistence.DEVICE_TYPE_DEVICE, Pattern: patternName, PublicKey: []byte(""), Arch: arch}
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReqBody)
+}
+
 // This is the same as exchange.NodeAddPolicy(), except that the node policy is a string, not a file
 func NodeAddPolicyString(org, credToUse, node, policyStr string, quieter bool) {
 	msgPrinter := i18n.GetMessagePrinter()
-	var nodeOrg string
-	nodeOrg, node = cliutils.TrimOrg(org, node)
 
-	// Parse in the policy metadata
+	// Parse the policy metadata
 	var policyFile externalpolicy.ExternalPolicy
 	err := json.Unmarshal([]byte(policyStr), &policyFile)
 	if err != nil {
@@ -291,19 +303,20 @@ func NodeAddPolicyString(org, credToUse, node, policyStr string, quieter bool) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in '%s': %v", policyStr, err))
 	}
 
-	// check node exists first
+	// ensure the node exists first
+	exchangeUrl := cliutils.GetExchangeUrl()
 	var nodes exchange.ExchangeNodes
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", exchangeUrl, "orgs/"+org+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", nodeOrg, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node '%v/%v' not found.", org, node))
 	}
 
 	// add/replace node policy
 	if !quieter {
-		msgPrinter.Printf("Adding/updating Node policy...")
+		msgPrinter.Printf("Adding/updating node policy...")
 		msgPrinter.Println()
 	}
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchangeUrl, "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
 
 	//msgPrinter.Printf("Node policy updated.")
 	//msgPrinter.Println()

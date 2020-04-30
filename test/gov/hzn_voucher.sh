@@ -122,6 +122,48 @@ else
 fi
 rm -f /tmp/voucher.badextension
 
+echo -e "${PREFIX} Testing 'hzn voucher import <voucher-file> --policy policy-not-there.json'"
+cmdOutput=$(hzn voucher import /tmp/sdo_voucher.json --policy policy-not-there.json 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'accessing policy-not-there.json'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher import <voucher-file> --policy policy-not-there.json': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+
+echo -e "${PREFIX} Testing 'hzn voucher import <voucher-file> with mutually exclusive -e and --policy'"
+touch /tmp/node-policy.json
+cmdOutput=$(hzn voucher import /tmp/sdo_voucher.json -e foo --policy /tmp/node-policy.json 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'mutually exclusive'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher import <voucher-file> -e foo --policy /tmp/node-policy.json': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+
+echo -e "${PREFIX} Testing 'hzn voucher import <voucher-file> with mutually exclusive -e and --pattern'"
+cmdOutput=$(hzn voucher import /tmp/sdo_voucher.json -e foo --pattern bar 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'mutually exclusive'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher import <voucher-file> -e foo --pattern bar': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+
+echo -e "${PREFIX} Testing 'hzn voucher import <voucher-file> with mutually exclusive --pattern and --policy'"
+cmdOutput=$(hzn voucher import /tmp/sdo_voucher.json --pattern bar --policy /tmp/node-policy.json 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'rror:'*'mutually exclusive'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher import <voucher-file> --pattern bar --policy /tmp/node-policy.json': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+rm -f /tmp/node-policy.json
+
 echo -e "${PREFIX} Testing 'hzn voucher import <voucher-file>' without HZN_SDO_SVC_URL set"
 unset HZN_SDO_SVC_URL
 cmdOutput=$(hzn voucher import /tmp/sdo_voucher.json 2>&1)
