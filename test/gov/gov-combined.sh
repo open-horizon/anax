@@ -168,7 +168,7 @@ done
 
 # Register msghub services and patterns
 if [ "$TESTFAIL" != "1" ]; then
-  if [ $TEST_MSGHUB -eq 1 ]; then
+  if [ "${TEST_MSGHUB}" = "1" ]; then
     echo "Register services and patterns for msghub test"
 
     ./msghub_rsrcreg.sh

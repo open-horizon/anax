@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+# set -x
 
 NAME_SPACE="openhorizon-agent"
 CONFIGMAP_NAME="agent-configmap-horizon"
@@ -38,8 +38,8 @@ else
        echo "Stopped agent in k8s."
 fi
 
-echo "Undeploy the agent and related constructs"
-$cprefix microk8s.kubectl delete deployment agent -n ${NAME_SPACE}
+# echo "Undeploy the agent and related constructs"
+# $cprefix microk8s.kubectl delete deployment agent -n ${NAME_SPACE}
 echo "Undeploy the agent and related constructs"
 $cprefix microk8s.kubectl delete deployment agent -n ${NAME_SPACE}
 RC=$?

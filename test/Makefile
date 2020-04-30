@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := 2.20.0
+DOCKER_EXCH_TAG := 2.23.0
 PKG_URL_BASE := http://169.45.88.181/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
@@ -157,21 +157,21 @@ run-dockerreg: test-network
 		-Bbn $(DOCKER_REG_USER) $(DOCKER_REG_PW) > $(AGBOT_TEMPFS)/auth/htpasswd
 	docker rm -v $(DOCKER_REG_PW_CNAME)
 
-run-exchange: run-exchange-db test-network $(EXCH_TEMPFS)/config.json
+run-exchange: run-exchange-db test-network $(EXCH_TEMPFS)/exchange-api.tmpl
 	@echo "Handling $(DOCKER_EXCH_CNAME)"
 	docker/docker_run.bash "$(DOCKER_EXCH_CNAME)" \
 		docker run -d \
 		-p 127.0.0.1:8090:8080 \
 		--name "$(DOCKER_EXCH_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
-		-v $(EXCH_TEMPFS)/config.json:/etc/horizon/exchange/config.json:ro \
+		-v $(EXCH_TEMPFS)/exchange-api.tmpl:/etc/horizon/exchange/exchange-api.tmpl:ro \
 		-t openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG)
 
-$(EXCH_TEMPFS)/config.json:
+$(EXCH_TEMPFS)/exchange-api.tmpl:
 	@echo "Populating the exchange configuration"
 	mkdir -p $(EXCH_TEMPFS)
 	echo "{ \"api\": { \"db\": { \"jdbcUrl\": \"jdbc:postgresql://$(DOCKER_EXCHDB_CNAME):$(EXCHDB_PORT)/$(EXCHDB_NAME)\"," \
-                "\"user\": \"$(EXCHDB_USER)\" }, \"root\": { \"password\": \"$(EXCH_ROOTPW)\" } } }" > $(EXCH_TEMPFS)/config.json
+                "\"user\": \"$(EXCHDB_USER)\" }, \"root\": { \"password\": \"$(EXCH_ROOTPW)\" } } }" > $(EXCH_TEMPFS)/exchange-api.tmpl
 
 run-exchange-db: test-network
 	@echo "Handling $(DOCKER_EXCHDB_CNAME)"

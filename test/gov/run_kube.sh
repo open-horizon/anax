@@ -5,7 +5,7 @@ if [[ "$NOKUBE" == "1" ]]; then
   exit
 fi
 
-set -x
+# set -x
 
 AGBOT_TEMPFS=$1
 ANAX_SOURCE=$2
