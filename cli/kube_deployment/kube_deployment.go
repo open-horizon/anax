@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 )
 
-const KUBE_DEPLOYMENT_CONFIG_TYPE="cluster"
+const KUBE_DEPLOYMENT_CONFIG_TYPE = "cluster"
 
 func init() {
 	plugin_registry.Register(KUBE_DEPLOYMENT_CONFIG_TYPE, NewKubeDeploymentConfigPlugin())

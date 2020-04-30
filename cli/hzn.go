@@ -33,6 +33,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"k8s.io/client-go/rest"
 	"runtime"
 )
 
@@ -589,6 +590,13 @@ Environment Variables:
 	// Parse cmd and apply env var defaults
 	fullCmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 	//cliutils.Verbose("Full command: %s", fullCmd)
+
+	// mms command is not supported for on a cluster node
+	if strings.HasPrefix(fullCmd, "mms ") {
+		if _, err := rest.InClusterConfig(); err == nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("The mms command is not supported on an edge cluster node."))
+		}
+	}
 
 	// setup the environment variables from the project config file
 	project_dir := ""

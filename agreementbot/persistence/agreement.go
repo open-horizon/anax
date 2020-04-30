@@ -7,10 +7,16 @@ import (
 	"time"
 )
 
+// device types. make the duplicates here so that agbot does not have dependency on
+// the edge side persistence
+const DEVICE_TYPE_DEVICE = "device"
+const DEVICE_TYPE_CLUSTER = "cluster"
+
 type Agreement struct {
 	CurrentAgreementId             string   `json:"current_agreement_id"`              // unique
 	Org                            string   `json:"org"`                               // the org in which the policy exists that was used to make this agreement
 	DeviceId                       string   `json:"device_id"`                         // the device id we are working with, immutable after construction
+	DeviceType                     string   `json:"device_type"`                       // the type of the device, the valid values are 'device' and 'cluster', the default is 'decive'
 	HAPartners                     []string `json:"ha_partners"`                       // list of HA partner device IDs
 	AgreementProtocol              string   `json:"agreement_protocol"`                // immutable after construction - name of protocol in use
 	AgreementProtocolVersion       int      `json:"agreement_protocol_version"`        // version of protocol in use - New in V2 protocol
@@ -59,6 +65,7 @@ func (a Agreement) String() string {
 		"AgreementProtocol: %v, "+
 		"AgreementProtocolVersion: %v, "+
 		"DeviceId: %v, "+
+		"DeviceType: %v, "+
 		"HA Partners: %v, "+
 		"AgreementInceptionTime: %v, "+
 		"AgreementCreationTime: %v, "+
@@ -92,7 +99,7 @@ func (a Agreement) String() string {
 		"NHCheckAgreementStatus: %v, "+
 		"Pattern: %v, "+
 		"ServiceId: %v",
-		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.HAPartners,
+		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.DeviceType, a.HAPartners,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
 		a.DataVerificationURL, a.DataVerificationUser, a.DataVerificationCheckRate, a.DataVerificationMissedCount, a.DataVerificationNoDataInterval,
@@ -103,7 +110,7 @@ func (a Agreement) String() string {
 }
 
 // Factory method for agreement w/out persistence safety.
-func NewAgreement(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) (*Agreement, error) {
+func NewAgreement(agreementid string, org string, deviceid string, deviceType string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
@@ -111,6 +118,7 @@ func NewAgreement(agreementid string, org string, deviceid string, policyName st
 			CurrentAgreementId:             agreementid,
 			Org:                            org,
 			DeviceId:                       deviceid,
+			DeviceType:                     deviceType,
 			HAPartners:                     []string{},
 			AgreementProtocol:              agreementProto,
 			AgreementProtocolVersion:       0,
@@ -155,6 +163,14 @@ func NewAgreement(agreementid string, org string, deviceid string, policyName st
 
 func (a *Agreement) NodeHealthInUse() bool {
 	return a.NHMissingHBInterval != 0 || a.NHCheckAgreementStatus != 0
+}
+
+func (a *Agreement) GetDeviceType() string {
+	if a.DeviceType == "" {
+		return DEVICE_TYPE_DEVICE
+	} else {
+		return a.DeviceType
+	}
 }
 
 // Functions that are up called from the agbot database implementation. This is done so that the business

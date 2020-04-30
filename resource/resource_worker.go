@@ -25,7 +25,15 @@ func NewResourceWorker(name string, config *config.HorizonConfig, db *bolt.DB, a
 	dev, _ := persistence.FindExchangeDevice(db)
 	if dev != nil {
 		ec = worker.NewExchangeContext(fmt.Sprintf("%v/%v", dev.Org, dev.Id), dev.Token, config.Edge.ExchangeURL, config.GetCSSURL(), config.Collaborators.HTTPClientFactory)
-		rm = NewResourceManager(config, dev.Org, dev.Pattern, dev.Id, dev.Token)
+		if !dev.IsEdgeCluster() {
+			if config == nil || config.GetCSSURL() == "" {
+				term_string := "Terminating, unable to start model management resource manager. Please set either CSSURL in the anax configuration file or HZN_FSS_CSSURL in /etc/default/horizon file."
+				glog.Errorf(term_string)
+				panic(term_string)
+			}
+
+			rm = NewResourceManager(config, dev.Org, dev.Pattern, dev.Id, dev.Token)
+		}
 	}
 
 	if rm == nil {
@@ -129,6 +137,12 @@ func (w *ResourceWorker) handleNodeConfigCommand(cmd *NodeConfigCommand) error {
 		return errors.New("no device object in local DB")
 	} else if dev.IsEdgeCluster() {
 		return nil
+	} else {
+		if w.Config == nil || w.Config.GetCSSURL() == "" {
+			term_string := "Terminating, unable to start model management resource manager. Please set either CSSURL in the anax configuration file or HZN_FSS_CSSURL in /etc/default/horizon file."
+			glog.Errorf(term_string)
+			panic(term_string)
+		}
 	}
 
 	// Start the embedded ESS this edge device.

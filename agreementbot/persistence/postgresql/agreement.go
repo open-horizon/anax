@@ -354,8 +354,8 @@ func (db *AgbotPostgresqlDB) FindSingleAgreementByAgreementIdAllProtocols(agreem
 	return nil, nil
 }
 
-func (db *AgbotPostgresqlDB) AgreementAttempt(agreementid string, org string, deviceid string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) error {
-	if agreement, err := persistence.NewAgreement(agreementid, org, deviceid, policyName, bcType, bcName, bcOrg, agreementProto, pattern, serviceId, nhPolicy); err != nil {
+func (db *AgbotPostgresqlDB) AgreementAttempt(agreementid string, org string, deviceid string, deviceType string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) error {
+	if agreement, err := persistence.NewAgreement(agreementid, org, deviceid, deviceType, policyName, bcType, bcName, bcOrg, agreementProto, pattern, serviceId, nhPolicy); err != nil {
 		return err
 	} else if err := db.insertAgreement(agreement, agreementProto); err != nil {
 		return err

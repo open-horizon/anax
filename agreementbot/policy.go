@@ -215,7 +215,7 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 			if foundService, err := FindCompatibleServices(serviceId, &newPolicy, workerId, w.config.ArchSynonyms); err != nil {
 				// FindCompatibleServices logs it own errors.
 				continue
-			} else if foundService {
+			} else if foundService && agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
 				newTargetNodes[agreement.DeviceId] = true
 				break
 			}
