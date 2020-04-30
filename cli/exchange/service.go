@@ -237,7 +237,7 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	// the publish command to skip pushing the images.
 	if dontTouchImage {
 		imageMap := map[string]bool{}
-		//for _, deployment := range []interface{}{sf.Deployment, sf.ClusterDeployment} {
+
 		if sf.Deployment != nil && sf.Deployment != "" {
 			if images, err := plugin_registry.DeploymentConfigPlugins.GetContainerImages(sf.Deployment); err != nil {
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to get container images from deployment configuration: %v", err))
@@ -247,7 +247,6 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 				}
 			}
 		}
-		//}
 
 		if len(imageMap) > 0 {
 			msgPrinter.Printf("If you haven't already, push your docker images to the registry:")

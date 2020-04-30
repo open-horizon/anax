@@ -140,6 +140,11 @@ func (w *ChangesWorker) findAndProcessChanges() {
 		} else if change.IsAgbotServedPolicy(w.GetExchangeId()) || change.IsAgbotServedPattern(w.GetExchangeId()) {
 			w.orgList = w.gatherServedOrgs(&change)
 
+		} else if change.IsAgbotAgreement(w.GetExchangeId()) {
+			ev := events.NewExchangeChangeMessage(events.CHANGE_AGBOT_AGREEMENT_TYPE)
+			ev.SetChange(change)
+			w.Messages() <- ev
+
 		} else if change.IsPattern() {
 			ev := events.NewExchangeChangeMessage(events.CHANGE_AGBOT_PATTERN)
 			ev.SetChange(change)
@@ -152,6 +157,21 @@ func (w *ChangesWorker) findAndProcessChanges() {
 
 		} else if change.IsServicePolicy() {
 			ev := events.NewExchangeChangeMessage(events.CHANGE_SERVICE_POLICY_TYPE)
+			ev.SetChange(change)
+			w.Messages() <- ev
+
+		} else if change.IsNode("") {
+			ev := events.NewExchangeChangeMessage(events.CHANGE_NODE_TYPE)
+			ev.SetChange(change)
+			w.Messages() <- ev
+
+		} else if change.IsNodePolicy("") {
+			ev := events.NewExchangeChangeMessage(events.CHANGE_NODE_POLICY_TYPE)
+			ev.SetChange(change)
+			w.Messages() <- ev
+
+		} else if change.IsNodeAgreement("") {
+			ev := events.NewExchangeChangeMessage(events.CHANGE_NODE_AGREEMENT_TYPE)
 			ev.SetChange(change)
 			w.Messages() <- ev
 

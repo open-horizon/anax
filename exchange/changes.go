@@ -39,6 +39,7 @@ const RESOURCE_AGBOT_MSG = "agbotmsgs"                   // A message was delive
 const RESOURCE_NODE = "node"                             // A change was made to the node
 const RESOURCE_AGBOT = "agbot"                           // A change was made to the agbot
 const RESOURCE_NODE_POLICY = "nodepolicies"              // A change was made to the node policy
+const RESOURCE_NODE_AGREEMENTS = "nodeagreements"        // A change was made to one of the agreements on the node
 const RESOURCE_NODE_ERROR = "nodeerrors"                 // A change was made to the node errors
 const RESOURCE_SERVICE = "service"                       // A change was made to a service
 const RESOURCE_AGBOT_SERVED_POLICY = "agbotbusinesspols" // A served deployment policy change occurred
@@ -46,6 +47,7 @@ const RESOURCE_AGBOT_SERVED_PATTERN = "agbotpatterns"    // A served pattern cha
 const RESOURCE_AGBOT_PATTERN = "pattern"                 // A pattern change occurred
 const RESOURCE_AGBOT_POLICY = "policy"                   // A policy change occurred
 const RESOURCE_AGBOT_SERVICE_POLICY = "servicepolicies"  // A service policy changed
+const RESOURCE_AGBOT_AGREEMENTS = "agbotagreements"      // A change was made to one of the agreements on the agbot
 
 // functions for interrogating change types
 func (e ExchangeChange) IsMessage(node string) bool {
@@ -58,9 +60,18 @@ func (e ExchangeChange) IsAgbotMessage(agbot string) bool {
 	return changeAgbot == agbot && e.Resource == RESOURCE_AGBOT_MSG
 }
 
+func (e ExchangeChange) IsAgbotAgreement(agbot string) bool {
+	changeAgbot := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+	return changeAgbot == agbot && e.Resource == RESOURCE_AGBOT_AGREEMENTS
+}
+
 func (e ExchangeChange) IsNode(node string) bool {
-	changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
-	return changeNode == node && e.Resource == RESOURCE_NODE
+	if node != "" {
+		changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+		return changeNode == node && e.Resource == RESOURCE_NODE
+	} else {
+		return e.Resource == RESOURCE_NODE
+	}
 }
 
 func (e ExchangeChange) IsAgbot(agbot string) bool {
@@ -69,8 +80,21 @@ func (e ExchangeChange) IsAgbot(agbot string) bool {
 }
 
 func (e ExchangeChange) IsNodePolicy(node string) bool {
-	changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
-	return changeNode == node && e.Resource == RESOURCE_NODE_POLICY
+	if node != "" {
+		changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+		return changeNode == node && e.Resource == RESOURCE_NODE_POLICY
+	} else {
+		return e.Resource == RESOURCE_NODE_POLICY
+	}
+}
+
+func (e ExchangeChange) IsNodeAgreement(node string) bool {
+	if node != "" {
+		changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+		return changeNode == node && e.Resource == RESOURCE_NODE_AGREEMENTS
+	} else {
+		return e.Resource == RESOURCE_NODE_AGREEMENTS
+	}
 }
 
 func (e ExchangeChange) IsNodeError(node string) bool {

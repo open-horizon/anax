@@ -3,6 +3,7 @@ package agreementbot
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"sync"
 )
 
 // A work queue that never blocks the sender and blocks the receiver when the internal work queue is empty.
@@ -17,7 +18,8 @@ type PrioritizedWorkQueue struct {
 	inboundLow         chan *AgreementWork // This is the low priority inbound channel.
 	workQueueBufferLow []*AgreementWork    // The internal work queue buffer for the low inbound channel.
 
-	recv chan *AgreementWork
+	recv       chan *AgreementWork // This is the channel where workers listen/block for work.
+	bufferLock sync.Mutex          // A lock that protects access to the work queue buffers.
 }
 
 func NewPrioritizedWorkQueue(bufferSize uint64) *PrioritizedWorkQueue {
@@ -50,6 +52,61 @@ func (n *PrioritizedWorkQueue) Receive() chan *AgreementWork {
 	return n.recv
 }
 
+func (n *PrioritizedWorkQueue) TotalBufferedWork() int {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	return len(n.workQueueBufferHigh) + len(n.workQueueBufferLow)
+}
+
+func (n *PrioritizedWorkQueue) HighPriorityBufferLen() int {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	return len(n.workQueueBufferHigh)
+}
+
+func (n *PrioritizedWorkQueue) GetHighPriorityBufferHead() *AgreementWork {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	head := n.workQueueBufferHigh[0]
+	return head
+}
+
+func (n *PrioritizedWorkQueue) RemoveHighPriorityBufferHead() {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	n.workQueueBufferHigh = n.workQueueBufferHigh[1:]
+}
+
+func (n *PrioritizedWorkQueue) AddToHighPriorityBuffer(w *AgreementWork) {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	n.workQueueBufferHigh = append(n.workQueueBufferHigh, w)
+}
+
+func (n *PrioritizedWorkQueue) LowPriorityBufferLen() int {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	return len(n.workQueueBufferLow)
+}
+
+func (n *PrioritizedWorkQueue) GetLowPriorityBufferHead() *AgreementWork {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	head := n.workQueueBufferLow[0]
+	return head
+}
+func (n *PrioritizedWorkQueue) RemoveLowPriorityBufferHead() {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	n.workQueueBufferLow = n.workQueueBufferLow[1:]
+}
+
+func (n *PrioritizedWorkQueue) AddToLowPriorityBuffer(w *AgreementWork) {
+	n.bufferLock.Lock()
+	defer n.bufferLock.Unlock()
+	n.workQueueBufferLow = append(n.workQueueBufferLow, w)
+}
+
 const HIGH_PRIORITY = "high"
 const LOW_PRIORITY = "low"
 const BOTH_PRIORITY = "both"
@@ -71,7 +128,7 @@ func (n *PrioritizedWorkQueue) run() {
 	whichInbound := ""
 
 	for {
-		if n.inboundHigh == nil && len(n.workQueueBufferHigh) == 0 {
+		if n.inboundHigh == nil && n.HighPriorityBufferLen() == 0 {
 			glog.V(3).Infof(pwqString("Closing receive channel"))
 			close(n.recv)
 			break
@@ -83,13 +140,13 @@ func (n *PrioritizedWorkQueue) run() {
 		// However, if there is bufferd work, the select will use the channel that worker threads are blocked on. This
 		// will allow work to be passed to a worker.
 		whichInbound = BOTH_PRIORITY
-		if len(n.workQueueBufferHigh) > 0 {
+		if n.HighPriorityBufferLen() > 0 {
 			recvChan = n.recv
-			recvVal = n.workQueueBufferHigh[0]
+			recvVal = n.GetHighPriorityBufferHead()
 			whichInbound = HIGH_PRIORITY
-		} else if len(n.workQueueBufferLow) > 0 {
+		} else if n.LowPriorityBufferLen() > 0 {
 			recvChan = n.recv
-			recvVal = n.workQueueBufferLow[0]
+			recvVal = n.GetLowPriorityBufferHead()
 			whichInbound = LOW_PRIORITY
 		}
 
@@ -109,7 +166,7 @@ func (n *PrioritizedWorkQueue) run() {
 		case i, ok := <-n.inboundHigh:
 			if ok {
 				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound high: %v", *i)))
-				n.workQueueBufferHigh = append(n.workQueueBufferHigh, i)
+				n.AddToHighPriorityBuffer(i)
 			} else {
 				// The channel must be closed now.
 				glog.V(3).Infof(pwqString("closing inbound high"))
@@ -118,7 +175,7 @@ func (n *PrioritizedWorkQueue) run() {
 		case i, ok := <-inLowChan:
 			if ok {
 				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound low: %v", *i)))
-				n.workQueueBufferLow = append(n.workQueueBufferLow, i)
+				n.AddToLowPriorityBuffer(i)
 			} else {
 				// The channel must be closed now.
 				glog.V(3).Infof(pwqString("closing inbound low"))
@@ -127,9 +184,9 @@ func (n *PrioritizedWorkQueue) run() {
 		case recvChan <- recvVal:
 			glog.V(5).Infof(pwqString(fmt.Sprintf("receiving %v", *recvVal)))
 			if whichInbound == HIGH_PRIORITY {
-				n.workQueueBufferHigh = n.workQueueBufferHigh[1:]
+				n.RemoveHighPriorityBufferHead()
 			} else if whichInbound == LOW_PRIORITY {
-				n.workQueueBufferLow = n.workQueueBufferLow[1:]
+				n.RemoveLowPriorityBufferHead()
 			}
 		}
 	}

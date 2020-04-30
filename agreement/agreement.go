@@ -395,6 +395,9 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			glog.Errorf(logString(fmt.Sprintf("unable to get device from the local database. %v", err)))
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 			deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
+		} else {
+			w.AddDeferredCommand(cmd)
+			return true
 		}
 
 		if deleteMessage {

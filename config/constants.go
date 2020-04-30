@@ -74,3 +74,6 @@ const AnaxAPIPortDefault = "8510"
 
 // The default agreement batch size
 const AgbotAgreementBatchSize_DEFAULT = 200
+
+// The default full rescan interval
+const AgbotFullRescan_DEFAULT = 600

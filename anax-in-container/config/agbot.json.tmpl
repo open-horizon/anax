@@ -5,8 +5,8 @@
         "Partitions": "part0",
         "TxLostDelayTolerationSeconds": 120,
         "AgreementWorkers": 15,
-        "ProtocolTimeoutS": 120,
-        "AgreementTimeoutS": 600,
+        "ProtocolTimeoutS": 240,
+        "AgreementTimeoutS": 360,
         "NoDataIntervalS": 300,
         "ActiveAgreementsURL": "",
         "ActiveAgreementsUser": "",
@@ -29,7 +29,8 @@
         "CheckUpdatedPolicyS": 15,
         "CSSURL": "${CSS_URL}",
         "SecureAPIListenHost": "0.0.0.0",
-        "SecureAPIListenPort": "8083"
+        "SecureAPIListenPort": "8083",
+        "AgreementBatchSize": 1300
     },
     "ArchSynonyms": {
         "x86_64": "amd64",

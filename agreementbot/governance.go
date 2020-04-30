@@ -44,7 +44,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	// Look at all agreements across all protocols
 	for _, agp := range policy.AllAgreementProtocols() {
 
-		protocolHandler := w.consumerPH[agp]
+		protocolHandler := w.consumerPH.Get(agp)
 
 		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
 		if agreements, err := w.db.FindAgreements([]persistence.AFilter{notYetFinalFilter(), persistence.UnarchivedAFilter()}, agp); err == nil {
@@ -183,9 +183,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
 					now := uint64(time.Now().Unix())
 					if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
-						if ag.Pattern == "" {
-							w.retryAgreements.AddRetry(ag.PolicyName, ag.DeviceId)
-						}
+						w.retryAgreements.AddRetry(ag.PolicyName, ag.DeviceId)
 						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
 					}
 				}
@@ -272,7 +270,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 						glog.V(5).Infof(logString(fmt.Sprintf("agreement for %v already terminated.", wlu.DeviceId)))
 
 					} else {
-						w.TerminateAgreement(ag, w.consumerPH[ag.AgreementProtocol].GetTerminationCode(TERM_REASON_POLICY_CHANGED))
+						w.TerminateAgreement(ag, w.consumerPH.Get(ag.AgreementProtocol).GetTerminationCode(TERM_REASON_POLICY_CHANGED))
 					}
 				}
 			} else {
@@ -427,7 +425,7 @@ func (w *AgreementBotWorker) TerminateAgreement(ag *persistence.Agreement, reaso
 	}
 
 	// Queue up a command for an agreement worker to do the blockchain work
-	w.consumerPH[ag.AgreementProtocol].HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason), w.consumerPH[ag.AgreementProtocol])
+	w.consumerPH.Get(ag.AgreementProtocol).HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, reason), w.consumerPH.Get(ag.AgreementProtocol))
 }
 
 func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId string, token string) (*exchange.Device, error) {
@@ -514,7 +512,7 @@ func (w *AgreementBotWorker) GovernBlockchainNeeds() int {
 			neededBCs := make(map[string]map[string]bool)
 			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter()}, agp); err == nil {
 				for _, ag := range agreements {
-					_, bcName, bcOrg := w.consumerPH[agp].GetKnownBlockchain(&ag)
+					_, bcName, bcOrg := w.consumerPH.Get(agp).GetKnownBlockchain(&ag)
 					if bcName != "" {
 						if _, ok := neededBCs[bcOrg]; !ok {
 							neededBCs[bcOrg] = make(map[string]bool)
