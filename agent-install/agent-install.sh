@@ -232,89 +232,6 @@ function validate_number_int() {
 	log_debug "validate_number_int() end"
 }
 
-# set HZN_EXCHANGE_PATTERN to a pattern set in the exchange
-function set_pattern_from_exchange(){
-	log_debug "set_pattern_from_exchange() begin"
-	if [[ "$NODE_ID" != "" ]]; then
-        	if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
-        		HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
-		fi
-		if [[ $CERTIFICATE != "" ]]; then
-			EXCH_OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
-		else
-			EXCH_OUTPUT=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u $HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH) || true
-		fi
-		if [[ "$EXCH_OUTPUT" != "" ]]; then
-			EXCH_PATTERN=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].pattern')
-			if [[ "$EXCH_PATTERN" != "\"\"" ]]; then
-        			HZN_EXCHANGE_PATTERN=$(echo "$EXCH_PATTERN" | sed 's/"//g' )
-			fi
-		fi
-	else
-		log_notify "Node id not set. Skipping finding node pattern in the exchange."
-	fi
-	log_debug "set_pattern_from_exchange() end"
-}
-
-# create a file for HZN_NODE_POLICY to point to containing the node policy found in the exchange
-function set_policy_from_exchange(){
-	log_debug "set_policy_from_exchange() begin"
-
-	# if USER_AUTH is empty we can use the NODE_AUTH to validate the exchange
-	if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
-		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH
-	elif [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
-		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
-	else
-		AUTH=$HZN_EXCHANGE_USER_AUTH
-	fi
-
-	local nodeID=${HZN_EXCHANGE_NODE_AUTH%%:*}
-	if [[ "$nodeID" != "" ]]; then
-		if [[ "${HZN_EXCHANGE_URL: -1}" == "/" ]]; then
-			HZN_EXCHANGE_URL=$(echo "$HZN_EXCHANGE_URL" | sed 's/\/$//')
-		fi
-		if [[ $CERTIFICATE != "" ]]; then
-			EXCH_POLICY=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$nodeID/policy -u $AUTH) || true
-		else
-			EXCH_POLICY=$(curl -fs $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$nodeID/policy -u $AUTH) || true
-		fi
-		if [[ $EXCH_POLICY != "" ]]; then
-			echo $EXCH_POLICY > exchange-node-policy.json
-			HZN_NODE_POLICY="exchange-node-policy.json"
-		fi
-	else
-		log_notify "Node id not set. Skipping finding node policy in the exchange."
-	fi
-	log_debug "set_policy_from_exchange() end"
-}
-
-# validate that the found credentials, org id, certificate, and exchange url will work to view the org in the exchange
-function validate_exchange(){
-	log_debug "validate_exchange() begin"
-
-	# if USER_AUTH is empty we can use the NODE_AUTH to validate the exchange
-	if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
-		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH
-	elif [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
-		AUTH=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
-	else
-		AUTH=$HZN_EXCHANGE_USER_AUTH
-	fi
-
-	if [[ "$CERTIFICATE" != "" ]]; then
-            	OUTPUT=$(curl -fs --cacert $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $AUTH) || true
-	else
-		OUTPUT=$(curl -fs $CERTIFICATE $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID -u $AUTH) || true
-	fi
-
-	if [[ "$OUTPUT" == "" ]]; then
-		log_error "Failed to reach exchange using CERTIFICATE=$CERTIFICATE HZN_EXCHANGE_URL=$HZN_EXCHANGE_URL HZN_ORG_ID=$HZN_ORG_ID, HZN_EXCHANGE_NODE_AUTH=$HZN_EXCHANGE_NODE_AUTH and HZN_EXCHANGE_USER_AUTH=$HZN_EXCHANGE_USER_AUTH"
-		exit 1
-	fi
-	log_debug "validate_exchange() end"
-}
-
 # checks input arguments and env variables specified
 function validate_args(){
 	log_debug "validate_args() begin"
@@ -364,6 +281,13 @@ function validate_args(){
 		help; exit 1
 	fi
 
+	# if NODE_AUTH is set, get the node id to save in /etc/default/horizon
+	if [[ -n $HZN_EXCHANGE_NODE_AUTH ]]; then
+		DEVICE_ID=${HZN_EXCHANGE_NODE_AUTH%%:*}
+	else
+		DEVICE_ID=${HOSTNAME}
+	fi
+
     if [ "${DEPLOY_TYPE}" == "cluster" ]; then
 	if [[ "$NODE_ID" == "" ]]; then
 		log_notify "The NODE_ID value is empty. Please set NODE_ID to edge cluster name in agent-install.cfg or as environment variable. Exiting..."
@@ -394,11 +318,7 @@ function validate_args(){
 	    fi
     fi
 
-    validate_exchange
     get_variable HZN_EXCHANGE_PATTERN $CFG
-        if [ -z "$HZN_EXCHANGE_PATTERN" ] && [ "${DEPLOY_TYPE}" == "device" ]; then
-                set_pattern_from_exchange
-        fi
 
     get_variable HZN_NODE_POLICY $CFG
     # check on mutual exclusive params (node policy and pattern name)
@@ -407,8 +327,6 @@ function validate_args(){
 	# if a node policy is non-empty, check if the file exists
 	if [[ -n  $HZN_NODE_POLICY ]]; then
 		check_exist f "$HZN_NODE_POLICY" "The node policy"
-        elif [[ "$HZN_EXCHANGE_PATTERN" == "" ]] && [ "${DEPLOY_TYPE}" == "device" ]; then
-                set_policy_from_exchange
 	fi
 
     if [ "${DEPLOY_TYPE}" == "device" ]; then
@@ -488,6 +406,7 @@ function create_config() {
             set -x
 		if [ -z "$CERTIFICATE" ]; then
 			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
+				-e "s~^HZN_DEVICE_ID=[^ ]*~HZN_DEVICE_ID=${DEVICE_ID}~g" \
 				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" /etc/default/horizon
 		else
 			if [[ ${CERTIFICATE:0:1} != "/" ]]; then
@@ -498,6 +417,7 @@ function create_config() {
 			fi
 			sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
 				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" \
+				-e "s~^HZN_DEVICE_ID=[^ ]*~HZN_DEVICE_ID=${DEVICE_ID}~g" \
 				-e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}~g" /etc/default/horizon
 		fi
             { set +x; } 2>/dev/null
@@ -618,17 +538,17 @@ function install_macos() {
         set -x
 	if [ -z "$CERTIFICATE" ]; then
 		printf "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
-			\nHZN_DEVICE_ID=${HOSTNAME}"  | sudo tee "$HZN_CONFIG"
+			\nHZN_DEVICE_ID=${DEVICE_ID}"  | sudo tee "$HZN_CONFIG"
 	else
 		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
 			#ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
-			sudo mv $CERTIFICATE /private/etc/horizon/
+			sudo mv $CERTIFICATE /private/etc/horizon/agent-install.crt
 			ABS_CERTIFICATE=/private/etc/horizon/agent-install.crt
 		else
 			ABS_CERTIFICATE=${CERTIFICATE}
 		fi
 		printf "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
-			\nHZN_DEVICE_ID=${HOSTNAME} \nHZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
+			\nHZN_DEVICE_ID=${DEVICE_ID} \nHZN_MGMT_HUB_CERT_PATH=${ABS_CERTIFICATE}"  | sudo tee "$HZN_CONFIG"
 	fi
 
         { set +x; } 2>/dev/null
@@ -917,20 +837,6 @@ function process_node(){
 		NODE_ID=$(hzn node list | jq -r .id)
 		log_notify "Registering node with existing id $NODE_ID"
 	fi
-	if [[ "$HZN_EXCHANGE_PATTERN" == "" ]] && [[ "$HZN_NODE_POLICY" == "" ]] && [[ ! "$OVERWRITE_NODE" == "true" ]]; then
-		LOCAL_PATTERN=$(hzn node list | jq -r .pattern)
-		if [[ "$LOCAL_PATTERN" != "null" ]] && [[ "$LOCAL_PATTERN" != "" ]]; then
-			HZN_EXCHANGE_PATTERN=$LOCAL_PATTERN
-		fi
-		if [[ "$HZN_EXCHANGE_PATTERN" = "" ]]; then
-			hzn policy list > local-node-policy.json
-			HZN_NODE_POLICY="local-node-policy.json"
-			log_info "Registering node with existing policy $(hzn policy list)"
-		else
-			log_info "Registering node with existing pattern $HZN_EXCHANGE_PATTERN"
-		fi
-	fi
-
 
 	if [ "$NODE_STATE" = "configured" ]; then
 		# node is registered
