@@ -58,6 +58,7 @@ type AgreementBotWorker struct {
 	lastSearchComplete bool
 	lastSearchTime     uint64
 	searchThread       chan bool
+	retryAgreements     *RetryAgreements
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
@@ -81,6 +82,7 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 		lastSearchComplete: true,
 		lastSearchTime:     0,
 		searchThread:       make(chan bool, 10),
+		retryAgreements:    NewRetryAgreements(),
 	}
 
 	glog.Info("Starting AgreementBot worker")
@@ -620,6 +622,10 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 	}
 	glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
 
+	// Combinations of nodes and policies that seem to be compatible but which fail to make an agreement
+	// due to unfortunate timing, will be retried by this function.
+	w.handleRetryAgreements()
+
 	// If shutdown has not started then keep looking for nodes to make agreements with. This can be a very long running and
 	// expensive operation so it will be dispatched onto a separate go thread.
 	// If shutdown has started then we will stop making new agreements. Instead we will look for agreements that have not yet completed
@@ -696,30 +702,33 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 	// current timestamp to be saved as the last agreement making cycle start time later.
 	currentAgMakingStartTime := uint64(time.Now().Unix()) - 1
 
-	// get a list of all the pattern orgs this agbot is serving
+	// Get a list of all the orgs this agbot is serving.
 	allOrgs := w.pm.GetAllPolicyOrgs()
 	for _, org := range allOrgs {
-		// Get a copy of all policies in the policy manager that pulls from the policy files so that we can safely iterate the list
-		// This is the pattern case
+		// Get a copy of all policies in the policy manager that pulls from the policy files so that we can safely iterate the list.
 		patternPolicies := w.pm.GetAllAvailablePolicies(org)
 		for _, consumerPolicy := range patternPolicies {
 			if consumerPolicy.PatternId != "" {
-				w.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0)
+				w.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0, nil)
 			} else if pBE := w.BusinessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
 				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
-				w.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated)
+				w.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated, nil)
 			}
 		}
 	}
 
-	// The current agreement making cycle is done, save the timestamp and tell the main thread that it's done.
+	// Done scanning all nodes across all policies.
 	w.lastAgMakingTime = currentAgMakingStartTime
+
 	w.searchThread <- true
 }
 
+// Returns true if the input nodeId should be filtered out.
+type SearchFilter func(nodeId string) bool
+
 // Search the exchange and make agreements with any device that is eligible based on the policies we have and
 // agreement protocols that we support.
-func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64) {
+func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64, filter SearchFilter) {
 
 	if devices, err := w.searchExchange(consumerPolicy, org, polName, polLastUpdateTime); err != nil {
 		glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", consumerPolicy, err)
@@ -727,14 +736,15 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 
 		for _, dev := range *devices {
 
+			if filter != nil && filter(dev.Id) {
+				continue
+			}
+
 			glog.V(3).Infof("AgreementBotWorker picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)
 			glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
 
 			// Check for agreements already in progress with this device
-			if found, err := w.alreadyMakingAgreementWith(&dev, consumerPolicy); err != nil {
-				glog.Errorf("AgreementBotWorker received error trying to find pending agreements: %v", err)
-				continue
-			} else if found {
+			if found := w.alreadyMakingAgreementWith(&dev, consumerPolicy); found {
 				glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
 				continue
 			}
@@ -747,9 +757,9 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 
 			producerPolicy := policy.Policy_Factory(consumerPolicy.Header.Name)
 
-			// get the cached service policies from the business policy manager. The returned value
+			// Get the cached service policies from the business policy manager. The returned value
 			// is a map keyed by the service id.
-			// There could be many service versions defined in a businees policy.
+			// There could be many service versions defined in a business policy.
 			// The policy manager only caches the ones that are used by an old agreement for this business policy.
 			// The cached ones may not be what the new agreement will use. If the new agreement chooses a
 			// new service version, then the new service policy will be put into the cache.
@@ -781,10 +791,12 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 		}
 
 	}
+
 }
 
 // Check all agreement protocol buckets to see if there are any agreements with this device.
-func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy) (bool, error) {
+// Return true if there is already an agreement for this node and policy.
+func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy) bool {
 
 	// Check to see if we're already doing something with this device
 	pendingAgreementFilter := func() persistence.AFilter {
@@ -805,12 +817,15 @@ func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResu
 			if ag.AgreementFinalizedTime != 0 {
 				glog.V(5).Infof("AgreementBotWorker sending agreement verify for %v", ag.CurrentAgreementId)
 				w.consumerPH[ag.AgreementProtocol].VerifyAgreement(&ag, w.consumerPH[ag.AgreementProtocol])
+				if ag.Pattern == "" {
+					w.retryAgreements.AddRetry(consumerPolicy.Header.Name, dev.Id)
+				}
 			}
 
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 
 }
 
