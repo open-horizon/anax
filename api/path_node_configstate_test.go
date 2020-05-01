@@ -497,7 +497,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 	theOrg := "myorg"
 	thePattern := "apattern"
 
-	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "cluster", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
+	_, err = persistence.SaveNewExchangeDevice(db, "testid", "testtoken", "testname", "device", false, theOrg, thePattern, persistence.CONFIGSTATE_CONFIGURING)
 	if err != nil {
 		t.Errorf("failed to create persisted device, error %v", err)
 	}

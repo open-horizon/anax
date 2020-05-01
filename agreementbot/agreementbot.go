@@ -58,7 +58,7 @@ type AgreementBotWorker struct {
 	lastSearchComplete bool
 	lastSearchTime     uint64
 	searchThread       chan bool
-	retryAgreements     *RetryAgreements
+	retryAgreements    *RetryAgreements
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {

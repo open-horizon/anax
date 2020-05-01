@@ -765,6 +765,23 @@ cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
   "arch":"amd64",
   "requiredServices":[
   ],
+  "userInput": [
+      {
+        "name": "var1",
+        "label": "",
+        "type": "string"
+       },
+      {
+        "name": "var2",
+        "label": "",
+        "type": "int"
+      },
+      {
+        "name": "var3",
+        "label": "",
+        "type": "float"
+      }
+  ],
   "clusterDeployment": {
     "operatorYamlArchive": "/root/input_files/k8s_deploy/k8s_deployment_files_1.tar.gz"
    },

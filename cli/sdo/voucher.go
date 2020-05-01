@@ -221,7 +221,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	// Import the voucher to the SDO owner service
 	creds := cliutils.OrgAndCreds(org, userCreds)
 	importResponse := ImportResponse{}
-	SdoPostVoucher(sdoUrl + "/voucher", creds, voucherBytes, &importResponse)
+	SdoPostVoucher(sdoUrl+"/voucher", creds, voucherBytes, &importResponse)
 	if !quieter {
 		msgPrinter.Printf("Voucher imported. Node id: %s, token: %s", importResponse.NodeId, importResponse.NodeToken)
 		msgPrinter.Println()
