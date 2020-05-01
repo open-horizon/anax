@@ -10,7 +10,7 @@ RUN microdnf update -y --nodocs && microdnf clean all
 # shadow-utils contains groupadd and adduser commands
 RUN microdnf install --nodocs -y shadow-utils \
 	&& groupadd -g 1000 cssuser && adduser -u 1000 -g cssuser cssuser \
-    && microdnf install --nodocs -y openssl ca-certificates \
+    && microdnf install --nodocs -y openssl ca-certificates gettext \
     && microdnf clean all
 
 # add license file
@@ -19,8 +19,13 @@ COPY LICENSE.txt /licenses
 
 ADD cloud-sync-service /home/cssuser/cloud-sync-service
 
-RUN mkdir /var/edge-sync-service && chown -R cssuser:cssuser /var/edge-sync-service
+RUN mkdir -p /var/edge-sync-service /etc/edge-sync-service /usr/edge-sync-service/bin
+
+COPY config/sync.conf.tmpl /etc/edge-sync-service
+COPY script/css_start.sh /usr/edge-sync-service/bin
+
+RUN chown -R cssuser:cssuser /var/edge-sync-service /etc/edge-sync-service /usr/edge-sync-service/bin
 
 USER cssuser
 
-CMD ["/home/cssuser/cloud-sync-service"]
+CMD ["/usr/edge-sync-service/bin/css_start.sh"]
