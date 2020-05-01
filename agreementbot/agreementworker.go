@@ -32,11 +32,6 @@ const ASYNC_CANCEL = "ASYNC_CANCEL"
 const MMS_OBJECT_POLICY = "MMS_OBJECT_POLICY"
 const STOP = "PROTOCOL_WORKER_STOP"
 
-// device types. make the duplicates here so that agbot does not have dependency on
-// the edge side persistence
-const DEVICE_TYPE_DEVICE = "device"
-const DEVICE_TYPE_CLUSTER = "cluster"
-
 type AgreementWork interface {
 	Type() string
 }
@@ -601,7 +596,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 			// Save the deployment and implementation package details into the consumer policy so that the node knows how to run
 			// the workload/service in the policy.
-			if nodeType == DEVICE_TYPE_CLUSTER {
+			if nodeType == persistence.DEVICE_TYPE_CLUSTER {
 				workload.ClusterDeployment = workloadDetails.GetClusterDeploymentString()
 				workload.ClusterDeploymentSignature = workloadDetails.GetClusterDeploymentSignature()
 			} else {
@@ -632,7 +627,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcIds, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, nodeType, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcIds, wi.ConsumerPolicy.NodeH); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Decoding device publicKey to []byte
@@ -796,36 +791,38 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 			// For the purposes of compatibility, skip this function if the agbot config has not been updated to point to the CSS.
 			// Only non-pattern based agreements can use MMS object policy.
-			if b.GetCSSURL() != "" && agreement.Pattern == "" {
+			if agreement.GetDeviceType() == persistence.DEVICE_TYPE_DEVICE {
+				if b.GetCSSURL() != "" && agreement.Pattern == "" {
 
-				// Retrieve the node policy.
-				nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
-				msgPrinter := i18n.GetMessagePrinter()
-				_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
-				if err != nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-				} else if nodePolicy == nil {
-					glog.Warning(BAWlogstring(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
-				} else {
-					glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
-				}
-
-				// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
-				// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
-				// all 3 pieces.
-				for _, serviceId := range agreement.ServiceId {
-
-					serviceNamePieces := strings.SplitN(serviceId, "_", 3)
-
-					objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
-
-					if err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy, false); err != nil {
-						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+					// Retrieve the node policy.
+					nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
+					msgPrinter := i18n.GetMessagePrinter()
+					_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, agreement.DeviceId, msgPrinter)
+					if err != nil {
+						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+					} else if nodePolicy == nil {
+						glog.Warning(BAWlogstring(workerId, fmt.Sprintf("cannot find node policy for this node %v.", agreement.DeviceId)))
+					} else {
+						glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
 					}
 
+					// Query the MMS cache to find objects with policies that refer to the agreed-to service(s). Service IDs are
+					// a concatenation of org '/' service name, hardware architecture and version, separated by underscores. We need
+					// all 3 pieces.
+					for _, serviceId := range agreement.ServiceId {
+
+						serviceNamePieces := strings.SplitN(serviceId, "_", 3)
+
+						objPolicies := b.mmsObjMgr.GetObjectPolicies(agreement.Org, serviceNamePieces[0], serviceNamePieces[2], serviceNamePieces[1])
+
+						if err := AssignObjectToNode(b, objPolicies, agreement.DeviceId, nodePolicy, false); err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to assign object(s) to node %v, error %v", agreement.DeviceId, err)))
+						}
+
+					}
+				} else if b.GetCSSURL() == "" {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 				}
-			} else if b.GetCSSURL() == "" {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("unable to evaluate object placement because there is no CSS URL configured in this agbot")))
 			}
 
 			// Send the reply Ack if it's still valid.
