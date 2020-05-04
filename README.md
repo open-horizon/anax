@@ -77,3 +77,4 @@ Only `hzn` command supports internationalization. To test, set LANG or HZN_LANG 
 #### Development Environment
 
 Note that this Makefile can construct its own `GOPATH` and build from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To get full tool support clone this project as `$GOPATH/src/github.com/open-horizon/anax`.
+
