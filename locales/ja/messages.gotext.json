@@ -2,6 +2,1714 @@
   "language": "ja",
   "messages": [
     {
+      "id": [
+        "EL_AG_UNABLE_READ_POL_FILE",
+        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "サービス {Arg_2} のポリシー・ファイル {Arg_1} を読み取れません。エラー: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_START_ADVERTISE_POL",
+        "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを開始します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_ADVERTISE_POL",
+        "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用してポリシーをアドバタイズできません: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_COMPLETE_ADVERTISE_POL",
+        "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを完了します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
+        "unable to read node policy from the local database. {Arg_1}"
+      ],
+      "message": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "ローカル・データベースからノード・ポリシーを読み取れません。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_FROM_DB",
+        "Unable to read node object from the local database. {Arg_1}"
+      ],
+      "message": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "ローカル・データベースからノード・オブジェクトを読み取れません。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
+        "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+      "translation": "ローカルのノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
+        "Node policy updated with the exchange copy: {Arg_1}"
+      ],
+      "message": "Node policy updated with the exchange copy: {Arg_1}",
+      "translation": "ノード・ポリシーが Exchange のコピーによって更新されました: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
+        "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+      "translation": "ローカルのノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
+        "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
+      ],
+      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_CANNOT_VERIFY_AG",
+        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
+      ],
+      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "ノードは利用者との契約 {Arg_1} を検証できませんでした。 キャンセルします。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_IS_OFFLINE",
+        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+      ],
+      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "ノードはオフラインです。 接続が復元されるまで、定期的なオフライン・エラー・メッセージのログ記録は抑制されます",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
+        "Unable to sync the node with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
+      "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
+        "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
+      ],
+      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+      "translation": "ノード・リソース {Arg_1} のサービス構成状態を Exchange から取得できません。エラー {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
+        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
+      ],
+      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "ローカル・データベースから保存済みノード Exchange パターンを取得できません。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
+        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
+      ],
+      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "新しいノード Exchange パターン {Arg_1} をローカル・データベースに保存できません。 エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_TERM_UNABLE_SYNC_CONTAINERS",
+        "anax terminating, unable to sync up containers."
+      ],
+      "message": "anax terminating, unable to sync up containers.",
+      "translation": "anax を終了します。コンテナーを同期できません。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_TERM_UNABLE_SYNC_AGS",
+        "anax terminating, unable to complete agreement sync up. {Arg_1}"
+      ],
+      "message": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+      "translation": "anax を終了します。契約の同期を実行できません。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No input found.",
+      "message": "No input found.",
+      "translation": "入力が見つかりません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "message": "Unauthorized. No exchange user id is supplied.",
+      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "message": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "message": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "message": "No exchange user id is supplied.",
+      "translation": "Exchange ユーザー ID が提供されていません。",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "message": "No exchange user organization id is supplied.",
+      "translation": "Exchange ユーザー組織 ID が提供されていません。",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "message": "No exchange user password or api key is supplied.",
+      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "message": "Wrong organization id, user id or password.",
+      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Internal server error",
+      "message": "Internal server error",
+      "translation": "内部サーバー・エラー",
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing the selections {Form}. {Err}",
+      "message": "Error parsing the selections {Form}. {Err}",
+      "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}",
+      "placeholders": [
+        {
+          "id": "Form",
+          "string": "%[1]v",
+          "type": "net/url.Values",
+          "underlyingType": "map[string][]string",
+          "argNum": 1,
+          "expr": "r.Form"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting {Resource} for output, error {Err}",
+      "message": "Error getting {Resource} for output, error {Err}",
+      "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}",
+      "placeholders": [
+        {
+          "id": "Resource",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "resource"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
+        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
+        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
+        "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード更新の入力を構文解析しているときにエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
+        "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
+        "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
+        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディに制約式またはプロパティー・リストが含まれていませんでした:{Arg_1}、エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
+        "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。 入力ボディを UserInput オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_REG",
+        "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "ノード {Arg_1} のノード構成/登録でエラーが発生しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UPDATE",
+        "Error in updating node {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "ノード {Arg_1} の更新でエラーが発生しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UNREG",
+        "Error in node unregistration. {Arg_1}"
+      ],
+      "message": "Error in node unregistration. {Arg_1}",
+      "translation": "ノードの登録解除でエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
+        "Error verifiying exchange version. error: {Arg_1}"
+      ],
+      "message": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "Exchange のバージョンの確認でエラーが発生しました。 エラー: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_CREATE",
+        "Error in creating or replacing node policy. {Arg_1}"
+      ],
+      "message": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "ノード・ポリシーの作成または置換中にエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_PATCH",
+        "Error in patching node policy. {Arg_1}"
+      ],
+      "message": "Error in patching node policy. {Arg_1}",
+      "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_DEL",
+        "Error in deleting node policy. {Arg_1}"
+      ],
+      "message": "Error in deleting node policy. {Arg_1}",
+      "translation": "ノード・ポリシーの削除でエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_UPDATE",
+        "Error in updating node user input. {Arg_1}"
+      ],
+      "message": "Error in updating node user input. {Arg_1}",
+      "translation": "ノードのユーザー入力の更新でエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_PATCH",
+        "Error in patching node user input. {Arg_1}"
+      ],
+      "message": "Error in patching node user input. {Arg_1}",
+      "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_DEL",
+        "Error in deleting node userinput. {Arg_1}"
+      ],
+      "message": "Error in deleting node userinput. {Arg_1}",
+      "translation": "ノードのユーザー入力の削除でエラーが発生しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_REG",
+        "Start node configuration/registration for node {Arg_1}."
+      ],
+      "message": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "ノード {Arg_1} に対するノード構成/登録を開始します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_UPDATE",
+        "Start updating node {Arg_1}."
+      ],
+      "message": "Start updating node {Arg_1}.",
+      "translation": "ノード {Arg_1} の更新を開始します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_UPDATE",
+        "Complete node update for {Arg_1}."
+      ],
+      "message": "Complete node update for {Arg_1}.",
+      "translation": "{Arg_1} に対するノード更新を完了します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_UNREG",
+        "Start node unregistration."
+      ],
+      "message": "Start node unregistration.",
+      "translation": "ノードの登録解除を開始します。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_UNREG",
+        "Node unregistration complete for node {Arg_1}."
+      ],
+      "message": "Node unregistration complete for node {Arg_1}.",
+      "translation": "ノード {Arg_1} に対するノードの登録解除が完了しました。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_NOT_FOUND",
+        "Error unregistring the node. The node is not found from the database."
+      ],
+      "message": "Error unregistring the node. The node is not found from the database.",
+      "translation": "ノードを登録解除しているときにエラーが発生しました。 このノードはデータベースで見つかりません。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
+        "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+      ],
+      "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "ノードを登録解除しているときにエラーが発生しました。 ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "ノード登録解除の入力エラー。 {Arg_1} は removeNode の誤った値です",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "ノード登録解除の入力エラー。 {Arg_1} は deepClean の誤った値です",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for block"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "ノード登録解除の入力エラー。 {Arg_1} は block の誤った値です",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_READ_NODE_FROM_DB",
+        "Unable to read node object from database, error {Arg_1}"
+      ],
+      "message": "Unable to read node object from database, error {Arg_1}",
+      "translation": "データベースからノード・オブジェクトを読み取れません。エラー {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
+        "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
+      ],
+      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_CONF_NOT_FOUND",
+        "Error in node configuration. The node is not found from the database."
+      ],
+      "message": "Error in node configuration. The node is not found from the database.",
+      "translation": "ノード構成のエラー。 このノードはデータベースで見つかりません。",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_CONF_WRONG_STATE",
+        "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
+      ],
+      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "ノード構成のエラー。 状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_UNSUP_NODE_STATE_TRANS",
+        "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
+      ],
+      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "「{Arg_1}」から「{Arg_2}」へのノードの状態遷移はサポートされていません。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_FAIL_GET_UI_FROM_DB",
+        "Failed get user input from local db. {Arg_1}"
+      ],
+      "message": "Failed get user input from local db. {Arg_1}",
+      "translation": "ローカル・データベースからのユーザー入力の取得に失敗しました。 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
+        "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
+      ],
+      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "ローカル・ユーザー入力からサービス {Arg_1}/{Arg_2} の設定を見つけられませんでした。エラー: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SAVE_NODE_CONFSTATE",
+        "Error saving new node config state to database: {Arg_1}"
+      ],
+      "message": "Error saving new node config state to database: {Arg_1}",
+      "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_REG",
+        "Complete node configuration/registration for node {Arg_1}."
+      ],
+      "message": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "ノード {Arg_1} のノード構成/登録を完了します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SVC_CONF",
+        "Error in service configuration for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} のサービス構成でエラーが発生しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_GET_SREFS_FOR_PATTERN",
+        "Error getting service references for pattern {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_IGNORE_TYPE_MISMATCH",
+        "Ignoring service. {Arg_1}"
+      ],
+      "message": "Ignoring service. {Arg_1}",
+      "translation": "サービスを無視します。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NEW_NODE_POL",
+        "New node policy: {Arg_1}"
+      ],
+      "message": "New node policy: {Arg_1}",
+      "translation": "新規ノード・ポリシー: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NODE_POL_DELETED",
+        "Deleted node policy"
+      ],
+      "message": "Deleted node policy",
+      "translation": "ノード・ポリシーを削除しました",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NEW_NODE_UI",
+        "New node user input: {Arg_1}"
+      ],
+      "message": "New node user input: {Arg_1}",
+      "translation": "新規ノードのユーザー入力: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NO_NODE_UI_TO_DEL",
+        "No node user input to detele"
+      ],
+      "message": "No node user input to detele",
+      "translation": "削除するノード・ユーザー入力はありません",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_DELETED_ALL_NODE_UI",
+        "Deleted all node user input"
+      ],
+      "message": "Deleted all node user input",
+      "translation": "すべてのノード・ユーザー入力を削除しました",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_SVC_CONFIG",
+        "Start service configuration with user input for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_SVC_AUTO_CONFIG",
+        "Start service auto configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を開始します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_SVC_CONFIG",
+        "Complete service configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} に対するサービスの構成を完了します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_SVC_AUTO_CONFIG",
+        "Complete service auto configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を完了します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
+        "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable."
+      ],
+      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "変数 {Arg_1} が {Arg_2}/{Arg_3} のサービス構成にありません。 欠落している変数の設定がデプロイメント・ポリシーに含まれていない場合、契約が結ばれない可能性があります。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_CONFIG_SVC",
+        "Error configuring service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "サービス {Arg_1} の構成中にエラーが発生しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
+        "Error changing service configstate {Arg_1}, error {Arg_2}"
+      ],
+      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_CHANGE_SVC_CONFIGSTATE",
+        "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
+      ],
+      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を開始します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
+        "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
+      ],
+      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "message": "Error converting the selections into Selectors: {Err}",
+      "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "message": "Name, or Org is empty string.",
+      "translation": "Name または Org が空ストリングです。",
+      "fuzzy": true
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "message": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 配列が空です。",
+      "fuzzy": true
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "message": "properties contains an invalid property: {Err}",
+      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "message": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。",
+      "placeholders": [
+        {
+          "id": "PROPSVCPRIVILEGED",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_FAILED",
+        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_RESTORED",
+        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "[verbose] {M}",
       "message": "[verbose] {M}",
       "translation": "[詳細] {M}",
@@ -1682,162 +3390,259 @@
       "fuzzy": true
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: {Expr} で空白文字は使用できません。",
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "message": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} は次のとおり構文解析されました: domain={Domain}、path={Path}、tag={Tag}",
       "placeholders": [
         {
-          "id": "Expr",
-          "string": "%[1]v",
+          "id": "Image",
+          "string": "%[1]s",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "message": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。",
-      "placeholders": [
-        {
-          "id": "Expr",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "message": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。",
-      "placeholders": [
-        {
-          "id": "V1",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "v1"
+          "expr": "image"
         },
         {
-          "id": "V2",
+          "id": "Domain",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "domain"
+        },
+        {
+          "id": "Path",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "path"
+        },
+        {
+          "id": "Tag",
+          "string": "%[4]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "message": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "警告: イメージ・パス「{Image}」を構文解析できませんでした。 Docker レジストリーにはプッシュせず、そのままの状態で「deployment」フィールドに含めます。",
+      "placeholders": [
+        {
+          "id": "Image",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "image"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "no service name",
+      "message": "no service name",
+      "translation": "サービス名がありません",
+      "fuzzy": true
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "message": "no docker image for service {ServiceName}",
+      "translation": "サービス {ServiceName} の Docker イメージがありません",
+      "placeholders": [
+        {
+          "id": "ServiceName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "message": "failed to marshal body for {D}: {Err}",
+      "translation": "{D} のボディのマーシャルに失敗しました: {Err}",
+      "placeholders": [
+        {
+          "id": "D",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "d"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "message": "user input {Name} has no default value and is not set",
+      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ui.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'userInput' is not supported for cluster type service.",
+      "message": "'userInput' is not supported for cluster type service.",
+      "translation": "「userInput」はクラスター・タイプ・サービスではサポートされません。",
+      "fuzzy": true
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "message": "'requiredServices' is not supported for cluster type service.",
+      "translation": "「requiredServices」はクラスター・タイプ・サービスではサポートされません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "message": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "サービス {ReqSvc} のバージョン {Ver} をバージョン範囲式に変換できませんでした。",
+      "placeholders": [
+        {
+          "id": "Ver",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver"
+        },
+        {
+          "id": "ReqSvc",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 2,
+          "expr": "reqSvc"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving service from the exchange for {ReqSvc}. {Err}",
+      "message": "Error retrieving service from the exchange for {ReqSvc}. {Err}",
+      "translation": "Exchange から {ReqSvc} のサービスを取得しているときにエラーが発生しました。{Err}",
+      "placeholders": [
+        {
+          "id": "ReqSvc",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "reqSvc"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "message": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "必須サービス {SId} のサービス・タイプが正しくありません: {SType}。",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
+        },
+        {
+          "id": "SType",
           "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "v2"
+          "expr": "sType"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_AG_NODE_HB_FAILED",
-        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}",
+      "id": "The depended service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "message": "The depended service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。",
       "placeholders": [
         {
-          "id": "Arg_1",
+          "id": "Id",
           "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "id"
         },
         {
-          "id": "Arg_2",
+          "id": "SId",
           "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sId"
         },
         {
-          "id": "Arg_3",
+          "id": "SType1",
           "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_HB_RESTORED",
-        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sType1"
         }
       ],
       "fuzzy": true
@@ -1849,9 +3654,9 @@
       "fuzzy": true
     },
     {
-      "id": "Neither bussiness policy nor pattern is specified.",
-      "message": "Neither bussiness policy nor pattern is specified.",
-      "translation": "ビジネス・ポリシーもパターンも指定されていません。",
+      "id": "Neither deployment policy nor pattern is specified.",
+      "message": "Neither deployment policy nor pattern is specified.",
+      "translation": "デプロイメント・ポリシーもパターンも指定されていません。",
       "fuzzy": true
     },
     {
@@ -2008,6 +3813,66 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+      "message": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+      "translation": "ノード・タイプが無効です: {NodeType}。これは「device」または「cluster」でなければなりません。",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+      "message": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+      "translation": "入力ノード・タイプ「{NodeType}」が、ノード {NodeId} のノード・タイプ「{ExchNodeType}」と一致しません。",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        },
+        {
+          "id": "ExchNodeType",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeType"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service does not have deployment configuration for node type 'device'.",
+      "message": "Service does not have deployment configuration for node type 'device'.",
+      "translation": "サービスには、ノード・タイプ「device」のデプロイメント構成はありません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
+      "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
+      "translation": "サービスには、ノード・タイプ「cluster」のクラスター・デプロイメント構成はありません。",
+      "fuzzy": true
+    },
+    {
       "id": "The PolicyCheck input cannot be null",
       "message": "The PolicyCheck input cannot be null",
       "translation": "PolicyCheck 入力を NULL にすることはできません",
@@ -2114,9 +3979,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "message": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "ビジネス・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。",
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+      "translation": "デプロイメント・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -2130,9 +3995,9 @@
       "fuzzy": true
     },
     {
-      "id": "No services found in the business policy.",
-      "message": "No services found in the business policy.",
-      "translation": "ビジネス・ポリシー内でサービスは見つかりませんでした。",
+      "id": "No services found in the deployment policy.",
+      "message": "No services found in the deployment policy.",
+      "translation": "デプロイメント・ポリシー内でサービスが見つかりません。",
       "fuzzy": true
     },
     {
@@ -2142,9 +4007,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy cannot be null.",
-      "message": "Business policy cannot be null.",
-      "translation": "ビジネス・ポリシーを NULL にすることはできません。",
+      "id": "Deployment policy cannot be null.",
+      "message": "Deployment policy cannot be null.",
+      "translation": "デプロイメント・ポリシーを NULL にすることはできません。",
       "fuzzy": true
     },
     {
@@ -2326,9 +4191,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "message": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "translation": "ビジネス・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}",
+      "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+      "message": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+      "translation": "デプロイメント・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2350,9 +4215,9 @@
       "fuzzy": true
     },
     {
-      "id": "Validation failure for business policy {BpId}. {Err}",
-      "message": "Validation failure for business policy {BpId}. {Err}",
-      "translation": "ビジネス・ポリシー {BpId} の検証失敗。 {Err}",
+      "id": "Validation failure for deployment policy {BpId}. {Err}",
+      "message": "Validation failure for deployment policy {BpId}. {Err}",
+      "translation": "デプロイメント・ポリシー {BpId} の検証失敗。{Err}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2374,9 +4239,9 @@
       "fuzzy": true
     },
     {
-      "id": "No services specified in the given business policy {BpId}.",
-      "message": "No services specified in the given business policy {BpId}.",
-      "translation": "指定されたビジネス・ポリシー {BpId} にはサービスが指定されていません。",
+      "id": "No services specified in the given deployment policy {BpId}.",
+      "message": "No services specified in the given deployment policy {BpId}.",
+      "translation": "指定されたデプロイメント・ポリシー {BpId} にはサービスが指定されていません。",
       "placeholders": [
         {
           "id": "BpId",
@@ -2390,9 +4255,9 @@
       "fuzzy": true
     },
     {
-      "id": "No services specified in the business policy {Name}.",
-      "message": "No services specified in the business policy {Name}.",
-      "translation": "ビジネス・ポリシー {Name} にはサービスが指定されていません。",
+      "id": "No services specified in the deployment policy {Name}.",
+      "message": "No services specified in the deployment policy {Name}.",
+      "translation": "デプロイメント・ポリシー {Name} にはサービスが指定されていません。",
       "placeholders": [
         {
           "id": "Name",
@@ -2406,21 +4271,21 @@
       "fuzzy": true
     },
     {
-      "id": "Neither business policy nor business policy id is specified.",
-      "message": "Neither business policy nor business policy id is specified.",
-      "translation": "ビジネス・ポリシーもビジネス・ポリシー ID も指定されていません。",
+      "id": "Neither deployment policy nor deployment policy id is specified.",
+      "message": "Neither deployment policy nor deployment policy id is specified.",
+      "translation": "デプロイメント・ポリシーもデプロイメント・ポリシー ID も指定されていません。",
       "fuzzy": true
     },
     {
-      "id": "Business policy id is empty.",
-      "message": "Business policy id is empty.",
-      "translation": "ビジネス・ポリシー ID が空です。",
+      "id": "Deployment policy id is empty.",
+      "message": "Deployment policy id is empty.",
+      "translation": "デプロイメント・ポリシー ID が空です。",
       "fuzzy": true
     },
     {
-      "id": "Organization is not specified in the business policy id: {BpId}.",
-      "message": "Organization is not specified in the business policy id: {BpId}.",
-      "translation": "このビジネス・ポリシー ID には組織が指定されていません: {BpId}。",
+      "id": "Organization is not specified in the deployment policy id: {BpId}.",
+      "message": "Organization is not specified in the deployment policy id: {BpId}.",
+      "translation": "このデプロイメント・ポリシー ID には組織が指定されていません: {BpId}。",
       "placeholders": [
         {
           "id": "BpId",
@@ -2434,9 +4299,9 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to get business policy for {BpId}, {Err}",
-      "message": "Unable to get business policy for {BpId}, {Err}",
-      "translation": "{BpId} のビジネス・ポリシーを取得できません。{Err}",
+      "id": "Unable to get deployment policy for {BpId}, {Err}",
+      "message": "Unable to get deployment policy for {BpId}, {Err}",
+      "translation": "{BpId} のデプロイメント・ポリシーを取得できません。{Err}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2458,9 +4323,9 @@
       "fuzzy": true
     },
     {
-      "id": "No business policy found for this id {BpId}.",
-      "message": "No business policy found for this id {BpId}.",
-      "translation": "この ID {BpId} に該当するビジネス・ポリシーが見つかりません。",
+      "id": "No deployment policy found for this id {BpId}.",
+      "message": "No deployment policy found for this id {BpId}.",
+      "translation": "この ID {BpId} に該当するデプロイメント・ポリシーが見つかりません。",
       "placeholders": [
         {
           "id": "BpId",
@@ -2474,9 +4339,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "message": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "translation": "ビジネス・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}",
+      "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+      "message": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+      "translation": "デプロイメント・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2676,15 +4541,15 @@
       "fuzzy": true
     },
     {
-      "id": "The given business policy should not be null.",
-      "message": "The given business policy should not be null.",
-      "translation": "指定されたビジネス・ポリシーは、NULL であってはなりません。",
+      "id": "The given deployment policy should not be null.",
+      "message": "The given deployment policy should not be null.",
+      "translation": "指定されたデプロイメント・ポリシーは、NULL であってはなりません。",
       "fuzzy": true
     },
     {
-      "id": "Error merging business policy with service policy. {Err}",
-      "message": "Error merging business policy with service policy. {Err}",
-      "translation": "ビジネス・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。 {Err}",
+      "id": "Error merging deployment policy with service policy. {Err}",
+      "message": "Error merging deployment policy with service policy. {Err}",
+      "translation": "デプロイメント・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -2698,19 +4563,43 @@
       "fuzzy": true
     },
     {
-      "id": "The business policy should not be null.",
-      "message": "The business policy should not be null.",
-      "translation": "ビジネス・ポリシーは NULL にできません。",
+      "id": "The deployment policy should not be null.",
+      "message": "The deployment policy should not be null.",
+      "translation": "デプロイメント・ポリシーは、NULL であってはなりません。",
       "fuzzy": true
     },
     {
-      "id": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
-      "message": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
-      "translation": "サービス {Org}/{WorkloadURL} のポリシーには {Arg_3} が設定されていますが、これらのサービスでは特権コンテナーで {Arg_4} を実行する必要があることをサービス・イントロスペクションが示しています。",
+      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
+      "message": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
+      "translation": "実行特権を必要とするサービスを参照するときに、デプロイメント・ポリシー {Header} に {PROPNODEPRIVILEGED}=true を指定することはできません。",
+      "placeholders": [
+        {
+          "id": "Header",
+          "string": "%[1]s",
+          "type": "github.com/open-horizon/anax/policy.PolicyHeader",
+          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Version string \"json:\\\"version\\\"\"}",
+          "argNum": 1,
+          "expr": "businessPol.Header"
+        },
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the exchange. {Err}",
+      "message": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the exchange. {Err}",
+      "translation": "Exchange からサービス {Org}/{WorkloadURL} {Version} {Arch} とその従属サービスを取得しているときにエラーが発生しました。{Err}",
       "placeholders": [
         {
           "id": "Org",
-          "string": "%[1]s",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
@@ -2718,25 +4607,137 @@
         },
         {
           "id": "WorkloadURL",
-          "string": "%[2]s",
+          "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
           "expr": "workload.WorkloadURL"
         },
         {
-          "id": "Arg_3",
-          "string": "%[3]s",
-          "type": "",
+          "id": "Version",
+          "string": "%[3]v",
+          "type": "string",
           "underlyingType": "string",
-          "argNum": 3
+          "argNum": 3,
+          "expr": "workload.Version"
         },
         {
-          "id": "Arg_4",
+          "id": "Arch",
           "string": "%[4]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 4
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "workload.Arch"
+        },
+        {
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
+      "message": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "サービス {SIdTop} のデプロイメント構成のマーシャルに失敗しました。エラー {Err}",
+      "placeholders": [
+        {
+          "id": "SIdTop",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sIdTop"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
+      "message": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "サービス {SIdTop} のクラスター・デプロイメント構成のマーシャルに失敗しました。エラー {Err}",
+      "placeholders": [
+        {
+          "id": "SIdTop",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sIdTop"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to find service definition from the input services.",
+      "message": "Unable to find service definition from the input services.",
+      "translation": "入力サービスからサービス定義が見つかりません。",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "message": "Unable to create version expression from {Version}. {Err}",
+      "translation": "{Version} からバージョン式を作成できません。 {Err}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDep.Version"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "message": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}",
+      "placeholders": [
+        {
+          "id": "SDep",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "sDep"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -2754,9 +4755,9 @@
       "fuzzy": true
     },
     {
-      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "message": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンにアーキテクチャー {NodeArch} を持つサービス・バージョンが指定されていません。",
+      "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+      "message": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+      "translation": "アーキテクチャー {NodeArch} を持つサービス・バージョンがデプロイメント・ポリシーにもパターンにも指定されていません。",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -2770,9 +4771,9 @@
       "fuzzy": true
     },
     {
-      "id": "No service versions specified in the business policy or pattern.",
-      "message": "No service versions specified in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンにサービス・バージョンが指定されていません。",
+      "id": "No service versions specified in the deployment policy or pattern.",
+      "message": "No service versions specified in the deployment policy or pattern.",
+      "translation": "デプロイメント・ポリシーにもパターンにもサービス・バージョンが指定されていません。",
       "fuzzy": true
     },
     {
@@ -2828,9 +4829,57 @@
       "fuzzy": true
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "message": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "'arch' {NodeArch} を持つサービスがビジネス・ポリシーにもパターンにも見つかりません。",
+      "id": "Warning: checking node user input:  {Err}",
+      "message": "Warning: checking node user input:  {Err}",
+      "translation": "警告: ノード・ユーザー入力を検査中: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: checking user input for the deployment policy: {Err}",
+      "message": "Warning: checking user input for the deployment policy: {Err}",
+      "translation": "警告: デプロイメント・ポリシーのユーザー入力を検査中: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: checking user input for the pattern: {Err}",
+      "message": "Warning: checking user input for the pattern: {Err}",
+      "translation": "警告: パターンのユーザー入力を検査中: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "'arch' {NodeArch} を持つサービスがデプロイメント・ポリシーにもパターンにも見つかりません。",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -2844,39 +4893,15 @@
       "fuzzy": true
     },
     {
-      "id": "No services found in the business policy or pattern.",
-      "message": "No services found in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーにもパターンにもサービスが見つかりませんでした。",
+      "id": "No services found in the deployment policy or pattern.",
+      "message": "No services found in the deployment policy or pattern.",
+      "translation": "デプロイメント・ポリシーにもパターンにもサービスが見つかりません。",
       "fuzzy": true
     },
     {
       "id": "The input service spec object cannot be null.",
       "message": "The input service spec object cannot be null.",
       "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。",
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "message": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "translation": "Exchange から {SvcSpec} のサービスを取得しているときにエラーが発生しました。 {Err}",
-      "placeholders": [
-        {
-          "id": "SvcSpec",
-          "string": "%[1]v",
-          "type": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
-          "underlyingType": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
-          "argNum": 1,
-          "expr": "svcSpec"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -2982,54 +5007,6 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "message": "Unable to create version expression from {Version}. {Err}",
-      "translation": "{Version} からバージョン式を作成できません。 {Err}",
-      "placeholders": [
-        {
-          "id": "Version",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sDep.Version"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "message": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}",
-      "placeholders": [
-        {
-          "id": "SDep",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 1,
-          "expr": "sDep"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Failed to get the service from the exchange. {Err}",
       "message": "Failed to get the service from the exchange. {Err}",
       "translation": "Exchange からサービスの取得に失敗しました。 {Err}",
@@ -3098,9 +5075,57 @@
       "fuzzy": true
     },
     {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "message": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "translation": "サービス URL {URL} が、ビジネス・ポリシー内に指定されているサービス URL {Name} と一致しません。",
+      "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+      "message": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+      "translation": "{Errmsg} サービス {Org}/{URL} バージョン {Version} アーキテクチャー {Arch} がノード・ユーザー入力にありません。",
+      "placeholders": [
+        {
+          "id": "Errmsg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err_msg"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sdef.GetOrg()"
+        },
+        {
+          "id": "URL",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sdef.GetURL()"
+        },
+        {
+          "id": "Version",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "sdef.GetVersion()"
+        },
+        {
+          "id": "Arch",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "sdef.GetArch()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+      "message": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+      "translation": "サービス URL {URL} が、デプロイメント・ポリシー内に指定されているサービス URL {Name} と一致しません。",
       "placeholders": [
         {
           "id": "URL",
@@ -3122,9 +5147,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "message": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。",
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+      "message": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+      "translation": "サービス組織 {Org} が、デプロイメント・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。",
       "placeholders": [
         {
           "id": "Org",
@@ -3146,9 +5171,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "message": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "translation": "サービス・アーキテクチャー {Arch} が、ビジネス・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。",
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+      "message": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+      "translation": "サービス・アーキテクチャー {Arch} が、デプロイメント・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。",
       "placeholders": [
         {
           "id": "Arch",
@@ -3170,9 +5195,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service version {Version} does not match any service versions specified in the business policy.",
-      "message": "Service version {Version} does not match any service versions specified in the business policy.",
-      "translation": "サービス・バージョン {Version} が、ビジネス・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。",
+      "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
+      "message": "Service version {Version} does not match any service versions specified in the deployment policy.",
+      "translation": "サービス・バージョン {Version} が、デプロイメント・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。",
       "placeholders": [
         {
           "id": "Version",
@@ -3375,6 +5400,694 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+      "message": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。serviceOrgid、serviceUrl、serviceArch、および serviceVersionRange が正しいことを確認してください。",
+      "placeholders": [
+        {
+          "id": "ServiceOrgid",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInput[0].ServiceOrgid"
+        },
+        {
+          "id": "ServiceUrl",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "userInput[0].ServiceUrl"
+        },
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "userInput[0].ServiceVersionRange"
+        },
+        {
+          "id": "ServiceArch",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "userInput[0].ServiceArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+      "message": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。サービス仕様が正しいことを確認してください。",
+      "placeholders": [
+        {
+          "id": "ServiceOrgid",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInput[i].ServiceOrgid"
+        },
+        {
+          "id": "ServiceUrl",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "userInput[i].ServiceUrl"
+        },
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "userInput[i].ServiceVersionRange"
+        },
+        {
+          "id": "ServiceArch",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "userInput[i].ServiceArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+      "message": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} の変数 {Name} は使用されていません。正しい名前であることを確認してください。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "uui.Name"
+        },
+        {
+          "id": "ServiceOrgid",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "userInput[i].ServiceOrgid"
+        },
+        {
+          "id": "ServiceUrl",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "userInput[i].ServiceUrl"
+        },
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "userInput[i].ServiceVersionRange"
+        },
+        {
+          "id": "ServiceArch",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "userInput[i].ServiceArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
+        "Deployment config {Arg_1} contains unsupported capability for a workload"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
+        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
+        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
+        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
+        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
+        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR",
+        "Error starting containers: {Arg_1}"
+      ],
+      "message": "Error starting containers: {Arg_1}",
+      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
+        "Error starting containers for agreement {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
+        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
+        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+      ],
+      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
+        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
+        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR",
+        "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+      ],
+      "message": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax を終了します。構成に指定されたサービス・ストレージ・ディレクトリーにアクセスできません: {Arg_1}。{Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT",
+        "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax を終了します。iptables クライアントのインスタンス化に失敗しました。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT",
+        "anax terminating. Failed to instantiate docker client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax を終了します。Docker クライアントのインスタンス化に失敗しました。{Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "プロパティー {PROPNODEPRIVILEGED} にはブール値 (true または false) が必要です。",
+      "placeholders": [
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "PROP_NODE_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property must include a name and a value: {Property}",
+      "message": "Property must include a name and a value: {Property}",
+      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}",
+      "placeholders": [
+        {
+          "id": "Property",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.Property",
+          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
+          "argNum": 1,
+          "expr": "property"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および string のリストです。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です",
+      "placeholders": [
+        {
+          "id": "ActualType",
+          "string": "%[1]T",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "actualType"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "message": "Value {Value} of property {Name} is not an integer type",
+      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "message": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "Value",
+          "string": "%[2]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "property.Value"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "message": "Property {Name} has invalid value type {ActualType}",
+      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "ActualType",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "actualType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています",
+      "placeholders": [
+        {
+          "id": "Dconstraints",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "dconstraints"
+        },
+        {
+          "id": "Dconstraints_1",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "dconstraints"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "message": "The constraint expression contains unmatched parentheses.",
+      "translation": "制約式に対応しない括弧が含まれています。",
       "fuzzy": true
     },
     {
@@ -4914,10 +7627,10 @@
     },
     {
       "id": [
-        "EL_GOV_START_DOWNGRADE_BECAUSW_UPGRADE_FAILED",
-        "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed."
+        "EL_GOV_START_DOWNGRADE_BECAUSE_UPGRADE_FAILED",
+        "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed."
       ],
-      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
+      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
       "translation": "アップグレードに失敗したため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。",
       "placeholders": [
         {
@@ -4986,10 +7699,10 @@
     {
       "id": [
         "EL_GOV_COMPLETE_DOWNGRADE",
-        "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
+        "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
       ],
-      "message": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のダウングレードを完了します。",
+      "message": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のダウングレードを完了しました。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -5103,9 +7816,9 @@
     {
       "id": [
         "EL_GOV_ERR_DOWNGRADE_FROM",
-        "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}"
+        "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}"
       ],
-      "message": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
+      "message": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
       "translation": "サービス {Arg_1}/{Arg_2} をバージョン {Arg_3} からバージョン {Arg_4} にダウングレードしようとしてエラーが発生しました。 エラー: {Arg_5}",
       "placeholders": [
         {
@@ -5472,1738 +8185,6 @@
       "fuzzy": true
     },
     {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "message": "Error parsing the selections {Form}. {Err}",
-      "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}",
-      "placeholders": [
-        {
-          "id": "Form",
-          "string": "%[1]v",
-          "type": "net/url.Values",
-          "underlyingType": "map[string][]string",
-          "argNum": 1,
-          "expr": "r.Form"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "message": "Error getting {Resource} for output, error {Err}",
-      "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}",
-      "placeholders": [
-        {
-          "id": "Resource",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "resource"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
-        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
-        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
-        "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード更新の入力を構文解析しているときにエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
-        "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
-        "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディに制約式またはプロパティー・リストが含まれていませんでした:{Arg_1}、エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
-        "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。 入力ボディを UserInput オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_REG",
-        "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "ノード {Arg_1} のノード構成/登録でエラーが発生しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UPDATE",
-        "Error in updating node {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "ノード {Arg_1} の更新でエラーが発生しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UNREG",
-        "Error in node unregistration. {Arg_1}"
-      ],
-      "message": "Error in node unregistration. {Arg_1}",
-      "translation": "ノードの登録解除でエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
-        "Error verifiying exchange version. error: {Arg_1}"
-      ],
-      "message": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "Exchange のバージョンの確認でエラーが発生しました。 エラー: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_CREATE",
-        "Error in creating or replacing node policy. {Arg_1}"
-      ],
-      "message": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "ノード・ポリシーの作成または置換中にエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_PATCH",
-        "Error in patching node policy. {Arg_1}"
-      ],
-      "message": "Error in patching node policy. {Arg_1}",
-      "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_DEL",
-        "Error in deleting node policy. {Arg_1}"
-      ],
-      "message": "Error in deleting node policy. {Arg_1}",
-      "translation": "ノード・ポリシーの削除でエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_UPDATE",
-        "Error in updating node user input. {Arg_1}"
-      ],
-      "message": "Error in updating node user input. {Arg_1}",
-      "translation": "ノードのユーザー入力の更新でエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_PATCH",
-        "Error in patching node user input. {Arg_1}"
-      ],
-      "message": "Error in patching node user input. {Arg_1}",
-      "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_DEL",
-        "Error in deleting node userinput. {Arg_1}"
-      ],
-      "message": "Error in deleting node userinput. {Arg_1}",
-      "translation": "ノードのユーザー入力の削除でエラーが発生しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_REG",
-        "Start node configuration/registration for node {Arg_1}."
-      ],
-      "message": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "ノード {Arg_1} に対するノード構成/登録を開始します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_UPDATE",
-        "Start updating node {Arg_1}."
-      ],
-      "message": "Start updating node {Arg_1}.",
-      "translation": "ノード {Arg_1} の更新を開始します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_UPDATE",
-        "Complete node update for {Arg_1}."
-      ],
-      "message": "Complete node update for {Arg_1}.",
-      "translation": "{Arg_1} に対するノード更新を完了します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_UNREG",
-        "Start node unregistration."
-      ],
-      "message": "Start node unregistration.",
-      "translation": "ノードの登録解除を開始します。",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_UNREG",
-        "Node unregistration complete for node {Arg_1}."
-      ],
-      "message": "Node unregistration complete for node {Arg_1}.",
-      "translation": "ノード {Arg_1} に対するノードの登録解除が完了しました。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_NOT_FOUND",
-        "Error unregistring the node. The node is not found from the database."
-      ],
-      "message": "Error unregistring the node. The node is not found from the database.",
-      "translation": "ノードを登録解除しているときにエラーが発生しました。 このノードはデータベースで見つかりません。",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
-        "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
-      ],
-      "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "ノードを登録解除しているときにエラーが発生しました。 ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は removeNode の誤った値です",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は deepClean の誤った値です",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for block"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は block の誤った値です",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_READ_NODE_FROM_DB",
-        "Unable to read node object from database, error {Arg_1}"
-      ],
-      "message": "Unable to read node object from database, error {Arg_1}",
-      "translation": "データベースからノード・オブジェクトを読み取れません。エラー {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
-        "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
-      ],
-      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_CONF_NOT_FOUND",
-        "Error in node configuration. The node is not found from the database."
-      ],
-      "message": "Error in node configuration. The node is not found from the database.",
-      "translation": "ノード構成のエラー。 このノードはデータベースで見つかりません。",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_CONF_WRONG_STATE",
-        "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
-      ],
-      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "ノード構成のエラー。 状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_UNSUP_NODE_STATE_TRANS",
-        "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
-      ],
-      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "「{Arg_1}」から「{Arg_2}」へのノードの状態遷移はサポートされていません。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_FAIL_GET_UI_FROM_DB",
-        "Failed get user input from local db. {Arg_1}"
-      ],
-      "message": "Failed get user input from local db. {Arg_1}",
-      "translation": "ローカル・データベースからのユーザー入力の取得に失敗しました。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
-        "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
-      ],
-      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "ローカル・ユーザー入力からサービス {Arg_1}/{Arg_2} の設定を見つけられませんでした。エラー: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SAVE_NODE_CONFSTATE",
-        "Error saving new node config state to database: {Arg_1}"
-      ],
-      "message": "Error saving new node config state to database: {Arg_1}",
-      "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_REG",
-        "Complete node configuration/registration for node {Arg_1}."
-      ],
-      "message": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "ノード {Arg_1} のノード構成/登録を完了します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SVC_CONF",
-        "Error in service configuration for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス構成でエラーが発生しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_GET_SREFS_FOR_PATTERN",
-        "Error getting service references for pattern {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NEW_NODE_POL",
-        "New node policy: {Arg_1}"
-      ],
-      "message": "New node policy: {Arg_1}",
-      "translation": "新規ノード・ポリシー: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NODE_POL_DELETED",
-        "Deleted node policy"
-      ],
-      "message": "Deleted node policy",
-      "translation": "ノード・ポリシーを削除しました",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NEW_NODE_UI",
-        "New node user input: {Arg_1}"
-      ],
-      "message": "New node user input: {Arg_1}",
-      "translation": "新規ノードのユーザー入力: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NO_NODE_UI_TO_DEL",
-        "No node user input to detele"
-      ],
-      "message": "No node user input to detele",
-      "translation": "削除するノード・ユーザー入力はありません",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_DELETED_ALL_NODE_UI",
-        "Deleted all node user input"
-      ],
-      "message": "Deleted all node user input",
-      "translation": "すべてのノード・ユーザー入力を削除しました",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_SVC_CONFIG",
-        "Start service configuration with user input for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_SVC_AUTO_CONFIG",
-        "Start service auto configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を開始します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_SVC_CONFIG",
-        "Complete service configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの構成を完了します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_SVC_AUTO_CONFIG",
-        "Complete service auto configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を完了します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
-        "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
-      ],
-      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-      "translation": "変数 {Arg_1} が {Arg_2}/{Arg_3} のサービス構成にありません。 欠落している変数の設定がビジネス・ポリシーに含まれていない場合、契約が結ばれない可能性があります。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_CONFIG_SVC",
-        "Error configuring service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の構成中にエラーが発生しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
-        "Error changing service configstate {Arg_1}, error {Arg_2}"
-      ],
-      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_CHANGE_SVC_CONFIGSTATE",
-        "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
-      ],
-      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を開始します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
-        "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
-      ],
-      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "message": "Error converting the selections into Selectors: {Err}",
-      "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています",
-      "placeholders": [
-        {
-          "id": "Dconstraints",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "dconstraints"
-        },
-        {
-          "id": "Dconstraints_1",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "dconstraints"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "message": "The constraint expression contains unmatched parentheses.",
-      "translation": "制約式に対応しない括弧が含まれています。",
-      "fuzzy": true
-    },
-    {
-      "id": "no service name",
-      "message": "no service name",
-      "translation": "サービス名がありません",
-      "fuzzy": true
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "message": "no docker image for service {ServiceName}",
-      "translation": "サービス {ServiceName} の Docker イメージがありません",
-      "placeholders": [
-        {
-          "id": "ServiceName",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "serviceName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "message": "failed to marshal body for {D}: {Err}",
-      "translation": "{D} のボディのマーシャルに失敗しました: {Err}",
-      "placeholders": [
-        {
-          "id": "D",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "d"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}",
-      "placeholders": [
-        {
-          "id": "StringjsonBytes",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "string(jsonBytes)"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "message": "user input {Name} has no default value and is not set",
-      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ui.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_POL_FILE",
-        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "サービス {Arg_2} のポリシー・ファイル {Arg_1} を読み取れません。エラー: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_START_ADVERTISE_POL",
-        "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを開始します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_ADVERTISE_POL",
-        "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用してポリシーをアドバタイズできません: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_COMPLETE_ADVERTISE_POL",
-        "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを完了します。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード・ポリシーを読み取れません。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_FROM_DB",
-        "Unable to read node object from the local database. {Arg_1}"
-      ],
-      "message": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード・オブジェクトを読み取れません。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
-        "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-      "translation": "ローカルのノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
-        "Node policy updated with the exchange copy: {Arg_1}"
-      ],
-      "message": "Node policy updated with the exchange copy: {Arg_1}",
-      "translation": "ノード・ポリシーが Exchange のコピーによって更新されました: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
-        "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-      "translation": "ローカルのノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
-        "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
-      ],
-      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_CANNOT_VERIFY_AG",
-        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
-      ],
-      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "ノードは利用者との契約 {Arg_1} を検証できませんでした。 キャンセルします。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_IS_OFFLINE",
-        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
-      ],
-      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "ノードはオフラインです。 接続が復元されるまで、定期的なオフライン・エラー・メッセージのログ記録は抑制されます",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
-        "Unable to sync the node with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
-      "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
-        "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
-      ],
-      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-      "translation": "ノード・リソース {Arg_1} のサービス構成状態を Exchange から取得できません。エラー {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
-        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
-      ],
-      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "ローカル・データベースから保存済みノード Exchange パターンを取得できません。 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
-        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
-      ],
-      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "新しいノード Exchange パターン {Arg_1} をローカル・データベースに保存できません。 エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "message": "properties contains an invalid property: {Err}",
-      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "message": "Property must include a name and a value: {Property}",
-      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}",
-      "placeholders": [
-        {
-          "id": "Property",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.Property",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
-          "argNum": 1,
-          "expr": "property"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および list of string です。",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です",
-      "placeholders": [
-        {
-          "id": "ActualType",
-          "string": "%[1]T",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "actualType"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "message": "Value {Value} of property {Name} is not an integer type",
-      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。",
-      "placeholders": [
-        {
-          "id": "Value",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。",
-      "placeholders": [
-        {
-          "id": "Value",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "message": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "property.Value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "message": "Property {Name} has invalid value type {ActualType}",
-      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "ActualType",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "actualType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}",
@@ -7375,311 +8356,6 @@
           "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
           "argNum": 2,
           "expr": "consumer_policy.DataVerify"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "Name または Org が空ストリングです。",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 配列が空です。",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
-        "Deployment config {Arg_1} contains unsupported capability for a workload"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
-        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
-        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
-        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
-        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
-        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR",
-        "Error starting containers: {Arg_1}"
-      ],
-      "message": "Error starting containers: {Arg_1}",
-      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
-        "Error starting containers for agreement {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
-        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
-        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-      ],
-      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
-        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
-        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -8039,125 +8715,107 @@
       "fuzzy": true
     },
     {
-      "id": "No input found.",
-      "message": "No input found.",
-      "translation": "入力が見つかりません。",
-      "fuzzy": true
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "message": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}",
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: {Expr} で空白文字は使用できません。",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Expr",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "expr"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "message": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}",
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "message": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Verstring",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "ver_string"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}",
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Verstring",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "ver_string"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}",
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Verstring",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "ver_string"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}",
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Expr",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "expr"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "No exchange user id is supplied.",
-      "message": "No exchange user id is supplied.",
-      "translation": "Exchange ユーザー ID が提供されていません。",
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "message": "No exchange user organization id is supplied.",
-      "translation": "Exchange ユーザー組織 ID が提供されていません。",
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "message": "No exchange user password or api key is supplied.",
-      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。",
-      "fuzzy": true
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。",
-      "fuzzy": true
-    },
-    {
-      "id": "Internal server error",
-      "message": "Internal server error",
-      "translation": "内部サーバー・エラー",
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "message": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。",
+      "placeholders": [
+        {
+          "id": "V1",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "v1"
+        },
+        {
+          "id": "V2",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "v2"
+        }
+      ],
       "fuzzy": true
     }
   ]
