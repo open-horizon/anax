@@ -3,6 +3,374 @@
   "language": "ja",
   "messages": [
     {
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "サービス {Arg_2} のポリシー・ファイル {Arg_1} を読み取れません。エラー: {Arg_3}"
+    },
+    {
+      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを開始します。"
+    },
+    {
+      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用してポリシーをアドバタイズできません: {Arg_3}"
+    },
+    {
+      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを完了します。"
+    },
+    {
+      "id": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "ローカル・データベースからノード・ポリシーを読み取れません。 {Arg_1}"
+    },
+    {
+      "id": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "ローカル・データベースからノード・オブジェクトを読み取れません。 {Arg_1}"
+    },
+    {
+      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+      "translation": "ローカルのノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}"
+    },
+    {
+      "id": "Node policy updated with the exchange copy: {Arg_1}",
+      "translation": "ノード・ポリシーが Exchange のコピーによって更新されました: {Arg_1}"
+    },
+    {
+      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+      "translation": "ローカルのノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}"
+    },
+    {
+      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}"
+    },
+    {
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "ノードは利用者との契約 {Arg_1} を検証できませんでした。 キャンセルします。"
+    },
+    {
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "ノードはオフラインです。 接続が復元されるまで、定期的なオフライン・エラー・メッセージのログ記録は抑制されます"
+    },
+    {
+      "id": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
+      "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}"
+    },
+    {
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+      "translation": "ノード・リソース {Arg_1} のサービス構成状態を Exchange から取得できません。エラー {Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "ローカル・データベースから保存済みノード Exchange パターンを取得できません。 {Arg_1}"
+    },
+    {
+      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "新しいノード Exchange パターン {Arg_1} をローカル・データベースに保存できません。 エラー: {Arg_2}"
+    },
+    {
+      "id": "anax terminating, unable to sync up containers.",
+      "translation": "anax を終了します。コンテナーを同期できません。"
+    },
+    {
+      "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+      "translation": "anax を終了します。契約の同期を実行できません。{Arg_1}"
+    },
+    {
+      "id": "No input found.",
+      "translation": "入力が見つかりません。"
+    },
+    {
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
+    },
+    {
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
+    },
+    {
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
+    },
+    {
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+    },
+    {
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+    },
+    {
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "translation": "Exchange ユーザー ID が提供されていません。"
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "translation": "Exchange ユーザー組織 ID が提供されていません。"
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
+    },
+    {
+      "id": "Internal server error",
+      "translation": "内部サーバー・エラー"
+    },
+    {
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}"
+    },
+    {
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}"
+    },
+    {
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード更新の入力を構文解析しているときにエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディに制約式またはプロパティー・リストが含まれていませんでした:{Arg_1}、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。 入力ボディを UserInput オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
+    },
+    {
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "ノード {Arg_1} のノード構成/登録でエラーが発生しました。 {Arg_2}"
+    },
+    {
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "ノード {Arg_1} の更新でエラーが発生しました。 {Arg_2}"
+    },
+    {
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "ノードの登録解除でエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "Exchange のバージョンの確認でエラーが発生しました。 エラー: {Arg_1}"
+    },
+    {
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "ノード・ポリシーの作成または置換中にエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "ノード・ポリシーの削除でエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "ノードのユーザー入力の更新でエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "ノードのユーザー入力の削除でエラーが発生しました。 {Arg_1}"
+    },
+    {
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "ノード {Arg_1} に対するノード構成/登録を開始します。"
+    },
+    {
+      "id": "Start updating node {Arg_1}.",
+      "translation": "ノード {Arg_1} の更新を開始します。"
+    },
+    {
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "{Arg_1} に対するノード更新を完了します。"
+    },
+    {
+      "id": "Start node unregistration.",
+      "translation": "ノードの登録解除を開始します。"
+    },
+    {
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "ノード {Arg_1} に対するノードの登録解除が完了しました。"
+    },
+    {
+      "id": "Error unregistring the node. The node is not found from the database.",
+      "translation": "ノードを登録解除しているときにエラーが発生しました。 このノードはデータベースで見つかりません。"
+    },
+    {
+      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "ノードを登録解除しているときにエラーが発生しました。 ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "ノード登録解除の入力エラー。 {Arg_1} は removeNode の誤った値です"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "ノード登録解除の入力エラー。 {Arg_1} は deepClean の誤った値です"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "ノード登録解除の入力エラー。 {Arg_1} は block の誤った値です"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "データベースからノード・オブジェクトを読み取れません。エラー {Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "ノード構成のエラー。 このノードはデータベースで見つかりません。"
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "ノード構成のエラー。 状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。"
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "「{Arg_1}」から「{Arg_2}」へのノードの状態遷移はサポートされていません。"
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "ローカル・データベースからのユーザー入力の取得に失敗しました。 {Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "ローカル・ユーザー入力からサービス {Arg_1}/{Arg_2} の設定を見つけられませんでした。エラー: {Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "ノード {Arg_1} のノード構成/登録を完了します。"
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} のサービス構成でエラーが発生しました。 {Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。 {Arg_2}"
+    },
+    {
+      "id": "Ignoring service. {Arg_1}",
+      "translation": "サービスを無視します。{Arg_1}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "新規ノード・ポリシー: {Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "ノード・ポリシーを削除しました"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "新規ノードのユーザー入力: {Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "削除するノード・ユーザー入力はありません"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "すべてのノード・ユーザー入力を削除しました"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。"
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を開始します。"
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} に対するサービスの構成を完了します。"
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を完了します。"
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "変数 {Arg_1} が {Arg_2}/{Arg_3} のサービス構成にありません。 欠落している変数の設定がデプロイメント・ポリシーに含まれていない場合、契約が結ばれない可能性があります。"
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "サービス {Arg_1} の構成中にエラーが発生しました。 {Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を開始します。"
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "Name または Org が空ストリングです。"
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 配列が空です。"
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
+    },
+    {
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}"
+    },
+    {
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。"
+    },
+    {
       "id": "[verbose] {M}",
       "translation": "[詳細] {M}"
     },
@@ -335,44 +703,64 @@
       "translation": "環境変数 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} を整数に変換中にエラーが発生しました。 {Err1}"
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} は次のとおり構文解析されました: domain={Domain}、path={Path}、tag={Tag}"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "警告: イメージ・パス「{Image}」を構文解析できませんでした。 Docker レジストリーにはプッシュせず、そのままの状態で「deployment」フィールドに含めます。"
     },
     {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
+      "id": "no service name",
+      "translation": "サービス名がありません"
     },
     {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
+      "id": "no docker image for service {ServiceName}",
+      "translation": "サービス {ServiceName} の Docker イメージがありません"
     },
     {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
     },
     {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。"
+      "id": "'userInput' is not supported for cluster type service.",
+      "translation": "「userInput」はクラスター・タイプ・サービスではサポートされません。"
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "「requiredServices」はクラスター・タイプ・サービスではサポートされません。"
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "サービス {ReqSvc} のバージョン {Ver} をバージョン範囲式に変換できませんでした。"
+    },
+    {
+      "id": "Error retrieving service from the exchange for {ReqSvc}. {Err}",
+      "translation": "Exchange から {ReqSvc} のサービスを取得しているときにエラーが発生しました。{Err}"
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "必須サービス {SId} のサービス・タイプが正しくありません: {SType}。"
+    },
+    {
+      "id": "The depended service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
     },
     {
       "id": "Bussiness policy and pattern are mutually exclusive.",
       "translation": "ビジネス・ポリシーとパターンは同時に指定することはできません。"
     },
     {
-      "id": "Neither bussiness policy nor pattern is specified.",
-      "translation": "ビジネス・ポリシーもパターンも指定されていません。"
+      "id": "Neither deployment policy nor pattern is specified.",
+      "translation": "デプロイメント・ポリシーもパターンも指定されていません。"
     },
     {
       "id": "Incompatible",
@@ -415,6 +803,22 @@
       "translation": "deployment ストリングを内部デプロイメント構造にアンマーシャル中にエラーが発生しました: {Err}"
     },
     {
+      "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+      "translation": "ノード・タイプが無効です: {NodeType}。これは「device」または「cluster」でなければなりません。"
+    },
+    {
+      "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+      "translation": "入力ノード・タイプ「{NodeType}」が、ノード {NodeId} のノード・タイプ「{ExchNodeType}」と一致しません。"
+    },
+    {
+      "id": "Service does not have deployment configuration for node type 'device'.",
+      "translation": "サービスには、ノード・タイプ「device」のデプロイメント構成はありません。"
+    },
+    {
+      "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
+      "translation": "サービスには、ノード・タイプ「cluster」のクラスター・デプロイメント構成はありません。"
+    },
+    {
       "id": "The PolicyCheck input cannot be null",
       "translation": "PolicyCheck 入力を NULL にすることはできません"
     },
@@ -439,20 +843,20 @@
       "translation": "サービス・ポリシーの検証に失敗しました。 {Err}"
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "ビジネス・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。"
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+      "translation": "デプロイメント・ポリシー内で 'arch' {NodeArch} を持つサービスが見つかりません。"
     },
     {
-      "id": "No services found in the business policy.",
-      "translation": "ビジネス・ポリシー内でサービスは見つかりませんでした。"
+      "id": "No services found in the deployment policy.",
+      "translation": "デプロイメント・ポリシー内でサービスが見つかりません。"
     },
     {
       "id": "Node policy cannot be null.",
       "translation": "ノード・ポリシーを NULL にすることはできません。"
     },
     {
-      "id": "Business policy cannot be null.",
-      "translation": "ビジネス・ポリシーを NULL にすることはできません。"
+      "id": "Deployment policy cannot be null.",
+      "translation": "デプロイメント・ポリシーを NULL にすることはできません。"
     },
     {
       "id": "Merged service policy cannot be null.",
@@ -499,44 +903,44 @@
       "translation": "ノード {NodeId} のノード・ポリシーを内部ポリシーに変換できませんでした: {Err}"
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "translation": "ビジネス・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}"
+      "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+      "translation": "デプロイメント・ポリシー {BpId} を内部ポリシーに変換できませんでした: {Err1}"
     },
     {
-      "id": "Validation failure for business policy {BpId}. {Err}",
-      "translation": "ビジネス・ポリシー {BpId} の検証失敗。 {Err}"
+      "id": "Validation failure for deployment policy {BpId}. {Err}",
+      "translation": "デプロイメント・ポリシー {BpId} の検証失敗。{Err}"
     },
     {
-      "id": "No services specified in the given business policy {BpId}.",
-      "translation": "指定されたビジネス・ポリシー {BpId} にはサービスが指定されていません。"
+      "id": "No services specified in the given deployment policy {BpId}.",
+      "translation": "指定されたデプロイメント・ポリシー {BpId} にはサービスが指定されていません。"
     },
     {
-      "id": "No services specified in the business policy {Name}.",
-      "translation": "ビジネス・ポリシー {Name} にはサービスが指定されていません。"
+      "id": "No services specified in the deployment policy {Name}.",
+      "translation": "デプロイメント・ポリシー {Name} にはサービスが指定されていません。"
     },
     {
-      "id": "Neither business policy nor business policy id is specified.",
-      "translation": "ビジネス・ポリシーもビジネス・ポリシー ID も指定されていません。"
+      "id": "Neither deployment policy nor deployment policy id is specified.",
+      "translation": "デプロイメント・ポリシーもデプロイメント・ポリシー ID も指定されていません。"
     },
     {
-      "id": "Business policy id is empty.",
-      "translation": "ビジネス・ポリシー ID が空です。"
+      "id": "Deployment policy id is empty.",
+      "translation": "デプロイメント・ポリシー ID が空です。"
     },
     {
-      "id": "Organization is not specified in the business policy id: {BpId}.",
-      "translation": "このビジネス・ポリシー ID には組織が指定されていません: {BpId}。"
+      "id": "Organization is not specified in the deployment policy id: {BpId}.",
+      "translation": "このデプロイメント・ポリシー ID には組織が指定されていません: {BpId}。"
     },
     {
-      "id": "Unable to get business policy for {BpId}, {Err}",
-      "translation": "{BpId} のビジネス・ポリシーを取得できません。{Err}"
+      "id": "Unable to get deployment policy for {BpId}, {Err}",
+      "translation": "{BpId} のデプロイメント・ポリシーを取得できません。{Err}"
     },
     {
-      "id": "No business policy found for this id {BpId}.",
-      "translation": "この ID {BpId} に該当するビジネス・ポリシーが見つかりません。"
+      "id": "No deployment policy found for this id {BpId}.",
+      "translation": "この ID {BpId} に該当するデプロイメント・ポリシーが見つかりません。"
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "translation": "ビジネス・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}"
+      "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+      "translation": "デプロイメント・ポリシー {BpId} を内部ポリシー・フォーマットに変換できませんでした: {Err}"
     },
     {
       "id": "Service policy id is empty.",
@@ -571,20 +975,44 @@
       "translation": "{SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch} のサービス・ポリシーの検証に失敗しました。 {Err}"
     },
     {
-      "id": "The given business policy should not be null.",
-      "translation": "指定されたビジネス・ポリシーは、NULL であってはなりません。"
+      "id": "The given deployment policy should not be null.",
+      "translation": "指定されたデプロイメント・ポリシーは、NULL であってはなりません。"
     },
     {
-      "id": "Error merging business policy with service policy. {Err}",
-      "translation": "ビジネス・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。 {Err}"
+      "id": "Error merging deployment policy with service policy. {Err}",
+      "translation": "デプロイメント・ポリシーとサービス・ポリシーをマージしているときにエラーが発生しました。{Err}"
     },
     {
-      "id": "The business policy should not be null.",
-      "translation": "ビジネス・ポリシーは NULL にできません。"
+      "id": "The deployment policy should not be null.",
+      "translation": "デプロイメント・ポリシーは、NULL であってはなりません。"
     },
     {
-      "id": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
-      "translation": "サービス {Org}/{WorkloadURL} のポリシーには {Arg_3} が設定されていますが、これらのサービスでは特権コンテナーで {Arg_4} を実行する必要があることをサービス・イントロスペクションが示しています。"
+      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
+      "translation": "実行特権を必要とするサービスを参照するときに、デプロイメント・ポリシー {Header} に {PROPNODEPRIVILEGED}=true を指定することはできません。"
+    },
+    {
+      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the exchange. {Err}",
+      "translation": "Exchange からサービス {Org}/{WorkloadURL} {Version} {Arch} とその従属サービスを取得しているときにエラーが発生しました。{Err}"
+    },
+    {
+      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "サービス {SIdTop} のデプロイメント構成のマーシャルに失敗しました。エラー {Err}"
+    },
+    {
+      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "サービス {SIdTop} のクラスター・デプロイメント構成のマーシャルに失敗しました。エラー {Err}"
+    },
+    {
+      "id": "Unable to find service definition from the input services.",
+      "translation": "入力サービスからサービス定義が見つかりません。"
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "translation": "{Version} からバージョン式を作成できません。 {Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
     },
     {
       "id": "The UserInputCheck input cannot be null",
@@ -595,12 +1023,12 @@
       "translation": "ノード・ユーザー入力もノード ID も指定されていません。"
     },
     {
-      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンにアーキテクチャー {NodeArch} を持つサービス・バージョンが指定されていません。"
+      "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+      "translation": "アーキテクチャー {NodeArch} を持つサービス・バージョンがデプロイメント・ポリシーにもパターンにも指定されていません。"
     },
     {
-      "id": "No service versions specified in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーまたはパターンにサービス・バージョンが指定されていません。"
+      "id": "No service versions specified in the deployment policy or pattern.",
+      "translation": "デプロイメント・ポリシーにもパターンにもサービス・バージョンが指定されていません。"
     },
     {
       "id": "User Input Incompatible",
@@ -615,20 +1043,28 @@
       "translation": "入力内でサービス定義が見つかりません。"
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "'arch' {NodeArch} を持つサービスがビジネス・ポリシーにもパターンにも見つかりません。"
+      "id": "Warning: checking node user input:  {Err}",
+      "translation": "警告: ノード・ユーザー入力を検査中: {Err}"
     },
     {
-      "id": "No services found in the business policy or pattern.",
-      "translation": "ビジネス・ポリシーにもパターンにもサービスが見つかりませんでした。"
+      "id": "Warning: checking user input for the deployment policy: {Err}",
+      "translation": "警告: デプロイメント・ポリシーのユーザー入力を検査中: {Err}"
+    },
+    {
+      "id": "Warning: checking user input for the pattern: {Err}",
+      "translation": "警告: パターンのユーザー入力を検査中: {Err}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "'arch' {NodeArch} を持つサービスがデプロイメント・ポリシーにもパターンにも見つかりません。"
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "デプロイメント・ポリシーにもパターンにもサービスが見つかりません。"
     },
     {
       "id": "The input service spec object cannot be null.",
       "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。"
-    },
-    {
-      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "translation": "Exchange から {SvcSpec} のサービスを取得しているときにエラーが発生しました。 {Err}"
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -651,14 +1087,6 @@
       "translation": "入力サービス定義オブジェクトを NULL にすることはできません。"
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "{Version} からバージョン式を作成できません。 {Err}"
-    },
-    {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
-    },
-    {
       "id": "Failed to get the service from the exchange. {Err}",
       "translation": "Exchange からサービスの取得に失敗しました。 {Err}"
     },
@@ -679,20 +1107,24 @@
       "translation": "変数 {Name} には、必要なユーザー入力値がありません。"
     },
     {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "translation": "サービス URL {URL} が、ビジネス・ポリシー内に指定されているサービス URL {Name} と一致しません。"
+      "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+      "translation": "{Errmsg} サービス {Org}/{URL} バージョン {Version} アーキテクチャー {Arch} がノード・ユーザー入力にありません。"
     },
     {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "サービス組織「{Org}」 が、ビジネス・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+      "translation": "サービス URL {URL} が、デプロイメント・ポリシー内に指定されているサービス URL {Name} と一致しません。"
     },
     {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "translation": "サービス・アーキテクチャー {Arch} が、ビジネス・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。"
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+      "translation": "サービス組織 {Org} が、デプロイメント・ポリシー内に指定されているサービス組織 {Org_1} と一致しません。"
     },
     {
-      "id": "Service version {Version} does not match any service versions specified in the business policy.",
-      "translation": "サービス・バージョン {Version} が、ビジネス・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。"
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+      "translation": "サービス・アーキテクチャー {Arch} が、デプロイメント・ポリシー内に指定されているサービス・アーキテクチャー {Arch_1} と一致しません。"
+    },
+    {
+      "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
+      "translation": "サービス・バージョン {Version} が、デプロイメント・ポリシー内に指定されているいずれのサービス・バージョンとも一致しません。"
     },
     {
       "id": "The service does not match any services in the pattern.",
@@ -745,6 +1177,118 @@
     {
       "id": "Validation failure for input service {SId}. {Err}",
       "translation": "入力サービス {SId} の検証失敗。 {Err}"
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。serviceOrgid、serviceUrl、serviceArch、および serviceVersionRange が正しいことを確認してください。"
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} は、パターンでもデプロイメント・ポリシーでも参照されていません。サービス仕様が正しいことを確認してください。"
+    },
+    {
+      "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+      "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} の変数 {Name} は使用されていません。正しい名前であることを確認してください。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
+    },
+    {
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax を終了します。構成に指定されたサービス・ストレージ・ディレクトリーにアクセスできません: {Arg_1}。{Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax を終了します。iptables クライアントのインスタンス化に失敗しました。{Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax を終了します。Docker クライアントのインスタンス化に失敗しました。{Arg_1}"
+    },
+    {
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "プロパティー {PROPNODEPRIVILEGED} にはブール値 (true または false) が必要です。"
+    },
+    {
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および string のリストです。"
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "制約式に対応しない括弧が含まれています。"
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -987,7 +1531,7 @@
       "translation": "サービスを開始できなかったため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
     },
     {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
       "translation": "アップグレードに失敗したため、サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードを開始します。"
     },
     {
@@ -995,8 +1539,8 @@
       "translation": "サービス {Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレードに失敗しました。エラー: {Arg_4}"
     },
     {
-      "id": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のダウングレードを完了します。"
+      "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "バージョン {Arg_3} からバージョン {Arg_4} へのサービス {Arg_1}/{Arg_2} のダウングレードを完了しました。"
     },
     {
       "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
@@ -1007,7 +1551,7 @@
       "translation": "{Arg_1}/{Arg_2} バージョン {Arg_3} のダウングレード先となる、低いバージョンが見つかりませんでした。"
     },
     {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
+      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
       "translation": "サービス {Arg_1}/{Arg_2} をバージョン {Arg_3} からバージョン {Arg_4} にダウングレードしようとしてエラーが発生しました。 エラー: {Arg_5}"
     },
     {
@@ -1063,350 +1607,6 @@
       "translation": "新規パターン {Arg_1} が検証されました。 契約を取り消し、新規パターンでノードを再登録します。"
     },
     {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "選択 {Form} の構文解析にエラーが発生しました。 {Err}"
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "出力の {Resource} の取得中にエラーが発生しました、エラー {Err}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード構成/登録用の入力の構文解析中にエラーが発生しました。 入力ボディを configstate オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード更新の入力を構文解析しているときにエラーが発生しました。 入力ボディをノード・オブジェクトにデシリアライズできませんでした: {Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー用の入力の構文解析中にエラーが発生しました。 入力ボディをポリシー・オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディを制約式またはプロパティー・リストにデシリアライズできませんでした:{Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "ノード・ポリシー・パッチ用の入力の構文解析中にエラーが発生しました。 入力ボディに制約式またはプロパティー・リストが含まれていませんでした:{Arg_1}、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "ノードのユーザー入力用の入力の構文解析中にエラーが発生しました。 入力ボディを UserInput オブジェクトとしてデシリアライズできませんでした: {Arg_1}。エラー: {Arg_2}"
-    },
-    {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "ノード {Arg_1} のノード構成/登録でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "ノード {Arg_1} の更新でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "ノードの登録解除でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "Exchange のバージョンの確認でエラーが発生しました。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "ノード・ポリシーの作成または置換中にエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "ノード・ポリシーへのパッチ適用でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "ノード・ポリシーの削除でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "ノードのユーザー入力の更新でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "ノードのユーザー入力へのパッチ適用でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "ノードのユーザー入力の削除でエラーが発生しました。 {Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "ノード {Arg_1} に対するノード構成/登録を開始します。"
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "ノード {Arg_1} の更新を開始します。"
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "{Arg_1} に対するノード更新を完了します。"
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "ノードの登録解除を開始します。"
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "ノード {Arg_1} に対するノードの登録解除が完了しました。"
-    },
-    {
-      "id": "Error unregistring the node. The node is not found from the database.",
-      "translation": "ノードを登録解除しているときにエラーが発生しました。 このノードはデータベースで見つかりません。"
-    },
-    {
-      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "ノードを登録解除しているときにエラーが発生しました。 ノードの構成解除を行うには、ノードが「configured」または「configuring」の状態である必要があります。"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は removeNode の誤った値です"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は deepClean の誤った値です"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "ノード登録解除の入力エラー。 {Arg_1} は block の誤った値です"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "データベースからノード・オブジェクトを読み取れません。エラー {Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "新規ノードの構成状態 (「unconfiguring」) をデータベースに保存する際にエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "ノード構成のエラー。 このノードはデータベースで見つかりません。"
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "ノード構成のエラー。 状態を {Arg_1} に変更するには、ノードが「configured」または「configuring」の状態である必要があります。"
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "「{Arg_1}」から「{Arg_2}」へのノードの状態遷移はサポートされていません。"
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "ローカル・データベースからのユーザー入力の取得に失敗しました。 {Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "ローカル・ユーザー入力からサービス {Arg_1}/{Arg_2} の設定を見つけられませんでした。エラー: {Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "新規ノードの構成状態をデータベースに保存する際にエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "ノード {Arg_1} のノード構成/登録を完了します。"
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス構成でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "パターン {Arg_1} のサービス参照の取得でエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "新規ノード・ポリシー: {Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "ノード・ポリシーを削除しました"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "新規ノードのユーザー入力: {Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "削除するノード・ユーザー入力はありません"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "すべてのノード・ユーザー入力を削除しました"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "ユーザー入力を使用して {Arg_1}/{Arg_2} のサービス構成を開始します。"
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を開始します。"
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの構成を完了します。"
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するサービスの自動構成を完了します。"
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-      "translation": "変数 {Arg_1} が {Arg_2}/{Arg_3} のサービス構成にありません。 欠落している変数の設定がビジネス・ポリシーに含まれていない場合、契約が結ばれない可能性があります。"
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の構成中にエラーが発生しました。 {Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "サービスの構成状態 {Arg_1} の変更中にエラーが発生しました、エラー {Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を開始します。"
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "ノードの {Arg_2} に対して、サービス構成状態の {Arg_1} への変更を完了します。"
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "制約式に対応しない括弧が含まれています。"
-    },
-    {
-      "id": "no service name",
-      "translation": "サービス名がありません"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "サービス {ServiceName} の Docker イメージがありません"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
-    },
-    {
-      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "サービス {Arg_2} のポリシー・ファイル {Arg_1} を読み取れません。エラー: {Arg_3}"
-    },
-    {
-      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを開始します。"
-    },
-    {
-      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用してポリシーをアドバタイズできません: {Arg_3}"
-    },
-    {
-      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する Exchange を使用したポリシーのアドバタイズを完了します。"
-    },
-    {
-      "id": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード・ポリシーを読み取れません。 {Arg_1}"
-    },
-    {
-      "id": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "ローカル・データベースからノード・オブジェクトを読み取れません。 {Arg_1}"
-    },
-    {
-      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-      "translation": "ローカルのノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Node policy updated with the exchange copy: {Arg_1}",
-      "translation": "ノード・ポリシーが Exchange のコピーによって更新されました: {Arg_1}"
-    },
-    {
-      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-      "translation": "ローカルのノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}"
-    },
-    {
-      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "ノードは利用者との契約 {Arg_1} を検証できませんでした。 キャンセルします。"
-    },
-    {
-      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "ノードはオフラインです。 接続が復元されるまで、定期的なオフライン・エラー・メッセージのログ記録は抑制されます"
-    },
-    {
-      "id": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
-      "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}"
-    },
-    {
-      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-      "translation": "ノード・リソース {Arg_1} のサービス構成状態を Exchange から取得できません。エラー {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "ローカル・データベースから保存済みノード Exchange パターンを取得できません。 {Arg_1}"
-    },
-    {
-      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "新しいノード Exchange パターン {Arg_1} をローカル・データベースに保存できません。 エラー: {Arg_2}"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および list of string です。"
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
-    },
-    {
       "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}"
     },
@@ -1433,62 +1633,6 @@
     {
       "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
       "translation": "互換性エラー: データ検査は対応している必要がありますが、プロデューサーは {DataVerify} で、コンシューマーは {DataVerify_1} です。"
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name または Org が空ストリングです。"
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 配列が空です。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
     },
     {
       "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
@@ -1551,52 +1695,28 @@
       "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
     },
     {
-      "id": "No input found.",
-      "translation": "入力が見つかりません。"
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
     },
     {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "Exchange ユーザー ID が提供されていません。"
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Exchange ユーザー組織 ID が提供されていません。"
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
-    },
-    {
-      "id": "Internal server error",
-      "translation": "内部サーバー・エラー"
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
     }
   ]
 }

@@ -2,6 +2,1714 @@
   "language": "pt-BR",
   "messages": [
     {
+      "id": [
+        "EL_AG_UNABLE_READ_POL_FILE",
+        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "Não é possível ler o arquivo de políticas {Arg_1} para o serviço {Arg_2}, erro: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_START_ADVERTISE_POL",
+        "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Iniciar a publicidade da política com a troca do serviço {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_ADVERTISE_POL",
+        "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "Não é possível anunciar políticas com a troca do serviço {Arg_1}/{Arg_2}, erro: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_COMPLETE_ADVERTISE_POL",
+        "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Concluir a publicidade da política com a troca do serviço {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
+        "unable to read node policy from the local database. {Arg_1}"
+      ],
+      "message": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "Não é possível ler a política do nó a partir do banco de dados local. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_FROM_DB",
+        "Unable to read node object from the local database. {Arg_1}"
+      ],
+      "message": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "Não é possível ler o objeto do nó a partir do banco de dados local. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
+        "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
+      "translation": "Não é possível sincronizar a política do nó local com a cópia de troca. Erro: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
+        "Node policy updated with the exchange copy: {Arg_1}"
+      ],
+      "message": "Node policy updated with the exchange copy: {Arg_1}",
+      "translation": "Política de nó atualizada com a cópia de troca: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
+        "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
+      "translation": "Não é possível sincronizar a entrada do usuário do nó local com a cópia de troca. Erro: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
+        "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
+      ],
+      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "Entrada do usuário do nó atualizada com a cópia de troca. As entradas do usuário alteradas são: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_CANNOT_VERIFY_AG",
+        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
+      ],
+      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "O nó não pôde verificar o contrato {Arg_1} com o consumidor. Ele será cancelado",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_IS_OFFLINE",
+        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+      ],
+      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "O nó está off-line. A criação de log de mensagens de erro off-line periódicas será restringida até que a conexão seja restaurada",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
+        "Unable to sync the node with the exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
+      "translation": "Não é possível sincronizar o nó com a cópia de troca. Erro: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
+        "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
+      ],
+      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
+      "translation": "Não é possível recuperar o estado de configuração do serviço para o recurso do nó {Arg_1} a partir da troca, erro {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
+        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
+      ],
+      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "Não é possível recuperar o padrão de troca de nó salvo do banco de dados local. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
+        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
+      ],
+      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "Não é possível salvar o novo padrão de troca de nó {Arg_1} no banco de dados local. Erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_TERM_UNABLE_SYNC_CONTAINERS",
+        "anax terminating, unable to sync up containers."
+      ],
+      "message": "anax terminating, unable to sync up containers.",
+      "translation": "anax sendo finalizado, não é possível sincronizar contêineres.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_TERM_UNABLE_SYNC_AGS",
+        "anax terminating, unable to complete agreement sync up. {Arg_1}"
+      ],
+      "message": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+      "translation": "anax sendo finalizado, não é possível concluir a sincronização do contrato. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No input found.",
+      "message": "No input found.",
+      "translation": "Nenhuma entrada localizada.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "message": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Desautorizado. Nenhum ID do usuário de troca é fornecido.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to authenticate the user with the exchange. {Err}",
+      "message": "Failed to authenticate the user with the exchange. {Err}",
+      "translation": "Falha ao autenticar o usuário com a troca. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "message": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Não foi possível desserializar o corpo de entrada para o objeto JSON. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Não foi possível desserializar o corpo de entrada para o objeto PolicyCheck. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Não foi possível desserializar o corpo de entrada para o objeto UserInputCheck. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "O corpo de entrada não pôde ser desserializado para o objeto CompCheck. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "message": "No exchange user id is supplied.",
+      "translation": "Nenhum ID do usuário de troca é fornecido.",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "message": "No exchange user organization id is supplied.",
+      "translation": "Nenhum ID de organização do usuário de troca é fornecido.",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "message": "No exchange user password or api key is supplied.",
+      "translation": "Nenhuma senha ou chave de API de usuário de troca é fornecida.",
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "message": "Wrong organization id, user id or password.",
+      "translation": "ID da organização, ID do usuário ou senha errada.",
+      "fuzzy": true
+    },
+    {
+      "id": "Internal server error",
+      "message": "Internal server error",
+      "translation": "Erro interno do servidor",
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing the selections {Form}. {Err}",
+      "message": "Error parsing the selections {Form}. {Err}",
+      "translation": "Erro ao analisar as seleções {Form}. {Err}",
+      "placeholders": [
+        {
+          "id": "Form",
+          "string": "%[1]v",
+          "type": "net/url.Values",
+          "underlyingType": "map[string][]string",
+          "argNum": 1,
+          "expr": "r.Form"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting {Resource} for output, error {Err}",
+      "message": "Error getting {Resource} for output, error {Err}",
+      "translation": "Erro ao obter {Resource} para a saída, erro {Err}",
+      "placeholders": [
+        {
+          "id": "Resource",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "resource"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
+        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para configuração/registro do nó. O corpo da entrada não pôde ser desserializado para o objeto de nó: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
+        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para configuração/registro do nó. O corpo da entrada não pôde ser desserializado para o objeto configstate: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
+        "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para atualização do nó. O corpo da entrada não pôde ser desserializado para o objeto de nó: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
+        "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para a política do nó. O corpo da entrada não pôde ser desserializado como um objeto de política: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
+        "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para a correção da política de nó. O corpo da entrada não pôde ser desserializado em uma Expressão de restrição ou Lista de propriedades: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
+        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para a correção da política de nó. O corpo da entrada não continha uma Expressão de restrição ou Lista de propriedades: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
+        "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao analisar a entrada para entrada do usuário do nó. O corpo da entrada não pôde ser desserializado como um objeto UserInput: {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_REG",
+        "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "Erro de configuração/registro do nó para o nó {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UPDATE",
+        "Error in updating node {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "Erro ao atualizar o nó {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UNREG",
+        "Error in node unregistration. {Arg_1}"
+      ],
+      "message": "Error in node unregistration. {Arg_1}",
+      "translation": "Erro na remoção de registro do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
+        "Error verifiying exchange version. error: {Arg_1}"
+      ],
+      "message": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "Erro ao verificar a versão do Exchange. erro {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_CREATE",
+        "Error in creating or replacing node policy. {Arg_1}"
+      ],
+      "message": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "Erro ao criar ou substituir a política do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_PATCH",
+        "Error in patching node policy. {Arg_1}"
+      ],
+      "message": "Error in patching node policy. {Arg_1}",
+      "translation": "Erro ao corrigir a política do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_DEL",
+        "Error in deleting node policy. {Arg_1}"
+      ],
+      "message": "Error in deleting node policy. {Arg_1}",
+      "translation": "Erro ao excluir a política do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_UPDATE",
+        "Error in updating node user input. {Arg_1}"
+      ],
+      "message": "Error in updating node user input. {Arg_1}",
+      "translation": "Erro ao atualizar a entrada do usuário do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_PATCH",
+        "Error in patching node user input. {Arg_1}"
+      ],
+      "message": "Error in patching node user input. {Arg_1}",
+      "translation": "Erro ao corrigir a entrada do usuário do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_DEL",
+        "Error in deleting node userinput. {Arg_1}"
+      ],
+      "message": "Error in deleting node userinput. {Arg_1}",
+      "translation": "Erro ao excluir a entrada do usuário do nó. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_REG",
+        "Start node configuration/registration for node {Arg_1}."
+      ],
+      "message": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "Iniciar configuração/registro do nó para o nó {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_UPDATE",
+        "Start updating node {Arg_1}."
+      ],
+      "message": "Start updating node {Arg_1}.",
+      "translation": "Iniciar atualização do nó {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_UPDATE",
+        "Complete node update for {Arg_1}."
+      ],
+      "message": "Complete node update for {Arg_1}.",
+      "translation": "Concluir atualização do nó para {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_UNREG",
+        "Start node unregistration."
+      ],
+      "message": "Start node unregistration.",
+      "translation": "Iniciar remoção de registro do nó.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_UNREG",
+        "Node unregistration complete for node {Arg_1}."
+      ],
+      "message": "Node unregistration complete for node {Arg_1}.",
+      "translation": "Remoção de registro do nó concluída para o nó {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_NOT_FOUND",
+        "Error unregistring the node. The node is not found from the database."
+      ],
+      "message": "Error unregistring the node. The node is not found from the database.",
+      "translation": "Erro ao cancelar o registro do nó. O nó não foi localizado no banco de dados.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
+        "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+      ],
+      "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "Erro ao cancelar o registro do nó. O nó deve estar no estado 'configured' ou 'configuring' para ser desconfigurado.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "Erro de entrada para remoção de registro do nó. {Arg_1} é um valor incorreto para removeNode",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "Erro de entrada para remoção de registro do nó. {Arg_1} é um valor incorreto para deepClean",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for block"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "Erro de entrada para remoção de registro do nó. {Arg_1} é um valor incorreto para o bloco",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_READ_NODE_FROM_DB",
+        "Unable to read node object from database, error {Arg_1}"
+      ],
+      "message": "Unable to read node object from database, error {Arg_1}",
+      "translation": "Não é possível ler o objeto de nó a partir do banco de dados, erro {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
+        "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
+      ],
+      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "Erro ao salvar o novo estado de configuração do nó (unconfiguring) no banco de dados: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_CONF_NOT_FOUND",
+        "Error in node configuration. The node is not found from the database."
+      ],
+      "message": "Error in node configuration. The node is not found from the database.",
+      "translation": "Erro na configuração do nó. O nó não foi localizado no banco de dados.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_CONF_WRONG_STATE",
+        "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
+      ],
+      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "Erro na configuração do nó. O nó deve estar no estado 'configured' ou 'configuring' para que seja possível alterar seu estado para {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_UNSUP_NODE_STATE_TRANS",
+        "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
+      ],
+      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "A transição de estado do nó de '{Arg_1}' para '{Arg_2}' não é suportada.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_FAIL_GET_UI_FROM_DB",
+        "Failed get user input from local db. {Arg_1}"
+      ],
+      "message": "Failed get user input from local db. {Arg_1}",
+      "translation": "Falha ao obter entrada do usuário a partir do banco de dados local. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
+        "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
+      ],
+      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "Falha ao localizar preferências para o serviço {Arg_1}/{Arg_2} a partir da entrada do usuário local, erro: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SAVE_NODE_CONFSTATE",
+        "Error saving new node config state to database: {Arg_1}"
+      ],
+      "message": "Error saving new node config state to database: {Arg_1}",
+      "translation": "Erro ao salvar o novo estado de configuração do nó no banco de dados: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_REG",
+        "Complete node configuration/registration for node {Arg_1}."
+      ],
+      "message": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "Concluir configuração/registro do nó para o nó {Arg_1}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SVC_CONF",
+        "Error in service configuration for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "Erro na configuração de serviço para {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_GET_SREFS_FOR_PATTERN",
+        "Error getting service references for pattern {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "Erro ao obter referências de serviço para o padrão {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_IGNORE_TYPE_MISMATCH",
+        "Ignoring service. {Arg_1}"
+      ],
+      "message": "Ignoring service. {Arg_1}",
+      "translation": "Ignorando o serviço. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NEW_NODE_POL",
+        "New node policy: {Arg_1}"
+      ],
+      "message": "New node policy: {Arg_1}",
+      "translation": "Nova política de nó: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NODE_POL_DELETED",
+        "Deleted node policy"
+      ],
+      "message": "Deleted node policy",
+      "translation": "Política de nó excluída",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NEW_NODE_UI",
+        "New node user input: {Arg_1}"
+      ],
+      "message": "New node user input: {Arg_1}",
+      "translation": "Nova entrada do usuário do nó: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NO_NODE_UI_TO_DEL",
+        "No node user input to detele"
+      ],
+      "message": "No node user input to detele",
+      "translation": "Nenhuma entrada do usuário do nó para ser excluída",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_DELETED_ALL_NODE_UI",
+        "Deleted all node user input"
+      ],
+      "message": "Deleted all node user input",
+      "translation": "Todas as entradas de usuário do nó excluídas",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_SVC_CONFIG",
+        "Start service configuration with user input for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "Iniciar configuração de serviço com a entrada do usuário para {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_SVC_AUTO_CONFIG",
+        "Start service auto configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Iniciar configuração automática do serviço para {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_SVC_CONFIG",
+        "Complete service configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Concluir a configuração do serviço para {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_SVC_AUTO_CONFIG",
+        "Complete service auto configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Concluir configuração automática do serviço para {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
+        "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable."
+      ],
+      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "A variável {Arg_1} está ausente na configuração de serviço para {Arg_2}/{Arg_3}. Isso poderá causar a não formação do contrato se a política de implementação não contiver a configuração para a variável ausente.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_CONFIG_SVC",
+        "Error configuring service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "Erro ao configurar o serviço {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
+        "Error changing service configstate {Arg_1}, error {Arg_2}"
+      ],
+      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "Erro ao alterar o configstate do serviço {Arg_1}, erro {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_CHANGE_SVC_CONFIGSTATE",
+        "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
+      ],
+      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "Iniciar alteração do estado de configuração do serviço para {Arg_1} para {Arg_2} para o nó.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
+        "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
+      ],
+      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "Concluir a alteração do estado de configuração do serviço para {Arg_1} para {Arg_2} para o nó.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "message": "Error converting the selections into Selectors: {Err}",
+      "translation": "Erro ao converter as seleções em Seletores: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "message": "Name, or Org is empty string.",
+      "translation": "Name ou Org é uma sequência de caracteres vazia.",
+      "fuzzy": true
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "message": "The serviceVersions array is empty.",
+      "translation": "A matriz serviceVersions está vazia.",
+      "fuzzy": true
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "message": "properties contains an invalid property: {Err}",
+      "translation": "As propriedades contêm uma propriedade inválida: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "message": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "A propriedade {PROPSVCPRIVILEGED} deve ter um valor booleano (true ou false).",
+      "placeholders": [
+        {
+          "id": "PROPSVCPRIVILEGED",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_FAILED",
+        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "A pulsação do nó falhou para o nó {Arg_1}/{Arg_2}. Erro: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_RESTORED",
+        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Pulsação do nó restaurada para o nó {Arg_1}/{Arg_2}.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "[verbose] {M}",
       "message": "[verbose] {M}",
       "translation": "[verbose] {M}",
@@ -1682,162 +3390,259 @@
       "fuzzy": true
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: não são permitidos espaços em branco em {Expr}.",
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "message": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} analisada em: domain={Domain}, path={Path}, tag={Tag}",
       "placeholders": [
         {
-          "id": "Expr",
-          "string": "%[1]v",
+          "id": "Image",
+          "string": "%[1]s",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "message": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} não é uma sequência de versões válida.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} não começa com uma diretiva de inclusão ou exclusão.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} não termina com uma diretiva de inclusão ou exclusão.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: número incorreto de versões na expressão: {Expr}.",
-      "placeholders": [
-        {
-          "id": "Expr",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "message": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "A sequência de versões de entrada {V1} ou {V2} não é uma sequência de versões única válida.",
-      "placeholders": [
-        {
-          "id": "V1",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "v1"
+          "expr": "image"
         },
         {
-          "id": "V2",
+          "id": "Domain",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "domain"
+        },
+        {
+          "id": "Path",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "path"
+        },
+        {
+          "id": "Tag",
+          "string": "%[4]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "message": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "Aviso: não foi possível analisar o caminho da imagem '{Image}'. Não será enviado por push para um registro do Docker, apenas incluído no campo 'deployment' no estado em que se encontra.",
+      "placeholders": [
+        {
+          "id": "Image",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "image"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "no service name",
+      "message": "no service name",
+      "translation": "Nenhum nome de serviço",
+      "fuzzy": true
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "message": "no docker image for service {ServiceName}",
+      "translation": "Nenhuma imagem do Docker para o serviço {ServiceName}",
+      "placeholders": [
+        {
+          "id": "ServiceName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "message": "failed to marshal body for {D}: {Err}",
+      "translation": "Falha ao serializar o corpo para {D}: {Err}",
+      "placeholders": [
+        {
+          "id": "D",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "d"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "Falha ao desserializar o JSON para o campo de implementação {StringjsonBytes}: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "message": "user input {Name} has no default value and is not set",
+      "translation": "A entrada do usuário {Name} não possui valor padrão e não está configurada",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ui.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'userInput' is not supported for cluster type service.",
+      "message": "'userInput' is not supported for cluster type service.",
+      "translation": "O 'userInput' não é suportado para o serviço de tipo de cluster.",
+      "fuzzy": true
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "message": "'requiredServices' is not supported for cluster type service.",
+      "translation": "O 'requiredServices' não é suportado para o serviço de tipo de cluster.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "message": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "Falha ao converter a versão {Ver} para o serviço {ReqSvc} em expressão de intervalo de versão.",
+      "placeholders": [
+        {
+          "id": "Ver",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver"
+        },
+        {
+          "id": "ReqSvc",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 2,
+          "expr": "reqSvc"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving service from the exchange for {ReqSvc}. {Err}",
+      "message": "Error retrieving service from the exchange for {ReqSvc}. {Err}",
+      "translation": "Erro ao recuperar o serviço por meio da troca para {ReqSvc}. {Err}",
+      "placeholders": [
+        {
+          "id": "ReqSvc",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "reqSvc"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "message": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "O serviço necessário {SId} tem o tipo de serviço errado: {SType}.",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
+        },
+        {
+          "id": "SType",
           "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
-          "expr": "v2"
+          "expr": "sType"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_AG_NODE_HB_FAILED",
-        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "A pulsação do nó falhou para o nó {Arg_1}/{Arg_2}. Erro: {Arg_3}",
+      "id": "The depended service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "message": "The depended service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "O serviço dependente {Id} para o serviço necessário {SId} tem o tipo de serviço errado: {SType1}.",
       "placeholders": [
         {
-          "id": "Arg_1",
+          "id": "Id",
           "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "id"
         },
         {
-          "id": "Arg_2",
+          "id": "SId",
           "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sId"
         },
         {
-          "id": "Arg_3",
+          "id": "SType1",
           "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_HB_RESTORED",
-        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Pulsação do nó restaurada para o nó {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sType1"
         }
       ],
       "fuzzy": true
@@ -1849,9 +3654,9 @@
       "fuzzy": true
     },
     {
-      "id": "Neither bussiness policy nor pattern is specified.",
-      "message": "Neither bussiness policy nor pattern is specified.",
-      "translation": "Nem a política de negócios nem o padrão foram especificados.",
+      "id": "Neither deployment policy nor pattern is specified.",
+      "message": "Neither deployment policy nor pattern is specified.",
+      "translation": "Nem a política de implementação nem o padrão estão especificados.",
       "fuzzy": true
     },
     {
@@ -2008,6 +3813,66 @@
       "fuzzy": true
     },
     {
+      "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+      "message": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+      "translation": "Tipo de nó inválido: {NodeType}. Ele deve ser 'device' ou 'cluster'.",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+      "message": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+      "translation": "O tipo de nó de entrada '{NodeType}' não corresponde ao tipo de nó '{ExchNodeType}' do nó {NodeId}.",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        },
+        {
+          "id": "ExchNodeType",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "exchNodeType"
+        },
+        {
+          "id": "NodeId",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "nodeId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service does not have deployment configuration for node type 'device'.",
+      "message": "Service does not have deployment configuration for node type 'device'.",
+      "translation": "O serviço não tem configuração de implementação para o tipo de nó 'device'.",
+      "fuzzy": true
+    },
+    {
+      "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
+      "message": "Service does not have cluster deployment configuration for node type 'cluster'.",
+      "translation": "O serviço não tem configuração de implementação de cluster para o tipo de nó 'cluster'.",
+      "fuzzy": true
+    },
+    {
       "id": "The PolicyCheck input cannot be null",
       "message": "The PolicyCheck input cannot be null",
       "translation": "A entrada PolicyCheck não pode ser nula",
@@ -2114,9 +3979,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "message": "Service with 'arch' {NodeArch} cannot be found in the business policy.",
-      "translation": "Não foi possível localizar o serviço com ''arch' {NodeArch} na política de negócios.",
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+      "translation": "O serviço com 'arch' {NodeArch} não pode ser localizado na política de implementação.",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -2130,9 +3995,9 @@
       "fuzzy": true
     },
     {
-      "id": "No services found in the business policy.",
-      "message": "No services found in the business policy.",
-      "translation": "Nenhum serviço localizado na política de negócios.",
+      "id": "No services found in the deployment policy.",
+      "message": "No services found in the deployment policy.",
+      "translation": "Nenhum serviço localizado na política de implementação.",
       "fuzzy": true
     },
     {
@@ -2142,9 +4007,9 @@
       "fuzzy": true
     },
     {
-      "id": "Business policy cannot be null.",
-      "message": "Business policy cannot be null.",
-      "translation": "A política de negócios não pode ser nula.",
+      "id": "Deployment policy cannot be null.",
+      "message": "Deployment policy cannot be null.",
+      "translation": "A política de implementação não pode ser nula.",
       "fuzzy": true
     },
     {
@@ -2326,9 +4191,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "message": "Failed to convert business policy {BpId} to internal policy: {Err1}",
-      "translation": "Falha ao converter a política de negócios {BpId} na política interna: {Err1}",
+      "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+      "message": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+      "translation": "Falha ao converter a política de implementação {BpId} em política interna: {Err1}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2350,9 +4215,9 @@
       "fuzzy": true
     },
     {
-      "id": "Validation failure for business policy {BpId}. {Err}",
-      "message": "Validation failure for business policy {BpId}. {Err}",
-      "translation": "Falha de validação para a política de negócios {BpId}. {Err}",
+      "id": "Validation failure for deployment policy {BpId}. {Err}",
+      "message": "Validation failure for deployment policy {BpId}. {Err}",
+      "translation": "Falha de validação para a política de implementação {BpId}. {Err}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2374,9 +4239,9 @@
       "fuzzy": true
     },
     {
-      "id": "No services specified in the given business policy {BpId}.",
-      "message": "No services specified in the given business policy {BpId}.",
-      "translation": "Nenhum serviço especificado na política de negócios fornecida {BpId}.",
+      "id": "No services specified in the given deployment policy {BpId}.",
+      "message": "No services specified in the given deployment policy {BpId}.",
+      "translation": "Nenhum serviço especificado na política de implementação fornecida {BpId}.",
       "placeholders": [
         {
           "id": "BpId",
@@ -2390,9 +4255,9 @@
       "fuzzy": true
     },
     {
-      "id": "No services specified in the business policy {Name}.",
-      "message": "No services specified in the business policy {Name}.",
-      "translation": "Nenhum serviço especificado na política de negócios {Name}.",
+      "id": "No services specified in the deployment policy {Name}.",
+      "message": "No services specified in the deployment policy {Name}.",
+      "translation": "Nenhum serviço especificado na política de implementação {Name}.",
       "placeholders": [
         {
           "id": "Name",
@@ -2406,21 +4271,21 @@
       "fuzzy": true
     },
     {
-      "id": "Neither business policy nor business policy id is specified.",
-      "message": "Neither business policy nor business policy id is specified.",
-      "translation": "Tanto a política de negócios quanto o ID da política de negócios não são especificados.",
+      "id": "Neither deployment policy nor deployment policy id is specified.",
+      "message": "Neither deployment policy nor deployment policy id is specified.",
+      "translation": "Nem a política de implementação nem o ID de política de implementação estão especificados.",
       "fuzzy": true
     },
     {
-      "id": "Business policy id is empty.",
-      "message": "Business policy id is empty.",
-      "translation": "O ID da política de negócios está vazio.",
+      "id": "Deployment policy id is empty.",
+      "message": "Deployment policy id is empty.",
+      "translation": "O ID de política de implementação está vazio.",
       "fuzzy": true
     },
     {
-      "id": "Organization is not specified in the business policy id: {BpId}.",
-      "message": "Organization is not specified in the business policy id: {BpId}.",
-      "translation": "A organização não está especificada no ID da política de negócio: {BpId}.",
+      "id": "Organization is not specified in the deployment policy id: {BpId}.",
+      "message": "Organization is not specified in the deployment policy id: {BpId}.",
+      "translation": "A organização não está especificada no ID de política de implementação: {BpId}.",
       "placeholders": [
         {
           "id": "BpId",
@@ -2434,9 +4299,9 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to get business policy for {BpId}, {Err}",
-      "message": "Unable to get business policy for {BpId}, {Err}",
-      "translation": "Não é possível obter a política de negócio para {BpId}, {Err}",
+      "id": "Unable to get deployment policy for {BpId}, {Err}",
+      "message": "Unable to get deployment policy for {BpId}, {Err}",
+      "translation": "Não é possível obter a política de implementação para {BpId}, {Err}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2458,9 +4323,9 @@
       "fuzzy": true
     },
     {
-      "id": "No business policy found for this id {BpId}.",
-      "message": "No business policy found for this id {BpId}.",
-      "translation": "Nenhuma política de negócio encontrada para este ID {BpId}.",
+      "id": "No deployment policy found for this id {BpId}.",
+      "message": "No deployment policy found for this id {BpId}.",
+      "translation": "Nenhuma política de implementação localizada para este ID {BpId}.",
       "placeholders": [
         {
           "id": "BpId",
@@ -2474,9 +4339,9 @@
       "fuzzy": true
     },
     {
-      "id": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "message": "Failed to convert business policy {BpId} to internal policy format: {Err}",
-      "translation": "Falha ao converter a política de negócio {BpId} para o formato de política interna: {Err}",
+      "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+      "message": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+      "translation": "Falha ao converter a política de implementação {BpId} em formato de política interna: {Err}",
       "placeholders": [
         {
           "id": "BpId",
@@ -2676,15 +4541,15 @@
       "fuzzy": true
     },
     {
-      "id": "The given business policy should not be null.",
-      "message": "The given business policy should not be null.",
-      "translation": "A política de negócios fornecida não deve ser nula.",
+      "id": "The given deployment policy should not be null.",
+      "message": "The given deployment policy should not be null.",
+      "translation": "A política de implementação fornecida não deve ser nula.",
       "fuzzy": true
     },
     {
-      "id": "Error merging business policy with service policy. {Err}",
-      "message": "Error merging business policy with service policy. {Err}",
-      "translation": "Erro ao mesclar política de negócios com a política de serviço. {Err}",
+      "id": "Error merging deployment policy with service policy. {Err}",
+      "message": "Error merging deployment policy with service policy. {Err}",
+      "translation": "Erro ao mesclar a política de implementação com a política de serviço. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -2698,19 +4563,43 @@
       "fuzzy": true
     },
     {
-      "id": "The business policy should not be null.",
-      "message": "The business policy should not be null.",
-      "translation": "A política de negócios não deve ser nula.",
+      "id": "The deployment policy should not be null.",
+      "message": "The deployment policy should not be null.",
+      "translation": "A política de implementação não deve ser nula.",
       "fuzzy": true
     },
     {
-      "id": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
-      "message": "Policy for service {Org}/{WorkloadURL} has {Arg_3} but service introspection indicates these services require privileged containers to run {Arg_4}.",
-      "translation": "A política para o serviço {Org}/{WorkloadURL} tem {Arg_3}, mas a introspecção de serviço indica que esses serviços requerem contêineres privilegiados para executar {Arg_4}.",
+      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
+      "message": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
+      "translation": "A política de implementação {Header} não pode ter {PROPNODEPRIVILEGED}=true ao referir-se a um serviço que requer privilégio para execução.",
+      "placeholders": [
+        {
+          "id": "Header",
+          "string": "%[1]s",
+          "type": "github.com/open-horizon/anax/policy.PolicyHeader",
+          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Version string \"json:\\\"version\\\"\"}",
+          "argNum": 1,
+          "expr": "businessPol.Header"
+        },
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "externalpolicy.PROP_NODE_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the exchange. {Err}",
+      "message": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the exchange. {Err}",
+      "translation": "Erro ao recuperar o serviço {Org}/{WorkloadURL} {Version} {Arch} e seus dependentes por meio da troca. {Err}",
       "placeholders": [
         {
           "id": "Org",
-          "string": "%[1]s",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
@@ -2718,25 +4607,137 @@
         },
         {
           "id": "WorkloadURL",
-          "string": "%[2]s",
+          "string": "%[2]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 2,
           "expr": "workload.WorkloadURL"
         },
         {
-          "id": "Arg_3",
-          "string": "%[3]s",
-          "type": "",
+          "id": "Version",
+          "string": "%[3]v",
+          "type": "string",
           "underlyingType": "string",
-          "argNum": 3
+          "argNum": 3,
+          "expr": "workload.Version"
         },
         {
-          "id": "Arg_4",
+          "id": "Arch",
           "string": "%[4]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 4
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "workload.Arch"
+        },
+        {
+          "id": "Err",
+          "string": "%[5]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 5,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
+      "message": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "Falha ao serializar a configuração de implementação para o serviço {SIdTop}, erro {Err}",
+      "placeholders": [
+        {
+          "id": "SIdTop",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sIdTop"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
+      "message": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "Falha ao serializar a configuração de implementação de cluster para o serviço {SIdTop}, erro {Err}",
+      "placeholders": [
+        {
+          "id": "SIdTop",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sIdTop"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to find service definition from the input services.",
+      "message": "Unable to find service definition from the input services.",
+      "translation": "Não é possível localizar a definição de serviço por meio dos serviços de entrada.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "message": "Unable to create version expression from {Version}. {Err}",
+      "translation": "Não é possível criar a expressão de versão por meio de {Version}. {Err}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sDep.Version"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "message": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
+      "translation": "Erro ao recuperar serviços dependentes por meio da troca para {SDep}. {Err}",
+      "placeholders": [
+        {
+          "id": "SDep",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "sDep"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -2754,9 +4755,9 @@
       "fuzzy": true
     },
     {
-      "id": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "message": "No service versions with architecture {NodeArch} specified in the business policy or pattern.",
-      "translation": "Nenhuma versão de serviço com arquitetura {NodeArch} especificada na política ou padrão de negócios.",
+      "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+      "message": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+      "translation": "Nenhuma versão de serviço com arquitetura {NodeArch} especificada na política de implementação ou padrão.",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -2770,9 +4771,9 @@
       "fuzzy": true
     },
     {
-      "id": "No service versions specified in the business policy or pattern.",
-      "message": "No service versions specified in the business policy or pattern.",
-      "translation": "Nenhuma versão de serviço especificada na política ou padrão de negócios.",
+      "id": "No service versions specified in the deployment policy or pattern.",
+      "message": "No service versions specified in the deployment policy or pattern.",
+      "translation": "Nenhuma versão de serviço especificada na política de implementação ou padrão.",
       "fuzzy": true
     },
     {
@@ -2828,9 +4829,57 @@
       "fuzzy": true
     },
     {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "message": "Service with 'arch' {NodeArch} cannot be found in the business policy or pattern.",
-      "translation": "O serviço com 'arch' {NodeArch} não pode ser localizado na política ou padrão de negócios.",
+      "id": "Warning: checking node user input:  {Err}",
+      "message": "Warning: checking node user input:  {Err}",
+      "translation": "Aviso: verificando a entrada do usuário do nó: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: checking user input for the deployment policy: {Err}",
+      "message": "Warning: checking user input for the deployment policy: {Err}",
+      "translation": "Aviso: verificando a entrada do usuário para a política de implementação: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: checking user input for the pattern: {Err}",
+      "message": "Warning: checking user input for the pattern: {Err}",
+      "translation": "Aviso: verificando a entrada do usuário para o padrão: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "message": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "O serviço com 'arch' {NodeArch} não pode ser localizado na política de implementação ou padrão.",
       "placeholders": [
         {
           "id": "NodeArch",
@@ -2844,39 +4893,15 @@
       "fuzzy": true
     },
     {
-      "id": "No services found in the business policy or pattern.",
-      "message": "No services found in the business policy or pattern.",
-      "translation": "Nenhum serviço localizado na política ou padrão de negócios.",
+      "id": "No services found in the deployment policy or pattern.",
+      "message": "No services found in the deployment policy or pattern.",
+      "translation": "Nenhum serviço localizado na política de implementação ou padrão.",
       "fuzzy": true
     },
     {
       "id": "The input service spec object cannot be null.",
       "message": "The input service spec object cannot be null.",
       "translation": "O objeto de especificação do serviço de entrada não pode ser nulo.",
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "message": "Error retrieving service from the exchange for {SvcSpec}. {Err}",
-      "translation": "Erro ao recuperar o serviço por meio da troca para {SvcSpec}. {Err}",
-      "placeholders": [
-        {
-          "id": "SvcSpec",
-          "string": "%[1]v",
-          "type": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
-          "underlyingType": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
-          "argNum": 1,
-          "expr": "svcSpec"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -2982,54 +5007,6 @@
       "fuzzy": true
     },
     {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "message": "Unable to create version expression from {Version}. {Err}",
-      "translation": "Não é possível criar a expressão de versão por meio de {Version}. {Err}",
-      "placeholders": [
-        {
-          "id": "Version",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sDep.Version"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "message": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "Erro ao recuperar serviços dependentes por meio da troca para {SDep}. {Err}",
-      "placeholders": [
-        {
-          "id": "SDep",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 1,
-          "expr": "sDep"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Failed to get the service from the exchange. {Err}",
       "message": "Failed to get the service from the exchange. {Err}",
       "translation": "Falha ao obter o serviço por meio da troca. {Err}",
@@ -3098,9 +5075,57 @@
       "fuzzy": true
     },
     {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "message": "Service URL {URL} does not match the service URL {Name} specified in the business policy.",
-      "translation": "A URL de serviço {URL} não corresponde à URL de serviço {Name} especificada na política de negócio.",
+      "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+      "message": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+      "translation": "{Errmsg} O serviço {Org}/{URL} versão {Version} arch {Arch} está ausente na entrada do usuário do nó.",
+      "placeholders": [
+        {
+          "id": "Errmsg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "err_msg"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sdef.GetOrg()"
+        },
+        {
+          "id": "URL",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sdef.GetURL()"
+        },
+        {
+          "id": "Version",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "sdef.GetVersion()"
+        },
+        {
+          "id": "Arch",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "sdef.GetArch()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+      "message": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+      "translation": "A URL de serviço {URL} não corresponde à URL de serviço {Name} especificada na política de implementação.",
       "placeholders": [
         {
           "id": "URL",
@@ -3122,9 +5147,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "message": "Service Org {Org} does not match the service org {Org_1} specified in the business policy.",
-      "translation": "A organização de serviço {Org} não corresponde à organização de serviço {Org_1} especificada na política de negócio.",
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+      "message": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+      "translation": "A organização de serviço {Org} não corresponde à organização de serviço {Org_1} especificada na política de implementação.",
       "placeholders": [
         {
           "id": "Org",
@@ -3146,9 +5171,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "message": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the business policy.",
-      "translation": "A arquitetura de serviço {Arch} não corresponde à arquitetura de serviço {Arch_1} especificada na política de negócio.",
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+      "message": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+      "translation": "A arquitetura de serviço {Arch} não corresponde à arquitetura de serviço {Arch_1} especificada na política de implementação.",
       "placeholders": [
         {
           "id": "Arch",
@@ -3170,9 +5195,9 @@
       "fuzzy": true
     },
     {
-      "id": "Service version {Version} does not match any service versions specified in the business policy.",
-      "message": "Service version {Version} does not match any service versions specified in the business policy.",
-      "translation": "A versão de serviço {Version} não corresponde a nenhuma versão de serviço especificada na política de negócios.",
+      "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
+      "message": "Service version {Version} does not match any service versions specified in the deployment policy.",
+      "translation": "A versão de serviço {Version} não corresponde a nenhuma versão de serviço especificada na política de implementação.",
       "placeholders": [
         {
           "id": "Version",
@@ -3375,6 +5400,694 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+      "message": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+      "translation": "O serviço {ServiceOrgid}/{ServiceUrl} versão {ServiceVersionRange} arch {ServiceArch} especificado na entrada do usuário não é referenciado pela política de padrão ou de implementação. Certifique-se de que o serviceOrgid, serviceUrl, serviceArch e serviceVersionRange estejam corretos.",
+      "placeholders": [
+        {
+          "id": "ServiceOrgid",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInput[0].ServiceOrgid"
+        },
+        {
+          "id": "ServiceUrl",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "userInput[0].ServiceUrl"
+        },
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "userInput[0].ServiceVersionRange"
+        },
+        {
+          "id": "ServiceArch",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "userInput[0].ServiceArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+      "message": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+      "translation": "O serviço {ServiceOrgid}/{ServiceUrl} versão {ServiceVersionRange} arch {ServiceArch} especificado na entrada do usuário não é referenciado pela política de padrão ou de implementação. Certifique-se de que a especificação de serviço esteja correta.",
+      "placeholders": [
+        {
+          "id": "ServiceOrgid",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "userInput[i].ServiceOrgid"
+        },
+        {
+          "id": "ServiceUrl",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "userInput[i].ServiceUrl"
+        },
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "userInput[i].ServiceVersionRange"
+        },
+        {
+          "id": "ServiceArch",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "userInput[i].ServiceArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+      "message": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+      "translation": "A variável {Name} para o serviço {ServiceOrgid}/{ServiceUrl} versão {ServiceVersionRange} arch {ServiceArch} especificado na entrada do usuário não é usado. Certifique-se de que seja um nome correto.",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "uui.Name"
+        },
+        {
+          "id": "ServiceOrgid",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "userInput[i].ServiceOrgid"
+        },
+        {
+          "id": "ServiceUrl",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "userInput[i].ServiceUrl"
+        },
+        {
+          "id": "ServiceVersionRange",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "userInput[i].ServiceVersionRange"
+        },
+        {
+          "id": "ServiceArch",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "userInput[i].ServiceArch"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
+        "Deployment config {Arg_1} contains unsupported capability for a workload"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "A configuração de implementação {Arg_1} contém um recurso não suportado para uma carga de trabalho",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
+        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "A configuração de implementação {Arg_1} contém um recurso não suportado para o contêiner de infraestrutura.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
+        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "A configuração de implementação {Arg_1} contém uma ligação não suportada para uma carga de trabalho, {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
+        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "A configuração de implementação {Arg_1} contém uma ligação não suportada para {Arg_2}, {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
+        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Erro ao Desserializar a sequência de implementação {Arg_1}, erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
+        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Erro ao Desserializar a sequência de substituição de implementação {Arg_1} para o contrato {Arg_2}, erro: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR",
+        "Error starting containers: {Arg_1}"
+      ],
+      "message": "Error starting containers: {Arg_1}",
+      "translation": "Erro ao iniciar os contêineres: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
+        "Error starting containers for agreement {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Erro ao iniciar contêineres para o contrato {Arg_1}: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
+        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Erro ao reiniciar contêineres para os contratos {Arg_1}: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
+        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+      ],
+      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Erro ao limpar contêineres antigos antes de iniciar novos contêineres para {Arg_1}. Erro: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
+        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Falha ao obter uma lista de contêineres pai para a nova tentativa de serviço para {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
+        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Falha ao restaurar a conexão de rede com os pais para o serviço {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR",
+        "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+      ],
+      "message": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "O anax está sendo finalizado. Não é possível acessar o diretório de armazenamento de serviço especificado na configuração: {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT",
+        "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "O anax está sendo finalizado. Falha ao instanciar o cliente iptables. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT",
+        "anax terminating. Failed to instantiate docker client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "O anax está sendo finalizado. Falha ao instanciar o cliente do docker. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "A propriedade {PROPNODEPRIVILEGED} deve ter um valor booleano (true ou false).",
+      "placeholders": [
+        {
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "PROP_NODE_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property must include a name and a value: {Property}",
+      "message": "Property must include a name and a value: {Property}",
+      "translation": "A propriedade deve incluir um nome e um valor: {Property}",
+      "placeholders": [
+        {
+          "id": "Property",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.Property",
+          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
+          "argNum": 1,
+          "expr": "property"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "A propriedade {Name} possui um tipo de propriedade inválido {DeclaredType}. Os tipos de propriedade permitidos são: versão, sequência, número inteiro, booleano, valor flutuante e lista de sequências.",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "O valor da propriedade é do tipo {ActualType}, tipo esperado {DeclaredType}",
+      "placeholders": [
+        {
+          "id": "ActualType",
+          "string": "%[1]T",
+          "type": "bool",
+          "underlyingType": "bool",
+          "argNum": 1,
+          "expr": "actualType"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "message": "Value {Value} of property {Name} is not an integer type",
+      "translation": "O valor {Value} da propriedade {Name} não é um tipo de número inteiro",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "O valor {Value} da propriedade {Name} não é uma sequência válida. Defina o tipo ou altere o valor para uma sequência.",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "message": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "A propriedade {Name} com o valor {Value} não é uma sequência de versões válida",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "Value",
+          "string": "%[2]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "property.Value"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "message": "Property {Name} has invalid value type {ActualType}",
+      "translation": "A propriedade {Name} possui um tipo de valor inválido {ActualType}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "ActualType",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "actualType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "A expressão de restrição: {Dconstraints} é do tipo {Dconstraints_1}, mas espera-se que seja uma matriz de sequências",
+      "placeholders": [
+        {
+          "id": "Dconstraints",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "dconstraints"
+        },
+        {
+          "id": "Dconstraints_1",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "dconstraints"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "message": "The constraint expression contains unmatched parentheses.",
+      "translation": "A expressão de restrição contém parênteses não correspondidos.",
       "fuzzy": true
     },
     {
@@ -4914,11 +7627,11 @@
     },
     {
       "id": [
-        "EL_GOV_START_DOWNGRADE_BECAUSW_UPGRADE_FAILED",
-        "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed."
+        "EL_GOV_START_DOWNGRADE_BECAUSE_UPGRADE_FAILED",
+        "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed."
       ],
-      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrade failed.",
-      "translation": "Iniciar downgrade do serviço {Arg_1}/{Arg_2} versão {Arg_3} porque o upgrade falhou.",
+      "message": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
+      "translation": "Inicie o downgrade do serviço {Arg_1}/{Arg_2} versão {Arg_3} porque o upgrade falhou.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -4986,10 +7699,10 @@
     {
       "id": [
         "EL_GOV_COMPLETE_DOWNGRADE",
-        "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
+        "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}."
       ],
-      "message": "Complete downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "Concluir downgrade do serviço {Arg_1}/{Arg_2} da versão {Arg_3} para a versão {Arg_4}.",
+      "message": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "O downgrade do serviço {Arg_1}/{Arg_2} da versão {Arg_3} para a versão {Arg_4} foi concluído.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -5103,9 +7816,9 @@
     {
       "id": [
         "EL_GOV_ERR_DOWNGRADE_FROM",
-        "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}"
+        "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}"
       ],
-      "message": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Eror: {Arg_5}",
+      "message": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
       "translation": "Erro ao fazer downgrade do serviço {Arg_1}/{Arg_2} da versão {Arg_3} para a versão {Arg_4}. Erro: {Arg_5}",
       "placeholders": [
         {
@@ -5472,1738 +8185,6 @@
       "fuzzy": true
     },
     {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "message": "Error parsing the selections {Form}. {Err}",
-      "translation": "Erro ao analisar as seleções {Form}. {Err}",
-      "placeholders": [
-        {
-          "id": "Form",
-          "string": "%[1]v",
-          "type": "net/url.Values",
-          "underlyingType": "map[string][]string",
-          "argNum": 1,
-          "expr": "r.Form"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "message": "Error getting {Resource} for output, error {Err}",
-      "translation": "Erro ao obter {Resource} para a saída, erro {Err}",
-      "placeholders": [
-        {
-          "id": "Resource",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "resource"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
-        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para configuração/registro do nó. O corpo da entrada não pôde ser desserializado para o objeto de nó: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
-        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para configuração/registro do nó. O corpo da entrada não pôde ser desserializado para o objeto configstate: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
-        "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para atualização do nó. O corpo da entrada não pôde ser desserializado para o objeto de nó: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
-        "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para a política do nó. O corpo da entrada não pôde ser desserializado como um objeto de política: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
-        "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para a correção da política de nó. O corpo da entrada não pôde ser desserializado em uma Expressão de restrição ou Lista de propriedades: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para a correção da política de nó. O corpo da entrada não continha uma Expressão de restrição ou Lista de propriedades: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
-        "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao analisar a entrada para entrada do usuário do nó. O corpo da entrada não pôde ser desserializado como um objeto UserInput: {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_REG",
-        "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "Erro de configuração/registro do nó para o nó {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UPDATE",
-        "Error in updating node {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "Erro ao atualizar o nó {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UNREG",
-        "Error in node unregistration. {Arg_1}"
-      ],
-      "message": "Error in node unregistration. {Arg_1}",
-      "translation": "Erro na remoção de registro do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
-        "Error verifiying exchange version. error: {Arg_1}"
-      ],
-      "message": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "Erro ao verificar a versão do Exchange. erro {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_CREATE",
-        "Error in creating or replacing node policy. {Arg_1}"
-      ],
-      "message": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "Erro ao criar ou substituir a política do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_PATCH",
-        "Error in patching node policy. {Arg_1}"
-      ],
-      "message": "Error in patching node policy. {Arg_1}",
-      "translation": "Erro ao corrigir a política do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_DEL",
-        "Error in deleting node policy. {Arg_1}"
-      ],
-      "message": "Error in deleting node policy. {Arg_1}",
-      "translation": "Erro ao excluir a política do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_UPDATE",
-        "Error in updating node user input. {Arg_1}"
-      ],
-      "message": "Error in updating node user input. {Arg_1}",
-      "translation": "Erro ao atualizar a entrada do usuário do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_PATCH",
-        "Error in patching node user input. {Arg_1}"
-      ],
-      "message": "Error in patching node user input. {Arg_1}",
-      "translation": "Erro ao corrigir a entrada do usuário do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_DEL",
-        "Error in deleting node userinput. {Arg_1}"
-      ],
-      "message": "Error in deleting node userinput. {Arg_1}",
-      "translation": "Erro ao excluir a entrada do usuário do nó. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_REG",
-        "Start node configuration/registration for node {Arg_1}."
-      ],
-      "message": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "Iniciar configuração/registro do nó para o nó {Arg_1}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_UPDATE",
-        "Start updating node {Arg_1}."
-      ],
-      "message": "Start updating node {Arg_1}.",
-      "translation": "Iniciar atualização do nó {Arg_1}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_UPDATE",
-        "Complete node update for {Arg_1}."
-      ],
-      "message": "Complete node update for {Arg_1}.",
-      "translation": "Concluir atualização do nó para {Arg_1}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_UNREG",
-        "Start node unregistration."
-      ],
-      "message": "Start node unregistration.",
-      "translation": "Iniciar remoção de registro do nó.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_UNREG",
-        "Node unregistration complete for node {Arg_1}."
-      ],
-      "message": "Node unregistration complete for node {Arg_1}.",
-      "translation": "Remoção de registro do nó concluída para o nó {Arg_1}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_NOT_FOUND",
-        "Error unregistring the node. The node is not found from the database."
-      ],
-      "message": "Error unregistring the node. The node is not found from the database.",
-      "translation": "Erro ao cancelar o registro do nó. O nó não foi localizado no banco de dados.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
-        "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
-      ],
-      "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "Erro ao cancelar o registro do nó. O nó deve estar no estado 'configured' ou 'configuring' para ser desconfigurado.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "Erro de entrada para remoção de registro do nó. {Arg_1} é um valor incorreto para removeNode",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "Erro de entrada para remoção de registro do nó. {Arg_1} é um valor incorreto para deepClean",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for block"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "Erro de entrada para remoção de registro do nó. {Arg_1} é um valor incorreto para o bloco",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_READ_NODE_FROM_DB",
-        "Unable to read node object from database, error {Arg_1}"
-      ],
-      "message": "Unable to read node object from database, error {Arg_1}",
-      "translation": "Não é possível ler o objeto de nó a partir do banco de dados, erro {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
-        "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
-      ],
-      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "Erro ao salvar o novo estado de configuração do nó (unconfiguring) no banco de dados: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_CONF_NOT_FOUND",
-        "Error in node configuration. The node is not found from the database."
-      ],
-      "message": "Error in node configuration. The node is not found from the database.",
-      "translation": "Erro na configuração do nó. O nó não foi localizado no banco de dados.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_CONF_WRONG_STATE",
-        "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
-      ],
-      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "Erro na configuração do nó. O nó deve estar no estado 'configured' ou 'configuring' para que seja possível alterar seu estado para {Arg_1}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_UNSUP_NODE_STATE_TRANS",
-        "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
-      ],
-      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "A transição de estado do nó de '{Arg_1}' para '{Arg_2}' não é suportada.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_FAIL_GET_UI_FROM_DB",
-        "Failed get user input from local db. {Arg_1}"
-      ],
-      "message": "Failed get user input from local db. {Arg_1}",
-      "translation": "Falha ao obter entrada do usuário a partir do banco de dados local. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
-        "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
-      ],
-      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "Falha ao localizar preferências para o serviço {Arg_1}/{Arg_2} a partir da entrada do usuário local, erro: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SAVE_NODE_CONFSTATE",
-        "Error saving new node config state to database: {Arg_1}"
-      ],
-      "message": "Error saving new node config state to database: {Arg_1}",
-      "translation": "Erro ao salvar o novo estado de configuração do nó no banco de dados: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_REG",
-        "Complete node configuration/registration for node {Arg_1}."
-      ],
-      "message": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "Concluir configuração/registro do nó para o nó {Arg_1}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SVC_CONF",
-        "Error in service configuration for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "Erro na configuração de serviço para {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_GET_SREFS_FOR_PATTERN",
-        "Error getting service references for pattern {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "Erro ao obter referências de serviço para o padrão {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NEW_NODE_POL",
-        "New node policy: {Arg_1}"
-      ],
-      "message": "New node policy: {Arg_1}",
-      "translation": "Nova política de nó: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NODE_POL_DELETED",
-        "Deleted node policy"
-      ],
-      "message": "Deleted node policy",
-      "translation": "Política de nó excluída",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NEW_NODE_UI",
-        "New node user input: {Arg_1}"
-      ],
-      "message": "New node user input: {Arg_1}",
-      "translation": "Nova entrada do usuário do nó: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NO_NODE_UI_TO_DEL",
-        "No node user input to detele"
-      ],
-      "message": "No node user input to detele",
-      "translation": "Nenhuma entrada do usuário do nó para ser excluída",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_DELETED_ALL_NODE_UI",
-        "Deleted all node user input"
-      ],
-      "message": "Deleted all node user input",
-      "translation": "Todas as entradas de usuário do nó excluídas",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_SVC_CONFIG",
-        "Start service configuration with user input for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "Iniciar configuração de serviço com a entrada do usuário para {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_SVC_AUTO_CONFIG",
-        "Start service auto configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Iniciar configuração automática do serviço para {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_SVC_CONFIG",
-        "Complete service configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Concluir a configuração do serviço para {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_SVC_AUTO_CONFIG",
-        "Complete service auto configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Concluir configuração automática do serviço para {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
-        "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable."
-      ],
-      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.",
-      "translation": "A variável {Arg_1} está ausente na configuração de serviço para {Arg_2}/{Arg_3}. Isso pode causar a não formação do contrato caso a política de negócio não contenha a configuração para a variável ausente.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_CONFIG_SVC",
-        "Error configuring service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "Erro ao configurar o serviço {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
-        "Error changing service configstate {Arg_1}, error {Arg_2}"
-      ],
-      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "Erro ao alterar o configstate do serviço {Arg_1}, erro {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_CHANGE_SVC_CONFIGSTATE",
-        "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
-      ],
-      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "Iniciar alteração do estado de configuração do serviço para {Arg_1} para {Arg_2} para o nó.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
-        "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
-      ],
-      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "Concluir a alteração do estado de configuração do serviço para {Arg_1} para {Arg_2} para o nó.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "message": "Error converting the selections into Selectors: {Err}",
-      "translation": "Erro ao converter as seleções em Seletores: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "A expressão de restrição: {Dconstraints} é do tipo {Dconstraints_1}, mas espera-se que seja uma matriz de sequências",
-      "placeholders": [
-        {
-          "id": "Dconstraints",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "dconstraints"
-        },
-        {
-          "id": "Dconstraints_1",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "dconstraints"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "message": "The constraint expression contains unmatched parentheses.",
-      "translation": "A expressão de restrição contém parênteses não correspondidos.",
-      "fuzzy": true
-    },
-    {
-      "id": "no service name",
-      "message": "no service name",
-      "translation": "Nenhum nome de serviço",
-      "fuzzy": true
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "message": "no docker image for service {ServiceName}",
-      "translation": "Nenhuma imagem do Docker para o serviço {ServiceName}",
-      "placeholders": [
-        {
-          "id": "ServiceName",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "serviceName"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "message": "failed to marshal body for {D}: {Err}",
-      "translation": "Falha ao serializar o corpo para {D}: {Err}",
-      "placeholders": [
-        {
-          "id": "D",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "d"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "Falha ao desserializar o JSON para o campo de implementação {StringjsonBytes}: {Err}",
-      "placeholders": [
-        {
-          "id": "StringjsonBytes",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "string(jsonBytes)"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "message": "user input {Name} has no default value and is not set",
-      "translation": "A entrada do usuário {Name} não possui valor padrão e não está configurada",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ui.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_POL_FILE",
-        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "Não é possível ler o arquivo de políticas {Arg_1} para o serviço {Arg_2}, erro: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_START_ADVERTISE_POL",
-        "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Iniciar a publicidade da política com a troca do serviço {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_ADVERTISE_POL",
-        "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "Não é possível anunciar políticas com a troca do serviço {Arg_1}/{Arg_2}, erro: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_COMPLETE_ADVERTISE_POL",
-        "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Concluir a publicidade da política com a troca do serviço {Arg_1}/{Arg_2}.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "Não é possível ler a política do nó a partir do banco de dados local. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_FROM_DB",
-        "Unable to read node object from the local database. {Arg_1}"
-      ],
-      "message": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "Não é possível ler o objeto do nó a partir do banco de dados local. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
-        "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-      "translation": "Não é possível sincronizar a política do nó local com a cópia de troca. Erro: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
-        "Node policy updated with the exchange copy: {Arg_1}"
-      ],
-      "message": "Node policy updated with the exchange copy: {Arg_1}",
-      "translation": "Política de nó atualizada com a cópia de troca: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
-        "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-      "translation": "Não é possível sincronizar a entrada do usuário do nó local com a cópia de troca. Erro: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
-        "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}"
-      ],
-      "message": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "Entrada do usuário do nó atualizada com a cópia de troca. As entradas do usuário alteradas são: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_CANNOT_VERIFY_AG",
-        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
-      ],
-      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "O nó não pôde verificar o contrato {Arg_1} com o consumidor. Ele será cancelado",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_IS_OFFLINE",
-        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
-      ],
-      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "O nó está off-line. A criação de log de mensagens de erro off-line periódicas será restringida até que a conexão seja restaurada",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
-        "Unable to sync the node with the exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
-      "translation": "Não é possível sincronizar o nó com a cópia de troca. Erro: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
-        "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}"
-      ],
-      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-      "translation": "Não é possível recuperar o estado de configuração do serviço para o recurso do nó {Arg_1} a partir da troca, erro {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
-        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
-      ],
-      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "Não é possível recuperar o padrão de troca de nó salvo do banco de dados local. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
-        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
-      ],
-      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "Não é possível salvar o novo padrão de troca de nó {Arg_1} no banco de dados local. Erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "message": "properties contains an invalid property: {Err}",
-      "translation": "As propriedades contêm uma propriedade inválida: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "message": "Property must include a name and a value: {Property}",
-      "translation": "A propriedade deve incluir um nome e um valor: {Property}",
-      "placeholders": [
-        {
-          "id": "Property",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.Property",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
-          "argNum": 1,
-          "expr": "property"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of string.",
-      "translation": "A propriedade {Name} possui um tipo de propriedade inválido {DeclaredType}. Os tipos de propriedade permitidos são: version, string, int, boolean, float e list of string.",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "O valor da propriedade é do tipo {ActualType}, tipo esperado {DeclaredType}",
-      "placeholders": [
-        {
-          "id": "ActualType",
-          "string": "%[1]T",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "actualType"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "message": "Value {Value} of property {Name} is not an integer type",
-      "translation": "O valor {Value} da propriedade {Name} não é um tipo de número inteiro",
-      "placeholders": [
-        {
-          "id": "Value",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "O valor {Value} da propriedade {Name} não é uma sequência válida. Defina o tipo ou altere o valor para uma sequência.",
-      "placeholders": [
-        {
-          "id": "Value",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "message": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "A propriedade {Name} com o valor {Value} não é uma sequência de versões válida",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "property.Value"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "message": "Property {Name} has invalid value type {ActualType}",
-      "translation": "A propriedade {Name} possui um tipo de valor inválido {ActualType}",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "ActualType",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "actualType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "translation": "Erro de compatibilidade: as versões de esquema não são as mesmas, Política do consumidor: {Version}, Política do produtor {Version_1}",
@@ -7375,311 +8356,6 @@
           "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
           "argNum": 2,
           "expr": "consumer_policy.DataVerify"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "Name ou Org é uma sequência de caracteres vazia.",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "A matriz serviceVersions está vazia.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
-        "Deployment config {Arg_1} contains unsupported capability for a workload"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "A configuração de implementação {Arg_1} contém um recurso não suportado para uma carga de trabalho",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
-        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "A configuração de implementação {Arg_1} contém um recurso não suportado para o contêiner de infraestrutura.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
-        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "A configuração de implementação {Arg_1} contém uma ligação não suportada para uma carga de trabalho, {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
-        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "A configuração de implementação {Arg_1} contém uma ligação não suportada para {Arg_2}, {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
-        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Erro ao Desserializar a sequência de implementação {Arg_1}, erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
-        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Erro ao Desserializar a sequência de substituição de implementação {Arg_1} para o contrato {Arg_2}, erro: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR",
-        "Error starting containers: {Arg_1}"
-      ],
-      "message": "Error starting containers: {Arg_1}",
-      "translation": "Erro ao iniciar os contêineres: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
-        "Error starting containers for agreement {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Erro ao iniciar contêineres para o contrato {Arg_1}: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
-        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Erro ao reiniciar contêineres para os contratos {Arg_1}: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
-        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-      ],
-      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Erro ao limpar contêineres antigos antes de iniciar novos contêineres para {Arg_1}. Erro: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
-        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Falha ao obter uma lista de contêineres pai para a nova tentativa de serviço para {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
-        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Falha ao restaurar a conexão de rede com os pais para o serviço {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -8039,125 +8715,107 @@
       "fuzzy": true
     },
     {
-      "id": "No input found.",
-      "message": "No input found.",
-      "translation": "Nenhuma entrada localizada.",
-      "fuzzy": true
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Desautorizado. Nenhum ID do usuário de troca é fornecido.",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "message": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "Falha ao autenticar o usuário com a troca. {Err}",
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: não são permitidos espaços em branco em {Expr}.",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Expr",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "expr"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "message": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Não foi possível desserializar o corpo de entrada para o objeto JSON. {Err}",
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "message": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} não é uma sequência de versões válida.",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Verstring",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "ver_string"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Não foi possível desserializar o corpo de entrada para o objeto PolicyCheck. {Err}",
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} não começa com uma diretiva de inclusão ou exclusão.",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Verstring",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "ver_string"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Não foi possível desserializar o corpo de entrada para o objeto UserInputCheck. {Err}",
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} não termina com uma diretiva de inclusão ou exclusão.",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Verstring",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "ver_string"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "O corpo de entrada não pôde ser desserializado para o objeto CompCheck. {Err}",
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: número incorreto de versões na expressão: {Expr}.",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Expr",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "expr"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "No exchange user id is supplied.",
-      "message": "No exchange user id is supplied.",
-      "translation": "Nenhum ID do usuário de troca é fornecido.",
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "message": "No exchange user organization id is supplied.",
-      "translation": "Nenhum ID de organização do usuário de troca é fornecido.",
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "message": "No exchange user password or api key is supplied.",
-      "translation": "Nenhuma senha ou chave de API de usuário de troca é fornecida.",
-      "fuzzy": true
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "ID da organização, ID do usuário ou senha errada.",
-      "fuzzy": true
-    },
-    {
-      "id": "Internal server error",
-      "message": "Internal server error",
-      "translation": "Erro interno do servidor",
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "message": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "A sequência de versões de entrada {V1} ou {V2} não é uma sequência de versões única válida.",
+      "placeholders": [
+        {
+          "id": "V1",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "v1"
+        },
+        {
+          "id": "V2",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "v2"
+        }
+      ],
       "fuzzy": true
     }
   ]
