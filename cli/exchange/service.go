@@ -174,8 +174,10 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	svcInput := exchange.ServiceDefinition{Label: sf.Label, Description: sf.Description, Public: sf.Public, Documentation: sf.Documentation, URL: sf.URL, Version: sf.Version, Arch: sf.Arch, Sharable: sf.Sharable, MatchHardware: sf.MatchHardware, RequiredServices: sf.RequiredServices, UserInputs: sf.UserInputs}
 
 	baseDir := filepath.Dir(jsonFilePath)
-	svcInput.Deployment, svcInput.DeploymentSignature = SignDeployment(sf.Deployment, sf.DeploymentSignature, baseDir, false, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage)
-	svcInput.ClusterDeployment, svcInput.ClusterDeploymentSignature = SignDeployment(sf.ClusterDeployment, sf.ClusterDeploymentSignature, baseDir, true, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage)
+	usedPubKey := ""
+	usedPubKey_cluster := ""
+	svcInput.Deployment, svcInput.DeploymentSignature, usedPubKey = SignDeployment(sf.Deployment, sf.DeploymentSignature, baseDir, false, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage)
+	svcInput.ClusterDeployment, svcInput.ClusterDeploymentSignature, usedPubKey_cluster = SignDeployment(sf.ClusterDeployment, sf.ClusterDeploymentSignature, baseDir, true, keyFilePath, pubKeyFilePath, dontTouchImage, pullImage)
 
 	// Create or update resource in the exchange
 	exchId := cutil.FormExchangeIdForService(svcInput.URL, svcInput.Version, svcInput.Arch)
@@ -197,10 +199,16 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	}
 
-	// Store the public key in the exchange, if they gave it to us
-	if pubKeyFilePath != "" {
-		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
-		baseName := filepath.Base(pubKeyFilePath)
+	// Store the public key in the exchange, if they are used
+	pubKeyToStore := ""
+	if usedPubKey != "" {
+		pubKeyToStore = usedPubKey
+	} else if usedPubKey_cluster != "" {
+		pubKeyToStore = usedPubKey_cluster
+	}
+	if pubKeyToStore != "" {
+		bodyBytes := cliutils.ReadFile(pubKeyToStore)
+		baseName := filepath.Base(pubKeyToStore)
 		msgPrinter.Printf("Storing %s with the service in the exchange...", baseName)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
@@ -260,7 +268,9 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	return
 }
 
-func SignDeployment(deployment interface{}, deploymentSignature string, baseDir string, isCluster bool, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool) (string, string) {
+// The function signs the given deployment if it is not empty abd not already signed. It returns the deployment, its signature
+// and the public key whose matching private was used for signing the deployment.
+func SignDeployment(deployment interface{}, deploymentSignature string, baseDir string, isCluster bool, keyFilePath string, pubKeyFilePath string, dontTouchImage bool, pullImage bool) (string, string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -273,7 +283,7 @@ func SignDeployment(deployment interface{}, deploymentSignature string, baseDir 
 	}
 
 	// The deployment field can be json object (map), string (for pre-signed), or nil
-	var newDeployment, newDeploymentSignature string
+	var newDeployment, newDeploymentSignature, newPubKeyToStore string
 	switch dep := deployment.(type) {
 	case nil:
 		deployment = ""
@@ -284,7 +294,7 @@ func SignDeployment(deployment interface{}, deploymentSignature string, baseDir 
 
 	case map[string]interface{}:
 		// We know we need to sign the deployment config, so make sure a real key file was provided.
-		keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+		keyFilePath, newPubKeyToStore = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 
 		// Construct and sign the deployment string.
 		msgPrinter.Printf("Signing service...")
@@ -317,7 +327,7 @@ func SignDeployment(deployment interface{}, deploymentSignature string, baseDir 
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("'%v' field is invalid type. It must be either a json object or a string (for pre-signed)", tag_d))
 	}
 
-	return newDeployment, newDeploymentSignature
+	return newDeployment, newDeploymentSignature, newPubKeyToStore
 }
 
 // ServiceVerify verifies the deployment strings of the specified service resource in the exchange.
