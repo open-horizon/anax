@@ -22,6 +22,30 @@ type ExchangeNodes struct {
 	Nodes     map[string]exchange.Device `json:"nodes"`
 }
 
+type ContainerStat struct {
+	Name    string `json:"name"`
+	Image   string `json:"image"`
+	Created int    `json:"created"`
+	State   string `json:"state"`
+}
+
+type ExNodeStatusService struct {
+	AgreementId     string          `json:"agreementId"`
+	ServiceUrl      string          `json:"serviceUrl"`
+	OrgId           string          `json:"orgid"`
+	Version         string          `json:"version"`
+	Arch            string          `json:"arch"`
+	ContainerStatus []ContainerStat `json:"containerStatus"`
+	OperatorStatus  interface{}     `json:"operatorStatus,omitempty"`
+}
+
+type ExchangeNodeStatus struct {
+	Connectivity    map[string]bool       `json:"connectivity,omitempty"`
+	Services        []ExNodeStatusService `json:"services"`
+	RunningServices string                `json:"runningServices"`
+	LastUpdated     string                `json:"lastUpdated,omitempty"`
+}
+
 func NodeList(org string, credToUse string, node string, namesOnly bool) {
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var nodeOrg string
@@ -540,6 +564,26 @@ func NodeListErrors(org string, credToUse string, node string, long bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	}
 }
+
+// NodeListStatus list the node run time status, for example service container status.
+func NodeListStatus(org string, credToUse string, node string) {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	cliutils.SetWhetherUsingApiKey(credToUse)
+	var nodeOrg string
+	nodeOrg, node = cliutils.TrimOrg(org, node)
+
+	var nodeStatus ExchangeNodeStatus
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/status", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodeStatus)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("node status not found for node '%v/%v'.", nodeOrg, node))
+	}
+
+	output := cliutils.MarshalIndent(nodeStatus, "exchange node liststatus")
+	fmt.Println(output)
+
+}
+
 
 // Verify the node user input for the pattern case. Make sure that the given
 // user input are compatible with the pattern.

@@ -175,6 +175,9 @@ Environment Variables:
 	exNodeErrorsListIdTok := exNodeErrorsList.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeErrorsListNode := exNodeErrorsList.Arg("node", msgPrinter.Sprintf("List surfaced errors for this node.")).Required().String()
 	exNodeErrorsListLong := exNodeErrorsList.Flag("long", msgPrinter.Sprintf("Show the full eventlog object of the errors currently surfaced to the exchange.")).Short('l').Bool()
+	exNodeStatusList := exNodeCmd.Command("liststatus", msgPrinter.Sprintf("List the run-time status of the node."))
+	exNodeStatusIdTok := exNodeStatusList.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNodeStatusListNode := exNodeStatusList.Arg("node", msgPrinter.Sprintf("List status for this node")).Required().String()
 
 	exAgbotCmd := exchangeCmd.Command("agbot", msgPrinter.Sprintf("List and manage agbots in the Horizon Exchange"))
 	exAgbotListCmd := exAgbotCmd.Command("list", msgPrinter.Sprintf("Display the agbot resources from the Horizon Exchange."))
@@ -632,6 +635,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeRemovePolicyIdTok)
 		case "node listerrors":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok)
+		case "node liststatus":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
@@ -777,6 +782,8 @@ Environment Variables:
 		exchange.NodeRemovePolicy(*exOrg, credToUse, *exNodeRemovePolicyNode, *exNodeRemovePolicyForce)
 	case exNodeErrorsList.FullCommand():
 		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
+	case exNodeStatusList.FullCommand():
+		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
