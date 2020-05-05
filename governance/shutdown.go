@@ -137,10 +137,12 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		return
 	}
 
-	// remove the docker volumes that are created by anax
-	if err := container.DeleteLeftoverDockerVolumes(w.db, w.Config); err != nil {
-		w.completedWithError(logString(err.Error()))
-		return
+	// remove the docker volumes that are created by anax if device type is "device"
+	if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+		if err := container.DeleteLeftoverDockerVolumes(w.db, w.Config); err != nil {
+			w.completedWithError(logString(err.Error()))
+			return
+		}
 	}
 
 	// Tell the system that node quiesce is complete without error. The API worker might be waiting for this message.
@@ -206,10 +208,12 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 		return
 	}
 
-	// remove the docker volumes that are created by anax
-	if err := container.DeleteLeftoverDockerVolumes(w.db, w.Config); err != nil {
-		w.completedWithError(logString(err.Error()))
-		return
+	// remove the docker volumes that are created by anax if device type is "device"
+	if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+		if err := container.DeleteLeftoverDockerVolumes(w.db, w.Config); err != nil {
+			w.completedWithError(logString(err.Error()))
+			return
+		}
 	}
 
 	// Tell the system that node quiesce is complete without error. The API worker might be waiting for this message.
