@@ -188,7 +188,10 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 	// Create the custom resources in the cluster
 	for _, crStr := range customResources {
 		cr := make(map[string]interface{})
-		yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+		err := yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+		if err != nil {
+			return fmt.Errorf("Error unmarshaling custom resource in deployment. %v", err)
+		}
 
 		newCr := makeAllKeysStrings(cr).(map[string]interface{})
 
@@ -262,7 +265,10 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 	// Delete the custom resources in the cluster
 	for _, crStr := range customResources {
 		cr := make(map[string]interface{})
-		yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+		err := yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+		if err != nil {
+			return fmt.Errorf("Error unmarshaling custom resource in deployment. %v", err)
+		}
 
 		newCr := makeAllKeysStrings(cr).(map[string]interface{})
 
@@ -359,7 +365,10 @@ func (c KubeClient) OperatorStatus(tar string) (interface{}, error) {
 
 	crStr := customResources[0]
 	cr := make(map[string]interface{})
-	yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+	err1 := yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
+	if err1 != nil {
+		return nil, fmt.Errorf("Error unmarshaling custom resource in deployment. %v", err1)
+	}
 	crMap := makeAllKeysStrings(cr).(map[string]interface{})
 
 	dynClient, err := NewDynamicKubeClient()
