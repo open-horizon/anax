@@ -151,7 +151,7 @@ func (w *GovernanceWorker) handleNodeExchPatternChanged(shutdown bool, new_patte
 		getService := exchange.GetHTTPServiceHandler(w)
 
 		// only log the same error once
-		if err := ValidateNewPattern(new_pattern, getPatterns, serviceResolver, getService, w.db, w.Config); err != nil {
+		if err := ValidateNewPattern(pDevice.GetNodeType(), new_pattern, getPatterns, serviceResolver, getService, w.db, w.Config); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("error validating new node pattern %v: %v", new_pattern, err)))
 
 			if w.patternChange.NewPattern != new_pattern || w.patternChange.LastError != err.Error() {
@@ -310,7 +310,7 @@ func (w *GovernanceWorker) changeNodePattern(dev *persistence.ExchangeDevice, ne
 
 // This function makes sure that the pattern exits on the exchange and
 // the local device has needed userinputs for services
-func ValidateNewPattern(new_pattern string,
+func ValidateNewPattern(nodeType string, new_pattern string,
 	getPatterns exchange.PatternHandler,
 	serviceResolver exchange.ServiceResolverHandler,
 	getService exchange.ServiceHandler,
@@ -370,6 +370,12 @@ func ValidateNewPattern(new_pattern string,
 			apiSpecList, serviceDef, _, err := serviceResolver(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
 				return fmt.Errorf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err)
+			}
+
+			// ignore the services that do not match the node type
+			serviceType := serviceDef.GetServiceType()
+			if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+				break
 			}
 
 			// check if we have needed user input for this service

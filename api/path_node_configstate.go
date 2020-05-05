@@ -104,7 +104,7 @@ func UpdateConfigstate(cfg *Configstate,
 		pattern_org, pattern_name, pat := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 		pDevice.Pattern = pat
 
-		common_apispec_list, pattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, true)
+		common_apispec_list, pattern, err := getSpecRefsForPattern(pDevice.GetNodeType(), pattern_name, pattern_org, getPatterns, resolveService, db, config, true)
 
 		if err != nil {
 			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_GET_SREFS_FOR_PATTERN, pattern_name, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
@@ -139,7 +139,6 @@ func UpdateConfigstate(cfg *Configstate,
 			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, ui_merged, errorhandler, &msgs, db, config); errHandled {
 				return errHandled, nil, nil
 			}
-
 		}
 
 		// The top-level services in a pattern also need to be registered just like the dependent services.
@@ -308,7 +307,7 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wV
 
 // This function returns the referenced dependent services from a given pattern.
 // If the checkWorkloadConfig is true, it will check if the user has given the correct input for the workload/top-level service already.
-func getSpecRefsForPattern(patName string,
+func getSpecRefsForPattern(nodeType string, patName string,
 	patOrg string,
 	getPatterns exchange.PatternHandler,
 	resolveService exchange.ServiceResolverHandler,
@@ -349,7 +348,7 @@ func getSpecRefsForPattern(patName string,
 
 		// Ignore top-level services that don't match this node's hardware architecture.
 		if service.ServiceArch != thisArch && config.ArchSynonyms.GetCanonicalArch(service.ServiceArch) != thisArch {
-			glog.Infof(apiLogString(fmt.Sprintf("skipping service because it is for a different hardware architecture, this node is %v. Skipped service is: %v", thisArch, service.ServiceArch)))
+			glog.Infof(apiLogString(fmt.Sprintf("skipping service %v/%v because it is for a different hardware architecture, this node is %v. Skipped service is: %v", service.ServiceOrg, service.ServiceURL, thisArch, service.ServiceArch)))
 			continue
 		}
 
@@ -360,6 +359,13 @@ func getSpecRefsForPattern(patName string,
 			apiSpecList, serviceDef, _, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
 				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err))
+			}
+
+			// skip the service because the type mis-match.
+			serviceType := serviceDef.GetServiceType()
+			if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
+				glog.Infof(apiLogString(fmt.Sprintf("skipping service %v/%v because it's type %v does not match the node type %v. ", service.ServiceOrg, service.ServiceURL, serviceType, nodeType)))
+				break
 			}
 
 			if checkWorkloadConfig {

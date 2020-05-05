@@ -9,7 +9,7 @@ import (
 // have made agreements. Use of this object is thread safe.
 type RetryAgreements struct {
 	retryPolicies map[string]map[string]bool // A map of policy ids to a map of node ids.
-	mapLock sync.Mutex
+	mapLock       sync.Mutex
 }
 
 func NewRetryAgreements() *RetryAgreements {

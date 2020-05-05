@@ -195,6 +195,7 @@ func CreateService(service *Service,
 		vr_saved = *service.VersionRange
 	}
 
+	nodeType := pDevice.GetNodeType()
 	if pDevice.Pattern != "" {
 		pattern_org, pattern_name, _ := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 
@@ -202,7 +203,7 @@ func CreateService(service *Service,
 			// We might be registering a dependent service, so look through the pattern and get a list of all dependent services, then
 			// come up with a common version for all references. If the service we're registering is one of these, then use the
 			// common version range in our service instead of the version range that was passed as input.
-			common_apispec_list, exchPattern, err := getSpecRefsForPattern(pattern_name, pattern_org, getPatterns, resolveService, db, config, false)
+			common_apispec_list, exchPattern, err := getSpecRefsForPattern(nodeType, pattern_name, pattern_org, getPatterns, resolveService, db, config, false)
 			if err != nil {
 				return errorhandler(err), nil, nil
 			}
@@ -274,7 +275,6 @@ func CreateService(service *Service,
 	}
 
 	// make sure that the node type and the service type match
-	nodeType := pDevice.GetNodeType()
 	serviceType := sdef.GetServiceType()
 	if serviceType != exchange.SERVICE_TYPE_BOTH && nodeType != serviceType {
 		return errorhandler(NewTypeMismatchError(fmt.Sprintf("Type mismatch. The service %v/%v is for '%v' node type but the current node type is '%v'.", *service.Org, *service.Url, serviceType, nodeType), "service")), nil, nil

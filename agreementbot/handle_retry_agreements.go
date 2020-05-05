@@ -43,7 +43,7 @@ func (w *AgreementBotWorker) handleRetryAgreements() {
 			}
 		}
 	}
-	
+
 }
 
 func nodeFilter(nodeMap map[string]bool) SearchFilter {

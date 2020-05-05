@@ -266,10 +266,6 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 	topSvcType := svcFile.GetServiceType()
 	requiredServices := svcFile.GetRequiredServices()
 	if topSvcType == exchange.SERVICE_TYPE_CLUSTER {
-		if svcFile.GetUserInputs() != nil && len(svcFile.GetUserInputs()) != 0 {
-			return fmt.Errorf(msgPrinter.Sprintf("'userInput' is not supported for cluster type service."))
-		}
-
 		if requiredServices != nil && len(requiredServices) != 0 {
 			return fmt.Errorf(msgPrinter.Sprintf("'requiredServices' is not supported for cluster type service."))
 		}
