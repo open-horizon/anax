@@ -454,7 +454,9 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 
 	case *CacheServicePolicyCommand:
 		cmd, _ := command.(*CacheServicePolicyCommand)
-		w.BusinessPolManager.AddMarshaledServicePolicy(cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName, cmd.Msg.ServiceId, cmd.Msg.ServicePolicy)
+		if err := w.BusinessPolManager.AddMarshaledServicePolicy(cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName, cmd.Msg.ServiceId, cmd.Msg.ServicePolicy); err != nil {
+			glog.Errorf(fmt.Sprintf("AgreementBotWorker failed to cache the service policy for service %v/%v for business policy %v/%v. %v", cmd.Msg.ServiceId, cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName, err))
+		}
 
 	case *ServicePolicyChangedCommand:
 		cmd, _ := command.(*ServicePolicyChangedCommand)
