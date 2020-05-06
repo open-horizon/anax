@@ -205,6 +205,10 @@ func (db *AgbotPostgresqlDB) HeartbeatPartition() error {
 		return errors.New(fmt.Sprintf("AgreementBot %v unable to heartbeat, error: %v", db.identity, err))
 	} else if num, err := res.RowsAffected(); err != nil {
 		return errors.New(fmt.Sprintf("AgreementBot %v error getting rows affected, error: %v", db.identity, err))
+	} else if num == 0 {
+		msg := fmt.Sprintf("AgreementBot %v heartbeat to partition %v failed to update any rows, assuming the partition has been stolen due to previously missing heartbeats.", db.identity, db.PrimaryPartition())
+		glog.Errorf(msg)
+		panic(msg)
 	} else if num != 1 {
 		return errors.New(fmt.Sprintf("AgreementBot %v, heartbeat update should have changed 1 row, but changed %v", db.identity, num))
 	} else {

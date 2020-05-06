@@ -1497,8 +1497,15 @@ func (w *AgreementBotWorker) databaseHeartBeat() int {
 // Ask the database to check for stale partitions and move them into our partition if one is found.
 func (w *AgreementBotWorker) stalePartitions() int {
 
-	if err := w.db.MovePartition(w.Config.GetPartitionStale()); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("Error claiming an unowned partition, error: %v", err)))
+	// Dont try to grab a stale partition if we are unable to heartbeat.
+	now := uint64(time.Now().Unix())
+	if hb, err := w.db.GetHeartbeat(); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("Error obtaining heartbeat, error: %v", err)))
+	} else if (now - hb) < w.BaseWorker.Manager.Config.GetPartitionStale() {
+		// The heartbeat has been occurring, so it's safe to attempt to take-over an unused partition.
+		if err := w.db.MovePartition(w.Config.GetPartitionStale()); err != nil {
+			glog.Errorf(AWlogString(fmt.Sprintf("Error claiming an unowned partition, error: %v", err)))
+		}
 	}
 	return 0
 }
