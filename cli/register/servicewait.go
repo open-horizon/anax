@@ -11,7 +11,7 @@ import (
 )
 
 // Wait for the specified service to start running on this node.
-func WaitForService(org string, waitService string, waitTimeout int) {
+func WaitForService(org string, waitService string, waitTimeout int, pattern string) {
 
 	const UpdateThreshold = 5    // How many service check iterations before updating the user with a msg on the console.
 	const ServiceUpThreshold = 5 // How many service check iterations before deciding that the service is up.
@@ -141,7 +141,11 @@ func WaitForService(org string, waitService string, waitTimeout int) {
 	if len(eLogs) == 0 {
 		msgPrinter.Printf("Currently, there are no errors recorded in the node's event log.")
 		msgPrinter.Println()
-		msgPrinter.Printf("Use the 'hzn deploycheck all' command to verify that node, service, pattern and policy configuration is compatible.")
+		if pattern == "" {
+			msgPrinter.Printf("Use the 'hzn deploycheck all {-b | -B}' command to verify that node, service configuration and deployment policy is compatible.")
+		} else {
+			msgPrinter.Printf("Use the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.")
+		}
 		msgPrinter.Println()
 	} else {
 		msgPrinter.Printf("The following errors were found in the node's event log and are related to %v/%v. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.", org, waitService)

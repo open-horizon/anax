@@ -181,7 +181,7 @@ func verifyUserInputCompatibleParameters(org string, userPw string, nodeId strin
 		}
 	} else {
 		if patternId == "" && patternFile == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Neither deployment policy nor pattern is specified."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("One of these flags must be specified: -b, -B, -p, or -P."))
 		}
 	}
 
