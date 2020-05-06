@@ -1380,14 +1380,16 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			// Dynamically add in a filesystem mapping so that the workload container has a RO filesystem.
 			for serviceName, service := range deploymentDesc.Services {
 
-				glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
-				if err := hasValidBindPermissions(service.Binds); err != nil {
-					eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND, cmd.AgreementLaunchContext.Configure.Deployment, err.Error()),
-						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
-					glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
-					b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
-					return true
+				if !service.Privileged {
+					glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
+					if err := hasValidBindPermissions(service.Binds); err != nil {
+						eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
+							persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND, cmd.AgreementLaunchContext.Configure.Deployment, err.Error()),
+							persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG, ags[0])
+						glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
+						b.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, cmd.AgreementLaunchContext.AgreementProtocol, agreementId, nil)
+						return true
+					}
 				}
 
 				dir := ""
@@ -1519,15 +1521,17 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		for serviceName, service := range deploymentDesc.Services {
 
-			glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
-			if err := hasValidBindPermissions(service.Binds); err != nil {
-				eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err.Error()),
-					persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-					"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
-				glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
-				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
-				return true
+			if !service.Privileged {
+				glog.V(5).Infof("Checking bind permissions for service %v", serviceName)
+				if err := hasValidBindPermissions(service.Binds); err != nil {
+					eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
+						persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err.Error()),
+						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
+						"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
+					glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
+					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
+					return true
+				}
 			}
 
 			if lc.Blockchain.Name != "" {
