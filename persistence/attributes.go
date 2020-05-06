@@ -311,7 +311,7 @@ func FindApplicableAttributes(db *bolt.DB, serviceUrl string, org string) ([]Att
 
 // This function is used to convert the persistent attributes for a service to an env var map.
 // This will include *all* values for which HostOnly is false, include those marked to not publish.
-func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64, nodePol *externalpolicy.ExternalPolicy) (map[string]string, error) {
+func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, prefix string, defaultRAM int64, nodePol *externalpolicy.ExternalPolicy, isCluster bool) (map[string]string, error) {
 
 	pf := func(str string, prefix string) string {
 		return fmt.Sprintf("%v%v", prefix, str)
@@ -336,7 +336,7 @@ func AttributesToEnvvarMap(attributes []Attribute, envvars map[string]string, pr
 	writePrefix("ARCH", cutil.ArchString())
 
 	// Override with the built-in properties
-	externalPol, externalPolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
+	externalPol, externalPolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol, isCluster)
 	if externalPol != nil {
 		externalPol.MergeWith(externalPolReadWrite, false)
 	} else if externalPolReadWrite != nil {

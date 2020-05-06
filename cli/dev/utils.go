@@ -306,7 +306,7 @@ func createEnvVarMap(agreementId string,
 		envvars map[string]string,
 		prefix string,
 		defaultRAM int64,
-		nodePol *externalpolicy.ExternalPolicy) (map[string]string, error),
+		nodePol *externalpolicy.ExternalPolicy, isCluster bool) (map[string]string, error),
 ) (map[string]string, error) {
 
 	// get message printer
@@ -364,7 +364,7 @@ func createEnvVarMap(agreementId string,
 	cliutils.HorizonGet("node/policy", []int{200}, &nodePolicy, true)
 	// Fourth, convert all attributes to system env vars.
 	var cerr error
-	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, cw.Config.Edge.DefaultServiceRegistrationRAM, &nodePolicy)
+	envvars, cerr = attrConverter(byValueAttrs, envvars, config.ENVVAR_PREFIX, cw.Config.Edge.DefaultServiceRegistrationRAM, &nodePolicy, false)
 	if cerr != nil {
 		return nil, errors.New(msgPrinter.Sprintf("global attribute conversion error: %v", cerr))
 	}

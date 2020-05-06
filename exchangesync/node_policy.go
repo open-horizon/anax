@@ -91,13 +91,12 @@ func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExch
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-
 	builtinPolicyReadOnly := &externalpolicy.ExternalPolicy{}
 	builtinPolicyReadWrite := &externalpolicy.ExternalPolicy{}
 	if (exchangeNodePolicy != nil && exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) || (existingPol != nil && existingPol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
-		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol)
+		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, true, existingPol, pDevice.IsEdgeCluster())
 	} else {
-		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+		builtinPolicyReadOnly, builtinPolicyReadWrite = externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
 	}
 
 	builtinPolicy := &externalpolicy.ExternalPolicy{}
@@ -168,7 +167,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
 	builtinNodePol.MergeWith(builtinNodePolReadWrite, true)
 
 	// get the default node policy file name from the config and set it up in local and exchange
@@ -356,7 +355,7 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	builtinNodePol, builtinNodePolReadWrite := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, pDevice.IsEdgeCluster())
 
 	if builtinNodePol != nil {
 		nodePolicy.MergeWith(builtinNodePol, true)

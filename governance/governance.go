@@ -1702,7 +1702,14 @@ func (w *GovernanceWorker) GetServicePreference(url string, org string, tcPolicy
 	if err != nil {
 		return nil, err
 	}
-	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM, nodePol)
+	isCluster := false
+	exchDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.V(2).Infof("Failed to retrieve node from local db: %v", err)
+	} else {
+		isCluster = exchDevice.IsEdgeCluster()
+	}
+	envAdds, err = persistence.AttributesToEnvvarMap(attrs, make(map[string]string), config.ENVVAR_PREFIX, w.Config.Edge.DefaultServiceRegistrationRAM, nodePol, isCluster)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to convert attrributes to env map for service %v/%v. Err: %v", org, url, err)
 	}

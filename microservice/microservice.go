@@ -321,7 +321,14 @@ func GenMicroservicePolicy(msdef *persistence.MicroserviceDefinition, policyPath
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
-	externalPol, externalReadWritePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol)
+	isCluster := false
+	exchDevice, err := persistence.FindExchangeDevice(db)
+	if err != nil {
+		glog.V(2).Infof("Failed to retrieve node from local db: %v", err)
+	} else {
+		isCluster = exchDevice.IsEdgeCluster()
+	}
+	externalPol, externalReadWritePol := externalpolicy.CreateNodeBuiltInPolicy(false, false, existingPol, isCluster)
 	externalPol.MergeWith(externalReadWritePol, false)
 	if externalPol != nil {
 		for _, ele := range externalPol.Properties {
