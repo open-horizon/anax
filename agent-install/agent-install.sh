@@ -148,53 +148,56 @@ function log() {
 function get_variable() {
 	log_debug "get_variable() begin"
 
-	if ! [ -z "${!1}" ]; then
+    local var_to_check=$1
+    local config_file=$2
+
+	if ! [ -z "${!var_to_check}" ]; then
 		# if env/command line variable is defined, using it
-		if [[ $1 == *"AUTH"* ]] || [[ $1 == *"TOKEN"* ]]; then
-			log_notify "Using variable from environment/command line, ${1}"
+		if [[ $var_to_check == *"AUTH"* ]] || [[ $var_to_check == *"TOKEN"* ]]; then
+			log_notify "Using variable from environment/command line, ${var_to_check}"
 		else
-			log_notify "Using variable from environment/command line, ${1} is ${!1}"
+			log_notify "Using variable from environment/command line, ${var_to_check} is ${!var_to_check}"
 		fi
 	else
-		log_notify "The ${1} is missed in environment/not specified with command line, looking for it in the config file ${2} ..."
+		log_notify "The ${var_to_check} is missed in environment/not specified with command line, looking for it in the config file ${config_file} ..."
 		# the env/command line variable not defined, using config file
 		# check if it exists
-		log_info "Checking if the config file ${2} exists..."
-		if [[ -f "$2" ]] ; then
-			log_info "The config file ${2} exists"
-			if [ -z "$(grep ${1} ${2} | grep "^#")" ] && ! [ -z "$(grep ${1} ${2} | cut -d'=' -f2 | cut -d'"' -f2)" ]; then
+		log_info "Checking if the config file ${config_file} exists..."
+		if [[ -f "$config_file" ]] ; then
+			log_info "The config file ${config_file} exists"
+			if [ -z "$(grep ${var_to_check} ${config_file} | grep "^#")" ] && ! [ -z "$(grep ${var_to_check} ${config_file} | cut -d'=' -f2 | cut -d'"' -f2)" ]; then
 				# found variable in the config file
-				ref=${1}
-				IFS= read -r "$ref" <<<"$(grep ${1} ${2} | cut -d'=' -f2 | cut -d'"' -f2)"
-                if [[ $1 == *"AUTH"* ]] || [[ $1 == *"TOKEN"* ]]; then
-                    log_notify "Using variable from the config file ${2}, ${1}"
+				ref=${var_to_check}
+				IFS= read -r "$ref" <<<"$(grep ${var_to_check} ${config_file} | cut -d'=' -f2 | cut -d'"' -f2)"
+                if [[ $var_to_check == *"AUTH"* ]] || [[ $var_to_check == *"TOKEN"* ]]; then
+                    log_notify "Using variable from the config file ${config_file}, ${var_to_check}"
                 else
-				    log_notify "Using variable from the config file ${2}, ${1} is ${!1}"
+				    log_notify "Using variable from the config file ${config_file}, ${var_to_check} is ${!var_to_check}"
                 fi
 			else
 				# found neither in env nor in config file. check if the missed var is in required parameters
-				if [[ " ${REQUIRED_PARAMS[*]} " == *" ${1} "* ]]; then
+				if [[ " ${REQUIRED_PARAMS[*]} " == *" ${var_to_check} "* ]]; then
     				# if found neither in the env nor in the env, try to use its default value, if any
-    				log_info "The required variable ${1} found neither in environment nor in the config file ${2}, checking if it has defaults..."
+    				log_info "The required variable ${var_to_check} found neither in environment nor in the config file ${config_file}, checking if it has defaults..."
 
     				for i in "${!REQUIRED_PARAMS[@]}"; do
-   						if [[ "${REQUIRED_PARAMS[$i]}" = "${1}" ]]; then
-       							log_info "Found ${1} in required params with index ${i}, using it for looking up its default value...";
-       							log_info "Found ${1} default, it is ${DEFAULTS[i]}"
-       							ref=${1}
+   						if [[ "${REQUIRED_PARAMS[$i]}" = "${var_to_check}" ]]; then
+       							log_info "Found ${var_to_check} in required params with index ${i}, using it for looking up its default value...";
+       							log_info "Found ${var_to_check} default, it is ${DEFAULTS[i]}"
+       							ref=${var_to_check}
 								IFS= read -r "$ref" <<<"${DEFAULTS[i]}"
    						fi
 					done
-					if [ ${!1}  = "$REQUIRED_VALUE_FLAG" ]; then
-						log_notify "The ${1} is required and needs to be set either in the config file or environment, exiting..."
+					if [ ${!var_to_check}  = "$REQUIRED_VALUE_FLAG" ]; then
+						log_notify "The ${var_to_check} is required and needs to be set either in the config file or environment, exiting..."
 						exit 1
 					fi
     			else
-    				log_info "The variable ${1} found neither in environment nor in the config file ${2}, but it's not required, continuing..."
+    				log_info "The variable ${var_to_check} found neither in environment nor in the config file ${config_file}, but it's not required, continuing..."
 				fi
 			fi
 		else
-			log_notify "The config file ${2} doesn't exist, exiting..."
+			log_notify "The config file ${config_file} doesn't exist, exiting..."
 			exit 1
 		fi
 	fi
@@ -204,11 +207,12 @@ function get_variable() {
 
 # validates if mutually exclusive arguments are mutually exclusive
 function validate_mutual_ex() {
-
 	log_debug "validate_mutual_ex() begin"
+    local policy=$1
+    local pattern=$2
 
-	if [[ -n "${!1}" && -n "${!2}" ]]; then
-		echo "Both ${1}=${!1} and ${2}=${!2} mutually exlusive parameters are defined, exiting..."
+	if [[ -n "${!policy}" && -n "${!pattern}" ]]; then
+		echo "Both ${policy}=${!policy} and ${pattern}=${!pattern} mutually exlusive parameters are defined, exiting..."
 		exit 1
 	fi
 
@@ -217,16 +221,17 @@ function validate_mutual_ex() {
 
 function validate_number_int() {
 	log_debug "validate_number_int() begin"
+    local verbosity_int_val=$1
 
 	re='^[0-9]+$'
-	if [[ $1 =~ $re ]] ; then
+	if [[ $verbosity_int_val =~ $re ]] ; then
    		# integer, validate if it's in a correct range
-   		if ! (($1 >= VERB_SILENT && $1 <= VERB_DEBUG)); then
+   		if ! (($verbosity_int_val >= VERB_SILENT && $verbosity_int_val <= VERB_DEBUG)); then
    			echo `now` "The verbosity number is not in range [${VERB_SILENT}; ${VERB_DEBUG}]."
   			quit 2
 		fi
    	else
-   		echo `now` "The provided verbosity value ${1} is not a number" >&2; quit 2
+   		echo `now` "The provided verbosity value ${verbosity_int_val} is not a number" >&2; quit 2
 	fi
 
 	log_debug "validate_number_int() end"
@@ -371,23 +376,26 @@ function show_config() {
 
 function check_installed() {
 	log_debug "check_installed() begin"
+    local prog=$1
+    local prog_name=$2
+    local brew_installer=$3
 
-    if command -v "$1" >/dev/null 2>&1; then
-        log_info "${2} is installed"
-    elif [[ $3 != "" ]]; then
-      if command -v "$3" >/dev/null 2>&1; then
-        log_notify "${2} not found. Attempting to install with ${3}"
+    if command -v "$prog" >/dev/null 2>&1; then
+        log_info "${prog_name} is installed"
+    elif [[ $brew_installer != "" ]]; then
+      if command -v "$brew_installer" >/dev/null 2>&1; then
+        log_notify "${prog_name} not found. Attempting to install with ${brew_installer}"
         set -x
-        $3 install "$2"
+        $brew_installer install "$prog_name"
         { set +x; } 2>/dev/null
       fi
-      if command -v "$1" >/dev/null 2>&1; then
-        log_info "${2} is now installed"
+      if command -v "$prog" >/dev/null 2>&1; then
+        log_info "${prog_name} is now installed"
       else
-        log_info "Failed to install ${2} with ${3}. Please install ${2}"
+        log_info "Failed to install ${prog_name} with ${brew_installer}. Please install ${prog_name}"
       fi
     else
-        log_notify "${2} not found, please install it"
+        log_notify "${prog_name} not found, please install it"
         quit 1
     fi
 
@@ -396,7 +404,8 @@ function check_installed() {
 
 # compare versions
 function version_gt() {
-	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
+    local version=$1
+	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$version";
 }
 
 # create /etc/default/horizon file for mac or linux
@@ -985,6 +994,9 @@ function create_node(){
 # register node depending on if registration's requested and pattern name or policy file
 function registration() {
 	log_debug "registration() begin"
+    local skip_reg=$1
+    local pattern=$2
+    local policy=$3
 
 	if [ "${DEPLOY_TYPE}" == "device" ]; then
 		NODE_STATE=$(hzn node list | jq -r .configstate.state)
@@ -1011,7 +1023,7 @@ function registration() {
 		EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
 	fi
     log_info "Node name is $NODE_NAME"
-    if [ "$1" = true ] ; then
+    if [ "$skip_reg" = true ] ; then
         log_notify "Skipping registration as it was specified with -s"
     else
         log_notify "Registering node..."
@@ -1031,23 +1043,23 @@ function registration() {
         		log_info "Node policy ${HZN_NODE_POLICY} was specified, registering..."
             		if [ "${DEPLOY_TYPE}" == "device" ]; then
 				set -x
-            			hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
+            			hzn register -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$policy" $WAIT_FOR_SERVICE_ARG
             			{ set +x; } 2>/dev/null
 			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
 				# copy policy file to /home/agentuser inside k8s container
-				log_info "Copying policy file $3 to pod container..."
-				POLICY_CONTENT=$(cat $3 | sed 's/\r/\n/')
-				POLICY_FILE_NAME=$(basename "$3")
+				log_info "Copying policy file $policy to pod container..."
+				POLICY_CONTENT=$(cat $policy | sed 's/\r/\n/')
+				POLICY_FILE_NAME=$(basename "$policy")
 				POLICY_FILE_IN_POD="/home/agentuser/${POLICY_FILE_NAME}"
 				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
 
 				# check if policy file exists
 				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "ls ${POLICY_FILE_IN_POD}"
 				if [ $? -ne 0 ]; then
-					log_notify "Failed to copy policy file $3 into pod container, existing..."
+					log_notify "Failed to copy policy file $policy into pod container, existing..."
 					exit 1
 				else
-					log_info "Copied policy file $3 to ${POLICY_FILE_IN_POD} inside pod container"
+					log_info "Copied policy file $policy to ${POLICY_FILE_IN_POD} inside pod container"
 				fi
 
 				HZN_REGISTER_CMD="hzn register -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\" --policy \"$POLICY_FILE_IN_POD\""
@@ -1056,31 +1068,31 @@ function registration() {
 			fi
                 fi
         else
-        	if [[ -z "${3}" ]]; then
-        		log_info "Registering node with ${2} pattern"
+        	if [[ -z "${policy}" ]]; then
+        		log_info "Registering node with ${pattern} pattern"
 			if [ "${DEPLOY_TYPE}" == "device" ]; then
             			set -x
-            			hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
+            			hzn register -p "$pattern" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" $WAIT_FOR_SERVICE_ARG
             			{ set +x; } 2>/dev/null
 			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
-				HZN_REGISTER_CMD="hzn register -p \"$2\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
+				HZN_REGISTER_CMD="hzn register -p \"$pattern\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
 				log_info "AGENT POD ID: ${POD_ID}"
 				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
 			fi
         	else
-        		log_info "Pattern ${2} and policy ${3} were specified. However, pattern registration will override the policy, registering..."
+        		log_info "Pattern ${pattern} and policy ${policy} were specified. However, pattern registration will override the policy, registering..."
             		if [ "${DEPLOY_TYPE}" == "device" ]; then
 				set -x
-           	 		hzn register -p "$2" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$3" $WAIT_FOR_SERVICE_ARG
+           	 		hzn register -p "$pattern" -m "${NODE_NAME}" -o "$HZN_ORG_ID" -u "$HZN_EXCHANGE_USER_AUTH" -n "$HZN_EXCHANGE_NODE_AUTH" --policy "$policy" $WAIT_FOR_SERVICE_ARG
             			{ set +x; } 2>/dev/null
 			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
-				log_info "Copying policy file $3 to pod container..."
-				POLICY_CONTENT=$(cat $3)
-				POLICY_FILE_NAME=$(basename "$3")
+				log_info "Copying policy file $policy to pod container..."
+				POLICY_CONTENT=$(cat $policy)
+				POLICY_FILE_NAME=$(basename "$policy")
 				POLICY_FILE_IN_POD="/home/agentuser/${POLICY_FILE_NAME}"
 				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
 
-				HZN_REGISTER_CMD="hzn register -p \"$2\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\" --policy \"$POLICY_FILE_IN_POD\""
+				HZN_REGISTER_CMD="hzn register -p \"$pattern\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\" --policy \"$POLICY_FILE_IN_POD\""
 				log_info "AGENT POD ID: ${POD_ID}"
 				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
 			fi
@@ -1093,9 +1105,11 @@ function registration() {
 
 function check_empty() {
 	log_debug "check_empty() begin"
+    local env_var=$1
+    local env_var_name=$2
 
-    if [ -z "$1" ]; then
-        log_notify "The ${2} value is empty, exiting..."
+    if [ -z "$env_var" ]; then
+        log_notify "The ${env_var_name} value is empty, exiting..."
         exit 1
     fi
 
@@ -1105,20 +1119,23 @@ function check_empty() {
 # checks if file or directory exists
 function check_exist() {
 	log_debug "check_exist() begin"
+    local flag=$1
+    local val=$2
+    local name=$3
 
-    case $1 in
-	f) if ! [[ -f "$2" ]] ; then
-			log_notify "${3} file ${2} doesn't exist"
+    case $flag in
+	f) if ! [[ -f "$val" ]] ; then
+			log_notify "${name} file ${val} doesn't exist"
 		    exit 1
 		fi
 	;;
-	d) if ! [[ -d "$2" ]] ; then
-			log_notify "${3} directory ${2} doesn't exist"
+	d) if ! [[ -d "$val" ]] ; then
+			log_notify "${name} directory ${val} doesn't exist"
 	        exit 1
 		fi
     ;;
-    w) if ! ls ${2} 1> /dev/null 2>&1 ; then
-			log_notify "${3} files ${2} do not exist"
+    w) if ! ls ${val} 1> /dev/null 2>&1 ; then
+			log_notify "${name} files ${val} do not exist"
 	        exit 1
 	    fi
 	;;
