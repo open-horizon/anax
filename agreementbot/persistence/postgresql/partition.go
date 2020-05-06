@@ -133,7 +133,7 @@ func (db *AgbotPostgresqlDB) findUnownedPartition(timeout uint64) (string, error
 					glog.Warningf("unable to remove partition %v, error: %v", id, err)
 				}
 				continue
-			} else if existingPartitions[0] != id {
+			} else if len(existingPartitions) == 0 || existingPartitions[0] != id {
 				glog.Errorf(fmt.Sprintf("AgreementBot chosen partition %v has no partition tables, retrying.", id))
 				// Delete partition
 				if _, err := db.db.Exec(PARTITION_DELETE, id); err != nil {
