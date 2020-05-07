@@ -73,7 +73,7 @@ do
   CMD="hzn deploycheck $subcmd -n userdev/an12345 -b userdev/bp_gpstest"
   echo "$CMD"
   RES=$($CMD 2>&1)
-  results "$RES" "Please specify the exchange credential with -u"
+  results "$RES" "Please specify the Exchange credential with -u"
 
   echo -e "\n${PREFIX} test with unauthorized user."
   CMD="hzn deploycheck $subcmd -u myorg/me:passwd -n userdev/an12345 -b userdev/bp_gpstest"
@@ -91,7 +91,7 @@ do
   CMD="hzn deploycheck $subcmd -u $USERDEV_ADMIN_AUTH -n xxxuserdev/an12345 -b userdev/bp_gpstest"
   echo "$CMD"
   RES=$($CMD 2>&1)
-  results "$RES" "Error getting node xxxuserdev/an12345 from the exchange"
+  results "$RES" "Error getting node xxxuserdev/an12345 from the Exchange"
 done
 
 PREFIX="HZN policy compatibility test:"

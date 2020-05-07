@@ -368,8 +368,8 @@ func (a *SecureAPI) processUserCred(resource string, w http.ResponseWriter, r *h
 		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No exchange user id is supplied."), http.StatusUnauthorized)
 		return nil, nil, false
 	} else if user_ec, err := a.authenticateWithExchange(userId, userPasswd, msgPrinter); err != nil {
-		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the exchange. %v", userId, err)))
-		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the exchange. %v", err), http.StatusUnauthorized)
+		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the Exchange. %v", userId, err)))
+		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the Exchange. %v", err), http.StatusUnauthorized)
 		return nil, nil, false
 	} else {
 		return user_ec, msgPrinter, true

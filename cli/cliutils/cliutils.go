@@ -872,7 +872,7 @@ func GetExchangeUrl() string {
 		if value != "" {
 			exchUrl = value
 		} else {
-			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent"))
+			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent"))
 		}
 	}
 
@@ -900,7 +900,7 @@ func GetExchangeUrlLocation() string {
 		if location != "" {
 			exchUrlLoc = location
 		} else {
-			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent"))
+			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent"))
 		}
 	}
 

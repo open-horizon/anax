@@ -282,7 +282,7 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 				}
 				svc_map, sDef, sId, err := serviceDefResolverHandler(reqSvc.URL, reqSvc.Org, vExp.Get_expression(), reqSvc.Arch)
 				if err != nil {
-					return fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the exchange for %v. %v", reqSvc, err))
+					return fmt.Errorf(msgPrinter.Sprintf("Error retrieving service from the Exchange for %v. %v", reqSvc, err))
 				}
 
 				// check the node type for the required service
@@ -295,7 +295,7 @@ func ValidateService(serviceDefResolverHandler exchange.ServiceDefResolverHandle
 				for id, s := range svc_map {
 					sType1 := s.GetServiceType()
 					if sType == exchange.SERVICE_TYPE_CLUSTER {
-						return fmt.Errorf(msgPrinter.Sprintf("The depended service %v for the required service %v has the wrong service type: %v.", id, sId, sType1))
+						return fmt.Errorf(msgPrinter.Sprintf("The dependent service %v for the required service %v has the wrong service type: %v.", id, sId, sType1))
 					}
 				}
 			}

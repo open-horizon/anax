@@ -204,7 +204,7 @@ func deployCompatible(getDeviceHandler exchange.DeviceHandler,
 	if ccInput.BusinessPolId != "" || ccInput.BusinessPolicy != nil {
 		useBPol = true
 		if ccInput.PatternId != "" || ccInput.Pattern != nil {
-			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Bussiness policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
+			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Deployment policy and pattern are mutually exclusive.")), COMPCHECK_INPUT_ERROR)
 		}
 	} else {
 		if ccInput.PatternId == "" && ccInput.Pattern == nil {
@@ -390,7 +390,7 @@ func GetExchangeNode(getDeviceHandler exchange.DeviceHandler, nodeId string, msg
 	}
 
 	if node, err := getDeviceHandler(nodeId, ""); err != nil {
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting node %v from the exchange. %v", nodeId, err)), COMPCHECK_EXCHANGE_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error getting node %v from the Exchange. %v", nodeId, err)), COMPCHECK_EXCHANGE_ERROR)
 	} else if node == nil {
 		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("No node found for this node id %v.", nodeId)), COMPCHECK_INPUT_ERROR)
 	} else {
@@ -505,7 +505,7 @@ func GetAllServices(getServiceResolvedDef exchange.ServiceDefResolverHandler, ge
 	sDefMap, topSvcDef, topSvcId, err := getServiceResolvedDef(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 	if err != nil {
 		// logging this message here so it gets translated. Will add quiet parameter to determine if this is an error or a cli warning later.
-		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the exchange.", topSvcId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
+		return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to find definition for dependent services of %s. Compatability of %s cannot be fully evaluated until all services are in the Exchange.", topSvcId, externalpolicy.PROP_NODE_PRIVILEGED)), COMPCHECK_EXCHANGE_ERROR)
 	}
 	if topSvcDef != nil {
 		sDefMap[topSvcId] = *topSvcDef

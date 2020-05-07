@@ -226,7 +226,7 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 		msgPrinter.Printf("Policy %v/%v not found in the Horizon Exchange", polOrg, policy)
 		msgPrinter.Println()
 	} else {
-		msgPrinter.Printf("Removing deployment policy %v/%v and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated", polOrg, policy)
+		msgPrinter.Printf("Removing deployment policy %v/%v and re-evaluating all agreements. Existing agreements might be cancelled and re-negotiated", polOrg, policy)
 		msgPrinter.Println()
 		msgPrinter.Printf("Deployment policy %v/%v removed", polOrg, policy)
 		msgPrinter.Println()

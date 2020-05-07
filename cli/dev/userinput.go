@@ -217,7 +217,7 @@ func ValidateUserInput(i *register.InputFile, directory string, originalUserInpu
 				if originalUserInputFilePath != "" {
 					return errors.New(msgPrinter.Sprintf("%v: services array does not contain an element for %v. Error: %v", originalUserInputFilePath, sDef.URL, err))
 				} else {
-					return errors.New(msgPrinter.Sprintf("please provice a user input file for service %v. Error: %v", sDef.URL, err))
+					return errors.New(msgPrinter.Sprintf("please provide a user input file for service %v. Error: %v", sDef.URL, err))
 				}
 			}
 		}

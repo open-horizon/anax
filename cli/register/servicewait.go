@@ -142,7 +142,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		msgPrinter.Printf("Currently, there are no errors recorded in the node's event log.")
 		msgPrinter.Println()
 		if pattern == "" {
-			msgPrinter.Printf("Use the 'hzn deploycheck all {-b | -B}' command to verify that node, service configuration and deployment policy is compatible.")
+			msgPrinter.Printf("Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.")
 		} else {
 			msgPrinter.Printf("Use the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.")
 		}

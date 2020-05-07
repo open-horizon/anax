@@ -492,7 +492,7 @@ func NodeRemovePolicy(org, credToUse, node string, force bool) {
 	}
 
 	// remove policy
-	msgPrinter.Printf("Removing Node policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
+	msgPrinter.Printf("Removing Node policy and re-evaluating all agreements. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Printf("Node policy removed.")
@@ -593,7 +593,7 @@ func verifyNodeUserInput(org string, credToUse string, node exchange.Device, nId
 		return
 	}
 
-	msgPrinter.Printf("Verifying userInuput with the node pattern %v.", node.Pattern)
+	msgPrinter.Printf("Verifying userInputs with the node pattern %v.", node.Pattern)
 	msgPrinter.Println()
 
 	// get exchange context

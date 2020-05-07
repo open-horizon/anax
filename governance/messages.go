@@ -25,8 +25,8 @@ const (
 	EL_GOV_DEL_NODE_EXCH_PATTERN_FROM_DB      = "Error deleting node exchange pattern from the local database. %v"
 
 	// exchange
-	EL_GOV_ERR_RETRIEVE_NODE_FROM_EXCH = "Error retrieving node %v from the exchange: %v"
-	EL_GOV_ERR_UPDATE_REGSVCS_IN_EXCH  = "Error updating registeredServices for node %v in the exchange: %v"
+	EL_GOV_ERR_RETRIEVE_NODE_FROM_EXCH = "Error retrieving node %v from the Exchange: %v"
+	EL_GOV_ERR_UPDATE_REGSVCS_IN_EXCH  = "Error updating registeredServices for node %v in the Exchange: %v"
 
 	// image
 	EL_GOV_IMAGE_LOADED            = "Image loaded for %v/%v."
@@ -98,11 +98,11 @@ const (
 	EL_GOV_ERR_UPDATE_SVC_RETRY_STATE = "Error updating retry start state for service instance %v in dadabase. %v"
 
 	// pattern change
-	EL_GOV_EXCH_NODE_PATTERN_CHANGED       = "Node pattern changed on the exchange from %v to %v."
+	EL_GOV_EXCH_NODE_PATTERN_CHANGED       = "Node pattern changed on the Exchange from %v to %v."
 	EL_GOV_ERR_REG_NODE_WITH_NEW_PATTERN   = "Encountered error while re-registering node with new pattern %v. %v"
 	EL_GOV_START_REREG_NODE_PATTERN_CHANGE = "Start re-registering node after pattern changed to %v."
 	EL_GOV_END_REREG_NODE_PATTERN_CHANGE   = "Complete re-registering node after pattern changed to %v."
-	EL_GOV_PATTERN_CHANGED_AGAIN           = "Node pattern changed again on the exchange. Will register the node with the new pattern: %v"
+	EL_GOV_PATTERN_CHANGED_AGAIN           = "Node pattern changed again on the Exchange. Will register the node with the new pattern: %v"
 	EL_GOV_ERR_VALIDATE_NEW_PATTERN        = "Error validating new node pattern %v: %v"
 	EL_GOV_NODE_KEEP_OLD_PATTERN           = "The node will keep using the old pattern %v"
 	EL_GOV_NEW_PATTERN_VERIFIED            = "New pattern %v is verified. Will cancel agreements and re-register the node with the new pattern."
