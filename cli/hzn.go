@@ -296,6 +296,7 @@ Environment Variables:
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessAddPolicyPolicy := exBusinessAddPolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to add or overwrite.")).Required().String()
 	exBusinessAddPolicyJsonFile := exBusinessAddPolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path of a JSON file containing the metadata necessary to create/update the service policy in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
+	exBusinessAddPolNoConstraint := exBusinessAddPolicyCmd.Flag("no-constraints", msgPrinter.Sprintf("Allow this deployment policy to be published even though it does not have any constraints.")).Bool()
 	exBusinessUpdatePolicyCmd := exBusinessCmd.Command("updatepolicy", msgPrinter.Sprintf("Update one attribute of an existing policy in the Horizon Exchange. The supported attributes are the top level attributes in the policy definition as shown by the command 'hzn exchange deployment new'."))
 	exBusinessUpdatePolicyIdTok := exBusinessUpdatePolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessUpdatePolicyPolicy := exBusinessUpdatePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to be updated in the Horizon Exchange.")).Required().String()
@@ -841,7 +842,7 @@ Environment Variables:
 	case exBusinessNewPolicyCmd.FullCommand():
 		exchange.BusinessNewPolicy()
 	case exBusinessAddPolicyCmd.FullCommand():
-		exchange.BusinessAddPolicy(*exOrg, credToUse, *exBusinessAddPolicyPolicy, *exBusinessAddPolicyJsonFile)
+		exchange.BusinessAddPolicy(*exOrg, credToUse, *exBusinessAddPolicyPolicy, *exBusinessAddPolicyJsonFile, *exBusinessAddPolNoConstraint)
 	case exBusinessUpdatePolicyCmd.FullCommand():
 		exchange.BusinessUpdatePolicy(*exOrg, credToUse, *exBusinessUpdatePolicyPolicy, *exBusinessUpdatePolicyJsonFile)
 	case exBusinessRemovePolicyCmd.FullCommand():
