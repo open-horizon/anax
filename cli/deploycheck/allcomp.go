@@ -225,7 +225,7 @@ func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeTyp
 	orgToUse := org
 	if useNodeId || useBPolId || useSPolId || usePatternId || useSId {
 		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy and service policy."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the Exchange credential with -u for querying the node, deployment policy and service policy."))
 		} else {
 			// get the org from credToUse
 			if org == "" {
@@ -233,7 +233,7 @@ func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeTyp
 				if id != "" {
 					orgToUse, _ = cliutils.TrimOrg("", id)
 					if orgToUse == "" {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the exchange credentials: %v.", *credToUse))
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the Exchange credentials: %v.", *credToUse))
 					}
 				}
 			}

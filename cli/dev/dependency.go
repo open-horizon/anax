@@ -770,14 +770,14 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		if err != nil {
 			return nil, err
 		} else if highest == "" {
-			return nil, errors.New(msgPrinter.Sprintf("unable to find highest version of %v %v in the exchange: %v", surl, org, resp.Services))
+			return nil, errors.New(msgPrinter.Sprintf("unable to find highest version of %v %v in the Exchange: %v", surl, org, resp.Services))
 		} else {
 			serviceDef = sDef
 			serviceId = sId
 		}
 
 	} else if len(resp.Services) == 0 {
-		return nil, errors.New(msgPrinter.Sprintf("no services found in the exchange."))
+		return nil, errors.New(msgPrinter.Sprintf("no services found in the Exchange."))
 	} else {
 		for sId, sDef := range resp.Services {
 			serviceDef = sDef

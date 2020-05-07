@@ -226,7 +226,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 
 	if httpCode != 200 {
 		if userPw == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
 		}
 
 		cliutils.SetWhetherUsingApiKey(userPw)
@@ -234,7 +234,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		httpCode1 := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), nil, &nodes)
 		if httpCode1 != 200 {
 			// node does not exist, create it
-			msgPrinter.Printf("Node %s/%s does not exist in the exchange with the specified token, creating/updating it...", org, nodeId)
+			msgPrinter.Printf("Node %s/%s does not exist in the Exchange with the specified token, creating/updating it...", org, nodeId)
 			msgPrinter.Println()
 			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, anaxArch, nodeName, nodeType, false)
 		} else {
@@ -248,20 +248,20 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 
 				// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
 				if nodeType != n.GetNodeType() {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the exchange node %v.", nodeType, n.GetNodeType(), nId))
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the Exchange node %v.", nodeType, n.GetNodeType(), nId))
 				}
 				break
 			}
 		}
 	} else {
-		msgPrinter.Printf("Node %s/%s exists in the exchange", org, nodeId)
+		msgPrinter.Printf("Node %s/%s exists in the Exchange", org, nodeId)
 		msgPrinter.Println()
 		for nId, n := range nodes.Nodes {
 			exchangePattern = n.Pattern
 
 			// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
 			if nodeType != n.GetNodeType() {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the exchange node %v.", nodeType, n.GetNodeType(), nId))
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the Exchange node %v.", nodeType, n.GetNodeType(), nId))
 			}
 			break
 		}
@@ -279,20 +279,20 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 				msgPrinter.Println()
 			}
 		} else {
-			msgPrinter.Printf("Pattern %s defined for the node on the exchange. Will proceeed with this pattern.", exchangePattern)
+			msgPrinter.Printf("Pattern %s defined for the node on the Exchange. Will proceeed with this pattern.", exchangePattern)
 			msgPrinter.Println()
 			pattern = exchangePattern
 		}
 	} else {
 		if exchangePattern != "" && cliutils.AddOrg(org, pattern) != cliutils.AddOrg(org, exchangePattern) {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the exchange.", pattern, exchangePattern))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the Exchange.", pattern, exchangePattern))
 		} else {
 			var output exchange.GetPatternResponse
 			var patorg, patname string
 			patorg, patname = cliutils.TrimOrg(org, pattern)
 			httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+patorg+"/patterns"+cliutils.AddSlash(patname), cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 404, 405}, &output)
 			if httpCode != 200 {
-				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s/%s' not found from the exchange.", patorg, patname))
+				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s/%s' not found from the Exchange.", patorg, patname))
 			}
 			pat := output.Patterns[patorg+"/"+patname]
 			if len(pat.Services) == 0 {
@@ -395,7 +395,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		// Technically an input file is not required, but it is not the common case, so warn them
 		msgPrinter.Printf("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
 		msgPrinter.Println()
-		msgPrinter.Printf("However, if there is 'useInput' specified in the node already in the exchange, the useInput will be used.")
+		msgPrinter.Printf("However, if there is 'useInput' specified in the node already in the Exchange, the useInput will be used.")
 		msgPrinter.Println()
 	}
 
@@ -454,7 +454,7 @@ func RegistrationFailure() {
 		}
 	}
 
-	cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Registration failed. Node sucessfully returned to unregistered state."))
+	cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Registration failed. Node successfully returned to unregistered state."))
 }
 
 // CreateNode will create the node locally during registration.
@@ -610,7 +610,7 @@ func SetConfigState(timeout int, inputFile string) error {
 		select {
 		case output := <-c:
 			if output == "done" {
-				cliutils.Verbose("Call to node to change state to configured executed sucessfully.")
+				cliutils.Verbose("Call to node to change state to configured executed successfully.")
 				return nil
 			} else {
 				return fmt.Errorf("%v", output)
@@ -686,7 +686,7 @@ func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string)
 	cliutils.SetWhetherUsingApiKey(nodeCreds)
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), route, nodeCreds, []int{200}, &svcOutput)
 	if len(svcOutput.Services) == 0 {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("found no services in the exchange matching: org=%s, url=%s, arch=%s", org, url, arch))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("found no services in the Exchange matching: org=%s, url=%s, arch=%s", org, url, arch))
 	}
 
 	// Loop thru the returned services and pick out the highest version that is within one of the versionRanges
@@ -709,7 +709,7 @@ func GetHighestService(nodeCreds, org, url, arch string, versionRanges []string)
 	}
 
 	if highestKey == "" {
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("found no services in the exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRanges, arch))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("found no services in the Exchange matched: org=%s, specRef=%s, version range=%s, arch=%s", org, url, versionRanges, arch))
 	}
 	return svcOutput.Services[highestKey]
 }

@@ -306,12 +306,12 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 200 {
 		// Pattern exists, update it
-		msgPrinter.Printf("Updating %s in the exchange...", exchId)
+		msgPrinter.Printf("Updating %s in the Exchange...", exchId)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
 	} else {
 		// Pattern not there, create it
-		msgPrinter.Printf("Creating %s in the exchange...", exchId)
+		msgPrinter.Printf("Creating %s in the Exchange...", exchId)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
 	}
@@ -324,7 +324,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		}
 		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
 		baseName := filepath.Base(pubKeyFilePath)
-		msgPrinter.Printf("Storing %s with the pattern in the exchange...", baseName)
+		msgPrinter.Printf("Storing %s with the pattern in the Exchange...", baseName)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}

@@ -450,7 +450,7 @@ func CreateService(service *Service,
 			return errorhandler(NewMSMissingVariableConfigError(fmt.Sprintf(cutil.ANAX_SVC_MISSING_VARIABLE, missingVarName, cutil.FormOrgSpecUrl(*service.Url, *service.Org)), "service.[attribute].mappings")), nil, nil
 		} else {
 			// For policy case, we do not know what business policy will form agreement with it, so we just give warning for the missing variable name
-			glog.Warningf(apiLogString(fmt.Sprintf("Variable %v is missing in the service configuration for %v/%v. It may cause agreement not formed if the business policy does not contain the setting for the missing variable.", missingVarName, *service.Org, *service.Url)))
+			glog.Warningf(apiLogString(fmt.Sprintf("Variable %v is missing in the service configuration for %v/%v. It may prevent an agreement if the business policy does not contain the setting for the missing variable.", missingVarName, *service.Org, *service.Url)))
 			LogServiceEvent(db, persistence.SEVERITY_WARN, persistence.NewMessageMeta(EL_API_ERR_MISS_VAR_IN_SVC_CONFIG, missingVarName, *service.Org, *service.Url), persistence.EC_WARNING_SERVICE_CONFIG, service)
 		}
 	}

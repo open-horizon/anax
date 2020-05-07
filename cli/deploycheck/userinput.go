@@ -127,7 +127,7 @@ func validateService(service *common.ServiceFile) error {
 	if service.Version == "" {
 		return fmt.Errorf(msgPrinter.Sprintf("Version must be specified in the service definition."))
 	} else if !semanticversion.IsVersionString(service.Version) {
-		return fmt.Errorf(msgPrinter.Sprintf("Invalide version format: %v.", service.Version))
+		return fmt.Errorf(msgPrinter.Sprintf("Invalid version format: %v.", service.Version))
 	}
 	if service.Arch == "" {
 		return fmt.Errorf(msgPrinter.Sprintf("Arch must be specified in the service definition."))
@@ -214,7 +214,7 @@ func verifyUserInputCompatibleParameters(org string, userPw string, nodeId strin
 	orgToUse := org
 	if useNodeId || useBPolId || usePatternId || useSId {
 		if *credToUse == "" {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the exchange credential with -u for querying the node, deployment policy and service policy."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the Exchange credential with -u for querying the node, deployment policy and service policy."))
 		} else {
 			// get the org from credToUse
 			if org == "" {
@@ -222,7 +222,7 @@ func verifyUserInputCompatibleParameters(org string, userPw string, nodeId strin
 				if id != "" {
 					orgToUse, _ = cliutils.TrimOrg("", id)
 					if orgToUse == "" {
-						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the exchange credentials: %v.", *credToUse))
+						cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the organization with -o for the Exchange credentials: %v.", *credToUse))
 					}
 				}
 			}
@@ -343,7 +343,7 @@ func checkServiceDefsForPattern(pattern common.AbstractPatternFile, serviceDefs 
 			}
 
 			if !found {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the patterh requirement.", sdef.Org, sdef.URL, sdef.Arch, sdef.Version, svcDefFiles[i]))
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The service %v/%v %v %v specified in file %v does not match the pattern requirement.", sdef.Org, sdef.URL, sdef.Arch, sdef.Version, svcDefFiles[i]))
 			}
 		}
 	}

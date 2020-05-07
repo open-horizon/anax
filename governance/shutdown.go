@@ -547,7 +547,7 @@ func (w *GovernanceWorker) deleteNode(httpClientFactory *config.HTTPClientFactor
 }
 
 // Delete the node error from the exchange and local db
-func (w *GovernanceWorker) deleteNodeError () error {
+func (w *GovernanceWorker) deleteNodeError() error {
 	glog.V(3).Infof(logString(fmt.Sprintf("deleting node surface error for node %v from exchange", w.GetExchangeId())))
 	err := exchange.DeleteSurfaceErrors(w.limitedRetryEC, w.GetExchangeId())
 	if err != nil {

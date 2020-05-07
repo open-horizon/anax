@@ -298,7 +298,7 @@ func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl str
 		cliutils.ConfirmRemove(msgPrinter.Sprintf("Are you sure you want to suspend %v for this Horizon node?", msg_part))
 	}
 
-	msgPrinter.Printf("Suspending %v, cancelling releated agreements, stopping related service containers...", msg_part)
+	msgPrinter.Printf("Suspending %v, cancelling related agreements, stopping related service containers...", msg_part)
 	msgPrinter.Println()
 
 	if applyAll {
@@ -313,7 +313,7 @@ func Suspend(forceSuspend bool, applyAll bool, serviceOrg string, serviceUrl str
 
 	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput, true)
 
-	msgPrinter.Printf("Service suspending request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.")
+	msgPrinter.Printf("Service suspending request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are removed. It may take a couple of minutes.")
 	msgPrinter.Println()
 }
 
@@ -349,6 +349,6 @@ func Resume(applyAll bool, serviceOrg string, serviceUrl string) {
 
 	cliutils.HorizonPutPost(http.MethodPost, "service/configstate", []int{201, 200}, apiInput, true)
 
-	msgPrinter.Printf("Service resuming request sucessfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.")
+	msgPrinter.Printf("Service resuming request successfully sent, please use 'hzn agreement' and 'docker ps' to make sure the related agreements and service containers are started. It may take a couple of minutes.")
 	msgPrinter.Println()
 }

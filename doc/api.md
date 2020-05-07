@@ -646,7 +646,7 @@ body:
 
 | name | subfield | type | description |
 | ---- | ---- |----| ---------------- |
-| config | | array of json | all the services and the associated configuration attributes. For the pattern case, these are the top level services and their dependent services the pattern references to. For the non-pattern case, thses are the registered depended services and any top level services that use has configured. |
+| config | | array of json | all the services and the associated configuration attributes. For the pattern case, these are the top level services and their dependent services the pattern references to. For the non-pattern case, thses are the registered dependent services and any top level services that use has configured. |
 | definitions | | json | the definition of all the related services. |
 | | active  | array of json | an array of service definitions that are actively in use. Please refer to the following table for the fields of a service definition object. |
 | | archived  | array of json | an array of service definitions that are archived. Please refer to the following table for the fields of a service definition object. |

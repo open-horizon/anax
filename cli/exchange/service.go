@@ -186,15 +186,15 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	if httpCode == 200 {
 		// check if the service exists with the same version, ask user if -O is not specified.
 		if promptForOverwrite {
-			cliutils.ConfirmRemove(msgPrinter.Sprintf("Service %v/%v exists in the exchange, do you want to overwrite it?", org, exchId))
+			cliutils.ConfirmRemove(msgPrinter.Sprintf("Service %v/%v exists in the Exchange, do you want to overwrite it?", org, exchId))
 		}
 		// Service exists, update it
-		msgPrinter.Printf("Updating %s in the exchange...", exchId)
+		msgPrinter.Printf("Updating %s in the Exchange...", exchId)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	} else {
 		// Service not there, create it
-		msgPrinter.Printf("Creating %s in the exchange...", exchId)
+		msgPrinter.Printf("Creating %s in the Exchange...", exchId)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
 	}
@@ -209,7 +209,7 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 	if pubKeyToStore != "" {
 		bodyBytes := cliutils.ReadFile(pubKeyToStore)
 		baseName := filepath.Base(pubKeyToStore)
-		msgPrinter.Printf("Storing %s with the service in the exchange...", baseName)
+		msgPrinter.Printf("Storing %s with the service in the Exchange...", baseName)
 		msgPrinter.Println()
 		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
 	}
@@ -231,7 +231,7 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 			msgPrinter.Println()
 			continue
 		}
-		msgPrinter.Printf("Storing %s with the service in the exchange...", regTok)
+		msgPrinter.Printf("Storing %s with the service in the Exchange...", regTok)
 		msgPrinter.Println()
 		regTokExch := ServiceDockAuthExch{Registry: regstry, UserName: username, Token: token}
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
@@ -606,7 +606,7 @@ func ServiceRemovePolicy(org string, credToUse string, service string, force boo
 	}
 
 	//remove service policy
-	msgPrinter.Printf("Removing Service policy and re-evaluating all agreements based on just the built-in node policy. Existing agreements might be cancelled and re-negotiated.")
+	msgPrinter.Printf("Removing Service policy and re-evaluating all agreements. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{204, 404})
 	msgPrinter.Printf("Service policy removed.")

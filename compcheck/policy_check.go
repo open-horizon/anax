@@ -85,7 +85,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 		}
 		if input.NodeArch != "" {
 			if node.Arch != "" && node.Arch != input.NodeArch {
-				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
+				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input node architecture %v does not match the Exchange node architecture %v for node %v.", input.NodeArch, node.Arch, nodeId)), COMPCHECK_INPUT_ERROR)
 			}
 		} else {
 			resources.NodeArch = node.Arch
@@ -728,7 +728,7 @@ func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolver
 	if svcDefs == nil || len(svcDefs) == 0 {
 		sDefMap, topSvcDef, topSvcId, err = getServiceResolvedDef(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch)
 		if err != nil {
-			return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v %v %v and its dependents from the exchange. %v", workload.Org, workload.WorkloadURL, workload.Version, workload.Arch, err)), COMPCHECK_EXCHANGE_ERROR)
+			return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving service %v/%v %v %v and its dependents from the Exchange. %v", workload.Org, workload.WorkloadURL, workload.Version, workload.Arch, err)), COMPCHECK_EXCHANGE_ERROR)
 		}
 		if sDefMap != nil {
 			svcList = sDefMap
@@ -811,7 +811,7 @@ func getServiceListFromInputDefs(getServiceResolvedDef exchange.ServiceDefResolv
 				return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.Version, err)), COMPCHECK_GENERAL_ERROR)
 			} else {
 				if s_map, s_def, s_id, err := getServiceResolvedDef(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
-					return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
+					return nil, nil, "", NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
 				} else {
 					service_map[s_id] = *s_def
 					for id, s := range s_map {
