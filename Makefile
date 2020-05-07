@@ -73,7 +73,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.2.2$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.3.0$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -83,19 +83,10 @@ CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
 CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest$(BRANCH_NAME)
 CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$(CSS_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
-# for redhat ubi
-CSS_UBI_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service_ubi
-CSS_UBI_IMAGE = $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION)
-CSS_UBI_IMAGE_STG = $(CSS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
-CSS_UBI_IMAGE_PROD = $(CSS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
-# the latest tag is the same as stable
-CSS_UBI_IMAGE_LATEST = $(CSS_UBI_IMAGE_NAME):latest$(BRANCH_NAME)
-
-
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.2.2$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.3.0$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -104,15 +95,6 @@ ESS_IMAGE_PROD = $(ESS_IMAGE_NAME):stable$(BRANCH_NAME)
 # the latest tag is the same as stable
 ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest$(BRANCH_NAME)
 ESS_IMAGE_LABELS ?= --label "name=$(arch)_edge-sync-service" --label "version=$(ESS_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
-
-
-# for redhat ubi
-ESS_UBI_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service_ubi
-ESS_UBI_IMAGE = $(ESS_UBI_IMAGE_NAME):$(ESS_IMAGE_VERSION)
-ESS_UBI_IMAGE_STG = $(ESS_UBI_IMAGE_NAME):testing$(BRANCH_NAME)
-ESS_UBI_IMAGE_PROD = $(ESS_UBI_IMAGE_NAME):stable$(BRANCH_NAME)
-# the latest tag is the same as stable
-ESS_UBI_IMAGE_LATEST = $(ESS_UBI_IMAGE_NAME):latest$(BRANCH_NAME)
 
 # license file name
 LICENSE_FILE = LICENSE.txt
@@ -425,12 +407,9 @@ anax-k8s-package: anax-k8s-image
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
-	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile . && \
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG);
-	@echo "Producing CSS docker image $(CSS_UBI_IMAGE)"
 	cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR)
-	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_UBI_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-	docker tag $(CSS_UBI_IMAGE) $(CSS_UBI_IMAGE_STG); \
+	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
 
 promote-css:
 	@echo "Promoting $(CSS_IMAGE)"
@@ -439,21 +418,12 @@ promote-css:
 	docker push $(CSS_IMAGE_PROD)
 	docker tag $(CSS_IMAGE) $(CSS_IMAGE_LATEST)
 	docker push $(CSS_IMAGE_LATEST)
-	@echo "Promoting $(CSS_UBI_IMAGE)"
-	docker pull $(CSS_UBI_IMAGE)
-	docker tag $(CSS_UBI_IMAGE) $(CSS_UBI_IMAGE_PROD)
-	docker push $(CSS_UBI_IMAGE_PROD)
-	docker tag $(CSS_UBI_IMAGE) $(CSS_UBI_IMAGE_LATEST)
-	docker push $(CSS_UBI_IMAGE_LATEST)
 
 ess-docker-image: ess-clean
 	@echo "Producing ESS docker image $(ESS_IMAGE)"
-	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile . && \
-	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG);
-	@echo "Producing ESS docker image $(ESS_UBI_IMAGE)"
 	cp -f $(LICENSE_FILE) $(ESS_CONTAINER_DIR)
-	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_LABELS) -t $(ESS_UBI_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-	docker tag $(ESS_UBI_IMAGE) $(ESS_UBI_IMAGE_STG); \
+	cd $(ESS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ESS_IMAGE_LABELS) -t $(ESS_IMAGE) -f ./$(ESS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+	docker tag $(ESS_IMAGE) $(ESS_IMAGE_STG); \
 
 ess-promote:
 	@echo "Promoting $(ESS_IMAGE)"
@@ -462,12 +432,6 @@ ess-promote:
 	docker push $(ESS_IMAGE_PROD)
 	docker tag $(ESS_IMAGE) $(ESS_IMAGE_LATEST)
 	docker push $(ESS_IMAGE_LATEST)
-	@echo "Promoting $(ESS_UBI_IMAGE)"
-	docker pull $(ESS_UBI_IMAGE)
-	docker tag $(ESS_UBI_IMAGE) $(ESS_UBI_IMAGE_PROD)
-	docker push $(ESS_UBI_IMAGE_PROD)
-	docker tag $(ESS_UBI_IMAGE) $(ESS_UBI_IMAGE_LATEST)
-	docker push $(ESS_UBI_IMAGE_LATEST)
 
 # This target should be used by developers working on anax, to build the ESS and CSS containers for the anax test environment.
 # These containers only need to be rebuilt when either the authentication plugin changes or when anax rebases on a new level/tag
@@ -486,26 +450,12 @@ fss-package: ess-docker-image css-docker-image
 	else \
 		echo "File sync service container $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_UBI_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
-		echo "Pushing ESS docker image $(ESS_UBI_IMAGE)"; \
-		docker push $(ESS_UBI_IMAGE); \
-		docker push $(ESS_UBI_IMAGE_STG); \
-	else \
-		echo "File sync service container $(ESS_UBI_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
-	fi
 	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing CSS docker image $(CSS_IMAGE)"; \
 		docker push $(CSS_IMAGE); \
 		docker push $(CSS_IMAGE_STG); \
 	else \
 		echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
-	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_UBI_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
-		echo "Pushing CSS docker image $(CSS_UBI_IMAGE)"; \
-		docker push $(CSS_UBI_IMAGE); \
-		docker push $(CSS_UBI_IMAGE_STG); \
-	else \
-		echo "File sync service container $(CSS_UBI_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
 
 clean: mostlyclean 
@@ -531,15 +481,11 @@ css-clean:
 	rm -f $(CSS_CONTAINER_DIR)/$(LICENSE_FILE)
 	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
 	-docker rmi $(CSS_IMAGE_STG) 2> /dev/null || :
-	-docker rmi $(CSS_UBI_IMAGE) 2> /dev/null || :
-	-docker rmi $(CSS_UBI_IMAGE_STG) 2> /dev/null || :
 
 ess-clean:
 	rm -f $(ESS_CONTAINER_DIR)/$(LICENSE_FILE)
 	-docker rmi $(ESS_IMAGE) 2> /dev/null || :
 	-docker rmi $(ESS_IMAGE_STG) 2> /dev/null || :
-	-docker rmi $(ESS_UBI_IMAGE) 2> /dev/null || :
-	-docker rmi $(ESS_UBI_IMAGE_STG) 2> /dev/null || :
 
 anax-container-clean:
 	rm -f $(ANAX_CONTAINER_DIR)/hzn
