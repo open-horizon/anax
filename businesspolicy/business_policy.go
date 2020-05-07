@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
+	"strings"
 )
 
 const DEFAULT_MAX_AGREEMENT = 0
@@ -143,6 +144,22 @@ func (b *BusinessPolicy) Validate() error {
 
 	// We only get here if the input object is nil OR all of the top level fields are empty.
 	return nil
+}
+
+// Check if there is no contraints or not
+func (b *BusinessPolicy) HasNoConstraints() bool {
+	if b.Constraints == nil || len(b.Constraints) == 0 {
+		return true
+	}
+
+	// even if the constraints array has non-zero length, the items in it could be emptry strings
+	for _, c := range b.Constraints {
+		if strings.TrimSpace(c) != "" {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Convert business policy to a policy object.

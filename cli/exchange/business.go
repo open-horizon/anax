@@ -60,7 +60,7 @@ func BusinessListPolicy(org string, credToUse string, policy string, namesOnly b
 }
 
 //BusinessAddPolicy will add a new policy or overwrite an existing policy byt he same name in the Horizon Exchange
-func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath string) {
+func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath string, noConstraints bool) {
 
 	//check for ExchangeUrl early on
 	var exchUrl = cliutils.GetExchangeUrl()
@@ -84,6 +84,11 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	err = policyFile.Validate()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect deployment policy format in file %s: %v", jsonFilePath, err))
+	}
+
+	// if the --no-constraints flag is not specified and the given policy has no constraints, alert the user.
+	if (!noConstraints) && policyFile.HasNoConstraints() {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."))
 	}
 
 	//add/overwrite business policy file
@@ -256,7 +261,7 @@ func BusinessNewPolicy() {
 		`  ],`,
 		`  "constraints": [  /* ` + msgPrinter.Sprintf("A list of constraint expressions of the form <property name> <operator> <property value>,") + ` */`,
 		`                    /* ` + msgPrinter.Sprintf("separated by boolean operators AND (&&) or OR (||).") + `*/`,
-		`       "" `,
+		`       "myproperty == myvalue" `,
 		`  ], `,
 		`  "userInput": [    /* ` + msgPrinter.Sprintf("A list of userInput variables to set when the service runs, listed by service.") + ` */`,
 		`    {            `,
