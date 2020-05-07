@@ -67,6 +67,11 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		errorMessage = fmt.Sprintf("Unable to reset the node in the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
 	}
 
+	if err := w.deleteNodeError(); err != nil {
+		w.completedWithError(logString(err.Error()))
+		return
+	}
+
 	// Tell the exchange changes worker to stop retrieving and recording changes. We dont need it any longer now that the agreements
 	// are all gone.
 	w.Messages() <- events.NewExchangeChangesShutdownMessage(events.MESSAGE_STOP)
@@ -539,6 +544,26 @@ func (w *GovernanceWorker) deleteNode(httpClientFactory *config.HTTPClientFactor
 
 	glog.V(3).Infof(logString(fmt.Sprintf("deleted node from exchange")))
 	return nil
+}
+
+// Delete the node error from the exchange and local db
+func (w *GovernanceWorker) deleteNodeError () error {
+	glog.V(3).Infof(logString(fmt.Sprintf("deleting node surface error for node %v from exchange", w.GetExchangeId())))
+	err := exchange.DeleteSurfaceErrors(w.limitedRetryEC, w.GetExchangeId())
+	if err != nil {
+		return errors.New(fmt.Sprintf("error deleting node error from exchange: %v", err))
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("deleted node error from exchange")))
+
+	glog.V(3).Infof(logString(fmt.Sprintf("deleting node surface error from local db")))
+	if err := persistence.DeleteSurfaceErrors(w.db); err != nil {
+		return err
+	}
+
+	glog.V(3).Infof(logString(fmt.Sprintf("deleted node surface error from local db")))
+	return nil
+
 }
 
 // Send the shutdown completed message on the internal message bus.

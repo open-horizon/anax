@@ -763,6 +763,38 @@ func PutSurfaceErrors(ec ExchangeContext, deviceId string, errorList *ExchangeSu
 	}
 }
 
+func DeleteSurfaceErrors(ec ExchangeContext, deviceId string) error {
+	var resp interface{}
+	resp = new(PostDeviceResponse)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/errors", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "DELETE", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil && !strings.Contains(err.Error(), "status: 404") {
+			return err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
+		} else {
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("deleted node surface errors for %v to exchange", deviceId)))
+			return nil
+		}
+	}
+
+}
+
 // This function is used to invoke an exchange API
 // For GET, the given resp parameter will be untouched when http returns code 404.
 func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {

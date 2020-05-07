@@ -64,6 +64,26 @@ func SaveSurfaceErrors(db *bolt.DB, surfaceErrors []SurfaceError) error {
 	return writeErr
 }
 
+// DeleteSurfaceErrors delete node surface errors from the local database
+func DeleteSurfaceErrors(db *bolt.DB) error {
+	if seList, err := FindSurfaceErrors(db); err != nil {
+		return err
+	} else if len(seList) == 0 {
+		return nil
+	} else {
+		return db.Update(func(tx *bolt.Tx) error {
+
+			if b, err := tx.CreateBucketIfNotExists([]byte(NODE_SURFACEERR)); err != nil {
+				return err
+			} else if err := b.Delete([]byte(NODE_SURFACEERR)); err != nil {
+				return fmt.Errorf("Unable to delete node surface error object: %v", err)
+			} else {
+				return nil
+			}
+		})
+	}
+}
+
 // NewErrorLog takes an eventLog object and puts it in the local db and exchange if it should be surfaced
 func NewErrorLog(db *bolt.DB, eventLog EventLog) bool {
 	if !IsSurfaceType(eventLog.EventCode) || !(eventLog.SourceType == SRC_TYPE_AG || eventLog.SourceType == SRC_TYPE_SVC) {
