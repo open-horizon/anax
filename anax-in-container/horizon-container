@@ -139,10 +139,23 @@ start() {
 
 	# setup directories for file sync service
 	if isMacos; then
-		fssHostSharePath=/private/var/tmp/horizon/${DOCKER_NAME}
+		fssBasePath=/private/var/tmp/horizon
 	else
-		fssHostSharePath=/var/tmp/horizon/${DOCKER_NAME}
+		fssBasePath=/private/var/tmp/horizon
 	fi
+	# set this base path to 777 to allow other users create directories under it
+	if [ -d $fssBasePath ]; then
+		# this is for backward comatibility because older version created this directory with root owned
+		if [ ! -w $fssBasePath ]; then
+			echo "sudo chmod 777 $fssBasePath"
+			sudo chmod 777 $fssBasePath
+		fi
+	else
+		mkdir -m 777 -p ${fssBasePath}
+	fi
+
+	# this is user specific and container name specific
+	fssHostSharePath=${fssBasePath}/${USER}/${DOCKER_NAME}
 
 	# create fss domain socket path and ess auth path
 	mkdir -p ${fssHostSharePath}/fss-domain-socket
