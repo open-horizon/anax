@@ -117,7 +117,18 @@ func NewErrorLog(db *bolt.DB, eventLog EventLog) bool {
 
 // getErrorTypeList returns a slice containing the error types to surface to the exchange
 func getErrorTypeList() []string {
-	return []string{EC_ERROR_IMAGE_LOADE, EC_ERROR_IN_DEPLOYMENT_CONFIG, EC_ERROR_START_CONTAINER}
+	return []string{
+		EC_ERROR_IMAGE_LOADE,
+		EC_ERROR_IN_DEPLOYMENT_CONFIG,
+		EC_ERROR_START_CONTAINER,
+		EC_CANCEL_AGREEMENT_EXECUTION_TIMEOUT,
+		EC_CANCEL_AGREEMENT_SERVICE_SUSPENDED,
+		EC_ERROR_SERVICE_CONFIG,
+		EC_ERROR_START_SERVICE,
+		EC_ERROR_START_DEPENDENT_SERVICE,
+		EC_DEPENDENT_SERVICE_FAILED,
+	}
+
 }
 
 // IsSurfaceType returns true if the string parameter is a type to surface to the exchange
