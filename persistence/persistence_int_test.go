@@ -118,7 +118,7 @@ func Test_DiscriminateSavedAttributes(t *testing.T) {
 
 	// TODO: separate into another test
 	envvars := make(map[string]string)
-	envvars, err = AttributesToEnvvarMap(services, envvars, "HZN_", 0, nil)
+	envvars, err = AttributesToEnvvarMap(services, envvars, "HZN_", 0, nil, false)
 	if err != nil {
 		t.Errorf("Failed to get envvar map: %v", err)
 	}

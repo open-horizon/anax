@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	yaml "gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
@@ -22,7 +23,6 @@ import (
 	dynamic "k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
 	"reflect"
 	"strings"
 	"time"
@@ -69,26 +69,17 @@ type ContainerStatus struct {
 	State       string
 }
 
-func NewKubeConfig() (*rest.Config, error) {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get cluster config information: %v", err)
-	}
-	return config, nil
-}
-
 func NewKubeClient() (*KubeClient, error) {
-	config, err := NewKubeConfig()
+	clientset, err := cutil.NewKubeClient()
 	if err != nil {
 		return nil, err
 	}
-	clientset, _ := kubernetes.NewForConfig(config)
 	return &KubeClient{Client: clientset}, nil
 }
 
 // NewDynamicKubeClient returns a kube client that interacts with unstructured.Unstructured type objects
 func NewDynamicKubeClient() (dynamic.Interface, error) {
-	config, err := NewKubeConfig()
+	config, err := cutil.NewKubeConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +88,7 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 func NewCRDClient() (*apiv1beta1client.ApiextensionsV1beta1Client, error) {
-	config, err := NewKubeConfig()
+	config, err := cutil.NewKubeConfig()
 	if err != nil {
 		return nil, err
 	}

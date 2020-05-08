@@ -30,7 +30,7 @@ func Update(fileName string) {
 	ep := new(externalpolicy.ExternalPolicy)
 	readInputFile(fileName, ep)
 
-	readOnlyBuiltIns := []string{externalpolicy.PROP_NODE_CPU, externalpolicy.PROP_NODE_ARCH, externalpolicy.PROP_NODE_MEMORY, externalpolicy.PROP_NODE_HARDWAREID}
+	readOnlyBuiltIns := externalpolicy.ListReadOnlyProperties()
 	includedBuiltIns := ""
 	for _, builtInProp := range readOnlyBuiltIns {
 		if ep.Properties.HasProperty(builtInProp) {

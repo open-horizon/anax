@@ -284,7 +284,11 @@ func (w *BaseProducerProtocolHandler) HandleProposal(ph abstractprotocol.Protoco
 			if err != nil {
 				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("Error getting node policy from db: %v", err)))
 			}
-			if r, err := ph.DecideOnProposal(proposal, producerPol, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), runningBCs, messageTarget, w.sendMessage); err != nil {
+			exchDevice, err := persistence.FindExchangeDevice(w.db)
+			if err != nil {
+				glog.V(2).Infof("Failed to retrieve node from local db: %v", err)
+			}
+			if r, err := ph.DecideOnProposal(proposal, producerPol, w.ec.GetExchangeId(), exchange.GetOrg(w.ec.GetExchangeId()), exchDevice, runningBCs, messageTarget, w.sendMessage); err != nil {
 				glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("respond to proposal with error: %v", err)))
 				err_log_event = fmt.Sprintf("Respond to proposal with error: %v", err)
 			} else {

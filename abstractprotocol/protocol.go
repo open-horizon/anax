@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/metering"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
 )
@@ -109,6 +110,7 @@ type ProtocolHandler interface {
 		nodeProposal *externalpolicy.ExternalPolicy,
 		myId string,
 		myOrg string,
+		device *persistence.ExchangeDevice,
 		runningBlockchains []map[string]string,
 		messageTarget interface{},
 		sendMessage func(mt interface{}, pay []byte) error) (ProposalReply, error)
@@ -256,7 +258,8 @@ func DecideOnProposal(p ProtocolHandler,
 	proposal Proposal,
 	nodePolicy *externalpolicy.ExternalPolicy,
 	myId string,
-	myOrg string) (*BaseProposalReply, error) {
+	myOrg string,
+	device *persistence.ExchangeDevice) (*BaseProposalReply, error) {
 
 	glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("Processing New proposal from %v, %v", proposal.ConsumerId(), proposal.ShortString())))
 	glog.V(5).Infof(AAPlogString(p.Name(), fmt.Sprintf("New proposal: %v", proposal)))
@@ -278,8 +281,9 @@ func DecideOnProposal(p ProtocolHandler,
 		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("Producer Policy: %v", pPolicy.String())))
 
 		// now add the node's built-in properties to the producer policy
+		isCluster := device.IsEdgeCluster()
 		var err1 error
-		producerPolicy, err1 = addNodeBuiltInProps(producerPolicy, nodePolicy)
+		producerPolicy, err1 = addNodeBuiltInProps(producerPolicy, nodePolicy, isCluster)
 		if err1 != nil {
 			replyErr = errors.New(fmt.Sprintf("Protocol %v decide on proposal received error adding node built-in policy to the producer policy, %v", p.Name(), err))
 		}
@@ -569,7 +573,7 @@ func DemarshalProposal(proposal string) (Proposal, error) {
 // Adds node built-in properties to the producer policy.
 // It will get node's CPU count, available memory and arch and add them to
 // the producer policy that was used to make the proposal on agbot.
-func addNodeBuiltInProps(pol *policy.Policy, nodePol *externalpolicy.ExternalPolicy) (*policy.Policy, error) {
+func addNodeBuiltInProps(pol *policy.Policy, nodePol *externalpolicy.ExternalPolicy, isCluster bool) (*policy.Policy, error) {
 	if pol == nil {
 		return nil, nil
 	}
@@ -577,7 +581,7 @@ func addNodeBuiltInProps(pol *policy.Policy, nodePol *externalpolicy.ExternalPol
 	// get built-in node properties and replace the ones in the policy,
 	// the memory will be the available memory instead of total memory -- not yet,
 	// still use total memory, change first parameter to true if you want available memory
-	builtinNodePol, readWriteBuiltinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol)
+	builtinNodePol, readWriteBuiltinNodePol := externalpolicy.CreateNodeBuiltInPolicy(false, true, nodePol, isCluster)
 	for _, prop := range builtinNodePol.Properties {
 		if err := pol.Add_Property(&prop, true); err != nil {
 			return nil, err

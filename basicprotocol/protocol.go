@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/metering"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"net/http"
 )
@@ -120,11 +121,12 @@ func (p *ProtocolHandler) DecideOnProposal(proposal abstractprotocol.Proposal,
 	nodePol *externalpolicy.ExternalPolicy,
 	myId string,
 	myOrg string,
+	device *persistence.ExchangeDevice,
 	ignore []map[string]string,
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) (abstractprotocol.ProposalReply, error) {
 
-	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, nodePol, myId, myOrg)
+	reply, replyErr := abstractprotocol.DecideOnProposal(p, proposal, nodePol, myId, myOrg, device)
 
 	// Always respond to the Proposer
 	return abstractprotocol.SendResponse(p, proposal, reply, myOrg, replyErr, messageTarget, sendMessage)
