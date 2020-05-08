@@ -113,7 +113,7 @@ export FSS_CSS_URL ?=
 # we use a script that will give us the debian arch version since that's what the packaging system inputs
 arch ?= $(shell tools/arch-tag)
 
-COMPILE_ARGS := CGO_ENABLED=0
+COMPILE_ARGS ?= CGO_ENABLED=0
 # TODO: handle other ARM architectures on build boxes too
 ifeq ($(arch),armhf)
 	COMPILE_ARGS +=  GOARCH=arm GOARM=6
@@ -132,8 +132,8 @@ else ifeq ($(opsys),Darwin)
 	COMPILE_ARGS += GOOS=darwin
 endif
 
-COMPILE_ARGS_LOCAL := CGO_ENABLED=0
-arch_local = $(shell tools/arch-tag)
+COMPILE_ARGS_LOCAL ?= CGO_ENABLED=0
+arch_local ?= $(shell tools/arch-tag)
 # TODO: handle other ARM architectures on build boxes too
 ifeq ($(arch_local),armhf)
 	COMPILE_ARGS_LOCAL +=  GOARCH=arm GOARM=6
@@ -145,7 +145,7 @@ else ifeq ($(arch_local),ppc64el)
 	COMPILE_ARGS_LOCAL +=  GOARCH=ppc64le
 endif
 
-opsys_local = $(shell uname -s)
+opsys_local ?= $(shell uname -s)
 ifeq ($(opsys_local),Linux)
 	COMPILE_ARGS_LOCAL += GOOS=linux
 else ifeq ($(opsys_local),Darwin)
