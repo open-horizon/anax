@@ -238,3 +238,7 @@ do
 		exit 0
 	fi
 done
+
+if [ $ag_formed -ne 1 ]; then
+	exit 2
+fi

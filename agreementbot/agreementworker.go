@@ -354,6 +354,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		// If the service is suspended, then do not make an agreement.
 		if found, suspended := exchange.ServiceSuspended(exchangeDev.RegisteredServices, workload.WorkloadURL, workload.Org); found && suspended {
 			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, cutil.FormOrgSpecUrl(workload.WorkloadURL, workload.Org))))
+
+			// Retry this command until it fails for a different reason, or until it succeeds.
+			cph.DeferCommand(*wi)
 			return
 		}
 
@@ -423,6 +426,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				if devMS.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
 					if devMS.Url == cutil.FormOrgSpecUrl(apiSpec.SpecRef, apiSpec.Org) || devMS.Url == apiSpec.SpecRef {
 						glog.Infof(BAWlogstring(workerId, fmt.Sprintf("cannot make agreement with %v for policy %v because service %v is suspended by the user.", wi.Device.Id, wi.ConsumerPolicy.Header.Name, devMS.Url)))
+
+						// Retry this command until it fails for a different reason, or until it succeeds.
+						cph.DeferCommand(*wi)
 						return
 					}
 				}

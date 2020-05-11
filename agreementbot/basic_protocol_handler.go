@@ -34,7 +34,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				httpClient:       cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
 				agbotId:          cfg.AgreementBot.ExchangeId,
 				token:            cfg.AgreementBot.ExchangeToken,
-				deferredCommands: nil,
+				deferredCommands: make([]AgreementWork, 0, 10),
 				messages:         messages,
 				mmsObjMgr:        mmsObjMgr,
 			},
@@ -189,7 +189,18 @@ func (c *BasicProtocolHandler) CanCancelNow(ag *persistence.Agreement) bool {
 }
 
 func (c *BasicProtocolHandler) HandleDeferredCommands() {
-	return
+
+	cmds := c.GetDeferredCommands()
+	for _, cmd := range cmds {
+		switch cmd.Type() {
+		case INITIATE:
+			c.WorkQueue().InboundLow() <- &cmd
+			glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued make agreement command: %v", cmd)))
+		default:
+			glog.Errorf(BsCPHlogString(fmt.Sprintf("unknown deferred command: %v", cmd)))
+		}
+	}
+
 }
 
 func (b *BasicProtocolHandler) PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, org string, workerId string) error {

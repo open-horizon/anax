@@ -109,6 +109,7 @@ type AGConfig struct {
 	CSSSSLCert                   string           // The path to the client side SSL certificate for the CSS.
 	MMSGarbageCollectionInterval int64            // The amount of time to wait between MMS object cache garbage collection scans.
 	AgreementBatchSize           uint64           // The number of nodes that the agbot will process in a batch.
+	FullRescanS                  uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -149,6 +150,10 @@ func (c *HorizonConfig) GetAgbotCSSCert() string {
 
 func (c *HorizonConfig) GetAgbotAgreementBatchSize() uint64 {
 	return c.AgreementBot.AgreementBatchSize
+}
+
+func (c *HorizonConfig) GetAgbotFullRescan() uint64 {
+	return c.AgreementBot.FullRescanS
 }
 
 func getDefaultBase() string {
@@ -218,6 +223,7 @@ func Read(file string) (*HorizonConfig, error) {
 			AgreementBot: AGConfig{
 				MessageKeyCheck:    AgbotMessageKeyCheck_DEFAULT,
 				AgreementBatchSize: AgbotAgreementBatchSize_DEFAULT,
+				FullRescanS:        AgbotFullRescan_DEFAULT,
 			},
 		}
 

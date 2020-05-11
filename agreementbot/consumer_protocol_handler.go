@@ -60,6 +60,7 @@ type ConsumerProtocolHandler interface {
 	IsBlockchainWritable(typeName string, name string, org string) bool
 	CanCancelNow(agreement *persistence.Agreement) bool
 	DeferCommand(cmd AgreementWork)
+	GetDeferredCommands() []AgreementWork
 	HandleDeferredCommands()
 	PostReply(agreementId string, proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, consumerPolicy *policy.Policy, org string, workerId string) error
 	UpdateProducer(ag *persistence.Agreement)

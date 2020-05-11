@@ -1,6 +1,7 @@
 package agreementbot
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/cutil"
 	"time"
@@ -11,13 +12,13 @@ import (
 // occur out of order. These combinations will be retried.
 func (w *AgreementBotWorker) handleRetryAgreements() {
 
-	glog.V(3).Infof(AWlogString(w.retryAgreements.Dump()))
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("Handling retries: %v", w.retryAgreements.Dump())))
 
 	// Search policies as if they just changed. This will return more results than we need, but
 	// the results will be filtered based on the nodes that we know we need to retry.
 	now := uint64(time.Now().Unix())
 
-	// Do a destrctive get on the list of policies and nodes to retry. From this point onward,
+	// Do a destructive get on the list of policies and nodes to retry. From this point onward,
 	// any newly discovered agreement failures will start queueing up again.
 	retryMap := w.retryAgreements.GetAll()
 	if len(retryMap) == 0 {
@@ -25,24 +26,46 @@ func (w *AgreementBotWorker) handleRetryAgreements() {
 		return
 	}
 
+	searchError := false
+
 	// Iterate through all the policy orgs. Usually there is only 1 org in this list.
 	allOrgs := w.pm.GetAllPolicyOrgs()
 	for _, org := range allOrgs {
-		// Get a copy of all policies in the policy manager that pulls from the policy files so that we can safely iterate the list
+		// Get a copy of all policies in the policy manager that pulls from the policy files so that we can safely iterate the list.
 		policies := w.pm.GetAllAvailablePolicies(org)
 		for _, consumerPolicy := range policies {
+			if _, ok := retryMap[consumerPolicy.Header.Name]; !ok {
+				// Ignore policies that are not in the retry list.
+				continue
+			}
 			if consumerPolicy.PatternId != "" {
-				// Pattern retries happen every time the agbot NoWorkHandler does a full scan.
-				continue
-			} else if _, ok := retryMap[consumerPolicy.Header.Name]; !ok {
-				// Ignore policy orgs that are not in the retry list.
-				continue
+				if err := w.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0, nil); err != nil {
+					searchError = true
+					break
+				}
 			} else if pBE := w.BusinessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
 				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
-				w.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, now, nodeFilter(retryMap[consumerPolicy.Header.Name]))
+				if err := w.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, now, nodeFilter(retryMap[consumerPolicy.Header.Name])); err != nil {
+					searchError = true
+					break
+				}
+			}
+		}
+		if searchError {
+			break
+		}
+	}
+
+	// If there was a search error, requeue all the deployment policies that should be retried.
+	if searchError {
+		for polId, nodeMap := range retryMap {
+			for nodeId, _ := range nodeMap {
+				w.retryAgreements.AddRetry(polId, nodeId)
 			}
 		}
 	}
+
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("Done handling retries: %v", w.retryAgreements.Dump())))
 
 }
 
