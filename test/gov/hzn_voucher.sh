@@ -3,7 +3,7 @@
 PREFIX="hzn voucher test:"
 
 echo ""
-echo -e "${PREFIX} Importing and inspecting vouchers with hzn command."
+echo -e "${PREFIX} Inspecting and importing vouchers with hzn command."
 
 # preparing the voucher file
 cat <<'EOF' > /tmp/sdo_voucher.json
@@ -25,6 +25,24 @@ read -r -d '' inspectOutput <<'EOF'
 }
 EOF
 
+cat <<'EOF' > /tmp/sdo_voucher-ip.json
+{"sz":1,"oh":{"pv":113,"pe":1,"r":[1,[4,{"ip":[4,"qS0yUg=="],"po":8040,"pow":8040,"pr":"http"}]],"g":"LuDNty+1QouPaf5Jd/aSQQ==","d":"SDO Java Device","pk":[13,1,[91,"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE1LBVR8bIcRAPcyGHtGBzfk0sJRAQ3pcwBaZo1EDDEHh6NvzmK8BC8DgJfYJj0xL8F3murSIlwK2CHEdOD3TzOA=="]],"hdc":[32,8,"sEQYXPYYSNh64ArkJyZJbcB2cHN93IExWyJJrbzl0cU="]},"hmac":[32,108,"94qpsFRrpgNrzXbQ0eCxF5SVaCekQeV6+l9cAnHlq8Q="],"dc":[1,2,[[313,"MIIBNTCB3aADAgECAgYBcffDJj8wCgYIKoZIzj0EAwIwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0yMDA1MDkwNDQ4MTNaFw0yMDA2MDgwNDQ4MTNaMAAwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAR1o6FQfSCGPjJa6UnnnZwrk2wurYX/7pqyrzjqomddjHkIZIB4hKfKP4DNOBu7Y7OPKiFXTsldlz/0xhEvGf6zMAoGCCqGSM49BAMCA0cAMEQCIHtTmstBEYxbJhQ5D7HxLebfdPH4AxJn3zcKOlDC7MXkAiAeMNCh7z22+CuS8Lyw0G2fYiJkXVVecNWkDfW09CZlSw=="],[483,"MIIB3zCCAYWgAwIBAgIUGe+4vTFELPtaQ9zTT2E7tgpb+J4wCgYIKoZIzj0EAwIwRTELMAkGA1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5IEx0ZDAeFw0xOTEyMjAxOTU2MDNaFw0yMDEyMTkxOTU2MDNaMEUxCzAJBgNVBAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATUsFVHxshxEA9zIYe0YHN+TSwlEBDelzAFpmjUQMMQeHo2/OYrwELwOAl9gmPTEvwXea6tIiXArYIcR04PdPM4o1MwUTAdBgNVHQ4EFgQUJcffU8efi7VUyZ3NHZ7MXAIkbYYwHwYDVR0jBBgwFoAUJcffU8efi7VUyZ3NHZ7MXAIkbYYwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNIADBFAiEAjfCAWcXdHtLp837WftNVZhSvb1mrNTMNLGcopa+4zt0CIHdusGmDHTPcIk/lq1m91nKE4XCGUI7wD4V3zk5Kpb0r"]]],"en":[{"bo":{"hp":[32,8,"2mBiOIwl5GQJm0s+EeB8QY1jollIxGXZ4SYJnEcHCgA="],"hc":[32,8,"fD7IJ8Db5CNUmpdfZdEwd1HP1+ZgLO3SzpiOOD/DN9U="],"pk":[13,1,[91,"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWVUE2G0GLy8scmAOyQyhcBiF/fSUd3i/Og7XDShiJb2IsbCZSRqt1ek15IbeCI5z7BHea2GZGgaK63cyD15gNA=="]]},"pk":[0,0,[0]],"sg":[72,"MEYCIQC762tS3zSaE68oIT4Ogf5MhjrvBRPRF9w2XiVvpH0LeAIhAKwSZLIPjm07oTrpCrCzc45jsQN5fVYa3b5g3dzl4Wh7"]}]}
+EOF
+
+read -r -d '' inspectOutputIp <<'EOF'
+{
+  "device": {
+    "uuid": "2ee0cdb7-2fb5-428b-8f69-fe4977f69241",
+    "deviceType": "SDO Java Device"
+  },
+  "voucher": {
+    "rendezvousUrls": [
+      "http://169.45.50.82:8040"
+    ]
+  }
+}
+EOF
+
 # Test hzn voucher inspect
 echo -e "${PREFIX} Testing 'hzn voucher inspect <voucher-file>'"
 cmdOutput=$(hzn voucher inspect /tmp/sdo_voucher.json 2>&1)
@@ -34,6 +52,18 @@ if [[ $rc -ne 0 ]]; then
 	exit 1
 elif [[ "$cmdOutput" != "$inspectOutput" ]]; then
 	echo -e "${PREFIX} Failed: Wrong output for 'hzn voucher inspect <voucher-file>': $cmdOutput."
+	exit 1
+fi
+
+# Test hzn voucher inspect with a voucher that has an IP address for the rendezvous svr
+echo -e "${PREFIX} Testing 'hzn voucher inspect <voucher-file>' with IP"
+cmdOutput=$(hzn voucher inspect /tmp/sdo_voucher-ip.json 2>&1)
+rc=$?
+if [[ $rc -ne 0 ]]; then
+	echo -e "${PREFIX} Failed: exit code $rc from 'hzn voucher inspect' with IP: $cmdOutput."
+	exit 1
+elif [[ "$cmdOutput" != "$inspectOutputIp" ]]; then
+	echo -e "${PREFIX} Failed: Wrong output for 'hzn voucher inspect <voucher-file>' with IP: $cmdOutput."
 	exit 1
 fi
 

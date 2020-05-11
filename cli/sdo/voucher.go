@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -70,21 +71,50 @@ func VoucherInspect(voucherFile *os.File) {
 
 func parseVoucherBytes(voucherBytes []byte, outStruct *InspectOutput) error {
 	// Read the voucher file and parse as json
+	msgPrinter := i18n.GetMessagePrinter()
 	voucher := Voucher{}
 	if err := json.Unmarshal(voucherBytes, &voucher); err != nil {
 		return errors.New("parsing json: " + err.Error())
 	}
 
 	// Do further parsing of the json, for those parts that have varying types
-	// The json in this section looks like: [ 1, [ 4, { "dn": "RVSDO", "po": 8040, "pow": 8040, "pr": "http" } ] ]
+	// The json in this section is like 1 of these 2 cases:
+	//		[ 1, [ 4, { "dn": "RVSDO", "po": 8040, "pow": 8040, "pr": "http" } ] ]
+	//		[ 1, [ 4, { "ip": [4, "qS0yUg=="], "po": 8040, "pow": 8040, "pr": "http" } ] ]
 	for _, thing := range voucher.Oh.R {
 		switch t := thing.(type) {
 		case []interface{}:
 			for _, thing2 := range t {
 				switch t2 := thing2.(type) {
 				case map[string]interface{}:
-					url := getMapValueOrEmptyStr(t2, "pr") + "://" + getMapValueOrEmptyStr(t2, "dn")
-					port := getMapValueOrEmptyStr(t2, "po") // Note: there is also a "pow" key that seems to have the same value, not sure the diff
+					host := getMapValueOrEmptyStr(t2, "dn")
+					if host == "" {
+						// It must be an IP address. Loop thru array looking for encoded string
+						if thing3, ok := t2["ip"]; ok {
+							switch ipArray := thing3.(type) {
+							case []interface{}:
+								for _, thing4 := range ipArray {
+									switch t4 := thing4.(type) {
+									case string:
+										// Found the IP encoded string
+										var ipBytes []byte
+										ipBytes = make([]byte, 4, 4)
+										if n, err := base64.StdEncoding.Decode(ipBytes, []byte(t4)); err != nil {
+											cliutils.Warning(msgPrinter.Sprintf("base64 decoding %s: %v", t4, err))
+										} else {
+											// The decoded value is a byte array of length 4. Each byte is 1 of the numbers of the IP address
+											cliutils.Verbose("decoding %s yielded %d bytes", t4, n)
+											if n == 4 && len(ipBytes) == 4 {
+												host = fmt.Sprintf("%d.%d.%d.%d", int(ipBytes[0]), int(ipBytes[1]), int(ipBytes[2]), int(ipBytes[3]))
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					url := getMapValueOrEmptyStr(t2, "pr") + "://" + host
+					port := getMapValueOrEmptyStr(t2, "po") // Note: "po" is the device port, "pow" the owner port, not sure which one i want
 					if port != "" {
 						url += ":" + port
 					}
