@@ -66,7 +66,7 @@ export GPS_VERSION=2.0.3   # the service version, and also used as the tag for t
 export DOCKER_HUB_ID=openhorizon   
 
 echo -e "Register $CPU2MSGHUB_NAME service $CPU_VERSION"
-hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f "$MH_SAMPLES_PATH/cpu2msghub/horizon/service.definition.json" -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f "$MH_SAMPLES_PATH/cpu2msghub/horizon/service.definition.json" -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for $CPU2MSGHUB_NAME."
@@ -75,7 +75,7 @@ then
 fi
 
 echo -e "Register cpu2msghub pattern $VERS:"
-hzn exchange pattern publish -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com  -f "$MH_SAMPLES_PATH/cpu2msghub/horizon/pattern/cpu2msghub.json" -k $KEY_TEST_DIR/*private.key
+hzn exchange pattern publish -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com  -f "$MH_SAMPLES_PATH/cpu2msghub/horizon/pattern/cpu2msghub.json" -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange pattern publish failed for cpu2msghub."

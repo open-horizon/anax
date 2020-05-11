@@ -87,7 +87,7 @@ function stopServices {
 # $2 - project name
 function deploy {
     cd $1
-    deploy=$(hzn exchange service publish -v -k /tmp/*private.key -f ./horizon/service.definition.json 2>&1)
+    deploy=$(hzn exchange service publish -v -k /tmp/*private.key -K /tmp/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo ${deploy} | grep "HTTP code: 201")
     if [ "${deploying}" == "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"

@@ -36,7 +36,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 }
 EOF
 echo -e "Re-register IBM/cpu $VERS service with deployment error:"
-hzn exchange service publish -I -O -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -O -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for IBM/cpu."

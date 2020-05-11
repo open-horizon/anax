@@ -288,6 +288,8 @@ test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
 test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg run-agbot copy-cert
+	@echo -e  "\nBootstrapping the exchange"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 

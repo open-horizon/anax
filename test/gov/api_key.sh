@@ -93,7 +93,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 EOF
 
 echo -e "Register $ORG_ID/cpu service $VERS:"
-hzn exchange service publish -I -u $MAIN_AUTH -o $ORG_ID -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key
+hzn exchange service publish -I -u $MAIN_AUTH -o $ORG_ID -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for $ORG_ID/cpu."
