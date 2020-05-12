@@ -824,6 +824,26 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 		return err
 	} else {
 
+		// Get all the agreements for this policy that are still active.
+		pendingAgreementFilter := func() persistence.AFilter {
+			return func(a persistence.Agreement) bool {
+				return a.PolicyName == consumerPolicy.Header.Name && a.AgreementTimedout == 0
+			}
+		}
+
+		ags := make(map[string][]persistence.Agreement)
+
+		// The agreements with this policy could be part of any supported agreement protocol.
+		for _, agp := range policy.AllAgreementProtocols() {
+			// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized.
+			// TODO: To support more than 1 agreement (maxagreements > 1) with this device for this policy, we need to adjust this logic.
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
+				glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
+			} else {
+				ags[agp] = agreements
+			}
+		}
+
 		for _, dev := range *devices {
 
 			if filter != nil && filter(dev.Id) {
@@ -834,7 +854,7 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 			glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
 
 			// Check for agreements already in progress with this device
-			if found := w.alreadyMakingAgreementWith(&dev, consumerPolicy); found {
+			if found := w.alreadyMakingAgreementWith(&dev, consumerPolicy, ags); found {
 				glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
 				continue
 			}
@@ -887,31 +907,20 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 
 // Check all agreement protocol buckets to see if there are any agreements with this device.
 // Return true if there is already an agreement for this node and policy.
-func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy) bool {
+func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy, allAgreements map[string][]persistence.Agreement) bool {
 
-	// Check to see if we're already doing something with this device
-	pendingAgreementFilter := func() persistence.AFilter {
-		return func(a persistence.Agreement) bool {
-			return a.DeviceId == dev.Id && a.PolicyName == consumerPolicy.Header.Name && a.AgreementTimedout == 0
-		}
-	}
-
-	// Search all agreement protocol buckets
-	for _, agp := range policy.AllAgreementProtocols() {
-		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized.
-		// TODO: To support more than 1 agreement (maxagreements > 1) with this device for this policy, we need to adjust this logic.
-		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
-			glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
-		} else if len(agreements) != 0 {
-
-			ag := agreements[0]
-			if ag.AgreementFinalizedTime != 0 {
-				glog.V(5).Infof("AgreementBotWorker sending agreement verify for %v", ag.CurrentAgreementId)
-				w.consumerPH.Get(ag.AgreementProtocol).VerifyAgreement(&ag, w.consumerPH.Get(ag.AgreementProtocol))
-				w.retryAgreements.AddRetry(consumerPolicy.Header.Name, dev.Id)
+	// Check to see if we're already doing something with this device.
+	for _, ags := range allAgreements {
+		// Look for any agreements with the current node.
+		for _, ag := range ags {
+			if ag.DeviceId == dev.Id {
+				if ag.AgreementFinalizedTime != 0 {
+					glog.V(5).Infof("AgreementBotWorker sending agreement verify for %v", ag.CurrentAgreementId)
+					w.consumerPH.Get(ag.AgreementProtocol).VerifyAgreement(&ag, w.consumerPH.Get(ag.AgreementProtocol))
+					w.retryAgreements.AddRetry(consumerPolicy.Header.Name, dev.Id)
+				}
+				return true
 			}
-
-			return true
 		}
 	}
 	return false
