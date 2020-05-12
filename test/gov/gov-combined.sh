@@ -141,15 +141,15 @@ fi
 cd /root
 
 # Start the API Key tests if it has been set
-if [ ${API_KEY} != "0" ]; then
-  echo -e "Starting API Key test."
-  ./api_key.sh
-  if [ $? -ne 0 ]
-  then
-    echo -e "API Key test failure."
-    exit -1
-  fi
-fi
+#if [ ${API_KEY} != "0" ]; then
+#  echo -e "Starting API Key test."
+#  ./api_key.sh
+#  if [ $? -ne 0 ]
+#  then
+#    echo -e "API Key test failure."
+#    exit -1
+#  fi
+#fi
 
 # test the CSS API
 ./sync_service_test.sh

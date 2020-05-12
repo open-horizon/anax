@@ -2,6 +2,8 @@
 
 # bootstrap the exchange
 
+TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
+
 EXCH_URL="${EXCH_APP_HOST}"
 
 # the horizon var base for storing the keys. It is the default value for HZN_VAR_BASE.
@@ -179,6 +181,17 @@ if [ $? -ne 0 ]
 then
   echo -e "Resource registration failure."
   exit -1
+fi
+
+# Start the API Key tests if it has been set
+if [ ${API_KEY} != "0" ]; then
+  echo -e "Starting API Key test."
+  ./api_key.sh
+  if [ $? -ne 0 ]
+  then
+    echo -e "API Key test failure."
+    exit -1
+  fi
 fi
 
 echo "Register services"
