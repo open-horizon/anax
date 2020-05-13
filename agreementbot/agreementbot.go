@@ -685,7 +685,7 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 		}
 
 		// If there is still no rescan needed but it's been a while since the last full scan, then do a full scan anyway.
-		if w.lastSearchComplete && !w.isRescanNeeded() && (w.Config.GetAgbotFullRescan() != 0 && (uint64(time.Now().Unix()) - w.lastSearchTime) >= w.Config.GetAgbotFullRescan()) {
+		if w.lastSearchComplete && !w.isRescanNeeded() && (w.Config.GetAgbotFullRescan() != 0 && (uint64(time.Now().Unix())-w.lastSearchTime) >= w.Config.GetAgbotFullRescan()) {
 			w.lastSearchTime = uint64(time.Now().Unix())
 			glog.V(3).Infof(AWlogString(fmt.Sprintf("Polling Exchange (full rescan), starting from %v.", time.Unix(int64(w.lastAgMakingTime), 0).Format(cutil.ExchangeTimeFormat))))
 			w.lastSearchComplete = false
@@ -750,7 +750,7 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 
 }
 
-func ( w *AgreementBotWorker) reportWorkQueues() {
+func (w *AgreementBotWorker) reportWorkQueues() {
 	rep := ""
 	for _, cph := range w.consumerPH.GetAll() {
 		rep += fmt.Sprintf("%v High: %v, Low: %v ", cph, w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen(), w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen())
@@ -758,7 +758,7 @@ func ( w *AgreementBotWorker) reportWorkQueues() {
 	glog.V(3).Infof(AWlogString(fmt.Sprintf("work queues: %v", rep)))
 }
 
-func ( w *AgreementBotWorker) pauseOnLongQueue() {
+func (w *AgreementBotWorker) pauseOnLongQueue() {
 	for _, cph := range w.consumerPH.GetAll() {
 		for {
 			if (uint64(w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen()) > w.Config.GetAgbotAgreementBatchSize()) || (uint64(w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen()) > w.Config.GetAgbotAgreementBatchSize()) {
