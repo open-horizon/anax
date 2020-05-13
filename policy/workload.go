@@ -165,7 +165,8 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 
 	if w.Deployment != "" {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentSignature, []byte(w.Deployment)); !verified {
-			return fmt.Errorf("Error verifying deployment signature: %v for deployment: %v, Error: %v", w.DeploymentSignature, w.Deployment, failed_map)
+			glog.Errorf("Unable to verify deployment signature: %v", failed_map)
+			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.DeploymentSignature, w.Deployment)
 		} else {
 			glog.Infof("Deployment verification successful with RSA pubkey in file: %v", fn_success)
 		}
@@ -173,7 +174,8 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 
 	if w.ClusterDeployment != "" {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.ClusterDeploymentSignature, []byte(w.ClusterDeployment)); !verified {
-			return fmt.Errorf("Error verifying cluster deployment signature: %v for deployment: %v, Error: %v", w.ClusterDeploymentSignature, w.ClusterDeployment, failed_map)
+			glog.Errorf("Unable to verify cluster deployment signature: %v", failed_map)
+			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.ClusterDeploymentSignature, w.ClusterDeployment)
 		} else {
 			glog.Infof("Cluster deployment verification successful with RSA pubkey in file: %v", fn_success)
 		}
@@ -183,7 +185,8 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 		return nil
 	} else {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentOverridesSignature, []byte(w.DeploymentOverrides)); !verified {
-			return fmt.Errorf("Error verifying deployment overrides signature: %v for deployment: %v, Error: %v", w.DeploymentOverridesSignature, w.DeploymentOverrides, failed_map)
+			glog.Errorf("Unable to verify override deployment signature: %v", failed_map)
+			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.DeploymentOverridesSignature, w.DeploymentOverrides)
 		} else {
 			glog.Infof("Deployment overrides verification successful with RSA pubkey in file: %v", fn_success)
 		}
