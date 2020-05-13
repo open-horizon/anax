@@ -497,6 +497,15 @@ func (pm *BusinessPolicyManager) updateBusinessPolicy(org string, polId string, 
 
 			// notify the policy manager
 			polManager.AddPolicy(org, newPE.Policy)
+
+			// send a message so that other process can handle it by re-negotiating agreements
+			glog.V(3).Infof(fmt.Sprintf("Policy manager detected new business policy %v", polId))
+			if policyString, err := policy.MarshalPolicy(newPE.Policy); err != nil {
+				glog.Errorf(fmt.Sprintf("Error trying to marshal policy %v error: %v", newPE.Policy, err))
+			} else {
+				pm.eventChannel <- events.NewPolicyChangedMessage(events.CHANGED_POLICY, "", newPE.Policy.Header.Name, org, policyString)
+			}
+
 		}
 	}
 
