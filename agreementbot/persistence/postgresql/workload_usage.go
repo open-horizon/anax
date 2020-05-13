@@ -396,25 +396,26 @@ func (db *AgbotPostgresqlDB) updateWorkloadUsage(tx *sql.Tx, wu *persistence.Wor
 }
 
 func (db *AgbotPostgresqlDB) deleteWU(tx *sql.Tx, deviceid string, policyName string) error {
-	// Query the device id and policy name to retrieve the partition for this workload usage. We dont need the workload usage
-	// object in this case. Then compare the workload usage's partition with the DB's primary and if they are different, delete
-	// this workload usage and then check to see if the partition specific table is now empty. If so, delete it.
+	// Query the device id and policy name to retrieve the partition for this workload usage. Then compare the workload usage's
+	// partition with the DB's primary and if they are different, delete this workload usage and then check to see if the
+	// partition specific table is now empty. If so, delete it.
 
 	checkTableDeletion := false
-	_, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(tx, deviceid, policyName)
+	wu, partition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(tx, deviceid, policyName)
 	if err != nil {
 		return err
-	} else if partition != db.PrimaryPartition() {
+	} else if partition != "" && partition != db.PrimaryPartition() {
 		checkTableDeletion = true
 	}
 
-	// Delete the workload usage.
-	sqlStr := strings.Replace(WORKLOAD_USAGE_DELETE, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(partition), 1)
-	if _, err := tx.Exec(sqlStr, deviceid, policyName); err != nil {
-		return err
+	// Delete the workload usage if it's there.
+	if wu != nil {
+		sqlStr := strings.Replace(WORKLOAD_USAGE_DELETE, WORKLOAD_USAGE_TABLE_NAME_ROOT, db.GetWorkloadUsagePartitionTableName(partition), 1)
+		if _, err := tx.Exec(sqlStr, deviceid, policyName); err != nil {
+			return err
+		}
+		glog.V(5).Infof("Succeeded deleting workload usage for device %v and policy %v from database.", deviceid, policyName)
 	}
-
-	glog.V(5).Infof("Succeeded deleting workload usage for device %v and policy %v from database.", deviceid, policyName)
 
 	// Remove the secondary partition table if necessary.
 	if checkTableDeletion {
