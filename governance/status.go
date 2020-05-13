@@ -176,15 +176,21 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 			msdef_status.Arch = msdef.Arch
 			msdef_status.Containers = make([]ContainerStatus, 0)
 			deployment, _ := msdef.GetDeployment()
-			opStatus, err := GetOperatorStatus(deployment)
-			if err != nil {
-				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving kube operator status for %s, error: %v", msdef.SpecRef, err)))
+			if msdef.ClusterDeployment != "" {
+				opStatus, err := GetOperatorStatus(msdef.ClusterDeployment)
+				if err != nil {
+					glog.Errorf(logString(fmt.Sprintf("Error getting operator status: %v", err)))
+				} else {
+					msdef_status.OperatorStatus = opStatus
+				}
 			}
-			msdef_status.OperatorStatus = opStatus
 			if msinsts, err := persistence.FindMicroserviceInstances(w.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), msdefFilter(msdef.Id)}); err != nil {
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
+					if deployment == "" {
+						deployment = msdef.ClusterDeployment
+					}
 					if deployment != "" {
 						if cstatus, err := GetContainerStatus(deployment, msi.GetKey(), true, containers); err != nil {
 							return nil, fmt.Errorf(logString(fmt.Sprintf("Error getting service container status for %v. %v", msdef.SpecRef, err)))
@@ -229,16 +235,24 @@ func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) 
 						wl_status.Version = wl.Version
 						wl_status.Arch = wl.Arch
 
-						opStatus, opErr := GetOperatorStatus(wl.Deployment)
-						if opErr == nil {
-							wl_status.OperatorStatus = opStatus
-						} else {
-							cstatus, cErr := GetContainerStatus(wl.Deployment, ag.CurrentAgreementId, false, containers)
-							if cErr == nil {
-								wl_status.Containers = append(wl_status.Containers, cstatus...)
+						if wl.ClusterDeployment != "" {
+							opStatus, opErr := GetOperatorStatus(wl.ClusterDeployment)
+							if opErr != nil {
+								glog.Errorf(logString(fmt.Sprintf("Error finding workload operator status for %v: %v.", ag, opErr)))
 							} else {
-								return nil, fmt.Errorf("Error finding workload status for %v. Container status error %v. Operator status error %v.", ag, cErr, opErr)
+								wl_status.OperatorStatus = opStatus
 							}
+						}
+
+						deployment := wl.Deployment
+						if deployment == "" {
+							deployment = wl.ClusterDeployment
+						}
+						cstatus, cErr := GetContainerStatus(deployment, ag.CurrentAgreementId, false, containers)
+						if cErr == nil {
+							wl_status.Containers = append(wl_status.Containers, cstatus...)
+						} else {
+							return nil, fmt.Errorf(logString(fmt.Sprintf("Error finding workload status for %v: %v.", ag, cErr)))
 						}
 						status = append(status, wl_status)
 					}
@@ -252,7 +266,6 @@ func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) 
 
 // find container status
 func GetContainerStatus(deployment string, key string, infrastructure bool, containers []docker.APIContainers) ([]ContainerStatus, error) {
-
 	status := make([]ContainerStatus, 0)
 
 	if deploymentDesc, err := containermessage.GetNativeDeployment(deployment); err == nil {
