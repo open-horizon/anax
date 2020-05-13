@@ -15,7 +15,7 @@ import (
 // This will close any surfaced errors that have persistent related agreements and update the local and exchange copies.
 // The node copy is the master EXCEPT for the hidden field of each error.
 func UpdateSurfaceErrors(db *bolt.DB, pDevice persistence.ExchangeDevice, exchErrors []persistence.SurfaceError, putErrors exchange.PutSurfaceErrorsHandler, serviceResolverHandler exchange.ServiceResolverHandler, errorTimeout int, agreementPersistentTime int) int {
-	var updatedExchLogs []persistence.SurfaceError
+	updatedExchLogs := make([]persistence.SurfaceError, 0, 5)
 
 	glog.V(5).Infof("Checking on errors to surface")
 
