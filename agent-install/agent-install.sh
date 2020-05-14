@@ -1352,6 +1352,21 @@ function check_node_state() {
 	log_debug "check_node_state() end"
 }
 
+# removes agent-install files and deb packages after successful install
+function device_cleanup_agent_files() {
+    log_notify "device_cleanup_agent_files() begin"
+
+    files_to_remove=( 'agent-install.cfg' *'horizon'* )
+
+    set +e
+    for file in "${files_to_remove[@]}"; do
+        rm -fv $file
+    done
+    set -e
+
+    log_notify "device_cleanup_agent_files() end"
+}
+
 function unzip_install_files() {
 	if [ -f $AGENT_INSTALL_ZIP ]; then
 		tar -zxf $AGENT_INSTALL_ZIP
@@ -1800,6 +1815,7 @@ if [[ $NODE_ID =~ : && -n ${NODE_ID#*:} ]]; then   # tests if NODE_ID contains a
 fi
 
 if [ -f "$AGENT_INSTALL_ZIP" ]; then
+    device_cleanup_agent_files
 	unzip_install_files
 	find_node_id
 	NODE_ID=$(echo "$NODE_ID" | sed -e 's/^[[:space:]]*//' | sed -e 's/[[:space:]]*$//' )
@@ -1829,6 +1845,7 @@ if [ "${DEPLOY_TYPE}" == "device" ]; then
 	fi
 
 	add_autocomplete
+
 elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
 	echo `now` "Install agent on edge cluster"
 	set +e
