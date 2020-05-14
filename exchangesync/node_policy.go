@@ -38,10 +38,10 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 
 	// if there is a change, update the local copy
 	if exchangeNodePolicy != nil {
+		newNodePolicy := exchangeNodePolicy.GetExternalPolicy()
 		if exchangeNodePolicy.GetLastUpdated() != nodePolicyLastUpdated {
 
 			// update the local node policy
-			newNodePolicy := exchangeNodePolicy.GetExternalPolicy()
 			if err := persistence.SaveNodePolicy(db, &newNodePolicy); err != nil {
 				return false, nil, fmt.Errorf("unable to save node policy %v to local database. %v", newNodePolicy, err)
 			} else if err := persistence.SaveNodePolicyLastUpdated_Exch(db, exchangeNodePolicy.GetLastUpdated()); err != nil {
@@ -50,6 +50,8 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 				glog.V(3).Infof("Updated the local node policy with the exchange copy: %v", newNodePolicy)
 				return true, &newNodePolicy, nil
 			}
+		} else {
+			return false, &newNodePolicy, nil
 		}
 	} else {
 		// get the local node policy
