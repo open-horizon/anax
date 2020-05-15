@@ -1352,7 +1352,7 @@ function check_node_state() {
 	log_debug "check_node_state() end"
 }
 
-# removes agent-install files and deb packages after successful install
+# removes agent-install files and deb packages before bulk install
 function device_cleanup_agent_files() {
     log_notify "device_cleanup_agent_files() begin"
 
