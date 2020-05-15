@@ -3,20 +3,400 @@
   "language": "it",
   "messages": [
     {
+      "id": "Name, or Org is empty string.",
+      "translation": "Name o Org è una stringa vuota."
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "L'array serviceVersions è vuota."
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "le proprietà contengono una proprietà non valida: {Err}"
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "La proprietà {PROPSVCPRIVILEGED} deve avere un valore booleano (true o false)."
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "L'espressione di vincolo {Dconstraints} è di tipo {Dconstraints_1}, ma è prevista come array di stringhe"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "L'espressione del vincolo contiene parentesi non corrispondenti."
+    },
+    {
+      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
+      "translation": "Errore durante il richiamo dell'accordo {Arg_1} dal database, errore {Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
+      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio MeteringNotification, errore {Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
+      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio Cancel, errore {Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
+      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio ReplyAck, errore {Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
+      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio DataReceived, errore {Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
+      "translation": "Impossibile richiamare gli accordi non archiviati dal database. {Arg_1}"
+    },
+    {
+      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
+      "translation": "Errore nel contrassegnare l'accordo {Arg_1} interrotto nel database: {Arg_2}."
+    },
+    {
+      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
+      "translation": "Errore durante il richiamo delle definizioni del servizio {Arg_1} da db. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
+      "translation": "Errore durante il richiamo di tutte le istanze del servizio dal database per {Arg_1}/{Arg_2} versione {Arg_3} chiave {Arg_4}. {Arg_5}"
+    },
+    {
+      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
+      "translation": "Errore durante il richiamo di tutte le istanze del servizio dal database per {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service instances from database, error: {Arg_1}",
+      "translation": "Errore durante il richiamo di tutte le istanze del servizio dal database, errore: {Arg_1}"
+    },
+    {
+      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
+      "translation": "Errore durante il richiamo dell'istanza del servizio {Arg_1} da db. {Arg_2}"
+    },
+    {
+      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
+      "translation": "Errore durante il richiamo degli accordi corrispondenti dal database per i workload {Arg_1}. Errore: {Arg_2}"
+    },
+    {
+      "id": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
+      "translation": "Errore nel rendere permanente lo stato di configurazione del nodo nel database in {Arg_1}. Errore: {Arg_2}"
+    },
+    {
+      "id": "Error retrieving device from database. Error: {Arg_1}",
+      "translation": "Errore durante il richiamo del dispositivo dal database. Errore: {Arg_1}"
+    },
+    {
+      "id": "Error deleting node exchange pattern from the local database. {Arg_1}",
+      "translation": "Errore durante l'eliminazione del modello exchange del nodo dal database locale. {Arg_1}"
+    },
+    {
+      "id": "Error retrieving node {Arg_1} from the Exchange: {Arg_2}",
+      "translation": "Errore durante il richiamo del nodo {Arg_1} da Exchange: {Arg_2}"
+    },
+    {
+      "id": "Error updating registeredServices for node {Arg_1} in the Exchange: {Arg_2}",
+      "translation": "Errore durante l'aggiornamento di registeredServices per il nodo {Arg_1} in Exchange: {Arg_2}"
+    },
+    {
+      "id": "Image loaded for {Arg_1}/{Arg_2}.",
+      "translation": "Immagine caricata per {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
+      "translation": "Immagine caricata per il servizio {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Error loading image for {Arg_1}/{Arg_2}.",
+      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
+      "translation": "Errore durante il caricamento dell'immagine per il servizio {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+      "translation": "Avvio interruzione dell'accordo per {Arg_1}. Motivo del interruzione: {Arg_2}"
+    },
+    {
+      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
+      "translation": "Accordo raggiunto per il servizio {Arg_1}. L'ID accordo è {Arg_2}."
+    },
+    {
+      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
+      "translation": "Accordo per {Arg_1} non più valido sull'agbot. Il nodo lo annullerà."
+    },
+    {
+      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
+      "translation": "I contenitori del servizio workload per {Arg_1}/{Arg_2} sono operativi."
+    },
+    {
+      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+      "translation": "Completamento dell'interruzione dell'accordo per {Arg_1}. Motivo del interruzione: {Arg_2}"
+    },
+    {
+      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
+      "translation": "Errore durante l'eliminazione dell'accordo per {Arg_1} in exchange: {Arg_2}. Verrà eseguito un nuovo tentativo."
+    },
+    {
+      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
+      "translation": "Rilevato errore per AgreementVerification per {Arg_1} con agbot, errore {Arg_2}"
+    },
+    {
+      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
+      "translation": "ReplyAck ha indicato che l'agbot non voleva stabilire l'accordo per {Arg_1}. Il nodo annullerà l'accordo"
+    },
+    {
+      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
+      "translation": "Il nodo ha ricevuto il messaggio Cancel per {Arg_1}/{Arg_2} dall'agbot {Arg_3}."
+    },
+    {
+      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
+      "translation": "Errore durante la gestione del messaggio ReplyAck per {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error handling ReplyAck message. {Arg_1}",
+      "translation": "Errore durante la gestione del messaggio ReplyAck. {Arg_1}"
+    },
+    {
+      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
+      "translation": "Errore durante la gestione del messaggio DataReceived per {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error handling DataReceived message. {Arg_1}",
+      "translation": "Errore durante la gestione del messaggio DataReceived. {Arg_1}"
+    },
+    {
+      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
+      "translation": "Errore durante la gestione del messaggio MeterNotification per {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error handling MeterNotification message. {Arg_1}",
+      "translation": "Errore durante la gestione del messaggio MeterNotification. {Arg_1}"
+    },
+    {
+      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
+      "translation": "Errore durante la gestione del messaggio Cancel per {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error handling Cancel message. {Arg_1}",
+      "translation": "Errore durante la gestione del messaggio Cancel. {Arg_1}"
+    },
+    {
+      "id": "Start workload service for {Arg_1}/{Arg_2}.",
+      "translation": "Avvio del servizio workload per {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Workload destroyed for {Arg_1}",
+      "translation": "Workload eliminato definitivamente per {Arg_1}"
+    },
+    {
+      "id": "Service containers for {Arg_1} started.",
+      "translation": "Contenitori del servizio per {Arg_1} avviati."
+    },
+    {
+      "id": "Complete cleaning up the service instance {Arg_1}.",
+      "translation": "Completamento della pulitura dell'istanza del servizio {Arg_1}."
+    },
+    {
+      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
+      "translation": "Avvio dei servizi dipendenti per {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
+      "translation": "Rilevato errore durante l'avvio dei servizi dipendenti per {Arg_1}/{Arg_2}. {Arg_3}"
+    },
+    {
+      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
+      "translation": "Errore durante l'avvio del servizio dipendente {Arg_1}/{Arg_2} versione {Arg_3} per l'accordo {Arg_4}. {Arg_5}"
+    },
+    {
+      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
+      "translation": "Avvio della ripulitura del servizio {Arg_1} perché l'accordo {Arg_2} è terminato."
+    },
+    {
+      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+      "translation": "Errore durante l'avvio del servizio {Arg_1}/{Arg_2} versione {Arg_3}, errore: {Arg_4}"
+    },
+    {
+      "id": "Error getting all the services from agreements: {Arg_1}",
+      "translation": "Errore durante il richiamo di tutti i servizi dagli accordi: {Arg_1}"
+    },
+    {
+      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
+      "translation": "Avvio del servizio senza accordo {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
+      "translation": "Completamento dell'avvio del servizio senza accordo {Arg_1}/{Arg_2} e delle relative dipendenze."
+    },
+    {
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
+      "translation": "Impossibile avviare il servizio senza accordo {Arg_1}/{Arg_2}, errore {Arg_3}"
+    },
+    {
+      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
+      "translation": "Impossibile avviare servizi senza accordo, errore durante la ricerca del modello {Arg_1} in exchange, errore: {Arg_2}"
+    },
+    {
+      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
+      "translation": "Impossibile avviare servizi senza accordo, modello {Arg_1} non trovato in exchange"
+    },
+    {
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
+      "translation": "Impossibile avviare il servizio senza accordo {Arg_1}/{Arg_2}, definizione del servizio locale non trovata"
+    },
+    {
+      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "Avvio dell'aggiornamento del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}."
+    },
+    {
+      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "Completamento dell'aggiornamento del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}."
+    },
+    {
+      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
+      "translation": "Impossibile aggiornare il servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}, errore: {Arg_5}"
+    },
+    {
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
+      "translation": "Avvio del downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3} perché il servizio per l'accordo non è stato avviato."
+    },
+    {
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
+      "translation": "Avvio del downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3} perché il servizio non è stato avviato."
+    },
+    {
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
+      "translation": "Avvio del downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3} perché l'aggiornamento non è riuscito."
+    },
+    {
+      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+      "translation": "Impossibile eseguire il downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3}, errore: {Arg_4}"
+    },
+    {
+      "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "Completato il downgrade del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}."
+    },
+    {
+      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
+      "translation": "Errore durante la ricerca della nuova definizione di servizio a cui eseguire il downgrade per {Arg_1}/{Arg_2} versione {Arg_3} chiave {Arg_4}. Errore: {Arg_5}"
+    },
+    {
+      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
+      "translation": "Impossibile trovare la versione inferiore per il downgrade per {Arg_1}/{Arg_2} versione {Arg_3}."
+    },
+    {
+      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
+      "translation": "Errore durante il downgrade del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}. Errore: {Arg_5}"
+    },
+    {
+      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
+      "translation": "Errore durante il downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3}. {Arg_4}"
+    },
+    {
+      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
+      "translation": "Avvio del numero di nuovi tentativi {Arg_1} per il servizio dipendente {Arg_2} versione {Arg_3} a causa errore del servizio."
+    },
+    {
+      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
+      "translation": "Numero di nuovi tentativi {Arg_1} non riuscito per il servizio dipendente {Arg_2} versione {Arg_3}."
+    },
+    {
+      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
+      "translation": "Impossibile ottenere il conteggio di nuovi tentativi del servizio per {Arg_1} versione {Arg_2}. {Arg_3}"
+    },
+    {
+      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
+      "translation": "Errore durante l'aggiornamento dello stato di avvio nuovo tentativo per l'istanza del servizio {Arg_1} nel database. {Arg_2}"
+    },
+    {
+      "id": "Node pattern changed on the Exchange from {Arg_1} to {Arg_2}.",
+      "translation": "Modello del nodo modificato in Exchange da {Arg_1} a {Arg_2}."
+    },
+    {
+      "id": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
+      "translation": "Rilevato errore durante la nuova registrazione del nodo con il nuovo modello {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Start re-registering node after pattern changed to {Arg_1}.",
+      "translation": "Avviare nuovamente la registrazione del nodo dopo che il modello è stato modificato in {Arg_1}."
+    },
+    {
+      "id": "Complete re-registering node after pattern changed to {Arg_1}.",
+      "translation": "Completare la nuova registrazione del nodo dopo che il modello è stato modificato in {Arg_1}."
+    },
+    {
+      "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
+      "translation": "Modello del nodo nuovamente modificato in Exchange. Il nodo verrà registrato con il nuovo modello: {Arg_1}"
+    },
+    {
+      "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
+      "translation": "Errore durante la convalida del nuovo modello del nodo {Arg_1}: {Arg_2}"
+    },
+    {
+      "id": "The node will keep using the old pattern {Arg_1}",
+      "translation": "Il nodo continuerà ad utilizzare il vecchio modello {Arg_1}"
+    },
+    {
+      "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
+      "translation": "Il nuovo modello {Arg_1} è stato verificato. Gli accordi verranno annullati e il nodo verrà registrato di nuovo con il nuovo modello."
+    },
+    {
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Heartbeat del nodo non riuscito per il nodo {Arg_1}/{Arg_2}. Errore: {Arg_3}"
+    },
+    {
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Heartbeat del nodo ripristinato per il nodo {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "La proprietà {PROPNODEPRIVILEGED} deve avere un valore booleano (true o false)."
+    },
+    {
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "La proprietà deve includere un nome e un valore: {Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "La proprietà {Name} ha un tipo di proprietà non valido {DeclaredType}. I tipi di proprietà consentiti sono: version, string, int, boolean, float e elenco di stringhe."
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "Il valore della proprietà è di tipo {ActualType}, tipo previsto {DeclaredType}"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "Il valore {Value} della proprietà {Name} non è un tipo integer"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "Il valore {Value} della proprietà {Name} non è una stringa valida. Definire il tipo o modificare il valore in una stringa."
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "La proprietà {Name} con il valore {Value} non è una stringa di versione valida"
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "La proprietà {Name} ha un tipo di valore non valido {ActualType}"
+    },
+    {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
       "translation": "Impossibile leggere il file di politica {Arg_1} per il servizio {Arg_2}, errore: {Arg_3}"
     },
     {
-      "id": "Start policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Avvio della promozione della politica con exchange per il servizio {Arg_1}/{Arg_2}."
+      "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Avvio della promozione della politica con Exchange per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Unable to advertise policies with exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "Impossibile promuovere le politiche con exchange per il servizio {Arg_1}/{Arg_2}, errore: {Arg_3}"
+      "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "Impossibile promuovere le politiche con Exchange per il servizio {Arg_1}/{Arg_2}, errore: {Arg_3}"
     },
     {
-      "id": "Complete policy advertising with the exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Completamento della promozione della politica con exchange per il servizio {Arg_1}/{Arg_2}."
+      "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Completamento della promozione della politica con Exchange per il servizio {Arg_1}/{Arg_2}."
     },
     {
       "id": "unable to read node policy from the local database. {Arg_1}",
@@ -27,20 +407,20 @@
       "translation": "impossibile leggere l'oggetto nodo dal database locale. {Arg_1}"
     },
     {
-      "id": "Unable to sync the local node policy with the exchange copy. Error: {Arg_1}",
-      "translation": "Impossibile sincronizzare la politica del nodo locale con la copia di exchange. Errore: {Arg_1}"
+      "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
+      "translation": "Impossibile sincronizzare la politica del nodo locale con la copia Exchange. Errore: {Arg_1}"
     },
     {
-      "id": "Node policy updated with the exchange copy: {Arg_1}",
-      "translation": "Politica del nodo aggiornata con la copia di exchange: {Arg_1}"
+      "id": "Node policy updated with the Exchange copy: {Arg_1}",
+      "translation": "Politica del nodo aggiornata con la copia Exchange: {Arg_1}"
     },
     {
-      "id": "Unable to sync the local node user input with the exchange copy. Error: {Arg_1}",
-      "translation": "Impossibile sincronizzare l'input utente del nodo locale con la copia di exchange. Errore: {Arg_1}"
+      "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
+      "translation": "Impossibile sincronizzare l'input utente del nodo locale con la copia Exchange. Errore: {Arg_1}"
     },
     {
-      "id": "Node user input updated with the exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "Input utente del nodo aggiornato con la copia di exchange. Gli input utente modificati sono: {Arg_1}"
+      "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "Input utente del nodo aggiornato con la copia Exchange. Gli input utente modificati sono: {Arg_1}"
     },
     {
       "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
@@ -51,12 +431,12 @@
       "translation": "Il nodo è offline. La registrazione dei messaggi di errore offline periodici verrà limitata fino a quando non viene ripristinata la connessione"
     },
     {
-      "id": "Unable to sync the node with the exchange copy. Error: {Arg_1}",
-      "translation": "Impossibile sincronizzare il nodo con la copia exchange. Errore: {Arg_1}"
+      "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
+      "translation": "Impossibile sincronizzare il nodo con la copia Exchange. Errore: {Arg_1}"
     },
     {
-      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the exchange, error {Arg_2}",
-      "translation": "Impossibile richiamare lo stato di configurazione del servizio per la risorsa nodo {Arg_1} da exchange, errore {Arg_2}"
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
+      "translation": "Impossibile richiamare lo stato di configurazione del servizio per la risorsa nodo {Arg_1} da Exchange, errore {Arg_2}"
     },
     {
       "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
@@ -75,52 +455,480 @@
       "translation": "anax è in fase di interruzione, impossibile completare la sincronizzazione dell'accordo. {Arg_1}"
     },
     {
-      "id": "No input found.",
-      "translation": "Nessun input trovato."
+      "id": "no service name",
+      "translation": "nessun nome servizio"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Non autorizzato. Nessun id utente exchange fornito."
+      "id": "no docker image for service {ServiceName}",
+      "translation": "nessuna immagine docker per il servizio {ServiceName}"
     },
     {
-      "id": "Failed to authenticate the user with the exchange. {Err}",
-      "translation": "Impossibile autenticare l'utente con exchange. {Err}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "impossibile eseguire il marshalling del corpo per {D}: {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto JSON. {Err}"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "impossibile annullare il marshalling del json per il campo di distribuzione {StringjsonBytes}: {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto PolicyCheck. {Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "l'input utente {Name} non ha un valore predefinito e non è impostato"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto UserInputCheck. {Err}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "'requisdServices' non supportato per il servizio di tipo cluster."
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto CompCheck. {Err}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "Conversione della versione {Ver} del servizio {ReqSvc} nell'espressione dell'intervallo di versione non riuscito."
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "Nessun id utente exchange fornito."
+      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "translation": "Errore durante il richiamo del servizio da Exchange per {ReqSvc}. {Err}"
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Nessun id organizzazione utente exchange fornito."
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "Il servizio obbligatorio {SId} ha un tipo di servizio errato: {SType}."
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Nessuna password utente exchange o chiave API fornita."
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "Il servizio dipendente {Id} per il servizio richiesto {SId} ha un tipo di servizio errato: {SType1}."
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "Id organizzazione, id utente o password errati."
+      "id": "Deployment policy and pattern are mutually exclusive.",
+      "translation": "La politica di distribuzione ed il modello si escludono reciprocamente. "
     },
     {
-      "id": "Internal server error",
-      "translation": "Errore interno del server"
+      "id": "Neither deployment policy nor pattern is specified.",
+      "translation": "Politica di distribuzione e modello non specificati."
+    },
+    {
+      "id": "Incompatible",
+      "translation": "Incompatibile"
+    },
+    {
+      "id": "Compatible",
+      "translation": "Compatibile"
+    },
+    {
+      "id": "Error marshaling object {In}. {Arg_2}",
+      "translation": "Errore durante il marshalling dell'oggetto {In}. {Arg_2}"
+    },
+    {
+      "id": "Failed to convert input to PolicyCheck object. {Err}",
+      "translation": "Impossibile convertire l'input nell'oggetto PolicyCheck. {Err}"
+    },
+    {
+      "id": "The given node id is empty.",
+      "translation": "L'id nodo fornito è vuoto."
+    },
+    {
+      "id": "Organization is not specified in the given node id: {NodeId}.",
+      "translation": "L'organizzazione non è specificata nell'id nodo fornito: {NodeId}."
+    },
+    {
+      "id": "Error getting node {NodeId} from the Exchange. {Err}",
+      "translation": "Errore durante l'acquisizione del nodo {NodeId} da Exchange. {Err}"
+    },
+    {
+      "id": "No node found for this node id {NodeId}.",
+      "translation": "Nessun nodo trovato per questo id nodo {NodeId}."
+    },
+    {
+      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
+      "translation": "Impossibile trovare la definizione per i servizi dipendenti di {TopSvcId}. La compatibilità di {PROPNODEPRIVILEGED} non può essere completamente valutata fino a quando tutti i servizi non sono in Exchange."
+    },
+    {
+      "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
+      "translation": "Errore durante l'annullamento del marshalling della stringa di distribuzione nella struttura di distribuzione interna: {Err}"
+    },
+    {
+      "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
+      "translation": "Tipo di nodo non valido: {NodeType}. Deve essere 'device' o 'cluster'."
+    },
+    {
+      "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
+      "translation": "Il tipo di nodo di input '{NodeType}' non corrisponde al tipo di nodo '{ExchNodeType}' dal nodo {NodeId}."
+    },
+    {
+      "id": "Service does not have deployment configuration for node type 'device'.",
+      "translation": "Il servizio non dispone della configurazione di distribuzione per il tipo di nodo 'device'."
+    },
+    {
+      "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
+      "translation": "Il servizio non dispone della configurazione di distribuzione del cluster per il tipo di nodo 'cluster'."
+    },
+    {
+      "id": "The PolicyCheck input cannot be null",
+      "translation": "L'input di PolicyCheck non può essere null"
+    },
+    {
+      "id": "The input node architecture {NodeArch} does not match the Exchange node architecture {Arch} for node {NodeId}.",
+      "translation": "L'architettura del nodo di input {NodeArch} non corrisponde all'architettura del nodo Exchange {Arch} per il nodo {NodeId}."
+    },
+    {
+      "id": "Policy Incompatible",
+      "translation": "Politica incompatibile"
+    },
+    {
+      "id": "Architecture does not match.",
+      "translation": "L'architettura non corrisponde."
+    },
+    {
+      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
+      "translation": "Impossibile ottenere servizi per tutte le architetture per {Org}/{WorkloadURL} versione {Version}. {Err}"
+    },
+    {
+      "id": "Failed to validate the service policy. {Err}",
+      "translation": "Impossibile convalidare la politica del servizio. {Err}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
+      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica di distribuzione."
+    },
+    {
+      "id": "No services found in the deployment policy.",
+      "translation": "Nessun servizio trovato nella politica di distribuzione."
+    },
+    {
+      "id": "Node policy cannot be null.",
+      "translation": "La politica del nodo non può essere null."
+    },
+    {
+      "id": "Deployment policy cannot be null.",
+      "translation": "La politica di distribuzione non può essere null."
+    },
+    {
+      "id": "Merged service policy cannot be null.",
+      "translation": "La politica del servizio unita non può essere null."
+    },
+    {
+      "id": "Error merging node policy with arch property. {Err}",
+      "translation": "Errore di unione della politica del nodo con la proprietà arch. {Err}"
+    },
+    {
+      "id": "Failed to validate the node policy. {Err}",
+      "translation": "Impossibile convalidare la politica del nodo. {Err}"
+    },
+    {
+      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
+      "translation": "Impossibile convertire la politica del nodo nel formato di politica interna per il nodo {NodeId}: {Err}"
+    },
+    {
+      "id": "No node policy found for this node {NodeId}.",
+      "translation": "Nessuna politica del nodo trovata per questo nodo {NodeId}."
+    },
+    {
+      "id": "Neither node policy nor node id is specified.",
+      "translation": "Non sono stati specificati né la politica del nodo né l'id nodo."
+    },
+    {
+      "id": "Node id is empty.",
+      "translation": "L'id nodo è vuoto."
+    },
+    {
+      "id": "Organization is not specified in the node id: {NodeId}.",
+      "translation": "L'organizzazione non è specificata nell'id nodo: {NodeId}."
+    },
+    {
+      "id": "Error trying to query node policy for {NodeId}: {Err}",
+      "translation": "Errore durante il tentativo di query sulla politica del nodo per {NodeId}: {Err}"
+    },
+    {
+      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
+      "translation": "Impossibile convalidare la politica del nodo per il nodo {NodeId}. {Err}"
+    },
+    {
+      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
+      "translation": "Impossibile convertire la politica del nodo nella politica interna per il nodo {NodeId}: {Err}"
+    },
+    {
+      "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
+      "translation": "Impossibile convertire la politica di distribuzione {BpId} nella politica interna: {Err1}"
+    },
+    {
+      "id": "Validation failure for deployment policy {BpId}. {Err}",
+      "translation": "Errore di convalida per la politica di distribuzione {BpId}. {Err}"
+    },
+    {
+      "id": "No services specified in the given deployment policy {BpId}.",
+      "translation": "Nessun servizio specificato nella policy di distribuzione fornita {BpId}."
+    },
+    {
+      "id": "No services specified in the deployment policy {Name}.",
+      "translation": "Nessun servizio specificato nella politica di distribuzione {Name}."
+    },
+    {
+      "id": "Neither deployment policy nor deployment policy id is specified.",
+      "translation": "Non sono stati specificati né la politica di distribuzione né l'id della politica di distribuzione."
+    },
+    {
+      "id": "Deployment policy id is empty.",
+      "translation": "L'id politica di distribuzione è vuoto."
+    },
+    {
+      "id": "Organization is not specified in the deployment policy id: {BpId}.",
+      "translation": "L'organizzazione non è specificata nell'id politica di distribuzione: {BpId}."
+    },
+    {
+      "id": "Unable to get deployment policy for {BpId}, {Err}",
+      "translation": "Impossibile richiamare la politica di distribuzione per {BpId}, {Err}"
+    },
+    {
+      "id": "No deployment policy found for this id {BpId}.",
+      "translation": "Nessuna politica di distribuzione trovata per questo id {BpId}."
+    },
+    {
+      "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
+      "translation": "Impossibile convertire la politica di distribuzione {BpId} nel formato di politica interna: {Err}"
+    },
+    {
+      "id": "Service policy id is empty.",
+      "translation": "L'id politica del servizio è vuoto."
+    },
+    {
+      "id": "Organization is not specified in the service policy id: {SvcId}.",
+      "translation": "L'organizzazione non è specificata nell'id politica del servizio: {SvcId}."
+    },
+    {
+      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
+      "translation": "Errore durante il tentativo di eseguire query sulla politica del servizio per l'id servizio {SvcId}: {Err}"
+    },
+    {
+      "id": "Error validating the service policy {SvcId}. {Err}",
+      "translation": "Errore durante la convalida della politica del servizio {SvcId}. {Err}"
+    },
+    {
+      "id": "Service name is empty.",
+      "translation": "Il nome del servizio è vuoto."
+    },
+    {
+      "id": "Service organization is empty.",
+      "translation": "L'organizzazione del servizio è vuota."
+    },
+    {
+      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "Errore durante il tentativo di query sulla politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
+    },
+    {
+      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
+      "translation": "Impossibile convalidare la politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
+    },
+    {
+      "id": "The given deployment policy should not be null.",
+      "translation": "La politica di distribuzione fornita non deve essere null."
+    },
+    {
+      "id": "Error merging deployment policy with service policy. {Err}",
+      "translation": "Errore durante l'unione della politica di distribuzione con la politica del servizio. {Err}"
+    },
+    {
+      "id": "The deployment policy should not be null.",
+      "translation": "La politica di distribuzione non deve essere null."
+    },
+    {
+      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
+      "translation": "La politica di distribuzione {Header} non può avere {PROPNODEPRIVILEGED}=true quando fa riferimento al servizio che richiede delle autorizzazioni per essere eseguito."
+    },
+    {
+      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
+      "translation": "Errore durante il richiamo del servizio {Org}/{WorkloadURL} {Version} {Arch} e delle relative dipendenze da Exchange. {Err}"
+    },
+    {
+      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "Impossibile eseguire il marshalling della configurazione di distribuzione del servizio {SIdTop}, errore {Err}"
+    },
+    {
+      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
+      "translation": "Impossibile eseguire il marshalling della configurazione di distribuzione del cluster del servizio {SIdTop}, errore {Err}"
+    },
+    {
+      "id": "Unable to find service definition from the input services.",
+      "translation": "Impossibile trovare la definizione del servizio dai servizi di input."
+    },
+    {
+      "id": "Unable to create version expression from {Version}. {Err}",
+      "translation": "Impossibile creare l'espressione di versione da {Version}. {Err}"
+    },
+    {
+      "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
+      "translation": "Errore durante il richiamo dei servizi dipendenti da Exchange per {SDep}. {Err}"
+    },
+    {
+      "id": "The UserInputCheck input cannot be null",
+      "translation": "L'input di UserInputCheck non può essere null"
+    },
+    {
+      "id": "Neither node user input nor node id is specified.",
+      "translation": "Non sono stati specificati né l'input utente del nodo né l'id nodo."
+    },
+    {
+      "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
+      "translation": "Nessuna versione del servizio con architettura {NodeArch} specificata nella politica di distribuzione o nel modello."
+    },
+    {
+      "id": "No service versions specified in the deployment policy or pattern.",
+      "translation": "Nessuna versione del servizio specificata nella politica di distribuzione o nel modello."
+    },
+    {
+      "id": "User Input Incompatible",
+      "translation": "Input utente incompatibile"
+    },
+    {
+      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
+      "translation": "Errore durante il richiamo dei servizi per tutte le architetture per {ServiceOrg}/{ServiceURL} versione {Version}. {Err}"
+    },
+    {
+      "id": "Service definition not found in the input.",
+      "translation": "Definizione del servizio non trovata nell'input."
+    },
+    {
+      "id": "Warning: checking node user input:  {Err}",
+      "translation": "Avvertenza: verifica input utente nodo:  {Err}"
+    },
+    {
+      "id": "Warning: checking user input for the deployment policy: {Err}",
+      "translation": "Avvertenza: verifica input utente per la politica di distribuzione:  {Err}"
+    },
+    {
+      "id": "Warning: checking user input for the pattern: {Err}",
+      "translation": "Avvertenza: verifica input utente per il modello:  {Err}"
+    },
+    {
+      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
+      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica di distribuzione o nel modello."
+    },
+    {
+      "id": "No services found in the deployment policy or pattern.",
+      "translation": "Nessun servizio trovato nella politica di distribuzione o nel modello."
+    },
+    {
+      "id": "The input service spec object cannot be null.",
+      "translation": "L'oggetto specifica del servizio di input non può essere null."
+    },
+    {
+      "id": "Error verifing user input for service {SId}. {Err}",
+      "translation": "Errore durante la verifica dell'input utente per il servizio {SId}. {Err}"
+    },
+    {
+      "id": "Failed to verify user input for service {SId}. {Reason}",
+      "translation": "Impossibile verificare l'input utente per il servizio {SId}. {Reason}"
+    },
+    {
+      "id": "Error verifing user input for dependent service {Id}. {Err}",
+      "translation": "Errore durante la verifica dell'input utente per il servizio dipendente {Id}. {Err}"
+    },
+    {
+      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
+      "translation": "Impossibile verificare l'input utente per il servizio dipendente {Id}. {Reason}"
+    },
+    {
+      "id": "The input service definition object cannot be null.",
+      "translation": "L'oggetto di definizione del servizio di input non può essere null."
+    },
+    {
+      "id": "Failed to get the service from the Exchange. {Err}",
+      "translation": "Impossibile acquisire il servizio da Exchange. {Err}"
+    },
+    {
+      "id": "Service does not exist on the Exchange.",
+      "translation": "Il servizio non esiste in Exchange."
+    },
+    {
+      "id": "No user input found for service.",
+      "translation": "Nessun input utente trovato per il servizio."
+    },
+    {
+      "id": "Failed to validate the user input type for variable {Name}. {Err}",
+      "translation": "Impossibile convalidare il tipo di input utente per la variabile {Name}. {Err}"
+    },
+    {
+      "id": "A required user input value is missing for variable {Name}.",
+      "translation": "Un valore di input utente obbligatorio è mancante per la variabile {Name}."
+    },
+    {
+      "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
+      "translation": "{Errmsg} Il servizio {Org}/{URL} con versione {Version} arch {Arch} non contiene l'input utente nodo."
+    },
+    {
+      "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
+      "translation": "L'URL del servizio {URL} non corrisponde all'URL di servizio {Name} specificato nella politica di distribuzione."
+    },
+    {
+      "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
+      "translation": "L'organizzazione del servizio {Org} non corrisponde all'organizzazione del servizio {Org_1} specificata nella politica di distribuzione."
+    },
+    {
+      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
+      "translation": "L'architettura del servizio {Arch} non corrisponde all'architettura del servizio {Arch_1} specificata nella politica di distribuzione."
+    },
+    {
+      "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
+      "translation": "La versione del servizio {Version} non corrisponde ad alcuna versione del servizio specificata nella politica di distribuzione."
+    },
+    {
+      "id": "The service does not match any services in the pattern.",
+      "translation": "Il servizio non corrisponde ad alcun servizio nel modello."
+    },
+    {
+      "id": "Pattern {PatId} cannot be found on the Exchange.",
+      "translation": "Impossibile trovare il modello {PatId} in Exchange."
+    },
+    {
+      "id": "Neither pattern nor pattern id is specified.",
+      "translation": "Non è stato specificato né modello né id modello."
+    },
+    {
+      "id": "Pattern id is empty.",
+      "translation": "L'id modello è vuoto."
+    },
+    {
+      "id": "Organization is not specified in the pattern id: {PatId}.",
+      "translation": "L'organizzazione non è specificata nell'id modello: {PatId}."
+    },
+    {
+      "id": "Error getting pattern {PatId} from the Exchange, {Err}",
+      "translation": "Errore durante l'acquisizione del modello {PatId} da Exchange, {Err}"
+    },
+    {
+      "id": "No pattern found for this id {PatId}.",
+      "translation": "Nessun modello trovato per questo id {PatId}."
+    },
+    {
+      "id": "URL must be specified in the service definition.",
+      "translation": "L'URL deve essere specificato nella definizione del servizio."
+    },
+    {
+      "id": "Version must be specified in the service definition for service {URL}.",
+      "translation": "La versione deve essere specificata nella definizione del servizio per il servizio {URL}."
+    },
+    {
+      "id": "Invalid version format {Version} for service {URL}.",
+      "translation": "Formato della versione {Version} non valido per il servizio {URL}."
+    },
+    {
+      "id": "Arch must be specified in the service definition for service {URL}.",
+      "translation": "L'architettura deve essere specificata nella definizione del servizio per il servizio {URL}."
+    },
+    {
+      "id": "Org must be specified in the service definition for service {URL}.",
+      "translation": "L'organizzazione deve essere specificata nella definizione del servizio per il servizio {URL}."
+    },
+    {
+      "id": "Validation failure for input service {SId}. {Err}",
+      "translation": "Errore di convalida per il servizio di input {SId}. {Err}"
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
+      "translation": "Nel modello o nella politica di distribuzione non si fa riferimento al servizio {ServiceOrgid}/{ServiceUrl} con versione {ServiceVersionRange} arch {ServiceArch} specificato nell'input utente. Verificare che serviceOrgid, serviceUrl, serviceArch e serviceVersionRange siano corretti."
+    },
+    {
+      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
+      "translation": "Nel modello o nella politica di distribuzione non si fa riferimento al servizio {ServiceOrgid}/{ServiceUrl} con versione {ServiceVersionRange} arch {ServiceArch} specificato nell'input utente. Verificare che la specifica del servizio sia corretta."
+    },
+    {
+      "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
+      "translation": "La variabile {Name} del servizio {ServiceOrgid}/{ServiceUrl} con versione {ServiceVersionRange} arch {ServiceArch} specificata nell'input utente non è utilizzata. Verificare che sia un nome corretto."
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -323,8 +1131,8 @@
       "translation": "Completamento della configurazione automatica del servizio per {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may cause agreement not formed if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "La variabile {Arg_1} è mancante nella configurazione del servizio per {Arg_2}/{Arg_3}. Se la politica di distribuzione non contiene l'impostazione per la variabile mancante l'accordo potrebbe non essere stabilito."
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "La variabile {Arg_1} è mancante nella configurazione del servizio per {Arg_2}/{Arg_3}. Se la politica di distribuzione non contiene l'impostazione della variabile mancante, potrebbe non essere possibile stabilire un accordo. "
     },
     {
       "id": "Error configuring service {Arg_1}. {Arg_2}",
@@ -347,28 +1155,92 @@
       "translation": "Errore durante la conversione delle selezioni in selettori: {Err}"
     },
     {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name o Org è una stringa vuota."
+      "id": "No input found.",
+      "translation": "Nessun input trovato."
     },
     {
-      "id": "The serviceVersions array is empty.",
-      "translation": "L'array serviceVersions è vuota."
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Non autorizzato. Nessun id utente exchange fornito."
     },
     {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "le proprietà contengono una proprietà non valida: {Err}"
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "Impossibile autenticare l'utente con Exchange. {Err}"
     },
     {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "La proprietà {PROPSVCPRIVILEGED} deve avere un valore booleano (true o false)."
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto JSON. {Err}"
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Heartbeat del nodo non riuscito per il nodo {Arg_1}/{Arg_2}. Errore: {Arg_3}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto PolicyCheck. {Err}"
     },
     {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Heartbeat del nodo ripristinato per il nodo {Arg_1}/{Arg_2}."
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto UserInputCheck. {Err}"
+    },
+    {
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "Il corpo dell'input non può essere deserializzato nell'oggetto CompCheck. {Err}"
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "translation": "Nessun id utente exchange fornito."
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "translation": "Nessun id organizzazione utente exchange fornito."
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "Nessuna password utente exchange o chiave API fornita."
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "Id organizzazione, id utente o password errati."
+    },
+    {
+      "id": "Internal server error",
+      "translation": "Errore interno del server"
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "impossibile creare la directory per il certificato API MMS autofirmato, errore {Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "impossibile generare il numero casuale per il numero di serie del certificato API MMS, errore {Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "impossibile generare la chiave privata per il certificato API MMS, errore {Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "impossibile creare il certificato API MMS, errore {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "impossibile scrivere il certificato API MMS nel file {ServerCertificate}, errore {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "impossibile codificare il certificato API MMS nel file {ServerCertificate}, errore {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "impossibile chiudere il file del certificato API MMS {ServerCertificate}, errore {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "impossibile scrivere la chiave privata del certificato API MMS nel file {ServerKey}, errore {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "impossibile codificare la chiave privata del certificato API MMS nel file {ServerKey}, errore {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "impossibile chiudere il file di chiave privata del certificato API MMS {ServerKey}, errore {Err}"
     },
     {
       "id": "[verbose] {M}",
@@ -539,8 +1411,8 @@
       "translation": "HZN_EXCHANGE_URL non è impostato, richiamarlo dalla configurazione dell'agent Horizon sul nodo."
     },
     {
-      "id": "Could not get the exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "Impossibile ottenere l'url exchange dalla variabile di ambiente HZN_EXCHANGE_URL o dall'agent Horizon"
+      "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "Impossibile acquisire l'URL Exchange dalla variabile di ambiente HZN_EXCHANGE_URL o dall'agent Horizon "
     },
     {
       "id": "The exchange url: {ExchUrl}",
@@ -565,6 +1437,22 @@
     {
       "id": "The model management service url: {MmsUrl}",
       "translation": "URL del servizio di gestione modelli: {MmsUrl}"
+    },
+    {
+      "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+      "translation": "HZN_SDO_SVC_URL non impostato, acquisirlo da {ANAXOVERWRITEFILE}."
+    },
+    {
+      "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "Errore durante l'acquisizione di HZN_SDO_SVC_URL da {ANAXOVERWRITEFILE}: {Err}"
+    },
+    {
+      "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+      "translation": "Impossibile ottenere il valore HZN_SDO_SVC_URL dall'ambiente, {ANAXOVERWRITEFILE}, o da uno dei file hzn.json "
+    },
+    {
+      "id": "The SDO service url: {SdoUrl}",
+      "translation": "L'URL del servizio SDO: {SdoUrl}"
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
@@ -711,484 +1599,76 @@
       "translation": "Avvertenza: non è stato possibile analizzare il percorso dell'immagine '{Image}'. Non eseguire il push a un registro docker, includere solo così com'è nel campo 'deployment'."
     },
     {
-      "id": "no service name",
-      "translation": "nessun nome servizio"
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "L'accordo {Arg_1} esiste già, la proposta viene ignorata: {Arg_2}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "nessuna immagine docker per il servizio {ServiceName}"
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "ricevuto errore durante l'annullamento del marshalling di TsAndCs per l'accordo {Arg_1}, {Arg_2}"
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "impossibile eseguire il marshalling del corpo per {D}: {Err}"
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "Il nodo ha ricevuto il messaggio di proposta utilizzando l'accordo {Arg_1} per il servizio {Arg_2}/{Arg_3} dall'agbot {Arg_4}."
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "impossibile annullare il marshalling del json per il campo di distribuzione {StringjsonBytes}: {Err}"
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "Il nodo ha rifiutato la proposta per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "l'input utente {Name} non ha un valore predefinito e non è impostato"
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Errore durante la gestione della proposta per il servizio {Arg_1}/{Arg_2}. Errore: {Arg_3}"
     },
     {
-      "id": "'userInput' is not supported for cluster type service.",
-      "translation": "'userInput' non supportato per il servizio di tipo cluster."
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: spazi non consentiti in {Expr}."
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "'requisdServices' non supportato per il servizio di tipo cluster."
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} non è una stringa di versione valida."
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "Conversione della versione {Ver} del servizio {ReqSvc} nell'espressione dell'intervallo di versione non riuscito. "
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} non inizia con una direttiva di inclusione o esclusione."
     },
     {
-      "id": "Error retrieving service from the exchange for {ReqSvc}. {Err}",
-      "translation": "Errore durante il richiamo del servizio da exchange per {ReqSvc}. {Err}"
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} non termina con una direttiva di inclusione o esclusione."
     },
     {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "Il servizio obbligatorio {SId} ha un tipo di servizio errato: {SType}."
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: numero di versioni errato nell'espressione: {Expr}."
     },
     {
-      "id": "The depended service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "Il servizio dipendente {Id} del servizio richiesto {SId} ha un tipo di servizio errato: {SType1}."
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "La stringa di versione di input {V1} o {V2} non è una stringa di versione singola valida."
     },
     {
-      "id": "Bussiness policy and pattern are mutually exclusive.",
-      "translation": "Politica aziendale e modello si escludono reciprocamente."
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Errore di compatibilità: le versioni di schema non sono uguali, Politica consumer: {Version}, Politica producer {Version_1}"
     },
     {
-      "id": "Neither deployment policy nor pattern is specified.",
-      "translation": "Politica di distribuzione e modello non specificati. "
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Errore di compatibilità: le proprietà del nodo {Properties} non soddisfano i requisiti di vincolo {Constraints}. Errore sottostante: {Err}"
     },
     {
-      "id": "Incompatible",
-      "translation": "Incompatibile"
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "Errore di compatibilità: le proprietà del nodo non soddisfano i requisiti di vincolo. {Err}"
     },
     {
-      "id": "Compatible",
-      "translation": "Compatibile"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Errore di compatibilità: le proprietà {Properties} non soddisfano i vincoli del nodo {Constraints}. Errore sottostante: {Err}"
     },
     {
-      "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "Errore durante il marshalling dell'oggetto {In}. {Arg_2}"
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "Errore di compatibilità: le proprietà non soddisfano il vincolo del nodo. {Err}"
     },
     {
-      "id": "Failed to convert input to PolicyCheck object. {Err}",
-      "translation": "Impossibile convertire l'input nell'oggetto PolicyCheck. {Err}"
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Errore di compatibilità: nessun protocollo di accordo comune tra {AgreementProtocols} e {AgreementProtocols_1}. Errore sottostante: {Err}"
     },
     {
-      "id": "The given node id is empty.",
-      "translation": "L'id nodo fornito è vuoto."
-    },
-    {
-      "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "L'organizzazione non è specificata nell'id nodo fornito: {NodeId}."
-    },
-    {
-      "id": "Error getting node {NodeId} from the exchange. {Err}",
-      "translation": "Errore durante l'acquisizione del nodo {NodeId} da exchange. {Err}"
-    },
-    {
-      "id": "No node found for this node id {NodeId}.",
-      "translation": "Nessun nodo trovato per questo id nodo {NodeId}."
-    },
-    {
-      "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the exchange.",
-      "translation": "Impossibile trovare la definizione per i servizi dipendenti di {TopSvcId}. La compatibilità di {PROPNODEPRIVILEGED} non può essere valutata completamente fino a quando tutti i servizi non sono in exchange."
-    },
-    {
-      "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
-      "translation": "Errore durante l'annullamento del marshalling della stringa di distribuzione nella struttura di distribuzione interna: {Err}"
-    },
-    {
-      "id": "Invalid node type: {NodeType}. It must be 'device' or 'cluster'.",
-      "translation": "Tipo di nodo non valido: {NodeType}. Deve essere 'device' o 'cluster'."
-    },
-    {
-      "id": "The input node type '{NodeType}' does not match the node type '{ExchNodeType}' from the node {NodeId}.",
-      "translation": "Il tipo di nodo di input '{NodeType}' non corrisponde al tipo di nodo '{ExchNodeType}' dal nodo {NodeId}."
-    },
-    {
-      "id": "Service does not have deployment configuration for node type 'device'.",
-      "translation": "Il servizio non dispone della configurazione di distribuzione per il tipo di nodo 'device'."
-    },
-    {
-      "id": "Service does not have cluster deployment configuration for node type 'cluster'.",
-      "translation": "Il servizio non dispone della configurazione di distribuzione del cluster per il tipo di nodo 'cluster'."
-    },
-    {
-      "id": "The PolicyCheck input cannot be null",
-      "translation": "L'input di PolicyCheck non può essere null"
-    },
-    {
-      "id": "The input node architecture {NodeArch} does not match the exchange node architecture {Arch} for node {NodeId}.",
-      "translation": "L'architettura del nodo di input {NodeArch} non corrisponde all'architettura del nodo exchange {Arch} per il nodo {NodeId}."
-    },
-    {
-      "id": "Policy Incompatible",
-      "translation": "Politica incompatibile"
-    },
-    {
-      "id": "Architecture does not match.",
-      "translation": "L'architettura non corrisponde."
-    },
-    {
-      "id": "Failed to get services for all archetctures for {Org}/{WorkloadURL} version {Version}. {Err}",
-      "translation": "Impossibile ottenere servizi per tutte le architetture per {Org}/{WorkloadURL} versione {Version}. {Err}"
-    },
-    {
-      "id": "Failed to validate the service policy. {Err}",
-      "translation": "Impossibile convalidare la politica del servizio. {Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy.",
-      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica di distribuzione."
-    },
-    {
-      "id": "No services found in the deployment policy.",
-      "translation": "Nessun servizio trovato nella politica di distribuzione."
-    },
-    {
-      "id": "Node policy cannot be null.",
-      "translation": "La politica del nodo non può essere null."
-    },
-    {
-      "id": "Deployment policy cannot be null.",
-      "translation": "La politica di distribuzione non può essere null."
-    },
-    {
-      "id": "Merged service policy cannot be null.",
-      "translation": "La politica del servizio unita non può essere null."
-    },
-    {
-      "id": "Error merging node policy with arch property. {Err}",
-      "translation": "Errore di unione della politica del nodo con la proprietà arch. {Err}"
-    },
-    {
-      "id": "Failed to validate the node policy. {Err}",
-      "translation": "Impossibile convalidare la politica del nodo. {Err}"
-    },
-    {
-      "id": "Failed to convert node policy to internal policy format for node {NodeId}: {Err}",
-      "translation": "Impossibile convertire la politica del nodo nel formato di politica interna per il nodo {NodeId}: {Err}"
-    },
-    {
-      "id": "No node policy found for this node {NodeId}.",
-      "translation": "Nessuna politica del nodo trovata per questo nodo {NodeId}."
-    },
-    {
-      "id": "Neither node policy nor node id is specified.",
-      "translation": "Non sono stati specificati né la politica del nodo né l'id nodo."
-    },
-    {
-      "id": "Node id is empty.",
-      "translation": "L'id nodo è vuoto."
-    },
-    {
-      "id": "Organization is not specified in the node id: {NodeId}.",
-      "translation": "L'organizzazione non è specificata nell'id nodo: {NodeId}."
-    },
-    {
-      "id": "Error trying to query node policy for {NodeId}: {Err}",
-      "translation": "Errore durante il tentativo di query sulla politica del nodo per {NodeId}: {Err}"
-    },
-    {
-      "id": "Failed to validate the node policy for node {NodeId}. {Err}",
-      "translation": "Impossibile convalidare la politica del nodo per il nodo {NodeId}. {Err}"
-    },
-    {
-      "id": "Failed to convert node policy to internal policy for node {NodeId}: {Err}",
-      "translation": "Impossibile convertire la politica del nodo nella politica interna per il nodo {NodeId}: {Err}"
-    },
-    {
-      "id": "Failed to convert deployment policy {BpId} to internal policy: {Err1}",
-      "translation": "Impossibile convertire la politica di distribuzione {BpId} nella politica interna: {Err1}"
-    },
-    {
-      "id": "Validation failure for deployment policy {BpId}. {Err}",
-      "translation": "Errore di convalida per la politica di distribuzione {BpId}. {Err}"
-    },
-    {
-      "id": "No services specified in the given deployment policy {BpId}.",
-      "translation": "Nessun servizio specificato nella policy di distribuzione fornita {BpId}."
-    },
-    {
-      "id": "No services specified in the deployment policy {Name}.",
-      "translation": "Nessun servizio specificato nella politica di distribuzione {Name}."
-    },
-    {
-      "id": "Neither deployment policy nor deployment policy id is specified.",
-      "translation": "Non sono stati specificati né la politica di distribuzione né l'id della politica di distribuzione."
-    },
-    {
-      "id": "Deployment policy id is empty.",
-      "translation": "L'id politica di distribuzione è vuoto."
-    },
-    {
-      "id": "Organization is not specified in the deployment policy id: {BpId}.",
-      "translation": "L'organizzazione non è specificata nell'id politica di distribuzione: {BpId}."
-    },
-    {
-      "id": "Unable to get deployment policy for {BpId}, {Err}",
-      "translation": "Impossibile richiamare la politica di distribuzione per {BpId}, {Err}"
-    },
-    {
-      "id": "No deployment policy found for this id {BpId}.",
-      "translation": "Nessuna politica di distribuzione trovata per questo id {BpId}."
-    },
-    {
-      "id": "Failed to convert deployment policy {BpId} to internal policy format: {Err}",
-      "translation": "Impossibile convertire la politica di distribuzione {BpId} nel formato di politica interna: {Err}"
-    },
-    {
-      "id": "Service policy id is empty.",
-      "translation": "L'id politica del servizio è vuoto."
-    },
-    {
-      "id": "Organization is not specified in the service policy id: {SvcId}.",
-      "translation": "L'organizzazione non è specificata nell'id politica del servizio: {SvcId}."
-    },
-    {
-      "id": "Error trying to query service policy for service id {SvcId}: {Err}",
-      "translation": "Errore durante il tentativo di eseguire query sulla politica del servizio per l'id servizio {SvcId}: {Err}"
-    },
-    {
-      "id": "Error validating the service policy {SvcId}. {Err}",
-      "translation": "Errore durante la convalida della politica del servizio {SvcId}. {Err}"
-    },
-    {
-      "id": "Service name is empty.",
-      "translation": "Il nome del servizio è vuoto."
-    },
-    {
-      "id": "Service organization is empty.",
-      "translation": "L'organizzazione del servizio è vuota."
-    },
-    {
-      "id": "Error trying to query service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "Errore durante il tentativo di query sulla politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
-    },
-    {
-      "id": "Failed to validate the service policy for {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}",
-      "translation": "Impossibile convalidare la politica del servizio per {SvcOrg}/{SvcUrl} {SvcVersion} {SvcArch}. {Err}"
-    },
-    {
-      "id": "The given deployment policy should not be null.",
-      "translation": "La politica di distribuzione fornita non deve essere null."
-    },
-    {
-      "id": "Error merging deployment policy with service policy. {Err}",
-      "translation": "Errore durante l'unione della politica di distribuzione con la politica del servizio. {Err}"
-    },
-    {
-      "id": "The deployment policy should not be null.",
-      "translation": "La politica di distribuzione non deve essere null."
-    },
-    {
-      "id": "Deployment policy {Header} cannot have {PROPNODEPRIVILEGED}=true when referring to a service that requires privilege to run.",
-      "translation": "La politica di distribuzione {Header} non può avere {PROPNODEPRIVILEGED}=true quando fa riferimento al servizio che richiede delle autorizzazioni per essere eseguito. "
-    },
-    {
-      "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the exchange. {Err}",
-      "translation": "Errore durante il richiamo del servizio {Org}/{WorkloadURL} {Version} {Arch} e delle relative dipendenze da exchange. {Err}"
-    },
-    {
-      "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Impossibile eseguire il marshalling della configurazione di distribuzione del servizio {SIdTop}, errore {Err}"
-    },
-    {
-      "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Impossibile eseguire il marshalling della configurazione di distribuzione del cluster del servizio {SIdTop}, errore {Err}"
-    },
-    {
-      "id": "Unable to find service definition from the input services.",
-      "translation": "Impossibile trovare la definizione del servizio dai servizi di input."
-    },
-    {
-      "id": "Unable to create version expression from {Version}. {Err}",
-      "translation": "Impossibile creare l'espressione di versione da {Version}. {Err}"
-    },
-    {
-      "id": "Error retrieving dependent services from the exchange for {SDep}. {Err}",
-      "translation": "Errore durante il richiamo dei servizi dipendenti da exchange per {SDep}. {Err}"
-    },
-    {
-      "id": "The UserInputCheck input cannot be null",
-      "translation": "L'input di UserInputCheck non può essere null"
-    },
-    {
-      "id": "Neither node user input nor node id is specified.",
-      "translation": "Non sono stati specificati né l'input utente del nodo né l'id nodo."
-    },
-    {
-      "id": "No service versions with architecture {NodeArch} specified in the deployment policy or pattern.",
-      "translation": "Nessuna versione del servizio con architettura {NodeArch} specificata nella politica di distribuzione o nel modello."
-    },
-    {
-      "id": "No service versions specified in the deployment policy or pattern.",
-      "translation": "Nessuna versione del servizio specificata nella politica di distribuzione o nel modello."
-    },
-    {
-      "id": "User Input Incompatible",
-      "translation": "Input utente incompatibile"
-    },
-    {
-      "id": "Error getting services for all archetctures for {ServiceOrg}/{ServiceURL} version {Version}. {Err}",
-      "translation": "Errore durante il richiamo dei servizi per tutte le architetture per {ServiceOrg}/{ServiceURL} versione {Version}. {Err}"
-    },
-    {
-      "id": "Service definition not found in the input.",
-      "translation": "Definizione del servizio non trovata nell'input."
-    },
-    {
-      "id": "Warning: checking node user input:  {Err}",
-      "translation": "Avvertenza: verifica input utente nodo:  {Err}"
-    },
-    {
-      "id": "Warning: checking user input for the deployment policy: {Err}",
-      "translation": "Avvertenza: verifica input utente per la politica di distribuzione:  {Err}"
-    },
-    {
-      "id": "Warning: checking user input for the pattern: {Err}",
-      "translation": "Avvertenza: verifica input utente per il modello:  {Err}"
-    },
-    {
-      "id": "Service with 'arch' {NodeArch} cannot be found in the deployment policy or pattern.",
-      "translation": "Impossibile trovare il servizio con 'arch' {NodeArch} nella politica di distribuzione o nel modello."
-    },
-    {
-      "id": "No services found in the deployment policy or pattern.",
-      "translation": "Nessun servizio trovato nella politica di distribuzione o nel modello."
-    },
-    {
-      "id": "The input service spec object cannot be null.",
-      "translation": "L'oggetto specifica del servizio di input non può essere null."
-    },
-    {
-      "id": "Error verifing user input for service {SId}. {Err}",
-      "translation": "Errore durante la verifica dell'input utente per il servizio {SId}. {Err}"
-    },
-    {
-      "id": "Failed to verify user input for service {SId}. {Reason}",
-      "translation": "Impossibile verificare l'input utente per il servizio {SId}. {Reason}"
-    },
-    {
-      "id": "Error verifing user input for dependent service {Id}. {Err}",
-      "translation": "Errore durante la verifica dell'input utente per il servizio dipendente {Id}. {Err}"
-    },
-    {
-      "id": "Failed to verify user input for dependent service {Id}. {Reason}",
-      "translation": "Impossibile verificare l'input utente per il servizio dipendente {Id}. {Reason}"
-    },
-    {
-      "id": "The input service definition object cannot be null.",
-      "translation": "L'oggetto di definizione del servizio di input non può essere null."
-    },
-    {
-      "id": "Failed to get the service from the exchange. {Err}",
-      "translation": "Impossibile richiamare il servizio da exchange. {Err}"
-    },
-    {
-      "id": "Servcie does not exist on the exchange.",
-      "translation": "Il servizio non esiste in exchange."
-    },
-    {
-      "id": "No user input found for service.",
-      "translation": "Nessun input utente trovato per il servizio."
-    },
-    {
-      "id": "Failed to validate the user input type for variable {Name}. {Err}",
-      "translation": "Impossibile convalidare il tipo di input utente per la variabile {Name}. {Err}"
-    },
-    {
-      "id": "A required user input value is missing for variable {Name}.",
-      "translation": "Un valore di input utente obbligatorio è mancante per la variabile {Name}."
-    },
-    {
-      "id": "{Errmsg} Service {Org}/{URL} version {Version} arch {Arch} is missing in the node user input.",
-      "translation": "{Errmsg} Il servizio {Org}/{URL} con versione {Version} arch {Arch} non contiene l'input utente nodo."
-    },
-    {
-      "id": "Service URL {URL} does not match the service URL {Name} specified in the deployment policy.",
-      "translation": "L'URL del servizio {URL} non corrisponde all'URL di servizio {Name} specificato nella politica di distribuzione."
-    },
-    {
-      "id": "Service Org {Org} does not match the service org {Org_1} specified in the deployment policy.",
-      "translation": "L'organizzazione del servizio {Org} non corrisponde all'organizzazione del servizio {Org_1} specificata nella politica di distribuzione."
-    },
-    {
-      "id": "Service architecure {Arch} does not match the service architectrure {Arch_1} specified in the deployment policy.",
-      "translation": "L'architettura del servizio {Arch} non corrisponde all'architettura del servizio {Arch_1} specificata nella politica di distribuzione."
-    },
-    {
-      "id": "Service version {Version} does not match any service versions specified in the deployment policy.",
-      "translation": "La versione del servizio {Version} non corrisponde ad alcuna versione del servizio specificata nella politica di distribuzione."
-    },
-    {
-      "id": "The service does not match any services in the pattern.",
-      "translation": "Il servizio non corrisponde ad alcun servizio nel modello."
-    },
-    {
-      "id": "Pattern {PatId} cannot be found on the exchange.",
-      "translation": "Impossibile trovare il modello {PatId} in exchange."
-    },
-    {
-      "id": "Neither pattern nor pattern id is specified.",
-      "translation": "Non è stato specificato né modello né id modello."
-    },
-    {
-      "id": "Pattern id is empty.",
-      "translation": "L'id modello è vuoto."
-    },
-    {
-      "id": "Organization is not specified in the pattern id: {PatId}.",
-      "translation": "L'organizzazione non è specificata nell'id modello: {PatId}."
-    },
-    {
-      "id": "Error getting pattern {PatId} from the exchange, {Err}",
-      "translation": "Errore durante il richiamo del modello {PatId} da exchange, {Err}"
-    },
-    {
-      "id": "No pattern found for this id {PatId}.",
-      "translation": "Nessun modello trovato per questo id {PatId}."
-    },
-    {
-      "id": "URL must be specified in the service definition.",
-      "translation": "L'URL deve essere specificato nella definizione del servizio."
-    },
-    {
-      "id": "Version must be specified in the service definition for service {URL}.",
-      "translation": "La versione deve essere specificata nella definizione del servizio per il servizio {URL}."
-    },
-    {
-      "id": "Invalide version format {Version} for service {URL}.",
-      "translation": "Formato della versione {Version} non valido per il servizio {URL}."
-    },
-    {
-      "id": "Arch must be specified in the service definition for service {URL}.",
-      "translation": "L'architettura deve essere specificata nella definizione del servizio per il servizio {URL}."
-    },
-    {
-      "id": "Org must be specified in the service definition for service {URL}.",
-      "translation": "L'organizzazione deve essere specificata nella definizione del servizio per il servizio {URL}."
-    },
-    {
-      "id": "Validation failure for input service {SId}. {Err}",
-      "translation": "Errore di convalida per il servizio di input {SId}. {Err}"
-    },
-    {
-      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the serviceOrgid, serviceUrl, serviceArch and serviceVersionRange are correct.",
-      "translation": "Nel modello o nella politica di distribuzione non si fa riferimento al servizio {ServiceOrgid}/{ServiceUrl} con versione {ServiceVersionRange} arch {ServiceArch} specificato nell'input utente. Verificare che serviceOrgid, serviceUrl, serviceArch e serviceVersionRange siano corretti. "
-    },
-    {
-      "id": "The service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not referenced by the pattern or deployment policy. Please make sure the service specification is correct.",
-      "translation": "Nel modello o nella politica di distribuzione non si fa riferimento al servizio {ServiceOrgid}/{ServiceUrl} con versione {ServiceVersionRange} arch {ServiceArch} specificato nell'input utente. Verificare che la specifica del servizio sia corretta. "
-    },
-    {
-      "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "La variabile {Name} del servizio {ServiceOrgid}/{ServiceUrl} con versione {ServiceVersionRange} arch {ServiceArch} specificata nell'input utente non è utilizzata. Verificare che sia un nome corretto."
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Errore di compatibilità: la verifica dei dati deve essere compatibile, il producer ha {DataVerify} e il consumer ha {DataVerify_1}."
     },
     {
       "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
@@ -1249,474 +1729,6 @@
     {
       "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
       "translation": "anax è in fase di interruzione. Impossibile instanziare il client docker. {Arg_1}"
-    },
-    {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "La proprietà {PROPNODEPRIVILEGED} deve avere un valore booleano (true o false)."
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "La proprietà deve includere un nome e un valore: {Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "La proprietà {Name} ha un tipo di proprietà non valido {DeclaredType}. I tipi di proprietà consentiti sono: version, string, int, boolean, float e elenco di stringhe."
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "Il valore della proprietà è di tipo {ActualType}, tipo previsto {DeclaredType}"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "Il valore {Value} della proprietà {Name} non è un tipo integer"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "Il valore {Value} della proprietà {Name} non è una stringa valida. Definire il tipo o modificare il valore in una stringa."
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "La proprietà {Name} con il valore {Value} non è una stringa di versione valida"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "La proprietà {Name} ha un tipo di valore non valido {ActualType}"
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "L'espressione di vincolo {Dconstraints} è di tipo {Dconstraints_1}, ma è prevista come array di stringhe"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "L'espressione del vincolo contiene parentesi non corrispondenti."
-    },
-    {
-      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
-      "translation": "Errore durante il richiamo dell'accordo {Arg_1} dal database, errore {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
-      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio MeteringNotification, errore {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
-      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio Cancel, errore {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
-      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio ReplyAck, errore {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
-      "translation": "Impossibile richiamare l'accordo {Arg_1} dal database per il messaggio DataReceived, errore {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
-      "translation": "Impossibile richiamare gli accordi non archiviati dal database. {Arg_1}"
-    },
-    {
-      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-      "translation": "Errore nel contrassegnare l'accordo {Arg_1} interrotto nel database: {Arg_2}."
-    },
-    {
-      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
-      "translation": "Errore durante il richiamo delle definizioni del servizio {Arg_1} da db. {Arg_2}"
-    },
-    {
-      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
-      "translation": "Errore durante il richiamo di tutte le istanze del servizio dal database per {Arg_1}/{Arg_2} versione {Arg_3} chiave {Arg_4}. {Arg_5}"
-    },
-    {
-      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
-      "translation": "Errore durante il richiamo di tutte le istanze del servizio dal database per {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error retrieving all service instances from database, error: {Arg_1}",
-      "translation": "Errore durante il richiamo di tutte le istanze del servizio dal database, errore: {Arg_1}"
-    },
-    {
-      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
-      "translation": "Errore durante il richiamo dell'istanza del servizio {Arg_1} da db. {Arg_2}"
-    },
-    {
-      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
-      "translation": "Errore durante il richiamo degli accordi corrispondenti dal database per i workload {Arg_1}. Errore: {Arg_2}"
-    },
-    {
-      "id": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
-      "translation": "Errore nel rendere permanente lo stato di configurazione del nodo nel database in {Arg_1}. Errore: {Arg_2}"
-    },
-    {
-      "id": "Error retrieving device from database. Error: {Arg_1}",
-      "translation": "Errore durante il richiamo del dispositivo dal database. Errore: {Arg_1}"
-    },
-    {
-      "id": "Error deleting node exchange pattern from the local database. {Arg_1}",
-      "translation": "Errore durante l'eliminazione del modello exchange del nodo dal database locale. {Arg_1}"
-    },
-    {
-      "id": "Error retrieving node {Arg_1} from the exchange: {Arg_2}",
-      "translation": "Errore durante il richiamo del nodo {Arg_1} da exchange: {Arg_2}"
-    },
-    {
-      "id": "Error updating registeredServices for node {Arg_1} in the exchange: {Arg_2}",
-      "translation": "Errore durante l'aggiornamento di registeredServices per il nodo {Arg_1} in exchange: {Arg_2}"
-    },
-    {
-      "id": "Image loaded for {Arg_1}/{Arg_2}.",
-      "translation": "Immagine caricata per {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
-      "translation": "Immagine caricata per il servizio {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
-      "translation": "Errore durante il caricamento dell'immagine per il servizio {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "Avvio interruzione dell'accordo per {Arg_1}. Motivo dell'interruzione: {Arg_2}"
-    },
-    {
-      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-      "translation": "Accordo raggiunto per il servizio {Arg_1}. L'ID accordo è {Arg_2}."
-    },
-    {
-      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
-      "translation": "Accordo per {Arg_1} non più valido sull'agbot. Il nodo lo annullerà."
-    },
-    {
-      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
-      "translation": "I contenitori del servizio workload per {Arg_1}/{Arg_2} sono operativi."
-    },
-    {
-      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "Completamento dell'interruzione dell'accordo per {Arg_1}. Motivo del interruzione: {Arg_2}"
-    },
-    {
-      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-      "translation": "Errore durante l'eliminazione dell'accordo per {Arg_1} in exchange: {Arg_2}. Verrà eseguito un nuovo tentativo."
-    },
-    {
-      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
-      "translation": "Rilevato errore per AgreementVerification per {Arg_1} con agbot, errore {Arg_2}"
-    },
-    {
-      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
-      "translation": "ReplyAck ha indicato che l'agbot non voleva stabilire l'accordo per {Arg_1}. Il nodo annullerà l'accordo"
-    },
-    {
-      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
-      "translation": "Il nodo ha ricevuto il messaggio Cancel per {Arg_1}/{Arg_2} dall'agbot {Arg_3}."
-    },
-    {
-      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
-      "translation": "Errore durante la gestione del messaggio ReplyAck per {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error handling ReplyAck message. {Arg_1}",
-      "translation": "Errore durante la gestione del messaggio ReplyAck. {Arg_1}"
-    },
-    {
-      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
-      "translation": "Errore durante la gestione del messaggio DataReceived per {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error handling DataReceived message. {Arg_1}",
-      "translation": "Errore durante la gestione del messaggio DataReceived. {Arg_1}"
-    },
-    {
-      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
-      "translation": "Errore durante la gestione del messaggio MeterNotification per {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error handling MeterNotification message. {Arg_1}",
-      "translation": "Errore durante la gestione del messaggio MeterNotification. {Arg_1}"
-    },
-    {
-      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
-      "translation": "Errore durante la gestione del messaggio Cancel per {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error handling Cancel message. {Arg_1}",
-      "translation": "Errore durante la gestione del messaggio Cancel. {Arg_1}"
-    },
-    {
-      "id": "Start workload service for {Arg_1}/{Arg_2}.",
-      "translation": "Avvio del servizio workload per {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Workload destroyed for {Arg_1}",
-      "translation": "Workload eliminato definitivamente per {Arg_1}"
-    },
-    {
-      "id": "Service containers for {Arg_1} started.",
-      "translation": "Contenitori del servizio per {Arg_1} avviati."
-    },
-    {
-      "id": "Complete cleaning up the service instance {Arg_1}.",
-      "translation": "Completamento della pulitura dell'istanza del servizio {Arg_1}."
-    },
-    {
-      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
-      "translation": "Avvio dei servizi dipendenti per {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
-      "translation": "Rilevato errore durante l'avvio dei servizi dipendenti per {Arg_1}/{Arg_2}. {Arg_3}"
-    },
-    {
-      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
-      "translation": "Errore durante l'avvio del servizio dipendente {Arg_1}/{Arg_2} versione {Arg_3} per l'accordo {Arg_4}. {Arg_5}"
-    },
-    {
-      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
-      "translation": "Avvio della ripulitura del servizio {Arg_1} perché l'accordo {Arg_2} è terminato."
-    },
-    {
-      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "Errore durante l'avvio del servizio {Arg_1}/{Arg_2} versione {Arg_3}, errore: {Arg_4}"
-    },
-    {
-      "id": "Error getting all the services from agreements: {Arg_1}",
-      "translation": "Errore durante il richiamo di tutti i servizi dagli accordi: {Arg_1}"
-    },
-    {
-      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
-      "translation": "Avvio del servizio senza accordo {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
-      "translation": "Completamento dell'avvio del servizio senza accordo {Arg_1}/{Arg_2} e delle relative dipendenze."
-    },
-    {
-      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
-      "translation": "Impossibile avviare il servizio senza accordo {Arg_1}/{Arg_2}, errore {Arg_3}"
-    },
-    {
-      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
-      "translation": "Impossibile avviare servizi senza accordo, errore durante la ricerca del modello {Arg_1} in exchange, errore: {Arg_2}"
-    },
-    {
-      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
-      "translation": "Impossibile avviare servizi senza accordo, modello {Arg_1} non trovato in exchange"
-    },
-    {
-      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
-      "translation": "Impossibile avviare il servizio senza accordo {Arg_1}/{Arg_2}, definizione del servizio locale non trovata"
-    },
-    {
-      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "Avvio dell'aggiornamento del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}."
-    },
-    {
-      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "Completamento dell'aggiornamento del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}."
-    },
-    {
-      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-      "translation": "Impossibile aggiornare il servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}, errore: {Arg_5}"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
-      "translation": "Avvio del downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3} perché il servizio per l'accordo non è stato avviato."
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
-      "translation": "Avvio del downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3} perché il servizio non è stato avviato."
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
-      "translation": "Avvio del downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3} perché l'aggiornamento non è riuscito."
-    },
-    {
-      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "Impossibile eseguire il downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3}, errore: {Arg_4}"
-    },
-    {
-      "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "Completato il downgrade del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}."
-    },
-    {
-      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
-      "translation": "Errore durante la ricerca della nuova definizione di servizio a cui eseguire il downgrade per {Arg_1}/{Arg_2} versione {Arg_3} chiave {Arg_4}. Errore: {Arg_5}"
-    },
-    {
-      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
-      "translation": "Impossibile trovare la versione inferiore per il downgrade per {Arg_1}/{Arg_2} versione {Arg_3}."
-    },
-    {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
-      "translation": "Errore durante il downgrade del servizio {Arg_1}/{Arg_2} dalla versione {Arg_3} alla versione {Arg_4}. Errore: {Arg_5}"
-    },
-    {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
-      "translation": "Errore durante il downgrade del servizio {Arg_1}/{Arg_2} versione {Arg_3}. {Arg_4}"
-    },
-    {
-      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
-      "translation": "Avvio del numero di nuovi tentativi {Arg_1} per il servizio dipendente {Arg_2} versione {Arg_3} a causa errore del servizio."
-    },
-    {
-      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-      "translation": "Numero di nuovi tentativi {Arg_1} non riuscito per il servizio dipendente {Arg_2} versione {Arg_3}."
-    },
-    {
-      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-      "translation": "Impossibile ottenere il conteggio di nuovi tentativi del servizio per {Arg_1} versione {Arg_2}. {Arg_3}"
-    },
-    {
-      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
-      "translation": "Errore durante l'aggiornamento dello stato di avvio nuovo tentativo per l'istanza del servizio {Arg_1} nel database. {Arg_2}"
-    },
-    {
-      "id": "Node pattern changed on the exchange from {Arg_1} to {Arg_2}.",
-      "translation": "Modello del nodo modificato su exchange da {Arg_1} in {Arg_2}."
-    },
-    {
-      "id": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
-      "translation": "Rilevato errore durante la nuova registrazione del nodo con il nuovo modello {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Start re-registering node after pattern changed to {Arg_1}.",
-      "translation": "Avviare nuovamente la registrazione del nodo dopo che il modello è stato modificato in {Arg_1}."
-    },
-    {
-      "id": "Complete re-registering node after pattern changed to {Arg_1}.",
-      "translation": "Completare la nuova registrazione del nodo dopo che il modello è stato modificato in {Arg_1}."
-    },
-    {
-      "id": "Node pattern changed again on the exchange. Will register the node with the new pattern: {Arg_1}",
-      "translation": "Modello di nodo modificato di nuovo su exchange. Il nodo verrà registrato con il nuovo modello: {Arg_1}"
-    },
-    {
-      "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
-      "translation": "Errore durante la convalida del nuovo modello del nodo {Arg_1}: {Arg_2}"
-    },
-    {
-      "id": "The node will keep using the old pattern {Arg_1}",
-      "translation": "Il nodo continuerà ad utilizzare il vecchio modello {Arg_1}"
-    },
-    {
-      "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
-      "translation": "Il nuovo modello {Arg_1} è stato verificato. Gli accordi verranno annullati e il nodo verrà registrato di nuovo con il nuovo modello."
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Errore di compatibilità: le versioni di schema non sono uguali, Politica consumer: {Version}, Politica producer {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Errore di compatibilità: le proprietà del nodo {Properties} non soddisfano i requisiti di vincolo {Constraints}. Errore sottostante: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "Errore di compatibilità: le proprietà del nodo non soddisfano i requisiti di vincolo. {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Errore di compatibilità: le proprietà {Properties} non soddisfano i vincoli del nodo {Constraints}. Errore sottostante: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "Errore di compatibilità: le proprietà non soddisfano il vincolo del nodo. {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Errore di compatibilità: nessun protocollo di accordo comune tra {AgreementProtocols} e {AgreementProtocols_1}. Errore sottostante: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Errore di compatibilità: la verifica dei dati deve essere compatibile, il producer ha {DataVerify} e il consumer ha {DataVerify_1}."
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "L'accordo {Arg_1} esiste già, la proposta viene ignorata: {Arg_2}"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "ricevuto errore durante l'annullamento del marshalling di TsAndCs per l'accordo {Arg_1}, {Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "Il nodo ha ricevuto il messaggio di proposta utilizzando l'accordo {Arg_1} per il servizio {Arg_2}/{Arg_3} dall'agbot {Arg_4}."
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "Il nodo ha rifiutato la proposta per il servizio {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Errore durante la gestione della proposta per il servizio {Arg_1}/{Arg_2}. Errore: {Arg_3}"
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "impossibile creare la directory per il certificato API MMS autofirmato, errore {Err}"
-    },
-    {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "impossibile generare il numero casuale per il numero di serie del certificato API MMS, errore {Err}"
-    },
-    {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "impossibile generare la chiave privata per il certificato API MMS, errore {Err}"
-    },
-    {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "impossibile creare il certificato API MMS, errore {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "impossibile scrivere il certificato API MMS nel file {ServerCertificate}, errore {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "impossibile codificare il certificato API MMS nel file {ServerCertificate}, errore {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "impossibile chiudere il file del certificato API MMS {ServerCertificate}, errore {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "impossibile scrivere la chiave privata del certificato API MMS nel file {ServerKey}, errore {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "impossibile codificare la chiave privata del certificato API MMS nel file {ServerKey}, errore {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "impossibile chiudere il file di chiave privata del certificato API MMS {ServerKey}, errore {Err}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: spazi non consentiti in {Expr}."
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} non è una stringa di versione valida."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} non inizia con una direttiva di inclusione o esclusione."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} non termina con una direttiva di inclusione o esclusione."
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: numero di versioni errato nell'espressione: {Expr}."
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "La stringa di versione di input {V1} o {V2} non è una stringa di versione singola valida."
     }
   ]
 }
