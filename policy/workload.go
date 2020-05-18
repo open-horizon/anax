@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/rsapss-tool/verify"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -166,7 +167,7 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 	if w.Deployment != "" {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.DeploymentSignature, []byte(w.Deployment)); !verified {
 			glog.Errorf("Unable to verify deployment signature: %v", failed_map)
-			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.DeploymentSignature, w.Deployment)
+			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that valid deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.DeploymentSignature, w.Deployment)
 		} else {
 			glog.Infof("Deployment verification successful with RSA pubkey in file: %v", fn_success)
 		}
@@ -175,7 +176,7 @@ func (w Workload) HasValidSignature(keyFileNames []string) error {
 	if w.ClusterDeployment != "" {
 		if verified, fn_success, failed_map := verify.InputVerifiedByAnyKey(keyFileNames, w.ClusterDeploymentSignature, []byte(w.ClusterDeployment)); !verified {
 			glog.Errorf("Unable to verify cluster deployment signature: %v", failed_map)
-			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.ClusterDeploymentSignature, w.ClusterDeployment)
+			return fmt.Errorf("There is no public key available to verify the deployment signature. Ensure that deployment signing keys are published with the service. Deployment signature: %v for deployment: %v.", w.ClusterDeploymentSignature, cutil.TruncateDisplayString(w.ClusterDeployment, 100))
 		} else {
 			glog.Infof("Cluster deployment verification successful with RSA pubkey in file: %v", fn_success)
 		}
