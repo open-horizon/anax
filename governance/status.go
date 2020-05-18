@@ -139,7 +139,7 @@ func (w *GovernanceWorker) getServiceStatus(containers []docker.APIContainers) (
 		// from the microservice list, and prefer the service from the workload list.
 		duplicate := false
 		for _, ws := range tempWS {
-			if ws.ServiceURL == ms.ServiceURL {
+			if ws.ServiceURL == ms.ServiceURL && ws.Org == ms.Org {
 				duplicate = true
 				break
 			}
@@ -188,6 +188,7 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 				return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving all service instances for %v from database, error: %v", msdef.SpecRef, err)))
 			} else if msinsts != nil {
 				for _, msi := range msinsts {
+					glog.V(3).Infof("Gathering status for msdef: %v/%v, working on instance %v", msdef.Org, msdef.SpecRef, msi.GetKey())
 					if deployment == "" {
 						deployment = msdef.ClusterDeployment
 					}

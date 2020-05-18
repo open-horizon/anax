@@ -67,6 +67,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		errorMessage = fmt.Sprintf("Unable to reset the node in the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
 	}
 
+	// Clear out any node errors.
 	if err := w.deleteNodeError(); err != nil {
 		w.completedWithError(logString(err.Error()))
 		return
@@ -103,6 +104,14 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 		if err := w.deleteNode(w.limitedRetryEC.GetHTTPFactory()); err != nil {
 			w.continueWithError(logString(err.Error()))
 			errorMessage = fmt.Sprintf("Unable to delete the node from the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
+		}
+	} else {
+		// Remove any left over node status.
+		ds := NewDeviceStatus()
+		ds.Services = make([]WorkloadStatus, 0)
+		if err := w.writeStatusToExchange(ds); err != nil {
+			w.continueWithError(logString(err.Error()))
+			errorMessage = fmt.Sprintf("Unable to delete node status from the Exchange. Please use 'hzn exchange node remove %v' to remove it. The error was: %v", w.GetExchangeId(), err)
 		}
 	}
 
