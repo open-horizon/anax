@@ -29,7 +29,6 @@ DEPLOY_TYPE="device" # "cluster" for deploy on edge cluster
 # agent deployment
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
-NAMESPACE="openhorizon-agent"
 SECRET_NAME="openhorizon-agent-secrets"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
@@ -299,6 +298,16 @@ function validate_args(){
 		exit 1
 	fi
 
+	get_variable EDGE_CLUSTER_STORAGE_CLASS $CFG
+	if [[ "$EDGE_CLUSTER_STORAGE_CLASS" == "" ]]; then
+		EDGE_CLUSTER_STORAGE_CLASS="gp2"
+	fi
+
+	get_variable AGENT_NAMESPACE $CFG
+	if [[ "$AGENT_NAMESPACE" == "" ]]; then
+		AGENT_NAMESPACE="openhorizon-agent"
+	fi
+
 	get_variable USE_EDGE_CLUSTER_REGISTRY $CFG
 	if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
 		get_variable EDGE_CLUSTER_REGISTRY_USERNAME $CFG
@@ -307,10 +316,6 @@ function validate_args(){
 		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Token"
 		get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY $CFG
 		check_empty IMAGE_ON_EDGE_CLUSTER_REGISTRY "Image on Edge Cluster Registry"
-		get_variable EDGE_CLUSTER_STORAGE_CLASS $CFG
-		if [[ "$EDGE_CLUSTER_STORAGE_CLASS" == "" ]]; then
-			EDGE_CLUSTER_STORAGE_CLASS="gp2"
-		fi
 	fi
     fi
     get_variable CERTIFICATE $CFG
@@ -363,12 +368,13 @@ function show_config() {
     echo "Verbosity is ${VERBOSITY}"
     echo "NODE_ID"=${NODE_ID}
     echo "Agent in Edge Cluster config:"
+    echo "AGENT_NAMESPACE: ${AGENT_NAMESPACE}"
+    echo "Edge Cluster Storage Class: ${EDGE_CLUSTER_STORAGE_CLASS}"
     echo "Using Edge Cluster Registry: ${USE_EDGE_CLUSTER_REGISTRY}"
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
 	echo "Edge Cluster Registry Username: ${EDGE_CLUSTER_REGISTRY_USERNAME}"
 	echo "Edge Cluster Registry Token: <specified>"
 	echo "Image On Edge Cluster Registry: ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}"
-	echo "Edge Cluster Storage Class: ${EDGE_CLUSTER_STORAGE_CLASS}"
     fi
 
     log_debug "show_config() end"
@@ -981,11 +987,11 @@ function create_node(){
 	EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
 	HZN_EX_NODE_CREATE_CMD="hzn exchange node create -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
 	log_info "AGENT POD ID: ${POD_ID}"
-	kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CREATE_CMD}"
+	kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CREATE_CMD}"
 
 	log_notify "Verifying a node..."
 	HZN_EX_NODE_CFM_CMD="hzn exchange node confirm -n \"$HZN_EXCHANGE_NODE_AUTH\" -o \"$HZN_ORG_ID\""
-	kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CFM_CMD}"
+	kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CFM_CMD}"
     fi
 
     log_debug "create_node() end"
@@ -1037,7 +1043,7 @@ function registration() {
 			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
 				HZN_REGISTER_CMD="hzn register -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\""
 				log_info "AGENT POD ID: ${POD_ID}"
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
 			fi
                 else
         		log_info "Node policy ${HZN_NODE_POLICY} was specified, registering..."
@@ -1051,10 +1057,10 @@ function registration() {
 				POLICY_CONTENT=$(cat $policy | sed 's/\r/\n/')
 				POLICY_FILE_NAME=$(basename "$policy")
 				POLICY_FILE_IN_POD="/home/agentuser/${POLICY_FILE_NAME}"
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
 
 				# check if policy file exists
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "ls ${POLICY_FILE_IN_POD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "ls ${POLICY_FILE_IN_POD}"
 				if [ $? -ne 0 ]; then
 					log_notify "Failed to copy policy file $policy into pod container, existing..."
 					exit 1
@@ -1064,7 +1070,7 @@ function registration() {
 
 				HZN_REGISTER_CMD="hzn register -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" --policy \"$POLICY_FILE_IN_POD\""
 				log_info "AGENT POD ID: ${POD_ID}"
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
 			fi
                 fi
         else
@@ -1077,7 +1083,7 @@ function registration() {
 			elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
 				HZN_REGISTER_CMD="hzn register -p \"$pattern\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\""
 				log_info "AGENT POD ID: ${POD_ID}"
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
 			fi
         	else
         		log_info "Pattern ${pattern} and policy ${policy} were specified. However, pattern registration will override the policy, registering..."
@@ -1090,11 +1096,11 @@ function registration() {
 				POLICY_CONTENT=$(cat $policy)
 				POLICY_FILE_NAME=$(basename "$policy")
 				POLICY_FILE_IN_POD="/home/agentuser/${POLICY_FILE_NAME}"
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "echo '${POLICY_CONTENT}' >> ${POLICY_FILE_IN_POD}"
 
 				HZN_REGISTER_CMD="hzn register -p \"$pattern\" -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" --policy \"$POLICY_FILE_IN_POD\""
 				log_info "AGENT POD ID: ${POD_ID}"
-				kubectl exec -it ${POD_ID} -n ${NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
+				kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_REGISTER_CMD}"
 			fi
                 fi
         fi
@@ -1547,6 +1553,7 @@ function prepare_k8s_development_file() {
     else
         sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
+    sed -i -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" deployment.yml
     sed -i -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment.yml
     rm deployment-template.yml
 
@@ -1557,6 +1564,7 @@ function prepare_k8s_pvc_file() {
 	log_debug "prepare_k8s_pvc_file() begin"
 
 	cp persistentClaim-template.yml persistentClaim.yml
+	sed -i -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" persistentClaim.yml
 	sed -i -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim.yml
 	rm persistentClaim-template.yml
 
@@ -1583,19 +1591,19 @@ function create_namespace() {
 
     # due to global set -e, need to unset that to allow the script to still run after error 
     set +e
-    kubectl get namespace ${NAMESPACE} 2>/dev/null
+    kubectl get namespace ${AGENT_NAMESPACE} 2>/dev/null
     local ret=$?
     set -e
     if [ $ret -ne 0 ]; then
-        log_info "namespace ${NAMESPACE} does not exist, creating..."
-        log_debug "command: kubectl create namespace ${NAMESPACE}"
-        kubectl create namespace ${NAMESPACE}
+        log_info "namespace ${AGENT_NAMESPACE} does not exist, creating..."
+        log_debug "command: kubectl create namespace ${AGENT_NAMESPACE}"
+        kubectl create namespace ${AGENT_NAMESPACE}
         if [ $? -ne 0 ]; then
-            log_notify "Failed to create namespace ${NAMESPACE}, exiting..."
+            log_notify "Failed to create namespace ${AGENT_NAMESPACE}, exiting..."
             exit 1
         fi
     else
-        log_info "namespace ${NAMESPACE} exists, skip creating namespace"
+        log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
     log_debug "create_namespace() end"
@@ -1603,7 +1611,7 @@ function create_namespace() {
 
 function create_service_account() {
 	log_debug "create_service_account() begin"
-	kubectl create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${NAMESPACE}
+	kubectl create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE}
 	if [ $? -ne 0 ]; then
         log_notify "Failed to create service account ${SERVICE_ACCOUNT_NAME}, exiting..."
         exit 1
@@ -1611,9 +1619,9 @@ function create_service_account() {
 	log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} created"
 
 	log_info "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
-	kubectl create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
+	kubectl create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
 	if [ $? -ne 0 ]; then
-        log_notify "Failed to create clusterrolebinding for ${NAMESPACE}:${SERVICE_ACCOUNT_NAME}, exiting..."
+        log_notify "Failed to create clusterrolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}, exiting..."
         exit 1
     fi
 	log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} created"
@@ -1625,7 +1633,7 @@ function create_secret() {
     log_debug "create_secrets() begin"
 
     log_info "creating secret for cert file..."
-    kubectl create secret generic ${SECRET_NAME} --from-file=${CERTIFICATE} -n ${NAMESPACE}
+    kubectl create secret generic ${SECRET_NAME} --from-file=${CERTIFICATE} -n ${AGENT_NAMESPACE}
     if [ $? -ne 0 ]; then
         log_notify "Failed to create secret ${SECRET_NAME} from cert file ${CERTIFICATE}, exiting..."
         exit 1
@@ -1638,7 +1646,7 @@ function create_secret() {
 function create_configmap() {
     log_debug "create_configmap() begin"
     log_info "create configmap from horizon.env..."
-    kubectl create configmap ${CONFIGMAP_NAME} --from-file=horizon -n ${NAMESPACE}
+    kubectl create configmap ${CONFIGMAP_NAME} --from-file=horizon -n ${AGENT_NAMESPACE}
     if [ $? -ne 0 ]; then
         log_notify "Failed to create configmap ${CONFIGMAP_NAME} from horizon file, exiting..."
         exit 1
@@ -1652,7 +1660,7 @@ function create_persistent_volume() {
     log_debug "create_persistent_volume() begin"
 
     log_info "creating persistent volume claim..."
-    kubectl apply -f persistentClaim.yml -n ${NAMESPACE}
+    kubectl apply -f persistentClaim.yml -n ${AGENT_NAMESPACE}
     if [ $? -ne 0 ]; then
         log_notify "Failed to create persistent volume claim, exiting..."
         exit 1
@@ -1666,13 +1674,13 @@ function check_resources_for_deployment() {
     log_debug "check_resource_for_deployment() begin"
     # check secrets/configmap/persistent/images
     set +e
-    kubectl get secret ${SECRET_NAME} -n ${NAMESPACE} > /dev/null
+    kubectl get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} > /dev/null
     secret_ready=$?
 
-    kubectl get configmap ${CONFIGMAP_NAME} -n ${NAMESPACE} > /dev/null
+    kubectl get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} > /dev/null
     configmap_ready=$?
 
-    kubectl get pvc ${PVC_NAME} -n ${NAMESPACE} > /dev/null
+    kubectl get pvc ${PVC_NAME} -n ${AGENT_NAMESPACE} > /dev/null
     pvc_ready=$?
     set -e
 
@@ -1690,7 +1698,7 @@ function create_deployment() {
     # check_resources_for_deployment()
     # deploy
     log_info "creating deployment..."
-    kubectl apply -f deployment.yml -n ${NAMESPACE}
+    kubectl apply -f deployment.yml -n ${AGENT_NAMESPACE}
     if [ $? -ne 0 ]; then
         log_notify "Failed to create deployment, exiting..."
         exit 1
@@ -1701,7 +1709,7 @@ function create_deployment() {
 
 function check_deployment_status() {
     log_debug "check_resource_for_deployment() begin"
-    DEP_STATUS=$(kubectl rollout status --timeout=30s deployment/agent -n ${NAMESPACE} | grep "successfully rolled out" )
+    DEP_STATUS=$(kubectl rollout status --timeout=30s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out" )
     if [ -z "$DEP_STATUS" ]; then
         log_notify "Deployment rollout status failed"
         exit 1
@@ -1711,7 +1719,7 @@ function check_deployment_status() {
 
 function get_pod_id() {
     log_debug "get_pod_id() begin"
-    POD_ID=$(kubectl get pod -n ${NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+    POD_ID=$(kubectl get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
     if [ -n "${POD_ID}" ]; then
         log_info "get pod: ${POD_ID}"
     else

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent
-  namespace: openhorizon-agent
+  namespace: __AgentNameSpace__
 spec:
   replicas: 1
   selector:
