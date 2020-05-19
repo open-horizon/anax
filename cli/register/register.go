@@ -239,7 +239,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			cliexchange.NodeCreate(org, "", nodeId, nodeToken, userPw, anaxArch, nodeName, nodeType, false)
 		} else {
 			// node exists but the token is new, update the node token
-			msgPrinter.Printf("Upating node token...")
+			msgPrinter.Printf("Updating node token...")
 			msgPrinter.Println()
 			patchNodeReq := cliexchange.NodeExchangePatchToken{Token: nodeToken}
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, patchNodeReq)
@@ -395,7 +395,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		// Technically an input file is not required, but it is not the common case, so warn them
 		msgPrinter.Printf("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
 		msgPrinter.Println()
-		msgPrinter.Printf("However, if there is 'useInput' specified in the node already in the Exchange, the useInput will be used.")
+		msgPrinter.Printf("However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.")
 		msgPrinter.Println()
 	}
 
