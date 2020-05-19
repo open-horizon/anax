@@ -411,6 +411,11 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			return
 		}
 
+		// zero out the dependent services for cluster type
+		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+			asl = new(policy.APISpecList)
+		}
+
 		// Canonicalize the arch field in the API spec list
 		for ix, apiSpec := range *asl {
 			if apiSpec.Arch != "" && b.config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != "" {
