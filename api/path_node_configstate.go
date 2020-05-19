@@ -126,18 +126,20 @@ func UpdateConfigstate(cfg *Configstate,
 
 		// Using the list of APISpec objects, we can create a service on this node automatically, for each service
 		// that already has configuration or which doesn't need it.
-		for _, apiSpec := range *common_apispec_list {
+		if pDevice.GetNodeType() == persistence.DEVICE_TYPE_DEVICE {
+			for _, apiSpec := range *common_apispec_list {
 
-			// get the user input for this service
-			ui_merged, _, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
-			if err != nil {
-				LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, apiSpec.Org, apiSpec.SpecRef, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
-				return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err)), nil, nil
-			}
+				// get the user input for this service
+				ui_merged, _, err := policy.FindUserInput(apiSpec.SpecRef, apiSpec.Org, "", apiSpec.Arch, mergedUserInput)
+				if err != nil {
+					LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_FAIL_FIND_SVC_PREF_FROM_UI, apiSpec.Org, apiSpec.SpecRef, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
+					return errorhandler(fmt.Errorf("Failed to find preferences for service %v/%v from the merged user input, error: %v", apiSpec.Org, apiSpec.SpecRef, err)), nil, nil
+				}
 
-			s := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
-			if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, ui_merged, errorhandler, &msgs, db, config); errHandled {
-				return errHandled, nil, nil
+				s := NewService(apiSpec.SpecRef, apiSpec.Org, makeServiceName(apiSpec.SpecRef, apiSpec.Org, apiSpec.Version), apiSpec.Arch, apiSpec.Version)
+				if errHandled := configureService(s, getPatterns, resolveService, getService, getDevice, patchDevice, ui_merged, errorhandler, &msgs, db, config); errHandled {
+					return errHandled, nil, nil
+				}
 			}
 		}
 

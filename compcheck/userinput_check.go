@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"golang.org/x/text/message"
@@ -277,7 +278,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 						continue
 					}
 					sSpec := NewServiceSpec(serviceRef.ServiceURL, serviceRef.ServiceOrg, workload.Version, serviceRef.ServiceArch)
-					if compatible, reason, sDefs, err := VerifyUserInputForService(sSpec, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, msgPrinter); err != nil {
+					if compatible, reason, sDefs, err := VerifyUserInputForService(sSpec, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
 						return nil, err
 					} else {
 						all_services = append(all_services, sDefs...)
@@ -312,7 +313,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 							if !needHandleService(sId, input.ServiceToCheck) {
 								continue
 							}
-							if compatible, reason, sDefs, err := VerifyUserInputForServiceDef(&svc, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, msgPrinter); err != nil {
+							if compatible, reason, sDefs, err := VerifyUserInputForServiceDef(&svc, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
 								return nil, err
 							} else {
 								all_services = append(all_services, sDefs...)
@@ -368,7 +369,7 @@ func userInputCompatible(getDeviceHandler exchange.DeviceHandler,
 					if useSDef.GetOrg() == "" {
 						useSDef.(*common.ServiceFile).Org = serviceRef.ServiceOrg
 					}
-					if compatible, reason, sDefs, err := VerifyUserInputForServiceDef(useSDef, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, msgPrinter); err != nil {
+					if compatible, reason, sDefs, err := VerifyUserInputForServiceDef(useSDef, getServiceHandler, serviceDefResolverHandler, bpUserInput, nodeUserInput, resources.NodeType, msgPrinter); err != nil {
 						return nil, err
 					} else {
 						all_services = append(all_services, sDefs...)
@@ -459,6 +460,7 @@ func VerifyUserInputForService(svcSpec *ServiceSpec,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	bpUserInput []policy.UserInput,
 	deviceUserInput []policy.UserInput,
+	nodeType string,
 	msgPrinter *message.Printer) (bool, string, []common.AbstractServiceFile, error) {
 
 	// get default message printer if nil
@@ -480,10 +482,12 @@ func VerifyUserInputForService(svcSpec *ServiceSpec,
 
 	// The service defs to be returned,the first one will be the top level service and the rests are dependent services
 	ret_sDefs := []common.AbstractServiceFile{&compSDef}
-	for id, s := range svc_map {
-		org := exchange.GetOrg(id)
-		svc := ServiceDefinition{org, s}
-		ret_sDefs = append(ret_sDefs, &svc)
+	if nodeType == persistence.DEVICE_TYPE_DEVICE {
+		for id, s := range svc_map {
+			org := exchange.GetOrg(id)
+			svc := ServiceDefinition{org, s}
+			ret_sDefs = append(ret_sDefs, &svc)
+		}
 	}
 
 	if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&compSDef, bpUserInput, deviceUserInput, msgPrinter); err != nil {
@@ -491,13 +495,15 @@ func VerifyUserInputForService(svcSpec *ServiceSpec,
 	} else if !compatible {
 		return false, msgPrinter.Sprintf("Failed to verify user input for service %v. %v", sId, reason), ret_sDefs, nil
 	} else {
-		for id, s := range svc_map {
-			org := exchange.GetOrg(id)
-			svc := ServiceDefinition{org, s}
-			if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&svc, bpUserInput, deviceUserInput, msgPrinter); err != nil {
-				return false, "", ret_sDefs, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
-			} else if !compatible {
-				return false, msgPrinter.Sprintf("Failed to verify user input for dependent service %v. %v", id, reason), ret_sDefs, nil
+		if nodeType == persistence.DEVICE_TYPE_DEVICE {
+			for id, s := range svc_map {
+				org := exchange.GetOrg(id)
+				svc := ServiceDefinition{org, s}
+				if compatible, reason, _, err := VerifyUserInputForSingleServiceDef(&svc, bpUserInput, deviceUserInput, msgPrinter); err != nil {
+					return false, "", ret_sDefs, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error verifing user input for dependent service %v. %v", id, err)), COMPCHECK_GENERAL_ERROR)
+				} else if !compatible {
+					return false, msgPrinter.Sprintf("Failed to verify user input for dependent service %v. %v", id, reason), ret_sDefs, nil
+				}
 			}
 		}
 	}
@@ -514,6 +520,7 @@ func VerifyUserInputForServiceDef(sDef common.AbstractServiceFile,
 	serviceDefResolverHandler exchange.ServiceDefResolverHandler,
 	bpUserInput []policy.UserInput,
 	deviceUserInput []policy.UserInput,
+	nodeType string,
 	msgPrinter *message.Printer) (bool, string, []common.AbstractServiceFile, error) {
 
 	// get default message printer if nil
@@ -529,20 +536,22 @@ func VerifyUserInputForServiceDef(sDef common.AbstractServiceFile,
 		return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("The input service definition object cannot be null.")), COMPCHECK_INPUT_ERROR)
 	}
 
-	// get all the service defs for the dependent services
+	// get all the service defs for the dependent services for device type node
 	service_map := map[string]ServiceDefinition{}
-	if sDef.GetRequiredServices() != nil && len(sDef.GetRequiredServices()) != 0 {
-		for _, sDep := range sDef.GetRequiredServices() {
-			if vExp, err := semanticversion.Version_Expression_Factory(sDep.GetVersionRange()); err != nil {
-				return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.Version, err)), COMPCHECK_GENERAL_ERROR)
-			} else {
-				if s_map, s_def, s_id, err := serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
-					return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
+	if nodeType == persistence.DEVICE_TYPE_DEVICE {
+		if sDef.GetRequiredServices() != nil && len(sDef.GetRequiredServices()) != 0 {
+			for _, sDep := range sDef.GetRequiredServices() {
+				if vExp, err := semanticversion.Version_Expression_Factory(sDep.GetVersionRange()); err != nil {
+					return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Unable to create version expression from %v. %v", sDep.Version, err)), COMPCHECK_GENERAL_ERROR)
 				} else {
-					service_map[s_id] = ServiceDefinition{sDep.Org, *s_def}
-					for id, s := range s_map {
-						service_map[id] = ServiceDefinition{exchange.GetOrg(id), s}
-						ret_sDefs = append(ret_sDefs, &ServiceDefinition{exchange.GetOrg(id), s})
+					if s_map, s_def, s_id, err := serviceDefResolverHandler(sDep.URL, sDep.Org, vExp.Get_expression(), sDep.Arch); err != nil {
+						return false, "", nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error retrieving dependent services from the Exchange for %v. %v", sDep, err)), COMPCHECK_EXCHANGE_ERROR)
+					} else {
+						service_map[s_id] = ServiceDefinition{sDep.Org, *s_def}
+						for id, s := range s_map {
+							service_map[id] = ServiceDefinition{exchange.GetOrg(id), s}
+							ret_sDefs = append(ret_sDefs, &ServiceDefinition{exchange.GetOrg(id), s})
+						}
 					}
 				}
 			}
