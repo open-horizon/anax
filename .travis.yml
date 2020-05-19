@@ -11,6 +11,10 @@ language: go
 
 go: 1.14.x
 
+before_install:
+- sudo apt-get -y update
+- sudo curl -fsSL get.docker.com | sh
+
 before_script:
   - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then echo "$BMX_REG_TOKEN" | docker login -u "$BMX_REG_USER" --password-stdin registry.ng.bluemix.net; fi'
   - make -C test

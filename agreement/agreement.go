@@ -300,7 +300,7 @@ func (w *AgreementWorker) Initialize() bool {
 	}
 
 	// Publish what we have for the world to see
-	if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
+	if err := w.advertiseAllPolicies(); err != nil {
 		glog.Warningf(logString(fmt.Sprintf("unable to advertise policies with exchange, error: %v", err)))
 	}
 
@@ -348,7 +348,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 				persistence.EC_START_POLICY_ADVERTISING,
 				"", persistence.WorkloadInfo{}, producer.ConvertToServiceSpecs(newPolicy.APISpecs), "", protocols)
 			// Publish what we have for the world to see
-			if err := w.advertiseAllPolicies(w.BaseWorker.Manager.Config.Edge.PolicyPath); err != nil {
+			if err := w.advertiseAllPolicies(); err != nil {
 				eventlog.LogAgreementEvent2(w.db, persistence.SEVERITY_ERROR,
 					persistence.NewMessageMeta(EL_AG_UNABLE_ADVERTISE_POL, newPolicy.APISpecs[0].Org, newPolicy.APISpecs[0].SpecRef, err.Error()),
 					persistence.EC_ERROR_POLICY_ADVERTISING,
@@ -427,8 +427,12 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 	case *EdgeConfigCompleteCommand:
 		if w.GetExchangeToken() == "" {
-			glog.Warningf(logString(fmt.Sprintf("ignoring config complete, device not registered: %v and %v", w.GetExchangeId(), w.GetExchangeToken())))
+			glog.Warningf(logString(fmt.Sprintf("ignoring config complete, device not registered: %v", w.GetExchangeId())))
 		} else {
+			// Write registered services and pattern (if any) to the exchange node.
+			if err := w.patchPattern(); err != nil {
+				glog.Errorf(logString(fmt.Sprintf("error setting registered services and the pattern, error: %v", err)))
+			}
 			// Setting the node's key into its exchange object enables an agbot to send proposal messages to it. Until this is
 			// set, the node will not receive any proposals.
 			w.patchNodeKey()
@@ -732,7 +736,7 @@ func (w *AgreementWorker) getAllAgreements() (map[string]exchange.DeviceAgreemen
 //
 
 // Update the registeredServices and Pattern for the node.
-func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]exchange.Microservice) error {
+func (w *AgreementWorker) registerNode(ms *[]exchange.Microservice) error {
 
 	pdr := exchange.PatchDeviceRequest{}
 	if ms != nil {
@@ -742,7 +746,7 @@ func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]ex
 		pdr.RegisteredServices = &tmp
 	}
 
-	glog.V(3).Infof("AgreementWorker Registering services and pattern: %v.", pdr)
+	glog.V(3).Infof(logString(fmt.Sprintf("Registering services and pattern: %v.", pdr)))
 
 	patchDevice := exchange.GetHTTPPatchDeviceHandler(w)
 	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
@@ -751,10 +755,23 @@ func (w *AgreementWorker) registerNode(dev *persistence.ExchangeDevice, ms *[]ex
 		glog.V(3).Infof(logString(fmt.Sprintf("advertised policies for device %v in exchange.", w.GetExchangeId())))
 	}
 
-	pdr = exchange.PatchDeviceRequest{}
+	return nil
+}
+
+// Update the Pattern for the node.
+func (w *AgreementWorker) patchPattern() error {
+
+	dev, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		return errors.New(fmt.Sprintf("received error getting device name: %v", err))
+	} else if dev == nil {
+		return errors.New("could not get device name because no device was registered yet.")
+	}
+
+	pdr := exchange.PatchDeviceRequest{}
 	if dev.Pattern != "" {
 		pdr.Pattern = dev.Pattern
-		if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
+		if err := exchange.GetHTTPPatchDeviceHandler(w)(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
 			return err
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("updated the pattern to %v for device %v in exchange.", dev.Pattern, w.GetExchangeId())))
@@ -788,19 +805,14 @@ func (w *AgreementWorker) patchNodeKey() error {
 	}
 }
 
-func (w *AgreementWorker) advertiseAllPolicies(location string) error {
+func (w *AgreementWorker) advertiseAllPolicies() error {
 
 	var pType, pValue, pCompare string
 
-	dev, err := persistence.FindExchangeDevice(w.db)
-	if err != nil {
-		return errors.New(fmt.Sprintf("AgreementWorker received error getting device name: %v", err))
-	} else if dev == nil {
-		return errors.New("AgreementWorker could not get device name because no device was registered yet.")
-	}
-
 	// Advertise the microservices that this device is offering
 	policies := w.pm.GetAllPolicies(exchange.GetOrg(w.GetExchangeId()))
+
+	glog.V(5).Infof(logString(fmt.Sprintf("current policies: %v", policies)))
 
 	if len(policies) > 0 {
 		ms := make([]exchange.Microservice, 0, 10)
@@ -875,7 +887,9 @@ func (w *AgreementWorker) advertiseAllPolicies(location string) error {
 		// what's available on the node. However, the node's messaging key is published later, after the
 		// configstate API is called to complete configuration on the node. It is the presence of this key
 		// in the exchange that tells the agbot it can make an agreement with this device.
-		if err := w.registerNode(dev, &ms); err != nil {
+		if err := w.registerNode(&ms); err != nil {
+			return err
+		} else if err := w.patchPattern(); err != nil {
 			return err
 		}
 

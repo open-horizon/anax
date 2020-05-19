@@ -10,6 +10,8 @@ EXCH_URL="${EXCH_APP_HOST}"
 mkdir -p /var/horizon
 mkdir -p /var/horizon/.colonus
 
+docker version
+
 #--cacert /certs/css.crt
 if [ ${CERT_LOC} -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
@@ -199,7 +201,7 @@ echo "Register services"
 if [ $? -ne 0 ]
 then
   echo -e "Service registration failure."
-  TESTFAIL="1"
+  exit -1
 else
   echo "Register services SUCCESSFUL"
 fi
