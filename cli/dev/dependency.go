@@ -813,7 +813,11 @@ func getServiceDefinition(homeDirectory, surl string, org string, version string
 		img_auths := make([]events.ImageDockerAuth, 0)
 		if docker_auths != nil {
 			for _, iau_temp := range docker_auths {
-				img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: "token", Password: iau_temp.Token})
+				user_name := "token"
+				if iau_temp.UserName != "" {
+					user_name = iau_temp.UserName
+				}
+				img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: user_name, Password: iau_temp.Token})
 			}
 		}
 		cliutils.Verbose(msgPrinter.Sprintf("The image docker auths for the service %v/%v are: %v", org, surl, img_auths))
