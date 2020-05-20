@@ -29,6 +29,6 @@ func (db *AgbotBoltDB) GetPartitionOwner(id string) (string, error) {
 	return "global", nil
 }
 
-func (db *AgbotBoltDB) MovePartition(timeout uint64) error {
-	return nil
+func (db *AgbotBoltDB) MovePartition(timeout uint64) (bool, error) {
+	return false, nil
 }

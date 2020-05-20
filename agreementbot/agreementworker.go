@@ -1002,7 +1002,8 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("terminating agreement %v reason: %v.", agreementId, cph.GetTerminationReason(reason))))
 
 	// Update the database
-	if ag, err := b.db.AgreementTimedout(agreementId, cph.Name()); err != nil {
+	ag, err := b.db.AgreementTimedout(agreementId, cph.Name())
+	if err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
 	} else if ag != nil && ag.Archived {
 		// The agreement is not active and it is archived, so this message belongs to this agbot, but the cancel has already happened
@@ -1021,59 +1022,55 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting agreement %v in exchange: %v", agreementId, err)))
 	}
 
-	// Find the agreement record
-	if ag, err := b.db.FindSingleAgreementByAgreementId(agreementId, cph.Name(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
-		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
-		return false
-	} else if ag == nil {
-		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))
-	} else {
+	// Update the workload usage record to clear the agreement. There might not be a workload usage record if there is no workload priority
+	// specified in the workload section of the policy.
+	if wlUsage, err := b.db.UpdateWUAgreementId(ag.DeviceId, ag.PolicyName, "", cph.Name()); err != nil {
+		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 
-		// Update the workload usage record to clear the agreement. There might not be a workload usage record if there is no workload priority
-		// specified in the workload section of the policy.
-		if wlUsage, err := b.db.UpdateWUAgreementId(ag.DeviceId, ag.PolicyName, "", cph.Name()); err != nil {
-			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("warning updating agreement id in workload usage for %v for policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-
-		} else if wlUsage != nil && (wlUsage.ReqsNotMet || cph.IsTerminationReasonNodeShutdown(reason)) {
-			// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
-			// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
-			// agbot always tries the next agreement starting with the highest priority workload again.
-			// Or, we will remove the workload usage record if the device is cancelling the agreement because it is shutting down. A shut down
-			// node that comes back and registers again, will start trying to run the highest priority workload. It should not remember the
-			// workload priority in use at the time it was removed from the network.
-			if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
-				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-			}
+	} else if wlUsage != nil && (wlUsage.ReqsNotMet || cph.IsTerminationReasonNodeShutdown(reason)) {
+		// If the workload usage record indicates that it is not at the highest priority workload because the device cant meet the
+		// requirements of the higher priority workload, then when an agreement gets cancelled, we will remove the record so that the
+		// agbot always tries the next agreement starting with the highest priority workload again.
+		// Or, we will remove the workload usage record if the device is cancelling the agreement because it is shutting down. A shut down
+		// node that comes back and registers again, will start trying to run the highest priority workload. It should not remember the
+		// workload priority in use at the time it was removed from the network.
+		if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error deleting workload usage record for device %v and policyName %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
 		}
-
-		// Remove the long blockchain cancel from the worker thread. It is important to give the protocol handler a chance to
-		// do whatever cleanup and termination it needs to do so we should never skip calling this function.
-		// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
-
-		if cph.CanCancelNow(ag) || ag.CounterPartyAddress == "" {
-			b.DoAsyncCancel(cph, ag, reason, workerId)
-		}
-
-		if ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg) {
-			// create deferred termination command
-			glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
-			cph.DeferCommand(AsyncCancelAgreement{
-				workType:    ASYNC_CANCEL,
-				AgreementId: agreementId,
-				Protocol:    cph.Name(),
-				Reason:      reason,
-			})
-		}
-
-		// Archive the record
-		if _, err := b.db.ArchiveAgreement(ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
-		}
-
 	}
+
+	// Remove the long blockchain cancel from the worker thread. It is important to give the protocol handler a chance to
+	// do whatever cleanup and termination it needs to do so we should never skip calling this function.
+	// If we can do the termination now, do it. Otherwise we will queue a command to do it later.
+
+	if cph.CanCancelNow(ag) || ag.CounterPartyAddress == "" {
+		if t := policy.RequiresBlockchainType(ag.AgreementProtocol); t != "" {
+			b.DoAsyncCancel(cph, ag, reason, workerId)
+		} else {
+			cph.TerminateAgreement(ag, reason, workerId)
+		}
+	}
+
+	if ag.BlockchainType != "" && !cph.IsBlockchainWritable(ag.BlockchainType, ag.BlockchainName, ag.BlockchainOrg) {
+		// create deferred termination command
+		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("deferring blockchain cancel for %v", agreementId)))
+		cph.DeferCommand(AsyncCancelAgreement{
+			workType:    ASYNC_CANCEL,
+			AgreementId: agreementId,
+			Protocol:    cph.Name(),
+			Reason:      reason,
+		})
+	}
+
+	// Archive the record
+	if _, err := b.db.ArchiveAgreement(ag.CurrentAgreementId, cph.Name(), reason, cph.GetTerminationReason(reason)); err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error archiving terminated agreement: %v, error: %v", ag.CurrentAgreementId, err)))
+	}
+
 	return true
 }
 
+// This function is only called when the cancel is deferred due to blockchain unavailability.
 func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) {
 
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting deferred cancel for %v", agreementId)))

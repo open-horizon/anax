@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"sync"
+	"time"
 )
 
 // A work queue that never blocks the sender and blocks the receiver when the internal work queue is empty.
@@ -20,6 +21,8 @@ type PrioritizedWorkQueue struct {
 
 	recv       chan *AgreementWork // This is the channel where workers listen/block for work.
 	bufferLock sync.Mutex          // A lock that protects access to the work queue buffers.
+
+	bufferSize uint64 // The (rough) maximum queue depth that should not be exceeded without blocking. This is immutable once constructed.
 }
 
 func NewPrioritizedWorkQueue(bufferSize uint64) *PrioritizedWorkQueue {
@@ -29,6 +32,7 @@ func NewPrioritizedWorkQueue(bufferSize uint64) *PrioritizedWorkQueue {
 		inboundLow:          make(chan *AgreementWork, bufferSize),
 		workQueueBufferLow:  make([]*AgreementWork, 0, bufferSize*2),
 		recv:                make(chan *AgreementWork),
+		bufferSize:          bufferSize,
 	}
 
 	go n.run()
@@ -41,11 +45,35 @@ func (n *PrioritizedWorkQueue) Close() {
 }
 
 func (n *PrioritizedWorkQueue) InboundHigh() chan *AgreementWork {
+	n.blockHighAtDepth()
 	return n.inboundHigh
 }
 
 func (n *PrioritizedWorkQueue) InboundLow() chan *AgreementWork {
+	n.blockLowAtDepth()
 	return n.inboundLow
+}
+
+func (n *PrioritizedWorkQueue) HighAtDepth() bool {
+	return uint64(n.HighPriorityBufferLen()) > n.bufferSize
+}
+
+func (n *PrioritizedWorkQueue) LowAtDepth() bool {
+	return uint64(n.LowPriorityBufferLen()) > n.bufferSize
+}
+
+func (n *PrioritizedWorkQueue) blockHighAtDepth() {
+	for n.HighAtDepth() {
+		glog.V(3).Infof(pwqString(fmt.Sprintf("pausing 2 secs to allow work queue High: %v to catch up: %v", n.HighPriorityBufferLen(), n.bufferSize)))
+		time.Sleep(2 * time.Second)
+	}
+}
+
+func (n *PrioritizedWorkQueue) blockLowAtDepth() {
+	for n.LowAtDepth() {
+		glog.V(3).Infof(pwqString(fmt.Sprintf("pausing 2 secs to allow work queue Low: %v to catch up: %v", n.LowPriorityBufferLen(), n.bufferSize)))
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func (n *PrioritizedWorkQueue) Receive() chan *AgreementWork {

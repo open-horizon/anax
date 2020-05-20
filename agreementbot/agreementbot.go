@@ -326,7 +326,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 		}
 
 		// let policy manager read it
-		if filePolManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.serviceResolver, true, false); err != nil {
+		if filePolManager, err := policy.Initialize(w.BaseWorker.Manager.Config.AgreementBot.PolicyPath, w.Config.ArchSynonyms, w.serviceResolver, false, false); err != nil {
 			glog.Errorf("AgreementBotWorker unable to initialize policy manager, error: %v", err)
 		} else {
 			// creating business policy cache and update the policy manager
@@ -684,8 +684,13 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 			}
 		}
 
+		// Ensure that no messages are missed.
+		if !w.workQueuesAtDepth() {
+			w.processProtocolMessage()
+		}
+
 		// If there is still no rescan needed but it's been a while since the last full scan, then do a full scan anyway.
-		if w.lastSearchComplete && !w.isRescanNeeded() && (w.Config.GetAgbotFullRescan() != 0 && (uint64(time.Now().Unix())-w.lastSearchTime) >= w.Config.GetAgbotFullRescan()) {
+		if w.lastSearchComplete && !w.isRescanNeeded() && !w.workQueuesAtDepth() && (w.Config.GetAgbotFullRescan() != 0 && (uint64(time.Now().Unix())-w.lastSearchTime) >= w.Config.GetAgbotFullRescan()) {
 			w.lastSearchTime = uint64(time.Now().Unix())
 			glog.V(3).Infof(AWlogString(fmt.Sprintf("Polling Exchange (full rescan), starting from %v.", time.Unix(int64(w.lastAgMakingTime), 0).Format(cutil.ExchangeTimeFormat))))
 			w.lastSearchComplete = false
@@ -693,7 +698,7 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 		}
 
 		// If a search has not been started recently, start one now.
-		if w.lastSearchComplete && w.isRescanNeeded() && ((uint64(time.Now().Unix()) - w.lastSearchTime) >= uint64(w.Config.AgreementBot.NewContractIntervalS)) {
+		if w.lastSearchComplete && w.isRescanNeeded() && !w.workQueuesAtDepth() && ((uint64(time.Now().Unix()) - w.lastSearchTime) >= uint64(w.Config.AgreementBot.NewContractIntervalS)) {
 			w.lastSearchTime = uint64(time.Now().Unix())
 			glog.V(3).Infof(AWlogString(fmt.Sprintf("Polling Exchange, starting from %v.", time.Unix(int64(w.lastAgMakingTime), 0).Format(cutil.ExchangeTimeFormat))))
 			w.lastSearchComplete = false
@@ -758,17 +763,14 @@ func (w *AgreementBotWorker) reportWorkQueues() {
 	glog.V(3).Infof(AWlogString(fmt.Sprintf("work queues: %v", rep)))
 }
 
-func (w *AgreementBotWorker) pauseOnLongQueue() {
+func (w *AgreementBotWorker) workQueuesAtDepth() bool {
 	for _, cph := range w.consumerPH.GetAll() {
-		for {
-			if (uint64(w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen()) > w.Config.GetAgbotAgreementBatchSize()) || (uint64(w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen()) > w.Config.GetAgbotAgreementBatchSize()) {
-				glog.V(3).Infof(AWlogString(fmt.Sprintf("pausing 2 secs to allow %v work queues High: %v, Low: %v to catch up: %v", cph, w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen(), w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen(), w.Config.GetAgbotAgreementBatchSize())))
-				time.Sleep(2 * time.Second)
-			} else {
-				break
-			}
+		if w.consumerPH.Get(cph).WorkQueue().HighAtDepth() || w.consumerPH.Get(cph).WorkQueue().LowAtDepth() {
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("skipping make agreements due to work queue depth")))
+			return true
 		}
 	}
+	return false
 }
 
 // Go through all the patterns and business polices and make agreements.
@@ -797,7 +799,6 @@ func (w *AgreementBotWorker) findAndMakeAgreements() {
 					break
 				}
 			}
-			w.pauseOnLongQueue()
 		}
 		if searchError {
 			break
@@ -1199,28 +1200,7 @@ func (w *AgreementBotWorker) syncOnInit() error {
 							glog.Errorf(AWlogString(fmt.Sprintf("error marking agreement %v terminated: %v", ag.CurrentAgreementId, err)))
 						}
 						w.consumerPH.Get(agp).HandleAgreementTimeout(NewAgreementTimeoutCommand(ag.CurrentAgreementId, ag.AgreementProtocol, w.consumerPH.Get(agp).GetTerminationCode(TERM_REASON_POLICY_CHANGED)), w.consumerPH.Get(agp))
-					} else if err := w.pm.MatchesMine(ag.Org, pol); err != nil {
-						glog.Warningf(AWlogString(fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
 
-						// Remove any workload usage records (non-HA) or mark for pending upgrade (HA). There might not be a workload usage record
-						// if the consumer policy does not specify the workload priority section.
-						if wlUsage, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
-							glog.Warningf(AWlogString(fmt.Sprintf("error retreiving workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-						} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime != 0 {
-							// Skip this agreement, it is part of an HA group where another member is upgrading
-							continue
-						} else if wlUsage != nil && len(wlUsage.HAPartners) != 0 && wlUsage.PendingUpgradeTime == 0 {
-							for _, partnerId := range wlUsage.HAPartners {
-								if _, err := w.db.UpdatePendingUpgrade(partnerId, ag.PolicyName); err != nil {
-									glog.Warningf(AWlogString(fmt.Sprintf("could not update pending workload upgrade for %v using policy %v, error: %v", partnerId, ag.PolicyName, err)))
-								}
-							}
-							// Choose this device's agreement within the HA group to start upgrading
-							w.cleanupAgreement(&ag)
-						} else {
-							// Non-HA device or agrement without workload priority in the policy, re-make the agreement
-							w.cleanupAgreement(&ag)
-						}
 					} else if err := w.pm.AttemptingAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId, ag.Org); err != nil {
 						glog.Errorf(AWlogString(fmt.Sprintf("cannot update agreement count for %v, error: %v", ag.CurrentAgreementId, err)))
 					} else if err := w.pm.FinalAgreement([]policy.Policy{*existingPol}, ag.CurrentAgreementId, ag.Org); err != nil {
@@ -1229,16 +1209,10 @@ func (w *AgreementBotWorker) syncOnInit() error {
 						// There is a small window where an agreement might not have been recorded in the exchange. Let's just make sure.
 					} else {
 
-						var exchangeAgreement map[string]exchange.AgbotAgreement
-						var resp interface{}
-						resp = new(exchange.AllAgbotAgreementsResponse)
-						targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + ag.CurrentAgreementId
-
-						if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil || tpErr != nil {
-							glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot info from exchange, error %v, transport error %v", err, tpErr)))
+						if exchangeAgreement, err := w.getConsumerAgreementState(ag.CurrentAgreementId); err != nil {
+							glog.Errorf(AWlogString(fmt.Sprintf("encountered error getting agbot agreement %v from exchange, error %v", ag.CurrentAgreementId, err)))
 							continue
 						} else {
-							exchangeAgreement = resp.(*exchange.AllAgbotAgreementsResponse).Agreements
 							glog.V(5).Infof(AWlogString(fmt.Sprintf("found agreements %v in the exchange.", exchangeAgreement)))
 
 							if _, there := exchangeAgreement[ag.CurrentAgreementId]; !there {
@@ -1327,7 +1301,7 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 	as.State = state
 
 	var resp interface{}
-	resp = new(exchange.PostDeviceResponse)
+	resp = new(exchange.AllAgbotAgreementsResponse)
 	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), &as, &resp); err != nil {
@@ -1340,6 +1314,29 @@ func (w *AgreementBotWorker) recordConsumerAgreementState(agreementId string, po
 		} else {
 			glog.V(5).Infof(AWlogString(fmt.Sprintf("set agreement %v to state %v", agreementId, state)))
 			return nil
+		}
+	}
+
+}
+
+func (w *AgreementBotWorker) getConsumerAgreementState(agreementId string) (map[string]exchange.AgbotAgreement, error) {
+
+	glog.V(5).Infof(AWlogString(fmt.Sprintf("getting agbot agreement %v", agreementId)))
+
+	var resp interface{}
+	resp = new(exchange.AllAgbotAgreementsResponse)
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
+	for {
+		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(err.Error())
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			exchangeAgreement := resp.(*exchange.AllAgbotAgreementsResponse).Agreements
+			return exchangeAgreement, nil
 		}
 	}
 
@@ -1607,8 +1604,14 @@ func (w *AgreementBotWorker) stalePartitions() int {
 		glog.Errorf(AWlogString(fmt.Sprintf("Error obtaining heartbeat, error: %v", err)))
 	} else if (now - hb) < w.BaseWorker.Manager.Config.GetPartitionStale() {
 		// The heartbeat has been occurring, so it's safe to attempt to take-over an unused partition.
-		if err := w.db.MovePartition(w.Config.GetPartitionStale()); err != nil {
+		if claimed, err := w.db.MovePartition(w.Config.GetPartitionStale()); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf("Error claiming an unowned partition, error: %v", err)))
+		} else if claimed {
+			// Perform the same sanity checks on existing agreements when we pick up a new set of agreements
+			// in the new partition.
+			if err := w.syncOnInit(); err != nil {
+				glog.Errorf(AWlogString(fmt.Sprintf("unable to sync up, error: %v", err)))
+			}
 		}
 	}
 	return 0

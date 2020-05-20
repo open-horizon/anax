@@ -77,7 +77,6 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 		return updated, nil, nil
 	}
 
-	return false, nil, nil
 }
 
 // This function retrieves the node's policy from the exchange, adds the node built-in properties if needed. Then it saves the new

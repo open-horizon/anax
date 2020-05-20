@@ -23,7 +23,7 @@ type AgbotDatabase interface {
 	GetHeartbeat() (uint64, error)
 	QuiescePartition() error
 	GetPartitionOwner(id string) (string, error)
-	MovePartition(timeout uint64) error
+	MovePartition(timeout uint64) (bool, error)
 
 	// Persistent agreement related functions
 	FindAgreements(filters []AFilter, protocol string) ([]Agreement, error)
