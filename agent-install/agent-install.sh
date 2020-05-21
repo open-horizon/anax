@@ -314,8 +314,8 @@ function validate_args(){
 		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Username"
 		get_variable EDGE_CLUSTER_REGISTRY_TOKEN $CFG
 		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Token"
-		get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY $CFG
-		check_empty IMAGE_ON_EDGE_CLUSTER_REGISTRY "Image on Edge Cluster Registry"
+		get_variable IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY $CFG
+		check_empty IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY "Image Full Path  on Edge Cluster Registry"
 	fi
     fi
     get_variable CERTIFICATE $CFG
@@ -374,7 +374,7 @@ function show_config() {
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
 	echo "Edge Cluster Registry Username: ${EDGE_CLUSTER_REGISTRY_USERNAME}"
 	echo "Edge Cluster Registry Token: <specified>"
-	echo "Image On Edge Cluster Registry: ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}"
+	echo "Image Full Path On Edge Cluster Registry: ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}"
     fi
 
     log_debug "show_config() end"
@@ -1468,13 +1468,13 @@ function pushImageToEdgeClusterRegistry() {
         exit 1
     fi
 
-    docker tag ${AGENT_IMAGE} ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}
-    docker push ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}
+    docker tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
+    docker push ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
     if [ $? -ne 0 ]; then
-        log_notify "Failed to push image ${IMAGE_ON_EDGE_CLUSTER_REGISTRY} to edge cluster's registry, exiting..."
+        log_notify "Failed to push image ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY} to edge cluster's registry, exiting..."
         exit 1
     fi
-    log_info "successfully pushed image $IMAGE_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
+    log_info "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
 
     log_debug "pushImageToEdgeClusterRegistry() end"
 }
@@ -1549,7 +1549,7 @@ function prepare_k8s_development_file() {
     cp deployment-template.yml deployment.yml
 
     if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
-    	sed -i -e "s#__ImagePath__#${IMAGE_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
+    	sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
     else
         sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
