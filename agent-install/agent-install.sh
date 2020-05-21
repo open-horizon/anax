@@ -34,6 +34,7 @@ CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 RESOURCE_READY=0
 GET_RESOURCE_MAX_TRY=5
+WAIT_POD_MAX_TRY=20
 POD_ID=""
 
 
@@ -1719,7 +1720,21 @@ function check_deployment_status() {
 
 function get_pod_id() {
     log_debug "get_pod_id() begin"
-    POD_ID=$(kubectl get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+
+    local i=0
+    while [[ $i -le $WAIT_POD_MAX_TRY ]] && [[ $(kubectl get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+        log_notify "waiting for pod: $i"
+	((i++))
+
+        sleep 1
+    done
+
+    if [[ $(kubectl get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+         log_notify "Failed to get agent pod in Ready status"
+	 exit 1
+    fi
+
+    POD_ID=$(kubectl get pod -l app=agent --field-selector status.phase=Running -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
     if [ -n "${POD_ID}" ]; then
         log_info "get pod: ${POD_ID}"
     else
