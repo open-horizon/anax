@@ -129,21 +129,23 @@ func (w *ChangesWorker) findAndProcessChanges() {
 		return
 	}
 
+	// Keep a map of changes that can be batched together into 1 event in order to reduce the load on
+	// the agbot worker.
+	batchedEvents := make(map[events.EventId]bool)
+
 	// Loop through each change to identify resources that we are interested in, and then send out event messages
 	// to notify the other workers that they have some work to do.
 	for _, change := range changes.Changes {
-		glog.V(3).Infof(chglog(fmt.Sprintf("Change: %v", change)))
+		glog.V(5).Infof(chglog(fmt.Sprintf("Change: %v", change)))
 
 		if change.IsAgbotMessage(w.GetExchangeId()) {
-			w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_MESSAGE_TYPE)
+			batchedEvents[events.CHANGE_AGBOT_MESSAGE_TYPE] = true
 
 		} else if change.IsAgbotServedPolicy(w.GetExchangeId()) || change.IsAgbotServedPattern(w.GetExchangeId()) {
 			w.orgList = w.gatherServedOrgs(&change)
 
 		} else if change.IsAgbotAgreement(w.GetExchangeId()) {
-			ev := events.NewExchangeChangeMessage(events.CHANGE_AGBOT_AGREEMENT_TYPE)
-			ev.SetChange(change)
-			w.Messages() <- ev
+			batchedEvents[events.CHANGE_AGBOT_AGREEMENT_TYPE] = true
 
 		} else if change.IsPattern() {
 			ev := events.NewExchangeChangeMessage(events.CHANGE_AGBOT_PATTERN)
@@ -161,26 +163,23 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			w.Messages() <- ev
 
 		} else if change.IsNode("") {
-			ev := events.NewExchangeChangeMessage(events.CHANGE_NODE_TYPE)
-			ev.SetChange(change)
-			w.Messages() <- ev
+			batchedEvents[events.CHANGE_NODE_TYPE] = true
 
 		} else if change.IsNodePolicy("") {
-			ev := events.NewExchangeChangeMessage(events.CHANGE_NODE_POLICY_TYPE)
-			ev.SetChange(change)
-			w.Messages() <- ev
+			batchedEvents[events.CHANGE_NODE_POLICY_TYPE] = true
 
 		} else if change.IsNodeAgreement("") {
-			ev := events.NewExchangeChangeMessage(events.CHANGE_NODE_AGREEMENT_TYPE)
-			ev.SetChange(change)
-			w.Messages() <- ev
+			batchedEvents[events.CHANGE_NODE_AGREEMENT_TYPE] = true
 
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))
 		}
 	}
 
-	// Record the most recent change id and reset the polling interval based on the changes that were found.
+	// Publish any batched events
+	w.emitChangeMessages(batchedEvents)
+
+	// Record the most recent change id.
 	w.postProcessChanges(changes)
 
 	glog.V(3).Infof(chglog(fmt.Sprintf("done looking for changes")))
@@ -201,6 +200,13 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	}
 	glog.V(3).Infof(chglog(fmt.Sprintf("done looking for object policy changes")))
 
+}
+
+// Send change message for each change type in the map that is set to true.
+func (w *ChangesWorker) emitChangeMessages(resChanges map[events.EventId]bool) {
+	for changeType, _ := range resChanges {
+		w.Messages() <- events.NewExchangeChangeMessage(changeType)
+	}
 }
 
 // Record the most recent change id based on the changes that were found.

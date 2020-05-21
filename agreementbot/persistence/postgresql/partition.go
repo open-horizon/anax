@@ -240,13 +240,13 @@ func (db *AgbotPostgresqlDB) QuiescePartition() error {
 }
 
 // Move all records from one partition to another if there is a stale or unowned partition in the database.
-func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) error {
+func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) (bool, error) {
 
 	if fromPartition, err := db.findUnownedPartition(timeout); err != nil {
-		return err
+		return false, err
 	} else if fromPartition == "" {
 		glog.V(3).Infof("AgreementBot %v did not find an unowned database partition.", db.identity)
-		return nil
+		return false, nil
 	} else {
 		// We have found a partition and we have claimed it (in a transaction) so no other agbot can grab it now. Move all the
 		// agreement related records in the partition into our primary partition, remove the partition tables and remove the partition
@@ -254,26 +254,27 @@ func (db *AgbotPostgresqlDB) MovePartition(timeout uint64) error {
 		// this time, another agbot will eventually claim this partition and attempt this same cleanup again.
 		tx, err := db.db.Begin()
 		if err != nil {
-			return errors.New(fmt.Sprintf("unable to start transaction for moving agreements, error: %v", err))
+			return false, errors.New(fmt.Sprintf("unable to start transaction for moving agreements, error: %v", err))
 		}
 		defer tx.Rollback()
 
 		if _, err := tx.Exec(db.GetAgreementPartitionMove(fromPartition, db.PrimaryPartition())); err != nil {
-			return err
+			return false, err
 		} else if _, err := tx.Exec(db.GetWorkloadUsagePartitionMove(fromPartition, db.PrimaryPartition())); err != nil {
-			return err
+			return false, err
 		} else if _, err := tx.Exec(db.GetAgreementPartitionTableDrop(fromPartition)); err != nil {
-			return err
+			return false, err
 		} else if _, err := tx.Exec(db.GetWorkloadUsagePartitionTableDrop(fromPartition)); err != nil {
-			return err
+			return false, err
 		} else if _, err := tx.Exec(PARTITION_DELETE, fromPartition); err != nil {
-			return err
+			return false, err
 		} else {
 			if err := tx.Commit(); err != nil {
-				return errors.New(fmt.Sprintf("unable to commit transaction for moving agreements, error: %v", err))
+				return false, errors.New(fmt.Sprintf("unable to commit transaction for moving agreements, error: %v", err))
 			}
 			glog.V(3).Infof("AgreementBot %v moved agreements from partition %v to %v", db.identity, fromPartition, db.PrimaryPartition())
 		}
 	}
-	return nil
+	// We found a partition and moved all the records.
+	return true, nil
 }
