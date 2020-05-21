@@ -1188,7 +1188,7 @@
     },
     {
       "id": "List the node errors currently surfaced to the Exchange.",
-      "translation": "列出当前在 Exchange 中出现的节点错误。"
+      "translation": "列出当前向 Exchange 呈现的节点错误。"
     },
     {
       "id": "List surfaced errors for this node.",
@@ -1196,7 +1196,7 @@
     },
     {
       "id": "Show the full eventlog object of the errors currently surfaced to the Exchange.",
-      "translation": "显示当前在 Exchange 中出现的错误的完整事件日志对象。"
+      "translation": "显示当前向 Exchange 呈现的错误的完整事件日志对象。"
     },
     {
       "id": "List the run-time status of the node.",
@@ -1584,7 +1584,7 @@
     },
     {
       "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
-      "translation": "在 Horizon Exchange 中添加或替换部署策略。 使用“hzn exchange deployment new”可建立空的部署策略模板。"
+      "translation": "在 Horizon Exchange 中添加或替换部署策略。 针对空的部署策略模板使用“hzn exchange deployment new”。"
     },
     {
       "id": "The name of the policy to add or overwrite.",

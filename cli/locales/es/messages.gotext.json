@@ -742,7 +742,7 @@
         "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
       ],
       "message": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "Se ha producido un error al eliminar el registro del nodo. El nodo debe estar en estado 'configured' 'configuring' para poder desconfigurarlo.",
+      "translation": "Se ha producido un error al eliminar el registro del nodo. El nodo debe estar en estado 'configured' o 'configuring' para poder desconfigurarlo.",
       "fuzzy": true
     },
     {
@@ -850,7 +850,7 @@
         "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
       ],
       "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "Se ha producido un error en la configuración de nodo. El nodo debe estar en estado 'configured' 'configuring' para poder cambiar el estado a {Arg_1}.",
+      "translation": "Se ha producido un error en la configuración de nodo. El nodo debe estar en estado 'configured' o 'configuring' para poder cambiar el estado a {Arg_1}.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -5161,7 +5161,7 @@
     {
       "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
       "message": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
-      "translation": "Añadir o sustituir una política de despliegue en Horizon Exchange. Utilice 'hzn exchange deployment new' para una nueva plantilla de política de despliegue vacía.",
+      "translation": "Añadir o sustituir una política de despliegue en Horizon Exchange. Utilice 'hzn exchange deployment new' para obtener una nueva plantilla de política de despliegue vacía.",
       "fuzzy": true
     },
     {
@@ -5197,7 +5197,7 @@
     {
       "id": "Remove the deployment policy in the Horizon Exchange.",
       "message": "Remove the deployment policy in the Horizon Exchange.",
-      "translation": "Elimine la política de despliegue en Horizon Exchange.",
+      "translation": "Eliminar la política de despliegue en Horizon Exchange.",
       "fuzzy": true
     },
     {
