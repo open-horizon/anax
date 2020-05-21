@@ -84,7 +84,7 @@
     },
     {
       "id": "Error retrieving device from database. Error: {Arg_1}",
-      "translation": "Erreur lors de la récupération de l'appareil depuis la base de données. Erreur : {Arg_1}"
+      "translation": "Erreur lors de la récupération du dispositif depuis la base de données. Erreur : {Arg_1}"
     },
     {
       "id": "Error deleting node exchange pattern from the local database. {Arg_1}",

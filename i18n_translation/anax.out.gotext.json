@@ -3,28 +3,12 @@
   "language": "en",
   "messages": [
     {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name, or Org is empty string."
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
     },
     {
-      "id": "The serviceVersions array is empty.",
-      "translation": "The serviceVersions array is empty."
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "properties contains an invalid property: {Err}"
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false)."
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "The constraint expression contains unmatched parentheses."
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Node heartbeat restored for node {Arg_1}/{Arg_2}."
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -343,44 +327,52 @@
       "translation": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern."
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      "id": "No input found.",
+      "translation": "No input found."
     },
     {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Node heartbeat restored for node {Arg_1}/{Arg_2}."
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Unauthorized. No exchange user id is supplied."
     },
     {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false)."
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "Failed to authenticate the user with the Exchange. {Err}"
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "Property must include a name and a value: {Property}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Input body couldn't be deserialized to JSON object. {Err}"
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings."
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to PolicyCheck object. {Err}"
     },
     {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "Property value is of type {ActualType}, expected type {DeclaredType}"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to UserInputCheck object. {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "Value {Value} of property {Name} is not an integer type"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to CompCheck object. {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string."
+      "id": "No exchange user id is supplied.",
+      "translation": "No exchange user id is supplied."
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "Property {Name} with value {Value} is not a valid verion string"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "No exchange user organization id is supplied."
     },
     {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "Property {Name} has invalid value type {ActualType}"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "No exchange user password or api key is supplied."
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "Wrong organization id, user id or password."
+    },
+    {
+      "id": "Internal server error",
+      "translation": "Internal server error"
     },
     {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
@@ -455,44 +447,32 @@
       "translation": "anax terminating, unable to complete agreement sync up. {Arg_1}"
     },
     {
-      "id": "no service name",
-      "translation": "no service name"
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "no docker image for service {ServiceName}"
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}"
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "failed to marshal body for {D}: {Err}"
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}"
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}"
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "user input {Name} has no default value and is not set"
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "Compatibility Error: Properties do not satisfy node constraint. {Err}"
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "'requiredServices' is not supported for cluster type service."
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}"
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "Failed to convert version {Ver} for service {ReqSvc} to version range expression."
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "Error retrieving service from the Exchange for {ReqSvc}. {Err}"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "The required service {SId} has the wrong service type: {SType}."
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}."
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}."
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -807,6 +787,10 @@
       "translation": "The input service spec object cannot be null."
     },
     {
+      "id": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
+      "translation": "Error retrieving service from the Exchange for {SvcSpec}. {Err}"
+    },
+    {
       "id": "Error verifing user input for service {SId}. {Err}",
       "translation": "Error verifing user input for service {SId}. {Err}"
     },
@@ -929,6 +913,14 @@
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
       "translation": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name."
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "The constraint expression contains unmatched parentheses."
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -1155,52 +1147,192 @@
       "translation": "Error converting the selections into Selectors: {Err}"
     },
     {
-      "id": "No input found.",
-      "translation": "No input found."
+      "id": "no service name",
+      "translation": "no service name"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Unauthorized. No exchange user id is supplied."
+      "id": "no docker image for service {ServiceName}",
+      "translation": "no docker image for service {ServiceName}"
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Failed to authenticate the user with the Exchange. {Err}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "failed to marshal body for {D}: {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Input body couldn't be deserialized to JSON object. {Err}"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to PolicyCheck object. {Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "user input {Name} has no default value and is not set"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to UserInputCheck object. {Err}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "'requiredServices' is not supported for cluster type service."
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to CompCheck object. {Err}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "Failed to convert version {Ver} for service {ReqSvc} to version range expression."
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "No exchange user id is supplied."
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "The required service {SId} has the wrong service type: {SType}."
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "No exchange user organization id is supplied."
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}."
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "No exchange user password or api key is supplied."
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "properties contains an invalid property: {Err}"
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "Wrong organization id, user id or password."
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false)."
     },
     {
-      "id": "Internal server error",
-      "translation": "Internal server error"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "Property must include a name and a value: {Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings."
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "Property value is of type {ActualType}, expected type {DeclaredType}"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "Value {Value} of property {Name} is not an integer type"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string."
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "Property {Name} with value {Value} is not a valid verion string"
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "Property {Name} has invalid value type {ActualType}"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+    },
+    {
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "Error starting containers: {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax terminating. Failed to instantiate docker client. {Arg_1}"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "Name, or Org is empty string."
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "The serviceVersions array is empty."
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false)."
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} is not a valid version string."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "Input version string {V1} or {V2} is not a valid single version string."
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
     },
     {
       "id": "unable to make directory for self signed MMS API certificate, error {Err}",
@@ -1597,138 +1729,6 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is."
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} is not a valid version string."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "Input version string {V1} or {V2} is not a valid single version string."
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "Compatibility Error: Properties do not satisfy node constraint. {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "Error starting containers: {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax terminating. Failed to instantiate iptables client. {Arg_1}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax terminating. Failed to instantiate docker client. {Arg_1}"
     }
   ]
 }

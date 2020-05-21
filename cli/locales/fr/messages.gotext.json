@@ -3537,13 +3537,13 @@
     {
       "id": "Please specify either deployment policy or pattern.",
       "message": "Please specify either deployment policy or pattern.",
-      "translation": "Veuillez spécifier une règle de déploiement ou un pattern.",
+      "translation": "Spécifiez une règle de déploiement ou un pattern.",
       "fuzzy": true
     },
     {
       "id": "One of these flags must be specified: -b, -B, -p, or -P.",
       "message": "One of these flags must be specified: -b, -B, -p, or -P.",
-      "translation": "Veuillez spécifier l'un des indicateurs suivants : -b, -B, -p ou -P.",
+      "translation": "Spécifiez l'un des indicateurs suivants : -b, -B, -p ou -P.",
       "fuzzy": true
     },
     {
@@ -3573,13 +3573,13 @@
     {
       "id": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
       "message": "Please specify the Exchange credential with -u for querying the node, deployment policy and service policy.",
-      "translation": "Veuillez spécifier les données d'identification d'Exchange avec -u pour l'interrogation du noeud, de la règle de déploiement et de la règle de service.",
+      "translation": "Spécifiez les données d'identification d'Exchange avec -u pour l'interrogation du noeud, de la règle de déploiement et de la règle de service.",
       "fuzzy": true
     },
     {
       "id": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
       "message": "Please specify the organization with -o for the Exchange credentials: {CredToUse}.",
-      "translation": "Veuillez spécifier l'organisation avec -o pour les données d'identification d'Exchange : {CredToUse}.",
+      "translation": "Spécifiez l'organisation avec -o pour les données d'identification d'Exchange : {CredToUse}.",
       "placeholders": [
         {
           "id": "CredToUse",
@@ -3673,7 +3673,7 @@
     {
       "id": "Wrong node type specified: {NodeType}. It must be 'device' or 'cluster'.",
       "message": "Wrong node type specified: {NodeType}. It must be 'device' or 'cluster'.",
-      "translation": "Type de noeud spécifié non valide : {NodeType}. Le type doit être 'device' ou 'cluster'.",
+      "translation": "Type de noeud spécifié incorrect : {NodeType}. Le type doit être 'device' ou 'cluster'.",
       "placeholders": [
         {
           "id": "NodeType",
@@ -3701,7 +3701,7 @@
     {
       "id": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
       "message": "Please specify the Exchange credential with -u for querying the node, deployment policy, service and service policy.",
-      "translation": "Veuillez spécifier les données d'identification d'Exchange avec -u pour l'interrogation du noeud, de la règle de déploiement, du service et de la règle de service.",
+      "translation": "Spécifiez les données d'identification d'Exchange avec -u pour l'interrogation du noeud, de la règle de déploiement, du service et de la règle de service.",
       "fuzzy": true
     },
     {
@@ -4215,7 +4215,7 @@
     {
       "id": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
       "message": "Horizon Exchange user credentials to query and create exchange resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value. As an alternative to using -o, you can set HZN_ORG_ID with the Horizon exchange organization ID",
-      "translation": "Données d'identification de l'utilisateur Horizon Exchange permettant d'interroger et de créer des ressources Exchange. Si elles ne sont pas renseignées, la variable HZN_EXCHANGE_USER_AUTH sera utilisée comme valeur par défaut. Si vous n'ajoutez pas l'organisation de l'utilisateur en préfixe, elle sera automatiquement ajoutée avec la valeur -o. Comme solution de rechange à l'utilisation de la valeur -o, définissez HZN_ORG_ID avec l'ID organisation Horizon Exchange.",
+      "translation": "Données d'identification de l'utilisateur Horizon Exchange permettant d'interroger et de créer des ressources Exchange. Si elles ne sont pas renseignées, la variable HZN_EXCHANGE_USER_AUTH est utilisée comme valeur par défaut. Si vous n'ajoutez pas l'organisation de l'utilisateur en préfixe, la valeur -o est automatiquement ajoutée en préfixe. Solution de rechange à l'utilisation de la valeur -o : définissez HZN_ORG_ID avec l'ID organisation Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -4257,7 +4257,7 @@
     {
       "id": "When listing all of the users, show only the usernames, instead of each entire resource.",
       "message": "When listing all of the users, show only the usernames, instead of each entire resource.",
-      "translation": "Lors de l'affichage de la liste de tous les utilisateurs, seuls les noms d'utilisateur apparaissent et non la ressource dans sa totalité.",
+      "translation": "Lors du listage de tous les utilisateurs, seuls les noms d'utilisateur apparaissent et non la ressource dans sa totalité.",
       "fuzzy": true
     },
     {
@@ -4383,7 +4383,7 @@
     {
       "id": "The type of your node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists, only the node token will be updated.",
       "message": "The type of your node. The valid values are: device, cluster. If omitted, the default is device. However, the node type stays unchanged if the node already exists, only the node token will be updated.",
-      "translation": "Le type de votre noeud. Les valeurs valides sont : 'device', 'cluster'. Si le type est omis, la valeur par défaut est 'device'. Toutefois, le type de noeud reste inchangé si le noeud existe déjà et seul le jeton de noeud est mis à jour.",
+      "translation": "Type de votre noeud. Valeurs admises : 'device', 'cluster'. Si le type est omis, la valeur par défaut est 'device'. Le type de noeud reste néanmoins inchangé si le noeud existe déjà, et seul le jeton de noeud est mis à jour.",
       "fuzzy": true
     },
     {
@@ -4539,13 +4539,13 @@
     {
       "id": "List the node errors currently surfaced to the Exchange.",
       "message": "List the node errors currently surfaced to the Exchange.",
-      "translation": "Afficher les erreurs de noeud en cours dans Exchange.",
+      "translation": "Répertorier les erreurs de noeud en cours dans Exchange.",
       "fuzzy": true
     },
     {
       "id": "List surfaced errors for this node.",
       "message": "List surfaced errors for this node.",
-      "translation": "Afficher les erreurs en cours pour ce noeud.",
+      "translation": "Répertorier les erreurs en cours pour ce noeud.",
       "fuzzy": true
     },
     {
@@ -4933,7 +4933,7 @@
     {
       "id": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
       "message": "The path of a private key file to be used to sign the service. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.private.key is the default.",
-      "translation": "Chemin d'accès à un fichier de clé privée à utiliser pour signer le service. S'il n'est pas spécifié, la variable d'environnement HZN_PRIVATE_KEY_FILE sera utilisée. Si aucun des deux n'est spécifié, ~/.hzn/keys/service.private.key est la valeur par défaut.",
+      "translation": "Chemin d'accès à un fichier de clé privée à utiliser pour signer le service. S'il n'est pas spécifié, la variable d'environnement HZN_PRIVATE_KEY_FILE est utilisée. Si aucun des deux n'est spécifié, ~/.hzn/keys/service.private.key est la valeur par défaut.",
       "fuzzy": true
     },
     {
@@ -5155,13 +5155,13 @@
     {
       "id": "Display an empty deployment policy template that can be filled in.",
       "message": "Display an empty deployment policy template that can be filled in.",
-      "translation": "Affiche un modèle de règle de déploiement vide à compléter.",
+      "translation": "Afficher un modèle de règle de déploiement vide à compléter.",
       "fuzzy": true
     },
     {
       "id": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
       "message": "Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template.",
-      "translation": "Ajoute ou remplace une règle de déploiement dans Horizon Exchange. Utilisez 'hzn exchange deployment new' pour un modèle de règle de déploiement vierge.",
+      "translation": "Ajouter ou remplacer une règle de déploiement dans Horizon Exchange. Utiliser 'hzn exchange deployment new' pour un modèle de règle de déploiement vierge.",
       "fuzzy": true
     },
     {
@@ -5191,7 +5191,7 @@
     {
       "id": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "Le chemin d'accès au fichier json qui contient l'attribut de règle de déploiement mis à jour devant être modifié dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Chemin d'accès au fichier json contenant l'attribut de règle de déploiement mis à jour à modifier dans Horizon Exchange. Spécifiez -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -5581,25 +5581,25 @@
     {
       "id": "Show the compatibility status of all the service versions referenced in the deployment policy.",
       "message": "Show the compatibility status of all the service versions referenced in the deployment policy.",
-      "translation": "Affichez le statut de compatibilité de toutes les versions de service référencées dans la règle de déploiement.",
+      "translation": "Afficher le statut de compatibilité de toutes les versions de service référencées dans la règle de déploiement.",
       "fuzzy": true
     },
     {
       "id": "Show policies and userinput used for the compatibility checking.",
       "message": "Show policies and userinput used for the compatibility checking.",
-      "translation": "Affichez les règles et entrée utilisateur utilisées pour la vérification de compatibilité.",
+      "translation": "Afficher les règles et l'entrée utilisateur utilisées pour la vérification de compatibilité.",
       "fuzzy": true
     },
     {
       "id": "Check policy compatibility.",
       "message": "Check policy compatibility.",
-      "translation": "Vérifiez la compatibilité de règle.",
+      "translation": "Vérifier la compatibilité de règle.",
       "fuzzy": true
     },
     {
       "id": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.",
       "message": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility.",
-      "translation": "Architecture du noeud. Obligatoire quand -n n'est pas spécifié. Si elle est omise, le service de toutes les architectures référencées dans la règle de déploiement sera vérifié à des fins de compatibilité.",
+      "translation": "Architecture du noeud. Obligatoire quand -n n'est pas spécifié. Si elle est omise, la comptabilité du service de toutes les architectures référencées dans la règle de déploiement sera vérifiée. ",
       "fuzzy": true
     },
     {
@@ -5611,7 +5611,7 @@
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "ID noeud Horizon Exchange. Mutuellement exclusif avec --node-pol. S'il est omis, l'ID noeud avec lequel l'appareil en cours est enregistré sera utilisé. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec la valeur -o.",
+      "translation": "ID noeud Horizon Exchange. Mutuellement exclusif avec --node-pol. S'il est omis, l'ID noeud avec lequel le dispositif en cours est enregistré sera utilisé. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec la valeur -o.",
       "fuzzy": true
     },
     {
@@ -5623,7 +5623,7 @@
     {
       "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
       "message": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
-      "translation": "ID de la règle de déploiement Horizon Exchange. Mutuellement exclusif avec -B. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec l'ID organisation du noeud.",
+      "translation": "ID de la règle de déploiement Horizon Exchange. Mutuellement exclusif avec -B. Si vous n'ajoutez pas l'ID organisation en préfixe, l'ID organisation du noeud est automatiquement ajoutée en préfixe.",
       "fuzzy": true
     },
     {
@@ -5635,7 +5635,7 @@
     {
       "id": "(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
       "message": "(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
-      "translation": "(facultatif) Nom du fichier d'entrée JSON contenant la règle de service. S'il est omis, la règle de service sera extraite d'Exchange pour le service défini dans la règle de déploiement.",
+      "translation": "(facultatif) Nom du fichier d'entrée JSON contenant la règle de service. S'il est omis, la règle de service est extraite d'Exchange pour le service défini dans la règle de déploiement.",
       "fuzzy": true
     },
     {
@@ -5659,7 +5659,7 @@
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "ID noeud Horizon Exchange. Mutuellement exclusif avec --node-ui. S'il est omis, l'ID noeud avec lequel l'appareil en cours est enregistré sera utilisé. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec la valeur -o.",
+      "translation": "ID noeud Horizon Exchange. Mutuellement exclusif avec --node-ui. S'il est omis, l'ID noeud avec lequel le dispositif en cours est enregistré sera utilisé. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec la valeur -o.",
       "fuzzy": true
     },
     {
@@ -5701,13 +5701,13 @@
     {
       "id": "Check all compatibilities for a deployment.",
       "message": "Check all compatibilities for a deployment.",
-      "translation": "Vérifiez toutes les compatibilités pour un déploiement.",
+      "translation": "Vérifier toutes les compatibilités pour un déploiement.",
       "fuzzy": true
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
       "message": "The Horizon exchange node ID. Mutually exclusive with --node-pol and --node-ui. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
-      "translation": "ID noeud Horizon Exchange. Mutuellement exclusif avec --node-pol et --node-ui. S'il est omis, l'ID noeud avec lequel l'appareil en cours est enregistré sera utilisé. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec la valeur -o.",
+      "translation": "ID noeud Horizon Exchange. Mutuellement exclusif avec --node-pol et --node-ui. S'il est omis, l'ID noeud avec lequel le dispositif en cours est enregistré sera utilisé. Si vous n'ajoutez pas l'ID organisation en préfixe, il sera automatiquement ajouté avec la valeur -o.",
       "fuzzy": true
     },
     {
@@ -7737,7 +7737,7 @@
     {
       "id": "Please specify the organization for service {ServiceUrl}.",
       "message": "Please specify the organization for service {ServiceUrl}.",
-      "translation": "Veuillez spécifier l'organisation du service {ServiceUrl}.",
+      "translation": "Spécifiez l'organisation du service {ServiceUrl}.",
       "placeholders": [
         {
           "id": "ServiceUrl",
@@ -11072,7 +11072,7 @@
     {
       "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
       "message": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
-      "translation": "Impossible de lire le numéro de série de la machine, erreur : {MsErr}. Poursuite de l'enregistrement de l'appareil.",
+      "translation": "Impossible de lire le numéro de série de la machine, erreur : {MsErr}. Poursuite de l'enregistrement du dispositif.",
       "placeholders": [
         {
           "id": "MsErr",
@@ -11734,7 +11734,7 @@
     {
       "id": "Please specify the node organization id.",
       "message": "Please specify the node organization id.",
-      "translation": "Veuillez spécifier l'ID organisation du noeud.",
+      "translation": "Spécifiez l'ID organisation du noeud.",
       "fuzzy": true
     },
     {
@@ -13676,7 +13676,7 @@
     {
       "id": "please specify the image name with -i flag.",
       "message": "please specify the image name with -i flag.",
-      "translation": "Veuillez spécifier le nom de l'image avec l'indicateur -i.",
+      "translation": "Spécifiez le nom de l'image avec l'indicateur -i.",
       "fuzzy": true
     },
     {
@@ -18774,7 +18774,7 @@
     {
       "id": "failed to unmarshal exchange node {Device}: {Err}",
       "message": "failed to unmarshal exchange node {Device}: {Err}",
-      "translation": "Echec de la désérialisation du noeud Exchange {Device} : {Err}",
+      "translation": "Echec de désérialisation du noeud Exchange {Device} : {Err}",
       "placeholders": [
         {
           "id": "Device",
@@ -18798,7 +18798,7 @@
     {
       "id": "Device will re-evaluate all agreements based on the update. Existing agreements might be cancelled and re-negotiated.",
       "message": "Device will re-evaluate all agreements based on the update. Existing agreements might be cancelled and re-negotiated.",
-      "translation": "L'appareil va réévaluer tous les accords en fonction de la mise à jour. Il se peut que les accords existants soient annulés et renégociés.",
+      "translation": "Le dispositif va réévaluer tous les accords en fonction de la mise à jour. Il se peut que les accords existants soient annulés et renégociés.",
       "fuzzy": true
     },
     {
@@ -18810,7 +18810,7 @@
     {
       "id": "Please specify both node and token.",
       "message": "Please specify both node and token.",
-      "translation": "Veuillez spécifier le noeud et le jeton.",
+      "translation": "Spécifiez le noeud et le jeton.",
       "fuzzy": true
     },
     {

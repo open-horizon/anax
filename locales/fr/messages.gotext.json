@@ -438,7 +438,7 @@
         "Error retrieving device from database. Error: {Arg_1}"
       ],
       "message": "Error retrieving device from database. Error: {Arg_1}",
-      "translation": "Erreur lors de la récupération de l'appareil depuis la base de données. Erreur : {Arg_1}",
+      "translation": "Erreur lors de la récupération du dispositif depuis la base de données. Erreur : {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
