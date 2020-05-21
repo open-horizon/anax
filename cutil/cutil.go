@@ -269,6 +269,16 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 
 }
 
+// Temporary function to remove ESS env vars for the edge cluster case.
+func RemoveESSEnvVars(envAdds map[string]string, prefix string) map[string]string {
+	delete(envAdds, prefix+"ESS_API_PROTOCOL")
+	delete(envAdds, prefix+"ESS_API_ADDRESS")
+	delete(envAdds, prefix+"ESS_API_PORT")
+	delete(envAdds, prefix+"ESS_AUTH")
+	delete(envAdds, prefix+"ESS_CERT")
+	return envAdds
+}
+
 // This function is similar to the above, for env vars that are system related. It is only used by workloads.
 func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon string, cpus string, ram string, arch string) {
 
