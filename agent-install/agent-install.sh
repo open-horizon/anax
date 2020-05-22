@@ -262,6 +262,13 @@ function validate_args(){
 	if [ $? -ne 0 ]; then
             log_notify "kubectl is not available, please install kubectl and ensure that it is found on your \$PATH. Exiting..."
 	fi
+
+    # check docker is available
+    docker --help > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+            log_notify "docker is not available, please install docker. Exiting..."
+    fi
+
     fi
 
     check_empty "$SKIP_REGISTRATION" "registration flag"
