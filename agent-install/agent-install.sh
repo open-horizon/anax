@@ -644,7 +644,7 @@ function install_linux(){
     else
         log_info "docker not found, installing it..."
         set -x
-        apt-get install -y docker-ce docker-ce-cli containerd.io
+        apt install -y docker-ce docker-ce-cli containerd.io
         { set +x; } 2>/dev/null
         log_info "docker installed"
     fi
