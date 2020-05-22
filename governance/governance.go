@@ -45,6 +45,7 @@ const CONTAINER_GOVERNOR = "ContainerGovernor"
 const MICROSERVICE_GOVERNOR = "MicroserviceGovernor"
 const BC_GOVERNOR = "BlockchainGovernor"
 const SURFACEERRORS = "SurfaceExchErrors"
+const NODESTATUS = "NodeStatus"
 
 // Keys for the exchange errors cache in the worker
 const EXCHANGE_ERRORS = "ExchangeErrors"
@@ -737,7 +738,7 @@ func (w *GovernanceWorker) Initialize() bool {
 	}
 
 	// report the device status to the exchange
-	w.ReportDeviceStatus()
+	w.DispatchSubworker(NODESTATUS, w.ReportDeviceStatus, 60, false)
 
 	// start checking for issues closed by agreements and putting updated surface errors in the exchange
 	w.DispatchSubworker(SURFACEERRORS, w.surfaceErrors, w.BaseWorker.Manager.Config.Edge.SurfaceErrorCheckIntervalS, false)
