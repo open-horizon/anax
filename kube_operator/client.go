@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	yaml "gopkg.in/yaml.v2"
 	"io"
@@ -129,7 +130,11 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 		}
 	}
 
-	mapName, err := c.CreateConfigMap(envVars, agId, namespace)
+	// The ESS is not supported in edge cluster services, so for now, remove the ESS env vars.
+	envAdds := cutil.RemoveESSEnvVars(envVars, config.ENVVAR_PREFIX)
+
+	// Create the config map.
+	mapName, err := c.CreateConfigMap(envAdds, agId, namespace)
 	if err != nil {
 		return err
 	}

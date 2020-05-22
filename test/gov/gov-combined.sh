@@ -446,6 +446,19 @@ else
   echo -e "Unconfig loop tests are disabled."
 fi
 
+#Start the edge cluster verification test.
+if [ "$NOKUBE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${TEST_PATTERNS}" == "" ]
+then
+  echo -e "Verifying edge cluster agreement"
+  ./verify_edge_cluster.sh
+  if [ $? -ne 0 ]; then
+    echo "Failed edge cluster verification tests."
+    exit 1
+  fi
+else
+  echo -e "Edge cluster agreement verification skipped."
+fi
+
 # Clean up remote environment
 if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   echo "Clean up remote environment"
