@@ -627,6 +627,7 @@ function install_linux(){
         log_info "curl installed"
 	fi
 
+    log_info "Checking if jq is installed..."
 	if command -v jq >/dev/null 2>&1; then
 		log_info "jq found"
 	else
@@ -636,6 +637,17 @@ function install_linux(){
         { set +x; } 2>/dev/null
         log_info "jq installed"
 	fi
+
+    log_info "Checking if docker is installed..."
+    if command -v docker >/dev/null 2>&1; then
+        log_info "docker found"
+    else
+        log_info "docker not found, installing it..."
+        set -x
+        apt install -y docker-ce docker-ce-cli containerd.io
+        { set +x; } 2>/dev/null
+        log_info "docker installed"
+    fi
 
     if [[ -n "$PKG_APT_REPO" ]]; then
 	    if [[ -n "$PKG_APT_KEY" ]]; then
@@ -1590,7 +1602,7 @@ function create_namespace() {
     # check if namespace exist, if not, create
     log_info "checking if namespace exist..."
 
-    # due to global set -e, need to unset that to allow the script to still run after error 
+    # due to global set -e, need to unset that to allow the script to still run after error
     set +e
     kubectl get namespace ${AGENT_NAMESPACE} 2>/dev/null
     local ret=$?
