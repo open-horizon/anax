@@ -4,11 +4,11 @@ import (
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
-	"k8s.io/client-go/rest"
 	"net/http"
 	"time"
 )
@@ -157,7 +157,7 @@ func DeepClean() error {
 
 	// detect the node type
 	nodeType := persistence.DEVICE_TYPE_DEVICE
-	if _, err := rest.InClusterConfig(); err == nil {
+	if _, err := cutil.NewKubeConfig(); err == nil {
 		nodeType = persistence.DEVICE_TYPE_CLUSTER
 	}
 
