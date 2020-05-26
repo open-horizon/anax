@@ -77,3 +77,6 @@ const AgbotAgreementBatchSize_DEFAULT = 200
 
 // The default full rescan interval
 const AgbotFullRescan_DEFAULT = 600
+
+// The maximum number of changes to retrieve at once from the exchange
+const AgbotMaxChanges_DEFAULT = 1000
