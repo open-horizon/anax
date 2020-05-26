@@ -305,9 +305,8 @@ func (w *AgreementBotWorker) Initialize() bool {
 		return w.fail()
 	}
 
-	// Start the go thread that heartbeats to the database and checks for stale partitions.
+	// Start the go thread that heartbeats to the database.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
-	w.DispatchSubworker(STALE_PARTITIONS, w.stalePartitions, int(w.BaseWorker.Manager.Config.GetPartitionStale()), false)
 
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.
@@ -372,6 +371,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 		glog.Errorf("AgreementBotWorker Terminating, unable to sync up, error: %v", err)
 		return w.fail()
 	}
+
+	// Start the go thread that checks for stale partitions.
+	w.DispatchSubworker(STALE_PARTITIONS, w.stalePartitions, int(w.BaseWorker.Manager.Config.GetPartitionStale()), false)
 
 	// The agbot worker is now ready to handle incoming messages
 	w.ready = true
