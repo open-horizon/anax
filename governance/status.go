@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/kube_operator"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"reflect"
 	"time"
 )
 
@@ -71,17 +72,17 @@ func NewDeviceStatus() *DeviceStatus {
 }
 
 // Report the containers status and connectivity status to the exchange.
-func (w *GovernanceWorker) ReportDeviceStatus() {
+func (w *GovernanceWorker) ReportDeviceStatus() int {
 
 	if !w.Config.Edge.ReportDeviceStatus {
 		glog.Info("ReportDeviceStatus is false. The status report to the exchange is turned off.")
-		return
+		return 3600
 	}
 
 	// for 'device' node type, it has to have DockerEndpoint set
 	if w.Config.Edge.DockerEndpoint == "" && w.deviceType == persistence.DEVICE_TYPE_DEVICE {
 		glog.Infof("Skip reporting the status to the exchange because DockerEndpoint is not set in the configuration.")
-		return
+		return 3600
 	}
 
 	glog.Info("started the status report to the exchange.")
@@ -111,12 +112,27 @@ func (w *GovernanceWorker) ReportDeviceStatus() {
 	// report the status to the exchange
 	w.deviceStatus = &device_status
 
-	glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status)))
-
-	if err := w.writeStatusToExchange(&device_status); err != nil {
-		glog.Errorf(logString(err))
+	statusChanged := true
+	oldWlStatus, err := persistence.FindNodeStatus(w.db)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Failed to retrieve previous device status from local database: %v", err)))
+	} else {
+		statusChanged = changeInWorkloadStatuses(device_status.Services, oldWlStatus)
 	}
 
+	if statusChanged {
+		glog.V(5).Infof(logString(fmt.Sprintf("device status to report to the exchange: %v", device_status)))
+
+		if err := w.writeStatusToExchange(&device_status); err != nil {
+			glog.Errorf(logString(err))
+		}
+		if err := persistence.SaveNodeStatus(w.db, convertToPersistenceType(device_status.Services)); err != nil {
+			glog.Errorf(logString(err))
+		}
+	} else {
+		glog.V(5).Infof(logString(fmt.Sprintf("device status unchanged, skipping report to exchange: %v", device_status)))
+	}
+	return 60
 }
 
 // Find the status for all the Services.
@@ -404,4 +420,74 @@ func (w *GovernanceWorker) surfaceErrors() int {
 	putErrorsHandler := exchange.GetHTTPPutSurfaceErrorsHandler(w.limitedRetryEC)
 	serviceResolverHandler := exchange.GetHTTPServiceResolverHandler(w.limitedRetryEC)
 	return exchangesync.UpdateSurfaceErrors(w.db, *pDevice, currentExchangeErrors.ErrorList, putErrorsHandler, serviceResolverHandler, w.BaseWorker.Manager.Config.Edge.SurfaceErrorTimeoutS, w.BaseWorker.Manager.Config.Edge.SurfaceErrorAgreementPersistentS)
+}
+
+func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persistence.WorkloadStatus) bool {
+	if len(oldStatuses) != len(newStatuses) {
+		return true
+	}
+	matches := 0
+	for _, oldStatus := range oldStatuses {
+		for _, newStatus := range newStatuses {
+			if statusMatch(newStatus, oldStatus) {
+				if !reflect.DeepEqual(newStatus.OperatorStatus, oldStatus.OperatorStatus) {
+					return true
+				}
+				if changeInContainerStatuses(newStatus.Containers, oldStatus.Containers) {
+					return true
+				}
+				matches++
+			}
+		}
+	}
+	if matches != len(newStatuses) {
+		return true
+	}
+	return false
+}
+
+func statusMatch(newStatus WorkloadStatus, oldStatus persistence.WorkloadStatus) bool {
+	return oldStatus.AgreementId == newStatus.AgreementId && oldStatus.ServiceURL == newStatus.ServiceURL && oldStatus.Org == newStatus.Org
+}
+
+func changeInContainerStatuses(newContainers []ContainerStatus, oldContainers []persistence.ContainerStatus) bool {
+	if len(oldContainers) != len(newContainers) {
+		return true
+	}
+	matches := 0
+	for _, oldContainer := range oldContainers {
+		for _, newContainer := range newContainers {
+			if oldContainer.Name == newContainer.Name && oldContainer.Image == newContainer.Image && oldContainer.Created == newContainer.Created {
+				if oldContainer.State == newContainer.State {
+					matches++
+				} else {
+					return true
+				}
+			}
+		}
+	}
+	if matches != len(newContainers) {
+		return true
+	}
+	return false
+}
+
+func convertToPersistenceType(workload []WorkloadStatus) []persistence.WorkloadStatus {
+	persistentWls := []persistence.WorkloadStatus{}
+	for _, wlStatus := range workload {
+		newPersistentWlStatus := persistence.WorkloadStatus{AgreementId: wlStatus.AgreementId,
+			ServiceURL: wlStatus.ServiceURL, Org: wlStatus.Org, Version: wlStatus.Version,
+			Arch: wlStatus.Arch, OperatorStatus: wlStatus.OperatorStatus}
+		newPersistentWlStatus.Containers = converContainerStatusToPersistenceType(wlStatus.Containers)
+		persistentWls = append(persistentWls, newPersistentWlStatus)
+	}
+	return persistentWls
+}
+
+func converContainerStatusToPersistenceType(containers []ContainerStatus) []persistence.ContainerStatus {
+	persistentCStatuses := []persistence.ContainerStatus{}
+	for _, cStatus := range containers {
+		persistentCStatuses = append(persistentCStatuses, persistence.ContainerStatus{Name: cStatus.Name, Image: cStatus.Image, Created: cStatus.Created, State: cStatus.State})
+	}
+	return persistentCStatuses
 }
