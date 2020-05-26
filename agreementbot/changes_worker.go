@@ -1,6 +1,7 @@
 package agreementbot
 
 import (
+	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
@@ -44,18 +45,10 @@ func (w *ChangesWorker) Initialize() bool {
 	// If we havent picked up changes yet, make sure to broadcast all change events just to make sure the agbot is
 	// up to date with what's in the exchange.
 	if w.changeID == 0 {
-
-		// Call the exchange to retrieve the current max change id.
-		if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(w)(); err != nil {
-			glog.Errorf(chglog(fmt.Sprintf("Error retrieving max change ID, error: %v", err)))
-		} else {
-			w.changeID = maxChangeID.MaxChangeID
+		if err := w.getChangeId(); err != nil {
+			// If the change Id was unavailable, the nowork handler will try to obtain it later.
+			return true
 		}
-
-		// Ensure the agbot does initial scans across resources.
-		w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_MESSAGE_TYPE)
-		w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_SERVED_POLICY)
-		w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_SERVED_PATTERN)
 	}
 
 	// Grab the list of orgs this agbot is supposed to be serving and set it into the worker's org list cache.
@@ -113,16 +106,23 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	w.noworkDispatch = time.Now().Unix()
 
 	// If there is no last known change id, then we havent initialized yet,so do nothing.
-	maxRecords := 1000
 	if w.changeID == 0 {
 		glog.Warningf(chglog(fmt.Sprintf("No starting change ID")))
-		return
+
+		// Get the latest change ID, if it's available.
+		if err := w.getChangeId(); err != nil {
+			return
+		}
+
+		// Grab the list of orgs this agbot is supposed to be serving and set it into the worker's org list cache.
+		w.orgList = w.gatherServedOrgs(nil)
+
 	}
 
 	glog.V(3).Infof(chglog(fmt.Sprintf("looking for changes starting from ID %v", w.changeID)))
 
 	// Call the exchange to retrieve any changes since our last known change id.
-	changes, err := exchange.GetHTTPExchangeChangeHandler(w)(w.changeID, maxRecords, w.orgList)
+	changes, err := exchange.GetHTTPExchangeChangeHandler(w)(w.changeID, w.Config.AgreementBot.MaxExchangeChanges, w.orgList)
 
 	// Handle heartbeat state changes and errors. Returns true if there was an error to be handled.
 	if w.handleHeartbeatStateAndError(changes, err) {
@@ -200,6 +200,27 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	}
 	glog.V(3).Infof(chglog(fmt.Sprintf("done looking for object policy changes")))
 
+}
+
+// Get the current change ID from the exchange, which gives this worker a place to start. Once there
+// is a change ID available, tell the agbot worker to init itself and start scanning.
+func (w *ChangesWorker) getChangeId() error {
+
+	// Call the exchange to retrieve the current max change id.
+	if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(w)(); err != nil {
+		msg := fmt.Sprintf("Error retrieving max change ID, error: %v", err)
+		glog.Errorf(chglog(msg))
+		return errors.New(msg)
+
+	} else {
+		w.changeID = maxChangeID.MaxChangeID
+	}
+
+	// Ensure the agbot does initial scans across resources.
+	w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_MESSAGE_TYPE)
+	w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_SERVED_POLICY)
+	w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_SERVED_PATTERN)
+	return nil
 }
 
 // Send change message for each change type in the map that is set to true.
