@@ -1486,10 +1486,22 @@ function getImageInfo() {
 
 function pushImageToEdgeClusterRegistry() {
     log_debug "pushImageToEdgeClusterRegistry() begin"
-    echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin
-    if [ $? -ne 0 ]; then
-        log_notify "Failed to login to edge cluster's registry, exiting..."
-        exit 1
+
+    # split $IMAGE_ON_EDGE_CLUSTER_REGISTRY by "/"
+    parts=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print NF}')
+    if [ "$parts" == "3" ]; then
+        EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $1}')
+        log_notify "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
+        if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
+                docker login $EDGE_CLUSTER_REGISTRY_HOST
+        elif
+                echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
+        fi
+
+        if [ $? -ne 0 ]; then
+            log_notify "Failed to login to edge cluster's registry: $EDGE_CLUSTER_REGISTRY_HOST, exiting..."
+            exit 1
+        fi
     fi
 
     docker tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
