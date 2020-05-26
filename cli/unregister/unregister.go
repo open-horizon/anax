@@ -4,9 +4,11 @@ import (
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/persistence"
 	"net/http"
 	"time"
 )
@@ -31,6 +33,7 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 	// get the node
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+
 	if horDevice.Org == nil || *horDevice.Org == "" {
 		msgPrinter.Printf("The node is not registered.")
 		msgPrinter.Println()
@@ -151,28 +154,51 @@ func DeleteHorizonNode(removeNodeUnregister bool, deepClean bool, timeout int) e
 
 // remove local db, policy files and all the service containers
 func DeepClean() error {
+
+	// detect the node type
+	nodeType := persistence.DEVICE_TYPE_DEVICE
+	if _, err := cutil.NewKubeConfig(); err == nil {
+		nodeType = persistence.DEVICE_TYPE_CLUSTER
+	}
+
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	msgPrinter.Printf("Starting external deep clean ...")
 	msgPrinter.Println()
-	cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
-	cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
 
-	msgPrinter.Printf("Deleting local horizon DB...")
-	msgPrinter.Println()
-	cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
-	cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
+	if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+		msgPrinter.Printf("Deleting local horizon DB...")
+		msgPrinter.Println()
+		cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
+		cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
 
-	msgPrinter.Printf("Deleting service containers...")
-	msgPrinter.Println()
-	if err := RemoveServiceContainers(); err != nil {
-		fmt.Printf(err.Error())
+		// kill anax inside the agent container, it will get restarted by the nax.service script
+		msgPrinter.Printf("Restarting anax...")
+		msgPrinter.Println()
+		cliutils.RunCmd(nil, "pkill", "-f", "/usr/horizon/bin/anax")
+
+	} else {
+		cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
+		cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
+
+		msgPrinter.Printf("Deleting local horizon DB...")
+		msgPrinter.Println()
+		cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
+		cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
+
+		msgPrinter.Printf("Deleting service containers...")
+		msgPrinter.Println()
+		if err := RemoveServiceContainers(); err != nil {
+			fmt.Printf(err.Error())
+		}
+
+		msgPrinter.Printf("Starting horizon...")
+		msgPrinter.Println()
+		cliutils.RunCmd(nil, "systemctl", "start", "horizon.service")
+
 	}
 
-	msgPrinter.Printf("Starting horizon...")
-	msgPrinter.Println()
-	cliutils.RunCmd(nil, "systemctl", "start", "horizon.service")
 	return nil
 }
 

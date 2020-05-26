@@ -1455,17 +1455,19 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		// get service image auths from the exchange
 		img_auths := make([]events.ImageDockerAuth, 0)
-		if w.Config.Edge.TrustDockerAuthFromOrg {
-			if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
-				return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
-			} else {
-				if ias != nil {
-					for _, iau_temp := range ias {
-						username := iau_temp.UserName
-						if username == "" {
-							username = "token"
+		if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+			if w.Config.Edge.TrustDockerAuthFromOrg {
+				if ias, err := exchange.GetHTTPServiceDockerAuthsHandler(w)(workload.WorkloadURL, workload.Org, workload.Version, workload.Arch); err != nil {
+					return errors.New(logString(fmt.Sprintf("received error querying exchange for service image auths: %v, error %v", workload, err)))
+				} else {
+					if ias != nil {
+						for _, iau_temp := range ias {
+							username := iau_temp.UserName
+							if username == "" {
+								username = "token"
+							}
+							img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
 						}
-						img_auths = append(img_auths, events.ImageDockerAuth{Registry: iau_temp.Registry, UserName: username, Password: iau_temp.Token})
 					}
 				}
 			}
@@ -1514,29 +1516,31 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 
 		lc.EnvironmentAdditions = &envAdds
 
-		// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
-		deps := serviceDef.GetServiceDependencies()
+		if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
+			deps := serviceDef.GetServiceDependencies()
 
-		// Create the service instance dependency path with the workload as the root.
-		instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
+			// Create the service instance dependency path with the workload as the root.
+			instancePath := []persistence.ServiceInstancePathElement{*persistence.NewServiceInstancePathElement(workload.WorkloadURL, workload.Org, workload.Version)}
 
-		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
-			persistence.NewMessageMeta(EL_GOV_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
-			persistence.EC_START_DEPENDENT_SERVICE,
-			*ag)
-
-		if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
-			eventlog.LogAgreementEvent(
-				w.db,
-				persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err.Error()),
-				persistence.EC_ERROR_START_DEPENDENT_SERVICE,
+			eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
+				persistence.NewMessageMeta(EL_GOV_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL),
+				persistence.EC_START_DEPENDENT_SERVICE,
 				*ag)
-			return err
-		} else {
-			// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
-			// the services that are going to be network accessible to the workload container(s).
-			lc.Microservices = ms_specs
+
+			if ms_specs, err := w.processDependencies(instancePath, deps, proposal.AgreementId(), protocol); err != nil {
+				eventlog.LogAgreementEvent(
+					w.db,
+					persistence.SEVERITY_ERROR,
+					persistence.NewMessageMeta(EL_GOV_ERR_START_DEPENDENT_SVC, ag.RunningWorkload.Org, ag.RunningWorkload.URL, err.Error()),
+					persistence.EC_ERROR_START_DEPENDENT_SERVICE,
+					*ag)
+				return err
+			} else {
+				// Save the list of services/microservices associated with this agreement and store them in the AgreementLaunchContext. These are
+				// the services that are going to be network accessible to the workload container(s).
+				lc.Microservices = ms_specs
+			}
 		}
 
 		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
