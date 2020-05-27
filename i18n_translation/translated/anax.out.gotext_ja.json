@@ -3,28 +3,12 @@
   "language": "ja",
   "messages": [
     {
-      "id": "Name, or Org is empty string.",
-      "translation": "Name または Org が空ストリングです。"
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}"
     },
     {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 配列が空です。"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "制約式に対応しない括弧が含まれています。"
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。"
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -328,7 +312,7 @@
     },
     {
       "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
-      "translation": "Exchange 上で、再度ノード・パターンが変更されました。新規パターンでノードを登録します: {Arg_1}"
+      "translation": "Exchange 上で、再度ノード・パターンが変更されました。 新規パターンでノードを登録します: {Arg_1}"
     },
     {
       "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
@@ -343,44 +327,52 @@
       "translation": "新規パターン {Arg_1} が検証されました。 契約を取り消し、新規パターンでノードを再登録します。"
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが失敗しました。 エラー: {Arg_3}"
+      "id": "No input found.",
+      "translation": "入力が見つかりません。"
     },
     {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "ノード {Arg_1}/{Arg_2} に対するノード・ハートビートが復元されました。"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
     },
     {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "プロパティー {PROPNODEPRIVILEGED} にはブール値 (true または false) が必要です。"
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "ユーザーを Exchange で認証できませんでした。 {Err}"
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および string のリストです。"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
+      "id": "No exchange user id is supplied.",
+      "translation": "Exchange ユーザー ID が提供されていません。"
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "Exchange ユーザー組織 ID が提供されていません。"
     },
     {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
+    },
+    {
+      "id": "Internal server error",
+      "translation": "内部サーバー・エラー"
     },
     {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
@@ -408,7 +400,7 @@
     },
     {
       "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
-      "translation": "ローカル・ノード・ポリシーを Exchange のコピーと同期できません。エラー: {Arg_1}"
+      "translation": "ローカル・ノード・ポリシーを Exchange のコピーと同期できません。 エラー: {Arg_1}"
     },
     {
       "id": "Node policy updated with the Exchange copy: {Arg_1}",
@@ -416,11 +408,11 @@
     },
     {
       "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
-      "translation": "ローカル・ノード・ユーザー入力を Exchange のコピーと同期できません。エラー: {Arg_1}"
+      "translation": "ローカル・ノード・ユーザー入力を Exchange のコピーと同期できません。 エラー: {Arg_1}"
     },
     {
       "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。変更されたユーザー入力: {Arg_1}"
+      "translation": "ノードのユーザー入力が Exchange のコピーによって更新されました。 変更されたユーザー入力: {Arg_1}"
     },
     {
       "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
@@ -432,7 +424,7 @@
     },
     {
       "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
-      "translation": "ノードを Exchange のコピーと同期できません。エラー: {Arg_1}"
+      "translation": "ノードを Exchange のコピーと同期できません。 エラー: {Arg_1}"
     },
     {
       "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
@@ -455,44 +447,32 @@
       "translation": "anax を終了します。契約の同期を実行できません。 {Arg_1}"
     },
     {
-      "id": "no service name",
-      "translation": "サービス名がありません"
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "サービス {ServiceName} の Docker イメージがありません"
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "互換性エラー: ノードのプロパティー {Properties} が、制約条件 {Constraints} を満たしていません。 基礎のエラー: {Err}"
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "互換性エラー: ノードのプロパティーが制約条件を満たしていません。 {Err}"
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "互換性エラー: プロパティー {Properties} が、ノード制約 {Constraints} を満たしていません。 基礎のエラー: {Err}"
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "互換性エラー: プロパティーがノード制約を満たしていません。 {Err}"
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "「requiredServices」はクラスター・タイプ・サービスではサポートされません。"
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "互換性エラー: {AgreementProtocols} と {AgreementProtocols_1} の間に共通する契約プロトコルがありません。 基礎のエラー: {Err}"
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "サービス {ReqSvc} のバージョン {Ver} をバージョン範囲式に変換できませんでした。"
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "Exchange から {ReqSvc} のサービスを取得しているときにエラーが発生しました。{Err}"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "必須サービス {SId} のサービス・タイプが正しくありません: {SType}。"
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "互換性エラー: データ検査は対応している必要がありますが、プロデューサーは {DataVerify} で、コンシューマーは {DataVerify_1} です。"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -528,7 +508,7 @@
     },
     {
       "id": "Error getting node {NodeId} from the Exchange. {Err}",
-      "translation": "Exchange からノード {NodeId} を取得しているときにエラーが発生しました。{Err}"
+      "translation": "Exchange からノード {NodeId} を取得しているときにエラーが発生しました。 {Err}"
     },
     {
       "id": "No node found for this node id {NodeId}.",
@@ -732,7 +712,7 @@
     },
     {
       "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "Exchange からサービス {Org}/{WorkloadURL} {Version} {Arch} とその従属サービスを取得しているときにエラーが発生しました。{Err}"
+      "translation": "Exchange からサービス {Org}/{WorkloadURL} {Version} {Arch} とその従属サービスを取得しているときにエラーが発生しました。 {Err}"
     },
     {
       "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
@@ -752,7 +732,7 @@
     },
     {
       "id": "Error retrieving dependent services from the Exchange for {SDep}. {Err}",
-      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。{Err}"
+      "translation": "Exchange から {SDep} の従属サービスを取得しているときにエラーが発生しました。 {Err}"
     },
     {
       "id": "The UserInputCheck input cannot be null",
@@ -807,6 +787,10 @@
       "translation": "入力サービス・スペック・オブジェクトを NULL にすることはできません。"
     },
     {
+      "id": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
+      "translation": "Exchange から {SvcSpec} のサービスを取得しているときにエラーが発生しました。 {Err}"
+    },
+    {
       "id": "Error verifing user input for service {SId}. {Err}",
       "translation": "サービス {SId} のユーザー入力を検証しているときにエラーが発生しました。 {Err}"
     },
@@ -828,7 +812,7 @@
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
-      "translation": "Exchange からサービスの取得に失敗しました。{Err}"
+      "translation": "Exchange からサービスの取得に失敗しました。 {Err}"
     },
     {
       "id": "Service does not exist on the Exchange.",
@@ -929,6 +913,14 @@
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
       "translation": "ユーザー入力に指定されているサービス {ServiceOrgid}/{ServiceUrl} バージョン {ServiceVersionRange} アーキテクチャー {ServiceArch} の変数 {Name} は使用されていません。 正しい名前であることを確認してください。"
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "制約式: {Dconstraints} の型は {Dconstraints_1} ですが、ストリングの配列が予期されています"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "制約式に対応しない括弧が含まれています。"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -1155,52 +1147,192 @@
       "translation": "選択を Selector に変換しているときにエラーが発生しました : {Err}"
     },
     {
-      "id": "No input found.",
-      "translation": "入力が見つかりません。"
+      "id": "no service name",
+      "translation": "サービス名がありません"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "許可されていません。 Exchange ユーザー ID が提供されていません。"
+      "id": "no docker image for service {ServiceName}",
+      "translation": "サービス {ServiceName} の Docker イメージがありません"
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "ユーザーを Exchange で認証できませんでした。{Err}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "{D} のボディのマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "入力ボディを JSON オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "deployment フィールド {StringjsonBytes} の JSON のアンマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "入力ボディを PolicyCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "ユーザー入力 {Name} にはデフォルト値が無く、未設定です"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "入力ボディを UserInputCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "「requiredServices」はクラスター・タイプ・サービスではサポートされません。"
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "入力ボディを CompCheck オブジェクトにデシリアライズできませんでした。 {Err}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "サービス {ReqSvc} のバージョン {Ver} をバージョン範囲式に変換できませんでした。"
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "Exchange ユーザー ID が提供されていません。"
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "必須サービス {SId} のサービス・タイプが正しくありません: {SType}。"
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Exchange ユーザー組織 ID が提供されていません。"
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Exchange ユーザー・パスワードまたは API 鍵が提供されていません。"
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "プロパティーには無効なプロパティーが含まれています: {Err}"
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "組織 ID、ユーザー ID、またはパスワードが正しくありません。"
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "プロパティー {PROPNODEPRIVILEGED} にはブール値 (true または false) が必要です。"
     },
     {
-      "id": "Internal server error",
-      "translation": "内部サーバー・エラー"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "プロパティーには、名前と値が含まれている必要があります: {Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "プロパティー {Name} の持つプロパティー型 {DeclaredType} は無効です。 許可されるプロパティー型は、version、string、int、boolean、float、および string のリストです。"
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "プロパティー値の型は {ActualType} ですが、予期される型は {DeclaredType} です"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "プロパティー {Name} の値 {Value} は integer 型ではありません。"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "プロパティー {Name} の値 {Value} は有効なストリングではありません。 型を定義するか、値をストリングに変更してください。"
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "プロパティー {Name} の 値 {Value} は有効な version ストリングではありません。"
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "プロパティー {Name} は無効な値の型 {ActualType} を持っています"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
+    },
+    {
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax を終了します。 構成に指定されたサービス・ストレージ・ディレクトリーにアクセスできません: {Arg_1}。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax を終了します。 iptables クライアントのインスタンス化に失敗しました。 {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax を終了します。 Docker クライアントのインスタンス化に失敗しました。 {Arg_1}"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "Name または Org が空ストリングです。"
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 配列が空です。"
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "プロパティー {PROPSVCPRIVILEGED} にはブール値 (true または false) が必要です。"
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "契約 {Arg_1} は既に存在します。提案 {Arg_2} を無視します"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "契約 {Arg_1} の TsAndCs をアンマーシャルしているときにエラーを受け取りました。{Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "ノードは、agbot {Arg_4} からサービス {Arg_2}/{Arg_3} に対する契約 {Arg_1} を使用しているときに Proposal メッセージを受け取りました。"
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "ノードは、サービス {Arg_1}/{Arg_2} に対する提案を拒否しました。"
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "サービス {Arg_1}/{Arg_2} に対する提案を処理しているときにエラーが発生しました。 エラー: {Arg_3}"
     },
     {
       "id": "unable to make directory for self signed MMS API certificate, error {Err}",
@@ -1597,138 +1729,6 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "警告: イメージ・パス「{Image}」を構文解析できませんでした。 Docker レジストリーにはプッシュせず、そのままの状態で「deployment」フィールドに含めます。"
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "契約 {Arg_1} は既に存在します。提案 {Arg_2} を無視します"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "契約 {Arg_1} の TsAndCs をアンマーシャルしているときにエラーを受け取りました。{Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "ノードは、agbot {Arg_4} からサービス {Arg_2}/{Arg_3} に対する契約 {Arg_1} を使用しているときに Proposal メッセージを受け取りました。"
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "ノードは、サービス {Arg_1}/{Arg_2} に対する提案を拒否しました。"
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "サービス {Arg_1}/{Arg_2} に対する提案を処理しているときにエラーが発生しました。 エラー: {Arg_3}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: {Expr} で空白文字は使用できません。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} は有効な version ストリングではありません。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで開始されていません。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} が、include ディレクティブまたは exclude ディレクティブで終了していません。"
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 式に含まれているバージョンの番号が正しくありません: {Expr}。"
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "入力された version ストリング {V1} または {V2} は有効な単一 version ストリングではありません。"
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "互換性エラー: スキーマ・バージョンが一致していません。コンシューマー・ポリシー: {Version}、プロデューサー・ポリシー {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "互換性エラー: ノードのプロパティー {Properties} が、制約条件 {Constraints} を満たしていません。 基礎のエラー: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "互換性エラー: ノードのプロパティーが制約条件を満たしていません。 {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "互換性エラー: プロパティー {Properties} が、ノード制約 {Constraints} を満たしていません。 基礎のエラー: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "互換性エラー: プロパティーがノード制約を満たしていません。 {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "互換性エラー: {AgreementProtocols} と {AgreementProtocols_1} の間に共通する契約プロトコルがありません。 基礎のエラー: {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "互換性エラー: データ検査は対応している必要がありますが、プロデューサーは {DataVerify} で、コンシューマーは {DataVerify_1} です。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "デプロイメント構成 {Arg_1} には、インフラストラクチャー・コンテナーでサポートされないケイパビリティーが含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "デプロイメント構成 {Arg_1} には、ワークロードでサポートされないバインド {Arg_2} が含まれています。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "デプロイメント構成 {Arg_1} には、{Arg_2} でサポートされないバインドが含まれています、{Arg_3}。"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "deployment ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "契約 {Arg_2} の deployment override ストリング {Arg_1} のアンマーシャルでエラーが発生しました、エラー: {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "コンテナーの開始でエラーが発生しました: {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの開始でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "契約 {Arg_1} 用のコンテナーの再開でエラーが発生しました: {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1} 用の新規コンテナーの開始前に古いコンテナーのクリーンアップ中にエラーが発生しました。 エラー: {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} のサービス再試行で、親コンテナーのリストの取得に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "サービス {Arg_1} の親とのネットワーク接続の復元に失敗しました。 {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax を終了します。 構成に指定されたサービス・ストレージ・ディレクトリーにアクセスできません: {Arg_1}。 {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax を終了します。 iptables クライアントのインスタンス化に失敗しました。 {Arg_1}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax を終了します。 Docker クライアントのインスタンス化に失敗しました。 {Arg_1}"
     }
   ]
 }
