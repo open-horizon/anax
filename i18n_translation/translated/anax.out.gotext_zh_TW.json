@@ -3,28 +3,12 @@
   "language": "zh-TW",
   "messages": [
     {
-      "id": "Name, or Org is empty string.",
-      "translation": "名稱或組織為空字串。"
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號失敗。 錯誤為：{Arg_3}"
     },
     {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 陣列為空。"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "內容包含無效內容：{Err}"
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "內容 {PROPSVCPRIVILEGED} 必須具有布林值（true 或 false）。"
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "限制表示式包含不相符的括弧。"
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號已還原。"
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -343,44 +327,52 @@
       "translation": "新型樣 {Arg_1} 已經過驗證。 將取消合約並重新登錄具有新型樣的節點。"
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號失敗。 錯誤為：{Arg_3}"
+      "id": "No input found.",
+      "translation": "找不到輸入。"
     },
     {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號已還原。"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "未獲授權。 未提供任何 Exchange 使用者 ID。"
     },
     {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "內容 {PROPNODEPRIVILEGED} 必須具有布林值（true 或 false）。"
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "無法向 Exchange 鑑別使用者。 {Err}"
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "內容必須包括名稱及值：{Property}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "輸入主體無法解除序列化為 JSON 物件。 {Err}"
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "內容 {Name} 的內容類型 {DeclaredType} 無效。 容許的內容類型為：版本、字串、整數、布林、浮點數及字串清單。"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。 {Err}"
     },
     {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "內容值的類型為 {ActualType}，但預期的類型為 {DeclaredType}"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。 {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "內容 {Name} 的值 {Value} 類型不是整數"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 CompCheck 物件。 {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "內容 {Name} 的值 {Value} 不是有效字串。 請定義類型或將值變更為字串。"
+      "id": "No exchange user id is supplied.",
+      "translation": "未提供任何 Exchange 使用者 ID。"
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "值為 {Value} 的內容 {Name} 不是有效的版本字串"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "未提供任何 Exchange 使用者組織 ID。"
     },
     {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "內容 {Name} 的值類型 {ActualType} 無效"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
+    },
+    {
+      "id": "Internal server error",
+      "translation": "內部伺服器錯誤"
     },
     {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
@@ -455,44 +447,32 @@
       "translation": "anax 正在終止，無法完成合約同步化。 {Arg_1}"
     },
     {
-      "id": "no service name",
-      "translation": "無服務名稱"
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "相容性錯誤：綱目版本不同，消費者原則：{Version}，生產者原則 {Version_1}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "相容性錯誤：節點內容 {Properties} 不滿足限制需求 {Constraints}。 基礎錯誤：{Err}"
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "無法配置 {D} 的主體：{Err}"
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "相容性錯誤：節點內容不滿足限制需求。 {Err}"
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "相容性錯誤：內容 {Properties} 不滿足節點限制 {Constraints}。 基礎錯誤：{Err}"
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "相容性錯誤：內容未滿足節點限制。 {Err}"
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "叢集類型服務不支援 'requiredServices'。"
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "相容性錯誤：{AgreementProtocols} 與 {AgreementProtocols_1} 之間沒有共用的合約通訊協定。 基礎錯誤：{Err}"
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "無法將服務 {ReqSvc} 的版本 {Ver} 轉換為版本範圍表示式。"
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "從 Exchange 擷取 {ReqSvc} 的服務時發生錯誤。{Err}"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "必要服務 {SId} 具有錯誤的服務類型：{SType}。"
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "必要服務 {SId} 的相依服務 {Id} 具有錯誤的服務類型：{SType1}。"
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "相容性錯誤：資料驗證必須相容，生產者具有 {DataVerify} 而消費者具有 {DataVerify_1}。"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -732,7 +712,7 @@
     },
     {
       "id": "Error retrieving service {Org}/{WorkloadURL} {Version} {Arch} and its dependents from the Exchange. {Err}",
-      "translation": "從 Exchange 擷取服務 {Org}/{WorkloadURL} {Version} {Arch} 及其相依項目時發生錯誤。{Err}"
+      "translation": "從 Exchange 擷取服務 {Org}/{WorkloadURL} {Version} {Arch} 及其相依項目時發生錯誤。 {Err}"
     },
     {
       "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
@@ -805,6 +785,10 @@
     {
       "id": "The input service spec object cannot be null.",
       "translation": "輸入服務規格物件不能為空值。"
+    },
+    {
+      "id": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
+      "translation": "從 Exchange 擷取 {SvcSpec} 的服務時發生錯誤。 {Err}"
     },
     {
       "id": "Error verifing user input for service {SId}. {Err}",
@@ -929,6 +913,14 @@
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
       "translation": "未使用使用者輸入中指定的服務 {ServiceOrgid}/{ServiceUrl} 版本 {ServiceVersionRange} 架構 {ServiceArch} 的變數 {Name}。 請確定名稱正確。"
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "限制表示式包含不相符的括弧。"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -1155,52 +1147,192 @@
       "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
     },
     {
-      "id": "No input found.",
-      "translation": "找不到輸入。"
+      "id": "no service name",
+      "translation": "無服務名稱"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "未獲授權。 未提供任何 Exchange 使用者 ID。"
+      "id": "no docker image for service {ServiceName}",
+      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "無法向 Exchange 鑑別使用者。 {Err}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "無法配置 {D} 的主體：{Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "輸入主體無法解除序列化為 JSON 物件。 {Err}"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。 {Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。 {Err}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "叢集類型服務不支援 'requiredServices'。"
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 CompCheck 物件。 {Err}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "無法將服務 {ReqSvc} 的版本 {Ver} 轉換為版本範圍表示式。"
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "未提供任何 Exchange 使用者 ID。"
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "必要服務 {SId} 具有錯誤的服務類型：{SType}。"
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "未提供任何 Exchange 使用者組織 ID。"
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "必要服務 {SId} 的相依服務 {Id} 具有錯誤的服務類型：{SType1}。"
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "內容包含無效內容：{Err}"
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "內容 {PROPNODEPRIVILEGED} 必須具有布林值（true 或 false）。"
     },
     {
-      "id": "Internal server error",
-      "translation": "內部伺服器錯誤"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "內容必須包括名稱及值：{Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "內容 {Name} 的內容類型 {DeclaredType} 無效。 容許的內容類型為：版本、字串、整數、布林、浮點數及字串清單。"
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "內容值的類型為 {ActualType}，但預期的類型為 {DeclaredType}"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "內容 {Name} 的值 {Value} 類型不是整數"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "內容 {Name} 的值 {Value} 不是有效字串。 請定義類型或將值變更為字串。"
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "值為 {Value} 的內容 {Name} 不是有效的版本字串"
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "內容 {Name} 的值類型 {ActualType} 無效"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
+    },
+    {
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。 錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。 {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax 正在終止。 無法存取配置 {Arg_1} 中指定的服務儲存目錄。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax 正在終止。 無法實例化 iptables 用戶端。 {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax 正在終止。 無法實例化 Docker 用戶端。 {Arg_1}"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "名稱或組織為空字串。"
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 陣列為空。"
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "內容 {PROPSVCPRIVILEGED} 必須具有布林值（true 或 false）。"
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "合約 {Arg_1} 已存在，將忽略提案：{Arg_2}"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "解除配置合約 {Arg_1} 的 TsAndCs 時收到錯誤：{Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "節點從 agbot {Arg_4} 中收到使用服務 {Arg_2}/{Arg_3} 之合約 {Arg_1} 的提案訊息。"
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "節點拒絕了服務 {Arg_1}/{Arg_2} 的提案。"
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "處理服務 {Arg_1}/{Arg_2} 的提案時發生錯誤。 錯誤為：{Arg_3}"
     },
     {
       "id": "unable to make directory for self signed MMS API certificate, error {Err}",
@@ -1597,138 +1729,6 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "警告：無法剖析映像檔路徑 '{Image}'。 不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "合約 {Arg_1} 已存在，將忽略提案：{Arg_2}"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "解除配置合約 {Arg_1} 的 TsAndCs 時收到錯誤：{Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "節點從 agbot {Arg_4} 中收到使用服務 {Arg_2}/{Arg_3} 之合約 {Arg_1} 的提案訊息。"
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "節點拒絕了服務 {Arg_1}/{Arg_2} 的提案。"
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "處理服務 {Arg_1}/{Arg_2} 的提案時發生錯誤。 錯誤為：{Arg_3}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "相容性錯誤：綱目版本不同，消費者原則：{Version}，生產者原則 {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "相容性錯誤：節點內容 {Properties} 不滿足限制需求 {Constraints}。 基礎錯誤：{Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "相容性錯誤：節點內容不滿足限制需求。 {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "相容性錯誤：內容 {Properties} 不滿足節點限制 {Constraints}。 基礎錯誤：{Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "相容性錯誤：內容未滿足節點限制。 {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "相容性錯誤：{AgreementProtocols} 與 {AgreementProtocols_1} 之間沒有共用的合約通訊協定。 基礎錯誤：{Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "相容性錯誤：資料驗證必須相容，生產者具有 {DataVerify} 而消費者具有 {DataVerify_1}。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。 錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。 {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。 {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax 正在終止。 無法存取配置 {Arg_1} 中指定的服務儲存目錄。 {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax 正在終止。 無法實例化 iptables 用戶端。 {Arg_1}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax 正在終止。 無法實例化 Docker 用戶端。 {Arg_1}"
     }
   ]
 }

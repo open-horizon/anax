@@ -3,28 +3,12 @@
   "language": "fr",
   "messages": [
     {
-      "id": "Name, or Org is empty string.",
-      "translation": "La chaîne Name ou Org est vide."
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Echec de la pulsation du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
     },
     {
-      "id": "The serviceVersions array is empty.",
-      "translation": "Le tableau serviceVersions est vide."
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "Les propriétés comportent une propriété non valide : {Err}"
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "La propriété {PROPSVCPRIVILEGED} doit avoir une valeur booléenne (true ou false)."
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "L'expression de contrainte {Dconstraints} est de type {Dconstraints_1}, alors qu'elle devrait être un tableau de chaînes"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "L'expression de contrainte comporte des parenthèses sans correspondance."
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Restauration de la pulsation du noeud {Arg_1}/{Arg_2}."
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -343,44 +327,52 @@
       "translation": "Nouveau pattern {Arg_1} vérifié. Les accords seront annulés et le noeud réenregistré avec le nouveau pattern."
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Echec de la pulsation du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+      "id": "No input found.",
+      "translation": "Aucune entrée trouvée."
     },
     {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Restauration de la pulsation du noeud {Arg_1}/{Arg_2}."
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Non autorisé. Aucun ID utilisateur Exchange n'est fourni."
     },
     {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "La propriété {PROPNODEPRIVILEGED} doit avoir une valeur booléenne (true ou false)."
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "Echec de l'authentification de l'utilisateur avec Exchange. {Err}"
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "La propriété doit inclure un nom et une valeur : {Property}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Impossible de désérialiser le corps de l'entrée en objet JSON. {Err}"
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriétés autorisés sont : version, string, int, boolean, float et list of strings."
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Impossible de désérialiser le corps de l'entrée en objet PolicyCheck. {Err}"
     },
     {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "La valeur de la propriété est de type {ActualType}, alors que le type attendu est {DeclaredType}"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Impossible de désérialiser le corps de l'entrée en objet UserInputCheck. {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "La valeur {Value} de la propriété {Name} n'est pas un type entier."
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "Impossible de désérialiser le corps de l'entrée en objet CompCheck. {Err}"
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Veuillez définir le type ou modifier la valeur en chaîne."
+      "id": "No exchange user id is supplied.",
+      "translation": "Aucun ID utilisateur Exchange n'est fourni."
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "La propriété {Name} avec la valeur {Value} n'est pas une chaîne de version valide."
+      "id": "No exchange user organization id is supplied.",
+      "translation": "Aucun ID organisation d'utilisateur Exchange n'est fourni."
     },
     {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "La propriété {Name} possède un type de valeur {ActualType} non valide."
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "Aucun mot de passe utilisateur Exchange ni aucune clé d'API n'est fourni."
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "Mauvais ID organisation, ID utilisateur ou de mot de passe."
+    },
+    {
+      "id": "Internal server error",
+      "translation": "Erreur de serveur interne"
     },
     {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
@@ -455,44 +447,32 @@
       "translation": "Anax est en cours d'arrêt. Impossible de terminer la synchronisation de l'accord. {Arg_1}"
     },
     {
-      "id": "no service name",
-      "translation": "Aucun nom de service"
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Erreur de compatibilité : Les versions de schéma ne sont pas identiques, Règle consommateur : {Version}, Règle fournisseur {Version_1}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "Aucune image Docker pour le service {ServiceName}"
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Erreur de compatibilité : Les propriétés de noeud {Properties} ne satisfont pas les exigences de contrainte {Constraints}. Erreur sous-jacente : {Err}"
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}"
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "Erreur de compatibilité : Les propriétés de noeud ne satisfont pas les exigences de contrainte. {Err}"
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Erreur de compatibilité : Les propriétés {Properties} ne satisfont pas la contrainte de noeud {Constraints}. Erreur sous-jacente : {Err}"
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "L'entrée utilisateur {Name} n'a pas de valeur par défaut et n'est pas définie"
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "Erreur de compatibilité : les propriétés ne satisfont pas la contrainte de noeud. {Err}"
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "'requiredServices' n'est pas pris en charge pour le service de type cluster."
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Erreur de compatibilité : Aucun protocole d'accord commun entre {AgreementProtocols} et {AgreementProtocols_1}. Erreur sous-jacente : {Err}"
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "Impossible de convertir la version {Ver} de service {ReqSvc} en une expression de plage de versions."
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "Erreur lors de la récupération du service à partir d'Exchange pour {ReqSvc}. {Err}"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "Le service requis {SId} possède le mauvais type de service : {SType}."
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "Le service dépendant {Id} du service requis {SId} possède le mauvais type de service : {SType1}."
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Erreur de compatibilité : La vérification des données doit être compatible, le fournisseur obtient {DataVerify} et le consommateur {DataVerify_1}."
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -807,6 +787,10 @@
       "translation": "L'objet de spécification du service d'entrée ne doit pas être NULL."
     },
     {
+      "id": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
+      "translation": "Erreur lors de la récupération du service à partir d'Exchange pour {SvcSpec}. {Err}"
+    },
+    {
       "id": "Error verifing user input for service {SId}. {Err}",
       "translation": "Erreur lors de la validation de l'entrée utilisateur pour le service {SId}. {Err}"
     },
@@ -929,6 +913,14 @@
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
       "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct."
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "L'expression de contrainte {Dconstraints} est de type {Dconstraints_1}, alors qu'elle devrait être un tableau de chaînes"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "L'expression de contrainte comporte des parenthèses sans correspondance."
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -1155,52 +1147,192 @@
       "translation": "Erreur lors de la conversion des sélections en sélecteurs : {Err}"
     },
     {
-      "id": "No input found.",
-      "translation": "Aucune entrée trouvée."
+      "id": "no service name",
+      "translation": "Aucun nom de service"
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Non autorisé. Aucun ID utilisateur Exchange n'est fourni."
+      "id": "no docker image for service {ServiceName}",
+      "translation": "Aucune image Docker pour le service {ServiceName}"
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Echec de l'authentification de l'utilisateur avec Exchange. {Err}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Impossible de désérialiser le corps de l'entrée en objet JSON. {Err}"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Impossible de désérialiser le corps de l'entrée en objet PolicyCheck. {Err}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "L'entrée utilisateur {Name} n'a pas de valeur par défaut et n'est pas définie"
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Impossible de désérialiser le corps de l'entrée en objet UserInputCheck. {Err}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "'requiredServices' n'est pas pris en charge pour le service de type cluster."
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "Impossible de désérialiser le corps de l'entrée en objet CompCheck. {Err}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "Impossible de convertir la version {Ver} de service {ReqSvc} en une expression de plage de versions."
     },
     {
-      "id": "No exchange user id is supplied.",
-      "translation": "Aucun ID utilisateur Exchange n'est fourni."
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "Le service requis {SId} possède le mauvais type de service : {SType}."
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "Aucun ID organisation d'utilisateur Exchange n'est fourni."
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "Le service dépendant {Id} du service requis {SId} possède le mauvais type de service : {SType1}."
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "Aucun mot de passe utilisateur Exchange ni aucune clé d'API n'est fourni."
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "Les propriétés comportent une propriété non valide : {Err}"
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "Mauvais ID organisation, ID utilisateur ou de mot de passe."
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "La propriété {PROPNODEPRIVILEGED} doit avoir une valeur booléenne (true ou false)."
     },
     {
-      "id": "Internal server error",
-      "translation": "Erreur de serveur interne"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "La propriété doit inclure un nom et une valeur : {Property}"
+    },
+    {
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriétés autorisés sont : version, string, int, boolean, float et list of strings."
+    },
+    {
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "La valeur de la propriété est de type {ActualType}, alors que le type attendu est {DeclaredType}"
+    },
+    {
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "La valeur {Value} de la propriété {Name} n'est pas un type entier."
+    },
+    {
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "La valeur {Value} de la propriété {Name} n'est pas une chaîne valide. Veuillez définir le type ou modifier la valeur en chaîne."
+    },
+    {
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "La propriété {Name} avec la valeur {Value} n'est pas une chaîne de version valide."
+    },
+    {
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "La propriété {Name} possède un type de valeur {ActualType} non valide."
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de charge de travail non prise en charge."
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de conteneur d'infrastructure non prise en charge."
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour la charge de travail, {Arg_2}"
+    },
+    {
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour {Arg_2}, {Arg_3}"
+    },
+    {
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Erreur lors de la désérialisation de la chaîne de déploiement {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Erreur lors de la désérialisation de la chaîne de remplacement {Arg_1} pour l'accord {Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "Erreur lors du démarrage des conteneurs : {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Erreur lors du démarrage des conteneurs pour l'accord {Arg_1} : {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Erreur lors du redémarrage des conteneurs pour les accords {Arg_1} : {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Erreur lors du nettoyage des anciens conteneurs avant de démarrer les nouveaux conteneurs pour {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Impossible d'obtenir la liste des conteneurs parents pour une nouvelle tentative de service pour {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Impossible de restaurer la connexion réseau avec les parents pour le service {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "Anax est en cours d'arrêt. Impossible d'accéder au répertoire de stockage de service spécifié dans config : {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "La chaîne Name ou Org est vide."
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "Le tableau serviceVersions est vide."
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "La propriété {PROPSVCPRIVILEGED} doit avoir une valeur booléenne (true ou false)."
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression : Les espaces blancs ne sont pas autorisés dans {Expr}."
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression : {Verstring} n'est pas une chaîne de version valide."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression : {Verstring} ne commence pas par une directive d'inclusion ou d'exclusion."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression : {Verstring} ne se termine pas par une directive d'inclusion ou d'exclusion."
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression : Nombre incorrect de versions dans l'expression : {Expr}."
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "La chaîne de version d'entrée {V1} ou {V2} n'est pas une chaîne de version unique valide."
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "L'accord {Arg_1} existe déjà, la proposition est ignorée : {Arg_2}"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "Une erreur s'est produite lors de la désérialisation de TsAndCs pour l'accord {Arg_1}, {Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "Le noeud a reçu un message de proposition à l'aide de l'accord {Arg_1} pour le service {Arg_2}/{Arg_3} à partir de l'agbot {Arg_4}."
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "Le noeud a rejeté la proposition pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Erreur lors du traitement de la proposition pour le service {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
     },
     {
       "id": "unable to make directory for self signed MMS API certificate, error {Err}",
@@ -1412,7 +1544,7 @@
     },
     {
       "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "Impossible d'obtenir l'URL Exchange à partir de la variable d'environnement HZN_EXCHANGE_URL ou de l'agent Horizon. "
+      "translation": "Impossible d'obtenir l'URL Exchange à partir de la variable d'environnement HZN_EXCHANGE_URL ou de l'agent Horizon."
     },
     {
       "id": "The exchange url: {ExchUrl}",
@@ -1597,138 +1729,6 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Avertissement : Impossible d'analyser le chemin de l'image '{Image}'. Celle-ci n'est pas envoyée (push) vers un registre Docker, mais juste incluse telle quelle dans la zone 'deployment'."
-    },
-    {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "L'accord {Arg_1} existe déjà, la proposition est ignorée : {Arg_2}"
-    },
-    {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "Une erreur s'est produite lors de la désérialisation de TsAndCs pour l'accord {Arg_1}, {Arg_2}"
-    },
-    {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "Le noeud a reçu un message de proposition à l'aide de l'accord {Arg_1} pour le service {Arg_2}/{Arg_3} à partir de l'agbot {Arg_4}."
-    },
-    {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "Le noeud a rejeté la proposition pour le service {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Erreur lors du traitement de la proposition pour le service {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression : Les espaces blancs ne sont pas autorisés dans {Expr}."
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression : {Verstring} n'est pas une chaîne de version valide."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression : {Verstring} ne commence pas par une directive d'inclusion ou d'exclusion."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression : {Verstring} ne se termine pas par une directive d'inclusion ou d'exclusion."
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression : Nombre incorrect de versions dans l'expression : {Expr}."
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "La chaîne de version d'entrée {V1} ou {V2} n'est pas une chaîne de version unique valide."
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Erreur de compatibilité : Les versions de schéma ne sont pas identiques, Règle consommateur : {Version}, Règle fournisseur {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Erreur de compatibilité : Les propriétés de noeud {Properties} ne satisfont pas les exigences de contrainte {Constraints}. Erreur sous-jacente : {Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "Erreur de compatibilité : Les propriétés de noeud ne satisfont pas les exigences de contrainte. {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Erreur de compatibilité : Les propriétés {Properties} ne satisfont pas la contrainte de noeud {Constraints}. Erreur sous-jacente : {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "Erreur de compatibilité : les propriétés ne satisfont pas la contrainte de noeud. {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Erreur de compatibilité : Aucun protocole d'accord commun entre {AgreementProtocols} et {AgreementProtocols_1}. Erreur sous-jacente : {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Erreur de compatibilité : La vérification des données doit être compatible, le fournisseur obtient {DataVerify} et le consommateur {DataVerify_1}."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de charge de travail non prise en charge."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de conteneur d'infrastructure non prise en charge."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour la charge de travail, {Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour {Arg_2}, {Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Erreur lors de la désérialisation de la chaîne de déploiement {Arg_1}. Erreur : {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Erreur lors de la désérialisation de la chaîne de remplacement {Arg_1} pour l'accord {Arg_2}. Erreur : {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "Erreur lors du démarrage des conteneurs : {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Erreur lors du démarrage des conteneurs pour l'accord {Arg_1} : {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Erreur lors du redémarrage des conteneurs pour les accords {Arg_1} : {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Erreur lors du nettoyage des anciens conteneurs avant de démarrer les nouveaux conteneurs pour {Arg_1}. Erreur : {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Impossible d'obtenir la liste des conteneurs parents pour une nouvelle tentative de service pour {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Impossible de restaurer la connexion réseau avec les parents pour le service {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "Anax est en cours d'arrêt. Impossible d'accéder au répertoire de stockage de service spécifié dans config : {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}"
     }
   ]
 }

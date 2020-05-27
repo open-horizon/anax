@@ -2,77 +2,60 @@
   "language": "ko",
   "messages": [
     {
-      "id": "Name, or Org is empty string.",
-      "message": "Name, or Org is empty string.",
-      "translation": "이름 또는 조직이 빈 문자열입니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "message": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 배열이 비어 있습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "message": "properties contains an invalid property: {Err}",
-      "translation": "특성에 올바르지 않은 특성이 포함되어 있음: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
+      "id": [
+        "EL_AG_NODE_HB_FAILED",
+        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "message": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "{PROPSVCPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다.",
+      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트가 실패했습니다. 오류: {Arg_3}",
       "placeholders": [
         {
-          "id": "PROPSVCPRIVILEGED",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "제한조건 표현식 {Dconstraints}의 유형이 {Dconstraints_1}이지만 문자열 배열이 요구됩니다.",
-      "placeholders": [
-        {
-          "id": "Dconstraints",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "interface{}",
+          "type": "",
           "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "dconstraints"
+          "argNum": 1
         },
         {
-          "id": "Dconstraints_1",
-          "string": "%[2]T",
-          "type": "interface{}",
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
           "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "dconstraints"
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "message": "The constraint expression contains unmatched parentheses.",
-      "translation": "제한조건 표현식에 짝이 맞지 않는 소괄호가 포함되어 있습니다.",
+      "id": [
+        "EL_AG_NODE_HB_RESTORED",
+        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트를 복원했습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -2170,236 +2153,125 @@
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_AG_NODE_HB_FAILED",
-        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트가 실패했습니다. 오류: {Arg_3}",
+      "id": "No input found.",
+      "message": "No input found.",
+      "translation": "입력을 찾을 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "message": "Unauthorized. No exchange user id is supplied.",
+      "translation": "권한이 없습니다. exchange 사용자 ID가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "message": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "사용자를 Exchange에 인증하는 데 실패했습니다. {Err}",
       "placeholders": [
         {
-          "id": "Arg_1",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_AG_NODE_HB_RESTORED",
-        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트를 복원했습니다.",
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "message": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "입력 본문을 JSON 오브젝트로 역직렬화하지 못했습니다. {Err}",
       "placeholders": [
         {
-          "id": "Arg_1",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "{PROPNODEPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다.",
-      "placeholders": [
-        {
-          "id": "PROPNODEPRIVILEGED",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "PROP_NODE_PRIVILEGED"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Property must include a name and a value: {Property}",
-      "message": "Property must include a name and a value: {Property}",
-      "translation": "특성에는 이름과 값이 포함되어야 함: {Property}",
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "입력 본문을 PolicyCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
       "placeholders": [
         {
-          "id": "Property",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.Property",
-          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "property"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "{Name} 특성에 올바르지 않은 특성 유형 {DeclaredType}이(가) 있습니다. 허용되는 특성 유형은 버전, 문자열, int, 부울, float 및 문자열 목록입니다.",
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "입력 본문을 UserInputCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
       "placeholders": [
         {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "특성 값은 {ActualType} 유형이며 예상 유형은 {DeclaredType}입니다.",
-      "placeholders": [
-        {
-          "id": "ActualType",
-          "string": "%[1]T",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "actualType"
-        },
-        {
-          "id": "DeclaredType",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "declaredType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "message": "Value {Value} of property {Name} is not an integer type",
-      "translation": "{Name} 특성의 {Value} 값이 정수 유형이 아님",
-      "placeholders": [
-        {
-          "id": "Value",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "{Name} 특성의 {Value} 값이 올바른 문자열이 아닙니다. 유형을 정의하거나 값을 문자열로 변경하십시오.",
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "입력 본문을 CompCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
       "placeholders": [
         {
-          "id": "Value",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "property.Value"
-        },
-        {
-          "id": "Name",
-          "string": "%[2]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "property.Name"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "message": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "값이 {Value}인 {Name} 특성이 올바른 버전 문자열이 아님",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "Value",
-          "string": "%[2]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "property.Value"
-        }
-      ],
+      "id": "No exchange user id is supplied.",
+      "message": "No exchange user id is supplied.",
+      "translation": "exchange 사용자 ID가 제공되지 않았습니다.",
       "fuzzy": true
     },
     {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "message": "Property {Name} has invalid value type {ActualType}",
-      "translation": "{Name} 특성에 올바르지 않은 값 유형 {ActualType}이(가) 있음",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "property.Name"
-        },
-        {
-          "id": "ActualType",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "actualType"
-        }
-      ],
+      "id": "No exchange user organization id is supplied.",
+      "message": "No exchange user organization id is supplied.",
+      "translation": "exchange 사용자 조직 ID가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "message": "No exchange user password or api key is supplied.",
+      "translation": "exchange 사용자 비밀번호 또는 API 키가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "message": "Wrong organization id, user id or password.",
+      "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Internal server error",
+      "message": "Internal server error",
+      "translation": "내부 서버 오류",
       "fuzzy": true
     },
     {
@@ -2765,197 +2637,177 @@
       "fuzzy": true
     },
     {
-      "id": "no service name",
-      "message": "no service name",
-      "translation": "서비스 이름 없음",
-      "fuzzy": true
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "message": "no docker image for service {ServiceName}",
-      "translation": "서비스 {ServiceName}의 Docker 이미지 없음",
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "호환성 오류: 스키마 버전이 동일하지 않음, 이용자 정책: {Version}, 생성자 정책: {Version_1}",
       "placeholders": [
         {
-          "id": "ServiceName",
-          "string": "%[1]s",
+          "id": "Version",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "serviceName"
+          "expr": "consumer_policy.Header.Version"
+        },
+        {
+          "id": "Version_1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "producer_policy.Header.Version"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "message": "failed to marshal body for {D}: {Err}",
-      "translation": "{D}의 본문을 마샬링하는 데 실패함: {Err}",
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "message": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "호환성 오류: 노드 특성 {Properties}이(가) 제한조건 요구사항 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
       "placeholders": [
         {
-          "id": "D",
+          "id": "Properties",
           "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
           "argNum": 1,
-          "expr": "d"
+          "expr": "producer_policy.Properties"
+        },
+        {
+          "id": "Constraints",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "consumer_policy.Constraints"
         },
         {
           "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "배치 필드 {StringjsonBytes}에 대한 JSON을 역마샬링하는 데 실패함: {Err}",
-      "placeholders": [
-        {
-          "id": "StringjsonBytes",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "string(jsonBytes)"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "message": "user input {Name} has no default value and is not set",
-      "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ui.Name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "message": "'requiredServices' is not supported for cluster type service.",
-      "translation": "클러스터 유형 서비스에는 'requiredServices'가 지원되지 않습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "message": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "{ReqSvc} 서비스의 {Ver} 버전을 버전 범위 표현식으로 변환하지 못했습니다.",
-      "placeholders": [
-        {
-          "id": "Ver",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver"
-        },
-        {
-          "id": "ReqSvc",
-          "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 2,
-          "expr": "reqSvc"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "message": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "{ReqSvc}에 대해 Exchange에서 서비스를 검색하는 중에 오류가 발생했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "ReqSvc",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 1,
-          "expr": "reqSvc"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "message": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "필수 서비스 {SId}의 서비스 유형이 잘못됨: {SType}.",
-      "placeholders": [
-        {
-          "id": "SId",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sId"
-        },
-        {
-          "id": "SType",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "sType"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "message": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "필수 서비스 {SId}의 종속 서비스 {Id}에 대한 서비스 유형이 잘못됨: {SType1}.",
-      "placeholders": [
-        {
-          "id": "Id",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "id"
-        },
-        {
-          "id": "SId",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "sId"
-        },
-        {
-          "id": "SType1",
           "string": "%[3]v",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 3,
-          "expr": "sType1"
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "message": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "호환성 오류: 노드 특성이 제한조건 요구사항을 만족시키지 않습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "message": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "호환성 오류: 특성 {Properties}이(가) 노드 제한조건 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "Properties",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "consumer_policy.Properties"
+        },
+        {
+          "id": "Constraints",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "producer_policy.Constraints"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "message": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "호환성 오류: 특성이 노드 제한조건을 만족시키지 않습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "message": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "호환성 오류: {AgreementProtocols}과(와) {AgreementProtocols_1} 간에 공통 계약 프로토콜이 없습니다. 근본적 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "AgreementProtocols",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
+          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
+          "argNum": 1,
+          "expr": "producer_policy.AgreementProtocols"
+        },
+        {
+          "id": "AgreementProtocols_1",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
+          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
+          "argNum": 2,
+          "expr": "consumer_policy.AgreementProtocols"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "message": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "호환성 오류: 데이터 확인이 생성자의 경우 {DataVerify}, 이용자의 경우 {DataVerify_1}(으)로 서로 호환되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "DataVerify",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/policy.DataVerification",
+          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
+          "argNum": 1,
+          "expr": "producer_policy.DataVerify"
+        },
+        {
+          "id": "DataVerify_1",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/policy.DataVerification",
+          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
+          "argNum": 2,
+          "expr": "consumer_policy.DataVerify"
         }
       ],
       "fuzzy": true
@@ -4218,6 +4070,30 @@
       "fuzzy": true
     },
     {
+      "id": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
+      "message": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
+      "translation": "{SvcSpec}에 대해 Exchange에서 서비스를 검색하는 중에 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "SvcSpec",
+          "string": "%[1]v",
+          "type": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
+          "underlyingType": "*github.com/open-horizon/anax/compcheck.ServiceSpec",
+          "argNum": 1,
+          "expr": "svcSpec"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Error verifing user input for service {SId}. {Err}",
       "message": "Error verifing user input for service {SId}. {Err}",
       "translation": "서비스 {SId}에 대한 사용자 입력을 확인하는 중에 오류가 발생했습니다. {Err}",
@@ -4841,6 +4717,36 @@
           "expr": "userInput[i].ServiceArch"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "제한조건 표현식 {Dconstraints}의 유형이 {Dconstraints_1}이지만 문자열 배열이 요구됩니다.",
+      "placeholders": [
+        {
+          "id": "Dconstraints",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "dconstraints"
+        },
+        {
+          "id": "Dconstraints_1",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "dconstraints"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "message": "The constraint expression contains unmatched parentheses.",
+      "translation": "제한조건 표현식에 짝이 맞지 않는 소괄호가 포함되어 있습니다.",
       "fuzzy": true
     },
     {
@@ -5824,7 +5730,7 @@
         "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable."
       ],
       "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "{Arg_2}/{Arg_3}에 대한 서비스 구성에서 {Arg_1} 변수가 누락되었습니다. 배치 정책에 누락된 변수에 대한 설정이 없는 경우 이로 인해 계약에 실패할 수 있습니다. ",
+      "translation": "{Arg_2}/{Arg_3}에 대한 서비스 구성에서 {Arg_1} 변수가 누락되었습니다. 배치 정책에 누락된 변수에 대한 설정이 없는 경우 이로 인해 계약에 실패할 수 있습니다.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -5967,21 +5873,181 @@
       "fuzzy": true
     },
     {
-      "id": "No input found.",
-      "message": "No input found.",
-      "translation": "입력을 찾을 수 없습니다.",
+      "id": "no service name",
+      "message": "no service name",
+      "translation": "서비스 이름 없음",
       "fuzzy": true
     },
     {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "권한이 없습니다. exchange 사용자 ID가 제공되지 않았습니다.",
+      "id": "no docker image for service {ServiceName}",
+      "message": "no docker image for service {ServiceName}",
+      "translation": "서비스 {ServiceName}의 Docker 이미지 없음",
+      "placeholders": [
+        {
+          "id": "ServiceName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "사용자를 Exchange에 인증하는 데 실패했습니다. {Err}",
+      "id": "failed to marshal body for {D}: {Err}",
+      "message": "failed to marshal body for {D}: {Err}",
+      "translation": "{D}의 본문을 마샬링하는 데 실패함: {Err}",
+      "placeholders": [
+        {
+          "id": "D",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "d"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "배치 필드 {StringjsonBytes}에 대한 JSON을 역마샬링하는 데 실패함: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "message": "user input {Name} has no default value and is not set",
+      "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ui.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "message": "'requiredServices' is not supported for cluster type service.",
+      "translation": "클러스터 유형 서비스에는 'requiredServices'가 지원되지 않습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "message": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "{ReqSvc} 서비스의 {Ver} 버전을 버전 범위 표현식으로 변환하지 못했습니다.",
+      "placeholders": [
+        {
+          "id": "Ver",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver"
+        },
+        {
+          "id": "ReqSvc",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 2,
+          "expr": "reqSvc"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "message": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "필수 서비스 {SId}의 서비스 유형이 잘못됨: {SType}.",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
+        },
+        {
+          "id": "SType",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "message": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "필수 서비스 {SId}의 종속 서비스 {Id}에 대한 서비스 유형이 잘못됨: {SType1}.",
+      "placeholders": [
+        {
+          "id": "Id",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "id"
+        },
+        {
+          "id": "SId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sId"
+        },
+        {
+          "id": "SType1",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "sType1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "message": "properties contains an invalid property: {Err}",
+      "translation": "특성에 올바르지 않은 특성이 포함되어 있음: {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5995,97 +6061,811 @@
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "message": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "입력 본문을 JSON 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "message": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "{PROPNODEPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다.",
       "placeholders": [
         {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "id": "PROPNODEPRIVILEGED",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "PROP_NODE_PRIVILEGED"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "입력 본문을 PolicyCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "id": "Property must include a name and a value: {Property}",
+      "message": "Property must include a name and a value: {Property}",
+      "translation": "특성에는 이름과 값이 포함되어야 함: {Property}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Property",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "github.com/open-horizon/anax/externalpolicy.Property",
+          "underlyingType": "struct{Name string \"json:\\\"name\\\"\"; Value interface{} \"json:\\\"value\\\"\"; Type string \"json:\\\"type,omitempty\\\"\"}",
           "argNum": 1,
-          "expr": "err"
+          "expr": "property"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "입력 본문을 UserInputCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "{Name} 특성에 올바르지 않은 특성 유형 {DeclaredType}이(가) 있습니다. 허용되는 특성 유형은 버전, 문자열, int, 부울, float 및 문자열 목록입니다.",
       "placeholders": [
         {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "property.Name"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "입력 본문을 CompCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "message": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "특성 값은 {ActualType} 유형이며 예상 유형은 {DeclaredType}입니다.",
       "placeholders": [
         {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "id": "ActualType",
+          "string": "%[1]T",
+          "type": "bool",
+          "underlyingType": "bool",
           "argNum": 1,
-          "expr": "err"
+          "expr": "actualType"
+        },
+        {
+          "id": "DeclaredType",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "declaredType"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "No exchange user id is supplied.",
-      "message": "No exchange user id is supplied.",
-      "translation": "exchange 사용자 ID가 제공되지 않았습니다.",
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "message": "Value {Value} of property {Name} is not an integer type",
+      "translation": "{Name} 특성의 {Value} 값이 정수 유형이 아님",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "No exchange user organization id is supplied.",
-      "message": "No exchange user organization id is supplied.",
-      "translation": "exchange 사용자 조직 ID가 제공되지 않았습니다.",
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "message": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "{Name} 특성의 {Value} 값이 올바른 문자열이 아닙니다. 유형을 정의하거나 값을 문자열로 변경하십시오.",
+      "placeholders": [
+        {
+          "id": "Value",
+          "string": "%[1]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 1,
+          "expr": "property.Value"
+        },
+        {
+          "id": "Name",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "property.Name"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "No exchange user password or api key is supplied.",
-      "message": "No exchange user password or api key is supplied.",
-      "translation": "exchange 사용자 비밀번호 또는 API 키가 제공되지 않았습니다.",
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "message": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "값이 {Value}인 {Name} 특성이 올바른 버전 문자열이 아님",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "Value",
+          "string": "%[2]v",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "property.Value"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다.",
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "message": "Property {Name} has invalid value type {ActualType}",
+      "translation": "{Name} 특성에 올바르지 않은 값 유형 {ActualType}이(가) 있음",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "property.Name"
+        },
+        {
+          "id": "ActualType",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
+          "argNum": 2,
+          "expr": "actualType"
+        }
+      ],
       "fuzzy": true
     },
     {
-      "id": "Internal server error",
-      "message": "Internal server error",
-      "translation": "내부 서버 오류",
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
+        "Deployment config {Arg_1} contains unsupported capability for a workload"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 기능이 포함되어 있음",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
+        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "배치 구성 {Arg_1}에 인프라 컨테이너에 대한 지원되지 않는 기능이 포함되어 있습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
+        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
+        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "배치 구성 {Arg_1}에 {Arg_2}에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
+        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "배치 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
+        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+      ],
+      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "{Arg_2} 계약에 대한 배치 대체 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR",
+        "Error starting containers: {Arg_1}"
+      ],
+      "message": "Error starting containers: {Arg_1}",
+      "translation": "컨테이너를 시작하는 중에 오류 발생: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
+        "Error starting containers for agreement {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "{Arg_1} 계약에 대한 컨테이너를 시작하는 중에 오류 발생: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
+        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "{Arg_1} 계약에 대한 컨테이너를 다시 시작하는 중에 오류 발생: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
+        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+      ],
+      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "{Arg_1}에 대한 새 컨테이너를 시작하기 전 오래된 컨테이너를 정리하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
+        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1}의 서비스 재시도에 대한 상위 컨테이너 목록을 가져오는 데 실패했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
+        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 서비스의 상위와의 네트워크 연결을 복원하는 데 실패했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR",
+        "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+      ],
+      "message": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax 종료 중. 구성에 지정된 서비스 스토리지 디렉토리에 액세스할 수 없음: {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT",
+        "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax 종료 중. iptables 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT",
+        "anax terminating. Failed to instantiate docker client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax 종료 중. docker 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "message": "Name, or Org is empty string.",
+      "translation": "이름 또는 조직이 빈 문자열입니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "message": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 배열이 비어 있습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "message": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "{PROPSVCPRIVILEGED} 특성은 부울 값(true 또는 false)을 가져야 합니다.",
+      "placeholders": [
+        {
+          "id": "PROPSVCPRIVILEGED",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: 공백은 {Expr}에서 허용되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Expr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "message": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring}은(는) 올바른 버전 문자열이 아닙니다.",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 시작되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 끝나지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: 표현식 {Expr}에서 버전 번호가 올바르지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Expr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "message": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "입력 버전 문자열 {V1} 또는 {V2}은(는) 올바른 단일 버전 문자열이 아닙니다.",
+      "placeholders": [
+        {
+          "id": "V1",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "v1"
+        },
+        {
+          "id": "V2",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "v2"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
+        "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+      ],
+      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "{Arg_1} 계약이 이미 있습니다. 제안을 무시합니다: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
+        "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+      ],
+      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "{Arg_1} 계약에 대한 TsAndCs를 역마샬링하는 중에 오류를 수신했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
+        "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+      ],
+      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "agbot {Arg_4}에서 {Arg_2}/{Arg_3} 서비스에 대한 {Arg_1} 계약을 사용하는 중에 노드에서 제안 메시지를 수신했습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        },
+        {
+          "id": "Arg_4",
+          "string": "%[4]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 4
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_NODE_REJECTED_PROPOSAL",
+        "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "노드에서 {Arg_1}/{Arg_2} 서비스에 대한 제안을 거부했습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_ERR_HANDLE_PROPOSAL",
+        "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} 서비스에 대한 제안을 처리하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -7219,7 +7999,7 @@
     {
       "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
       "message": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
-      "translation": "HZN_SDO_SVC_URL이 설정되지 않았습니다. {ANAXOVERWRITEFILE}에서 가져옵니다. ",
+      "translation": "HZN_SDO_SVC_URL이 설정되지 않았습니다. {ANAXOVERWRITEFILE}에서 가져옵니다.",
       "placeholders": [
         {
           "id": "ANAXOVERWRITEFILE",
@@ -7259,7 +8039,7 @@
     {
       "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
       "message": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
-      "translation": "HZN_SDO_SVC_URL 값을 환경, {ANAXOVERWRITEFILE}, 또는 hzn.json 파일 중 하나에서 가져올 수 없습니다. ",
+      "translation": "HZN_SDO_SVC_URL 값을 환경, {ANAXOVERWRITEFILE}, 또는 hzn.json 파일 중 하나에서 가져올 수 없습니다.",
       "placeholders": [
         {
           "id": "ANAXOVERWRITEFILE",
@@ -8100,786 +8880,6 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "image"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
-        "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
-      ],
-      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "{Arg_1} 계약이 이미 있습니다. 제안을 무시합니다: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
-        "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
-      ],
-      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "{Arg_1} 계약에 대한 TsAndCs를 역마샬링하는 중에 오류를 수신했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
-        "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
-      ],
-      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "agbot {Arg_4}에서 {Arg_2}/{Arg_3} 서비스에 대한 {Arg_1} 계약을 사용하는 중에 노드에서 제안 메시지를 수신했습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        },
-        {
-          "id": "Arg_4",
-          "string": "%[4]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 4
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_NODE_REJECTED_PROPOSAL",
-        "Node rejected the proposal for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "노드에서 {Arg_1}/{Arg_2} 서비스에 대한 제안을 거부했습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_ERR_HANDLE_PROPOSAL",
-        "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} 서비스에 대한 제안을 처리하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: 공백은 {Expr}에서 허용되지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Expr",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "message": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring}은(는) 올바른 버전 문자열이 아닙니다.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 시작되지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 끝나지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 표현식 {Expr}에서 버전 번호가 올바르지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Expr",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "message": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "입력 버전 문자열 {V1} 또는 {V2}은(는) 올바른 단일 버전 문자열이 아닙니다.",
-      "placeholders": [
-        {
-          "id": "V1",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "v1"
-        },
-        {
-          "id": "V2",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "v2"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "호환성 오류: 스키마 버전이 동일하지 않음, 이용자 정책: {Version}, 생성자 정책: {Version_1}",
-      "placeholders": [
-        {
-          "id": "Version",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "consumer_policy.Header.Version"
-        },
-        {
-          "id": "Version_1",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "producer_policy.Header.Version"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "message": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "호환성 오류: 노드 특성 {Properties}이(가) 제한조건 요구사항 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
-      "placeholders": [
-        {
-          "id": "Properties",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
-          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
-          "argNum": 1,
-          "expr": "producer_policy.Properties"
-        },
-        {
-          "id": "Constraints",
-          "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
-          "underlyingType": "[]string",
-          "argNum": 2,
-          "expr": "consumer_policy.Constraints"
-        },
-        {
-          "id": "Err",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "message": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "호환성 오류: 노드 특성이 제한조건 요구사항을 만족시키지 않습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "message": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "호환성 오류: 특성 {Properties}이(가) 노드 제한조건 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
-      "placeholders": [
-        {
-          "id": "Properties",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
-          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
-          "argNum": 1,
-          "expr": "consumer_policy.Properties"
-        },
-        {
-          "id": "Constraints",
-          "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
-          "underlyingType": "[]string",
-          "argNum": 2,
-          "expr": "producer_policy.Constraints"
-        },
-        {
-          "id": "Err",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "message": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "호환성 오류: 특성이 노드 제한조건을 만족시키지 않습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "message": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "호환성 오류: {AgreementProtocols}과(와) {AgreementProtocols_1} 간에 공통 계약 프로토콜이 없습니다. 근본적 오류: {Err}",
-      "placeholders": [
-        {
-          "id": "AgreementProtocols",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
-          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
-          "argNum": 1,
-          "expr": "producer_policy.AgreementProtocols"
-        },
-        {
-          "id": "AgreementProtocols_1",
-          "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
-          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
-          "argNum": 2,
-          "expr": "consumer_policy.AgreementProtocols"
-        },
-        {
-          "id": "Err",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "message": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "호환성 오류: 데이터 확인이 생성자의 경우 {DataVerify}, 이용자의 경우 {DataVerify_1}(으)로 서로 호환되지 않습니다.",
-      "placeholders": [
-        {
-          "id": "DataVerify",
-          "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/policy.DataVerification",
-          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
-          "argNum": 1,
-          "expr": "producer_policy.DataVerify"
-        },
-        {
-          "id": "DataVerify_1",
-          "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/policy.DataVerification",
-          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
-          "argNum": 2,
-          "expr": "consumer_policy.DataVerify"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
-        "Deployment config {Arg_1} contains unsupported capability for a workload"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 기능이 포함되어 있음",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
-        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "배치 구성 {Arg_1}에 인프라 컨테이너에 대한 지원되지 않는 기능이 포함되어 있습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
-        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
-        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "배치 구성 {Arg_1}에 {Arg_2}에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
-        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "배치 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
-        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "{Arg_2} 계약에 대한 배치 대체 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR",
-        "Error starting containers: {Arg_1}"
-      ],
-      "message": "Error starting containers: {Arg_1}",
-      "translation": "컨테이너를 시작하는 중에 오류 발생: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
-        "Error starting containers for agreement {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "{Arg_1} 계약에 대한 컨테이너를 시작하는 중에 오류 발생: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
-        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "{Arg_1} 계약에 대한 컨테이너를 다시 시작하는 중에 오류 발생: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
-        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
-      ],
-      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1}에 대한 새 컨테이너를 시작하기 전 오래된 컨테이너를 정리하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
-        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1}의 서비스 재시도에 대한 상위 컨테이너 목록을 가져오는 데 실패했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
-        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 서비스의 상위와의 네트워크 연결을 복원하는 데 실패했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR",
-        "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
-      ],
-      "message": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax 종료 중. 구성에 지정된 서비스 스토리지 디렉토리에 액세스할 수 없음: {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT",
-        "anax terminating. Failed to instantiate iptables client. {Arg_1}"
-      ],
-      "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax 종료 중. iptables 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT",
-        "anax terminating. Failed to instantiate docker client. {Arg_1}"
-      ],
-      "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax 종료 중. docker 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
         }
       ],
       "fuzzy": true
