@@ -876,7 +876,9 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 	} else {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("received rejection from producer %v", reply)))
 
-		b.CancelAgreement(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_NEGATIVE_REPLY), workerId)
+		// Returns true if the protocol msg can be deleted.
+		ok := b.CancelAgreement(cph, reply.AgreementId(), cph.GetTerminationCode(TERM_REASON_NEGATIVE_REPLY), workerId)
+		deletedMessage = !ok
 	}
 
 	// Get rid of the lock
@@ -996,12 +998,13 @@ func (b *BaseAgreementWorker) CancelAgreementWithLock(cph ConsumerProtocolHandle
 	return ok
 }
 
+// Return true if the caller should delete the protocol message that initiated this cancel command.
 func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agreementId string, reason uint, workerId string) bool {
 
 	// Start timing out the agreement
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("terminating agreement %v reason: %v.", agreementId, cph.GetTerminationReason(reason))))
 
-	// Update the database
+	// Update the database. Returns an error if the agreement is not found.
 	ag, err := b.db.AgreementTimedout(agreementId, cph.Name())
 	if err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marking agreement %v terminated: %v", agreementId, err)))
@@ -1010,7 +1013,10 @@ func (b *BaseAgreementWorker) CancelAgreement(cph ConsumerProtocolHandler, agree
 		// so we should just get rid of the protocol msg.
 		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("cancel is for a cancelled agreement %v, deleting cancel message.", agreementId)))
 		return true
-	} else if ag == nil {
+	}
+
+	// Safety check. AgreementTimedout returns an error for not found.
+	if ag == nil {
 		// The cancel is for an agreement that this agbot doesnt know anything about.
 		glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("discarding cancel for agreement id %v not in this agbot's database", agreementId)))
 		// Tell the caller not to delete the exchange message if this is what initiated the cancel because this cancel is not for us.
