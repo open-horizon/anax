@@ -10,6 +10,7 @@ CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
 SECRET_NAME="openhorizon-agent-secrets"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
+AGENT_NAMESPACE="openhorizon-agent"
 
 function now() {
 	echo `date '+%Y-%m-%d %H:%M:%S'`
@@ -94,10 +95,13 @@ function validate_args(){
     log_info "Checking script requirements..."
 
     # check kubectl is available
-    kubectl --help > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
-    	log_notify "kubectl is not available, please install kubectl and ensure that it is found on your \$PATH. Exiting..."
-	exit 1
+    KUBECTL=${KUBECTL:-kubectl}   # the default is kubectl, or what they set in the env var
+    if command -v "$KUBECTL" >/dev/null 2>&1; then
+	    :   # nothing more to do
+    elif command -v microk8s.kubectl >/dev/null 2>&1; then
+	    KUBECTL=microk8s.kubectl
+    else
+	    log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH. Exiting..."
     fi
 
     if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
@@ -134,7 +138,7 @@ function validate_number_int() {
 
 function get_agent_pod_id() {
     log_debug "get_agent_pod_id() begin"
-    POD_ID=$(kubectl get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+    POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
     if [ -n "${POD_ID}" ]; then
         log_info "get pod: ${POD_ID}"
     else
@@ -149,8 +153,8 @@ function removeNodeFromLocalAndManagementHub() {
     log_info "Check node status for agent pod: ${POD_ID}"
 
     EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
-    NODE_STATE=$(kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
-    NODE_ID=$(kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .id" | sed 's/\r//g')
+    NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
+    NODE_ID=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .id" | sed 's/\r//g')
     log_debug "NODE config state for ${NODE_ID} is ${NODE_STATE}"
 
     if [[ "$NODE_STATE" != *"unconfigured"* ]] && [[ "$NODE_STATE" != *"unconfiguring"* ]]; then
@@ -187,10 +191,10 @@ function unregister() {
         HZN_UNREGISTER_CMD="hzn unregister -f"
     fi
 
-    kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_UNREGISTER_CMD}"
+    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_UNREGISTER_CMD}"
 
     # verify the node is unregistered
-    NODE_STATE=$(kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
+    NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
     log_debug "NODE config state is ${NODE_STATE}"
 
     if [[ "$NODE_STATE" != "unconfigured" ]] && [[ "$NODE_STATE" != "unconfiguring" ]]; then
@@ -209,7 +213,7 @@ function deleteNodeFrommanagementHub() {
 
     log_info "Deleting node ${node_id} from the management hub..."
 
-    kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f"
+    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f"
 
     log_debug "deleteNodeFromManagementHub() end"
 }
@@ -222,7 +226,7 @@ function verifyNodeRemovedFromManagementHub() {
 
     log_info "Verifying node ${node_id} is from the management hub..."
 
-    kubectl exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}"
+    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}"
     if [ $? -ne 8 ]; then
             log_notify "Node was not removed from the management hub, exiting..."
 	    exit 1
@@ -233,26 +237,33 @@ function verifyNodeRemovedFromManagementHub() {
 function deleteAgentResources() {
     log_debug "deleteAgentResources() begin"
 
+    set +e
     log_info "Deleting agent deployment..."
-    kubectl delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --force=true --grace-period=0
+
+    log_info "Force deleting all the pods under $AGNET_NAMESPACE if any stuck in Terminating status"
+    $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
     
     log_info "Deleting configmap..."
-    kubectl delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
 
     log_info "Deleting secret..."
-    kubectl delete secret $SECRET_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete secret $SECRET_NAME -n $AGENT_NAMESPACE
 
     log_info "Deleting persistent volume..."
-    kubectl delete pvc $PVC_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete pvc $PVC_NAME -n $AGENT_NAMESPACE
+    set -e
 
     log_info "Deleting clusterrolebinding..."
-    kubectl delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
+    $KUBECTL delete clusterrolebinding $CLUSTER_ROLE_BINDING_NAME
 
+    set +e
     log_info "Deleting serviceaccount..."
-    kubectl delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
+    $KUBECTL delete serviceaccount $SERVICE_ACCOUNT_NAME -n $AGENT_NAMESPACE
+    set -e
 
     log_info "Deleting namespace..."
-    kubectl delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
+    $KUBECTL delete namespace $AGENT_NAMESPACE --force=true --grace-period=0
 
     log_debug "deleteAgentResources() end"
 }
