@@ -1487,9 +1487,10 @@ function pushImageToEdgeClusterRegistry() {
     if [ "$parts" == "3" ]; then
         EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $1}')
         log_notify "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
-        if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
+        
+	if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
                 docker login $EDGE_CLUSTER_REGISTRY_HOST
-        elif
+	else
                 echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
         fi
 
