@@ -36,6 +36,7 @@ RESOURCE_READY=0
 GET_RESOURCE_MAX_TRY=5
 WAIT_POD_MAX_TRY=20
 POD_ID=""
+HZN_ENV_FILE="/tmp/agent-install-horizon-env"
 
 
 VERBOSITY=3 # Default logging verbosity
@@ -958,7 +959,7 @@ function process_node(){
 
 }
 
-# creates node
+# For Device and Cluster: creates node
 function create_node(){
 	log_debug "create_node() begin"
 
@@ -1016,7 +1017,7 @@ function create_node(){
     log_debug "create_node() end"
 }
 
-# register node depending on if registration's requested and pattern name or policy file
+# For Device and Cluster: register node depending on if registration's requested and pattern name or policy file
 function registration() {
 	log_debug "registration() begin"
     local skip_reg=$1
@@ -1434,6 +1435,7 @@ function find_node_ip_address() {
     fi
 }
 
+# Cluster only: check if node exist in management hub
 function check_node_exist() {
     log_debug "check_node_exist() begin"
 
@@ -1463,6 +1465,7 @@ function check_node_exist() {
     log_debug "check_node_exist() end"
 }
 
+# Cluster only: to extract agent image tar.gz and load to docker
 function getImageInfo() {
     log_debug "getImageInfo() begin"
 
@@ -1474,18 +1477,24 @@ function getImageInfo() {
 
     LOADED_IMAGE_MESSAGE=$(docker load --input amd64_anax_k8s_ubi.tar)
     AGENT_IMAGE=$(echo $LOADED_IMAGE_MESSAGE|awk -F': ' '{print $2}')
+
+    if [ -z $AGENT_IMAGE ]; then
+	    log_notify "Agent image is empty, exiting..."
+	    exit 1
+    fi
     log_info "Got agent image: $AGENT_IMAGE"
 
     log_debug "getImageInfo() end"
 }
 
+# Cluster only: to push agent image to image registry that edge cluster can access
 function pushImageToEdgeClusterRegistry() {
     log_debug "pushImageToEdgeClusterRegistry() begin"
 
-    # split $IMAGE_ON_EDGE_CLUSTER_REGISTRY by "/"
-    parts=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print NF}')
+    # split $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY by "/"
+    parts=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print NF}')
     if [ "$parts" == "3" ]; then
-        EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $1}')
+        EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $1}')
         log_notify "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
         
 	if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
@@ -1498,6 +1507,9 @@ function pushImageToEdgeClusterRegistry() {
             log_notify "Failed to login to edge cluster's registry: $EDGE_CLUSTER_REGISTRY_HOST, exiting..."
             exit 1
         fi
+    else
+        log_notify "\$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>:tag"
+	exit 1
     fi
 
     docker tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
@@ -1511,6 +1523,7 @@ function pushImageToEdgeClusterRegistry() {
     log_debug "pushImageToEdgeClusterRegistry() end"
 }
 
+# Cluster only: to generate 3 files: /tmp/agent-install-horizon-env, deployment.yml and persistentClaim.yml
 function generate_installation_files() {
     log_debug "generate_installation_files() begin"
 
@@ -1529,52 +1542,42 @@ function generate_installation_files() {
     log_debug "generate_installation_files() end"
 }
 
+# Cluster only: to generate /tmp/agent-install-hzn-env file
 function generate_horizon_env() {
     log_debug "generate_horizon_env() begin"
-    hzn_env_file="horizon"
-    if [ -e $hzn_env_file ]; then
-        log_info "$hzn_env_file already exists."
-	echo "Do you want to overwrite $hzn_env_file?[y/N]:"
-	read RESPONSE
-	if [ "$RESPONSE" == 'y' ]; then
-		rm $hzn_env_file
-		if [ $? -ne 0 ]; then
-			log_notify "Failed to remove $hzn_env_file, please remove mannually. Exiting..."
-			exit 1
-		else
-			log_notify "$hzn_env_file removed."
-		fi
-		create_horizon_env
-	else
-		log_notify "Agent install will continue and use the existing $hzn_env_file"
-	fi
-    else
-        create_horizon_env
+    if [ -e $HZN_ENV_FILE ]; then
+        log_info "$HZN_ENV_FILE already exists. This script will overwrite it"
+	rm $HZN_ENV_FILE
     fi
+    
+    create_horizon_env
 
     log_debug "generate_horizon_env() end"
 }
 
+# Cluster only: to generate /tmp/agent-install-hzn-env file
 function create_horizon_env() {
     log_debug "create_horizon_env() begin"
     cert_name=$(basename ${CERTIFICATE})
-    echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >> $hzn_env_file
-    echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >> $hzn_env_file
-    echo "HZN_DEVICE_ID=${NODE_ID}" >> $hzn_env_file
-    echo "HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/$cert_name" >> $hzn_env_file
-    echo "HZN_AGENT_PORT=8510" >> $hzn_env_file
+    echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >> $HZN_ENV_FILE
+    echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >> $HZN_ENV_FILE
+    echo "HZN_DEVICE_ID=${NODE_ID}" >> $HZN_ENV_FILE
+    echo "HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/$cert_name" >> $HZN_ENV_FILE
+    echo "HZN_AGENT_PORT=8510" >> $HZN_ENV_FILE
     log_debug "create_horizon_env() end"
 }
 
+# Cluster only: to delete /tmp/agent-install-hzn-env file
 function cleanup_cluster_config_files() {
     log_debug "cleanup_cluster_config_files() begin"
-    rm $hzn_env_file
+    rm $HZN_ENV_FILE
     if [ $? -ne 0 ]; then
-	    log_notify "Failed to remove $hzn_env_file, please remove mannually"
+	    log_notify "Failed to remove $HZN_ENV_FILE, please remove it mannually"
     fi
     log_debug "cleanup_cluster_config_files() end"
 }
 
+# Cluster only: to create deployment.yml based on template
 function prepare_k8s_development_file() {
     log_debug "prepare_k8s_development_file() begin"
 
@@ -1589,6 +1592,7 @@ function prepare_k8s_development_file() {
     log_debug "prepare_k8s_development_file() end"
 }
 
+# Cluster only: to create persistenClaim.yml based on template
 function prepare_k8s_pvc_file() {
 	log_debug "prepare_k8s_pvc_file() begin"
 
@@ -1597,6 +1601,7 @@ function prepare_k8s_pvc_file() {
 	log_debug "prepare_k8s_pvc_file() end"
 }
 
+# Cluster only: to create cluster resources
 function create_cluster_resources() {
 	log_debug "create_cluster_resources() begin"
 
@@ -1610,16 +1615,14 @@ function create_cluster_resources() {
 	log_debug "create_cluster_resources() end"
 }
 
+# Cluster only: to create namespace that agent will be deployed
 function create_namespace() {
     log_debug "create_namespace() begin"
     # check if namespace exist, if not, create
     log_info "checking if namespace exist..."
 
-    # due to global set -e, need to unset that to allow the script to still run after error
-    set +e
     $KUBECTL get namespace ${AGENT_NAMESPACE} 2>/dev/null
     local ret=$?
-    set -e
     if [ $ret -ne 0 ]; then
         log_info "namespace ${AGENT_NAMESPACE} does not exist, creating..."
         log_debug "command: $KUBECTL create namespace ${AGENT_NAMESPACE}"
@@ -1635,6 +1638,7 @@ function create_namespace() {
     log_debug "create_namespace() end"
 }
 
+# Cluster only: to create service account for agent namespace and binding to cluster-admin clusterrole
 function create_service_account() {
 	log_debug "create_service_account() begin"
 	$KUBECTL create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE}
@@ -1655,6 +1659,7 @@ function create_service_account() {
 	log_debug "create_service_account() end"
 }
 
+# Cluster only: to create secret from cert file for agent deployment
 function create_secret() {
     log_debug "create_secrets() begin"
 
@@ -1669,12 +1674,13 @@ function create_secret() {
     log_debug "create_secrets() end"
 }
 
+# Cluster only: to create configmap based on /tmp/agent-install-horizon-env for agent deployment
 function create_configmap() {
     log_debug "create_configmap() begin"
-    log_info "create configmap from horizon.env..."
-    $KUBECTL create configmap ${CONFIGMAP_NAME} --from-file=horizon -n ${AGENT_NAMESPACE}
+    log_info "create configmap from ${HZN_ENV_FILE}..."
+    $KUBECTL create configmap ${CONFIGMAP_NAME} --from-file=horizon=${HZN_ENV_FILE} -n ${AGENT_NAMESPACE}
     if [ $? -ne 0 ]; then
-        log_notify "Failed to create configmap ${CONFIGMAP_NAME} from horizon file, exiting..."
+        log_notify "Failed to create configmap ${CONFIGMAP_NAME} from ${HZN_ENV_FILE}, exiting..."
         exit 1
     fi
     log_info "configmap ${CONFIGMAP_NAME} created."
@@ -1682,6 +1688,7 @@ function create_configmap() {
     log_debug "create_configmap() end"
 }
 
+# Cluster only: to create persistent volume claim for agent deployment
 function create_persistent_volume() {
     log_debug "create_persistent_volume() begin"
 
@@ -1696,10 +1703,10 @@ function create_persistent_volume() {
     log_debug "create_persistent_volume() end"
 }
 
+# Cluster only: to check secret, configmap, pvc is created
 function check_resources_for_deployment() {
     log_debug "check_resource_for_deployment() begin"
-    # check secrets/configmap/persistent/images
-    set +e
+    # check secrets/configmap/persistent
     $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} > /dev/null
     secret_ready=$?
 
@@ -1708,7 +1715,6 @@ function check_resources_for_deployment() {
 
     $KUBECTL get pvc ${PVC_NAME} -n ${AGENT_NAMESPACE} > /dev/null
     pvc_ready=$?
-    set -e
 
     if [[ ${secret_ready} -eq 0 ]] && [[ ${configmap_ready} -eq 0 ]] && [[ ${pvc_ready} -eq 0 ]]; then
         RESOURCE_READY=1
@@ -1719,10 +1725,10 @@ function check_resources_for_deployment() {
     log_debug "check_resource_for_deployment() end"
 }
 
+# Cluster only: to create deployment
 function create_deployment() {
     log_debug "create_deployment() begin"
-    # check_resources_for_deployment()
-    # deploy
+
     log_info "creating deployment..."
     $KUBECTL apply -f deployment.yml -n ${AGENT_NAMESPACE}
     if [ $? -ne 0 ]; then
@@ -1733,6 +1739,7 @@ function create_deployment() {
     log_debug "create_deployment() end"
 }
 
+# Cluster only: to check agent deplyment status
 function check_deployment_status() {
     log_debug "check_resource_for_deployment() begin"
     DEP_STATUS=$($KUBECTL rollout status --timeout=30s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out" )
@@ -1743,6 +1750,7 @@ function check_deployment_status() {
     log_debug "check_resource_for_deployment() end"
 }
 
+# Cluster only: to get agent pod id
 function get_pod_id() {
     log_debug "get_pod_id() begin"
 
@@ -1769,12 +1777,13 @@ function get_pod_id() {
     log_debug "get_pod_id() end"
 }
 
+# Cluster only: to install agent in cluster
 function install_cluster() {
 	check_node_exist
 
 	getImageInfo
 
-	# get image from ocp registry and push to cluster's registry
+	# push agent image to cluster's registry
 	if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
 		pushImageToEdgeClusterRegistry
 	fi
@@ -1797,10 +1806,12 @@ function install_cluster() {
 	check_deployment_status
 	get_pod_id
 
+	set -e
 	create_node
 
 	# register
 	registration "$SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+	set +e
 
 	cleanup_cluster_config_files
 
