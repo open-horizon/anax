@@ -1578,16 +1578,13 @@ function cleanup_cluster_config_files() {
 function prepare_k8s_development_file() {
     log_debug "prepare_k8s_development_file() begin"
 
-    cp deployment-template.yml deployment.yml
+    sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml > deployment.yml
 
     if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
     	sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
     else
         sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
-    sed -i -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" deployment.yml
-    sed -i -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment.yml
-    rm deployment-template.yml
 
     log_debug "prepare_k8s_development_file() end"
 }
@@ -1595,10 +1592,7 @@ function prepare_k8s_development_file() {
 function prepare_k8s_pvc_file() {
 	log_debug "prepare_k8s_pvc_file() begin"
 
-	cp persistentClaim-template.yml persistentClaim.yml
-	sed -i -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" persistentClaim.yml
-	sed -i -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim.yml
-	rm persistentClaim-template.yml
+	sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim-template.yml > persistentClaim.yml
 
 	log_debug "prepare_k8s_pvc_file() end"
 }
