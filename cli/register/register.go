@@ -265,7 +265,6 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			}
 			break
 		}
-		msgPrinter.Println()
 	}
 
 	// Use the exchange node pattern if any
