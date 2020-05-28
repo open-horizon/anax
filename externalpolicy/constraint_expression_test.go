@@ -160,6 +160,15 @@ func Test_succeed_IsSatisfiedBy(t *testing.T) {
 	if err := ce.IsSatisfiedBy(*props); err != nil {
 		t.Errorf("Error: unable to convert simple expression: %v", err)
 	}
+
+	ce = new(ConstraintExpression)
+	(*ce) = append((*ce),
+		"version in [0.0.1,9.3.2)")
+	prop_list = `[{"name":"version", "value":"0.0.2"}]`
+	props = create_property_list(prop_list, t)
+	if err := ce.IsSatisfiedBy(*props); err != nil {
+		t.Errorf("Error: unable to convert simple expression: %v", err)
+	}
 }
 
 func Test_fail_IsSatisfiedBy(t *testing.T) {

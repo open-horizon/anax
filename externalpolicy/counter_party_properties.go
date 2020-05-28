@@ -470,7 +470,7 @@ func propertyInArray(propexp *PropertyExpression, props *[]Property) bool {
 					}
 					return pValue != propexpValue
 				} else if propexp.Op == isin {
-					if p.Type == VERSION_TYPE {
+					if p.Type == VERSION_TYPE || (semanticversion.IsVersionString(pValue) && semanticversion.IsVersionExpression(propexpValue)) {
 						return containsVersion(pValue, propexpValue)
 					}
 					if p.Type == LIST_TYPE {
