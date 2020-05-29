@@ -37,6 +37,8 @@ GET_RESOURCE_MAX_TRY=5
 WAIT_POD_MAX_TRY=20
 POD_ID=""
 HZN_ENV_FILE="/tmp/agent-install-horizon-env"
+USE_EDGE_CLUSTER_REGISTRY="true"
+DEFAULT_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-image-registry.svc:5000"
 
 
 VERBOSITY=3 # Default logging verbosity
@@ -55,6 +57,7 @@ function help() {
 $(basename "$0") <options> -- installing Horizon software
 where:
     \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, either \$HZN_EXCHANGE_USER_AUTH or \$HZN_EXCHANGE_NODE_AUTH, variables must be defined either in a config file or environment,
+    \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be defined in a config file or environment if deploy type is "Cluster", format: <registry-host>/<ocp-project>/amd64_agent (without tag), for microsk8s: localhost:32000/agent-repo/amd64_agent
 
     -c          - path to a certificate file
     -k          - path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
@@ -75,6 +78,7 @@ where:
     -o          - specify an org id for the service specified with '-w'
     -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
     -D		- specify deploy type (device, cluster. If not specifed, uses device by default).
+    -U		- specify internal url for edge cluster registry (If not specified, this script will detect if cluster is local. Use "image-registry.openshift-image-registry.svc:5000" by default for ocp image registry)
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -316,15 +320,25 @@ function validate_args(){
 		AGENT_NAMESPACE="openhorizon-agent"
 	fi
 
-	get_variable USE_EDGE_CLUSTER_REGISTRY $CFG
+	get_variable AGENT_IMAGE_TAG $CFG
+	check_empty AGENT_IMAGE_TAG "Agent image tag"
+
+	# get_variable USE_EDGE_CLUSTER_REGISTRY $CFG
+	# $USE_EDGE_CLUSTER_REGISTRY is set to true by default
 	if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
 		get_variable EDGE_CLUSTER_REGISTRY_USERNAME $CFG
-		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Username"
 		get_variable EDGE_CLUSTER_REGISTRY_TOKEN $CFG
-		check_empty EDGE_CLUSTER_REGISTRY_USERNAME "Edge Cluster Registry Token"
-		get_variable IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY $CFG
-		check_empty IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY "Image Full Path  on Edge Cluster Registry"
+		get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY $CFG
+		check_empty IMAGE_ON_EDGE_CLUSTER_REGISTRY "Image on edge cluster registry"
+		parts=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print NF}')
+    		if [ "$parts" != "3" ]; then
+			log_notify "\$IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
+			exit 1
+		fi
+		IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY=$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_TAG
+		get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY $CFG
 	fi
+
     fi
     get_variable CERTIFICATE $CFG
     get_variable HZN_MGMT_HUB_CERT_PATH $CFG
@@ -381,8 +395,14 @@ function show_config() {
     echo "Using Edge Cluster Registry: ${USE_EDGE_CLUSTER_REGISTRY}"
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
 	echo "Edge Cluster Registry Username: ${EDGE_CLUSTER_REGISTRY_USERNAME}"
-	echo "Edge Cluster Registry Token: <specified>"
+	if [[ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]]; then
+		echo "Edge Cluster Registry Token:"
+	else
+		echo "Edge Cluster Registry Token: <specified>"
+	fi
+	echo "Image On Edge Cluster Registry: ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}"
 	echo "Image Full Path On Edge Cluster Registry: ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}"
+	echo "Internal URL for Edge Cluster Registry: ${INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY}"
     fi
 
     log_debug "show_config() end"
@@ -1492,24 +1512,18 @@ function pushImageToEdgeClusterRegistry() {
     log_debug "pushImageToEdgeClusterRegistry() begin"
 
     # split $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY by "/"
-    parts=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print NF}')
-    if [ "$parts" == "3" ]; then
-        EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $1}')
-        log_notify "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
-        
-	if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
-                docker login $EDGE_CLUSTER_REGISTRY_HOST
-	else
-                echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
-        fi
-
-        if [ $? -ne 0 ]; then
-            log_notify "Failed to login to edge cluster's registry: $EDGE_CLUSTER_REGISTRY_HOST, exiting..."
-            exit 1
-        fi
+    EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $1}')
+    log_notify "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
+    
+    if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
+	    docker login $EDGE_CLUSTER_REGISTRY_HOST
     else
-        log_notify "\$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>:tag"
-	exit 1
+	    echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
+    fi
+    
+    if [ $? -ne 0 ]; then
+	    log_notify "Failed to login to edge cluster's registry: $EDGE_CLUSTER_REGISTRY_HOST, exiting..."
+            exit 1
     fi
 
     docker tag ${AGENT_IMAGE} ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}
@@ -1584,9 +1598,27 @@ function prepare_k8s_development_file() {
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml > deployment.yml
 
     if [ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]; then
-    	sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
+			EDGE_CLUSTER_REGISTRY_PROJECT_NAME=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $2}')
+			EDGE_CLUSTER_AGENT_IMAGE_AND_TAG=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print $3}')
+
+			if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
+				# check if using local cluster or remote ocp
+				if kubectl cluster-info | grep -q -E 'Kubernetes master.*//(127|172|10|192.168)\.'; then
+					# using small kube
+					sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
+				else
+					# using ocp
+					IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY_INTERNAL_URL=$DEFAULT_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
+					sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY_INTERNAL_URL}#g" deployment.yml
+				fi
+			else
+				IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY_INTERNAL_URL=$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY/$EDGE_CLUSTER_REGISTRY_PROJECT_NAME/$EDGE_CLUSTER_AGENT_IMAGE_AND_TAG
+				sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY_INTERNAL_URL}#g" deployment.yml
+			fi		
     else
-        sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
+		log_notify "Agent install on edge cluster requires to use an edge cluster registry"
+		exit 1
+        #sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
 
     log_debug "prepare_k8s_development_file() end"
@@ -1818,7 +1850,7 @@ function install_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:a:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:a:U:" opt; do
 	case $opt in
 		c) CERTIFICATE="$OPTARG"
 		;;
@@ -1859,6 +1891,8 @@ while getopts "c:i:j:p:k:u:d:z:hvl:n:sfbw:o:t:D:a:" opt; do
 		t) APT_REPO_BRANCH="$OPTARG"
 		;;
 		D) DEPLOY_TYPE="$OPTARG"
+		;;
+		U) INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="$OPTARG"
 		;;
 		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
