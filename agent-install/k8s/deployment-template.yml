@@ -31,6 +31,7 @@ spec:
       containers:
       - name: anax
         image: __ImagePath__
+        imagePullPolicy: Always
         volumeMounts:
         - mountPath: /etc/default/horizon
           subPath: horizon
