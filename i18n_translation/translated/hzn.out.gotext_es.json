@@ -2452,7 +2452,7 @@
     },
     {
       "id": "The JSON input file name containing the node policy.",
-      "translation": "El nombre archivo de entrada JSON que contiene la política de nodo."
+      "translation": "El nombre de archivo de entrada JSON que contiene la política de nodo."
     },
     {
       "id": "Add or update node policy properties or overwrite the node policy constraint expression.",
@@ -2500,7 +2500,7 @@
     },
     {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "translation": "El nombre archivo de entrada JSON que contiene la política de nodo. Mutuamente excluyente con un -n."
+      "translation": "El nombre de archivo de entrada JSON que contiene la política de nodo. Mutuamente excluyente con un -n."
     },
     {
       "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -2508,15 +2508,15 @@
     },
     {
       "id": "The JSON input file name containing the Deployment policy. Mutually exclusive with -b.",
-      "translation": "El nombre archivo de entrada JSON que contiene la política de despliegue. Mutuamente excluyente con -b."
+      "translation": "El nombre de archivo de entrada JSON que contiene la política de despliegue. Mutuamente excluyente con -b."
     },
     {
       "id": "(optional) The JSON input file name containing the service policy. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
-      "translation": "(opcional) El nombre archivo de entrada JSON que contiene la política de servicio. Si se omite, la política de servicio se recuperará de Exchange para el servicio definido en la política de despliegue."
+      "translation": "(opcional) El nombre de archivo de entrada JSON que contiene la política de servicio. Si se omite, la política de servicio se recuperará de Exchange para el servicio definido en la política de despliegue."
     },
     {
       "id": "(optional) The JSON input file name containing the service definition. Mutually exclusive with -b. If omitted, the service referenced in the deployment policy is retrieved from the Exchange. This flag can be repeated to specify different versions of the service.",
-      "translation": "(opcional) El nombre archivo de entrada JSON que contiene la definición de servicio. Mutuamente excluyente con -b. Si se omite, el servicio referenciado en la política de despliegue se recupera de Exchange. Este distintivo se puede repetir para especificar diferentes versiones del servicio."
+      "translation": "(opcional) El nombre de archivo de entrada JSON que contiene la definición de servicio. Mutuamente excluyente con -b. Si se omite, el servicio referenciado en la política de despliegue se recupera de Exchange. Este distintivo se puede repetir para especificar diferentes versiones del servicio."
     },
     {
       "id": "Check user input compatibility.",
@@ -2532,7 +2532,7 @@
     },
     {
       "id": "The JSON input file name containing the node user input. Mutually exclusive with -n.",
-      "translation": "El nombre archivo de entrada JSON que contiene la entrada de usuario de nodo. Mutuamente excluyente con un -n."
+      "translation": "El nombre de archivo de entrada JSON que contiene la entrada de usuario de nodo. Mutuamente excluyente con un -n."
     },
     {
       "id": "The Horizon exchange deployment policy ID. Mutually exclusive with -B, -p and -P. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -2540,11 +2540,11 @@
     },
     {
       "id": "The JSON input file name containing the deployment policy. Mutually exclusive with -b, -p and -P.",
-      "translation": "El nombre archivo de entrada JSON que contiene la política de despliegue. Mutuamente excluyente con -b, -p y -P."
+      "translation": "El nombre de archivo de entrada JSON que contiene la política de despliegue. Mutuamente excluyente con -b, -p y -P."
     },
     {
       "id": "(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the Exchange. This flag can be repeated to specify different versions of the service.",
-      "translation": "(opcional) El nombre archivo de entrada JSON que contiene la definición de servicio. Si se omite, el servicio definido en el patrón o la política de despliegue se recuperará de Exchange. Este distintivo se puede repetir para especificar diferentes versiones del servicio."
+      "translation": "(opcional) El nombre de archivo de entrada JSON que contiene la definición de servicio. Si se omite, el servicio definido en el patrón o la política de despliegue se recuperará de Exchange. Este distintivo se puede repetir para especificar diferentes versiones del servicio."
     },
     {
       "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -2552,7 +2552,7 @@
     },
     {
       "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.",
-      "translation": "El nombre archivo de entrada JSON que contiene el patrón. Mutuamente excluyente con -p, -b y -B."
+      "translation": "El nombre de archivo de entrada JSON que contiene el patrón. Mutuamente excluyente con -p, -b y -B."
     },
     {
       "id": "Check all compatibilities for a deployment.",
@@ -2564,11 +2564,11 @@
     },
     {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "translation": "El nombre archivo de entrada JSON que contiene la política de nodo. Mutuamente excluyente con -n, -p y -P."
+      "translation": "El nombre de archivo de entrada JSON que contiene la política de nodo. Mutuamente excluyente con -n, -p y -P."
     },
     {
       "id": "(optional) The JSON input file name containing the service policy. Mutually exclusive with -p and -P. If omitted, the service policy will be retrieved from the Exchange for the service defined in the deployment policy.",
-      "translation": "(opcional) El nombre archivo de entrada JSON que contiene la política de servicio. Mutuamente excluyente con -p y -P. Si se omite, la política de servicio se recuperará de Exchange para el servicio definido en la política de despliegue."
+      "translation": "(opcional) El nombre de archivo de entrada JSON que contiene la política de servicio. Mutuamente excluyente con -p y -P. Si se omite, la política de servicio se recuperará de Exchange para el servicio definido en la política de despliegue."
     },
     {
       "id": "The Horizon exchange pattern ID. Mutually exclusive with -P, -b, -B --node-pol and --service-pol. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.",
@@ -2576,7 +2576,7 @@
     },
     {
       "id": "The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B, --node-pol and --service-pol.",
-      "translation": "El nombre archivo de entrada JSON que contiene el patrón. Mutuamente excluyente con -p, -b y -B, --node-pol y --service-pol."
+      "translation": "El nombre de archivo de entrada JSON que contiene el patrón. Mutuamente excluyente con -p, -b y -B, --node-pol y --service-pol."
     },
     {
       "id": "List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.",
