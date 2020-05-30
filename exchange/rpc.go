@@ -264,6 +264,52 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 	}
 }
 
+type NodeStatus struct {
+	RunningServices string `json:"runningServices,omitempty"`
+}
+
+func (w NodeStatus) String() string {
+	return fmt.Sprintf(
+		"Running Services: %v",
+		w.RunningServices)
+}
+
+func GetNodeStatus(ec ExchangeContext, deviceId string) (*NodeStatus, error) {
+
+	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting node status for %v.", deviceId)))
+
+	// Get the node status object. There should only be 1.
+	var resp interface{}
+	resp = new(NodeStatus)
+
+	targetURL := fmt.Sprintf("%vorgs/%v/nodes/%v/status", ec.GetExchangeURL(), GetOrg(deviceId), GetId(deviceId))
+
+	retryCount := ec.GetHTTPFactory().RetryCount
+	retryInterval := ec.GetHTTPFactory().GetRetryInterval()
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "GET", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), nil, &resp); err != nil {
+			glog.Errorf(rpclogString(fmt.Sprintf(err.Error())))
+			return nil, err
+		} else if tpErr != nil {
+			glog.Warningf(rpclogString(fmt.Sprintf(tpErr.Error())))
+			if ec.GetHTTPFactory().RetryCount == 0 {
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			} else if retryCount == 0 {
+				return nil, fmt.Errorf("Exceeded %v retries for error: %v", ec.GetHTTPFactory().RetryCount, tpErr)
+			} else {
+				retryCount--
+				time.Sleep(time.Duration(retryInterval) * time.Second)
+				continue
+			}
+		} else {
+			glog.V(5).Infof(rpclogString(fmt.Sprintf("returning node status %v for %v.", resp, deviceId)))
+			nodeStatus := resp.(*NodeStatus)
+			return nodeStatus, nil
+		}
+	}
+}
+
 type DeviceAgreement struct {
 	Service          []MSAgreementState `json:"services"`
 	State            string             `json:"state"`
@@ -969,6 +1015,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					case *ExchangeChangeIDResponse:
+						return nil, nil
+
+					case *NodeStatus:
 						return nil, nil
 
 					default:

@@ -286,6 +286,15 @@ func GetHTTPDeleteSurfaceErrorsHandler(ec ExchangeContext) DeleteSurfaceErrorsHa
 	}
 }
 
+// A handler for getting the node status.
+type NodeStatusHandler func(deviceId string) (*NodeStatus, error)
+
+func GetHTTPNodeStatusHandler(ec ExchangeContext) NodeStatusHandler {
+	return func(deviceId string) (*NodeStatus, error) {
+		return GetNodeStatus(ec, deviceId)
+	}
+}
+
 // Two handlers for getting the service policy from the exchange.
 type ServicePolicyWithIdHandler func(service_id string) (*ExchangePolicy, error)
 
