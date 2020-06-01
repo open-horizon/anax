@@ -140,7 +140,7 @@ function validate_number_int() {
 
 function get_agent_pod_id() {
     log_debug "get_agent_pod_id() begin"
-    if [[ $(kubectl get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+    if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
 	    AGENT_POD_READY="false"
     else
 	    AGENT_POD_READY="true"
