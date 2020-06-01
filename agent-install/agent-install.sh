@@ -270,6 +270,7 @@ function validate_args(){
         KUBECTL=microk8s.kubectl
       else
                 log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH. Exiting..."
+		exit 1
       fi
 
       check_installed "docker" "Docker"
@@ -1603,7 +1604,7 @@ function prepare_k8s_development_file() {
 
 			if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
 				# check if using local cluster or remote ocp
-				if kubectl cluster-info | grep -q -E 'Kubernetes master.*//(127|172|10|192.168)\.'; then
+				if $KUBECTL cluster-info | grep -q -E 'Kubernetes master.*//(127|172|10|192.168)\.'; then
 					# using small kube
 					sed -i -e "s#__ImagePath__#${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}#g" deployment.yml
 				else
