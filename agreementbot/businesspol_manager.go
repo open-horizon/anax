@@ -285,12 +285,12 @@ func (pm *BusinessPolicyManager) GetBusinessPolicyEntry(org string, pol *policy.
 }
 
 func (pm *BusinessPolicyManager) GetAllPolicyOrgs() []string {
-	pm.polMapLock.Lock()
-	defer pm.polMapLock.Unlock()
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
 
 	orgs := make([]string, 0)
-	for org, _ := range pm.OrgPolicies {
-		orgs = append(orgs, org)
+	for _, sp := range pm.ServedPolicies {
+		orgs = append(orgs, sp.BusinessPolOrg)
 	}
 	return orgs
 }
@@ -304,7 +304,7 @@ func (pm *BusinessPolicyManager) setServedBusinessPolicies(servedPols map[string
 	pm.ServedPolicies = servedPols
 }
 
-// chek if the agbot serves the given business policy or not.
+// check if the agbot serves the given business policy or not.
 func (pm *BusinessPolicyManager) serveBusinessPolicy(polOrg string, polName string) bool {
 	pm.spMapLock.Lock()
 	defer pm.spMapLock.Unlock()
@@ -411,8 +411,9 @@ func (pm *BusinessPolicyManager) UpdatePolicies(org string, definedPolicies map[
 	// This is the case where business policy or the org has been deleted but the agbot still hosts the policy on the exchange.
 	if definedPolicies == nil || len(definedPolicies) == 0 {
 		// delete org and all policy files in it.
-		glog.V(5).Infof("Deleting the org %v from the policy manager because it does not contain a business policy.", org)
-		return pm.deleteOrg(org, polManager)
+		glog.V(5).Infof("Org %v no longer has any policies in the policy manager", org)
+		pm.deleteRemainingPolicies(org, polManager)
+		return nil
 	}
 
 	// Delete the business policy from the pm if the policy does not exist on the exchange or the agbot
@@ -466,6 +467,7 @@ func (pm *BusinessPolicyManager) updateBusinessPolicy(org string, polId string, 
 			if err != nil {
 				return errors.New(fmt.Sprintf("unable to hash the business policy %v for %v, error %v", pol, org, err))
 			}
+
 			if !bytes.Equal(pe.Hash, newHash) {
 				// update the cache
 				glog.V(5).Infof("Updating policy entry for %v of org %v because it is changed. ", polId, org)
@@ -515,7 +517,20 @@ func (pm *BusinessPolicyManager) updateBusinessPolicy(org string, polId string, 
 // When an org is removed from the list of supported orgs and business policies, remove the org
 // from the BusinessPolicyManager.
 func (pm *BusinessPolicyManager) deleteOrg(org_in string, polManager *policy.PolicyManager) error {
-	// send PolicyDeletedMessage message for each business polices in the org
+	// Get rid of any policies remaining in the org. It is important to call this function so that
+	// it will send out the policy delete events for any policies that are deleted.
+	pm.deleteRemainingPolicies(org_in, polManager)
+
+	// Get rid of the org map
+	if pm.hasOrg(org_in) {
+		delete(pm.OrgPolicies, org_in)
+	}
+	return nil
+}
+
+// Remove any policies that might be present in the policy manager for this org.
+func (pm *BusinessPolicyManager) deleteRemainingPolicies(org_in string, polManager *policy.PolicyManager) {
+	// send PolicyDeletedMessage message for each business policy in the org
 	for org, orgMap := range pm.OrgPolicies {
 		if org == org_in {
 			for polName, pe := range orgMap {
@@ -524,6 +539,11 @@ func (pm *BusinessPolicyManager) deleteOrg(org_in string, polManager *policy.Pol
 
 					// notify the policy manager
 					polManager.DeletePolicy(org, pe.Policy)
+
+					if err := pm.deleteBusinessPolicy(org, polName, polManager); err != nil {
+						glog.Errorf("Error deleting business policy %v from the org %v in the policy manager. Error: %v", polName, org, err)
+						continue
+					}
 
 					if policyString, err := policy.MarshalPolicy(pe.Policy); err != nil {
 						glog.Errorf(fmt.Sprintf("Policy manager error trying to marshal policy %v error: %v", polName, err))
@@ -535,12 +555,6 @@ func (pm *BusinessPolicyManager) deleteOrg(org_in string, polManager *policy.Pol
 			break
 		}
 	}
-
-	// Get rid of the org map
-	if pm.hasOrg(org_in) {
-		delete(pm.OrgPolicies, org_in)
-	}
-	return nil
 }
 
 // When a business policy is removed from the exchange, remove it from the BusinessPolicyManager, PolicyManager and send a PolicyDeletedMessage.
