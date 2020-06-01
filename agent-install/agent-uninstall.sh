@@ -63,6 +63,8 @@ function log() {
 function help() {
     cat << EndOfMessage
 $(basename "$0") <options> -- uninstall agent from edge cluster
+where:
+    \$HZN_EXCHANGE_USER_AUTH must be defined in environment
 
     -v          - show version
     -l          - logging verbosity level (0-5, 5 is verbose)
@@ -80,7 +82,7 @@ function show_config() {
 	log_debug "show_config() begin"
 
     echo "Current configuration:"
-    echo "HZN_EXCHANGE_USER_AUTH: ${HZN_EXCHANGE_USER_AUTH}"
+    echo "HZN_EXCHANGE_USER_AUTH: <specified>"
     echo "Delete node: ${DELETE_EX_NODE}"
     echo "Agent namespace to uninstall: ${AGENT_NAMESPACE}"
     echo "Verbosity is ${VERBOSITY}"
@@ -101,7 +103,7 @@ function validate_args(){
     elif command -v microk8s.kubectl >/dev/null 2>&1; then
 	    KUBECTL=microk8s.kubectl
     else
-	    log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH. Exiting..."
+	    log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
     fi
 
     if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
@@ -138,12 +140,20 @@ function validate_number_int() {
 
 function get_agent_pod_id() {
     log_debug "get_agent_pod_id() begin"
-    POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
-    if [ -n "${POD_ID}" ]; then
-        log_info "get pod: ${POD_ID}"
+    if [[ $(kubectl get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+	    AGENT_POD_READY="false"
     else
-        log_notify "Failed to get pod id, exiting..."
-        exit 1
+	    AGENT_POD_READY="true"
+    fi
+
+    if [ "$AGENT_POD_READY" == "true" ]; then
+    	POD_ID=$($KUBECTL get pod -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+    	if [ -n "${POD_ID}" ]; then
+        	log_info "get pod: ${POD_ID}"
+    	else
+        	log_notify "Failed to get pod id, exiting..."
+        	exit 1
+    	fi
     fi
     log_debug "get_agent_pod_id() end"
 }
@@ -153,23 +163,28 @@ function removeNodeFromLocalAndManagementHub() {
     log_info "Check node status for agent pod: ${POD_ID}"
 
     EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
-    NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
-    NODE_ID=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .id" | sed 's/\r//g')
+    NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list")
+    NODE_STATE=$(echo $NODE_INFO | jq -r .configstate.state | sed 's/[^a-z]*//g')
+    NODE_ID=$(echo $NODE_INFO | jq -r .id | sed 's/\r//g')
     log_debug "NODE config state for ${NODE_ID} is ${NODE_STATE}"
 
     if [[ "$NODE_STATE" != *"unconfigured"* ]] && [[ "$NODE_STATE" != *"unconfiguring"* ]]; then
-        log_info "Process with unregister..."
-	unregister $NODE_ID
-	sleep 2
+        if [[ -n $NODE_STATE ]]; then
+		log_info "Process with unregister..."
+		unregister $NODE_ID
+		sleep 2
+	else 
+		log_info "node state is empty"
+	fi
     else
         log_info "Node is not registered, skip unregister..."
 	if [[ "$DELETE_EX_NODE" == "true" ]]; then
 	    log_info "Remve node from the management hub..."
-	    deleteNodeFrommanagementHub $NODE_ID
+	    deleteNodeFromManagementHub $NODE_ID
 	fi
     fi
 
-    if [[ "$DELETE_EX_NODE" == "true" ]]; then
+    if [[ -n $NODE_STATE ]] && [[ "$DELETE_EX_NODE" == "true" ]]; then
         verifyNodeRemovedFromManagementHub $NODE_ID
     fi
 
@@ -185,27 +200,28 @@ function unregister() {
 
     if [[ "$DELETE_EX_NODE" == "true" ]]; then
         log_info "This script will delete the node from the management hub"
-	HZN_UNREGISTER_CMD="hzn unregister -rf"
+	HZN_UNREGISTER_CMD="hzn unregister -rf -t 1"
     else
         log_info "This script will NOT delete the node from the management hub"
-        HZN_UNREGISTER_CMD="hzn unregister -f"
+        HZN_UNREGISTER_CMD="hzn unregister -f -t 1"
     fi
 
+    set +e
     $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_UNREGISTER_CMD}"
+    set -e
 
     # verify the node is unregistered
     NODE_STATE=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list | jq -r .configstate.state" | sed 's/[^a-z]*//g')
     log_debug "NODE config state is ${NODE_STATE}"
 
     if [[ "$NODE_STATE" != "unconfigured" ]] && [[ "$NODE_STATE" != "unconfiguring" ]]; then
-        log_notify "Failed to unregister agent, exiting..."
-        exit 1
+        log_warning "Failed to unregister agent"
     fi
 
     log_debug "unregister() end"
 }
 
-function deleteNodeFrommanagementHub() {
+function deleteNodeFromManagementHub() {
     log_debug "deleteNodeFromManagementHub() begin"
 
     EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
@@ -213,7 +229,9 @@ function deleteNodeFrommanagementHub() {
 
     log_info "Deleting node ${node_id} from the management hub..."
 
+    set +e
     $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node remove ${node_id} -f"
+    set -e
 
     log_debug "deleteNodeFromManagementHub() end"
 }
@@ -226,11 +244,12 @@ function verifyNodeRemovedFromManagementHub() {
 
     log_info "Verifying node ${node_id} is from the management hub..."
 
-    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}"
+    set +e
+    $KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn exchange node list ${node_id}" >/dev/null 2>&1
     if [ $? -ne 8 ]; then
-            log_notify "Node was not removed from the management hub, exiting..."
-	    exit 1
+	    log_warning "Node was not removed from the management hub"
     fi
+    set -e
     log_debug "verifyNodeRemovedFromManagementHub() end"
 }
 
@@ -271,12 +290,14 @@ function deleteAgentResources() {
 function uninstall_cluster() {
     show_config
     
-    validate_args "$*" "$#"
+    validate_args
 
     get_agent_pod_id
-    
-    removeNodeFromLocalAndManagementHub
 
+    if [[ "$AGENT_POD_READY" == "true" ]]; then
+    	removeNodeFromLocalAndManagementHub
+    fi
+    
     deleteAgentResources
 }
 
