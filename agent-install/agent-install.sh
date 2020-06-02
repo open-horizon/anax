@@ -453,8 +453,10 @@ function create_config() {
 				-e "s~^HZN_DEVICE_ID=[^ ]*~HZN_DEVICE_ID=${DEVICE_ID}~g" \
 				-e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" /etc/default/horizon
 		else
-			if [[ ${CERTIFICATE:0:1} != "/" ]] && [[ -f "$CERTIFICATE" ]]; then
-				sudo mv $CERTIFICATE /etc/horizon/agent-install.crt
+			if [[ ${CERTIFICATE:0:1} != "/" ]]; then
+                set -x
+				sudo cp $CERTIFICATE /etc/horizon/agent-install.crt
+                { set +x; } 2>/dev/null
 				ABS_CERTIFICATE=/etc/horizon/agent-install.crt
 			else
 				ABS_CERTIFICATE=${CERTIFICATE}
@@ -485,10 +487,10 @@ function install_macos() {
 
     sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${PACKAGES}/${MAC_PACKAGE_CERT}
     { set +x; } 2>/dev/null
-	if [[ "$CERTIFICATE" != "" ]] && [[ -f "$CERTIFICATE" ]]; then
+	if [[ "$CERTIFICATE" != "" ]]; then
 		log_info "Configuring an edge node to trust the ICP certificate ..."
 		set -x
-		sudo mv $CERTIFICATE /private/etc/horizon/agent-install.crt
+		sudo cp $CERTIFICATE /private/etc/horizon/agent-install.crt
 		CERTIFICATE=/private/etc/horizon/agent-install.crt
 		sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "$CERTIFICATE"
 		{ set +x; } 2>/dev/null
@@ -584,9 +586,9 @@ function install_macos() {
 		printf "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL} \nHZN_FSS_CSSURL=${HZN_FSS_CSSURL} \
 			\nHZN_DEVICE_ID=${DEVICE_ID}"  | sudo tee "$HZN_CONFIG"
 	else
-		if [[ ${CERTIFICATE:0:1} != "/" ]] && [[ -f "$CERTIFICATE" ]]; then
+		if [[ ${CERTIFICATE:0:1} != "/" ]]; then
 			#ABS_CERTIFICATE=$(pwd)/${CERTIFICATE}
-			sudo mv $CERTIFICATE /private/etc/horizon/agent-install.crt
+			sudo cp $CERTIFICATE /private/etc/horizon/agent-install.crt
 			ABS_CERTIFICATE=/private/etc/horizon/agent-install.crt
 		else
 			ABS_CERTIFICATE=${CERTIFICATE}
@@ -670,7 +672,8 @@ function install_linux(){
     if command -v docker >/dev/null 2>&1; then
         log_info "docker found"
     else
-        log_info "docker not found, install before continuing..."
+        log_info "docker not found, please install docker and rerun the agent_install script."
+        exit 1
     fi
 
     if [[ -n "$PKG_APT_REPO" ]]; then
