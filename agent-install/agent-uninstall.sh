@@ -260,8 +260,12 @@ function deleteAgentResources() {
     log_info "Deleting agent deployment..."
     $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --force=true --grace-period=0
 
+    # give pods sometime to terminate by themselves
+    sleep 10
+
     log_info "Force deleting all the pods under $AGNET_NAMESPACE if any stuck in Terminating status"
     $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
+    pkill -f anax.service
     
     log_info "Deleting configmap..."
     $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
