@@ -1774,7 +1774,10 @@ function create_deployment() {
 # Cluster only: to check agent deplyment status
 function check_deployment_status() {
     log_debug "check_resource_for_deployment() begin"
-    DEP_STATUS=$($KUBECTL rollout status --timeout=30s deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out" )
+    local timeout=75s
+    log_notify "Waiting up to $timeout for the agent deployment to complete..."
+
+    DEP_STATUS=$($KUBECTL rollout status --timeout=${timeout} deployment/agent -n ${AGENT_NAMESPACE} | grep "successfully rolled out" )
     if [ -z "$DEP_STATUS" ]; then
         log_notify "Deployment rollout status failed"
         exit 1
