@@ -57,8 +57,12 @@ function help() {
 $(basename "$0") <options> -- installing Horizon software
 where:
     \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, either \$HZN_EXCHANGE_USER_AUTH or \$HZN_EXCHANGE_NODE_AUTH, variables must be defined either in a config file or environment,
-    \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be defined in a config file or environment if deploy type is "Cluster", format: <registry-host>/<ocp-project>/amd64_agent (without tag), for microsk8s: localhost:32000/agent-repo/amd64_agent
+    
+For agent install on edge cluster:
+    \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be defined in a config file or environment if deploy type is "cluster", format: <registry-host>/<ocp-project>/amd64_agent (without tag), for microsk8s: localhost:32000/agent-repo/amd64_agent
+    if set \$EDGE_CLUSTER_STORAGE_CLASS in environement, the value of "EDGE_CLUSTER_STORAGE_CLASS" in configuration file will not be used
 
+Parameters:
     -c          - path to a certificate file
     -k          - path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
     -p          - pattern name to register with (if not specified, registers node w/o pattern)
