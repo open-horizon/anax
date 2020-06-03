@@ -1668,8 +1668,9 @@ function create_namespace() {
             log_notify "Failed to create namespace ${AGENT_NAMESPACE}, exiting..."
             exit 1
         fi
+	log_notify "namespace ${AGENT_NAMESPACE} created"
     else
-        log_info "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
+        log_notify "namespace ${AGENT_NAMESPACE} exists, skip creating namespace"
     fi
 
     log_debug "create_namespace() end"
@@ -1678,21 +1679,36 @@ function create_namespace() {
 # Cluster only: to create service account for agent namespace and binding to cluster-admin clusterrole
 function create_service_account() {
 	log_debug "create_service_account() begin"
-	$KUBECTL create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE}
-	if [ $? -ne 0 ]; then
-        log_notify "Failed to create service account ${SERVICE_ACCOUNT_NAME}, exiting..."
-        exit 1
-    fi
-	log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} created"
 
-	log_info "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
-	$KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
+	log_info "checking if serviceaccont exist..."
+	$KUBECTL get serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null
+	
 	if [ $? -ne 0 ]; then
-        log_notify "Failed to create clusterrolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}, exiting..."
-        exit 1
-    fi
-	log_info "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} created"
+		log_info "serviceaccount ${SERVICE_ACCOUNT_NAME} does not exist, creating..."
+		$KUBECTL create serviceaccount ${SERVICE_ACCOUNT_NAME} -n ${AGENT_NAMESPACE}
+		if [ $? -ne 0 ]; then
+        		log_notify "Failed to create service account ${SERVICE_ACCOUNT_NAME}, exiting..."
+        		exit 1
+    		fi
+		log_notify "serviceaccount ${SERVICE_ACCOUNT_NAME} created"
 
+	else
+		log_notify "serviceaccount ${SERVICE_ACCOUNT_NAME} exists, skip creating serviceaccount"
+	fi
+
+	log_info "checking if clusterrolebinding exist..."
+	$KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} 2>/dev/null
+	if [ $? -ne 0 ]; then
+		log_info "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
+		$KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
+		if [ $? -ne 0 ]; then
+        		log_notify "Failed to create clusterrolebinding for ${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME}, exiting..."
+        		exit 1
+    		fi
+		log_notify "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} created"
+	else
+		log_notify "clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} exists, skip creating clusterrolebinding"
+	fi
 	log_debug "create_service_account() end"
 }
 
@@ -1700,13 +1716,19 @@ function create_service_account() {
 function create_secret() {
     log_debug "create_secrets() begin"
 
-    log_info "creating secret for cert file..."
-    $KUBECTL create secret generic ${SECRET_NAME} --from-file=${CERTIFICATE} -n ${AGENT_NAMESPACE}
+    log_info "checking if secret ${SECRET_NAME} exist..."
+    $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null
     if [ $? -ne 0 ]; then
-        log_notify "Failed to create secret ${SECRET_NAME} from cert file ${CERTIFICATE}, exiting..."
-        exit 1
+    	log_info "creating secret for cert file..."
+    	$KUBECTL create secret generic ${SECRET_NAME} --from-file=${CERTIFICATE} -n ${AGENT_NAMESPACE}
+    	if [ $? -ne 0 ]; then
+        	log_notify "Failed to create secret ${SECRET_NAME} from cert file ${CERTIFICATE}, exiting..."
+        	exit 1
+    	fi
+    	log_notify "secret ${SECRET_NAME} created"
+    else
+        log_notify "secret ${SECRET_NAME} exists, skip creating secret"
     fi
-    log_info "secret ${SECRET_NAME} created"
 
     log_debug "create_secrets() end"
 }
@@ -1714,13 +1736,20 @@ function create_secret() {
 # Cluster only: to create configmap based on /tmp/agent-install-horizon-env for agent deployment
 function create_configmap() {
     log_debug "create_configmap() begin"
-    log_info "create configmap from ${HZN_ENV_FILE}..."
-    $KUBECTL create configmap ${CONFIGMAP_NAME} --from-file=horizon=${HZN_ENV_FILE} -n ${AGENT_NAMESPACE}
+
+    log_info "checking if configmap ${CONFIGMAP_NAME} exist..."
+    $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null
     if [ $? -ne 0 ]; then
-        log_notify "Failed to create configmap ${CONFIGMAP_NAME} from ${HZN_ENV_FILE}, exiting..."
-        exit 1
+    	log_info "create configmap from ${HZN_ENV_FILE}..."
+    	$KUBECTL create configmap ${CONFIGMAP_NAME} --from-file=horizon=${HZN_ENV_FILE} -n ${AGENT_NAMESPACE}
+    	if [ $? -ne 0 ]; then
+        	log_notify "Failed to create configmap ${CONFIGMAP_NAME} from ${HZN_ENV_FILE}, exiting..."
+        	exit 1
+    	fi
+    	log_notify "configmap ${CONFIGMAP_NAME} created."
+    else
+        log_notify "configmap ${CONFIGMAP_NAME} exists, skip creating configmap"
     fi
-    log_info "configmap ${CONFIGMAP_NAME} created."
 
     log_debug "create_configmap() end"
 }
@@ -1729,13 +1758,19 @@ function create_configmap() {
 function create_persistent_volume() {
     log_debug "create_persistent_volume() begin"
 
-    log_info "creating persistent volume claim..."
-    $KUBECTL apply -f persistentClaim.yml -n ${AGENT_NAMESPACE}
+    log_info "checking if persistent volume claim ${PVC_NAME} exist..."
+    $KUBECTL get pvc ${PVC_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null
     if [ $? -ne 0 ]; then
-        log_notify "Failed to create persistent volume claim, exiting..."
-        exit 1
+    	log_info "creating persistent volume claim..."
+    	$KUBECTL apply -f persistentClaim.yml -n ${AGENT_NAMESPACE}
+    	if [ $? -ne 0 ]; then
+        	log_notify "Failed to create persistent volume claim, exiting..."
+        	exit 1
+    	fi
+    	log_notify "persistent volume claim created"
+    else
+        log_notify "persistent volume claim ${PVC_NAME} exists, skip creating persistent volume claim"
     fi
-    log_info "persistent volume claim created"
 
     log_debug "create_persistent_volume() end"
 }
