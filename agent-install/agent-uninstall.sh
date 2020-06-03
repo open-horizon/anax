@@ -106,6 +106,15 @@ function validate_args(){
 	    log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
     fi
 
+    # check jq is available
+    log_info "Checking if jq is installed..."
+    if command -v jq >/dev/null 2>&1; then
+	log_info "jq found"
+    else
+        log_notify "jq not found, please install it. Exiting..."
+        exit 1
+    fi
+
     if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
     	echo "\$HZN_EXCHANGE_USER_AUTH: ${HZN_EXCHANGE_USER_AUTH}"
 	log_notify "\$HZN_EXCHANGE_USER_AUTH is not set. Exiting..."

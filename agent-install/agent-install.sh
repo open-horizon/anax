@@ -274,6 +274,7 @@ function validate_args(){
       fi
 
       check_installed "docker" "Docker"
+      check_installed "jq" "jq"
     fi
 
     check_empty "$SKIP_REGISTRATION" "registration flag"
