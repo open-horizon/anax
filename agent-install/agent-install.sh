@@ -267,6 +267,8 @@ function validate_args(){
         :   # nothing more to do
       elif command -v microk8s.kubectl >/dev/null 2>&1; then
         KUBECTL=microk8s.kubectl
+      elif command -v k3s kubectl; then
+        KUBECTL="k3s kubectl"
       else
                 log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH. Exiting..."
 		exit 1
@@ -569,6 +571,8 @@ function install_macos() {
 
 	start_horizon_service
 
+	check_node_exist "device"
+
 	process_node
 
     # configuring agent inside the container
@@ -785,6 +789,8 @@ function install_linux(){
 		fi
     	    done </etc/horizon/anax.json
     fi
+
+    check_node_exist "device"
 
     process_node
 
@@ -1011,8 +1017,10 @@ function create_node(){
                 		NODE_ID=$NODE_NAME
             		fi
         	elif [[ "$OS" == "macos" ]]; then
-            		log_info "Using hostname as node id..."
-            		NODE_ID=$NODE_NAME
+			if [[ "$NODE_ID" == "" ]]; then
+				log_info "Using hostname as node id..."
+				NODE_ID=$NODE_NAME
+			fi
         	fi
 	fi
         log_info "Node id is $NODE_ID"
@@ -1025,19 +1033,6 @@ function create_node(){
     else
         log_notify "Found HZN_EXCHANGE_NODE_AUTH variable, using it..."
     fi
-
-    if [ "${DEPLOY_TYPE}" == "cluster" ]; then
-	log_notify "Creating a node..."
-	EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
-	HZN_EX_NODE_CREATE_CMD="hzn exchange node create -n \"$HZN_EXCHANGE_NODE_AUTH\" -m \"$NODE_NAME\" -o \"$HZN_ORG_ID\" -u \"$HZN_EXCHANGE_USER_AUTH\" -T \"cluster\""
-	log_info "AGENT POD ID: ${POD_ID}"
-	$KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CREATE_CMD}"
-
-	log_notify "Verifying a node..."
-	HZN_EX_NODE_CFM_CMD="hzn exchange node confirm -n \"$HZN_EXCHANGE_NODE_AUTH\" -o \"$HZN_ORG_ID\""
-	$KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; ${HZN_EX_NODE_CFM_CMD}"
-    fi
-
     log_debug "create_node() end"
 }
 
@@ -1064,6 +1059,22 @@ function registration() {
 				WAIT_FOR_SERVICE_ARG=" -s $WAIT_FOR_SERVICE "
 			fi
 		fi
+	elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
+		log_info "checking node status inside agent pod ${POD_ID}"
+        	NODE_INFO_IN_POD=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "hzn node list")
+        	NODE_ID_IN_POD=$(echo "$NODE_INFO_IN_POD" | jq -r .id)
+        	NODE_STATE_IN_POD=$(echo "$NODE_INFO_IN_POD" | jq -r .configstate.state)
+
+        	log_debug "NODE_ID_IN_POD: ${NODE_ID_IN_POD}, NODE_STATE_IN_POD: ${NODE_STATE_IN_POD}"
+        	if [[ "$NODE_ID" != "$NODE_ID_IN_POD" ]]; then
+                	log_notify "Node id in agent pod ${NODE_ID_IN_POD} is different from NODE_ID: ${NODE_ID}. Please use ${NODE_ID_IN_POD}. If you want to use a different NODE_ID. Please run agent-uninsall.sh first. Exiting..."
+                	exit 1
+        	fi
+
+        	if [[ "$NODE_STATE_IN_POD" == "configured" ]]; then
+                	log_info "NODE_STATE is $NODE_STATE_IN_POD, will skip registration..."
+			return 0
+        	fi
 	fi
 
 	if [ "${DEPLOY_TYPE}" == "device" ]; then
@@ -1464,6 +1475,8 @@ function find_node_ip_address() {
 function check_node_exist() {
     log_debug "check_node_exist() begin"
 
+    local expected_type=$1
+
     if [[ $HZN_EXCHANGE_USER_AUTH == *"iamapikey"* ]]; then
         EXCH_CREDS=$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH
     else
@@ -1478,10 +1491,10 @@ function check_node_exist() {
 
         if [[ "$EXCH_OUTPUT" != "" ]]; then
                 EXCH_NODE_TYPE=$(echo $EXCH_OUTPUT | jq -e '.nodes | .[].nodeType' | sed 's/"//g')
-                if [[ "$EXCH_NODE_TYPE" = "device" ]]; then
+                if [[ "$EXCH_NODE_TYPE" = "device" ]] && [[ "$expected_type" != "device" ]]; then
                 	log_notify "Node id ${NODE_ID} is already been created as nodeType Device"
             		exit 1
-        	else
+		elif [[ "$EXCH_NODE_TYPE" = "cluster" ]] && [[ "$expected_type" != "cluster" ]]; then
             		log_notify "Node id ${NODE_ID} is already been created as nodeType Clutser"
 			exit 1
                 fi
@@ -1855,7 +1868,8 @@ function get_pod_id() {
 
 # Cluster only: to install agent in cluster
 function install_cluster() {
-	check_node_exist
+
+	check_node_exist "cluster"
 
 	getImageInfo
 
