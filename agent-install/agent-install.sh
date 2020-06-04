@@ -43,10 +43,11 @@ DEFAULT_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-image-r
 
 VERBOSITY=3 # Default logging verbosity
 
-# required parameters and their defaults
+#future: decide if we are going to use this or check_empty()
 REQUIRED_PARAMS=( "HZN_EXCHANGE_URL" "HZN_FSS_CSSURL" "HZN_ORG_ID" )
-REQUIRED_VALUE_FLAG="REQUIRED_FROM_USER"
-DEFAULTS=( "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" )
+# the default values are passed into each call of get_variable()
+#REQUIRED_VALUE_FLAG="REQUIRED_FROM_USER"
+#DEFAULTS=( "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" "${REQUIRED_VALUE_FLAG}" )
 
 # certificate for the CLI package on MacOS
 MAC_PACKAGE_CERT="horizon-cli.crt"
@@ -55,34 +56,35 @@ MAC_PACKAGE_CERT="horizon-cli.crt"
 function help() {
      cat << EndOfMessage
 $(basename "$0") <options> -- installing Horizon software
-where:
-    \$HZN_EXCHANGE_URL, \$HZN_FSS_CSSURL, \$HZN_ORG_ID, either \$HZN_EXCHANGE_USER_AUTH or \$HZN_EXCHANGE_NODE_AUTH, variables must be defined either in a config file or environment,
+
+Required Input Variables (in environment or config file):
+    HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
     
-For agent install on edge cluster:
-    \$IMAGE_ON_EDGE_CLUSTER_REGISTRY must be defined in a config file or environment if deploy type is "cluster", format: <registry-host>/<ocp-project>/amd64_agent (without tag), for microsk8s: localhost:32000/agent-repo/amd64_agent
-    if set \$EDGE_CLUSTER_STORAGE_CLASS in environement, the value of "EDGE_CLUSTER_STORAGE_CLASS" in configuration file will not be used
+Input Variables Specific to Cluster Node Type (in environment or config file):
+    IMAGE_ON_EDGE_CLUSTER_REGISTRY: (required) agent image path (without tag) in edge cluster registry. For OCP: <registry-host>/<agent-project>/amd64_anax_k8s, for microsk8s: localhost:32000/<agent-namespace>/amd64_anax_k8s
+    EDGE_CLUSTER_STORAGE_CLASS: (optional) the storage class to use for the agent and edge services. (Storage class must already be created.)
 
 Parameters:
-    -c          - path to a certificate file
-    -k          - path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
-    -p          - pattern name to register with (if not specified, registers node w/o pattern)
-    -i          - installation packages location (if not specified, uses current directory). if the argument begins with 'http' or 'https', will use as an apt repository
-    -j          - file location for the public key for an apt repository specified with '-i'
-    -t          - set a branch to use in the apt repo specified with -i. default is 'updates'
-    -n          - path to a node policy file
-    -s          - skip registration
-    -v          - show version
-    -l          - logging verbosity level (0: silent, 1: critical, 2: error, 3: warning, 4: info, 5: debug), the default is (3: warning)
-    -u          - exchange user authorization credentials
-    -a 		- exchange node authorization credentials
-    -d          - the id to register this node with
-    -f          - install older version without prompt. overwrite configured node without prompt.
-    -b 			- skip any prompts for user input
-    -w          - wait for the named service to start executing on this node
-    -o          - specify an org id for the service specified with '-w'
-    -z 		- specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
-    -D		- specify deploy type (device, cluster. If not specifed, uses device by default).
-    -U		- specify internal url for edge cluster registry (If not specified, this script will detect if cluster is local. Use "image-registry.openshift-image-registry.svc:5000" by default for ocp image registry)
+    -c    path to a certificate file
+    -k    path to a configuration file (if not specified, uses agent-install.cfg in current directory, if present)
+    -p    pattern name to register with (if not specified, registers node w/o pattern)
+    -i    installation packages location (if not specified, uses current directory). if the argument begins with 'http' or 'https', will use as an apt repository
+    -j    file location for the public key for an apt repository specified with '-i'
+    -t    set a branch to use in the apt repo specified with -i. default is 'updates'
+    -n    path to a node policy file
+    -s    skip registration
+    -v    show version
+    -l    logging verbosity level (0: silent, 1: critical, 2: error, 3: warning, 4: info, 5: debug), the default is (3: warning)
+    -u    exchange user authorization credentials
+    -a    exchange node authorization credentials
+    -d    the id to register this node with
+    -f    install older version without prompt. overwrite configured node without prompt.
+    -b    skip any prompts for user input
+    -w    wait for the named service to start executing on this node
+    -o    specify an org id for the service specified with '-w'
+    -z    specify the name of your agent installation tar file. Default is ./agent-install-files.tar.gz
+    -D    specify node type (device, cluster. If not specifed, uses device by default).
+    -U    specify internal url for edge cluster registry (If not specified, this script will detect if cluster is local. Use "image-registry.openshift-image-registry.svc:5000" by default for ocp image registry)
 
 Example: ./$(basename "$0") -i <path_to_package(s)>
 
@@ -118,22 +120,25 @@ VERB_WARNING=3
 VERB_INFO=4
 VERB_DEBUG=5
 
+# Always printed
 function log_notify() {
     log $VERB_SILENT "$1"
 }
 
 function log_critical() {
-    log $VERB_CRITICAL "CRITICAL: $1"
+    log $VERB_CRITICAL "CRITICAL ERROR: $1"
 }
 
 function log_error() {
     log $VERB_ERROR "ERROR: $1"
 }
 
+# The current default highest output level
 function log_warning() {
     log $VERB_WARNING "WARNING: $1"
 }
 
+# This is more like verbose
 function log_info() {
     log $VERB_INFO "INFO: $1"
 }
@@ -148,66 +153,56 @@ function now() {
 
 function log() {
     if [ $VERBOSITY -ge $1 ]; then
-        echo `now` "$2" | fold -w80 -s
+        #echo `now` "$2" | fold -w80 -s
+        echo `now` "$2"
     fi
 }
 
-# get variables for the script
-# if the env variable is defined uses it, if not checks it in the config file
+# Get the specified input variable. Precedence: If env variable is defined uses it, if not check in the config file
 function get_variable() {
 	log_debug "get_variable() begin"
 
     local var_to_check=$1
     local config_file=$2
+    local default_val="$3"   # optional
 
-	if ! [ -z "${!var_to_check}" ]; then
-		# if env/command line variable is defined, using it
+	if [[ -n "${!var_to_check}" ]]; then
+		# do not display the value of secrets
 		if [[ $var_to_check == *"AUTH"* ]] || [[ $var_to_check == *"TOKEN"* ]]; then
-			log_notify "Using variable from environment/command line, ${var_to_check}"
+			varValue='******'
 		else
-			log_notify "Using variable from environment/command line, ${var_to_check} is ${!var_to_check}"
+			varValue="${!var_to_check}"
 		fi
-	else
-		log_notify "The ${var_to_check} is missed in environment/not specified with command line, looking for it in the config file ${config_file} ..."
-		# the env/command line variable not defined, using config file
-		# check if it exists
-		log_info "Checking if the config file ${config_file} exists..."
-		if [[ -f "$config_file" ]] ; then
-			log_info "The config file ${config_file} exists"
-			if [ -z "$(grep ${var_to_check} ${config_file} | grep "^#")" ] && ! [ -z "$(grep ${var_to_check} ${config_file} | cut -d'=' -f2 | cut -d'"' -f2)" ]; then
-				# found variable in the config file
-				ref=${var_to_check}
-				IFS= read -r "$ref" <<<"$(grep ${var_to_check} ${config_file} | cut -d'=' -f2 | cut -d'"' -f2)"
-                if [[ $var_to_check == *"AUTH"* ]] || [[ $var_to_check == *"TOKEN"* ]]; then
-                    log_notify "Using variable from the config file ${config_file}, ${var_to_check}"
-                else
-				    log_notify "Using variable from the config file ${config_file}, ${var_to_check} is ${!var_to_check}"
-                fi
+		log_notify "${var_to_check}: $varValue (from environment)"
+	elif [[ -f "$config_file" ]] ; then
+		# Variable not defined in the environment, look in the config file
+		# Note: we already checked for the existence of the config file before get_variable() is called, and printed a warning if not found, so don't have to do that here
+		log_debug "The ${var_to_check} is missed in environment/not specified with command line, looking for it in the config file ${config_file} ..."
+		if [ -z "$(grep ${var_to_check} ${config_file} | grep "^#")" ] && ! [ -z "$(grep ${var_to_check} ${config_file} | cut -d'=' -f2 | cut -d'"' -f2)" ]; then
+			# found variable in the config file
+			ref=${var_to_check}
+			IFS= read -r "$ref" <<< $(grep ${var_to_check} ${config_file} | cut -d'=' -f2 | cut -d'"' -f2)
+			if [[ $var_to_check == *"AUTH"* ]] || [[ $var_to_check == *"TOKEN"* ]]; then
+				varValue='******'
 			else
-				# found neither in env nor in config file. check if the missed var is in required parameters
-				if [[ " ${REQUIRED_PARAMS[*]} " == *" ${var_to_check} "* ]]; then
-    				# if found neither in the env nor in the env, try to use its default value, if any
-    				log_info "The required variable ${var_to_check} found neither in environment nor in the config file ${config_file}, checking if it has defaults..."
-
-    				for i in "${!REQUIRED_PARAMS[@]}"; do
-   						if [[ "${REQUIRED_PARAMS[$i]}" = "${var_to_check}" ]]; then
-       							log_info "Found ${var_to_check} in required params with index ${i}, using it for looking up its default value...";
-       							log_info "Found ${var_to_check} default, it is ${DEFAULTS[i]}"
-       							ref=${var_to_check}
-								IFS= read -r "$ref" <<<"${DEFAULTS[i]}"
-   						fi
-					done
-					if [ ${!var_to_check}  = "$REQUIRED_VALUE_FLAG" ]; then
-						log_notify "The ${var_to_check} is required and needs to be set either in the config file or environment, exiting..."
-						exit 1
-					fi
-    			else
-    				log_info "The variable ${var_to_check} found neither in environment nor in the config file ${config_file}, but it's not required, continuing..."
-				fi
+				varValue="${!var_to_check}"
 			fi
-		else
-			log_notify "The config file ${config_file} doesn't exist, exiting..."
+			log_notify "${var_to_check}: $varValue (from ${config_file})"
+		fi
+	elif [[ -n "$default_val" ]]; then
+		# A default value was passed into this function, use that
+		ref=${var_to_check}
+		IFS= read -r "$ref" <<< "$default_val"
+		log_notify "${var_to_check}: ${!var_to_check} (default)"
+	fi
+
+	if [[ -z "${!var_to_check}" ]]; then
+		# Did not find a value anywhere. See if it is required
+		if [[ " ${REQUIRED_PARAMS[*]} " == *" ${var_to_check} "* ]]; then
+			log_notify "${var_to_check} is required but was not set in either the environment or ${config_file}, exiting..."
 			exit 1
+		else
+			log_notify "${var_to_check}: (not found)"
 		fi
 	fi
 
@@ -286,16 +281,21 @@ function validate_args(){
 
     log_info "Checking configuration..."
     # read and validate configuration
+	if [[ -f "$CFG" ]]; then
+		log_info "Using configuration file: $CFG"
+	else
+		log_warning "Configuration file $CFG not found. All required input variables must be set in the environment."
+	fi
     get_variable HZN_EXCHANGE_URL $CFG
-    check_empty HZN_EXCHANGE_URL "Exchange URL"
+    check_empty "$HZN_EXCHANGE_URL" "Exchange URL"
     get_variable HZN_FSS_CSSURL $CFG
-    check_empty HZN_FSS_CSSURL "FSS_CSS URL"
+    check_empty "$HZN_FSS_CSSURL" "FSS_CSS URL"
     get_variable HZN_ORG_ID $CFG
-    check_empty HZN_ORG_ID "ORG ID"
+    check_empty "$HZN_ORG_ID" "ORG ID"
     get_variable HZN_EXCHANGE_NODE_AUTH $CFG
-    check_empty HZN_EXCHANGE_NODE_AUTH "Exchange Node Auth"
+    #check_empty $HZN_EXCHANGE_NODE_AUTH "Exchange Node Auth"
     get_variable HZN_EXCHANGE_USER_AUTH $CFG
-    check_empty HZN_EXCHANGE_USER_AUTH "Exchange User Auth"
+    #check_empty $HZN_EXCHANGE_USER_AUTH "Exchange User Auth"
     get_variable NODE_ID $CFG
 
     # If USER_AUTH and NODE_AUTH are unset, exit with error code of 1
@@ -316,26 +316,19 @@ function validate_args(){
 		exit 1
 	fi
 
-	get_variable EDGE_CLUSTER_STORAGE_CLASS $CFG
-	if [[ "$EDGE_CLUSTER_STORAGE_CLASS" == "" ]]; then
-		EDGE_CLUSTER_STORAGE_CLASS="gp2"
-	fi
+	get_variable EDGE_CLUSTER_STORAGE_CLASS $CFG 'gp2'
 
-	get_variable AGENT_NAMESPACE $CFG
-	if [[ "$AGENT_NAMESPACE" == "" ]]; then
-		AGENT_NAMESPACE="openhorizon-agent"
-	fi
+	get_variable AGENT_NAMESPACE $CFG 'openhorizon-agent'
 
 	get_variable AGENT_IMAGE_TAG $CFG
-	check_empty AGENT_IMAGE_TAG "Agent image tag"
+	check_empty "$AGENT_IMAGE_TAG" "Agent image tag"
 
-	# get_variable USE_EDGE_CLUSTER_REGISTRY $CFG
 	# $USE_EDGE_CLUSTER_REGISTRY is set to true by default
 	if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
 		get_variable EDGE_CLUSTER_REGISTRY_USERNAME $CFG
 		get_variable EDGE_CLUSTER_REGISTRY_TOKEN $CFG
 		get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY $CFG
-		check_empty IMAGE_ON_EDGE_CLUSTER_REGISTRY "Image on edge cluster registry"
+		check_empty "$IMAGE_ON_EDGE_CLUSTER_REGISTRY" "Image on edge cluster registry"
 		parts=$(echo $IMAGE_ON_EDGE_CLUSTER_REGISTRY|awk -F'/' '{print NF}')
     		if [ "$parts" != "3" ]; then
 			log_notify "\$IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
@@ -381,20 +374,28 @@ function validate_args(){
 function show_config() {
 	log_debug "show_config() begin"
 
+	# Unless verbose, only show cmd line args (env var/cfg vars were already displayed)
+    echo "Installation packages location: ${PKG_PATH}"
+    echo "Ignore package tree: ${PKG_TREE_IGNORE}"
+    echo "Node policy: ${HZN_NODE_POLICY}"
+    echo "NODE_ID"=${NODE_ID}
+	echo "Image Full Path On Edge Cluster Registry: ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}"
+	echo "Internal URL for Edge Cluster Registry: ${INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY}"
+
+	if [[ $VERBOSITY -lt $VERB_INFO ]]; then
+		return
+	fi
+
     echo "Current configuration:"
     echo "Certification file: ${CERTIFICATE}"
     echo "Configuration file: ${CFG}"
-    echo "Installation packages location: ${PKG_PATH}"
-    echo "Ignore package tree: ${PKG_TREE_IGNORE}"
     echo "Pattern name: ${HZN_EXCHANGE_PATTERN}"
-    echo "Node policy: ${HZN_NODE_POLICY}"
     echo "Skip registration: ${SKIP_REGISTRATION}"
     echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}"
     echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}"
     echo "HZN_ORG_ID=${HZN_ORG_ID}"
     echo "HZN_EXCHANGE_USER_AUTH=<specified>"
     echo "Verbosity is ${VERBOSITY}"
-    echo "NODE_ID"=${NODE_ID}
     echo "Agent in Edge Cluster config:"
     echo "AGENT_NAMESPACE: ${AGENT_NAMESPACE}"
     echo "Edge Cluster Storage Class: ${EDGE_CLUSTER_STORAGE_CLASS}"
@@ -407,8 +408,6 @@ function show_config() {
 		echo "Edge Cluster Registry Token: <specified>"
 	fi
 	echo "Image On Edge Cluster Registry: ${IMAGE_ON_EDGE_CLUSTER_REGISTRY}"
-	echo "Image Full Path On Edge Cluster Registry: ${IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY}"
-	echo "Internal URL for Edge Cluster Registry: ${INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY}"
     fi
 
     log_debug "show_config() end"
@@ -844,7 +843,7 @@ function start_horizon_service(){
 		    	current_horizon_container_check=`date +%s`
 				log_info "the horizon-container with anax is not ready, retry in 10 seconds"
 				if (( current_horizon_container_check - start_horizon_container_check > 300 )); then
-					echo `now` "horizon container timeout of 60 seconds occured"
+					log_notify "horizon container timeout of 60 seconds occured"
 					exit 1
 				fi
 				sleep 10
@@ -1154,13 +1153,14 @@ function registration() {
     log_debug "registration() end"
 }
 
+#future: remove this function and instead add to REQUIRED_PARAMS so get_variable() takes care of this
 function check_empty() {
 	log_debug "check_empty() begin"
-    local env_var=$1
-    local env_var_name=$2
+    local env_var_val=$1
+    local env_var_desc=$2
 
-    if [ -z "$env_var" ]; then
-        log_notify "The ${env_var_name} value is empty, exiting..."
+    if [ -z "$env_var_val" ]; then
+        log_notify "The ${env_var_desc} value is empty, exiting..."
         exit 1
     fi
 
@@ -1405,17 +1405,17 @@ function check_node_state() {
 
 # removes agent-install files and deb packages before bulk install
 function device_cleanup_agent_files() {
-    log_notify "device_cleanup_agent_files() begin"
+    log_debug "device_cleanup_agent_files() begin"
 
     files_to_remove=( 'agent-install.cfg' *'horizon'* )
 
     set +e
     for file in "${files_to_remove[@]}"; do
-        rm -fv $file
+        rm -f $file
     done
     set -e
 
-    log_notify "device_cleanup_agent_files() end"
+    log_debug "device_cleanup_agent_files() end"
 }
 
 function unzip_install_files() {
@@ -1521,7 +1521,8 @@ function pushImageToEdgeClusterRegistry() {
     log_notify "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
     
     if [ -z $EDGE_CLUSTER_REGISTRY_USERNAME ] && [ -z $EDGE_CLUSTER_REGISTRY_TOKEN ]; then
-	    docker login $EDGE_CLUSTER_REGISTRY_HOST
+		:  # even for a registry in the insecure-registries list, if we don't specify user/pw it will prompt for it
+	    #docker login $EDGE_CLUSTER_REGISTRY_HOST
     else
 	    echo "$EDGE_CLUSTER_REGISTRY_TOKEN" | docker login -u $EDGE_CLUSTER_REGISTRY_USERNAME --password-stdin $EDGE_CLUSTER_REGISTRY_HOST
     fi
@@ -1965,7 +1966,7 @@ validate_args "$*" "$#"
 # showing current configuration
 show_config
 
-echo `now` "deploy type is: ${DEPLOY_TYPE}"
+log_notify "Node type is: ${DEPLOY_TYPE}"
 if [ "${DEPLOY_TYPE}" == "device" ]; then
 	# checking if the requirements are met
 	check_requirements
@@ -1973,19 +1974,19 @@ if [ "${DEPLOY_TYPE}" == "device" ]; then
 	check_node_state
 
 	if [[ "$OS" == "linux" ]]; then
-		echo `now` "Detection results: OS is ${OS}, distribution is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
+		log_notify "Detection results: OS is ${OS}, distribution is ${DISTRO}, release is ${CODENAME}, architecture is ${ARCH}"
 		install_${OS} ${OS} ${DISTRO} ${CODENAME} ${ARCH}
 	elif [[ "$OS" == "macos" ]]; then
-		echo `now` "Detection results: OS is ${OS}"
+		log_notify "Detection results: OS is ${OS}"
 		install_${OS}
 	fi
 
 	add_autocomplete
 
 elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
-	echo `now` "Install agent on edge cluster"
+	log_info "Install agent on edge cluster"
 	set +e
 	install_cluster
 else
-	echo `now` "deploy type only support 'device' or 'cluster'"
+	log_error "node type only support 'device' or 'cluster'"
 fi
