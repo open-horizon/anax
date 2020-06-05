@@ -6,7 +6,7 @@
 AGENT_IMAGE_TAG="4.1.0"
 IMAGE_TAR_FILE="amd64_anax_k8s_ubi.tar"
 CLUSTER_STORAGE_CLASS="gp2"
-PACKAGE_NAME="ibm-eam-4.1.0-x86_64"
+PACKAGE_NAME="horizon-edge-packages-4.1.0"
 AGENT_NAMESPACE="openhorizon-agent"
 
 function scriptUsage () {
@@ -22,7 +22,7 @@ Parameters:
     -k          Include this flag to create a new $CLUSTER_USER-Edge-Node-API-Key, even if one already exists.
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
-    -p <package_name>   The product media bundle name. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/horizon-edge-packages/<PLATFORM>/<OS>/<DISTRO>/<ARCH>
+    -p <package_name>   The horizon deb package bundle name. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<PLATFORM>/<OS>/<DISTRO>/<ARCH>
     -d <distribution>	By default 'bionic' and 'buster' packages are used on linux. Use this flag to use 'xenial' or 'stretch' packages. Flag is ignored with macOS and x86_64-Cluster.
     -s <edge-cluster-storage-class>   Storage class used on the edge cluster. Default is gp2. Only applies for node type x86_64-Cluster.
     -i <agent-image-tag>   Docker tag (version) of agent image to deploy to edge cluster. Only applies for node type x86_64-Cluster.
@@ -402,9 +402,9 @@ function gatherHorizonFiles () {
     # Determine edge node type, and distribution if applicable
     if [[ "$EDGE_NODE_TYPE" == "32-bit-ARM" ]]; then
 			if [[ "$DISTRO" == "stretch" ]]; then
-				tar --strip-components 6 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/linux/raspbian/stretch/armhf
+				tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/raspbian/stretch/armhf
 			else
-				tar --strip-components 6 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/linux/raspbian/buster/armhf
+				tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/raspbian/buster/armhf
 			fi
 		if [ $? -ne 0 ]; then
 			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
@@ -413,9 +413,9 @@ function gatherHorizonFiles () {
 
 	elif [[ "$EDGE_NODE_TYPE" == "64-bit-ARM" ]]; then
 		if [[ "$DISTRO" == "xenial" ]]; then
-			tar --strip-components 6 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/linux/ubuntu/xenial/arm64
+			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/xenial/arm64
 		else
-			tar --strip-components 6 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/linux/ubuntu/bionic/arm64
+			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/bionic/arm64
 		fi
 		if [ $? -ne 0 ]; then
 			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
@@ -424,9 +424,9 @@ function gatherHorizonFiles () {
 
 	elif [[ "$EDGE_NODE_TYPE" == "x86_64-Linux" ]]; then
 		if [[ "$DISTRO" == "xenial" ]]; then
-			tar --strip-components 6 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/linux/ubuntu/xenial/amd64
+			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/xenial/amd64
 		else
-			tar --strip-components 6 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/linux/ubuntu/bionic/amd64
+			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/bionic/amd64
 		fi
 		if [ $? -ne 0 ]; then
 			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
@@ -434,7 +434,7 @@ function gatherHorizonFiles () {
     	fi
 
 	elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
-		tar --strip-components 3 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/macos
+		tar --strip-components 2 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/macos
 		if [ $? -ne 0 ]; then
 			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
         	exit 2
@@ -496,8 +496,10 @@ function createTarFile () {
 
 	if [[ "$EDGE_NODE_TYPE" == "x86_64-Cluster" ]]; then
 		FILES_TO_COMPRESS="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $IMAGE_ZIP_FILE deployment-template.yml persistentClaim-template.yml"
+	elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
+		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt horizon-cli*"
 	else
-		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt *horizon*"
+		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt bluehorizon* horizon-cli* horizon_*"
 	fi
 	echo "tar -czvf agentInstallFiles-$EDGE_NODE_TYPE.tar.gz $(ls $FILES_TO_COMPRESS)"
 
