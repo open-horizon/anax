@@ -388,7 +388,7 @@ function getClusterCert () {
 	kubectl -n kube-public get secret ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
 	if [ $? -ne 0 ]; then
 		echo "ERROR: Failed to get the IBM Cloud Pak self-signed certificate"
-2        exit 2
+        exit 2
     fi
     echo ""
 }
