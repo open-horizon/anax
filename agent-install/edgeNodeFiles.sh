@@ -317,7 +317,7 @@ function getImageFromOcpRegistry() {
 	docker pull $OCP_IMAGE
 	if [ $? -ne 0 ]; then
 		echo "ERROR: Failed to pull image from OCP image registry"
-2        exit 2
+        exit 2
     fi
 
     # save image to tar file
