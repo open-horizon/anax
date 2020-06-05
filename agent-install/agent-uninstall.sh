@@ -11,9 +11,23 @@ SECRET_NAME="openhorizon-agent-secrets"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 AGENT_NAMESPACE="openhorizon-agent"
+USE_DELETE_FORCE=false
+DELETE_TIMEOUT=10 # Default delete timeout
 
 function now() {
 	echo `date '+%Y-%m-%d %H:%M:%S'`
+}
+
+# Exit handling
+function quit(){
+  case $1 in
+    1) echo "Exiting..."; exit 1
+    ;;
+    2) echo "Input error, exiting..."; exit 2
+    ;;
+    *) exit
+    ;;
+  esac
 }
 
 # Logging
@@ -71,6 +85,8 @@ where:
     -u          - management hub user authorization credentials
     -d          - delete node from the management hub
     -m		- agent namespace to uninstall
+    -f		- force delete cluster resources
+    -t		- cluster resource delete timeout (specified timeout should > 0)
 
 Example: ./$(basename "$0") -u <hzn-exchange-user-auth> -d
 Note: Namespace may be stuck in "Terminating" during deleting. It is a known issue on Kubernetes. Please refer to Kubernetes website to delete namespace manually.
@@ -85,6 +101,8 @@ function show_config() {
     echo "HZN_EXCHANGE_USER_AUTH: <specified>"
     echo "Delete node: ${DELETE_EX_NODE}"
     echo "Agent namespace to uninstall: ${AGENT_NAMESPACE}"
+    echo "Force delete cluster resources: ${USE_DELETE_FORCE}"
+    echo "Cluster resource delete timeout: ${DELETE_TIMEOUT}"
     echo "Verbosity is ${VERBOSITY}"
 
     log_debug "show_config() end"
@@ -102,6 +120,8 @@ function validate_args(){
 	    :   # nothing more to do
     elif command -v microk8s.kubectl >/dev/null 2>&1; then
 	    KUBECTL=microk8s.kubectl
+    elif command -v k3s kubectl; then
+            KUBECTL="k3s kubectl"
     else
 	    log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
     fi
@@ -145,6 +165,18 @@ function validate_number_int() {
 	fi
 
 	log_debug "validate_number_int() end"
+}
+
+function validate_positive_int() {
+    log_debug "validate_positive_int() begin"
+    re='^[0-9]+$'
+    if [[ $1 =~ $re ]] && (( $1 > 0 )); then
+        :
+    else
+        echo `now` "${1} is not a positive int" >&2; quit 2
+    fi
+
+    log_debug "validate_positive_int() end"
 }
 
 function get_agent_pod_id() {
@@ -267,15 +299,46 @@ function deleteAgentResources() {
 
     set +e
     log_info "Deleting agent deployment..."
-    $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --force=true --grace-period=0
+    
+    if [ "$USE_DELETE_FORCE" != true ]; then
+        $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
+
+        $KUBECTL get deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE 2>/dev/null
+        if [ $? -eq 0 ]; then
+            log_info "deployment $DEPLOYMENT_NAME still exist"
+            DEPLOYMENT_STILL_EXIST="true"
+        fi
+    fi
+
+    if [ "$USE_DELETE_FORCE" == true ] || [ "$DEPLOYMENT_STILL_EXIST" == true ]; then
+        log_info "Force deleting agent deployment"
+        $KUBECTL delete deployment $DEPLOYMENT_NAME -n $AGENT_NAMESPACE --force=true --grace-period=0
+    fi
 
     # give pods sometime to terminate by themselves
     sleep 10
 
-    log_info "Force deleting all the pods under $AGNET_NAMESPACE if any stuck in Terminating status"
-    $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
-    pkill -f anax.service
-    
+    log_info "Checking if pods are deleted"
+    PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null)
+    if [[ -n "$PODS" ]]; then
+        log_info "Pods are not deleted by deleting deployment, delete pods now"
+        if [ "$USE_DELETE_FORCE" != true ]; then
+            $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --grace-period=$DELETE_TIMEOUT
+
+            PODS=$($KUBECTL get pod -n $AGENT_NAMESPACE 2>/dev/null) 
+            if [[ -n "$PODS" ]]; then
+                log_info "Pods still exist"
+                PODS_STILL_EXIST="true"
+            fi
+        fi
+
+        if [ "$USE_DELETE_FORCE" == true ] || [ "$PODS_STILL_EXIST" == true ]; then
+            log_info "Force deleting all the pods under $AGENT_NAMESPACE"
+            $KUBECTL delete --all pods --namespace=$AGENT_NAMESPACE --force=true --grace-period=0
+            pkill -f anax.service
+        fi
+    fi
+
     log_info "Deleting configmap..."
     $KUBECTL delete configmap $CONFIGMAP_NAME -n $AGENT_NAMESPACE
 
@@ -315,7 +378,7 @@ function uninstall_cluster() {
 }
 
 # Accept the parameters from command line
-while getopts "u:hvl:dm:" opt; do
+while getopts "u:hvl:dm:ft:" opt; do
 	case $opt in
 		u) HZN_EXCHANGE_USER_AUTH="$OPTARG"
 		;;
@@ -329,6 +392,10 @@ while getopts "u:hvl:dm:" opt; do
 		;;
 		m) AGENT_NAMESPACE="$OPTARG"
 		;;
+		f) USE_DELETE_FORCE=true
+                ;;
+		t) validate_positive_int "$OPTARG"; DELETE_TIMEOUT="$OPTARG"
+        	;;
 		\?) echo "Invalid option: -$OPTARG"; help; exit 1
 		;;
 		:) echo "Option -$OPTARG requires an argument"; help; exit 1
