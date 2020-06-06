@@ -199,20 +199,21 @@ type BusinessPolicyManager struct {
 }
 
 func (pm *BusinessPolicyManager) String() string {
-	pm.polMapLock.Lock()
-	defer pm.polMapLock.Unlock()
+	// pm.polMapLock.Lock()
+	// defer pm.polMapLock.Unlock()
 
-	res := "Policy Manager: "
-	for org, orgMap := range pm.OrgPolicies {
-		res += fmt.Sprintf("Org: %v ", org)
-		for pat, pe := range orgMap {
-			res += fmt.Sprintf("Business policy: %v %v ", pat, pe)
-		}
-	}
+	// res := "Policy Manager: "
+	// for org, orgMap := range pm.OrgPolicies {
+	// 	res += fmt.Sprintf("Org: %v ", org)
+	// 	for pat, pe := range orgMap {
+	// 		res += fmt.Sprintf("Business policy: %v %v ", pat, pe)
+	// 	}
+	// }
 
 	pm.spMapLock.Lock()
 	defer pm.spMapLock.Unlock()
 
+	res := "DABDAB BPOL:"
 	for _, served := range pm.ServedPolicies {
 		res += fmt.Sprintf(" Serve: %v ", served)
 	}
@@ -292,6 +293,7 @@ func (pm *BusinessPolicyManager) GetAllPolicyOrgs() []string {
 	for _, sp := range pm.ServedPolicies {
 		orgs = append(orgs, sp.BusinessPolOrg)
 	}
+	glog.V(3).Infof("DABDAB BPOL orgs: %v", orgs)
 	return orgs
 }
 

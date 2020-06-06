@@ -136,7 +136,7 @@ func GetAgbotDeploymentPols(ec ExchangeContext) (map[string]ServedBusinessPolicy
 			continue
 		} else {
 			pols := resp.(*GetAgbotsBusinessPolsResponse).BusinessPols
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("retrieved agbot serviced deployment policy names from exchange %v", pols)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("DABDAB retrieved agbot serviced deployment policy names from exchange %v", pols)))
 			return pols, nil
 		}
 	}
@@ -157,7 +157,7 @@ func GetAgbotPatterns(ec ExchangeContext) (map[string]ServedPattern, error) {
 			continue
 		} else {
 			pats := resp.(*GetAgbotsPatternsResponse).Patterns
-			glog.V(5).Infof(rpclogString(fmt.Sprintf("retrieved agbot served patterns from exchange %v", pats)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("DABDAB retrieved agbot served patterns from exchange %v", pats)))
 			return pats, nil
 		}
 	}

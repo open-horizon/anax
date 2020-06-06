@@ -565,11 +565,15 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		go w.updateServicePolicies(&cmd.Msg)
 
 	case *ServedPatternCommand:
+		glog.V(3).Infof("DABDAB PatternM B4 save: %v", w.PatternManager)
 		w.saveAgbotServedPatterns()
+		glog.V(3).Infof("DABDAB PatternM AF save: %v", w.PatternManager)
 		go w.generatePolicyFromPatterns(nil)
 
 	case *ServedPolicyCommand:
+		glog.V(3).Infof("DABDAB BPOL B4 save: %v", w.BusinessPolManager)
 		w.saveAgbotServedPolicies()
+		glog.V(3).Infof("DABDAB BPOL AF save: %v", w.BusinessPolManager)
 		go w.generatePolicyFromBusinessPols(nil)
 
 	case *AgbotShutdownCommand:
@@ -1426,7 +1430,7 @@ func (w *AgreementBotWorker) saveAgbotServedPolicies() {
 // to make or cancel agreements.
 func (w *AgreementBotWorker) generatePolicyFromPatterns(msg *events.ExchangeChangeMessage) error {
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
 
 	// Iterate over each org in the PatternManager and process all the patterns in that org
 	for org, _ := range w.PatternManager.OrgPatterns {
@@ -1455,7 +1459,7 @@ func (w *AgreementBotWorker) generatePolicyFromPatterns(msg *events.ExchangeChan
 	// Cached policy has changed, make sure we rescan the nodes.
 	w.setRescanNeeded()
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("done scanning patterns for updates")))
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("done scanning patterns for updates")))
 	return nil
 
 }
@@ -1465,7 +1469,7 @@ func (w *AgreementBotWorker) generatePolicyFromPatterns(msg *events.ExchangeChan
 // metadata and based on the business policy metadata itself.
 func (w *AgreementBotWorker) generatePolicyFromBusinessPols(msg *events.ExchangeChangeMessage) error {
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning business policies for updates")))
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("scanning business policies for updates")))
 
 	// Iterate over each org in the BusinessPolManager and process all the business policies in that org
 	for _, org := range w.BusinessPolManager.GetAllPolicyOrgs() {
@@ -1494,7 +1498,7 @@ func (w *AgreementBotWorker) generatePolicyFromBusinessPols(msg *events.Exchange
 
 	}
 
-	glog.V(5).Infof(AWlogString(fmt.Sprintf("done scanning business policies for updates")))
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("done scanning business policies for updates")))
 	return nil
 
 }

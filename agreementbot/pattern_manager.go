@@ -83,12 +83,12 @@ type PatternManager struct {
 }
 
 func (pm *PatternManager) String() string {
-	res := "Pattern Manager: "
-	for org, orgMap := range pm.OrgPatterns {
+	res := "DABDAB Pattern Manager: "
+	for org, _ := range pm.OrgPatterns {
 		res += fmt.Sprintf("Org: %v ", org)
-		for pat, pe := range orgMap {
-			res += fmt.Sprintf("Pattern: %v %v ", pat, pe)
-		}
+		// for pat, pe := range orgMap {
+		// 	res += fmt.Sprintf("Pattern: %v %v ", pat, pe)
+		// }
 	}
 
 	pm.spMapLock.Lock()
