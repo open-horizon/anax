@@ -5,7 +5,6 @@
 # default agent image tag if it is not specified by script user
 AGENT_IMAGE_TAG="4.1.0"
 IMAGE_TAR_FILE="amd64_anax_k8s_ubi.tar"
-CLUSTER_STORAGE_CLASS="gp2"
 PACKAGE_NAME="horizon-edge-packages-4.1.0"
 AGENT_NAMESPACE="openhorizon-agent"
 
@@ -22,9 +21,9 @@ Parameters:
     -k          Include this flag to create a new $CLUSTER_USER-Edge-Node-API-Key, even if one already exists.
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
-    -p <package_name>   The horizon deb package bundle name. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<PLATFORM>/<OS>/<DISTRO>/<ARCH>
+    -p <package_name>   The base name of the horizon deb package tar file. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<PLATFORM>/<OS>/<DISTRO>/<ARCH>
     -d <distribution>	By default 'bionic' and 'buster' packages are used on linux. Use this flag to use 'xenial' or 'stretch' packages. Flag is ignored with macOS and x86_64-Cluster.
-    -s <edge-cluster-storage-class>   Storage class used on the edge cluster. Default is gp2. Only applies for node type x86_64-Cluster.
+    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies for node type x86_64-Cluster.
     -i <agent-image-tag>   Docker tag (version) of agent image to deploy to edge cluster. Only applies for node type x86_64-Cluster.
     -o <hzn-org-id>     The exchange org id that should be used on the edge node. Currently on used for node type x86_64-Cluster.
     -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies for node type x86_64-Cluster.
@@ -352,18 +351,22 @@ function createAgentInstallConfig () {
 	HUB_CERT_PATH="agent-install.crt"
 
 if [[ "$EDGE_NODE_TYPE" == "x86_64-Cluster" ]]; then
-	cat << EndOfContent > agent-install.cfg
+    cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1/
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 HZN_ORG_ID=$ORG_ID
 HZN_MGMT_HUB_CERT_PATH=$HUB_CERT_PATH
-EDGE_CLUSTER_STORAGE_CLASS=$CLUSTER_STORAGE_CLASS
 AGENT_NAMESPACE=$AGENT_NAMESPACE
 AGENT_IMAGE_TAG=$AGENT_IMAGE_TAG
 EndOfContent
 
+    # Only include this setting if it is not empty
+    if [[ -n $CLUSTER_STORAGE_CLASS ]]; then
+        echo "EDGE_CLUSTER_STORAGE_CLASS=$CLUSTER_STORAGE_CLASS" >> agent-install.cfg
+    fi
+
 else
-	cat << EndOfContent > agent-install.cfg
+    cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1/
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 HZN_ORG_ID=$CLUSTER_NAME
