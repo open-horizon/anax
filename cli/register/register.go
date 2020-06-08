@@ -284,7 +284,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		}
 	} else {
 		if exchangePattern != "" && cliutils.AddOrg(org, pattern) != cliutils.AddOrg(org, exchangePattern) {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the Exchange.", pattern, exchangePattern))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)", pattern, exchangePattern))
 		} else {
 			var output exchange.GetPatternResponse
 			var patorg, patname string
