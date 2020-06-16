@@ -454,7 +454,7 @@ function gatherHorizonFiles () {
 function pullAgentInstallScript () {
 	echo "Pulling agent-install.sh script..."
 
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/agent-install.sh)
+	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/v4.1/agent-install/agent-install.sh)
 	if [[ $httpCode -ne 200 ]]; then
 		echo "ERROR: Failed to pull agent-install.sh script from the anax repo, HTTP code: $httpCode"
        	exit 2
@@ -466,8 +466,8 @@ function pullAgentInstallScript () {
 # Download the latest version of the agent-uninstall.sh script and make it executable
 function pullAgentUninsallScript () {
 	echo "Pulling agent-uninstall.sh script..."
-        
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/agent-uninstall.sh)
+
+	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/v4.1/agent-install/agent-uninstall.sh)
         if [[ $httpCode -ne 200 ]]; then
                 echo "ERROR: Failed to pull agent-uninstall.sh script from the anax repo, HTTP code: $httpCode"
         exit 2
@@ -479,13 +479,13 @@ function pullAgentUninsallScript () {
 function pullClusterDeployTemplages () {
 	echo "Pulling cluster deploy templates: deployment-template.yml, persistentClaim-template.yml..."
 
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/k8s/deployment-template.yml)
+	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/v4.1/agent-install/k8s/deployment-template.yml)
 	if [[ $httpCode -ne 200 ]]; then
 		echo "ERROR: Failed to pull deployment-template.yml script from the anax repo, HTTP code: $httpCode"
        	exit 2
     fi
 
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/k8s/persistentClaim-template.yml)
+	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/v4.1/agent-install/k8s/persistentClaim-template.yml)
 	if [[ $httpCode -ne 200 ]]; then
 		echo "ERROR: Failed to pull persistentClaim-template.yml script from the anax repo, HTTP code: $httpCode"
        	exit 2
