@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [[ $# -lt 1 ]]; then
+  (>&2 echo "Missing required args, cannot continue.")
+  exit 1
+fi
+
+pdir=$(dirname $0)
+$pdir/mk-dir-trees $1 $2
+$pdir/horizon-env-preprocess $1/etc/default/horizon

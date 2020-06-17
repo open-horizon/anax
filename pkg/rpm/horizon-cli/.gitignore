@@ -1,0 +1,4 @@
+# these are the files that are copied in during the rpm build
+/fs/usr/horizon/bin/hzn
+/fs/usr/horizon/bin/horizon-container
+/fs/etc/bash_completion.d/
