@@ -1,9 +1,66 @@
 #!/bin/bash
 
+EXCH_URL="${EXCH_APP_HOST}"
+E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
+USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
+export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
+
 # ==================================================================
+# Begin testing publish presigned service
+
+echo "Start Testing Publishing Presigned Services"
+
+result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_amd64 | jq '."e2edev@somecomp.com/my.company.com.services.hello2_1.0.0_amd64"' | jq 'del(.owner, .lastUpdated)')
+if [ $? -ne 0 ]; then
+    echo "Failed to get service: $result"
+    exit 1
+fi
+echo "$result"
+
+result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
+if [ $? -eq 0 ]; then
+    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_amd64 successfully published"
+else
+    echo "Failed to publish service: $result2"
+    exit 1
+fi
+
+result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_amd64 -f)
+if [ $? -eq 0 ]; then
+    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_amd64 successfully removed"
+else
+    echo "Failed to remove service: $result3"
+    exit 1
+fi
+
+result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH k8s-service1_1.0.0_amd64 | jq '."e2edev@somecomp.com/k8s-service1_1.0.0_amd64"' | jq 'del(.owner, .lastUpdated)')
+if [ $? -ne 0 ]; then
+    echo "Failed to get service: $result"
+    exit 1
+fi
+echo "$result"
+
+result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
+if [ $? -eq 0 ]; then
+    echo "Presigned service userdev/k8s-service1_1.0.0_amd64 successfully published"
+else
+    echo "Failed to publish service: $result2"
+    exit 1
+fi
+
+result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH k8s-service1_1.0.0_amd64 -f)
+if [ $? -eq 0 ]; then
+    echo "Presigned service userdev/k8s-service1_1.0.0_amd64 successfully removed"
+else
+    echo "Failed to remove service: $result3"
+    exit 1
+fi
+
+echo "End Testing Publishing Presigned Services"
+
 # Begin testing service config API
 
-EXCH_URL="${EXCH_APP_HOST}"
+echo "Start Testing Service APIs"
 
 if [ ${CERT_LOC} -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
@@ -750,3 +807,5 @@ then
 else
   echo -e "found expected response: $RES"
 fi
+
+echo "End Testing Service APIs"
