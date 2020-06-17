@@ -12,6 +12,16 @@ mkdir -p /var/horizon/.colonus
 
 docker version
 
+# update host file if needed
+if [ "$ICP_HOST_IP" != "0" ]
+then
+  echo "Updating hosts file."
+  HOST_NAME_ICP=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g'`
+  HOST_NAME=`echo $EXCH_URL | awk -F/ '{print $3}' | sed 's/:.*//g' | sed 's/\.icp*//g'`
+  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME"
+  echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
+fi
+
 #--cacert /certs/css.crt
 if [ ${CERT_LOC} -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
@@ -84,6 +94,26 @@ else
   echo "Delete helm-service_1.0.0 ..."
   DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64")
   echo "$DLHELM100"
+
+  echo "Delete Userdev Org Definition ..."
+  DL8USERDEVDEF=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/userdev_*_userdev")
+  echo "$DL8USERDEVDEF"
+
+  echo "Delete E2E Org Definition ..."
+  DL8E2EDEF=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/businesspols/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  echo "$DL8E2EDEF"
+
+  echo "Delete Pattern Definition E2E ..."
+  DL8PATTERNDEFE2E=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_e2edev@somecomp.com")
+  echo "$DL8PATTERNDEFE2E"
+
+  echo "Delete Pattern Definition UserDev ..."
+  DL8PATTERNDUSERDEV=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_*_userdev")
+  echo "$DL8PATTERNDUSERDEV"
+
+  echo "Delete Pattern Definition SNS ..."
+  DL8PATTERNSNS=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_sns_e2edev@somecomp.com")
+  echo "$DL8PATTERNSNS"
 
   sleep 30
 fi
