@@ -33,8 +33,8 @@ const (
 	EL_API_START_NODE_UNREG     = "Start node unregistration."
 	EL_API_COMPLETE_NODE_UNREG  = "Node unregistration complete for node %v."
 
-	EL_API_ERR_NODE_UNREG_NOT_FOUND             = "Error unregistring the node. The node is not found from the database."
-	EL_API_ERR_NODE_UNREG_NOT_IN_STATE          = "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+	EL_API_ERR_NODE_UNREG_NOT_FOUND             = "Error unregistering the node. The node is not found from the database."
+	EL_API_ERR_NODE_UNREG_NOT_IN_STATE          = "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
 	EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN    = "Input error for node unregistration. %v is an incorrect value for removeNode"
 	EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC    = "Input error for node unregistration. %v is an incorrect value for deepClean"
 	EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK = "Input error for node unregistration. %v is an incorrect value for block"
