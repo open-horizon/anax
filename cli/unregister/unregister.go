@@ -4,9 +4,9 @@ import (
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"net/http"
@@ -56,18 +56,28 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 		}
 
 		// deep clean if anax failed to do it
-		if deepClean && unregErr != nil {
-			if err := DeepClean(); err != nil {
-				fmt.Println(err.Error())
+		if unregErr != nil {
+			if deepClean {
+				if err := DeepClean(); err != nil {
+					fmt.Println(err.Error())
+				} else {
+					unregErr = nil
+				}
 			} else {
-				unregErr = nil
+				msgPrinter.Printf("The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.")
+				msgPrinter.Println()
 			}
 		}
 
 		// check the new node config state
 		if unregErr == nil {
 			if err := CheckNodeConfigState(180); err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+				if !deepClean {
+					errmsg := msgPrinter.Sprintf("%v\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.", err)
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, errmsg)
+				} else {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+				}
 			} else {
 				msgPrinter.Printf("Horizon node unregistered. You may now run 'hzn register ...' again, if desired.")
 				msgPrinter.Println()
@@ -207,7 +217,7 @@ func CheckNodeConfigState(timeout uint64) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	msgPrinter.Printf("Checking the node configuration state...")
+	msgPrinter.Printf("Waiting for agent service to restart and checking the node configuration state...")
 	msgPrinter.Println()
 	now := uint64(time.Now().Unix())
 	for uint64(time.Now().Unix())-now < timeout {
