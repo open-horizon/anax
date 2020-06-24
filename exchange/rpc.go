@@ -137,6 +137,7 @@ type Device struct {
 	Arch               string             `json:"arch"`
 	UserInput          []policy.UserInput `json:"userInput"`
 	HeartbeatIntv      HeartbeatIntervals `json:"heartbeatIntervals,omitempty"`
+	LastUpdated        string             `json:"lastUpdated,omitempty"`
 }
 
 func (d Device) String() string {
