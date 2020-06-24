@@ -111,6 +111,16 @@ Environment Variables:
 	exVersionCmd := exchangeCmd.Command("version", msgPrinter.Sprintf("Display the version of the Horizon Exchange."))
 	exStatusCmd := exchangeCmd.Command("status", msgPrinter.Sprintf("Display the status of the Horizon Exchange."))
 
+	exOrgCmd := exchangeCmd.Command("org", msgPrinter.Sprintf("List and manage organizations in the Horizon Exchange."))
+	exOrgListCmd := exOrgCmd.Command("list", msgPrinter.Sprintf("Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)"))
+	exOrgListOrg := exOrgListCmd.Arg("org", msgPrinter.Sprintf("List this one organization. Default is your own org.")).String()
+	exOrgCreateCmd := exOrgCmd.Command("create", msgPrinter.Sprintf("Create the organization resource in the Horizon Exchange."))
+	exOrgCreatetOrg := exOrgCreateCmd.Arg("org", msgPrinter.Sprintf("Create this organization. Default is your own org.")).String()
+	exOrgCreateLabel := exOrgCreateCmd.Flag("label", msgPrinter.Sprintf("Label for new organization")).Short('l').String()
+	exOrgCreateDesc := exOrgCreateCmd.Flag("description", msgPrinter.Sprintf("Description for new organization")).Short('d').String()
+	exOrgDelCmd := exOrgCmd.Command("remove", msgPrinter.Sprintf("Remove an organization resource from the Horizon Exchange."))
+	exOrgDelOrg := exOrgDelCmd.Arg("org", msgPrinter.Sprintf("Remove this organization. Default is your own org.")).String()
+
 	exUserCmd := exchangeCmd.Command("user", msgPrinter.Sprintf("List and manage users in the Horizon Exchange."))
 	exUserListCmd := exUserCmd.Command("list", msgPrinter.Sprintf("Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)"))
 	exUserListUser := exUserListCmd.Arg("user", msgPrinter.Sprintf("List this one user. Default is your own user. Only admin users can list other users.")).String()
@@ -754,6 +764,14 @@ Environment Variables:
 		exchange.Version(*exOrg, credToUse)
 	case exStatusCmd.FullCommand():
 		exchange.Status(*exOrg, *exUserPw)
+
+	case exOrgListCmd.FullCommand():
+		exchange.OrgList(*exOrgListOrg)
+	case exOrgCreateCmd.FullCommand():
+		exchange.OrgCreate(*exOrgCreatetOrg, *exOrgCreateLabel, *exOrgCreateDesc)
+	case exOrgDelCmd.FullCommand():
+		exchange.OrgDel(*exOrgDelOrg)
+
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw, *exUserListUser, *exUserListAll, *exUserListNamesOnly)
 	case exUserCreateCmd.FullCommand():
