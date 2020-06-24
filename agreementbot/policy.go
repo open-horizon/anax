@@ -463,6 +463,7 @@ func hasRunningService(allRunningServices string, newPolicy *exchange.ObjectDest
 	}
 	return false
 }
+
 // =============================================================================================================
 var opLogstring = func(v interface{}) string {
 	return fmt.Sprintf("Object Policy: %v", v)
