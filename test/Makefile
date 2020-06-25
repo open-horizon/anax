@@ -43,7 +43,7 @@ DOCKER_DEV_TAG := latest
 DOCKER_EXCHDB_INAME := postgres
 DOCKER_EXCHDB_TAG := 9
 DOCKER_REG_INAME := registry
-DOCKER_REG_TAG := 2
+DOCKER_REG_TAG := sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
 DOCKER_CSSDB_INAME := mongo
 DOCKER_CSSDB_TAG := 4.0.6
 DOCKER_CSS_INAME := openhorizon/amd64_cloud-sync-service
@@ -149,11 +149,11 @@ run-dockerreg: test-network
 		-e REGISTRY_AUTH=htpasswd \
 		-e REGISTRY_AUTH_HTPASSWD_REALM=RegistryRealm \
 		-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
-		-t $(DOCKER_REG_INAME):$(DOCKER_REG_TAG)
+		-t $(DOCKER_REG_INAME)@$(DOCKER_REG_TAG)
 	@echo "Docker $(DOCKER_REG_CNAME) container running with TLS"
 	docker run --name $(DOCKER_REG_PW_CNAME) \
 		--entrypoint htpasswd \
-		-t $(DOCKER_REG_INAME):$(DOCKER_REG_TAG) \
+		-t $(DOCKER_REG_INAME)@$(DOCKER_REG_TAG) \
 		-Bbn $(DOCKER_REG_USER) $(DOCKER_REG_PW) > $(AGBOT_TEMPFS)/auth/htpasswd
 	docker rm -v $(DOCKER_REG_PW_CNAME)
 
