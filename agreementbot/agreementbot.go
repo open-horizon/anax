@@ -54,8 +54,6 @@ type AgreementBotWorker struct {
 	shutdownStarted    bool
 	lastAgMakingTime   uint64 // the start time for the last agreement making cycle, only used by non-pattern case
 	MMSObjectPM        *MMSObjectPolicyManager
-	servedPatterns     map[string]exchange.ServedPattern
-	servedPolicies     map[string]exchange.ServedBusinessPolicy
 	lastSearchComplete bool
 	lastSearchTime     uint64
 	searchThread       chan bool
@@ -80,8 +78,6 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 		GovTiming:          DVState{},
 		shutdownStarted:    false,
 		lastAgMakingTime:   0,
-		servedPatterns:     make(map[string]exchange.ServedPattern),
-		servedPolicies:     make(map[string]exchange.ServedBusinessPolicy),
 		lastSearchComplete: true,
 		lastSearchTime:     0,
 		searchThread:       make(chan bool, 10),
@@ -1387,34 +1383,32 @@ func (w *AgreementBotWorker) serviceResolver(wURL string, wOrg string, wVersion 
 
 // Get the configured org/pattern/nodeorg triplet for this agbot.
 func (w *AgreementBotWorker) saveAgbotServedPatterns() {
-	var err error
-	w.servedPatterns, err = exchange.GetHTTPAgbotServedPattern(w)()
+	servedPatterns, err := exchange.GetHTTPAgbotServedPattern(w)()
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to retrieve agbot served patterns, error %v", err)))
 	}
 
 	// Consume the configured org/pattern pairs into the PatternManager
-	if err = w.PatternManager.SetCurrentPatterns(w.servedPatterns, w.Config.AgreementBot.PolicyPath); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("unable to process agbot served patterns %v, error %v", w.servedPatterns, err)))
+	if err = w.PatternManager.SetCurrentPatterns(servedPatterns, w.Config.AgreementBot.PolicyPath); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to process agbot served patterns %v, error %v", servedPatterns, err)))
 	}
 }
 
 // Get the configured (policy org, business policy, node org) triplets for this agbot.
 func (w *AgreementBotWorker) saveAgbotServedPolicies() {
-	var err error
-	w.servedPolicies, err = exchange.GetHTTPAgbotServedDeploymentPolicy(w)()
+	servedPolicies, err := exchange.GetHTTPAgbotServedDeploymentPolicy(w)()
 	if err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to retrieve agbot served deployment policies, error %v", err)))
 	}
 
 	// Consume the configured (policy org, business policy, node org) triplets into the BusinessPolicyManager
-	if err = w.BusinessPolManager.SetCurrentBusinessPolicies(w.servedPolicies, w.pm); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("unable to process agbot served deployment policies %v, error %v", w.servedPolicies, err)))
+	if err = w.BusinessPolManager.SetCurrentBusinessPolicies(servedPolicies, w.pm); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to process agbot served deployment policies %v, error %v", servedPolicies, err)))
 	}
 
 	// Consume the configured (policy org, business policy, node org) triplets into the ObjectPolicyManager
-	if err = w.MMSObjectPM.SetCurrentPolicyOrgs(w.servedPolicies); err != nil {
-		glog.Errorf(AWlogString(fmt.Sprintf("unable to process agbot served deployment policies for MMS %v, error %v", w.servedPolicies, err)))
+	if err = w.MMSObjectPM.SetCurrentPolicyOrgs(servedPolicies); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to process agbot served deployment policies for MMS %v, error %v", servedPolicies, err)))
 	}
 
 }

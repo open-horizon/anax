@@ -306,22 +306,7 @@ func (w *ChangesWorker) gatherServedOrgs(change *exchange.ExchangeChange) []stri
 
 	glog.V(5).Infof(chglog(fmt.Sprintf("Previously serving orgs: %v, now serving orgs: %v", w.orgList, orgs)))
 
-	// If the list of served orgs is somehow different, tell the other workers.
-	sendUpdatedOrgsEvent := false
-
-	for _, currentOrg := range w.orgList {
-		if _, ok := orgs[currentOrg]; !ok {
-			sendUpdatedOrgsEvent = true
-		}
-	}
-
-	if len(orgs) != len(w.orgList) {
-		sendUpdatedOrgsEvent = true
-	}
-
-	// If the list of served orgs is being recalculated because of a change in the agbot's served policy/pattern
-	// config, then tell the other workers about the change.
-	if change != nil && sendUpdatedOrgsEvent {
+	if change != nil {
 		if change.IsAgbotServedPolicy(w.GetExchangeId()) {
 			w.Messages() <- events.NewExchangeChangeMessage(events.CHANGE_AGBOT_SERVED_POLICY)
 		} else {
