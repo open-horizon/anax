@@ -63,13 +63,14 @@ func getSelectionString(selections []string) (string, error) {
 	return strings.Join(sels, "&"), nil
 }
 
-func List(all bool, detail bool, selections []string) {
+func List(all bool, detail bool, selections []string, tailing bool) {
 
 	// format the eventlog api string
 	url_s := "eventlog"
 	if all {
 		url_s = fmt.Sprintf("%v/all", url_s)
 	}
+
 	if len(selections) > 0 {
 		if s, err := getSelectionString(selections); err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", err)
@@ -78,39 +79,74 @@ func List(all bool, detail bool, selections []string) {
 		}
 	}
 
-	// get the eventlog from anax
-	apiOutput := make([]persistence.EventLogRaw, 0)
-	cliutils.HorizonGet(url_s, []int{200}, &apiOutput, false)
+	for {
+		// get the eventlog from anax
+		apiOutput := make([]persistence.EventLogRaw, 0)
+		cliutils.HorizonGet(url_s, []int{200}, &apiOutput, false)
 
-	//output
-	if detail {
-		long_output := make([]EventLog, len(apiOutput))
-		for i, v := range apiOutput {
-			long_output[i].Id = v.Id
-			long_output[i].Timestamp = cliutils.ConvertTime(v.Timestamp)
-			long_output[i].Severity = v.Severity
-			long_output[i].Message = v.Message
-			long_output[i].EventCode = v.EventCode
-			long_output[i].SourceType = v.SourceType
-			long_output[i].Source = v.Source
+		//output
+
+		if detail {
+			long_output := make([]EventLog, len(apiOutput))
+			for i, v := range apiOutput {
+				long_output[i].Id = v.Id
+				long_output[i].Timestamp = cliutils.ConvertTime(v.Timestamp)
+				long_output[i].Severity = v.Severity
+				long_output[i].Message = v.Message
+				long_output[i].EventCode = v.EventCode
+				long_output[i].SourceType = v.SourceType
+				long_output[i].Source = v.Source
+			}
+
+			jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
+			}
+			if len(jsonBytes) > 2 {
+				fmt.Printf("%s", jsonBytes[2:len(jsonBytes)-1])
+			}
+		} else {
+			short_output := make([]string, len(apiOutput))
+			for i, v := range apiOutput {
+				t := time.Unix(int64(v.Timestamp), 0)
+				short_output[i] = fmt.Sprintf("%v:   %v", t.Format("2006-01-02 15:04:05"), v.Message)
+			}
+			jsonBytes, err := json.MarshalIndent(short_output, "", cliutils.JSON_INDENT)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
+			}
+
+			if len(jsonBytes) > 2 {
+				fmt.Printf("%s", jsonBytes[2:len(jsonBytes)-1])
+			}
 		}
 
-		jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
+		if tailing {
+			// selection contraints for most recent records
+			var newselect []string
+
+			// update with inputted selection contraints
+			if len(selections) > 0 {
+				newselect = make([]string, len(selections))
+				copy(newselect, selections)
+			} else {
+				newselect = []string{}
+			}
+
+			// select for most recent records if any
+			if len(apiOutput) > 0 {
+				newselect = append(newselect, fmt.Sprintf("record_id>%v", apiOutput[len(apiOutput)-1].Id))
+				if s, err := getSelectionString(newselect); err != nil {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, "%v", err)
+				} else {
+					url_s = fmt.Sprintf("eventlog?%v", s)
+				}
+			}
+			time.Sleep(1 * time.Second)
+
+		} else {
+			break
 		}
-		fmt.Printf("%s\n", jsonBytes)
-	} else {
-		short_output := make([]string, len(apiOutput))
-		for i, v := range apiOutput {
-			t := time.Unix(int64(v.Timestamp), 0)
-			short_output[i] = fmt.Sprintf("%v:   %v", t.Format("2006-01-02 15:04:05"), v.Message)
-		}
-		jsonBytes, err := json.MarshalIndent(short_output, "", cliutils.JSON_INDENT)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
-		}
-		fmt.Printf("%s\n", jsonBytes)
 	}
 }
 

@@ -466,6 +466,7 @@ Environment Variables:
 
 	eventlogCmd := app.Command("eventlog", msgPrinter.Sprintf("List the event logs for the current or all registrations."))
 	eventlogListCmd := eventlogCmd.Command("list", msgPrinter.Sprintf("List the event logs for the current or all registrations."))
+	listTail := eventlogListCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the event log to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	listAllEventlogs := eventlogListCmd.Flag("all", msgPrinter.Sprintf("List all the event logs including the previous registrations.")).Short('a').Bool()
 	listDetailedEventlogs := eventlogListCmd.Flag("long", msgPrinter.Sprintf("List event logs with details.")).Short('l').Bool()
 	listSelectedEventlogs := eventlogListCmd.Flag("select", msgPrinter.Sprintf("Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.")).Short('s').Strings()
@@ -916,7 +917,7 @@ Environment Variables:
 	case statusCmd.FullCommand():
 		status.DisplayStatus(*statusLong, false)
 	case eventlogListCmd.FullCommand():
-		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs)
+		eventlog.List(*listAllEventlogs, *listDetailedEventlogs, *listSelectedEventlogs, *listTail)
 	case surfaceErrorsEventlogs.FullCommand():
 		eventlog.ListSurfaced(*surfaceErrorsEventlogsLong)
 	case devServiceNewCmd.FullCommand():
