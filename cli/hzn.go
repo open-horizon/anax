@@ -113,13 +113,25 @@ Environment Variables:
 
 	exOrgCmd := exchangeCmd.Command("org", msgPrinter.Sprintf("List and manage organizations in the Horizon Exchange."))
 	exOrgListCmd := exOrgCmd.Command("list", msgPrinter.Sprintf("Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)"))
-	exOrgListOrg := exOrgListCmd.Arg("org", msgPrinter.Sprintf("List this one organization. Default is your own org.")).String()
+	exOrgListOrg := exOrgListCmd.Arg("org", msgPrinter.Sprintf("List this one organization.")).String()
+	exOrgListLong := exOrgListCmd.Flag("long", msgPrinter.Sprintf("Display detailed info of orgs")).Short('l').Bool()
 	exOrgCreateCmd := exOrgCmd.Command("create", msgPrinter.Sprintf("Create the organization resource in the Horizon Exchange."))
-	exOrgCreatetOrg := exOrgCreateCmd.Arg("org", msgPrinter.Sprintf("Create this organization. Default is your own org.")).String()
-	exOrgCreateLabel := exOrgCreateCmd.Flag("label", msgPrinter.Sprintf("Label for new organization")).Short('l').String()
-	exOrgCreateDesc := exOrgCreateCmd.Flag("description", msgPrinter.Sprintf("Description for new organization")).Short('d').String()
+	exOrgCreateOrg := exOrgCreateCmd.Arg("org", msgPrinter.Sprintf("Create this organization.")).Required().String()
+	exOrgCreateLabel := exOrgCreateCmd.Flag("label", msgPrinter.Sprintf("Label for new organization.")).Short('l').String()
+	exOrgCreateDesc := exOrgCreateCmd.Flag("description", msgPrinter.Sprintf("Description for new organization.")).Short('d').Required().String()
+	exOrgCreateHBMin := exOrgCreateCmd.Flag("heartbeatmin", msgPrinter.Sprintf("The minimum number of seconds between agent heartbeats to the Exchange.")).Int()
+	exOrgCreateHBMax := exOrgCreateCmd.Flag("heartbeatmax", msgPrinter.Sprintf("The maximum number of seconds between agent heartbeats to the Exchange. During periods of inactivity, the agent will increase the interval between heartbeats by increments of --heartbeatadjust.")).Int()
+	exOrgCreateHBAdjust := exOrgCreateCmd.Flag("heartbeatadjust", msgPrinter.Sprintf("The number of seconds to increment the agent's heartbeat interval.")).Int()
+	exOrgUpdateCmd := exOrgCmd.Command("update", msgPrinter.Sprintf("Update the organization resource in the Horizon Exchange."))
+	exOrgUpdateOrg := exOrgUpdateCmd.Arg("org", msgPrinter.Sprintf("Update this organization.")).Required().String()
+	exOrgUpdateLabel := exOrgUpdateCmd.Flag("label", msgPrinter.Sprintf("New label for organization.")).Short('l').String()
+	exOrgUpdateDesc := exOrgUpdateCmd.Flag("description", msgPrinter.Sprintf("New description for organization.")).Short('d').String()
+	exOrgUpdateHBMin := exOrgUpdateCmd.Flag("heartbeatmin", msgPrinter.Sprintf("New minimum number of seconds the between agent heartbeats to the Exchange.")).Int()
+	exOrgUpdateHBMax := exOrgUpdateCmd.Flag("heartbeatmax", msgPrinter.Sprintf("New maximum number of seconds between agent heartbeats to the Exchange.")).Int()
+	exOrgUpdateHBAdjust := exOrgUpdateCmd.Flag("heartbeatadjust", msgPrinter.Sprintf("New value for the number of seconds to increment the agent's heartbeat interval.")).Int()
 	exOrgDelCmd := exOrgCmd.Command("remove", msgPrinter.Sprintf("Remove an organization resource from the Horizon Exchange."))
-	exOrgDelOrg := exOrgDelCmd.Arg("org", msgPrinter.Sprintf("Remove this organization. Default is your own org.")).String()
+	exOrgDelOrg := exOrgDelCmd.Arg("org", msgPrinter.Sprintf("Remove this organization.")).Required().String()
+	exOrgDelForce := exOrgDelCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
 	exUserCmd := exchangeCmd.Command("user", msgPrinter.Sprintf("List and manage users in the Horizon Exchange."))
 	exUserListCmd := exUserCmd.Command("list", msgPrinter.Sprintf("Display the user resource from the Horizon Exchange. (Normally you can only display your own user. If the user does not exist, you will get an invalid credentials error.)"))
@@ -766,11 +778,13 @@ Environment Variables:
 		exchange.Status(*exOrg, *exUserPw)
 
 	case exOrgListCmd.FullCommand():
-		exchange.OrgList(*exOrgListOrg)
+		exchange.OrgList(*exOrg, *exUserPw, *exOrgListOrg, *exOrgListLong)
 	case exOrgCreateCmd.FullCommand():
-		exchange.OrgCreate(*exOrgCreatetOrg, *exOrgCreateLabel, *exOrgCreateDesc)
+		exchange.OrgCreate(*exOrg, *exUserPw, *exOrgCreateOrg, *exOrgCreateLabel, *exOrgCreateDesc, *exOrgCreateHBMin, *exOrgCreateHBMax, *exOrgCreateHBAdjust)
+	case exOrgUpdateCmd.FullCommand():
+		exchange.OrgUpdate(*exOrg, *exUserPw, *exOrgUpdateOrg, *exOrgUpdateLabel, *exOrgUpdateDesc, *exOrgUpdateHBMin, *exOrgUpdateHBMax, *exOrgUpdateHBAdjust)
 	case exOrgDelCmd.FullCommand():
-		exchange.OrgDel(*exOrgDelOrg)
+		exchange.OrgDel(*exOrg, *exUserPw, *exOrgDelOrg, *exOrgDelForce)
 
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw, *exUserListUser, *exUserListAll, *exUserListNamesOnly)

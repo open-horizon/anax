@@ -602,9 +602,10 @@ func ConvertPropertyToExchangeFormat(prop *externalpolicy.Property) (*MSProp, er
 
 // Functions and types for working with organizations in the exchange
 type Organization struct {
-	Label       string `json:"label"`
-	Description string `json:"description"`
-	LastUpdated string `json:"lastUpdated,omitempty"`
+	Label       string              `json:"label,omitempty"`
+	Description string              `json:"description,omitempty"`
+	Heartbeat   *HeartbeatIntervals `json:"heartbeatIntervals,omitempty"`
+	LastUpdated string              `json:"lastUpdated,omitempty"`
 }
 
 type GetOrganizationResponse struct {
