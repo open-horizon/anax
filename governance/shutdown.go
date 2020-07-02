@@ -69,8 +69,7 @@ func (w *GovernanceWorker) nodeShutdown(cmd *NodeShutdownCommand) {
 
 	// Clear out any node errors.
 	if err := w.deleteNodeError(); err != nil {
-		w.completedWithError(logString(err.Error()))
-		return
+		w.continueWithError(logString(err.Error()))
 	}
 
 	// Tell the exchange changes worker to stop retrieving and recording changes. We dont need it any longer now that the agreements
