@@ -1423,7 +1423,7 @@ func (w *AgreementBotWorker) generatePolicyFromPatterns(msg *events.ExchangeChan
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("scanning patterns for updates")))
 
 	// Iterate over each org in the PatternManager and process all the patterns in that org
-	for org, _ := range w.PatternManager.OrgPatterns {
+	for _, org := range w.PatternManager.GetAllPatternOrgs() {
 
 		var exchangePatternMetadata map[string]exchange.Pattern
 		var err error

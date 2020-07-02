@@ -193,13 +193,24 @@ func (pm *PatternManager) GetServedNodeOrgs(pattten_org string, pattern string) 
 	return node_orgs
 }
 
+func (pm *PatternManager) GetAllPatternOrgs() []string {
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
+
+	orgs := make([]string, 0)
+	for _, sp := range pm.ServedPatterns {
+		orgs = append(orgs, sp.PatternOrg)
+	}
+	return orgs
+}
+
 // Given a list of pattern_org/pattern/node_org triplets that this agbot is supposed to serve, save that list and
 // convert it to map of maps (keyed by org and pattern name) to hold all the pattern meta data. This
 // will allow the PatternManager to know when the pattern metadata changes.
 func (pm *PatternManager) SetCurrentPatterns(servedPatterns map[string]exchange.ServedPattern, policyPath string) error {
 
 	// Exit early if nothing to do
-	if len(pm.OrgPatterns) == 0 && len(servedPatterns) == 0 {
+	if len(pm.OrgPatterns) == 0 && len(pm.ServedPatterns) == 0 && len(servedPatterns) == 0 {
 		return nil
 	}
 
@@ -256,17 +267,21 @@ func createPolicyFiles(pe *PatternEntry, patternId string, pattern *exchange.Pat
 // the agbot can start serving the workloads and services.
 func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[string]exchange.Pattern, policyPath string) error {
 
-	// Exit early on error
-	if !pm.hasOrg(org) {
-		return errors.New(fmt.Sprintf("org %v not found in pattern manager", org))
-	}
-
-	// If there is no pattern in the org, delete the org from the pm and all of the policy files in the org.
+	// If there is no pattern in the org, delete the pattern entries for the org from the pm and all of the policy files in the org.
 	// This is the case where pattern or the org has been deleted but the agbot still hosts the pattern on the exchange.
 	if definedPatterns == nil || len(definedPatterns) == 0 {
-		// delete org and all policy files in it.
-		glog.V(5).Infof("Deleting the org %v from the pattern manager and all its policy files because it does not contain a pattern.", org)
-		return pm.deleteOrg(policyPath, org)
+		glog.V(5).Infof("Clear pattern entries and deleting all policy files from org %v.", org)
+		// remove all the pattern entries from the pattern manager
+		if pm.hasOrg(org) && len(pm.OrgPatterns[org]) > 0 {
+			pm.OrgPatterns[org] = make(map[string]*PatternEntry)
+		}
+		// delete all policy files from the org
+		return policy.DeletePolicyFilesForOrg(policyPath, org, true)
+	}
+
+	// just in case the entry for the given org is not created yet
+	if !pm.hasOrg(org) {
+		pm.OrgPatterns[org] = make(map[string]*PatternEntry)
 	}
 
 	// Delete the pattern from the pm and all of its policy files if the pattern does not exist on the exchange or the agbot
