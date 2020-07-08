@@ -97,7 +97,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input
-	org, pattern = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag)
+	org, pattern, waitService, waitOrg = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg)
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	// Read input file 1st, so we don't get half way thru registration before finding the problem
@@ -267,6 +267,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		}
 	}
 
+	checkPattern := false
 	// Use the exchange node pattern if any
 	if pattern == "" {
 		if exchangePattern == "" {
@@ -278,28 +279,34 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 				msgPrinter.Println()
 			}
 		} else {
-			msgPrinter.Printf("Pattern %s defined for the node on the Exchange. Will proceeed with this pattern.", exchangePattern)
+			msgPrinter.Printf("Pattern %s defined for the node on the Exchange.", exchangePattern)
 			msgPrinter.Println()
 			pattern = exchangePattern
+			checkPattern = true
 		}
 	} else {
 		if exchangePattern != "" && cliutils.AddOrg(org, pattern) != cliutils.AddOrg(org, exchangePattern) {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it is different from the pattern %s defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)", pattern, exchangePattern))
 		} else {
-			var output exchange.GetPatternResponse
-			var patorg, patname string
-			patorg, patname = cliutils.TrimOrg(org, pattern)
-			httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+patorg+"/patterns"+cliutils.AddSlash(patname), cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 404, 405}, &output)
-			if httpCode != 200 {
-				cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s/%s' not found from the Exchange.", patorg, patname))
-			}
-			pat := output.Patterns[patorg+"/"+patname]
-			if len(pat.Services) == 0 {
-				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it does not include any services.", pattern))
-			} else {
-				msgPrinter.Printf("Will proceeed with the given pattern %s.", pattern)
-				msgPrinter.Println()
-			}
+			checkPattern = true
+		}
+	}
+
+	var pat exchange.Pattern
+	if checkPattern {
+		var output exchange.GetPatternResponse
+		var patorg, patname string
+		patorg, patname = cliutils.TrimOrg(org, pattern)
+		httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+patorg+"/patterns"+cliutils.AddSlash(patname), cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 404, 405}, &output)
+		if httpCode != 200 {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s/%s' not found from the Exchange.", patorg, patname))
+		}
+		pat = output.Patterns[patorg+"/"+patname]
+		if len(pat.Services) == 0 {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot proceed with the given pattern %s because it does not include any services.", pattern))
+		} else {
+			msgPrinter.Printf("Will proceeed with the given pattern %s.", pattern)
+			msgPrinter.Println()
 		}
 	}
 
@@ -414,7 +421,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		msgPrinter.Println()
 
 		// Wait for the service to be started.
-		WaitForService(waitOrg, waitService, waitTimeout, pattern)
+		WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
 
 	} else {
 		msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
@@ -632,7 +639,7 @@ func SetConfigState(timeout int, inputFile string) error {
 	}
 }
 
-func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string) (string, string) {
+func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string, waitService string, waitOrg string) (string, string, string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -653,7 +660,26 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFl
 	if org == "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Please specify the node organization id."))
 	}
-	return org, pattern
+
+	if waitService == "" && waitOrg != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("-s must be specified if --serviceorg is specified"))
+	}
+
+	// if waitOrg is omitted, default to '*'
+	if waitOrg == "" {
+		waitOrg = "*"
+	}
+
+	// for the policy case, waitService = '*' is not supported
+	if waitService == "*" {
+		if pattern == "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("When registering with a node policy, '*' is not a valid value for -s."))
+		} else if waitOrg != "*" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted."))
+		}
+	}
+
+	return org, pattern, waitService, waitOrg
 }
 
 // isWithinRanges returns true if version is within at least 1 of the ranges in versionRanges

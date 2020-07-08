@@ -1,17 +1,87 @@
 package register
 
 import (
+	"fmt"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"strings"
 	"time"
 )
 
+type serviceSpec struct {
+	name      string
+	org       string
+	status    int
+	serviceUp int
+}
+
+// Check if service type and node type match
+func CheckService(name string, org string, arch string, version string, nodeType string, userOrg string, userPw string) bool {
+	var services exchange.GetServicesResponse
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// get service from exchange
+	id := cutil.FormExchangeIdForService(name, version, arch)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/services/"+id, cliutils.OrgAndCreds(userOrg, userPw), []int{200, 404}, &services)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("service '%s' not found in org %s", id, org))
+	}
+	// Check in the service type
+	for _, s := range services.Services {
+		serviceType := s.GetServiceType()
+		return nodeType == serviceType || serviceType == exchange.SERVICE_TYPE_BOTH
+	}
+	return false
+}
+
+func DisplayServiceStatus(servSpecArr []serviceSpec, displayStarOrg bool) {
+	statusArr := []string{"Failed", "Waiting", "Success"}
+
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Printf("Status of the services you are watching:")
+	msgPrinter.Println()
+	for _, ss := range servSpecArr {
+		if ss.org != "*" || displayStarOrg {
+			msgPrinter.Printf("\t%v \t%v/%v", statusArr[ss.status+1], ss.org, ss.name)
+			msgPrinter.Println()
+		}
+	}
+}
+
+// returns two values:
+// allSucces 	- 	true if all services are successful
+// needWait 	-	true if any service is still in progress
+func ServiceAllSucess(servSpecArr []serviceSpec) (bool, bool) {
+	// true if all services have started
+	allSuccess := true
+
+	// true if any service has not shown up yet
+	needWait := false
+
+	// for each service that we are monitoring, check if all succeeds
+	for _, ss := range servSpecArr {
+		if ss.status == 0 {
+			allSuccess = false
+			needWait = true
+
+		} else if ss.status < 0 {
+			allSuccess = false
+		}
+	}
+
+	return allSuccess, needWait
+}
+
 // Wait for the specified service to start running on this node.
-func WaitForService(org string, waitService string, waitTimeout int, pattern string) {
+func WaitForService(org string, waitService string, waitTimeout int, pattern string, pat exchange.Pattern, nodeType string, nodeArch, userOrg string, userPw string) {
 
 	const UpdateThreshold = 5    // How many service check iterations before updating the user with a msg on the console.
 	const ServiceUpThreshold = 5 // How many service check iterations before deciding that the service is up.
@@ -24,104 +94,163 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("--timeout must be a positive integer."))
 	}
 
+	servSpecArr := []serviceSpec{}
+	if pattern != "" {
+		for _, s := range pat.Services {
+			if (waitService == "*" || waitService == s.ServiceURL) && (org == "*" || org == s.ServiceOrg) && (s.ServiceArch == "*" || nodeArch == s.ServiceArch) {
+				if len(s.ServiceVersions) > 0 && CheckService(s.ServiceURL, s.ServiceOrg, nodeArch, s.ServiceVersions[0].Version, nodeType, userOrg, userPw) {
+					servSpecArr = append(servSpecArr, serviceSpec{name: s.ServiceURL, org: s.ServiceOrg, status: 0, serviceUp: 0})
+				}
+			}
+		}
+	} else {
+		servSpecArr = append(servSpecArr, serviceSpec{name: waitService, org: org, status: 0, serviceUp: 0})
+	}
+
 	// 1. Wait for the /service API to return a service with url that matches the input
 	// 2. While waiting, report when at least 1 agreement is formed
 
-	msgPrinter.Printf("Waiting for up to %v seconds for service %v/%v to start...", waitTimeout, org, waitService)
+	msgPrinter.Printf("Waiting for up to %v seconds for following services to start:", waitTimeout)
 	msgPrinter.Println()
 
+	for _, ss := range servSpecArr {
+		msgPrinter.Printf("\t%v/%v", ss.org, ss.name)
+		msgPrinter.Println()
+
+	}
 	// Save the most recent set of services here.
 	services := api.AllServices{}
 
 	// Start monitoring the agent's /service API, looking for the presence of the input waitService.
 	updateCounter := UpdateThreshold
-	serviceUp := 0
-	serviceFailed := false
 	now := uint64(time.Now().Unix())
-	for (uint64(time.Now().Unix())-now < uint64(waitTimeout) || serviceUp > 0) && !serviceFailed {
+	for uint64(time.Now().Unix())-now < uint64(waitTimeout) {
 		time.Sleep(time.Duration(3) * time.Second)
 		if _, err := cliutils.HorizonGet("service", []int{200}, &services, true); err != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
 		}
 
 		// Active services are services that have at least been started. When the execution time becomes non-zero
-		// it means the service container is started. The container could still fail quickly after it is started.
+		// it means the servie container is started. The container could still fail quickly after it is started.
 		instances := services.Instances["active"]
-		for _, serviceInstance := range instances {
 
-			if !(serviceInstance.SpecRef == waitService && serviceInstance.Org == org) {
-				// Skip elements for other services
-				continue
+		// for each service that we are monitoring, check if they are up
+		for i, ss := range servSpecArr {
+			if ss.status == 0 {
+				for _, serviceInstance := range instances {
+					if serviceInstance.SpecRef == ss.name && (serviceInstance.Org == ss.org || ss.org == "*") {
+						if ss.org == "*" {
+							servSpecArr[i].org = serviceInstance.Org
+						}
+						if serviceInstance.ExecutionStartTime != 0 {
 
-			} else if serviceInstance.ExecutionStartTime != 0 {
-				// The target service is started. If stays up then declare victory and return.
-				if serviceUp >= ServiceUpThreshold {
-					msgPrinter.Printf("Service %v/%v is started.", org, waitService)
-					msgPrinter.Println()
-					return
+							// The target service is started. If stays up then declare victory and return.
+							if ss.serviceUp >= ServiceUpThreshold {
+								servSpecArr[i].status = 1
+							}
+
+							// The service could fail quickly if we happened to catch it just as it was starting, so make sure
+							// the service stays up.
+							servSpecArr[i].serviceUp += 1
+							break
+
+						} else if ss.serviceUp > 0 {
+							// The service has been up for at least 1 iteration, so it's absence means that it failed.
+							servSpecArr[i].serviceUp = 0
+							servSpecArr[i].status = -1
+							break
+						}
+					}
 				}
-
-				// The service could fail quickly if we happened to catch it just as it was starting, so make sure
-				// the service stays up.
-				serviceUp += 1
-
-			} else if serviceUp > 0 {
-				// The service has been up for at least 1 iteration, so it's absence means that it failed.
-				serviceUp = 0
-				msgPrinter.Printf("The service %v/%v has failed.", org, waitService)
-				msgPrinter.Println()
-				serviceFailed = true
 			}
-
-			break
 		}
 
-		// Service is not there yet. Update the user on progress, and wait for a bit.
+		// decrement or update updateCounter
 		updateCounter = updateCounter - 1
-		if updateCounter <= 0 && !serviceFailed {
+
+		// exit if all services are started successfully
+		allSuccess, needWait := ServiceAllSucess(servSpecArr)
+		if allSuccess {
+			DisplayServiceStatus(servSpecArr, false)
+			return
+		}
+
+		if updateCounter <= 0 {
+			DisplayServiceStatus(servSpecArr, true)
 			updateCounter = UpdateThreshold
-			msgPrinter.Printf("Waiting for service %v/%v to start executing.", org, waitService)
-			msgPrinter.Println()
+		}
+
+		if !needWait {
+			break
 		}
 	}
 
 	// If we got to this point, then there is a problem.
-	msgPrinter.Printf("Timeout waiting for service %v/%v to successfully start. Analyzing possible reasons for the timeout...", org, waitService)
+	msgPrinter.Printf("Timeout waiting for some services to successfully start. Analyzing possible reasons for the timeout...")
 	msgPrinter.Println()
 
+	// Save services to an array based on their status
+	failedArr, failedDescArr, delayedArr, notDeployedArr := []serviceSpec{}, []string{}, []serviceSpec{}, []serviceSpec{}
+
 	// Let's see if we can provide the user with some help figuring out what's going on.
-	found := false
-	for _, serviceInstance := range services.Instances["active"] {
+	for i, ss := range servSpecArr {
+		if ss.status <= 0 {
+			found := false
+			for _, serviceInstance := range services.Instances["active"] {
+				// 1. Maybe the service is there but just hasnt started yet.
+				if serviceInstance.SpecRef == ss.name && serviceInstance.Org == ss.org {
+					found = true
 
-		// 1. Maybe the service is there but just hasnt started yet.
-		if serviceInstance.SpecRef == waitService && serviceInstance.Org == org {
-			msgPrinter.Printf("Service %v/%v is deployed to the node, but not executing yet.", org, waitService)
-			msgPrinter.Println()
-			found = true
-
-			// 2. Maybe the service has encountered an error.
-			if serviceInstance.ExecutionStartTime == 0 && serviceInstance.ExecutionFailureCode != 0 {
-				msgPrinter.Printf("Service %v/%v execution failed: %v.", org, waitService, serviceInstance.ExecutionFailureDesc)
-				msgPrinter.Println()
-				serviceFailed = true
-			} else {
-				msgPrinter.Printf("Service %v/%v might need more time to start executing, continuing analysis.", org, waitService)
-				msgPrinter.Println()
+					// 2. Maybe the service has encountered an error.
+					if serviceInstance.ExecutionStartTime == 0 && serviceInstance.ExecutionFailureCode != 0 {
+						failedArr = append(failedArr, ss)
+						failedDescArr = append(failedDescArr, serviceInstance.ExecutionFailureDesc)
+						servSpecArr[i].status = -1
+					} else {
+						delayedArr = append(delayedArr, ss)
+					}
+					break
+				}
 			}
-			break
 
+			// 3. The service might not even be there at all.
+			if !found {
+				notDeployedArr = append(notDeployedArr, ss)
+			}
 		}
 	}
 
-	// 3. The service might not even be there at all.
-	if !found {
-		msgPrinter.Printf("Service %v/%v is not deployed to the node, continuing analysis.", org, waitService)
+	// Print the status of each service
+	if len(failedArr) > 0 {
+		msgPrinter.Printf("The following services failed during execution:")
 		msgPrinter.Println()
+		for i, ss := range failedArr {
+			msgPrinter.Printf("\t%v/%v: %v", ss.org, ss.name, failedDescArr[i])
+			msgPrinter.Println()
+		}
+	}
+
+	if len(delayedArr) > 0 {
+		msgPrinter.Printf("The following services might need more time to start executing, continuing analysis:")
+		msgPrinter.Println()
+		for _, ss := range delayedArr {
+			msgPrinter.Printf("\t%v/%v", ss.org, ss.name)
+			msgPrinter.Println()
+		}
+	}
+
+	if len(notDeployedArr) > 0 {
+		msgPrinter.Printf("The following services are not deployed to the node, continuing analysis:")
+		msgPrinter.Println()
+		for _, ss := range notDeployedArr {
+			msgPrinter.Printf("\t%v/%v", ss.org, ss.name)
+			msgPrinter.Println()
+		}
 	}
 
 	// 4. Are there any agreements being made? Check for only non-archived agreements. Skip this if we know the service failed
 	// because we know there are agreements.
-	if !serviceFailed {
+	if len(delayedArr) > 0 || len(notDeployedArr) > 0 {
 		msgPrinter.Println()
 		ags := agreement.GetAgreements(false)
 		if len(ags) != 0 {
@@ -132,7 +261,6 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 			msgPrinter.Println()
 		}
 	}
-
 	// 5. Scan the event log for errors related to this service. This should always be done if the service did not come up
 	// successfully.
 	eLogs := make([]persistence.EventLogRaw, 0)
@@ -148,32 +276,47 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		}
 		msgPrinter.Println()
 	} else {
-		msgPrinter.Printf("The following errors were found in the node's event log and are related to %v/%v. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.", org, waitService)
-		msgPrinter.Println()
+		for _, ss := range servSpecArr {
+			logArr := []string{}
 
-		// Scan the log for events related to the service we're waiting for.
-		sel := persistence.Selector{
-			Op:         "=",
-			MatchValue: waitService,
-		}
-		match := make(map[string][]persistence.Selector)
-		match["service_url"] = []persistence.Selector{sel}
+			if ss.status == 1 {
+				continue
+			}
+			// Scan the log for events related to the service we're waiting for.
+			var serviceFullName = ss.name
+			if ss.org != "*" {
+				serviceFullName = fmt.Sprintf("%v/%v", ss.org, ss.name)
+			}
+			sel := persistence.Selector{
+				Op:         "=",
+				MatchValue: serviceFullName,
+			}
+			match := make(map[string][]persistence.Selector)
+			match["service_url"] = []persistence.Selector{sel}
 
-		for _, el := range eLogs {
-			t := time.Unix(int64(el.Timestamp), 0)
-			printLog := false
-			if strings.Contains(el.Message, waitService) {
-				printLog = true
-			} else if es, err := persistence.GetRealEventSource(el.SourceType, el.Source); err != nil {
-				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to convert eventlog source, error: %v", err)
-			} else if (*es).Matches(match) {
-				printLog = true
+			for _, el := range eLogs {
+				t := time.Unix(int64(el.Timestamp), 0)
+				printLog := false
+				if strings.Contains(el.Message, serviceFullName) {
+					printLog = true
+				} else if es, err := persistence.GetRealEventSource(el.SourceType, el.Source); err != nil {
+					cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "unable to convert eventlog source, error: %v", err)
+				} else if (*es).Matches(match) {
+					printLog = true
+				}
+
+				// Put relevant events on the console.
+				if printLog {
+					logArr = append(logArr, msgPrinter.Sprintf("%v: %v", t.Format("2006-01-02 15:04:05"), el.Message))
+				}
 			}
 
-			// Put relevant events on the console.
-			if printLog {
-				msgPrinter.Printf("%v: %v", t.Format("2006-01-02 15:04:05"), el.Message)
+			if len(logArr) > 0 {
+				msgPrinter.Printf("The following errors were found in the node's event log and are related to %v/%v. Use 'hzn eventlog list -s severity=error -l' to see the full detail of the errors.", ss.org, ss.name)
 				msgPrinter.Println()
+				for _, log := range logArr {
+					fmt.Printf("%v", log)
+				}
 			}
 		}
 	}
