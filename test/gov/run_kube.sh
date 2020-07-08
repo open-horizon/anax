@@ -14,6 +14,8 @@ EXCH_ROOTPW=$3
 NAME_SPACE="openhorizon-agent"
 CONFIGMAP_NAME="agent-configmap-horizon"
 SECRET_NAME="agent-secret-cert"
+PVC_NAME="agent-pvc-horizon"
+WAIT_POD_MAX_TRY=30
 
 isRoot=$(id -u)
 cprefix="sudo -E"
@@ -33,7 +35,7 @@ sleep 2
 if [ $RC -ne 0 ]
 then
 	echo "Try to install microk8s"
-	sudo snap install microk8s --classic --channel=1.14/stable
+	sudo snap install microk8s --classic --channel=1.18/stable
 	IRC=$?
 	if [ $IRC -ne 0 ]; then echo "Unable to install microk8s: $IRC"; exit 1; fi
 
@@ -102,7 +104,16 @@ $cprefix microk8s.enable dns
 RC=$?
 if [ $RC -ne 0 ]
 then
-        echo "Failure enabling kube dns: $RC"
+        echo "Failure enabling kube dns & storage: $RC"
+        exit 1
+fi
+
+echo "Enable kube storage"
+$cprefix microk8s.enable storage
+RC=$?
+if [ $RC -ne 0 ]
+then
+        echo "Failure enabling kube storage: $RC"
         exit 1
 fi
 
@@ -129,7 +140,7 @@ do
 done
 
 # Debug help - microk8s.ctr images ls
-$cprefix microk8s.ctr -n k8s.io image import /tmp/agent-in-kube.tar
+$cprefix microk8s.ctr --namespace k8s.io image import /tmp/agent-in-kube.tar
 RC=$?
 if [ $RC -ne 0 ]
 then
@@ -174,6 +185,17 @@ then
 	exit 1
 fi
 
+# Create a persistent volume claim
+echo "Create persistent volume claim to mount db file"
+$cprefix microk8s.kubectl apply -f ${AGBOT_TEMPFS}/etc/agent-in-kube/persistent-claim.yaml
+RC=$?
+if [ $RC -ne 0 ]
+then
+	echo "Failure creating pvc '${PVC_NAME}' to mount db file: $RC"
+	$cprefix microk8s.kubectl get pvc ${PVC_NAME} -n ${NAME_SPACE}
+	exit 1
+fi
+
 sleep 2
 
 echo "Deploy the agent"
@@ -191,8 +213,25 @@ fi
 
 echo "Agent deployed to local kube"
 
-
 sleep 15
+
+echo "Wait for agent pod to run"
+i=0
+while :
+do
+	if [ $i -eq $WAIT_POD_MAX_TRY ]; then
+		echo "Timeout for waiting pod to become READY"
+		exit 1
+	else
+		if [[ $($cprefix microk8s.kubectl get pods -n ${NAME_SPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+			 echo "waiting for pod: $i"
+        		((i++))
+			sleep 1
+		else
+			break
+		fi
+	fi
+done
 
 echo "Configuring agent for policy"
 

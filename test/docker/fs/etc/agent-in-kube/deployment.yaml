@@ -14,10 +14,9 @@ spec:
         app: agent
     spec:
       volumes:
-      - name: agent-vol
-        emptyDir: {}
-      - name: agent-policy-vol
-        emptyDir: {}
+      - name: agent-pvc-vol
+        persistentVolumeClaim:
+          claimName: agent-pvc-horizon
       - name: agent-etc-vol
         configMap:
           name: agent-configmap-horizon
@@ -30,9 +29,9 @@ spec:
         imagePullPolicy: Never
         volumeMounts:
         - mountPath: /var/horizon
-          name: agent-vol
+          name: agent-pvc-vol
         - mountPath: /etc/horizon/policy.d
-          name: agent-policy-vol
+          name: agent-pvc-vol
         - mountPath: /etc/default/horizon
           subPath: horizon
           name: agent-etc-vol
