@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
@@ -105,7 +106,8 @@ func Log(serviceName string, tailing bool) {
 		serviceFound := false
 		var instanceId string
 		for _, serviceInstance := range runningServices.Instances["active"] {
-			if strings.Contains(serviceInstance.SpecRef, refUrl) {
+			org, name := cutil.SplitOrgSpecUrl(refUrl)
+			if (serviceInstance.SpecRef == name && serviceInstance.Org == org) || strings.Contains(serviceInstance.SpecRef, refUrl) {
 				instanceId = serviceInstance.InstanceId
 				serviceFound = true
 				msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
