@@ -66,6 +66,9 @@ func (w *ChangesWorker) NewEvent(incoming events.Message) {
 		msg, _ := incoming.(*events.NodeShutdownCompleteMessage)
 		switch msg.Event().Id {
 		case events.UNCONFIGURE_COMPLETE:
+			w.Commands <- worker.NewBeginShutdownCommand()
+			w.Commands <- worker.NewTerminateCommand("shutdown")
+		case events.AGBOT_QUIESCE_COMPLETE:
 			w.Commands <- worker.NewTerminateCommand("shutdown")
 		}
 

@@ -48,7 +48,7 @@ const PARTITION_QUIESCE = `UPDATE partitions SET owner = NULL, heartbeat = NULL 
 
 const PARTITION_DELETE = `DELETE FROM partitions WHERE id = $1;`
 
-// The complexity of the WHERE clause should not be underestimated. Each row is scanned whlie the table is locked
+// The complexity of the WHERE clause should not be underestimated. Each row is scanned while the table is locked
 // so we are sure that no other agbot can even read this table until this query is complete. This query runs in a
 // transaction that is controlled by the functions in this package.
 const PARTITION_CLAIM_UNOWNED_FUNCTION = `

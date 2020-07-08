@@ -155,15 +155,17 @@ type HandleWorkloadUpgrade struct {
 	AgreementId string
 	Protocol    string
 	Device      string
+	Org         string
 	PolicyName  string
 }
 
-func NewHandleWorkloadUpgrade(agId string, protocol string, device string, policyName string) AgreementWork {
+func NewHandleWorkloadUpgrade(agId string, protocol string, device string, org string, policyName string) AgreementWork {
 	return HandleWorkloadUpgrade{
 		workType:    WORKLOAD_UPGRADE,
 		AgreementId: agId,
 		Device:      device,
 		Protocol:    protocol,
+		Org:         org,
 		PolicyName:  policyName,
 	}
 }
@@ -222,14 +224,15 @@ type AgreementWorker interface {
 }
 
 type BaseAgreementWorker struct {
-	pm         *policy.PolicyManager
-	db         persistence.AgbotDatabase
-	config     *config.HorizonConfig
-	alm        *AgreementLockManager
-	workerID   string
-	httpClient *http.Client
-	ec         *worker.BaseExchangeContext
-	mmsObjMgr  *MMSObjectPolicyManager
+	pm              *policy.PolicyManager
+	db              persistence.AgbotDatabase
+	config          *config.HorizonConfig
+	alm             *AgreementLockManager
+	workerID        string
+	httpClient      *http.Client
+	ec              *worker.BaseExchangeContext
+	mmsObjMgr       *MMSObjectPolicyManager
+	retryAgreements *RetryAgreements
 }
 
 // A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
@@ -718,7 +721,7 @@ func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, 
 
 		// Find the saved agreement in the database. The returned agreement might be archived. If it's archived, then it is our agreement
 		// so we will delete the protocol msg.
-		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
+		if agreement, err := b.db.FindSingleAgreementByAgreementId(reply.AgreementId(), cph.Name(), []persistence.AgbotDBFilter{}); err != nil {
 			// A DB error occurred so we dont know if this is our agreement or not. Leave it alone until the agbot is restarted
 			// or until the DB error is resolved.
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying pending agreement %v, error: %v", reply.AgreementId(), err)))
@@ -915,7 +918,7 @@ func (b *BaseAgreementWorker) HandleDataReceivedAck(cph ConsumerProtocolHandler,
 
 		// The agreement might be archived in this agbot's partition. If it's archived, then it is our agreement
 		// so we will delete the protocol msg, but we will ignore the ack msg.
-		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AFilter{}); err != nil {
+		if ag, err := b.db.FindSingleAgreementByAgreementId(drAck.AgreementId(), cph.Name(), []persistence.AgbotDBFilter{}); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v, error: %v", drAck.AgreementId(), err)))
 			deleteMessage = false
 		} else if ag != nil && ag.Archived {
@@ -954,7 +957,7 @@ func (b *BaseAgreementWorker) HandleWorkloadUpgrade(cph ConsumerProtocolHandler,
 	// grab the agreement id lock, cancel the agreement and delete the workload usage record.
 
 	if wi.AgreementId == "" {
-		if ags, err := b.db.FindAgreements([]persistence.AFilter{persistence.DevPolAFilter(wi.Device, wi.PolicyName)}, cph.Name()); err != nil {
+		if _, ags, err := b.db.FindAgreementsPage([]persistence.AgbotDBFilter{b.db.GetNodeFilter(wi.Device), b.db.GetPolicyFilter(wi.Org, wi.PolicyName)}, cph.Name(), "", 999); err != nil {
 			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error finding agreement for device %v and policyName %v, error: %v", wi.Device, wi.PolicyName, err)))
 		} else if len(ags) == 0 {
 			// If there is no agreement found, is it a problem? We could have caught the system in a state where there is no
@@ -1082,7 +1085,7 @@ func (b *BaseAgreementWorker) ExternalCancel(cph ConsumerProtocolHandler, agreem
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("starting deferred cancel for %v", agreementId)))
 
 	// Find the agreement record
-	if ag, err := b.db.FindSingleAgreementByAgreementId(agreementId, cph.Name(), []persistence.AFilter{}); err != nil {
+	if ag, err := b.db.FindSingleAgreementByAgreementId(agreementId, cph.Name(), []persistence.AgbotDBFilter{}); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error querying agreement %v from database, error: %v", agreementId, err)))
 	} else if ag == nil {
 		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("nothing to terminate for agreement %v, no database record.", agreementId)))

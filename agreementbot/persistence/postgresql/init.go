@@ -73,13 +73,15 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 			return errors.New(fmt.Sprintf("unable to create workload usage partition table index, error: %v", err))
 		}
 
-		// Create the agreement table, partition and index if necessary.
+		// Create the agreement table, partition and indexes if necessary.
 		if _, err := db.db.Exec(AGREEMENT_CREATE_MAIN_TABLE); err != nil {
 			return errors.New(fmt.Sprintf("unable to create agreements table, error: %v", err))
 		} else if _, err := db.db.Exec(db.GetPrimaryAgreementPartitionTableCreate()); err != nil {
 			return errors.New(fmt.Sprintf("unable to create agreements partition table, error: %v", err))
 		} else if _, err := db.db.Exec(db.GetPrimaryAgreementPartitionTableIndexCreate()); err != nil {
 			return errors.New(fmt.Sprintf("unable to create agreements partition table index, error: %v", err))
+		} else if _, err := db.db.Exec(db.GetPrimaryAgreementPartitionTableDeviceIdIndexCreate()); err != nil {
+			return errors.New(fmt.Sprintf("unable to create agreements partition table device id index, error: %v", err))
 		}
 
 		glog.V(3).Infof("Postgresql primary partition database tables exist.")

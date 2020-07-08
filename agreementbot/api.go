@@ -208,7 +208,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		id := pathVars["id"]
 
 		if id != "" {
-			if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(id, policy.AllAgreementProtocols(), []persistence.AFilter{}); err != nil {
+			if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(id, policy.AllAgreementProtocols(), []persistence.AgbotDBFilter{}); err != nil {
 				glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", id, err)))
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			} else if ag == nil {
@@ -228,11 +228,22 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 			wrap[agreementsKey][activeKey] = []persistence.Agreement{}
 
 			for _, agp := range policy.AllAgreementProtocols() {
-				if ags, err := a.db.FindAgreements([]persistence.AFilter{}, agp); err != nil {
-					glog.Error(APIlogString(fmt.Sprintf("error finding all agreements, error: %v", err)))
-					http.Error(w, "Internal server error", http.StatusInternalServerError)
-					return
-				} else {
+
+				nextAgreementId := ""
+				for {
+					lastAgreementId, ags, err := a.db.FindAgreementsPage([]persistence.AgbotDBFilter{}, agp, nextAgreementId, a.Config.GetAgbotDBLimit())
+					if err != nil {
+						glog.Error(APIlogString(fmt.Sprintf("error finding all agreements, error: %v", err)))
+						http.Error(w, "Internal server error", http.StatusInternalServerError)
+						return
+					}
+
+					// If there are no more agreements to iterate, then break out of the loop.
+					if lastAgreementId == "" {
+						break
+					} else {
+						nextAgreementId = lastAgreementId
+					}
 
 					for _, agreement := range ags {
 						// The archived agreements and the agreements being terminated are returned as archived.
@@ -264,7 +275,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 		}
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("handling DELETE of agreement: %v", r)))
 
-		if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(id, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
+		if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(id, policy.AllAgreementProtocols(), []persistence.AgbotDBFilter{a.db.GetUnarchivedFilter()}); err != nil {
 			glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", id, err)))
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if ag == nil {
@@ -388,7 +399,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		protocol := ""
 		// The body is syntacticly correct, verify that the agreement id matches up with the device id and policy name.
 		if upgrade.AgreementId != "" {
-			if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(upgrade.AgreementId, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
+			if ag, err := a.db.FindSingleAgreementByAgreementIdAllProtocols(upgrade.AgreementId, policy.AllAgreementProtocols(), []persistence.AgbotDBFilter{a.db.GetUnarchivedFilter()}); err != nil {
 				glog.Error(APIlogString(fmt.Sprintf("error finding agreement %v, error: %v", upgrade.AgreementId, err)))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -427,7 +438,7 @@ func (a *API) policy(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// If we got this far, begin workload upgrade processing.
-		a.Messages() <- events.NewABApiWorkloadUpgradeMessage(events.WORKLOAD_UPGRADE, protocol, upgrade.AgreementId, upgrade.Device, policyName)
+		a.Messages() <- events.NewABApiWorkloadUpgradeMessage(events.WORKLOAD_UPGRADE, protocol, upgrade.AgreementId, upgrade.Device, upgrade.Org, policyName)
 		w.WriteHeader(http.StatusOK)
 
 	case "OPTIONS":

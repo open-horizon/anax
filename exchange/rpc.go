@@ -745,7 +745,7 @@ func GetNodeHealthStatus(httpClientFactory *config.HTTPClientFactory, pattern st
 			}
 		} else {
 			status := resp.(*NodeHealthStatus)
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found nodehealth status for %v, status %v", pattern, status)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("found node health status for %v, status %v", pattern, status)))
 			return status, nil
 		}
 	}

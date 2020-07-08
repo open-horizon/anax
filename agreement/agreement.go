@@ -397,11 +397,11 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 
 			deleteMessage, proposalAccepted = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
-
 			if proposalAccepted {
 				// send a message to let the changes worker know that we have received a proposal message
 				w.Messages() <- events.NewProposalAcceptedMessage(events.PROPOSAL_ACCEPTED)
 			}
+
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURING {
 			w.AddDeferredCommand(cmd)
 			return true

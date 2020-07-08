@@ -1044,6 +1044,7 @@ type ABApiWorkloadUpgradeMessage struct {
 	AgreementProtocol string
 	AgreementId       string
 	DeviceId          string
+	Org               string
 	PolicyName        string
 }
 
@@ -1052,14 +1053,14 @@ func (m *ABApiWorkloadUpgradeMessage) Event() Event {
 }
 
 func (m ABApiWorkloadUpgradeMessage) String() string {
-	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, DeviceId: %v, PolicyName: %v", m.event, m.AgreementProtocol, m.AgreementId, m.DeviceId, m.PolicyName)
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, DeviceId: %v, Org: %v, PolicyName: %v", m.event, m.AgreementProtocol, m.AgreementId, m.DeviceId, m.Org, m.PolicyName)
 }
 
 func (m ABApiWorkloadUpgradeMessage) ShortString() string {
 	return m.String()
 }
 
-func NewABApiWorkloadUpgradeMessage(id EventId, protocol string, agreementId string, deviceId string, policyName string) *ABApiWorkloadUpgradeMessage {
+func NewABApiWorkloadUpgradeMessage(id EventId, protocol string, agreementId string, deviceId string, org string, policyName string) *ABApiWorkloadUpgradeMessage {
 	return &ABApiWorkloadUpgradeMessage{
 		event: Event{
 			Id: id,
@@ -1067,6 +1068,7 @@ func NewABApiWorkloadUpgradeMessage(id EventId, protocol string, agreementId str
 		AgreementProtocol: protocol,
 		AgreementId:       agreementId,
 		DeviceId:          deviceId,
+		Org:               org,
 		PolicyName:        policyName,
 	}
 }
