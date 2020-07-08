@@ -19,7 +19,7 @@ type BasicAgreementWorker struct {
 	protocolHandler *BasicProtocolHandler
 }
 
-func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager, mmsObjMgr *MMSObjectPolicyManager) *BasicAgreementWorker {
+func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, alm *AgreementLockManager, mmsObjMgr *MMSObjectPolicyManager, retryAgs *RetryAgreements) *BasicAgreementWorker {
 
 	id, err := uuid.NewV4()
 	if err != nil {
@@ -28,14 +28,15 @@ func NewBasicAgreementWorker(c *BasicProtocolHandler, cfg *config.HorizonConfig,
 
 	p := &BasicAgreementWorker{
 		BaseAgreementWorker: &BaseAgreementWorker{
-			pm:         pm,
-			db:         db,
-			config:     cfg,
-			alm:        alm,
-			workerID:   id.String(),
-			httpClient: cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-			ec:         worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.GetAgbotCSSURL(), cfg.Collaborators.HTTPClientFactory),
-			mmsObjMgr:  mmsObjMgr,
+			pm:              pm,
+			db:              db,
+			config:          cfg,
+			alm:             alm,
+			workerID:        id.String(),
+			httpClient:      cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+			ec:              worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.GetAgbotCSSURL(), cfg.Collaborators.HTTPClientFactory),
+			mmsObjMgr:       mmsObjMgr,
+			retryAgreements: retryAgs,
 		},
 		protocolHandler: c,
 	}
@@ -189,7 +190,7 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 			exists := false
 			deleteMessage := true
 			sendReply := true
-			if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Verify.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
+			if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.Verify.AgreementId(), a.protocolHandler.Name(), []persistence.AgbotDBFilter{}); err != nil {
 				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.Verify.AgreementId(), err)))
 				sendReply = false
 			} else if agreement != nil && agreement.Archived {
@@ -227,7 +228,7 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 
 			cancel := false
 			deleteMessage := true
-			if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.VerifyReply.AgreementId(), a.protocolHandler.Name(), []persistence.AFilter{}); err != nil {
+			if agreement, err := a.db.FindSingleAgreementByAgreementId(wi.VerifyReply.AgreementId(), a.protocolHandler.Name(), []persistence.AgbotDBFilter{}); err != nil {
 				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error querying agreement %v, error: %v", wi.VerifyReply.AgreementId(), err)))
 			} else if agreement != nil && agreement.Archived {
 				// The agreement is not active and it is archived, so this message belongs to this agbot.
