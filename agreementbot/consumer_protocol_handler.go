@@ -15,11 +15,12 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
 	"net/http"
+	"sync"
 	"time"
 )
 
-func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager) ConsumerProtocolHandler {
-	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr); handler != nil {
+func CreateConsumerPH(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, msgq chan events.Message, mmsObjMgr *MMSObjectPolicyManager, retryAgs *RetryAgreements) ConsumerProtocolHandler {
+	if handler := NewBasicProtocolHandler(name, cfg, db, pm, msgq, mmsObjMgr, retryAgs); handler != nil {
 		return handler
 	} // Add new consumer side protocol handlers here
 	return nil
@@ -86,8 +87,10 @@ type BaseConsumerProtocolHandler struct {
 	agbotId          string
 	token            string
 	deferredCommands []AgreementWork // The agreement related work that has to be deferred and retried
+	dcLock           sync.Mutex      // The lock that protects the deferred command queue
 	messages         chan events.Message
 	mmsObjMgr        *MMSObjectPolicyManager
+	retryAgreements  *RetryAgreements
 }
 
 func (b *BaseConsumerProtocolHandler) GetSendMessage() func(mt interface{}, pay []byte) error {
@@ -196,7 +199,7 @@ func (b *BaseConsumerProtocolHandler) DispatchProtocolMessage(cmd *NewProtocolMe
 		glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued data received ack message")))
 	} else if can, cerr := cph.AgreementProtocolHandler("", "", "").ValidateCancel(string(cmd.Message)); cerr == nil {
 		// Before dispatching the cancel to a worker thread, make sure it's a valid cancel
-		if ag, err := b.db.FindSingleAgreementByAgreementId(can.AgreementId(), can.Protocol(), []persistence.AFilter{}); err != nil {
+		if ag, err := b.db.FindSingleAgreementByAgreementId(can.AgreementId(), can.Protocol(), []persistence.AgbotDBFilter{}); err != nil {
 			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error finding agreement %v in the db", can.AgreementId())))
 		} else if ag == nil {
 			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("cancel ignored, cannot find agreement %v in the db", can.AgreementId())))
@@ -230,104 +233,59 @@ func (b *BaseConsumerProtocolHandler) HandlePolicyChanged(cmd *PolicyChangedComm
 
 	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy changed command."))
 
-	if eventPol, err := policy.DemarshalPolicy(cmd.Msg.PolicyString()); err != nil {
-		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error demarshalling change policy event %v, error: %v", cmd.Msg.PolicyString(), err)))
-	} else {
-
-		InProgress := func() persistence.AFilter {
-			return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+	nextAgreementId := ""
+	for {
+		lastAgreementId, agreements, err := b.db.FindAgreementsPage([]persistence.AgbotDBFilter{b.db.GetActiveFilter(), b.db.GetUnarchivedFilter(), b.db.GetPolicyFilter(cmd.Msg.Org(), cmd.Msg.PolicyName())}, cph.Name(), nextAgreementId, b.config.GetAgbotDBLimit())
+		if err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+			break
 		}
 
-		if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
-			for _, ag := range agreements {
-
-				if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
-					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-
-				} else if eventPol.Header.Name != pol.Header.Name {
-					// This agreement is using a policy different from the one that changed.
-					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("policy change handler skipping agreement %v because it is using a policy that did not change.", ag.CurrentAgreementId)))
-					continue
-				} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
-					glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
-					b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
-				} else {
-					glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement %v, no policy content differences detected", ag.CurrentAgreementId)))
-				}
-
-			}
+		// If there are no more agreements to iterate, then break out of the loop.
+		if lastAgreementId == "" {
+			break
 		} else {
-			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+			nextAgreementId = lastAgreementId
+		}
+
+		for _, ag := range agreements {
+
+			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
+				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
+			} else if err := b.pm.MatchesMine(cmd.Msg.Org(), pol); err != nil {
+				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that has changed: %v", ag.CurrentAgreementId, pol.Header.Name, err)))
+				b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+			} else {
+				glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("for agreement %v, no policy content differences detected", ag.CurrentAgreementId)))
+			}
+
 		}
 	}
+
 }
 
 func (b *BaseConsumerProtocolHandler) HandlePolicyDeleted(cmd *PolicyDeletedCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
 
-	InProgress := func() persistence.AFilter {
-		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
-	}
-
-	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
-		for _, ag := range agreements {
-
-			if pol, err := policy.DemarshalPolicy(ag.Policy); err != nil {
-				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("unable to demarshal policy for agreement %v, error %v", ag.CurrentAgreementId, err)))
-			} else if cmd.Msg.Org() == ag.Org {
-				if existingPol := b.pm.GetPolicy(cmd.Msg.Org(), pol.Header.Name); existingPol == nil {
-					glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, pol.Header.Name)))
-
-					// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
-					if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
-						glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
-					}
-
-					// Queue up a cancellation command for this agreement.
-					agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED), 0)
-					cph.WorkQueue().InboundHigh() <- &agreementWork
-
-				}
-			}
+	nextAgreementId := ""
+	for {
+		lastAgreementId, agreements, err := b.db.FindAgreementsPage([]persistence.AgbotDBFilter{b.db.GetActiveFilter(), b.db.GetUnarchivedFilter(), b.db.GetPolicyFilter(cmd.Msg.Org(), cmd.Msg.PolicyName())}, cph.Name(), nextAgreementId, b.config.GetAgbotDBLimit())
+		if err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+			break
 		}
-	} else {
-		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
-	}
-}
 
-func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler) {
-
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received service policy changed command: %v. cmd"))
-
-	InProgress := func() persistence.AFilter {
-		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
-	}
-
-	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
-		for _, ag := range agreements {
-			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId[0] == cmd.Msg.ServiceId {
-
-				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
-				b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
-			}
+		// If there are no more agreements to iterate, then break out of the loop.
+		if lastAgreementId == "" {
+			break
+		} else {
+			nextAgreementId = lastAgreementId
 		}
-	} else {
-		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
-	}
-}
 
-func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler) {
-	glog.V(5).Infof(BCPHlogstring(b.Name(), "received policy deleted command."))
-
-	InProgress := func() persistence.AFilter {
-		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
-	}
-
-	if agreements, err := b.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), InProgress()}, cph.Name()); err == nil {
 		for _, ag := range agreements {
 
-			if ag.Pattern == "" && ag.PolicyName == fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName) && ag.ServiceId[0] == cmd.Msg.ServiceId {
-				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that doesn't exist anymore", ag.CurrentAgreementId, ag.ServiceId)))
+			if existingPol := b.pm.GetPolicy(cmd.Msg.Org(), cmd.Msg.PolicyName()); existingPol == nil {
+				glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a policy %v that doesn't exist anymore", ag.CurrentAgreementId, cmd.Msg.PolicyName())))
 
 				// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
 				if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
@@ -340,8 +298,83 @@ func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePol
 
 			}
 		}
-	} else {
-		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+	}
+}
+
+func (b *BaseConsumerProtocolHandler) HandleServicePolicyChanged(cmd *ServicePolicyChangedCommand, cph ConsumerProtocolHandler) {
+
+	glog.V(5).Infof(BCPHlogstring(b.Name(), "received service policy changed command: %v. cmd"))
+
+	nextAgreementId := ""
+	for {
+		filters := []persistence.AgbotDBFilter{
+			b.db.GetActiveFilter(),
+			b.db.GetUnarchivedFilter(),
+			b.db.GetNoPatternFilter(),
+			b.db.GetServiceIdFilter(cmd.Msg.ServiceId),
+			b.db.GetPolicyFilter(cmd.Msg.BusinessPolOrg, fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName)),
+		}
+
+		lastAgreementId, agreements, err := b.db.FindAgreementsPage(filters, cph.Name(), nextAgreementId, b.config.GetAgbotDBLimit())
+		if err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+			break
+		}
+
+		// If there are no more agreements to iterate, then break out of the loop.
+		if lastAgreementId == "" {
+			break
+		} else {
+			nextAgreementId = lastAgreementId
+		}
+
+		for _, ag := range agreements {
+			glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that has changed.", ag.CurrentAgreementId, ag.ServiceId)))
+			b.CancelAgreement(ag, TERM_REASON_POLICY_CHANGED, cph)
+		}
+	}
+}
+
+func (b *BaseConsumerProtocolHandler) HandleServicePolicyDeleted(cmd *ServicePolicyDeletedCommand, cph ConsumerProtocolHandler) {
+	glog.V(5).Infof(BCPHlogstring(b.Name(), "received service policy deleted command."))
+
+	nextAgreementId := ""
+	for {
+		filters := []persistence.AgbotDBFilter{
+			b.db.GetActiveFilter(),
+			b.db.GetUnarchivedFilter(),
+			b.db.GetNoPatternFilter(),
+			b.db.GetServiceIdFilter(cmd.Msg.ServiceId),
+			b.db.GetPolicyFilter(cmd.Msg.BusinessPolOrg, fmt.Sprintf("%v/%v", cmd.Msg.BusinessPolOrg, cmd.Msg.BusinessPolName)),
+		}
+
+		lastAgreementId, agreements, err := b.db.FindAgreementsPage(filters, cph.Name(), nextAgreementId, b.config.GetAgbotDBLimit())
+		if err != nil {
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error searching database: %v", err)))
+			break
+		}
+
+		// If there are no more agreements to iterate, then break out of the loop.
+		if lastAgreementId == "" {
+			break
+		} else {
+			nextAgreementId = lastAgreementId
+		}
+
+		for _, ag := range agreements {
+
+			glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("agreement %v has a service policy %v that doesn't exist anymore", ag.CurrentAgreementId, ag.ServiceId)))
+
+			// Remove any workload usage records so that a new agreement will be made starting from the highest priority workload.
+			if err := b.db.DeleteWorkloadUsage(ag.DeviceId, ag.PolicyName); err != nil {
+				glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("error deleting workload usage for %v using policy %v, error: %v", ag.DeviceId, ag.PolicyName, err)))
+			}
+
+			// Queue up a cancellation command for this agreement.
+			agreementWork := NewCancelAgreement(ag.CurrentAgreementId, ag.AgreementProtocol, cph.GetTerminationCode(TERM_REASON_POLICY_CHANGED), 0)
+			cph.WorkQueue().InboundHigh() <- &agreementWork
+
+		}
 	}
 }
 
@@ -386,7 +419,7 @@ func (b *BaseConsumerProtocolHandler) CancelAgreement(ag persistence.Agreement, 
 
 func (b *BaseConsumerProtocolHandler) HandleWorkloadUpgrade(cmd *WorkloadUpgradeCommand, cph ConsumerProtocolHandler) {
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("received workload upgrade command.")))
-	upgradeWork := NewHandleWorkloadUpgrade(cmd.Msg.AgreementId, cmd.Msg.AgreementProtocol, cmd.Msg.DeviceId, cmd.Msg.PolicyName)
+	upgradeWork := NewHandleWorkloadUpgrade(cmd.Msg.AgreementId, cmd.Msg.AgreementProtocol, cmd.Msg.DeviceId, cmd.Msg.Org, cmd.Msg.PolicyName)
 	cph.WorkQueue().InboundHigh() <- &upgradeWork
 	glog.V(5).Infof(BCPHlogstring(b.Name(), fmt.Sprintf("queued workload upgrade command.")))
 }
@@ -545,10 +578,14 @@ func (b *BaseConsumerProtocolHandler) getDevice(deviceId string, workerId string
 }
 
 func (b *BaseConsumerProtocolHandler) DeferCommand(cmd AgreementWork) {
+	b.dcLock.Lock()
+	defer b.dcLock.Unlock()
 	b.deferredCommands = append(b.deferredCommands, cmd)
 }
 
 func (b *BaseConsumerProtocolHandler) GetDeferredCommands() []AgreementWork {
+	b.dcLock.Lock()
+	defer b.dcLock.Unlock()
 	res := b.deferredCommands
 	b.deferredCommands = make([]AgreementWork, 0, 10)
 	return res

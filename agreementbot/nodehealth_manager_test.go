@@ -4,10 +4,8 @@ package agreementbot
 
 import (
 	"flag"
-	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/policy"
 	"testing"
 	"time"
 )
@@ -248,20 +246,27 @@ func Test_SetNodeOrgs(t *testing.T) {
 		t.Errorf("patterns map should be empty")
 	}
 
-	ag1, _ := persistence.NewAgreement("agreement_id1", "pattern_org1", "node_org1/device1", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
-	ag2, _ := persistence.NewAgreement("agreement_id2", "pattern_org1", "node_org1/device2", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
-	ag3, _ := persistence.NewAgreement("agreement_id3", "pattern_org1", "node_org2/device1", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
-	ag4, _ := persistence.NewAgreement("agreement_id4", "pattern_org1", "node_org2/device2", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
-	ag5, _ := persistence.NewAgreement("agreement_id5", "pattern_org2", "node_org1/device1", "device", "", "", "", "", "basic", "pattern_org2/sall", []string{""}, policy.NodeHealth{})
-	ag6, _ := persistence.NewAgreement("agreement_id6", "pattern_org2", "node_org1/device1", "device", "", "", "", "", "basic", "pattern_org2/sall", []string{""}, policy.NodeHealth{})
-	ag7, _ := persistence.NewAgreement("agreement_id7", "pattern_org1", "node_org1/device2", "device", "", "", "", "", "basic", "pattern_org1/netspeed", []string{""}, policy.NodeHealth{})
-	ag8, _ := persistence.NewAgreement("agreement_id8", "pattern_org1", "node_org2/device2", "device", "", "", "", "", "basic", "pattern_org1/netspeed", []string{""}, policy.NodeHealth{})
-	ag9, _ := persistence.NewAgreement("agreement_id9", "org1", "node_org2/device3", "device", "", "", "", "", "basic", "", []string{""}, policy.NodeHealth{})
-	ag10, _ := persistence.NewAgreement("agreement_id10", "org1", "node_org3/device3", "device", "", "", "", "", "basic", "", []string{""}, policy.NodeHealth{})
+	// ag1, _ := persistence.NewAgreement("agreement_id1", "pattern_org1", "node_org1/device1", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	// ag2, _ := persistence.NewAgreement("agreement_id2", "pattern_org1", "node_org1/device2", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	// ag3, _ := persistence.NewAgreement("agreement_id3", "pattern_org1", "node_org2/device1", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	// ag4, _ := persistence.NewAgreement("agreement_id4", "pattern_org1", "node_org2/device2", "device", "", "", "", "", "basic", "pattern_org1/sall", []string{""}, policy.NodeHealth{})
+	// ag5, _ := persistence.NewAgreement("agreement_id5", "pattern_org2", "node_org1/device1", "device", "", "", "", "", "basic", "pattern_org2/sall", []string{""}, policy.NodeHealth{})
+	// ag6, _ := persistence.NewAgreement("agreement_id6", "pattern_org2", "node_org1/device1", "device", "", "", "", "", "basic", "pattern_org2/sall", []string{""}, policy.NodeHealth{})
+	// ag7, _ := persistence.NewAgreement("agreement_id7", "pattern_org1", "node_org1/device2", "device", "", "", "", "", "basic", "pattern_org1/netspeed", []string{""}, policy.NodeHealth{})
+	// ag8, _ := persistence.NewAgreement("agreement_id8", "pattern_org1", "node_org2/device2", "device", "", "", "", "", "basic", "pattern_org1/netspeed", []string{""}, policy.NodeHealth{})
+	// ag9, _ := persistence.NewAgreement("agreement_id9", "org1", "node_org2/device3", "device", "", "", "", "", "basic", "", []string{""}, policy.NodeHealth{})
+	// ag10, _ := persistence.NewAgreement("agreement_id10", "org1", "node_org3/device3", "device", "", "", "", "", "basic", "", []string{""}, policy.NodeHealth{})
 
-	agreements := []persistence.Agreement{*ag1, *ag2, *ag3, *ag4, *ag5, *ag6, *ag7, *ag8, *ag9, *ag10}
+	// agreements := []persistence.Agreement{*ag1, *ag2, *ag3, *ag4, *ag5, *ag6, *ag7, *ag8, *ag9, *ag10}
 
-	nhm.SetNodeOrgs(agreements, "basic")
+	nodeOrgs := map[string][]string{
+		"pattern_org1/sall": []string{"node_org1","node_org2"},
+		"pattern_org2/sall": []string{"node_org1"},
+		"pattern_org1/netspeed": []string{"node_org1","node_org2"},
+		"org1": []string{"node_org2","node_org3"},
+	}
+
+	nhm.SetNodeOrgs(nodeOrgs)
 
 	patternNodeOrgs := nhm.NodeOrgs
 
@@ -307,7 +312,7 @@ func Test_SetNodeOrgs(t *testing.T) {
 		t.Errorf("expected org1 has node org called node_org3 in map but not.")
 	}
 
-	nhm.SetNodeOrgs([]persistence.Agreement{}, "basic")
+	nhm.SetNodeOrgs(map[string][]string{})
 	if len(nhm.NodeOrgs) != 0 {
 		t.Errorf("expected patternNodeOrgs has 0 keys but found %v", len(nhm.NodeOrgs))
 	}
