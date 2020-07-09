@@ -260,10 +260,10 @@ func Test_SetNodeOrgs(t *testing.T) {
 	// agreements := []persistence.Agreement{*ag1, *ag2, *ag3, *ag4, *ag5, *ag6, *ag7, *ag8, *ag9, *ag10}
 
 	nodeOrgs := map[string][]string{
-		"pattern_org1/sall": []string{"node_org1","node_org2"},
-		"pattern_org2/sall": []string{"node_org1"},
-		"pattern_org1/netspeed": []string{"node_org1","node_org2"},
-		"org1": []string{"node_org2","node_org3"},
+		"pattern_org1/sall":     []string{"node_org1", "node_org2"},
+		"pattern_org2/sall":     []string{"node_org1"},
+		"pattern_org1/netspeed": []string{"node_org1", "node_org2"},
+		"org1":                  []string{"node_org2", "node_org3"},
 	}
 
 	nhm.SetNodeOrgs(nodeOrgs)
