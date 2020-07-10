@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"time"
@@ -182,8 +183,24 @@ func (m *NodeHealthManager) setNewStatus(pattern string, org string, lastCall st
 }
 
 // set the node orgs for patterns for current active agreements under the given agreement protocol
-func (m *NodeHealthManager) SetNodeOrgs(nodeOrgs map[string][]string) {
-	m.NodeOrgs = nodeOrgs
+func (m *NodeHealthManager) SetNodeOrgs(agreements []persistence.Agreement, agreementProtocol string) {
+
+	tmpNodeOrgs := map[string][]string{}
+
+	for _, ag := range agreements {
+		patternKey := getKey(ag.Pattern, ag.Org)
+		nodeOrg := exchange.GetOrg(ag.DeviceId)
+		if nodeOrgs, ok := tmpNodeOrgs[patternKey]; !ok {
+			tmpNodeOrgs[patternKey] = []string{nodeOrg}
+		} else {
+			if !stringSliceContains(nodeOrgs, nodeOrg) {
+				nodeOrgs = append(nodeOrgs, nodeOrg)
+				tmpNodeOrgs[patternKey] = nodeOrgs
+			}
+		}
+	}
+
+	m.NodeOrgs = tmpNodeOrgs
 }
 
 // check if a slice contains a string

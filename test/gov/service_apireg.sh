@@ -962,6 +962,55 @@ echo -e "Register gps service pattern $VERS:"
 
 results "$RES"
 
+# shelm test pattern
+# if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+#   MHI=90
+#   CAS=60
+# else
+#   MHI=600
+#   CAS=600
+# fi
+
+# VERS="1.0.0"
+# read -d '' sdef <<EOF
+# {
+#   "label": "Helm Test",
+#   "description": "a Helm Test pattern",
+#   "public": true,
+#   "services": [
+#     {
+#       "serviceUrl":"http://my.company.com/services/helm-service",
+#       "serviceOrgid":"IBM",
+#       "serviceArch":"amd64",
+#       "serviceVersions":[
+#         {
+#           "version":"$VERS",
+#           "deployment_overrides":"",
+#           "deployment_overrides_signature":"",
+#           "priority":{},
+#           "upgradePolicy": {}
+#         }
+#       ],
+#       "dataVerification": {},
+#       "nodeHealth": {
+#         "missing_heartbeat_interval": $MHI,
+#         "check_agreement_status": $CAS
+#       }
+#     }
+#   ],
+#   "agreementProtocols": [
+#     {
+#       "name": "Basic"
+#     }
+#   ]
+# }
+# EOF
+# echo -e "Register Helm service pattern $VERS:"
+
+#   RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/shelm" | jq -r '.')
+
+# results "$RES"
+
 # susehello test pattern
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   MHI=90
@@ -1266,7 +1315,7 @@ if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   MHI_240=240
   MHI_180=180
   MHI_120=120
-  MHI_90=120
+  MHI_90=90
   CAS_60=60
   CAS_45=45
   CAS_30=30

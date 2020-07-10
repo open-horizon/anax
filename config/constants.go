@@ -80,6 +80,3 @@ const AgbotFullRescan_DEFAULT = 600
 
 // The maximum number of changes to retrieve at once from the exchange
 const AgbotMaxChanges_DEFAULT = 1000
-
-// The maximum number of agreements returned from the DB when iterating all of them.
-const AgbotAgreementDBLimit_DEFAULT = 1000

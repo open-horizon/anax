@@ -192,145 +192,143 @@ func (w *BaseAgreementWorker) HandleMMSObjectPolicy(cph ConsumerProtocolHandler,
 
 	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy current dest nodes: %v", destNodes)))
 
+	inProgress := func() persistence.AFilter {
+		return func(e persistence.Agreement) bool { return e.AgreementCreationTime != 0 && e.AgreementTimedout == 0 }
+	}
+
+	notPattern := func() persistence.AFilter {
+		return func(e persistence.Agreement) bool { return e.Pattern == "" }
+	}
+
+	// Find all policy related agreements that are in progress.
+	agreements, err := w.db.FindAgreements([]persistence.AFilter{inProgress(), notPattern(), persistence.UnarchivedAFilter()}, cph.Name())
+	if err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy unable to read agreements, error %v", err)))
+		return
+	}
+
+	// The main logic in the function can be summarized as follows. The top half of the algorithm verifies that any policy changes
+	// in the object's constraints are checked. The bottom half of the algorithm verifies that changes to the object policy's
+	// service list are handled correctly.
+	//
+	// for all agreements in this agbot: (this ensures that the agbot only considers agreements in it's scope)
+	//   if the agreement is for a service that is compatible (including arch and version range) with a service in the new policy
+	//     if agreement's node's policy is compatible with new object policy
+	//       if agreement's node is NOT in current obj dest list, then
+	//         add the agreement's node to object's destination list
+	//       else
+	//         nothing to do, the object is already on the agreement's node
+	//     else
+	//       if agreement's node is in the object's destination list, then
+	//         remove the agreement's node from obj destination list
+	//       else
+	//         nothing to do, the agreement's node is not in the object's destination list
+
+	//   else (we might have to remove the node from the object's destination list - if the object policy's service list changed)
+	//     if the policy change event includes an old/previous Policy (which is the policy before the change)
+	//       if the old Policy's service list is different from newPolicy service list (then a service list change has occurred, so more checks are required)
+	//         if the agreement is for a service that is compatible with a service in the old policy (this agreement's node might need to be removed from the object's destination list)
+	//           if the agreement's node is in current object's destination list, then (it needs to be removed if there are no other services on the node which are compatible with the object policy)
+	//             find ALL the services running on the node (even the services for which this agbot doesnt have an agreement)
+	//             if none of them are in new policy then
+	//               remove the node from the dest list
+	//             else
+	//               nothing to do, assume that the agbot which owns the agreement for the other services will handle this same policy change event appropriately
+	//           else
+	//             nothing to do, node is not in object's destination list
+	//         else
+	//           nothing to do, this agreement is irrelevant because it contains services in neither the old nor new object policy
+	//       else (the new policy service list has not changed, and since it doesnt match a service in this agreement, there is nothing to do)
+	//         nothing to do
+	//     else (no old policy so the object policy's service list hasnt changed)
+	//       nothing to do, the new policy didn't match any services of agreements owned by this agbot.
+
 	objPolicies := new(exchange.ObjectDestinationPolicies)
 	(*objPolicies) = append((*objPolicies), newPolicy)
 
-	// Find all policy related agreements that are in progress. Agreements are scanned in pages so that we dont consume too much memory.
-	nextAgreementId := ""
-	for {
-		lastAgreementId, agreements, err := w.db.FindAgreementsPage([]persistence.AgbotDBFilter{w.db.GetActiveFilter(), w.db.GetNoPatternFilter(), w.db.GetUnarchivedFilter()}, cph.Name(), nextAgreementId, w.config.GetAgbotDBLimit())
-		if err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy unable to read agreements, error %v", err)))
-			return
-		}
+	for _, agreement := range agreements {
 
-		// If there are no more agreements to iterate, then break out of the loop.
-		if lastAgreementId == "" {
-			break
-		} else {
-			nextAgreementId = lastAgreementId
-		}
+		// if the agreement is for a service that is compatible (including arch and version range) with a service in the new policy
+		if w.findCompatibleServices(&agreement, &newPolicy, workerId, w.config.ArchSynonyms) {
 
-		// The main logic in the function can be summarized as follows. The top half of the algorithm verifies that any policy changes
-		// in the object's constraints are checked. The bottom half of the algorithm verifies that changes to the object policy's
-		// service list are handled correctly.
-		//
-		// for all agreements in this agbot: (this ensures that the agbot only considers agreements in it's scope)
-		//   if the agreement is for a service that is compatible (including arch and version range) with a service in the new policy
-		//     if agreement's node's policy is compatible with new object policy
-		//       if agreement's node is NOT in current obj dest list, then
-		//         add the agreement's node to object's destination list
-		//       else
-		//         nothing to do, the object is already on the agreement's node
-		//     else
-		//       if agreement's node is in the object's destination list, then
-		//         remove the agreement's node from obj destination list
-		//       else
-		//         nothing to do, the agreement's node is not in the object's destination list
+			_, nodePolicy, err := compcheck.GetNodePolicy(exchange.GetHTTPNodePolicyHandler(w), agreement.DeviceId, nil)
 
-		//   else (we might have to remove the node from the object's destination list - if the object policy's service list changed)
-		//     if the policy change event includes an old/previous Policy (which is the policy before the change)
-		//       if the old Policy's service list is different from newPolicy service list (then a service list change has occurred, so more checks are required)
-		//         if the agreement is for a service that is compatible with a service in the old policy (this agreement's node might need to be removed from the object's destination list)
-		//           if the agreement's node is in current object's destination list, then (it needs to be removed if there are no other services on the node which are compatible with the object policy)
-		//             find ALL the services running on the node (even the services for which this agbot doesnt have an agreement)
-		//             if none of them are in new policy then
-		//               remove the node from the dest list
-		//             else
-		//               nothing to do, assume that the agbot which owns the agreement for the other services will handle this same policy change event appropriately
-		//           else
-		//             nothing to do, node is not in object's destination list
-		//         else
-		//           nothing to do, this agreement is irrelevant because it contains services in neither the old nor new object policy
-		//       else (the new policy service list has not changed, and since it doesnt match a service in this agreement, there is nothing to do)
-		//         nothing to do
-		//     else (no old policy so the object policy's service list hasnt changed)
-		//       nothing to do, the new policy didn't match any services of agreements owned by this agbot.
+			if err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
+			} else if nodePolicy == nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Errorf("No node policy found for %v", agreement.DeviceId)))
+			} else {
 
-		for _, agreement := range agreements {
-
-			// if the agreement is for a service that is compatible (including arch and version range) with a service in the new policy
-			if w.findCompatibleServices(&agreement, &newPolicy, workerId, w.config.ArchSynonyms) {
-
-				_, nodePolicy, err := compcheck.GetNodePolicy(exchange.GetHTTPNodePolicyHandler(w), agreement.DeviceId, nil)
-
+				// if agreement's node's policy is compatible with new object policy
+				//   if agreement's node is NOT in current obj dest list, then
+				//     add the agreement's node to object's destination list
+				added, err := AssignObjectToNode(w, objPolicies, agreement.DeviceId, nodePolicy, false)
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
-				} else if nodePolicy == nil {
-					glog.Errorf(BAWlogstring(workerId, fmt.Errorf("No node policy found for %v", agreement.DeviceId)))
-				} else {
-
-					// if agreement's node's policy is compatible with new object policy
-					//   if agreement's node is NOT in current obj dest list, then
-					//     add the agreement's node to object's destination list
-					added, err := AssignObjectToNode(w, objPolicies, agreement.DeviceId, nodePolicy, false)
+				} else if !added {
+					//  else
+					//    if agreement's node is in the object's destination list, then
+					//      remove the agreement's node from obj destination list
+					err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId)
 					if err != nil {
 						glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
-					} else if !added {
-						//  else
-						//    if agreement's node is in the object's destination list, then
-						//      remove the agreement's node from obj destination list
-						err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId)
-						if err != nil {
-							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
-						}
 					}
 				}
-				continue
 			}
+			continue
+		}
 
-			// else (we might have to remove the node from the object's destination list - if the object policy's service list changed)
-			//   if the policy change event includes an old/previous Policy (which is the policy before the change)
-			if wi.Event.OldPolicy != nil {
+		// else (we might have to remove the node from the object's destination list - if the object policy's service list changed)
+		//   if the policy change event includes an old/previous Policy (which is the policy before the change)
+		if wi.Event.OldPolicy != nil {
 
-				// if the old Policy's service list is different from newPolicy service list (then a service list change has occurred, so more checks are required)
-				if hasDifferentServiceLists(&newPolicy, &oldPolicy) {
+			// if the old Policy's service list is different from newPolicy service list (then a service list change has occurred, so more checks are required)
+			if hasDifferentServiceLists(&newPolicy, &oldPolicy) {
 
-					// if the agreement is for a service that is compatible with a service in the old policy (this agreement's node might need to be removed
-					// from the object's destination list)
-					if w.findCompatibleServices(&agreement, &oldPolicy, workerId, w.config.ArchSynonyms) {
+				// if the agreement is for a service that is compatible with a service in the old policy (this agreement's node might need to be removed
+				// from the object's destination list)
+				if w.findCompatibleServices(&agreement, &oldPolicy, workerId, w.config.ArchSynonyms) {
 
-						// if the agreement's node is in current object's destination list, then (it needs to be removed if there are no other services on
-						// the node which are compatible with the object policy)
-						if cutil.SliceContains(destNodes, exchange.GetId(agreement.DeviceId)) {
+					// if the agreement's node is in current object's destination list, then (it needs to be removed if there are no other services on
+					// the node which are compatible with the object policy)
+					if cutil.SliceContains(destNodes, exchange.GetId(agreement.DeviceId)) {
 
-							// find ALL the services running on the node (even the services for which this agbot doesnt have an agreement)
-							ns, err := exchange.GetHTTPNodeStatusHandler(w)(agreement.DeviceId)
+						// find ALL the services running on the node (even the services for which this agbot doesnt have an agreement)
+						ns, err := exchange.GetHTTPNodeStatusHandler(w)(agreement.DeviceId)
+						if err != nil {
+							glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy unable to get node status, error %v", err)))
+							continue
+						}
+						glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy got node status: %v", ns.RunningServices)))
+
+						// if none of them are in new policy then
+						if !hasRunningService(ns.RunningServices, &newPolicy, workerId, w.config.ArchSynonyms) {
+							//   remove the node from the dest list
+							err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId)
 							if err != nil {
-								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy unable to get node status, error %v", err)))
-								continue
-							}
-							glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("Object Policy got node status: %v", ns.RunningServices)))
-
-							// if none of them are in new policy then
-							if !hasRunningService(ns.RunningServices, &newPolicy, workerId, w.config.ArchSynonyms) {
-								//   remove the node from the dest list
-								err := UnassignObjectFromNode(w, &newPolicy, agreement.DeviceId)
-								if err != nil {
-									glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
-								}
-							} else {
-								// else
-								//   nothing to do, assume that the agbot which owns the agreement for the other services will handle this same policy change event appropriately
+								glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Object Policy error %v", err)))
 							}
 						} else {
 							// else
-							//   nothing to do, node is not in object's destination list
+							//   nothing to do, assume that the agbot which owns the agreement for the other services will handle this same policy change event appropriately
 						}
 					} else {
 						// else
-						//   nothing to do, this agreement is irrelevant because it contains services in neither the old nor new object policy
+						//   nothing to do, node is not in object's destination list
 					}
 				} else {
-					// else (the new policy service list has not changed, and since it doesnt match a service in this agreement, there is nothing to do)
-					//   nothing to do
+					// else
+					//   nothing to do, this agreement is irrelevant because it contains services in neither the old nor new object policy
 				}
 			} else {
-				// else (no old policy so the object policy's service list hasnt changed)
-				//   nothing to do, the new policy didn't match any services of agreements owned by this agbot.
+				// else (the new policy service list has not changed, and since it doesnt match a service in this agreement, there is nothing to do)
+				//   nothing to do
 			}
-
+		} else {
+			// else (no old policy so the object policy's service list hasnt changed)
+			//   nothing to do, the new policy didn't match any services of agreements owned by this agbot.
 		}
+
 	}
 
 	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("done with MMS Object Policy event: %v", wi)))

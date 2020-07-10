@@ -111,7 +111,6 @@ type AGConfig struct {
 	AgreementBatchSize           uint64           // The number of nodes that the agbot will process in a batch.
 	FullRescanS                  uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
 	MaxExchangeChanges           int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
-	DBPagingLimit                int              // The maximum number of agreements obtained from the DB at any one time, when iterating all agreements.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -156,10 +155,6 @@ func (c *HorizonConfig) GetAgbotAgreementBatchSize() uint64 {
 
 func (c *HorizonConfig) GetAgbotFullRescan() uint64 {
 	return c.AgreementBot.FullRescanS
-}
-
-func (c *HorizonConfig) GetAgbotDBLimit() int {
-	return c.AgreementBot.DBPagingLimit
 }
 
 func getDefaultBase() string {
@@ -231,7 +226,6 @@ func Read(file string) (*HorizonConfig, error) {
 				AgreementBatchSize: AgbotAgreementBatchSize_DEFAULT,
 				FullRescanS:        AgbotFullRescan_DEFAULT,
 				MaxExchangeChanges: AgbotMaxChanges_DEFAULT,
-				DBPagingLimit:      AgbotAgreementDBLimit_DEFAULT,
 			},
 		}
 

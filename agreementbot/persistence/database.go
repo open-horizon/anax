@@ -26,10 +26,9 @@ type AgbotDatabase interface {
 	MovePartition(timeout uint64) (bool, error)
 
 	// Persistent agreement related functions
-	FindAgreementsPage(filters []AgbotDBFilter, protocol string, nextId string, limit int) (string, []Agreement, error)
-	GetNodeOrgs(filters []AgbotDBFilter, protocol string) (map[string][]string, error)
-	FindSingleAgreementByAgreementId(agreementid string, protocol string, filters []AgbotDBFilter) (*Agreement, error)
-	FindSingleAgreementByAgreementIdAllProtocols(agreementid string, protocols []string, ilters []AgbotDBFilter) (*Agreement, error)
+	FindAgreements(filters []AFilter, protocol string) ([]Agreement, error)
+	FindSingleAgreementByAgreementId(agreementid string, protocol string, filters []AFilter) (*Agreement, error)
+	FindSingleAgreementByAgreementIdAllProtocols(agreementid string, protocols []string, filters []AFilter) (*Agreement, error)
 
 	GetAgreementCount(partition string) (int64, int64, error)
 
@@ -51,18 +50,6 @@ type AgbotDatabase interface {
 	DeleteAgreement(pk string, protocol string) error
 	ArchiveAgreement(agreementid string, protocol string, reason uint, desc string) (*Agreement, error)
 
-	// Filters related to persistent agreement objects
-	GetUnarchivedFilter() AgbotDBFilter
-	GetArchivedFilter() AgbotDBFilter
-	GetActiveFilter() AgbotDBFilter
-	GetNoPatternFilter() AgbotDBFilter
-	GetAgedOutFilter(now int64, ageLimit int) AgbotDBFilter
-	GetNodeFilter(id string) AgbotDBFilter
-	GetPolicyFilter(org string, name string) AgbotDBFilter
-	GetPendingFilter() AgbotDBFilter
-	GetAgreementIdFilter(id string) AgbotDBFilter
-	GetServiceIdFilter(id string) AgbotDBFilter
-
 	// Workoad usage related functions
 	NewWorkloadUsage(deviceId string, hapartners []string, policy string, policyName string, priority int, retryDurationS int, verifiedDurationS int, reqsNotMet bool, agid string) error
 	FindSingleWorkloadUsageByDeviceAndPolicyName(deviceid string, policyName string) (*WorkloadUsage, error)
@@ -80,11 +67,4 @@ type AgbotDatabase interface {
 	DisableRollbackChecking(deviceid string, policyName string) (*WorkloadUsage, error)
 
 	DeleteWorkloadUsage(deviceid string, policyName string) error
-}
-
-type AgbotDBFilter interface {
-	// Modify the SQL statement to condition the result set.
-	ConditionSQL(sqlStr string) string
-	// Keep rows in the result set, if this function returns true.
-	KeepResult(ag *Agreement) bool
 }

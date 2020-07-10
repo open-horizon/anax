@@ -434,23 +434,30 @@ func ValidateStateTransition(mod *Agreement, update *Agreement) {
 	}
 }
 
-// Utility function to run a list of filters on an agreement, and decide if the agreement
-// should be kept in the result set or not.
-func RunFilters(ag *Agreement, filters []AgbotDBFilter) *Agreement {
-	for _, filter := range filters {
-		if !filter.KeepResult(ag) {
+// Filters used by the caller to control what comes back from the database.
+type AFilter func(Agreement) bool
+
+func UnarchivedAFilter() AFilter {
+	return func(e Agreement) bool { return !e.Archived }
+}
+
+func ArchivedAFilter() AFilter {
+	return func(e Agreement) bool { return e.Archived }
+}
+
+func IdAFilter(id string) AFilter {
+	return func(a Agreement) bool { return a.CurrentAgreementId == id }
+}
+
+func DevPolAFilter(deviceId string, policyName string) AFilter {
+	return func(a Agreement) bool { return a.DeviceId == deviceId && a.PolicyName == policyName }
+}
+
+func RunFilters(ag *Agreement, filters []AFilter) *Agreement {
+	for _, filterFn := range filters {
+		if !filterFn(*ag) {
 			return nil
 		}
 	}
 	return ag
-}
-
-// Utility function to add SQL filters on the given query. This function assumes that the input SQL
-// statement already has a WHERE clause on it.
-func RunSQLFilters(sqlIn string, filters []AgbotDBFilter) string {
-	sql := sqlIn
-	for _, filter := range filters {
-		sql = filter.ConditionSQL(sql)
-	}
-	return sql
 }

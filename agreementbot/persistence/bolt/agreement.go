@@ -6,8 +6,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
-	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 )
 
@@ -33,9 +31,9 @@ func (db *AgbotBoltDB) String() string {
 func (db *AgbotBoltDB) GetAgreementCount(partition string) (int64, int64, error) {
 	var activeNum, archivedNum int64
 	for _, protocol := range policy.AllAgreementProtocols() {
-		if _, activeAgreements, err := db.FindAgreementsPage([]persistence.AgbotDBFilter{db.GetUnarchivedFilter()}, protocol, "", 0); err != nil {
+		if activeAgreements, err := db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter()}, protocol); err != nil {
 			return 0, 0, err
-		} else if _, archivedAgreements, err := db.FindAgreementsPage([]persistence.AgbotDBFilter{db.GetArchivedFilter()}, protocol, "", 0); err != nil {
+		} else if archivedAgreements, err := db.FindAgreements([]persistence.AFilter{persistence.ArchivedAFilter()}, protocol); err != nil {
 			return 0, 0, err
 		} else {
 			activeNum += int64(len(activeAgreements))
@@ -45,19 +43,9 @@ func (db *AgbotBoltDB) GetAgreementCount(partition string) (int64, int64, error)
 	return activeNum, archivedNum, nil
 }
 
-// Return all the agreements in the database according to the provided filters. The limit parameter is ignored for the bolt plugin.
-func (db *AgbotBoltDB) FindAgreementsPage(filters []persistence.AgbotDBFilter, protocol string, nextId string, limit int) (string, []persistence.Agreement, error) {
-
+func (db *AgbotBoltDB) FindAgreements(filters []persistence.AFilter, protocol string) ([]persistence.Agreement, error) {
 	agreements := make([]persistence.Agreement, 0)
-	lastId := ""
 
-	// The Bolt DB plugin doesnt support pagination, if the caller is giving us a nextId, then just return an empty
-	// result set because we know we already gave the full result set on the previous call to this function.
-	if nextId != "" {
-		return "", agreements, nil
-	}
-
-	// Read all the records from the DB.
 	readErr := db.db.View(func(tx *bolt.Tx) error {
 
 		if b := tx.Bucket([]byte(bucketName(protocol))); b != nil {
@@ -68,11 +56,16 @@ func (db *AgbotBoltDB) FindAgreementsPage(filters []persistence.AgbotDBFilter, p
 				if err := json.Unmarshal(v, &a); err != nil {
 					glog.Errorf("Unable to deserialize db record: %v", v)
 				} else {
-					if lastId == "" || a.CurrentAgreementId > lastId {
-						lastId = a.CurrentAgreementId
-					}
-					if agPassed := persistence.RunFilters(&a, filters); agPassed != nil {
+					if !a.Archived {
 						glog.V(5).Infof("Demarshalled agreement in DB: %v", a)
+					}
+					exclude := false
+					for _, filterFn := range filters {
+						if !filterFn(a) {
+							exclude = true
+						}
+					}
+					if !exclude {
 						agreements = append(agreements, a)
 					}
 				}
@@ -84,47 +77,10 @@ func (db *AgbotBoltDB) FindAgreementsPage(filters []persistence.AgbotDBFilter, p
 	})
 
 	if readErr != nil {
-		return "", nil, readErr
+		return nil, readErr
 	} else {
-		return lastId, agreements, nil
+		return agreements, nil
 	}
-
-}
-
-func (db *AgbotBoltDB) GetNodeOrgs(filters []persistence.AgbotDBFilter, protocol string) (map[string][]string, error) {
-	res := make(map[string][]string, 5)
-
-	// Get all the agreements out of the DB.
-	_, ags, err := db.FindAgreementsPage(filters, protocol, "", 0)
-	if err != nil {
-		return res, err
-	}
-
-	// Iterate through each agreement and pull out the node org info that the caller is requesting.
-	for _, ag := range ags {
-		// Construct the response object based on the result set. For each pattern or policy org, collect the
-		// set of node orgs in use by each one.
-
-		// The key to each map entry is the pattern or policy org.
-		key := ag.Pattern
-		if key == "" {
-			key = ag.Org
-		}
-
-		// The value of each key is an array of node orgs.
-		nodeOrg := exchange.GetOrg(ag.DeviceId)
-		if nodeOrgs, ok := res[key]; !ok {
-			res[key] = []string{nodeOrg}
-		} else {
-			if !cutil.SliceContains(nodeOrgs, nodeOrg) {
-				nodeOrgs = append(nodeOrgs, nodeOrg)
-				res[key] = nodeOrgs
-			}
-		}
-
-	}
-
-	return res, nil
 }
 
 func (db *AgbotBoltDB) AgreementAttempt(agreementid string, org string, deviceid string, deviceType string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) error {
@@ -182,10 +138,10 @@ func (db *AgbotBoltDB) ArchiveAgreement(agreementid string, protocol string, rea
 }
 
 // no error on not found, only nil
-func (db *AgbotBoltDB) FindSingleAgreementByAgreementId(agreementid string, protocol string, filters []persistence.AgbotDBFilter) (*persistence.Agreement, error) {
-	filters = append(filters, db.GetAgreementIdFilter(agreementid))
+func (db *AgbotBoltDB) FindSingleAgreementByAgreementId(agreementid string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, error) {
+	filters = append(filters, persistence.IdAFilter(agreementid))
 
-	if _, agreements, err := db.FindAgreementsPage(filters, protocol, "", 0); err != nil {
+	if agreements, err := db.FindAgreements(filters, protocol); err != nil {
 		return nil, err
 	} else if len(agreements) > 1 {
 		return nil, fmt.Errorf("Expected only one record for agreementid: %v, but retrieved: %v", agreementid, agreements)
@@ -197,22 +153,25 @@ func (db *AgbotBoltDB) FindSingleAgreementByAgreementId(agreementid string, prot
 }
 
 // no error on not found, only nil
-func (db *AgbotBoltDB) FindSingleAgreementByAgreementIdAllProtocols(agreementid string, protocols []string, filters []persistence.AgbotDBFilter) (*persistence.Agreement, error) {
+func (db *AgbotBoltDB) FindSingleAgreementByAgreementIdAllProtocols(agreementid string, protocols []string, filters []persistence.AFilter) (*persistence.Agreement, error) {
+	filters = append(filters, persistence.IdAFilter(agreementid))
 
 	for _, protocol := range protocols {
-		if ag, err := db.FindSingleAgreementByAgreementId(agreementid, protocol, filters); err != nil {
+		if agreements, err := db.FindAgreements(filters, protocol); err != nil {
 			return nil, err
-		} else if ag == nil {
+		} else if len(agreements) > 1 {
+			return nil, fmt.Errorf("Expected only one record for agreementid: %v, but retrieved: %v", agreementid, agreements)
+		} else if len(agreements) == 0 {
 			continue
 		} else {
-			return ag, nil
+			return &agreements[0], nil
 		}
 	}
 	return nil, nil
 }
 
 func (db *AgbotBoltDB) SingleAgreementUpdate(agreementid string, protocol string, fn func(persistence.Agreement) *persistence.Agreement) (*persistence.Agreement, error) {
-	if agreement, err := db.FindSingleAgreementByAgreementId(agreementid, protocol, []persistence.AgbotDBFilter{}); err != nil {
+	if agreement, err := db.FindSingleAgreementByAgreementId(agreementid, protocol, []persistence.AFilter{}); err != nil {
 		return nil, err
 	} else if agreement == nil {
 		return nil, fmt.Errorf("Unable to locate agreement id: %v", agreementid)

@@ -351,7 +351,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// to initiate the protocol.
 	for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
 		if policy.SupportedAgreementProtocol(protocolName) {
-			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM, w.retryAgreements)
+			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM)
 			cph.Initialize()
 			w.consumerPH.Add(protocolName, cph)
 		} else {
@@ -424,7 +424,7 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 				// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
 				if !w.consumerPH.Has(agp.Name) {
 					glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", agp.Name)
-					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM, w.retryAgreements)
+					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM)
 					cph.Initialize()
 					w.consumerPH.Add(agp.Name, cph)
 				}
@@ -709,35 +709,20 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 		// pending state.
 		glog.V(4).Infof("AgreementBotWorker Looking for pending agreements before shutting down.")
 
-		// Look at all agreements across all protocols.
+		agreementPendingFilter := func() persistence.AFilter {
+			return func(a persistence.Agreement) bool { return a.AgreementFinalizedTime == 0 && a.AgreementTimedout == 0 }
+		}
+
+		// Look at all agreements across all protocols,
 		foundPending := false
 		for _, agp := range policy.AllAgreementProtocols() {
 
 			// Find all agreements that are in progress, agreements that are not archived and dont have either a finalized time or a timeeout time.
-			nextAgreementId := ""
-			for {
-				lastAgreementId, agreements, err := w.db.FindAgreementsPage([]persistence.AgbotDBFilter{w.db.GetPendingFilter()}, agp, nextAgreementId, w.Config.GetAgbotDBLimit())
-				if err != nil {
-					glog.Errorf("AgreementBotWorker unable to read agreements from database, error: %v", err)
-					w.Messages() <- events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, err.Error())
-					break
-				}
-
-				// There are pending agreements, so exit the scan loop.
-				if len(agreements) != 0 {
-					foundPending = true
-					break
-				}
-
-				// If there are no more agreements to iterate, then break out of the loop.
-				if lastAgreementId == "" {
-					break
-				} else {
-					nextAgreementId = lastAgreementId
-				}
-			}
-
-			if foundPending {
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{agreementPendingFilter(), persistence.UnarchivedAFilter()}, agp); err != nil {
+				glog.Errorf("AgreementBotWorker unable to read agreements from database, error: %v", err)
+				w.Messages() <- events.NewNodeShutdownCompleteMessage(events.AGBOT_QUIESCE_COMPLETE, err.Error())
+			} else if len(agreements) != 0 {
+				foundPending = true
 				break
 			}
 
@@ -838,6 +823,26 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 		return err
 	} else {
 
+		// Get all the agreements for this policy that are still active.
+		pendingAgreementFilter := func() persistence.AFilter {
+			return func(a persistence.Agreement) bool {
+				return a.PolicyName == consumerPolicy.Header.Name && a.AgreementTimedout == 0
+			}
+		}
+
+		ags := make(map[string][]persistence.Agreement)
+
+		// The agreements with this policy could be part of any supported agreement protocol.
+		for _, agp := range policy.AllAgreementProtocols() {
+			// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized.
+			// TODO: To support more than 1 agreement (maxagreements > 1) with this device for this policy, we need to adjust this logic.
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
+				glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
+			} else {
+				ags[agp] = agreements
+			}
+		}
+
 		for _, dev := range *devices {
 
 			if filter != nil && filter(dev.Id) {
@@ -846,6 +851,12 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 
 			glog.V(3).Infof("AgreementBotWorker picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)
 			glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
+
+			// Check for agreements already in progress with this device
+			if found := w.alreadyMakingAgreementWith(&dev, consumerPolicy, ags); found {
+				glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
+				continue
+			}
 
 			// If the device is not ready to make agreements yet, then skip it.
 			if dev.PublicKey == "" {
@@ -890,6 +901,28 @@ func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy
 
 	}
 	return nil
+
+}
+
+// Check all agreement protocol buckets to see if there are any agreements with this device.
+// Return true if there is already an agreement for this node and policy.
+func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy, allAgreements map[string][]persistence.Agreement) bool {
+
+	// Check to see if we're already doing something with this device.
+	for _, ags := range allAgreements {
+		// Look for any agreements with the current node.
+		for _, ag := range ags {
+			if ag.DeviceId == dev.Id {
+				if ag.AgreementFinalizedTime != 0 {
+					glog.V(5).Infof("AgreementBotWorker sending agreement verify for %v", ag.CurrentAgreementId)
+					w.consumerPH.Get(ag.AgreementProtocol).VerifyAgreement(&ag, w.consumerPH.Get(ag.AgreementProtocol))
+					w.retryAgreements.AddRetry(consumerPolicy.Header.Name, dev.Id)
+				}
+				return true
+			}
+		}
+	}
+	return false
 
 }
 
@@ -1125,22 +1158,10 @@ func (w *AgreementBotWorker) syncOnInit() error {
 	// Search all agreement protocol buckets
 	for _, agp := range policy.AllAgreementProtocols() {
 
-		neededBCInstances := make(map[string]map[string]map[string]bool)
-
 		// Loop through our database and check each record for accuracy with the exchange and the blockchain
-		nextAgreementId := ""
-		for {
-			lastAgreementId, agreements, err := w.db.FindAgreementsPage([]persistence.AgbotDBFilter{w.db.GetUnarchivedFilter()}, agp, nextAgreementId, w.Config.GetAgbotDBLimit())
-			if err != nil {
-				return errors.New(AWlogString(fmt.Sprintf("error searching database: %v", err)))
-			}
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter()}, agp); err == nil {
 
-			// If there are no more agreements to iterate, then break out of the loop.
-			if lastAgreementId == "" {
-				break
-			} else {
-				nextAgreementId = lastAgreementId
-			}
+			neededBCInstances := make(map[string]map[string]map[string]bool)
 
 			for _, ag := range agreements {
 
@@ -1223,17 +1244,20 @@ func (w *AgreementBotWorker) syncOnInit() error {
 				}
 
 			}
-		}
 
-		// Fire off start requests for each BC client that we need running. The blockchain worker and the container worker will tolerate
-		// a start request for containers that are already running.
-		glog.V(3).Infof(AWlogString(fmt.Sprintf("discovered BC instances in DB %v", neededBCInstances)))
-		for org, typeMap := range neededBCInstances {
-			for typeName, instMap := range typeMap {
-				for instName, _ := range instMap {
-					w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+			// Fire off start requests for each BC client that we need running. The blockchain worker and the container worker will tolerate
+			// a start request for containers that are already running.
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("discovered BC instances in DB %v", neededBCInstances)))
+			for org, typeMap := range neededBCInstances {
+				for typeName, instMap := range typeMap {
+					for instName, _ := range instMap {
+						w.Messages() <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, typeName, instName, org, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+					}
 				}
 			}
+
+		} else {
+			return errors.New(AWlogString(fmt.Sprintf("error searching database: %v", err)))
 		}
 	}
 

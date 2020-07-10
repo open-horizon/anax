@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
-	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/policy"
 	"strings"
 )
@@ -105,13 +103,6 @@ const AGREEMENT_PARTITION_FILLIN = `partition_name`
 const AGREEMENT_QUERY = `SELECT agreement FROM "agreements_ WHERE agreement_id = $1 AND protocol = $2;`
 const ALL_AGREEMENTS_QUERY = `SELECT agreement FROM "agreements_ WHERE protocol = $1;`
 const AGREEMENT_PARTITION_EMPTY = `SELECT agreement_id FROM "agreements_;`
-const AGREEMENT_PAGE1_QUERY_PART1 = `SELECT agreement FROM "agreements_ WHERE protocol = $1;`
-const AGREEMENT_PAGE1_QUERY_PART2 = ` ORDER BY agreement_id limit $2;`
-const AGREEMENT_PAGEn_QUERY_PART1 = `SELECT agreement FROM "agreements_ WHERE agreement_id > $1 AND protocol = $2;`
-const AGREEMENT_PAGEn_QUERY_PART2 = ` ORDER BY agreement_id limit $3;`
-
-// Used to extract the node orgs in use by all agreements.
-const AGREEMENT_NODEORGS = `SELECT DISTINCT agreement->>'device_id' AS deviceid,agreement->>'org' AS org,agreement->>'pattern' as pattern FROM "agreements_ WHERE protocol = $1;`
 
 const AGREEMENT_COUNT = `SELECT agreement FROM "agreements_;`
 
@@ -129,8 +120,6 @@ INSERT INTO "agreements_ (agreement_id, protocol, partition, agreement) SELECT a
 const AGREEMENT_PARTITIONS = `SELECT partition FROM agreements;`
 
 const AGREEMENT_DROP_PARTITION = `DROP TABLE "agreements_;`
-
-const AGREEMENT_BYTE_SIZE = 1024 * 5
 
 // The fields in this object are initialized in the Initialize method in this package.
 type AgbotPostgresqlDB struct {
@@ -263,130 +252,52 @@ func (db *AgbotPostgresqlDB) GetAgreementCount(partition string) (int64, int64, 
 	return activeNum, archivedNum, nil
 }
 
-// Retrieve a page of agreement from the database and filter them out based on the input filters.
-func (db *AgbotPostgresqlDB) FindAgreementsPage(filters []persistence.AgbotDBFilter, protocol string, nextId string, limit int) (string, []persistence.Agreement, error) {
+// Retrieve all agreements from the database and filter them out based on the input filters.
+func (db *AgbotPostgresqlDB) FindAgreements(filters []persistence.AFilter, protocol string) ([]persistence.Agreement, error) {
 
 	ags := make([]persistence.Agreement, 0, 100)
-	lastId := ""
 
 	for _, currentPartition := range db.AllPartitions() {
-
-		// Find all the agreement objects, allowing the database to do the filtering. If there is no nextId,
-		// then the caller wants to start at the beginning of the table.
-
-		sqlStr := ""
-		if nextId == "" {
-			sqlStr = strings.Replace(AGREEMENT_PAGE1_QUERY_PART1, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(currentPartition), 1)
-			sqlStr = persistence.RunSQLFilters(sqlStr, filters)
-			sqlStr = strings.Replace(sqlStr, ";", AGREEMENT_PAGE1_QUERY_PART2, 1)
-		} else {
-			sqlStr = strings.Replace(AGREEMENT_PAGEn_QUERY_PART1, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(currentPartition), 1)
-			sqlStr = persistence.RunSQLFilters(sqlStr, filters)
-			sqlStr = strings.Replace(sqlStr, ";", AGREEMENT_PAGEn_QUERY_PART2, 1)
-		}
-		glog.V(3).Infof("Find agreements using SQL: %v for partition %v", sqlStr, currentPartition)
-
-		var err error
-		var rows *sql.Rows
-		if nextId == "" {
-			rows, err = db.db.Query(sqlStr, protocol, limit)
-		} else {
-			rows, err = db.db.Query(sqlStr, nextId, protocol, limit)
-		}
-
+		// Find all the agreement objects, read them in and run them through the filters (after unmarshalling the blob into an
+		// in memory agreement object).
+		sql := strings.Replace(ALL_AGREEMENTS_QUERY, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(currentPartition), 1)
+		glog.V(5).Infof("Find agreements using SQL: %v for partition %v", sql, currentPartition)
+		rows, err := db.db.Query(sql, protocol)
 		if err != nil {
-			return "", nil, errors.New(fmt.Sprintf("error querying for agreements error: %v", err))
+			return nil, errors.New(fmt.Sprintf("error querying for agreements error: %v", err))
 		}
 
 		// If the rows object doesnt get closed, memory and connections will grow and/or leak.
 		defer rows.Close()
-
-		// Keep track of the last agreement id returned in the result set, so that the caller knows where to begin the next search.
 		for rows.Next() {
-			agBytes := make([]byte, 0, AGREEMENT_BYTE_SIZE)
+			agBytes := make([]byte, 0, 2048)
 			ag := new(persistence.Agreement)
 			if err := rows.Scan(&agBytes); err != nil {
-				return "", nil, errors.New(fmt.Sprintf("error scanning row: %v", err))
+				return nil, errors.New(fmt.Sprintf("error scanning row: %v", err))
 			} else if err := json.Unmarshal(agBytes, ag); err != nil {
-				return "", nil, errors.New(fmt.Sprintf("error demarshalling row: %v, error: %v", string(agBytes), err))
+				return nil, errors.New(fmt.Sprintf("error demarshalling row: %v, error: %v", string(agBytes), err))
 			} else {
-				lastId = ag.CurrentAgreementId
-				if agPassed := persistence.RunFilters(ag, filters); agPassed != nil {
-					ags = append(ags, *ag)
+				if !ag.Archived {
 					glog.V(5).Infof("Demarshalled agreement in partition %v from DB: %v", currentPartition, ag)
 				}
-			}
-		}
-
-		// The rows.Next() function will exit with false when done or an error occurred. Get any error encountered during iteration.
-		if err = rows.Err(); err != nil {
-			return "", nil, errors.New(fmt.Sprintf("error iterating: %v", err))
-		}
-	}
-
-	return lastId, ags, nil
-
-}
-
-// Return a map of patterns and policy orgs that are in use for current agreements, and include the list of node orgs
-// in use by each pattern and policyorg.
-func (db *AgbotPostgresqlDB) GetNodeOrgs(filters []persistence.AgbotDBFilter, protocol string) (map[string][]string, error) {
-
-	res := make(map[string][]string, 5)
-
-	for _, currentPartition := range db.AllPartitions() {
-
-		// Construct the query string by providing the correct table partition name and adding any filters.
-		sqlStr := strings.Replace(AGREEMENT_NODEORGS, AGREEMENT_TABLE_NAME_ROOT, db.GetAgreementPartitionTableName(currentPartition), 1)
-		sqlStr = persistence.RunSQLFilters(sqlStr, filters)
-		glog.V(5).Infof("Find node orgs using SQL: %v for partition %v", sqlStr, currentPartition)
-
-		// Query the database.
-		rows, err := db.db.Query(sqlStr, protocol)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("error querying for agreement node orgs error: %v", err))
-		}
-
-		// If the rows object doesnt get closed, memory and connections will grow and/or leak.
-		defer rows.Close()
-
-		// Construct the response object based on the result set. For each pattern or policy org, collect the
-		// set of node orgs in use by each one.
-		for rows.Next() {
-			var deviceid, org, pattern string
-			if err := rows.Scan(&deviceid, &org, &pattern); err != nil {
-				return nil, errors.New(fmt.Sprintf("error scanning row: %v", err))
-			} else {
-				// The key to each map entry is the pattern or policy org.
-				key := pattern
-				if key == "" {
-					key = org
-				}
-
-				// The value of each key is an array of node orgs.
-				nodeOrg := exchange.GetOrg(deviceid)
-				if nodeOrgs, ok := res[key]; !ok {
-					res[key] = []string{nodeOrg}
-				} else {
-					if !cutil.SliceContains(nodeOrgs, nodeOrg) {
-						nodeOrgs = append(nodeOrgs, nodeOrg)
-						res[key] = nodeOrgs
-					}
+				if agPassed := persistence.RunFilters(ag, filters); agPassed != nil {
+					ags = append(ags, *ag)
 				}
 			}
 		}
 
 		// The rows.Next() function will exit with false when done or an error occurred. Get any error encountered during iteration.
 		if err = rows.Err(); err != nil {
-			return nil, errors.New(fmt.Sprintf("error iterating nodeorg result set: %v", err))
+			return nil, errors.New(fmt.Sprintf("error iterating: %v", err))
 		}
 	}
 
-	return res, nil
+	return ags, nil
+
 }
 
 // Find a specific agreement in the database. The input filters are ignored for this query. They are needed by the bolt implementation.
-func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(tx *sql.Tx, agreementId string, protocol string, filters []persistence.AgbotDBFilter) (*persistence.Agreement, string, error) {
+func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(tx *sql.Tx, agreementId string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, string, error) {
 
 	agBytes := make([]byte, 0, 2048)
 	ag := new(persistence.Agreement)
@@ -421,20 +332,23 @@ func (db *AgbotPostgresqlDB) internalFindSingleAgreementByAgreementId(tx *sql.Tx
 
 }
 
-func (db *AgbotPostgresqlDB) FindSingleAgreementByAgreementId(agreementId string, protocol string, filters []persistence.AgbotDBFilter) (*persistence.Agreement, error) {
+func (db *AgbotPostgresqlDB) FindSingleAgreementByAgreementId(agreementId string, protocol string, filters []persistence.AFilter) (*persistence.Agreement, error) {
 	ag, _, err := db.internalFindSingleAgreementByAgreementId(nil, agreementId, protocol, filters)
 	return ag, err
 }
 
-func (db *AgbotPostgresqlDB) FindSingleAgreementByAgreementIdAllProtocols(agreementid string, protocols []string, filters []persistence.AgbotDBFilter) (*persistence.Agreement, error) {
+func (db *AgbotPostgresqlDB) FindSingleAgreementByAgreementIdAllProtocols(agreementid string, protocols []string, filters []persistence.AFilter) (*persistence.Agreement, error) {
+	filters = append(filters, persistence.IdAFilter(agreementid))
 
 	for _, protocol := range protocols {
-		if ag, err := db.FindSingleAgreementByAgreementId(agreementid, protocol, filters); err != nil {
+		if agreements, err := db.FindAgreements(filters, protocol); err != nil {
 			return nil, err
-		} else if ag == nil {
+		} else if len(agreements) > 1 {
+			return nil, fmt.Errorf("Expected only one record for agreementid: %v, but retrieved: %v", agreementid, agreements)
+		} else if len(agreements) == 0 {
 			continue
 		} else {
-			return ag, nil
+			return &agreements[0], nil
 		}
 	}
 	return nil, nil
@@ -520,7 +434,7 @@ func (db *AgbotPostgresqlDB) Close() {
 // to be updated (the query is done in it's own transaction), then calls the input function to update the agreement in
 // memory, and finally calls wrapTransaction to start a transaction that will actually perform the update.
 func (db *AgbotPostgresqlDB) SingleAgreementUpdate(agreementid string, protocol string, fn func(persistence.Agreement) *persistence.Agreement) (*persistence.Agreement, error) {
-	if agreement, err := db.FindSingleAgreementByAgreementId(agreementid, protocol, []persistence.AgbotDBFilter{}); err != nil {
+	if agreement, err := db.FindSingleAgreementByAgreementId(agreementid, protocol, []persistence.AFilter{}); err != nil {
 		return nil, err
 	} else if agreement == nil {
 		return nil, errors.New(fmt.Sprintf("unable to locate agreement id: %v", agreementid))
@@ -548,7 +462,7 @@ func (db *AgbotPostgresqlDB) wrapTransaction(agreementid string, protocol string
 // agreement object contains valid state transitions, and then write the updated agreement back to the database.
 func (db *AgbotPostgresqlDB) persistUpdatedAgreement(tx *sql.Tx, agreementid string, protocol string, update *persistence.Agreement) error {
 
-	if mod, partition, err := db.internalFindSingleAgreementByAgreementId(tx, agreementid, protocol, []persistence.AgbotDBFilter{}); err != nil {
+	if mod, partition, err := db.internalFindSingleAgreementByAgreementId(tx, agreementid, protocol, []persistence.AFilter{}); err != nil {
 		return err
 	} else if mod == nil {
 		return errors.New(fmt.Sprintf("No agreement with given id available to update: %v", agreementid))
@@ -598,7 +512,7 @@ func (db *AgbotPostgresqlDB) deleteAgreement(tx *sql.Tx, agreementId string, pro
 	// check to see if the partition specific table is now empty.
 
 	checkTableDeletion := false
-	_, partition, err := db.internalFindSingleAgreementByAgreementId(tx, agreementId, protocol, []persistence.AgbotDBFilter{})
+	_, partition, err := db.internalFindSingleAgreementByAgreementId(tx, agreementId, protocol, []persistence.AFilter{})
 	if err != nil {
 		return err
 	} else if partition != db.PrimaryPartition() {

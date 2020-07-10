@@ -274,7 +274,7 @@ func (db *AgbotPostgresqlDB) UpdateWUAgreementId(deviceid string, policyName str
 	// move the workload usage record.
 	if wlUsage, wlPartition, err := db.internalFindSingleWorkloadUsageByDeviceAndPolicyName(nil, deviceid, policyName); err != nil {
 		return nil, err
-	} else if _, agPartition, err := db.internalFindSingleAgreementByAgreementId(nil, agid, protocol, []persistence.AgbotDBFilter{}); err != nil {
+	} else if _, agPartition, err := db.internalFindSingleAgreementByAgreementId(nil, agid, protocol, []persistence.AFilter{}); err != nil {
 		return nil, err
 	} else if wlPartition != agPartition {
 		// Move the existing record to the new partition. Inserts are always done in the primary partition.

@@ -16,7 +16,7 @@ import (
 
 func (w *AgreementBotWorker) GovernAgreements() int {
 
-	unarchived := []persistence.AgbotDBFilter{w.db.GetUnarchivedFilter()}
+	unarchived := []persistence.AFilter{persistence.UnarchivedAFilter()}
 
 	// The length of time this governance routine waits is based on several factors. The data verification check rate
 	// of any agreements that are being maintained and the default time specified in the agbot config. Assume that we
@@ -32,6 +32,11 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	w.GovTiming.dvSkip = uint64(0)    // Number of times to skip data verification checks before actually doing the check.
 	w.GovTiming.nhSkip = uint64(0)    // Number of times to skip node health checks before actually doing the check.
 
+	// A filter for limiting the returned set of agreements just to those that are in progress and not yet timed out.
+	notYetFinalFilter := func() persistence.AFilter {
+		return func(a persistence.Agreement) bool { return a.AgreementCreationTime != 0 && a.AgreementTimedout == 0 }
+	}
+
 	// Reset the updated status of the Node Health manager. This ensures that the agbot will attempt to get updated status
 	// info from the exchange. The exchange might return no updates, but at least the agbot asked for updates.
 	w.NHManager.ResetUpdateStatus()
@@ -41,171 +46,150 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 
 		protocolHandler := w.consumerPH.Get(agp)
 
-		// For the given agreement protocol, get the node orgs in use by the set of all agreements, so that the node health manager
-		// can be queried later for node status.
-		if nodeOrgs, err := w.db.GetNodeOrgs([]persistence.AgbotDBFilter{w.db.GetUnarchivedFilter(), w.db.GetActiveFilter()}, agp); err != nil {
-			glog.Errorf(logString(fmt.Sprintf("unable to get node orgs from agreements in database, error: %v", err)))
-			continue
-		} else {
-			// Ensure the Node Health manager has up to date info.
-			glog.V(5).Infof("AgreementBot Governance saving the node orgs %v to the node health manager for all active agreements under %v protocol.", nodeOrgs, agp)
-			w.NHManager.SetNodeOrgs(nodeOrgs)
-		}
+		// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{notYetFinalFilter(), persistence.UnarchivedAFilter()}, agp); err == nil {
+			activeDataVerification := true
+			allActiveAgreements := make(map[string][]string)
 
-		nextAgreementId := ""
-		// Process agreements in batches of at most w.Config.GetAgbotDBLimit(). This ensure that we dont consume too much memory.
-		for {
-			// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized on blockchain.
-			// The result set might have fewer agreements than the result set limit size.
-			if lastAgreementId, agreements, err := w.db.FindAgreementsPage([]persistence.AgbotDBFilter{w.db.GetActiveFilter(), w.db.GetUnarchivedFilter()}, agp, nextAgreementId, w.Config.GetAgbotDBLimit()); err == nil {
+			// set the node orgs for the given agreement protocol
+			glog.V(5).Infof("AgreementBot Governance saving the node orgs to the node health manager for all active agreements under %v protocol.", agp)
+			w.NHManager.SetNodeOrgs(agreements, agp)
 
-				// If there are no more agreements to iterate, then break out of the loop.
-				if lastAgreementId == "" {
-					break
-				} else {
-					nextAgreementId = lastAgreementId
-				}
+			for _, ag := range agreements {
 
-				activeDataVerification := true
-				allActiveAgreements := make(map[string][]string)
+				// Govern agreements that have seen a reply from the device
+				if protocolHandler.AlreadyReceivedReply(&ag) {
 
-				for _, ag := range agreements {
+					// For agreements that havent seen a blockchain write yet, check timeout
+					if ag.AgreementFinalizedTime == 0 {
 
-					// Govern agreements that have seen a reply from the device
-					if protocolHandler.AlreadyReceivedReply(&ag) {
-
-						// For agreements that havent seen a blockchain write yet, check timeout
-						if ag.AgreementFinalizedTime == 0 {
-
-							glog.V(5).Infof("AgreementBot Governance detected agreement %v not yet final.", ag.CurrentAgreementId)
-							now := uint64(time.Now().Unix())
-							if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
-								// Start timing out the agreement
-								w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NOT_FINALIZED_TIMEOUT))
-							}
-						}
-
-						// Do DV check only if not skipping it this time.
-						if w.GovTiming.dvSkip == 0 {
-
-							// Check for the receipt of data in the data ingest system (if necessary)
-							if !ag.DisableDataVerificationChecks {
-
-								// Capture the data verification check rate for later
-								if discoveredDVWaitTime == 0 || (discoveredDVWaitTime != 0 && uint64(ag.DataVerificationCheckRate) < discoveredDVWaitTime) {
-									discoveredDVWaitTime = uint64(ag.DataVerificationCheckRate)
-								}
-
-								// First check to see if this agreement is just not sending data. If so, terminate the agreement.
-								now := uint64(time.Now().Unix())
-								noDataLimit := w.BaseWorker.Manager.Config.AgreementBot.NoDataIntervalS
-								if ag.DataVerificationNoDataInterval != 0 {
-									noDataLimit = uint64(ag.DataVerificationNoDataInterval)
-								}
-								if now-ag.DataVerifiedTime >= noDataLimit {
-									// No data is being received, terminate the agreement
-									glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
-									w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_DATA_RECEIVED))
-
-								} else if activeDataVerification {
-									// Otherwise make sure the device is still sending data
-									if ag.DataVerifiedTime+uint64(ag.DataVerificationCheckRate) > now {
-										// It's not time to check again
-										continue
-									} else if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, w.BaseWorker.Manager.Config); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
-										activeDataVerification = false
-									} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
-										if _, err := w.db.DataVerified(ag.CurrentAgreementId, agp); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
-										}
-
-										if ag.DataNotificationSent == 0 {
-											// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
-											// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
-											// we get an ack to our verification message.
-											if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
-											} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-											} else if err := protocolHandler.AgreementProtocolHandler("", "", "").NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
-												glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
-											}
-										}
-
-										// Check to see if it's time to send a metering notification
-										// Create Metering notification. If the policy is empty, there's nothing to do.
-										mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
-										if mp.IsEmpty() {
-											continue
-										} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent+uint64(ag.MeteringNotificationInterval)) <= now) {
-											// Grab the blockchain info from the agreement if there is any
-
-											bcType, bcName, bcOrg := protocolHandler.GetKnownBlockchain(&ag)
-											glog.V(5).Info(logString(fmt.Sprintf("metering on %v %v", bcType, bcName)))
-
-											// If we can write to the blockchain then we have all the info we need to do metering.
-											if protocolHandler.IsBlockchainWritable(bcType, bcName, bcOrg) && protocolHandler.CanSendMeterRecord(&ag) {
-												if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
-													glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
-												} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
-													glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
-												} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
-													glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
-												} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName, bcOrg).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
-													glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
-												} else if _, err := w.db.MeteringNotification(ag.CurrentAgreementId, agp, msg); err != nil {
-													glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
-												}
-											}
-										}
-
-										// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
-										// workload rollback retry checking feature.
-										if wlUsage, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
-											glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
-										} else if wlUsage != nil && !wlUsage.DisableRetry {
-											if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime - ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
-												glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime - ag.DataNotificationSent))))
-												if _, err := w.db.DisableRollbackChecking(ag.DeviceId, ag.PolicyName); err != nil {
-													glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
-												}
-											}
-										}
-
-									} else if _, err := w.db.DataNotVerified(ag.CurrentAgreementId, agp); err != nil {
-										glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
-									}
-								}
-							}
-						}
-
-						// Do node health check only if not skipping it this time.
-						if w.GovTiming.nhSkip == 0 {
-							// Check for agreement termination based on node health issues. Checking node health might require an expensive
-							// call to the exchange for batch node status, so only do the health checks if we have to.
-							if checkrate, err := w.VerifyNodeHealth(&ag, protocolHandler); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to verify node health for %v, error: %v", ag.CurrentAgreementId, err)))
-							} else if checkrate != 0 && (discoveredNHWaitTime == 0 || (discoveredNHWaitTime != 0 && uint64(checkrate) < discoveredNHWaitTime)) {
-								discoveredNHWaitTime = uint64(checkrate)
-							}
-						}
-
-						// Govern agreements that havent seen a proposal reply yet
-					} else {
-						// We are waiting for a reply
-						glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
+						glog.V(5).Infof("AgreementBot Governance detected agreement %v not yet final.", ag.CurrentAgreementId)
 						now := uint64(time.Now().Unix())
-						if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
-							w.retryAgreements.AddRetry(ag.PolicyName, ag.DeviceId)
-							w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
+						if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
+							// Start timing out the agreement
+							w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NOT_FINALIZED_TIMEOUT))
 						}
 					}
+
+					// Do DV check only if not skipping it this time.
+					if w.GovTiming.dvSkip == 0 {
+
+						// Check for the receipt of data in the data ingest system (if necessary)
+						if !ag.DisableDataVerificationChecks {
+
+							// Capture the data verification check rate for later
+							if discoveredDVWaitTime == 0 || (discoveredDVWaitTime != 0 && uint64(ag.DataVerificationCheckRate) < discoveredDVWaitTime) {
+								discoveredDVWaitTime = uint64(ag.DataVerificationCheckRate)
+							}
+
+							// First check to see if this agreement is just not sending data. If so, terminate the agreement.
+							now := uint64(time.Now().Unix())
+							noDataLimit := w.BaseWorker.Manager.Config.AgreementBot.NoDataIntervalS
+							if ag.DataVerificationNoDataInterval != 0 {
+								noDataLimit = uint64(ag.DataVerificationNoDataInterval)
+							}
+							if now-ag.DataVerifiedTime >= noDataLimit {
+								// No data is being received, terminate the agreement
+								glog.V(3).Infof(logString(fmt.Sprintf("cancelling agreement %v due to lack of data", ag.CurrentAgreementId)))
+								w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_DATA_RECEIVED))
+
+							} else if activeDataVerification {
+								// Otherwise make sure the device is still sending data
+								if ag.DataVerifiedTime+uint64(ag.DataVerificationCheckRate) > now {
+									// It's not time to check again
+									continue
+								} else if activeAgreements, err := GetActiveAgreements(allActiveAgreements, ag, w.BaseWorker.Manager.Config); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("unable to retrieve active agreement list. Terminating data verification loop early, error: %v", err)))
+									activeDataVerification = false
+								} else if ActiveAgreementsContains(activeAgreements, ag, w.Config.AgreementBot.DVPrefix) {
+									if _, err := w.db.DataVerified(ag.CurrentAgreementId, agp); err != nil {
+										glog.Errorf(logString(fmt.Sprintf("unable to record data verification, error: %v", err)))
+									}
+
+									if ag.DataNotificationSent == 0 {
+										// Get message address of the device from the exchange. The device ensures that the exchange is kept current.
+										// If the address happens to be invalid, that should be a temporary condition. We will keep sending until
+										// we get an ack to our verification message.
+										if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error obtaining message target for data notification: %v", err)))
+										} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+										} else if err := protocolHandler.AgreementProtocolHandler("", "", "").NotifyDataReceipt(ag.CurrentAgreementId, mt, protocolHandler.GetSendMessage()); err != nil {
+											glog.Errorf(logString(fmt.Sprintf("unable to send data notification, error: %v", err)))
+										}
+									}
+
+									// Check to see if it's time to send a metering notification
+									// Create Metering notification. If the policy is empty, there's nothing to do.
+									mp := policy.Meter{Tokens: ag.MeteringTokens, PerTimeUnit: ag.MeteringPerTimeUnit, NotificationIntervalS: ag.MeteringNotificationInterval}
+									if mp.IsEmpty() {
+										continue
+									} else if ag.MeteringNotificationSent == 0 || (ag.MeteringNotificationSent != 0 && (ag.MeteringNotificationSent+uint64(ag.MeteringNotificationInterval)) <= now) {
+										// Grab the blockchain info from the agreement if there is any
+
+										bcType, bcName, bcOrg := protocolHandler.GetKnownBlockchain(&ag)
+										glog.V(5).Info(logString(fmt.Sprintf("metering on %v %v", bcType, bcName)))
+
+										// If we can write to the blockchain then we have all the info we need to do metering.
+										if protocolHandler.IsBlockchainWritable(bcType, bcName, bcOrg) && protocolHandler.CanSendMeterRecord(&ag) {
+											if mn, err := protocolHandler.CreateMeteringNotification(mp, &ag); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to create metering notification, error: %v", err)))
+											} else if whisperTo, pubkeyTo, err := protocolHandler.GetDeviceMessageEndpoint(ag.DeviceId, "Governance"); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("error obtaining message target for metering notification: %v", err)))
+											} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("error creating message target: %v", err)))
+											} else if msg, err := protocolHandler.AgreementProtocolHandler(bcType, bcName, bcOrg).NotifyMetering(ag.CurrentAgreementId, mn, mt, protocolHandler.GetSendMessage()); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to send metering notification, error: %v", err)))
+											} else if _, err := w.db.MeteringNotification(ag.CurrentAgreementId, agp, msg); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to record metering notification, error: %v", err)))
+											}
+										}
+									}
+
+									// Data verification has occured. If it has been maintained for the specified duration then we can turn off the
+									// workload rollback retry checking feature.
+									if wlUsage, err := w.db.FindSingleWorkloadUsageByDeviceAndPolicyName(ag.DeviceId, ag.PolicyName); err != nil {
+										glog.Errorf(logString(fmt.Sprintf("unable to find workload usage record, error: %v", err)))
+									} else if wlUsage != nil && !wlUsage.DisableRetry {
+										if wlUsage.VerifiedDurationS == 0 || (wlUsage.VerifiedDurationS != 0 && ag.DataNotificationSent != 0 && ag.DataVerifiedTime != ag.AgreementCreationTime && (ag.DataVerifiedTime > ag.DataNotificationSent) && ((ag.DataVerifiedTime - ag.DataNotificationSent) >= uint64(wlUsage.VerifiedDurationS))) {
+											glog.V(5).Infof(logString(fmt.Sprintf("disabling workload rollback for %v after %v seconds", ag.CurrentAgreementId, (ag.DataVerifiedTime - ag.DataNotificationSent))))
+											if _, err := w.db.DisableRollbackChecking(ag.DeviceId, ag.PolicyName); err != nil {
+												glog.Errorf(logString(fmt.Sprintf("unable to disable workload rollback retries, error: %v", err)))
+											}
+										}
+									}
+
+								} else if _, err := w.db.DataNotVerified(ag.CurrentAgreementId, agp); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("unable to record data not verified, error: %v", err)))
+								}
+							}
+						}
+					}
+
+					// Do node health check only if not skipping it this time.
+					if w.GovTiming.nhSkip == 0 {
+						// Check for agreement termination based on node health issues. Checking node health might require an expensive
+						// call to the exchange for batch node status, so only do the health checks if we have to.
+						if checkrate, err := w.VerifyNodeHealth(&ag, protocolHandler); err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to verify node health for %v, error: %v", ag.CurrentAgreementId, err)))
+						} else if checkrate != 0 && (discoveredNHWaitTime == 0 || (discoveredNHWaitTime != 0 && uint64(checkrate) < discoveredNHWaitTime)) {
+							discoveredNHWaitTime = uint64(checkrate)
+						}
+					}
+
+					// Govern agreements that havent seen a proposal reply yet
+				} else {
+					// We are waiting for a reply
+					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
+					now := uint64(time.Now().Unix())
+					if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
+						w.retryAgreements.AddRetry(ag.PolicyName, ag.DeviceId)
+						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
+					}
 				}
-			} else {
-				glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
-				break
 			}
+		} else {
+			glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
 		}
 	}
 
@@ -358,7 +342,7 @@ func (w *AgreementBotWorker) checkWorkloadUsageAgreement(partnerWLU *persistence
 	partnerUpgrading := ""
 	upgradedPartnerFound := ""
 
-	if ag, err := w.db.FindSingleAgreementByAgreementIdAllProtocols(partnerWLU.CurrentAgreementId, policy.AllAgreementProtocols(), []persistence.AgbotDBFilter{w.db.GetUnarchivedFilter()}); err != nil {
+	if ag, err := w.db.FindSingleAgreementByAgreementIdAllProtocols(partnerWLU.CurrentAgreementId, policy.AllAgreementProtocols(), []persistence.AFilter{persistence.UnarchivedAFilter()}); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("unable to read agreement %v from database, error: %v", partnerWLU.CurrentAgreementId, err)))
 	} else if ag == nil {
 		// If we dont find an agreement for a partner, then it is because a previous agreement with that partner has failed and we
@@ -486,25 +470,17 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() int {
 
 	glog.V(5).Infof(logString(fmt.Sprintf("archive purge scanning for agreements archived more than %v hour(s) ago.", ageLimit)))
 
+	// A filter for limiting the returned set of agreements to just those that are too old.
+	agedOutFilter := func(now int64, limitH int) persistence.AFilter {
+		return func(a persistence.Agreement) bool {
+			return a.AgreementTimedout != 0 && (a.AgreementTimedout+uint64(limitH*3600) <= uint64(now))
+		}
+	}
+
 	// Find all archived agreements that are old enough and delete them.
 	for _, agp := range policy.AllAgreementProtocols() {
 		now := time.Now().Unix()
-
-		nextAgreementId := ""
-		for {
-			lastAgreementId, agreements, err := w.db.FindAgreementsPage([]persistence.AgbotDBFilter{w.db.GetAgedOutFilter(now, ageLimit), w.db.GetArchivedFilter()}, agp, nextAgreementId, w.Config.GetAgbotDBLimit())
-			if err != nil {
-				glog.Errorf(logString(fmt.Sprintf("unable to read archived agreements from database for protocol %v, error: %v", agp, err)))
-				break
-			}
-
-			// If there are no more agreements to iterate, then break out of the loop.
-			if lastAgreementId == "" {
-				break
-			} else {
-				nextAgreementId = lastAgreementId
-			}
-
+		if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.ArchivedAFilter(), agedOutFilter(now, ageLimit)}, agp); err == nil {
 			for _, ag := range agreements {
 				if err := w.db.DeleteAgreement(ag.CurrentAgreementId, agp); err != nil {
 					glog.Error(logString(fmt.Sprintf("error deleting archived agreement %v, error: %v", ag.CurrentAgreementId, err)))
@@ -512,6 +488,9 @@ func (w *AgreementBotWorker) GovernArchivedAgreements() int {
 					glog.V(3).Infof(logString(fmt.Sprintf("archive purge deleted %v", ag.CurrentAgreementId)))
 				}
 			}
+
+		} else {
+			glog.Errorf(logString(fmt.Sprintf("unable to read archived agreements from database for protocol %v, error: %v", agp, err)))
 		}
 	}
 	return 0
@@ -531,22 +510,7 @@ func (w *AgreementBotWorker) GovernBlockchainNeeds() int {
 
 			// Make a map of all blockchain names that we need to have running
 			neededBCs := make(map[string]map[string]bool)
-
-			nextAgreementId := ""
-			for {
-				lastAgreementId, agreements, err := w.db.FindAgreementsPage([]persistence.AgbotDBFilter{w.db.GetUnarchivedFilter()}, agp, nextAgreementId, w.Config.GetAgbotDBLimit())
-				if err != nil {
-					glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database for protocol %v, error: %v", agp, err)))
-					break
-				}
-
-				// If there are no more agreements to iterate, then break out of the loop.
-				if lastAgreementId == "" {
-					break
-				} else {
-					nextAgreementId = lastAgreementId
-				}
-
+			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter()}, agp); err == nil {
 				for _, ag := range agreements {
 					_, bcName, bcOrg := w.consumerPH.Get(agp).GetKnownBlockchain(&ag)
 					if bcName != "" {
@@ -556,11 +520,14 @@ func (w *AgreementBotWorker) GovernBlockchainNeeds() int {
 						neededBCs[bcOrg][bcName] = true
 					}
 				}
-			}
 
-			// If we captured any needed blockchains, inform the blockchain worker
-			if len(neededBCs) != 0 {
-				w.Messages() <- events.NewReportNeededBlockchainsMessage(events.BC_NEEDED, bcType, neededBCs)
+				// If we captured any needed blockchains, inform the blockchain worker
+				if len(neededBCs) != 0 {
+					w.Messages() <- events.NewReportNeededBlockchainsMessage(events.BC_NEEDED, bcType, neededBCs)
+				}
+
+			} else {
+				glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database for protocol %v, error: %v", agp, err)))
 			}
 
 		}
