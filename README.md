@@ -78,3 +78,6 @@ Only `hzn` command supports internationalization. To test, set LANG or HZN_LANG 
 
 Note that this Makefile can construct its own `GOPATH` and build from it; this is a convenience that can sometimes cause problems for development tooling that expects a project to be in a subdirector of `$GOPATH/src`. To get full tool support clone this project as `$GOPATH/src/github.com/open-horizon/anax`.
 
+## Deprecated Commands and APIs
+* `hzn policy patch` command is deprecated. Please use `hzn policy update` to update the node policy.
+* `hzn exchange node updatepolicy` command is deprecated. Please use `hzn exchange node addpolicy` to update the node policy in the Exchange.

@@ -54,9 +54,12 @@ func Update(fileName string) {
 }
 
 func Patch(patch string) {
+	msgPrinter := i18n.GetMessagePrinter()
+	msgPrinter.Printf("Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.")
+	msgPrinter.Println()
+
 	cliutils.HorizonPutPost(http.MethodPatch, "node/policy", []int{201, 200}, patch, true)
 
-	msgPrinter := i18n.GetMessagePrinter()
 	msgPrinter.Printf("Horizon node policy updated.")
 	msgPrinter.Println()
 }
