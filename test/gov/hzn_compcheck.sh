@@ -408,11 +408,13 @@ echo "$CMD"
 RES=$($CMD 2>&1)
 check_comp_results "$RES" "false" "Policy Incompatible"
 
+if [ ${MUL_AGENTS} -eq 0 ]; then
 echo -e "\n${PREFIX} test service type checking. Compatible"
 CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -p e2edev@somecomp.com/sall"
 echo "$CMD"
 RES=$($CMD 2>&1 | grep -v 'Neither node id')
 check_comp_results "$RES" "true" "Service does not have deployment configuration for node type 'device'"
+fi
 
 echo -e "\n${PREFIX} test service type checking, pattern. Incompatible"
 CMD="hzn deploycheck all -u $USERDEV_ADMIN_AUTH -p e2edev@somecomp.com/sk8s"

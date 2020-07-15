@@ -1328,6 +1328,7 @@ else
   CAS_45=600
   CAS_30=600
 fi
+if [ ${MUL_AGENTS} -eq 0 ]; then
 read -d '' msdef <<EOF
 {
   "label": "All",
@@ -1686,6 +1687,350 @@ read -d '' msdef <<EOF
   ]
 }
 EOF
+else
+read -d '' msdef <<EOF
+{
+  "label": "All",
+  "description": "a pattern for all service based top level services",
+  "public": true,
+  "services": [
+    {
+      "serviceUrl":"https://bluehorizon.network/services/weather",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$PWSVERS",
+          "deployment_overrides": "",
+          "deployment_overrides_signature": "",
+          "priority":{
+            "priority_value": 3,
+            "retries": 1,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"$PWSVERS",
+          "deployment_overrides": "",
+          "deployment_overrides_signature": "",
+          "priority":{
+            "priority_value": 2,
+            "retries": 1,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": $MHI_180,
+        "check_agreement_status": $CAS_45
+      }
+    },
+    {
+      "serviceUrl":"https://bluehorizon.network/services/netspeed",
+      "serviceOrgid":"IBM",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$NSVERS",
+          "deployment_overrides":"{\\\"services\\\":{\\\"netspeed5\\\":{\\\"environment\\\":[\\\"E2EDEV_OVERRIDE=1\\\"]}}}",
+          "deployment_overrides_signature":"CoQb1Tw204vbMP0H1Faw7Sp9lHHSiIzvhlX9SEejx2kRY+x6uj7PB4fvJUBoYlWJJOkecQKDD9zdLm6hD32b+f9zMWaBdRF5Ab4pHU5gcDPpuPGnYup1ZreSe4eqPnThkGgfYIW5zcQd/vbxO9tx31EM8lJ5NrhcJ5rwhwbIPDh7Hstxi84IetNAygE1gPaTGQaJzzqATFYINwWkxjJXjihdEVuo5IvINJusHtIs7C6BIVy9+CExUXXxem1I/bzvwzY1wpKuubHxq1CddIKr+BaHAsErHIHvJQVc3JoDPgXPjVE8ew1QKjLCkC86wRbANN6rhCB2Q6+HhyaRfv8oJDz8XoLBcYw6bKerGMCxEBTuyUu0n9mTSCzEZZaaLdmxTzaLN47Svm8Gj18tT5CjvYkeSgDpISwRR0aME8YSHO6OtRKhLFGvZDzR4hu6kzyfp7aiYHRzVDrfcKhch/c0AuAEb6qEQ8nCHnSFJwEXP/3L3qKy8y8OT+42vumXTYOp7IadZ+UnFxLNJip9qnEsXFS8+WlT3PwaNMKFdg+zsJfUz5V+OXaotZKfe9PABn4+656PfngIi+N7q/unnrNSzc/BN8Dgy1FSHqVQ0UfRWST31pStJi2kS46UreIBgG9T6D/WgwnvATN3BaZkveiwDpUXRNv5nGzcWqnIerWWfL8=",
+          "priority":{
+            "priority_value": 3,
+            "retries": 1,
+            "retry_durations": 1800,
+            "verified_durations": 45
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"$NSVERS",
+          "deployment_overrides":"{\\\"services\\\":{\\\"netspeed5\\\":{\\\"environment\\\":[\\\"E2EDEV_OVERRIDE=1\\\"]}}}",
+          "deployment_overrides_signature":"CoQb1Tw204vbMP0H1Faw7Sp9lHHSiIzvhlX9SEejx2kRY+x6uj7PB4fvJUBoYlWJJOkecQKDD9zdLm6hD32b+f9zMWaBdRF5Ab4pHU5gcDPpuPGnYup1ZreSe4eqPnThkGgfYIW5zcQd/vbxO9tx31EM8lJ5NrhcJ5rwhwbIPDh7Hstxi84IetNAygE1gPaTGQaJzzqATFYINwWkxjJXjihdEVuo5IvINJusHtIs7C6BIVy9+CExUXXxem1I/bzvwzY1wpKuubHxq1CddIKr+BaHAsErHIHvJQVc3JoDPgXPjVE8ew1QKjLCkC86wRbANN6rhCB2Q6+HhyaRfv8oJDz8XoLBcYw6bKerGMCxEBTuyUu0n9mTSCzEZZaaLdmxTzaLN47Svm8Gj18tT5CjvYkeSgDpISwRR0aME8YSHO6OtRKhLFGvZDzR4hu6kzyfp7aiYHRzVDrfcKhch/c0AuAEb6qEQ8nCHnSFJwEXP/3L3qKy8y8OT+42vumXTYOp7IadZ+UnFxLNJip9qnEsXFS8+WlT3PwaNMKFdg+zsJfUz5V+OXaotZKfe9PABn4+656PfngIi+N7q/unnrNSzc/BN8Dgy1FSHqVQ0UfRWST31pStJi2kS46UreIBgG9T6D/WgwnvATN3BaZkveiwDpUXRNv5nGzcWqnIerWWfL8=",
+          "priority":{
+            "priority_value": 2,
+            "retries": 1,
+            "retry_durations": 1800
+          },
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": $MHI_120,
+        "check_agreement_status": $CAS_30
+      }
+    },
+    {
+      "serviceUrl":"https://bluehorizon.network/services/netspeed",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$NSVERS",
+          "deployment_overrides":"{\\\"services\\\":{\\\"netspeed5\\\":{\\\"environment\\\":[\\\"E2EDEV_OVERRIDE=1\\\"]}}}",
+          "deployment_overrides_signature":"CoQb1Tw204vbMP0H1Faw7Sp9lHHSiIzvhlX9SEejx2kRY+x6uj7PB4fvJUBoYlWJJOkecQKDD9zdLm6hD32b+f9zMWaBdRF5Ab4pHU5gcDPpuPGnYup1ZreSe4eqPnThkGgfYIW5zcQd/vbxO9tx31EM8lJ5NrhcJ5rwhwbIPDh7Hstxi84IetNAygE1gPaTGQaJzzqATFYINwWkxjJXjihdEVuo5IvINJusHtIs7C6BIVy9+CExUXXxem1I/bzvwzY1wpKuubHxq1CddIKr+BaHAsErHIHvJQVc3JoDPgXPjVE8ew1QKjLCkC86wRbANN6rhCB2Q6+HhyaRfv8oJDz8XoLBcYw6bKerGMCxEBTuyUu0n9mTSCzEZZaaLdmxTzaLN47Svm8Gj18tT5CjvYkeSgDpISwRR0aME8YSHO6OtRKhLFGvZDzR4hu6kzyfp7aiYHRzVDrfcKhch/c0AuAEb6qEQ8nCHnSFJwEXP/3L3qKy8y8OT+42vumXTYOp7IadZ+UnFxLNJip9qnEsXFS8+WlT3PwaNMKFdg+zsJfUz5V+OXaotZKfe9PABn4+656PfngIi+N7q/unnrNSzc/BN8Dgy1FSHqVQ0UfRWST31pStJi2kS46UreIBgG9T6D/WgwnvATN3BaZkveiwDpUXRNv5nGzcWqnIerWWfL8=",
+          "priority":{
+            "priority_value": 3,
+            "retries": 1,
+            "retry_durations": 1800,
+            "verified_durations": 45
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"$NSVERS",
+          "deployment_overrides":"{\\\"services\\\":{\\\"netspeed5\\\":{\\\"environment\\\":[\\\"E2EDEV_OVERRIDE=1\\\"]}}}",
+          "deployment_overrides_signature":"CoQb1Tw204vbMP0H1Faw7Sp9lHHSiIzvhlX9SEejx2kRY+x6uj7PB4fvJUBoYlWJJOkecQKDD9zdLm6hD32b+f9zMWaBdRF5Ab4pHU5gcDPpuPGnYup1ZreSe4eqPnThkGgfYIW5zcQd/vbxO9tx31EM8lJ5NrhcJ5rwhwbIPDh7Hstxi84IetNAygE1gPaTGQaJzzqATFYINwWkxjJXjihdEVuo5IvINJusHtIs7C6BIVy9+CExUXXxem1I/bzvwzY1wpKuubHxq1CddIKr+BaHAsErHIHvJQVc3JoDPgXPjVE8ew1QKjLCkC86wRbANN6rhCB2Q6+HhyaRfv8oJDz8XoLBcYw6bKerGMCxEBTuyUu0n9mTSCzEZZaaLdmxTzaLN47Svm8Gj18tT5CjvYkeSgDpISwRR0aME8YSHO6OtRKhLFGvZDzR4hu6kzyfp7aiYHRzVDrfcKhch/c0AuAEb6qEQ8nCHnSFJwEXP/3L3qKy8y8OT+42vumXTYOp7IadZ+UnFxLNJip9qnEsXFS8+WlT3PwaNMKFdg+zsJfUz5V+OXaotZKfe9PABn4+656PfngIi+N7q/unnrNSzc/BN8Dgy1FSHqVQ0UfRWST31pStJi2kS46UreIBgG9T6D/WgwnvATN3BaZkveiwDpUXRNv5nGzcWqnIerWWfL8=",
+          "priority":{
+            "priority_value": 2,
+            "retries": 1,
+            "retry_durations": 1800
+          },
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": $MHI_120,
+        "check_agreement_status": $CAS_30
+      }
+    },
+    {
+      "serviceUrl":"https://bluehorizon.network/services/location",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$LOCVERS1",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{
+            "priority_value": 3,
+            "retries": 2,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        },
+        {
+          "version":"$LOCVERS2",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{
+            "priority_value": 2,
+            "retries": 2,
+            "retry_durations": 3600,
+            "verified_durations": 52
+          },
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": $MHI_240,
+        "check_agreement_status": $CAS_60
+      }
+    },
+    {
+      "serviceUrl":"https://bluehorizon.network/services/locgps",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "agreementLess": true,
+      "serviceVersions":[
+        {
+          "version":"2.0.4",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {}
+    },
+    {
+      "serviceUrl":"my.company.com.services.usehello2",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"1.0.0",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {}
+    },
+    {
+      "serviceUrl":"https://bluehorizon.network/services/gpstest",
+      "serviceOrgid":"e2edev@somecomp.com",
+      "serviceArch":"amd64",
+      "serviceVersions":[
+        {
+          "version":"$GPSVERS",
+          "deployment_overrides":"",
+          "deployment_overrides_signature":"",
+          "priority":{},
+          "upgradePolicy": {}
+        }
+      ],
+      "dataVerification": {},
+      "nodeHealth": {
+        "missing_heartbeat_interval": $MHI_90,
+        "check_agreement_status": $CAS_60
+      }
+    }
+  ],
+  "agreementProtocols": [
+    {
+      "name": "Basic"
+    }
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var3",
+          "value": 10.22
+        },
+        {
+          "name": "var4",
+          "value": ["abcd", "1234"]
+        },
+        {
+          "name": "var5",
+          "value": "override2"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var3",
+          "value": 11.22
+        },
+        {
+          "name": "var4",
+          "value": ["abc", "123"]
+        },
+        {
+          "name": "var5",
+          "value": "override1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "e2edev_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibm_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "e2edev_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/locgps",
+      "serviceArch": "",
+      "serviceVersionRange": "2.0.3",
+      "inputs": [
+        {
+          "name": "test",
+          "value": "testValue"
+        },
+        {
+          "name": "extra",
+          "value": "extraValue"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "ibmvar1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/weather",
+      "serviceArch": "",
+      "serviceVersionRange": "1.5.0",
+      "inputs": [
+        {
+          "name": "HZN_WUGNAME",
+          "value": "e2edev mocked pws"
+        },
+        {
+          "name": "HZN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "MTN_PWS_MODEL",
+          "value": "LaCrosse WS2317"
+        },
+        {
+          "name": "HZN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        },
+        {
+          "name": "MTN_PWS_ST_TYPE",
+          "value": "WS23xx"
+        }
+      ]
+    }
+  ]
+}
+EOF
+fi
 
 if [[ $TEST_DIFF_ORG -eq 0 ]]; then
   msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')

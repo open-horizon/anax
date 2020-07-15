@@ -9,8 +9,43 @@ echo -e "${PREFIX} starting"
 function verifyAgreements {
         # Wait until there are agreements
         TARGET_NUM_AG=1
+        MUL_NUM_AG_1=0
+        MUL_NUM_AG_2=0
+        MUL_NUM_AG_3=0
+        MUL_NUM_AG_4=0
         if [ "${HZN_REG_TEST}" != "1" ]; then
             if [ "${PATTERN}" == "sall" ]; then
+              case ${MUL_AGENTS} in
+                1)
+                echo -e "${PREFIX} 1 extra agent"
+                MUL_NUM_AG_1=6
+                ;;
+                2)
+                echo -e "${PREFIX} 2 extra agents"
+                MUL_NUM_AG_1=6
+                MUL_NUM_AG_2=6
+                ;;
+                3)
+                echo -e "${PREFIX} 3 extra agents"
+                MUL_NUM_AG_1=6
+                MUL_NUM_AG_2=6
+                MUL_NUM_AG_3=6
+                ;;
+                4)
+                echo -e "${PREFIX} 4 extra agents"
+                MUL_NUM_AG_1=6
+                MUL_NUM_AG_2=6
+                MUL_NUM_AG_3=6
+                MUL_NUM_AG_4=6
+                ;;
+                *)
+                echo -e "${PREFIX} 4 extra agents"
+                MUL_NUM_AG_1=6
+                MUL_NUM_AG_2=6
+                MUL_NUM_AG_3=6
+                MUL_NUM_AG_4=6
+                ;;
+              esac
                 TARGET_NUM_AG=6
             elif [ "${PATTERN}" == "" ]; then
                 TARGET_NUM_AG=5
@@ -25,16 +60,94 @@ function verifyAgreements {
 
                 AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
                 NUM_AGS=$(echo ${AGS} | jq -r '. | length')
-                if [ "${TARGET_NUM_AG}" == "${NUM_AGS}" ]; then
-                        # Make an array of agreement ids that we should be tracking
-                        MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
-                        echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
-                        return 0
+                if [ "${TARGET_NUM_AG}" == "${NUM_AGS}" ] && [ "${MUL_NUM_AG_1}" -eq 6 ] && [ "${VERIFY_MUL}" -eq 0 ]; then
+                  # Make an array of agreement ids that we should be tracking
+                  echo -e "Main agent formed agreements waiting on extra agents!"
+                  case ${MUL_AGENTS} in
+                    1)
+                    MUL_AGS_1=$(docker exec horizon6 /bin/bash -c "curl -sSL http://localhost:8512/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    if [ "${MUL_NUM_AG_1}" == "${MUL_AGS_1}" ]; then
+                      MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+                      echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
+                      echo -e "Multiple Agents Test Passed"
+                      docker exec horizon6 /bin/bash -c "export HORIZON_URL=http://localhost:8512; hzn unregister -r -f -v --timeout 2"
+                      return 0
+                    fi
+                    ;;
+                    2)
+                    MUL_AGS_1=$(docker exec horizon6 /bin/bash -c "curl -sSL http://localhost:8512/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_2=$(docker exec horizon7 /bin/bash -c "curl -sSL http://localhost:8513/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    if [ "${MUL_NUM_AG_1}" == "${MUL_AGS_1}" ] && [ "${MUL_NUM_AG_2}" == "${MUL_AGS_2}" ]; then
+                      MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+                      echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
+                      echo -e "Multiple Agents Test Passed"
+                      docker exec horizon6 /bin/bash -c "export HORIZON_URL=http://localhost:8512; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon7 /bin/bash -c "export HORIZON_URL=http://localhost:8513; hzn unregister -r -f -v --timeout 2"
+                      return 0
+                    fi
+                    ;;
+                    3)
+                    MUL_AGS_1=$(docker exec horizon6 /bin/bash -c "curl -sSL http://localhost:8512/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_2=$(docker exec horizon7 /bin/bash -c "curl -sSL http://localhost:8513/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_3=$(docker exec horizon8 /bin/bash -c "curl -sSL http://localhost:8514/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    if [ "${MUL_NUM_AG_1}" == "${MUL_AGS_1}" ] && [ "${MUL_NUM_AG_2}" == "${MUL_AGS_2}" ] && [ "${MUL_NUM_AG_3}" == "${MUL_AGS_3}" ]; then
+                      MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+                      echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
+                      echo -e "Multiple Agents Test Passed"
+                      docker exec horizon6 /bin/bash -c "export HORIZON_URL=http://localhost:8512; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon7 /bin/bash -c "export HORIZON_URL=http://localhost:8513; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon8 /bin/bash -c "export HORIZON_URL=http://localhost:8514; hzn unregister -r -f -v --timeout 2"
+                      return 0
+                    fi
+                    ;;
+                    4)
+                    MUL_AGS_1=$(docker exec horizon6 /bin/bash -c "curl -sSL http://localhost:8512/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_2=$(docker exec horizon7 /bin/bash -c "curl -sSL http://localhost:8513/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_3=$(docker exec horizon8 /bin/bash -c "curl -sSL http://localhost:8514/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_4=$(docker exec horizon9 /bin/bash -c "curl -sSL http://localhost:8515/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    if [ "${MUL_NUM_AG_1}" == "${MUL_AGS_1}" ] && [ "${MUL_NUM_AG_2}" == "${MUL_AGS_2}" ] && [ "${MUL_NUM_AG_3}" == "${MUL_AGS_3}" ] && [ "${MUL_NUM_AG_4}" == "${MUL_AGS_4}" ]; then
+                      MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+                      echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
+                      echo -e "Multiple Agents Test Passed"
+                      docker exec horizon6 /bin/bash -c "export HORIZON_URL=http://localhost:8512; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon7 /bin/bash -c "export HORIZON_URL=http://localhost:8513; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon8 /bin/bash -c "export HORIZON_URL=http://localhost:8514; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon9 /bin/bash -c "export HORIZON_URL=http://localhost:8515; hzn unregister -r -f -v --timeout 2"
+                      return 0
+                    fi
+                    ;;
+                    *)
+                    MUL_AGS_1=$(docker exec horizon6 /bin/bash -c "curl -sSL http://localhost:8512/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_2=$(docker exec horizon7 /bin/bash -c "curl -sSL http://localhost:8513/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_3=$(docker exec horizon8 /bin/bash -c "curl -sSL http://localhost:8514/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    MUL_AGS_4=$(docker exec horizon9 /bin/bash -c "curl -sSL http://localhost:8515/agreement | jq -r '.agreements.active' | jq -r '. | length'")
+                    if [ "${MUL_NUM_AG_1}" == "${MUL_AGS_1}" ] && [ "${MUL_NUM_AG_2}" == "${MUL_AGS_2}" ] && [ "${MUL_NUM_AG_3}" == "${MUL_AGS_3}" ] && [ "${MUL_NUM_AG_4}" == "${MUL_AGS_4}" ]; then
+                      MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+                      echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
+                      echo -e "Multiple Agents Test Passed"
+                      docker exec horizon6 /bin/bash -c "export HORIZON_URL=http://localhost:8512; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon7 /bin/bash -c "export HORIZON_URL=http://localhost:8513; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon8 /bin/bash -c "export HORIZON_URL=http://localhost:8514; hzn unregister -r -f -v --timeout 2"
+                      docker exec horizon9 /bin/bash -c "export HORIZON_URL=http://localhost:8515; hzn unregister -r -f -v --timeout 2"
+                      return 0
+                    fi
+                    ;;
+                  esac
+                elif [ "${TARGET_NUM_AG}" == "${NUM_AGS}" ]  && [[ "${MUL_NUM_AG}" -eq 0 || "${VERIFY_MUL}" -ne 0 ]]; then
+                  # Make an array of agreement ids that we should be tracking
+                  MONITOR_AGS=$(echo ${AGS} | jq -r '[.[].current_agreement_id]')
+                  echo -e "${PREFIX} found ${TARGET_NUM_AG} agreement(s): ${MONITOR_AGS}"
+                  return 0
                 fi
                 let AG_LOOP_CNT+=1
                 sleep 5
         done
 
+        if [ "${TARGET_NUM_AG}" != "${NUM_AGS}" ]; then
+          echo -e "Multiple Agents Test Failed"
+          echo -e "Timed out, ${MUL_AGS} agreements formed but we were looking for ${MUL_NUM_AG}"
+          exit 1
+        fi
         echo -e "Timed out, ${NUM_AGS} agreements formed but we were looking for ${TARGET_NUM_AG}"
         exit 1
 }

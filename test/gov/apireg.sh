@@ -59,32 +59,32 @@ sleep 30
 # Set a node policy indicating the testing purpose of the node.
 
 constraint2=""
-if [ "$NONS" == "1" ]; then 
+if [ "$NONS" == "1" ]; then
     constraint2="NONS==true"
 else
     constraint2="NONS==false"
 fi
-if [ "$NOGPS" == "1" ]; then 
+if [ "$NOGPS" == "1" ]; then
     constraint2="$constraint2 || NOGPS == true"
 else
     constraint2="$constraint2 || NOGPS == false"
 fi
-if [ "$NOLOC" == "1" ]; then 
+if [ "$NOLOC" == "1" ]; then
     constraint2="$constraint2 || NOLOC == true"
 else
     constraint2="$constraint2 || NOLOC == false"
 fi
-if [ "$NOPWS" == "1" ]; then 
+if [ "$NOPWS" == "1" ]; then
     constraint2="$constraint2 || NOPWS == true"
 else
     constraint2="$constraint2 || NOPWS == false"
 fi
-if [ "$NOHELLO" == "1" ]; then 
+if [ "$NOHELLO" == "1" ]; then
     constraint2="$constraint2 || NOHELLO == true"
 else
     constraint2="$constraint2 || NOHELLO == false"
 fi
-if [ "$NOK8S" == "1" ]; then 
+if [ "$NOK8S" == "1" ]; then
     constraint2="$constraint2 || NOK8S == true"
 else
     constraint2="$constraint2 || NOK8S == false"
@@ -131,7 +131,7 @@ then
         echo -e "$newhznpolicy \nsecond try resulted in incorrect response: $RES"
         exit 2
     else
-        echo -e "found expected response in second try: $RES" 
+        echo -e "found expected response in second try: $RES"
     fi
 else
   echo -e "found expected response: $RES"
@@ -188,7 +188,7 @@ EOF
         else
             echo -e "found expected response: $RES"
         fi
- 
+
     elif [ "$PATTERN" = "sgps" ] || [ "$PATTERN" = "sloc" ] || [ "$PATTERN" = "sall" ] || [ "$PATTERN" = "susehello" ] || [ "$PATTERN" = "cpu2msghub" ] || [ "$PATTERN" = "shelm" ]; then
         echo -e "Pattern $PATTERN is not supported with HA tests, only sns and spws are supported."
     fi

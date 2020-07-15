@@ -79,8 +79,11 @@ DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSSDB_CNAME := css-db
+MUL_AGENTS ?= 0
 
 run-agbot: agbot-docker-prereqs test-network
+	touch /tmp/horizon
+	touch /tmp/css.crt
 	@echo "Handling $(DOCKER_AGBOT_CNAME)"
 	docker/docker_run.bash "$(DOCKER_AGBOT_CNAME)" \
 		docker run -d \
@@ -102,12 +105,16 @@ run-agbot: agbot-docker-prereqs test-network
 		-v /tmp/hzndev/:/tmp/hzndev/ \
 		-v $(AGBOT_TEMPFS)/certs:/certs \
 		-v /var/log/:/var/log/ \
+		-v $(ANAX_SOURCE)/anax-in-container:/tmp/anax-in-container \
+		-v /tmp/horizon:/tmp/horizon:rw \
+		-v /tmp/css.crt:/tmp/css.crt:rw \
 		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
 		-e "HZN_SSL_SKIP_VERIFY=1" \
 		-e "CSS_URL=$(CSS_URL)" \
 		-e "API_KEY=$(API_KEY)" \
 		-e "CERT_LOC=$(CERT_LOC)" \
+		-e "MUL_AGENTS=$(MUL_AGENTS)" \
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "AGBOT_NAME=$(AGBOT_NAME)" \
 		-e "AGBOT_SAPI_URL=$(AGBOT_SAPI_URL)" \
@@ -115,6 +122,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "DOCKER_REG_CNAME=$(DOCKER_REG_CNAME)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
+		-e "DOCKER_EXCH_TAG=$(DOCKER_EXCH_TAG)" \
 		-e "HZN_AGBOT_API=http://localhost:8082" \
 		-e "HZN_EXCHANGE_URL=$(DOCKER_EXCH)" \
 		-e "HZN_DEV_HOST_IP=$(E2EDEV_HOST_IP)" \
@@ -190,8 +198,16 @@ clean:
 	gov/stop_kube.sh
 	@echo "Shutdown anax cleanly"
 	-@curl -sSLX DELETE http://localhost:8510/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8512/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8513/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8514/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8515/node 2>/dev/null || true
 	@echo "Removing agbot container"
 	-@docker rm -f "$(DOCKER_AGBOT_CNAME)" 2>/dev/null || true
+	@echo "Removing agent containers"
+	-@docker stop -t 120 "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
+	-@docker rm -f "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
+	-@docker volume rm "horizon6_var" "horizon6_etc" "horizon7_var" "horizon7_etc" "horizon8_var" "horizon8_etc" "horizon9_var" "horizon9_etc" 2>/dev/null || true
 	@echo "Dropping and re-initializing the exchange DB"
 	@$(eval DROP_DB_TOKEN := $(shell curl -sLX GET -u "root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/dropdb/token" | jq -r '.token')) 2>/dev/null || true
 	-@curl -sLX POST -u "root/root:$(DROP_DB_TOKEN)" "http://localhost:8080/v1/admin/dropdb" | jq -r '.msg' 2>/dev/null || true
