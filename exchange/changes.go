@@ -41,6 +41,7 @@ const RESOURCE_AGBOT = "agbot"                           // A change was made to
 const RESOURCE_NODE_POLICY = "nodepolicies"              // A change was made to the node policy
 const RESOURCE_NODE_AGREEMENTS = "nodeagreements"        // A change was made to one of the agreements on the node
 const RESOURCE_NODE_ERROR = "nodeerrors"                 // A change was made to the node errors
+const RESOURCE_ORG = "org"                               // A change was made to the org
 const RESOURCE_SERVICE = "service"                       // A change was made to a service
 const RESOURCE_AGBOT_SERVED_POLICY = "agbotbusinesspols" // A served deployment policy change occurred
 const RESOURCE_AGBOT_SERVED_PATTERN = "agbotpatterns"    // A served pattern change occurred
@@ -100,6 +101,10 @@ func (e ExchangeChange) IsNodeAgreement(node string) bool {
 func (e ExchangeChange) IsNodeError(node string) bool {
 	changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
 	return changeNode == node && e.Resource == RESOURCE_NODE_ERROR
+}
+
+func (e ExchangeChange) IsOrg() bool {
+	return e.Resource == RESOURCE_ORG
 }
 
 func (e ExchangeChange) IsService() bool {

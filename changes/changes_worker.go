@@ -44,10 +44,10 @@ func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *Chan
 	worker := &ChangesWorker{
 		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
 		db:               db,
-		pollInterval:     config.ExchangeMessagePollInterval_DEFAULT,
-		pollMinInterval:  config.ExchangeMessagePollInterval_DEFAULT,
-		pollMaxInterval:  config.ExchangeMessagePollMaxInterval_DEFAULT,
-		pollAdjustment:   config.ExchangeMessagePollIncrement_DEFAULT,
+		pollInterval:     cfg.Edge.ExchangeMessagePollInterval,
+		pollMinInterval:  cfg.Edge.ExchangeMessagePollInterval,
+		pollMaxInterval:  cfg.Edge.ExchangeMessagePollMaxInterval,
+		pollAdjustment:   cfg.Edge.ExchangeMessagePollIncrement,
 		pollInitTime:     0,
 		noMsgCount:       0,
 		agreementReached: false,
@@ -71,7 +71,7 @@ func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *Chan
 
 	// The initial poll interval is changed dynamically by the NoWorkHandler when it detects that it can increase
 	// or decrease the polling interval.
-	worker.Start(worker, config.ExchangeMessagePollInterval_DEFAULT)
+	worker.Start(worker, cfg.Edge.ExchangeMessagePollInterval)
 	return worker
 }
 
@@ -270,6 +270,8 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			resourceTypes[events.CHANGE_NODE_POLICY_TYPE] = true
 		} else if change.IsNodeError(w.GetExchangeId()) {
 			resourceTypes[events.CHANGE_NODE_ERROR_TYPE] = true
+		} else if change.IsOrg() {
+			w.getNodeHeartbeatIntervals()
 		} else if change.IsService() {
 			resourceTypes[events.CHANGE_SERVICE_TYPE] = true
 		} else {
@@ -475,30 +477,54 @@ func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 // This function gets called retrieve the node's heartbeat configuration, if there is any.
 func (w *ChangesWorker) getNodeHeartbeatIntervals() {
 
+	updated := false
+
 	// Retrieve the node's heartbeat configuration from the node itself.
 	if node, err := exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), ""); err != nil {
 		glog.Errorf(chglog(fmt.Sprintf("Error retrieving node %v heartbeat intervals, error: %v", w.GetExchangeId(), err)))
-	} else {
-		updated := false
-		if node.HeartbeatIntv.MinInterval != 0 {
+	} else if node != nil {
+		if node.HeartbeatIntv.MinInterval != 0 && w.pollMinInterval != node.HeartbeatIntv.MinInterval {
 			w.pollMinInterval = node.HeartbeatIntv.MinInterval
 			updated = true
 		}
-		if node.HeartbeatIntv.MaxInterval != 0 {
+		if node.HeartbeatIntv.MaxInterval != 0 && w.pollMaxInterval != node.HeartbeatIntv.MaxInterval {
 			w.pollMaxInterval = node.HeartbeatIntv.MaxInterval
 			updated = true
 		}
-		if node.HeartbeatIntv.IntervalAdjustment != 0 {
+		if node.HeartbeatIntv.IntervalAdjustment != 0 && w.pollAdjustment != node.HeartbeatIntv.IntervalAdjustment {
 			w.pollAdjustment = node.HeartbeatIntv.IntervalAdjustment
 			updated = true
 		}
+	}
+	// Reconcile the new values from the node with the existing poll interval, by resetting the poll interval to the starting value.
+	if updated {
+		glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat Poll intervals from node min: %v, max: %v, increment: %v", w.pollMinInterval, w.pollMaxInterval, w.pollAdjustment)))
+		w.resetPollingInterval()
+		return
+	}
 
-		// Reconcile the new values with the existing poll interval, by resetting the poll interval to the starting value.
-		if updated {
-			glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat Poll intervals from node min: %v, max: %v, increment: %v", w.pollMinInterval, w.pollMaxInterval, w.pollAdjustment)))
-			w.resetPollingInterval()
+	// Retrieve the heartbeat configuration from the node's org
+	nodeorg := exchange.GetOrg(w.GetExchangeId())
+	if org, err := exchange.GetHTTPExchangeOrgHandler(w)(nodeorg); err != nil {
+		glog.Errorf(chglog(fmt.Sprintf("Error retrieving node's org %v heartbeat intervals, error: %v", nodeorg, err)))
+	} else if org != nil {
+		if org.HeartbeatIntv.MinInterval != 0 && w.pollMinInterval != org.HeartbeatIntv.MinInterval {
+			w.pollMinInterval = org.HeartbeatIntv.MinInterval
+			updated = true
 		}
-
+		if org.HeartbeatIntv.MaxInterval != 0 && w.pollMaxInterval != org.HeartbeatIntv.MaxInterval {
+			w.pollMaxInterval = org.HeartbeatIntv.MaxInterval
+			updated = true
+		}
+		if org.HeartbeatIntv.IntervalAdjustment != 0 && w.pollAdjustment != org.HeartbeatIntv.IntervalAdjustment {
+			w.pollAdjustment = org.HeartbeatIntv.IntervalAdjustment
+			updated = true
+		}
+	}
+	// Reconcile the new values from the node's org with the existing poll interval, by resetting the poll interval to the starting value.
+	if updated {
+		glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat Poll intervals from node's org min: %v, max: %v, increment: %v", w.pollMinInterval, w.pollMaxInterval, w.pollAdjustment)))
+		w.resetPollingInterval()
 	}
 }
 

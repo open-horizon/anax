@@ -97,7 +97,7 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, min i
 
 	// add org to exchange
 	orgHb := exchange.HeartbeatIntervals{MinInterval: min, MaxInterval: max, IntervalAdjustment: adjust}
-	postOrgReq := exchange.Organization{Label: label, Description: desc, Heartbeat: &orgHb}
+	postOrgReq := exchange.Organization{Label: label, Description: desc, HeartbeatIntv: &orgHb}
 	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postOrgReq)
 
 	msgPrinter.Printf("Organization %v is successfully added to the Exchange.", theOrg)
@@ -161,7 +161,7 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, min i
 		}
 
 		orgHb := exchange.HeartbeatIntervals{MinInterval: min, MaxInterval: max, IntervalAdjustment: adjust}
-		newOrgHeartbeaat := exchange.Organization{Heartbeat: &orgHb}
+		newOrgHeartbeaat := exchange.Organization{HeartbeatIntv: &orgHb}
 		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgHeartbeaat)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("org %s not found.", theOrg))
