@@ -415,6 +415,9 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	msgPrinter.Printf("Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.")
+	msgPrinter.Println()
+
 	cliutils.SetWhetherUsingApiKey(credToUse)
 	var nodeOrg string
 	nodeOrg, node = cliutils.TrimOrg(org, node)
