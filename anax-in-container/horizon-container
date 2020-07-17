@@ -88,8 +88,15 @@ killSocat() {
 	pids=$(ps aux | grep -v 'grep ' | grep "socat TCP-LISTEN:$SOCAT_LISTEN_PORT" | awk '{ print $2 }')
 	if [[ -n "$pids" ]]; then
 		echo "Killing socat PIDs: $pids..."
-		kill $pids
-		checkrc $? "kill socat"
+		kill $pids 2>/dev/null 
+		if [ $? -ne 0 ]; then
+			# for the case where socat was brought up by "sudo horizon-container start" command,
+			# but "horizon-container stop" was run without sudo, we must use sudo to kill the socat.
+			echo "sudo kill $pids"
+			sudo kill $pids
+
+			checkrc $? "kill socat"
+		fi
 	fi
 }
 
@@ -141,8 +148,9 @@ start() {
 	if isMacos; then
 		fssBasePath=/private/var/tmp/horizon
 	else
-		fssBasePath=/private/var/tmp/horizon
+		fssBasePath=/var/tmp/horizon
 	fi
+
 	# set this base path to 777 to allow other users create directories under it
 	if [ -d $fssBasePath ]; then
 		# this is for backward comatibility because older version created this directory with root owned
@@ -154,12 +162,36 @@ start() {
 		mkdir -m 777 -p ${fssBasePath}
 	fi
 
-	# this is user specific and container name specific
-	fssHostSharePath=${fssBasePath}/${USER}/${DOCKER_NAME}
+	# this is container name specific, like "horizon1" for example. 
+	fssHostSharePath=${fssBasePath}/${DOCKER_NAME}
+
+    # clean up everything under the container name directory
+	# just incase there are left over files by other user
+	# especially the ones that are not readable by the login user 
+	if [ -d $fssHostSharePath ]; then
+		rm -Rf $fssHostSharePath 2>/dev/null 
+		if [ $? -ne 0 ]; then
+			echo "sudo rm -Rf $fssHostSharePath"
+			sudo rm -Rf $fssHostSharePath
+		fi
+	fi
 
 	# create fss domain socket path and ess auth path
 	mkdir -p ${fssHostSharePath}/fss-domain-socket
 	mkdir -p ${fssHostSharePath}/ess-auth
+
+	# for mac, docker container has the filesystem privilge of the login user instead of root
+	# even if the `docker run` command was run by a root user.
+	# so in the case when this script is run by a root user using sudo, we need to get the login user's name
+	# and create the directories for ess with login user as the ownner. Otherwise
+	# the service container will be unable to create subdirectories under it.
+	if isMacos; then 
+		login_user=$(logname 2>/dev/null || echo $SUDO_USER)
+		if [ -n "$login_user" ] && [ "$login_user" != "$USER" ]; then
+			# this is for the sudo case, change the owner to login user
+			chown -R ${login_user} $fssHostSharePath
+		fi
+	fi
 
 	# Start socat, if not already running
 	if isMacos; then
