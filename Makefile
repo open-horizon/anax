@@ -14,12 +14,23 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
+export VERSION ?= 2.27.0
+# BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
+# It can NOT contain dashes, but can contain: plus, period, and tilde.
+export BUILD_NUMBER
+# only set DISTRO if the artifact needs to be built differently for this distro. Value can be like "ubuntu" or "ubuntu.bionic". Will be appended to BUILD_NUMBER
+export DISTRO
+
+ifdef BUILD_NUMBER
+BUILD_NUMBER := -$(BUILD_NUMBER:-%=%)
+endif
+
 EXECUTABLE := $(shell basename $$PWD)
-CLI_EXECUTABLE := cli/hzn
-CLI_CONFIG_FILE := cli/hzn.json
+export CLI_EXECUTABLE := cli/hzn
+export CLI_CONFIG_FILE := cli/hzn.json
 CLI_HORIZON_CONTAINER := anax-in-container/horizon-container
-CLI_MAN_DIR := cli/man1
-CLI_COMPLETION_DIR := cli/bash_completion
+export CLI_MAN_DIR := cli/man1
+export CLI_COMPLETION_DIR := cli/bash_completion
 DEFAULT_UI = api/static/index.html
 
 # used for creating hzn man pages
@@ -73,7 +84,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.3.0$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.4.0$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -86,7 +97,7 @@ CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.3.0$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.4.0$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -97,10 +108,10 @@ ESS_IMAGE_LATEST = $(ESS_IMAGE_NAME):latest$(BRANCH_NAME)
 ESS_IMAGE_LABELS ?= --label "name=$(arch)_edge-sync-service" --label "version=$(ESS_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
 # license file name
-LICENSE_FILE = LICENSE.txt
+export LICENSE_FILE = LICENSE.txt
 
 # supported locales
-SUPPORTED_LOCALES ?= de  es  fr  it  ja  ko  pt_BR  zh_CN  zh_TW
+export SUPPORTED_LOCALES ?= de  es  fr  it  ja  ko  pt_BR  zh_CN  zh_TW
 
 
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
@@ -207,12 +218,17 @@ $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
 
+# Build the deb pkgs and put them in pkg/deb/debs/
+debpkgs:
+	$(MAKE) -C pkg/deb all
+
+# Build the rpm pkgs and put them in ~/rpmbuild/RPMS/x86_64/
+rpmpkgs:
+	$(MAKE) -C pkg/rpm all
+
 # Build the horizon-cli pkg for mac
-#todo: these targets should be moved into the official horizon build process
-export MAC_PKG_VERSION ?= 2.22.7
+MAC_PKG_VERSION = $(VERSION)$(BUILD_NUMBER)
 MAC_PKG = pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
-MAC_PKG_IDENTIFIER ?= com.github.open-horizon.pkg.horizon-cli
-MAC_PKG_INSTALL_DIR ?= /Users/Shared/horizon-cli
 # this is Softlayer hostname aptrepo-sjc03-1
 APT_REPO_HOST ?= 169.45.88.181
 APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
@@ -220,30 +236,15 @@ APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
 # This is a 1-time step to create the private signing key and public cert for the mac pkg.
 # You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
 gen-mac-key:
-	: $${HORIZON_CLI_PRIV_KEY_PW:?}
-	@echo "Generating the horizon-cli mac pkg private key and public certificate, and putting them in the p12 archive"
-	openssl genrsa -out pkg/mac/build/horizon-cli.key 2048  # create private key
-	openssl req -x509 -days 3650 -new -config pkg/mac/key-gen/horizon-cli-key.conf -nodes -key pkg/mac/build/horizon-cli.key -extensions extensions -sha256 -out pkg/mac/build/horizon-cli.crt  # create self-signed cert
-	openssl pkcs12 -export -inkey pkg/mac/build/horizon-cli.key -in pkg/mac/build/horizon-cli.crt -out pkg/mac/build/horizon-cli.p12 -password env:HORIZON_CLI_PRIV_KEY_PW  # wrap the key and certificate into PKCS#12 archive
-	rm -f pkg/mac/build/horizon-cli.key  # clean up intermediate files
-	@echo "Created pkg/mac/build/horizon-cli.crt and pkg/mac/build/horizon-cli.p12. Once you are sure that this the key/cert that should be used for all new staging mac packages:"
-	@echo "  - Copy pkg/mac/build/horizon-cli.p12 to the horizon dev team's private key location."
-	@echo "  - Make pkg/mac/build/horizon-cli.crt available to users via 'make macuploadcert' ."
+	$(MAKE) -C pkg/mac gen-mac-key
 
 # This is a 1-time step to install the mac pkg signing key on your mac so it can be used to sign the pkg.
 # You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
 # If you did not just create the pkg/mac/build/horizon-cli.p12 file using the make target above, download it and put it there.
 install-mac-key:
-	: $${HORIZON_CLI_PRIV_KEY_PW:?}
-	@echo "Importing the key/cert into your keychain. When prompted, enter your Mac admin password:"
-	sudo security import pkg/mac/build/horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12  # import key/cert into keychain
-	#todo: the cmd above does not automatically set the cert to "Always Trust", tried the cmd below but it does not work.
-	#sudo security add-trusted-cert -d -r trustAsRoot -p pkgSign -k /Library/Keychains/System.keychain pkg/mac/build/horizon-cli.p12
-	@echo "pkg/mac/build/horizon-cli.p12 installed in the System keychain. Now set it to 'Always Trust' by doing:"
-	@echo "Open Finder, click on Applications and then Utilities, and open the Keychain Access app."
-	@echo "Click on the System keychain, find horizon-cli-installer in list, and open it."
-	@echo "Expand the Trust section and for 'When using this certificate' select 'Always Trust'."
+	$(MAKE) -C pkg/mac install-mac-key
 
+#todo: instead of these 2 targets, should we just put version/version.go in .gitignore so it never gets committed to git?
 # Inserts the version into version.go in prep for the macpkg build
 temp-mod-version:
 	mv version/version.go version/version.go.bak   # preserve the time stamp
@@ -255,30 +256,14 @@ temp-mod-version:
 temp-mod-version-undo:
 	mv version/version.go.bak version/version.go
 
-# Build the pkg and put it in pkg/mac/build/
-# Note: this will only run the dependencies sequentially (as we need) if make is run without --jobs
-macpkg: $(MAC_PKG)
+# Build the mac pkg and put it in pkg/mac/build/
+macpkg:
+	$(MAKE) -C pkg/mac macpkg
 
-$(MAC_PKG): temp-mod-version $(CLI_EXECUTABLE) temp-mod-version-undo
-	@echo "Producing Mac pkg horizon-cli"
-	mkdir -p pkg/mac/build pkg/mac/horizon-cli/bin pkg/mac/horizon-cli/share/horizon pkg/mac/horizon-cli/share/man/man1 pkg/mac/horizon-cli/etc/horizon
-	cp $(CLI_EXECUTABLE) pkg/mac/horizon-cli/bin
-	cp -Rapv cli/samples pkg/mac/horizon-cli/
-	cp anax-in-container/horizon-container pkg/mac/horizon-cli/bin
-	cp $(LICENSE_FILE) pkg/mac/horizon-cli/share/horizon
-	cp $(CLI_MAN_DIR)/hzn.1 pkg/mac/horizon-cli/share/man/man1
-	for loc in $(SUPPORTED_LOCALES) ; do \
-		mkdir -p pkg/mac/horizon-cli/share/man/$$loc/man1 && \
-		cp $(CLI_MAN_DIR)/hzn.1.$$loc pkg/mac/horizon-cli/share/man/$$loc/man1/hzn.1; \
-	done
-	cp $(CLI_COMPLETION_DIR)/hzn_bash_autocomplete.sh pkg/mac/horizon-cli/share/horizon
-	cp $(CLI_CONFIG_FILE) pkg/mac/horizon-cli/etc/horizon
-	pkgbuild --sign "horizon-cli-installer" --root pkg/mac/horizon-cli --scripts pkg/mac/scripts --identifier $(MAC_PKG_IDENTIFIER) --version $(MAC_PKG_VERSION) --install-location $(MAC_PKG_INSTALL_DIR) $@
-
-# Upload the pkg to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/macos/
+# Upload the pkg to the staging dir of our apt repo svr
 #todo: For now, you must have ssh access to the apt repo svr for this to work
 macupload: $(MAC_PKG)
-	@echo "Uploading $< to http://pkg.bluehorizon.network/macos/testing/"
+	@echo "Uploading $< to the staging dir of our apt repo svr"
 	rsync -avz $< root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
 
 # Upload the pkg cert to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/testing/macos/
@@ -295,12 +280,11 @@ promote-mac-pkg:
 	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/horizon-cli-$(MAC_PKG_VERSION).pkg $(APT_REPO_DIR)/macos'
 
 macinstall: $(MAC_PKG)
-	sudo installer -pkg $< -target '/Volumes/Macintosh HD'
+	$(MAKE) -C pkg/mac macinstall
 
 # This only works on the installed package
 macpkginfo:
-	pkgutil --pkg-info $(MAC_PKG_IDENTIFIER)
-	pkgutil --only-files --files $(MAC_PKG_IDENTIFIER)
+	$(MAKE) -C pkg/mac macpkginfo
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"

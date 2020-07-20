@@ -59,8 +59,6 @@ If you created a new private signing key and public cert, upload the cert to the
 make macuploadcert
 ```
 
-Then they can be downloaded by others from http://pkg.bluehorizon.network/macos/testing/ .
-
 ## Promote the Mac Package (and New Certificate, If Necessary)
 
 Once it has been verified in staging, and this version of horizon is being promoted:

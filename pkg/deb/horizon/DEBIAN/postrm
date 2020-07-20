@@ -1,0 +1,36 @@
+#!/bin/bash
+if [ "$1" == "remove" ] || [ "$1" == "purge" ]; then
+
+  # remove all running containers with horizon tags
+  containers="$(docker ps -aq 2> /dev/null)"
+  if [ "$containers" != "" ]; then
+    # TODO: add infrastructure labels too
+    # reassign containers variable after doing some filtering
+    containers=$(echo $containers | xargs docker inspect | jq -r '.[] | select ((.Config.Labels | length != 0) and (.Config.Labels["openhorizon.anax.service_name"] !="" or .Config.Labels["openhorizon.anax.infrastructure"] != ""))')
+  fi
+
+  # TODO: deal with no container output
+  # remove running containers
+  if [ "$containers" != "" ]; then
+    echo $containers | jq -r '.Id' | xargs docker rm -f
+  fi
+
+    # remove networks; some errors are expected b/c we're issuing remove command for even networks that should have already been removed by anax
+    cat /var/horizon/prerm.bridges <(echo $containers | jq -r '.NetworkSettings.Networks | keys[]') | sort | uniq | grep -v 'bridge' | xargs docker network rm 2> /dev/null
+
+    # remove container images; TODO: use labels to remove infrastructure container images too once they are tagged properly upon
+    cat /var/horizon/prerm.images <(echo $containers | jq -r '.Config.Image') | sort | uniq | xargs docker rmi 2> /dev/null
+fi
+
+if [ "$1" == "purge" ]; then
+
+  rm -Rf /etc/horizon /var/cache/horizon /etc/default/horizon /var/tmp/horizon /var/run/horizon
+
+  # remove all content from /var/horizon that isn't related to the dedicated SBC images
+  find /var/horizon -mindepth 1 ! \( -name '.firstboot' -or -name 'image_version' \) -exec rm -rf {} +
+  if [ "$(ls -A /var/horizon)" ]; then
+    rmdir /var/horizon
+  fi
+fi
+
+exit 0

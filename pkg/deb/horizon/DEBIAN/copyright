@@ -1,0 +1,9 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Horizon
+Upstream-Contact: Horizon Team <linggao@us.ibm.com>
+Source: https://github.com/open-horizon
+
+Files: *
+Copyright: IBM Corp. 2015, 2016, 2017, 2018, 2019, 2020
+License: Apache-2
+  [cf. LICENSE.txt]

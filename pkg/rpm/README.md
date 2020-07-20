@@ -1,7 +1,5 @@
 # Building, Installing, and Using Horizon Agent RPMs
 
-**Note: The Horizon agent RPM packages are still experimental!!**
-
 ## Building the Horizon RPMs
 
 You can build them on a Linux or Mac host. From this directory run:

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ "$1" == "remove" ] || [ "$1" == "purge" ]; then
+  # save off container, etc. resources anax knows about for later removal
+  # all agreements anax has ever made
+
+  IMAGES_OUT=/var/horizon/prerm.images
+  BRIDGES_OUT=/var/horizon/prerm.bridges
+
+  touch $IMAGES_OUT $BRIDGES_OUT
+
+  agreements_fetch="$(curl -s http://localhost/agreement)"
+  if [ $? == 0 ]; then
+    anax_agreements=$(echo $agreements_fetch | jq -r '(.agreements.active[], .agreements.archived[])')
+
+    # get all image names
+    echo "$anax_agreements" | jq -r '.proposal' | jq -r '.tsandcs'  | jq -r '.workloads[].deployment' | jq -r '.services[].image' | sort | uniq > $IMAGES_OUT
+
+    # get all network bridge names (same as agreement right now)
+    echo $anax_agreements | jq -r '.current_agreement_id' | sort | uniq > $BRIDGES_OUT
+  fi
+fi
+
+# this has to occur after we've already done the pre-stop info gathering
+systemctl --quiet is-active horizon.service
+if [ "$?" == 0 ]; then
+  systemctl stop horizon.service
+fi
+
+if [ "$1" == "remove" ] || [ "$1" == "purge" ]; then
+  systemctl --quiet is-enabled horizon.service
+  if [ "$?" == 0 ]; then
+    systemctl disable horizon.service
+  fi
+  systemctl daemon-reload
+  systemctl reset-failed
+fi
+
+exit 0
