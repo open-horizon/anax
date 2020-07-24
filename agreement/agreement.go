@@ -395,9 +395,13 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 			glog.Errorf(logString(fmt.Sprintf("unable to get device from the local database. %v", err)))
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
 			deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
-		} else {
+		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURING {
 			w.AddDeferredCommand(cmd)
 			return true
+		} else {
+			// Nothing to do, the message will be deleted because the node is going away and will not be able to send messages.
+			// At this point, the agbot has an outstanding agreement that has to timeout before it will try to contact this node again.
+			glog.Warningf(logString(fmt.Sprintf("node is shutting down, deleting proposal %v message %v", p, exchangeMsg.MsgId)))
 		}
 
 		if deleteMessage {

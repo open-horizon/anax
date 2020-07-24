@@ -280,7 +280,7 @@ function verify_agreements {
 }
 
 # check if current node pattern is the same as the given pattern
-function checkNodePatter {
+function checkNodePattern {
     pattern=$1
 
     echo "Checking if device has the new pattern name $pattern."
@@ -318,7 +318,7 @@ else
 fi
 
 # change the exchange node pattern to sns
-echo -e "${PREFIX} Change the userinput for node"
+echo -e "${PREFIX} Change the userinput for node in ${org}"
 ret=$(hzn userinput add -f /tmp/userinput_for_sns.json)
 if [ $? -ne 0 ]; then
     echo -e "${PREFIX} Failed changing the user input for local node. $ret"
@@ -332,7 +332,7 @@ results "$RES"
 echo "Sleeping 60 seconds..."
 sleep 60
 
-checkNodePatter "e2edev@somecomp.com/sns"
+checkNodePattern "e2edev@somecomp.com/sns"
 verify_agreements
 
 
@@ -374,7 +374,7 @@ echo "Sleeping 60 seconds..."
 sleep 60
 
 # the pattern should have change on local node
-checkNodePatter "e2edev@somecomp.com/sall"
+checkNodePattern "e2edev@somecomp.com/sall"
 ./verify_agreements.sh
 if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed to verify agreement."
