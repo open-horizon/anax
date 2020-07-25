@@ -1,4 +1,8 @@
 # these are the files that are copied in during the rpm build
 /fs/usr/horizon/bin/hzn
 /fs/usr/horizon/bin/horizon-container
+/fs/usr/horizon/bin/agent-install.sh
+/fs/usr/horizon/bin/agent-uninstall.sh
+/fs/usr/horizon/bin/edgeNodeFiles.sh
 /fs/etc/bash_completion.d/
+/fs/usr/share/man/

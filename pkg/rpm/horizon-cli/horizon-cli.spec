@@ -5,7 +5,7 @@
 Summary: Open-horizon CLI
 Name: horizon-cli
 Version: %{getenv:VERSION}
-Release: %{getenv:RELEASE}
+Release: %{getenv:BUILD_NUMBER}
 Epoch: 1
 License: Apache License Version 2.0
 Source: horizon-cli-%{version}.tar.gz
@@ -26,7 +26,6 @@ Open-horizon command line interface
 %setup -q
 
 %build
-#todo: the rpm should really build the executables itself, but we have a ways to go before getting there...
 # This phase is done in ~/rpmbuild/BUILD/horizon-cli-<version> . All of the tarball source has been unpacked there and
 # is in the same file structure as it is in the git repo. $RPM_BUILD_DIR has a value like ~/rpmbuild/BUILD
 #env | grep -i build
@@ -48,8 +47,8 @@ cp -a fs/* $RPM_BUILD_ROOT/
 #%defattr(-, root, root)
 /usr/horizon
 /etc/horizon
-#todo: cmd completion for hzn is not working. Have not figured out why yet.
 /etc/bash_completion.d/hzn_bash_autocomplete.sh
+/usr/share/man
 
 %post
 # Runs after the pkg is installed
@@ -59,6 +58,9 @@ fi
 if [[ ! -e "/usr/bin/horizon-container" ]]; then
 	ln -s /usr/horizon/bin/horizon-container /usr/bin/horizon-container
 fi
+if [[ ! -e "/usr/bin/edgeNodeFiles.sh" ]]; then
+	ln -s /usr/horizon/bin/edgeNodeFiles.sh /usr/bin/edgeNodeFiles.sh
+fi
 
 %postun
 # Runs after the pkg is uninstalled. $1 == 0 means this is a complete removal, not an update.
@@ -66,6 +68,7 @@ if [ "$1" = "0" ]; then
 	# Remove the sym links we created during install of this pkg
 	rm -f /usr/bin/hzn
 	rm -f /usr/bin/horizon-container
+	rm -f /usr/bin/edgeNodeFiles.sh
 fi
 
 %clean

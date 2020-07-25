@@ -1,0 +1,11 @@
+Package: horizon
+Version: ${VERSION}${BUILD_NUMBER}
+Section: misc
+Priority: optional
+Architecture: ${arch}
+Depends: horizon-cli (= ${VERSION}${BUILD_NUMBER}), docker-engine (>= 17.0) | docker-ce (>= 17.0) | docker (>= 17.0) | docker.io (>= 17.0), iptables (>= 1.4), systemd (>= 215-17), bash (>= 4), jq
+Conflicts: bluehorizon
+Replaces: bluehorizon
+Maintainer: https://github.com/open-horizon
+Description: The Horizon edge node agent
+Homepage: https://github.com/open-horizon

@@ -5,7 +5,7 @@
 Summary: Open-horizon edge agent
 Name: horizon
 Version: %{getenv:VERSION}
-Release: %{getenv:RELEASE}
+Release: %{getenv:BUILD_NUMBER}
 Epoch: 1
 License: Apache License Version 2.0
 Source: horizon-%{version}.tar.gz
@@ -29,7 +29,6 @@ Open-horizon edge node agent
 %setup -q
 
 %build
-#todo: the rpm should really build the executables itself, but we have a ways to go before getting there...
 # This phase is done in ~/rpmbuild/BUILD/horizon-<version> . All of the tarball source has been unpacked there and
 # is in the same file structure as it is in the git repo. $RPM_BUILD_DIR has a value like ~/rpmbuild/BUILD
 #env | grep -i build
@@ -44,13 +43,12 @@ Open-horizon edge node agent
 # The $RPM_BUILD_ROOT is a simulated root file system and usually has a value like: ~/rpmbuild/BUILDROOT/horizon-1.0.0-1.x86_64
 # Following the LSB Filesystem Hierarchy Standard: https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr/horizon/{bin,sbin,samples} $RPM_BUILD_ROOT/etc/default $RPM_BUILD_ROOT/etc/horizon/{policy.d,trust/}
+mkdir -p $RPM_BUILD_ROOT/usr/horizon/{bin,samples} $RPM_BUILD_ROOT/etc/default $RPM_BUILD_ROOT/etc/horizon/trust/
 cp -a fs/* $RPM_BUILD_ROOT/
 
 %files
 #%defattr(-, root, root)
 %license /usr/horizon/LICENSE.txt
-%doc /usr/horizon/README.md
 %config(noreplace) /etc/default/horizon
 /usr/horizon
 /lib/systemd/system/horizon.service
@@ -66,6 +64,7 @@ if systemctl --quiet is-active horizon.service; then
 fi
 systemctl start horizon.service
 #fi
+mkdir -p /var/{horizon/,run/horizon/}
 
 %preun
 # This runs before the pkg is removed. But the way rpm updates work is the newer rpm is installed 1st (with reference counting on the files),
@@ -123,7 +122,7 @@ if [ "$1" = "0" ]; then
   # remove container images; TODO: use labels to remove infrastructure container images too once they are tagged properly upon
   cat /var/horizon/prerm.images <<< $(echo $containers | jq -r '.Config.Image') | sort | uniq | xargs docker rmi 2> /dev/null
 
-  #todo: in the debian pkg, these cmds only run for the purge option. There doesn't seem to be an rpm equivalent
+  # Note: in the debian pkg, these cmds only run for the purge option. There doesn't seem to be an rpm equivalent
   rm -Rf /etc/horizon /var/cache/horizon /etc/default/horizon /var/tmp/horizon /var/run/horizon
   # remove all content from /var/horizon that isn't related to the dedicated SBC images
   find /var/horizon -mindepth 1 ! \( -name '.firstboot' -or -name 'image_version' \) -exec rm -rf {} +

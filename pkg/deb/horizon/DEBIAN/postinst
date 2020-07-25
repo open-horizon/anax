@@ -1,0 +1,12 @@
+#!/bin/bash
+
+systemctl daemon-reload
+systemctl enable horizon.service
+if systemctl --quiet is-active horizon.service; then
+	systemctl stop horizon.service   # in case this was an update
+fi
+systemctl start horizon.service
+
+mkdir -p /var/{horizon/,run/horizon/}
+
+exit 0

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rm -f /usr/bin/hzn
+rm -f /usr/bin/horizon-container
+
+exit 0
