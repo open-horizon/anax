@@ -50,7 +50,9 @@ horizon-cli-deb: require-version
 	@# If you add files copied, add them to .gitignore too
 	cp ../../cli/hzn horizon-cli/usr/horizon/bin
 	cp ../../anax-in-container/horizon-container horizon-cli/usr/horizon/bin
-	cp ../../agent-install/{agent-install.sh,agent-uninstall.sh,edgeNodeFiles.sh} horizon-cli/usr/horizon/bin
+	cp ../../agent-install/agent-install.sh horizon-cli/usr/horizon/bin
+	cp ../../agent-install/agent-uninstall.sh horizon-cli/usr/horizon/bin
+	cp ../../agent-install/edgeNodeFiles.sh horizon-cli/usr/horizon/bin
 	cp ../../cli/bash_completion/hzn_bash_autocomplete.sh horizon-cli/etc/bash_completion.d
 	mkdir -p horizon-cli/usr/share/man/man1
 	gzip --stdout ../../cli/man1/hzn.1 > horizon-cli/usr/share/man/man1/hzn.1.gz

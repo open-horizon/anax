@@ -69,7 +69,9 @@ $(MAC_PKG): require-version
 	cp ../../$(CLI_EXECUTABLE) horizon-cli/bin
 	cp -Rapv ../../cli/samples horizon-cli/share/horizon
 	cp ../../anax-in-container/horizon-container horizon-cli/bin
-	cp ../../agent-install/{agent-install.sh,agent-uninstall.sh,edgeNodeFiles.sh} horizon-cli/bin
+	cp ../../agent-install/agent-install.sh horizon-cli/bin
+	cp ../../agent-install/agent-uninstall.sh horizon-cli/bin
+	cp ../../agent-install/edgeNodeFiles.sh horizon-cli/bin
 	cp scripts/horizon-cli-uninstall.sh horizon-cli/bin
 	cp ../../$(LICENSE_FILE) horizon-cli/share/horizon
 	cp ../../$(CLI_MAN_DIR)/hzn.1 horizon-cli/share/man/man1
