@@ -57,7 +57,7 @@ horizon-cli-deb: require-version
 	mkdir -p horizon-cli/usr/share/man/man1
 	gzip --stdout ../../cli/man1/hzn.1 > horizon-cli/usr/share/man/man1/hzn.1.gz
 	for m in ../../cli/man1/hzn.1.*; do \
-	  if [[ ! -f $$m ]]; then continue; fi; \
+	  test -f $$m || continue; \
 	  d="horizon-cli/usr/share/man/$${m##../../cli/man1/hzn.1.}/man1"; \
 	  mkdir -p $$d; \
 	  gzip --stdout $$m > "$$d/hzn.1.gz"; \
