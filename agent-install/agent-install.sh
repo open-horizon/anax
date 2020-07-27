@@ -29,6 +29,7 @@ DEPLOY_TYPE="device" # "cluster" for deploy on edge cluster
 # agent deployment
 SERVICE_ACCOUNT_NAME="agent-service-account"
 CLUSTER_ROLE_BINDING_NAME="openhorizon-agent-cluster-rule"
+DEPLOYMENT_NAME="agent"
 SECRET_NAME="openhorizon-agent-secrets"
 CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
@@ -1513,8 +1514,14 @@ function getImageInfo() {
         exit 1
     fi
 
+    # Loaded image: {repo}/{image_name}:{version_number}
     LOADED_IMAGE_MESSAGE=$(docker load --input amd64_anax_k8s_ubi.tar)
+
+    # {repo}/{image_name}:{version_number}
     AGENT_IMAGE=$(echo $LOADED_IMAGE_MESSAGE|awk -F': ' '{print $2}')
+
+    # {version_number}
+    AGENT_IMAGE_VERSION_IN_TAR=$(echo $AGENT_IMAGE|awk -F':' '{print $2}')
 
     if [ -z $AGENT_IMAGE ]; then
 	    log_notify "Agent image is empty, exiting..."
@@ -1554,6 +1561,68 @@ function pushImageToEdgeClusterRegistry() {
     log_info "successfully pushed image $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY to edge cluster registry"
 
     log_debug "pushImageToEdgeClusterRegistry() end"
+}
+
+# Cluster only: check if agent deployment exist/compare agent image version to determin agent install or agent update
+function check_agent_deployment_exist() {
+    log_debug "check_agent_deployment_exist() begin"
+    $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE}
+    if [ $? -ne 0 ]; then
+        # agent deployment doesn't exist in ${AGENT_NAMESPACE}, fresh install
+        AGENT_DEPLOYMENT_UPDATE="false"
+    else
+        # already have an agent deplyment in ${AGENT_NAMESPACE}, check the agent pod status
+        if [[ $($KUBECTL get pods -n ${AGENT_NAMESPACE} -l app=agent -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; then
+            # agent deployment does not have agent pod in RUNNING status
+            log_notify "Previous agent pod in not in RUNNING status, please run agent-uninstall.sh to clean up and re-run the agent-install.sh. Exiting..."
+            exit 1
+        else
+            # check 1) agent image in deployment
+            # eg: {image-registry}:5000/{repo}/{image-name}:{version}
+            AGENT_IMAGE_IN_USE=$($KUBECTL get deployment agent -o jsonpath='{$.spec.template.spec.containers[:1].image}' -n ${AGENT_NAMESPACE})
+            # {image-name}:{version}
+	    AGENT_IMAGE_NAME_WITH_TAG=$(echo $AGENT_IMAGE_IN_USE|awk -F'/' '{print $3}')
+            # {version}
+	    AGENT_IMAGE_VERSION_IN_USE=$(echo $AGENT_IMAGE_NAME_WITH_TAG|awk -F':' '{print $2}')
+
+	    log_debug "Current agent image version is: $AGENT_IMAGE_VERSION_IN_USE, agent image version in tar file is: $AGENT_IMAGE_VERSION_IN_TAR"
+            if [ "$AGENT_IMAGE_VERSION_IN_TAR" == "$AGENT_IMAGE_VERSION_IN_USE" ]; then
+                AGENT_DEPLOYMENT_UPDATE="false"
+            else
+                AGENT_DEPLOYMENT_UPDATE="true"
+
+                POD_ID=$($KUBECTL get pod -l app=agent --field-selector status.phase=Running -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" | cut -d " " -f1 2> /dev/null)
+                log_info "Previous agent pod is ${POD_ID}, will continue with agent updating in edge cluster"
+            fi
+        fi
+    fi
+
+    log_debug "check_agent_deployment_exist() end"
+}
+
+# Cluster only: get NODE_ID from the running agent pod
+function get_node_id_from_deployment() {
+    log_debug "get_node_id_from_deployment() begin"
+
+    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
+    NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list")
+    NODE_ID=$(echo "$NODE_INFO" | jq -r .id)
+
+    log_info "Get node id $NODE_ID from agent pod ${POD_ID}"
+
+    log_debug "get_node_id_from_deployment() end"
+
+}
+
+# Cluster only: check NODE_ID
+function validate_node_id_for_agent_install() {
+    log_debug "validate_node_id_for_agent_install() begin"
+    if [[ "$NODE_ID" == "" ]]; then
+        log_notify "The NODE_ID value is empty. Please set NODE_ID to edge cluster name in agent-install.cfg or as environment variable for agent cluster install. Exiting..."
+        exit 1
+    fi
+    log_debug "validate_node_id_for_agent_install end"
+
 }
 
 # Cluster only: to generate 3 files: /tmp/agent-install-horizon-env, deployment.yml and persistentClaim.yml
@@ -1666,6 +1735,17 @@ function create_cluster_resources() {
 	log_debug "create_cluster_resources() end"
 }
 
+# Cluster only: to update cluster resources
+function update_cluster_resources() {
+	log_debug "update_cluster_resources() begin"
+
+	update_secret
+	update_configmap
+
+	log_debug "update_cluster_resources() end"
+
+}
+
 # Cluster only: to create namespace that agent will be deployed
 function create_namespace() {
     log_debug "create_namespace() begin"
@@ -1747,6 +1827,26 @@ function create_secret() {
     log_debug "create_secrets() end"
 }
 
+# Cluster only: to update secret
+function update_secret() {
+    log_debug "update_secret() begin"
+    $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        # secret exists, delete it
+        log_info "Find secret ${SECRET_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old secret..."
+        $KUBECTL delete secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            log_notify "Failed to delete secret for agent update on cluster. Exiting..."
+            exit 1
+        fi
+	log_info "Old secret ${SECRET_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+    fi
+
+    create_secret
+
+    log_debug "update_secret() end"
+}
+
 # Cluster only: to create configmap based on /tmp/agent-install-horizon-env for agent deployment
 function create_configmap() {
     log_debug "create_configmap() begin"
@@ -1766,6 +1866,26 @@ function create_configmap() {
     fi
 
     log_debug "create_configmap() end"
+}
+
+# Cluster only: to update configmap based on /tmp/agent-install-horizon-env for agent deployment
+function update_configmap() {
+    log_debug "update_configmap() begin"
+    $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        # configmap exists, delete it
+        log_info "Find configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old configmap..."
+        $KUBECTL delete configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            log_notify "Failed to delete the old configmap for agent update on cluster. Exiting..."
+            exit 1
+        fi
+        log_info "Old configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+    fi
+
+    create_configmap
+
+    log_debug "update_configmap() end"
 }
 
 # Cluster only: to create persistent volume claim for agent deployment
@@ -1825,6 +1945,67 @@ function create_deployment() {
     log_debug "create_deployment() end"
 }
 
+# Cluster only: to update deployment
+function update_deployment() {
+    log_debug "update_deployment() begin"
+
+    $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        # deployment exists, delete it
+        log_info "Find deployment ${DEPLOYMENT_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old deployment..."
+        $KUBECTL delete deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            log_notify "Failed to delete the old deployment for agent update on cluster. Exiting..."
+            exit 1
+        fi
+
+        # give pod sometime to terminate by itself
+        sleep 10
+
+	log_info "Old deployment ${DEPLOYMENT_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+
+        log_info "Checking if agent pod is terminated..."
+        AGENT_POD_ENTRY=$($KUBECTL get pod ${POD_ID} -n ${AGENT_NAMESPACE} 2> /dev/null | grep "agent-" 2> /dev/null)
+        if [ -n "$AGENT_POD_ENTRY" ]; then
+            AGENT_POD_STATUS=$(echo $AGENT_POD_ENTRY | cut -d " " -f3)
+            if [ $AGENT_POD_STATUS == "Terminating" ]; then
+                if [[ $SKIP_PROMPT == 'false' ]]; then
+                    echo "Agent pod ${POD_ID} is still in Terminating, force delete pod?[y/N]:"
+                    read RESPONSE
+                    if [ "$RESPONSE" == 'y' ]; then
+                        log_info "Force deleting agent pod ${POD_ID}..."
+                        $KUBECTL delete pod ${POD_ID} --force=true --grace-period=0 -n ${AGENT_NAMESPACE}
+                        if [ $? -ne 0 ]; then
+                            log_notify "Failed to delete the Terminating pod for agent update on cluster. Exiting..."
+                            exit 1
+                        fi
+                        pkill -f anax.service
+                    else
+                        log_info "Will not force deleting agent pod"
+                    fi
+                else
+                    log_info "Agent pod ${POD_ID} is still in Terminating, force deleting..."
+                    $KUBECTL delete pod ${POD_ID} --force=true --grace-period=0 -n ${AGENT_NAMESPACE}
+                    if [ $? -ne 0 ]; then
+                        log_notify "Failed to delete the Terminating pod for agent update on cluster. Exiting..."
+                        exit 1
+                    fi
+                    pkill -f anax.service
+                fi
+            fi
+
+        else
+            log_info "Agent pod is terminated successfully"
+        fi
+
+
+    fi
+
+    create_deployment
+
+    log_debug "update_deployment() end"
+}
+
 # Cluster only: to check agent deplyment status
 function check_deployment_status() {
     log_debug "check_resource_for_deployment() begin"
@@ -1866,8 +2047,8 @@ function get_pod_id() {
     log_debug "get_pod_id() end"
 }
 
-# Cluster only: to install agent in cluster
-function install_cluster() {
+# Cluster only: to install/update agent in cluster
+function install_update_cluster() {
 
 	check_node_exist "cluster"
 
@@ -1878,32 +2059,69 @@ function install_cluster() {
 		pushImageToEdgeClusterRegistry
 	fi
 
-	# generate files based on templates
-	generate_installation_files
-
-	# create cluster namespace and resources
-	create_cluster_resources
-
-	while [ -z ${RESOURCE_READY} ] && [ ${GET_RESOURCE_MAX_TRY} -gt 0 ]
-	do
-		check_resources_for_deployment
-		count=$((GET_RESOURCE_MAX_TRY-1))
-		GET_RESOURCE_MAX_TRY=$count
-	done
-
-	# get pod information
-	create_deployment
-	check_deployment_status
-	get_pod_id
-
-	set -e
-	create_node
-
-	# register
-	registration "$SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
-	set +e
+	check_agent_deployment_exist
+	if [ "$AGENT_DEPLOYMENT_UPDATE" == "true" ]; then
+            echo `now` "Update agent on edge cluster"
+            update_cluster
+    	else
+            echo `now` "Install agent on edge cluster"
+            install_cluster
+    	fi
 
 	cleanup_cluster_config_files
+
+}
+
+# Cluster only: to install agent in cluster
+function install_cluster() {
+    # generate files based on templates
+    generate_installation_files
+    
+    # create cluster namespace and resources
+    create_cluster_resources
+    
+    while [ -z ${RESOURCE_READY} ] && [ ${GET_RESOURCE_MAX_TRY} -gt 0 ]
+    do
+	check_resources_for_deployment
+	count=$((GET_RESOURCE_MAX_TRY-1))
+	GET_RESOURCE_MAX_TRY=$count
+    done
+
+    # get pod information
+    create_deployment
+    check_deployment_status
+    get_pod_id
+
+    set -e
+    create_node
+
+    # register
+    registration "$SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    set +e
+
+}
+
+# Cluster only: to update agent in cluster
+function update_cluster() {
+
+    get_node_id_from_deployment
+
+    validate_node_id_for_agent_install
+
+    generate_installation_files
+
+    update_cluster_resources
+
+    while [ -z ${RESOURCE_READY} ] && [ ${GET_RESOURCE_MAX_TRY} -gt 0 ]
+    do
+        check_resources_for_deployment
+        count=$((GET_RESOURCE_MAX_TRY-1))
+        GET_RESOURCE_MAX_TRY=$count
+    done
+
+    update_deployment
+    check_deployment_status
+    get_pod_id
 
 }
 
@@ -1998,9 +2216,9 @@ if [ "${DEPLOY_TYPE}" == "device" ]; then
 	add_autocomplete
 
 elif [ "${DEPLOY_TYPE}" == "cluster" ]; then
-	log_info "Install agent on edge cluster"
+	log_info "Install/Update agent on edge cluster"
 	set +e
-	install_cluster
+	install_update_cluster
 else
 	log_error "node type only support 'device' or 'cluster'"
 fi
