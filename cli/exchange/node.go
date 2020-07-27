@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -13,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
+	"github.com/open-horizon/anax/semanticversion"
 	"net/http"
 	"os"
 )
@@ -194,7 +196,9 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 
 	findPatchType := make(map[string]interface{})
-	json.Unmarshal([]byte(attribute), &findPatchType)
+	if err := json.Unmarshal([]byte(attribute), &findPatchType); err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute: %v", err))
+	}
 
 	// check invalid attributes
 	for k, _ := range findPatchType {
@@ -230,7 +234,12 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 				break
 			}
 
+			// verify node userinput for pattern case
 			verifyNodeUserInput(org, credToUse, node, nId, ui)
+
+			// verify node userinput for policy case
+			verifyNodeUserInputsForPolicy(org, credToUse, node, ui)
+
 			patch[k] = ui
 		} else if k == "pattern" {
 			pattern := ""
@@ -629,5 +638,73 @@ func verifyNodeUserInput(org string, credToUse string, node exchange.Device, nId
 			}
 		}
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to update the node because of the above error."))
+	}
+}
+
+// Verify the node user input for the policy case. Make sure that the given
+// user input are compatible with the service in exchange
+func verifyNodeUserInputsForPolicy(org string, credToUse string, node exchange.Device, ui []policy.UserInput) {
+	msgPrinter := i18n.GetMessagePrinter()
+	msgPrinter.Printf("Verifying userInputs for node using policy.")
+        msgPrinter.Println()
+
+	if len(ui) != 0 {
+		all_services := []common.AbstractServiceFile{}
+		for _, u := range ui {
+			uInput := u
+
+			serviceOrg := uInput.ServiceOrgid
+			serviceUrl := uInput.ServiceUrl
+			serviceVersionRange := uInput.ServiceVersionRange
+			serviceArch := uInput.ServiceArch
+
+			if &uInput.ServiceVersionRange == nil || uInput.ServiceVersionRange == "" {
+				serviceVersionRange = "0.0.0"
+			}
+
+			msgPrinter.Printf("Start validating userinput %v, %v, %v, %v", serviceOrg, serviceUrl, serviceVersionRange, serviceArch)
+			msgPrinter.Println()
+
+			var vExp *semanticversion.Version_Expression
+			var err error
+			if vExp, err = semanticversion.Version_Expression_Factory(serviceVersionRange); err != nil {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput, error: %v", "", err))
+			}
+			versionRange := vExp.Get_expression()
+
+			if &uInput.ServiceArch == nil || uInput.ServiceArch == "" {
+				serviceArch = node.Arch
+			}
+
+			// get exchange context
+			ec := cliutils.GetUserExchangeContext(org, credToUse)
+
+			serviceDefResolverHandler := exchange.GetHTTPServiceDefResolverHandler(ec)
+			var bpUserInput []policy.UserInput
+
+			svcSpec := compcheck.NewServiceSpec(serviceUrl, serviceOrg, versionRange, serviceArch)
+			if validated, message, sDefs, err := compcheck.VerifyUserInputForService(svcSpec, nil, serviceDefResolverHandler, bpUserInput, ui, node.GetNodeType(), msgPrinter); !validated {
+				if err != nil && message != "" {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput, message: %v, error: %v", message, err))
+				} else if err != nil {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput, error: %v", err))
+				} else {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput, message: %v", message))
+				}
+			} else {
+				all_services = append(all_services, sDefs...)
+
+				// check service type and node type compatibility
+				if compatible_t, reason_t := compcheck.CheckTypeCompatibility(node.NodeType, sDefs[0], msgPrinter); compatible_t != true {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to validate exchange node userInput: %v", reason_t))
+				}
+			}
+
+		}
+
+		// check redundant userinput for service
+		if err := compcheck.CheckRedundantUserinput(all_services, ui, msgPrinter); err != nil {
+			cliutils.Warning(msgPrinter.Sprintf("validate exchange node/userinput %v ", err))
+		}
 	}
 }
