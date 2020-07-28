@@ -25,7 +25,7 @@ ifdef BUILD_NUMBER
 BUILD_NUMBER := -$(BUILD_NUMBER:-%=%)
 endif
 
-EXECUTABLE := $(shell basename $$PWD)
+EXECUTABLE := anax
 export CLI_EXECUTABLE := cli/hzn
 export CLI_CONFIG_FILE := cli/hzn.json
 CLI_HORIZON_CONTAINER := anax-in-container/horizon-container
