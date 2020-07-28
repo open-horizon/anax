@@ -23,7 +23,7 @@ Provides: horizon-cli = %{version}
 Open-horizon command line interface
 
 %prep
-%setup -q
+%setup -c
 
 %build
 # This phase is done in ~/rpmbuild/BUILD/horizon-cli-<version> . All of the tarball source has been unpacked there and

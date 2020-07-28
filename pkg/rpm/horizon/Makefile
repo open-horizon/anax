@@ -43,11 +43,13 @@ rpmbuild: require-version
 	cp ../../../anax fs/usr/horizon/bin
 	cp -a ../../../cli/samples fs/usr/horizon
 	cp -a ../../../LICENSE.txt fs/usr/horizon
-	mkdir -p $(RPMROOT)/{SOURCES,SRPMS,SRPMS}
-	rm -f $(RPMNAME)-$(VERSION); ln -s . $(RPMNAME)-$(VERSION)  # so the tar file files can have this prefix
+	mkdir -p $(RPMROOT)/SOURCES
+	mkdir -p $(RPMROOT)/RPMS
+	mkdir -p $(RPMROOT)/SRPMS
+	rm -f $(RPMNAME)-$(VERSION)
 	rm -f $(RPMROOT)/SOURCES/$(RPMNAME)-*.tar.gz
 	#tar --exclude '.git*' -X .tarignore -H -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
-	tar -H -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
+	tar -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz .
 	rm -rf $(RPMROOT)/BUILD/horizon-*
 	rm -f $(RPMROOT)/SRPMS/$(RPMNAME)-$${VERSION%%.*}*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$${VERSION%%.*}*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$${VERSION%%.*}*rpm.gz
 	rpmbuild --target $(rpm_arch)-linux -ba $(RPMNAME).spec

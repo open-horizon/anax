@@ -26,7 +26,7 @@ Requires: horizon-cli docker-ce iptables jq
 Open-horizon edge node agent
 
 %prep
-%setup -q
+%setup -c
 
 %build
 # This phase is done in ~/rpmbuild/BUILD/horizon-<version> . All of the tarball source has been unpacked there and

@@ -49,16 +49,18 @@ rpmbuild: require-version
 	mkdir -p fs/usr/share/man/man1
 	gzip --stdout ../../../cli/man1/hzn.1 > fs/usr/share/man/man1/hzn.1.gz
 	for m in ../../../cli/man1/hzn.1.*; do \
-	  if [[ ! -f $$m ]]; then continue; fi; \
+	  test -f $$m || continue; \
 	  d="fs/usr/share/man/$${m##../../../cli/man1/hzn.1.}/man1"; \
 	  mkdir -p $$d; \
 	  gzip --stdout $$m > "$$d/hzn.1.gz"; \
 	done
-	mkdir -p $(RPMROOT)/{SOURCES,SRPMS,SRPMS}
-	rm -f $(RPMNAME)-$(VERSION); ln -s . $(RPMNAME)-$(VERSION)  # so the tar file files can have this prefix
+	mkdir -p $(RPMROOT)/SOURCES
+	mkdir -p $(RPMROOT)/RPMS
+	mkdir -p $(RPMROOT)/SRPMS
+	rm -f $(RPMNAME)-$(VERSION)
 	rm -f $(RPMROOT)/SOURCES/$(RPMNAME)-*.tar.gz
 	#tar --exclude '.git*' -X .tarignore -H -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
-	tar -H -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz $(RPMNAME)-$(VERSION)
+	tar -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz .
 	rm -rf $(RPMROOT)/BUILD/horizon-cli-*
 	rm -f $(RPMROOT)/SRPMS/$(RPMNAME)*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)*rpm.gz
 	rpmbuild --target $(rpm_arch)-linux -ba $(RPMNAME).spec
