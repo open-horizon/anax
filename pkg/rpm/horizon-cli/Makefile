@@ -42,7 +42,9 @@ rpmbuild: require-version
 	@# If you add files copied, add them to .gitignore too
 	cp ../../../cli/hzn fs/usr/horizon/bin
 	cp ../../../anax-in-container/horizon-container fs/usr/horizon/bin
-	cp ../../../agent-install/{agent-install.sh,agent-uninstall.sh,edgeNodeFiles.sh} fs/usr/horizon/bin
+	cp ../../../agent-install/agent-install.sh fs/usr/horizon/bin
+	cp ../../../agent-install/agent-uninstall.sh fs/usr/horizon/bin
+	cp ../../../agent-install/edgeNodeFiles.sh fs/usr/horizon/bin
 	cp ../../../cli/bash_completion/hzn_bash_autocomplete.sh fs/etc/bash_completion.d
 	mkdir -p fs/usr/share/man/man1
 	gzip --stdout ../../../cli/man1/hzn.1 > fs/usr/share/man/man1/hzn.1.gz
