@@ -62,6 +62,7 @@ type GovernanceWorker struct {
 	patternChange     ChangePattern
 	limitedRetryEC    exchange.ExchangeContext
 	exchErrors        cache.Cache
+	noworkDispatch    int64 // The last time the NoWorkHandler was dispatched.
 }
 
 func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm *policy.PolicyManager) *GovernanceWorker {
@@ -88,6 +89,7 @@ func NewGovernanceWorker(name string, cfg *config.HorizonConfig, db *bolt.DB, pm
 		ShuttingDownCmd: nil,
 		limitedRetryEC:  lrec,
 		exchErrors:      cache.NewSimpleMapCache(),
+		noworkDispatch:  time.Now().Unix(),
 	}
 
 	// Start the worker and set the no work interval to 10 seconds.
@@ -763,6 +765,13 @@ func (w *GovernanceWorker) Initialize() bool {
 
 func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
+	// It's possible that the command handler stays busy enough that the noworkhandler never gets
+	// control. Usually that's not a problem for workers, but this worker is a special case because
+	// it handles shutdown processing.
+	if time.Since(time.Unix(w.noworkDispatch, 0)).Seconds() > float64(w.GetNoWorkInterval()) {
+		w.NoWorkHandler()
+	}
+
 	// Handle the domain specific commands
 	// TODO: consolidate DB update cases
 	switch command.(type) {
@@ -1376,6 +1385,9 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 func (w *GovernanceWorker) NoWorkHandler() {
 
+	glog.V(3).Infof(logString(fmt.Sprintf("GovernanceWorker dispatching no work handler.")))
+	w.noworkDispatch = time.Now().Unix()
+
 	// Make sure that all known agreements are maintained, if we're not shutting down.
 	if !w.IsWorkerShuttingDown() {
 		w.governAgreements()
@@ -1384,6 +1396,7 @@ func (w *GovernanceWorker) NoWorkHandler() {
 	// When all subworkers are down, start the shutdown process.
 	if w.IsWorkerShuttingDown() && w.ShuttingDownCmd != nil {
 		if w.AreAllSubworkersTerminated() {
+			glog.V(5).Infof(logString(fmt.Sprintf("GovernanceWorker initiating async shutdown.")))
 			cmd := w.ShuttingDownCmd
 			// This is one of the few go routines that should NOT be abstracted as a subworker.
 			go w.nodeShutdown(cmd)

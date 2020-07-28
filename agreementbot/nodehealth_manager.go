@@ -171,7 +171,7 @@ func (m *NodeHealthManager) setNewStatus(pattern string, org string, lastCall st
 	// Cache new status if there is any
 	if nhs != nil {
 		glog.V(5).Infof("Node Health Manager: consuming new status: %v", nhs)
-		if pe.Nodes == nil {
+		if pe.Nodes == nil || pe.Nodes.Nodes == nil {
 			pe.Nodes = nhs
 		} else {
 			for nodeid, status := range nhs.Nodes {
