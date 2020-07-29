@@ -432,6 +432,11 @@ func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId str
 
 	glog.V(5).Infof(logString(fmt.Sprintf("retrieving device %v from exchange", deviceId)))
 
+	cachedDevice := exchange.GetNodeFromCache(exchange.GetOrg(deviceId), exchange.GetId(deviceId))
+	if cachedDevice != nil {
+		return cachedDevice, nil
+	}
+
 	var resp interface{}
 	resp = new(exchange.GetDevicesResponse)
 	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId)
@@ -449,6 +454,7 @@ func GetDevice(httpClient *http.Client, deviceId string, url string, agbotId str
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
 				glog.V(5).Infof(logString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				exchange.UpdateCache(exchange.NodeCacheMapKey(exchange.GetOrg(deviceId), exchange.GetId(deviceId)), exchange.NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
 		}
