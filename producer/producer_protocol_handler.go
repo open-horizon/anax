@@ -56,7 +56,7 @@ type ProducerProtocolHandler interface {
 	Name() string
 	AcceptCommand(cmd worker.Command) bool
 	AgreementProtocolHandler(typeName string, name string, org string) abstractprotocol.ProtocolHandler
-	HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool
+	HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) (bool, bool)
 	HandleBlockchainEventMessage(cmd *BlockchainEventCommand) (string, bool, uint64, bool, error)
 	TerminateAgreement(agreement *persistence.EstablishedAgreement, reason uint)
 	GetSendMessage() func(mt interface{}, pay []byte) error
