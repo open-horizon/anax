@@ -151,6 +151,72 @@ type ImportResponse struct {
 	NodeToken string `json:"nodeToken"`
 }
 
+//tfine list the all the uploaded SDO vouchers, or a single voucher
+func VoucherList(org, userCreds, voucher string) {
+	msgPrinter := i18n.GetMessagePrinter()
+	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
+
+	// setup HTTP parameters and URL
+	var requestBodyBytes []byte
+	var sdoURL string
+	url := cliutils.GetSdoSvcUrl()
+	
+	if voucher == "" {
+		sdoURL = url+"/vouchers"
+	} else {
+		sdoURL = url+"/vouchers"+"/"+voucher 
+	}
+
+	creds := cliutils.OrgAndCreds(org, userCreds)
+	method := http.MethodGet
+	apiMsg := method + " " + sdoURL
+	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
+
+	resp := cliutils.InvokeRestApi(httpClient, method, sdoURL, creds, requestBodyBytes, "SDO Owner Service", apiMsg)
+	defer resp.Body.Close()
+	httpCode := resp.StatusCode
+	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
+	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
+	}
+	if httpCode != 200 {
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))
+	}
+	if err != nil {
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
+	}
+
+	// list the UUIDs of all the imported vouchers 
+	if voucher == "" {
+		output := []string{}
+		err = json.Unmarshal(respBodyBytes, &output)
+		if err != nil {
+			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
+		}
+
+		jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+		
+	} else { // list the details of a single imported voucher 
+		vouch := Voucher{}
+		err = json.Unmarshal(respBodyBytes, &vouch)
+		if err != nil {
+			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
+		}
+		
+		jsonBytes, err := json.MarshalIndent(vouch, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	}
+}
+
 // hzn voucher inspect <voucher-file>
 func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyFilePath, patternName string) {
 	defer voucherFile.Close()
@@ -184,43 +250,6 @@ func VoucherImport(org, userCreds string, voucherFile *os.File, example, policyF
 	} else {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unsupported voucher file type extension: %s", voucherFile.Name()))
 	}
-}
-
-//tfine list the SDO vouchers 
-func VoucherList(org, userCreds, voucher string) {
-	msgPrinter := i18n.GetMessagePrinter()
-	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
-
-	var requestBodyBytes []byte
-	respBody := ImportResponse{}
-	url := cliutils.GetSdoSvcUrl()
-	sdoUrl := url+"/vouchers"
-	creds := cliutils.OrgAndCreds(org, userCreds)
-	method := http.MethodGet
-	apiMsg := method + " " + sdoUrl
-	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
-	// Note: need to pass the request body in as a string, not []byte, so that it sets header: Content-Type, application/json
-
-	resp := cliutils.InvokeRestApi(httpClient, method, sdoUrl, creds, string(requestBodyBytes), "SDO Owner Service", apiMsg)
-	defer resp.Body.Close()
-
-	//resp, err := http.Get("http://ablest1.fyre.ibm.com:9008/api/vouchers")
-	httpCode := resp.StatusCode
-	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
-	msgPrinter.Println(string(respBodyBytes))
-	if err != nil {
-		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
-	}
-	if httpCode != 201 {
-		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))
-	}
-	err = json.Unmarshal(respBodyBytes, respBody)
-	if err != nil {
-		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
-	}
-
-	msgPrinter.Println(string(respBodyBytes))
 }
 
 func importTar(org, userCreds, sdoUrl string, voucherFileReader io.Reader, voucherFileName, example, policyFilePath, patternName string) {
