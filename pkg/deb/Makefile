@@ -53,7 +53,9 @@ horizon-cli-deb: require-version
 	cp ../../agent-install/agent-install.sh horizon-cli/usr/horizon/bin
 	cp ../../agent-install/agent-uninstall.sh horizon-cli/usr/horizon/bin
 	cp ../../agent-install/edgeNodeFiles.sh horizon-cli/usr/horizon/bin
-	cp ../../cli/bash_completion/hzn_bash_autocomplete.sh horizon-cli/etc/bash_completion.d
+	if [ -e ../../cli/bash_completion/hzn_bash_autocomplete.sh ]; then \
+          cp ../../cli/bash_completion/hzn_bash_autocomplete.sh horizon-cli/etc/bash_completion.d; \
+	fi
 	mkdir -p horizon-cli/usr/share/man/man1
 	gzip --stdout ../../cli/man1/hzn.1 > horizon-cli/usr/share/man/man1/hzn.1.gz
 	for m in ../../cli/man1/hzn.1.*; do \
