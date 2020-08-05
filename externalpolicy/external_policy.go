@@ -19,9 +19,11 @@ func (e ExternalPolicy) String() string {
 	return fmt.Sprintf("ExternalPolicy: Properties: %v, Constraints: %v", e.Properties, e.Constraints)
 }
 
-// The validate function returns errors if the policy does not validate. It uses the constraint language
+// This function validates the properties and constrains. It also updates the node's and service's
+// writable built-in properties inside this policy to make sure they have correct data types.
+// The validation returns errors if the policy does not validate. It uses the constraint language
 // plugins to handle the constraints field.
-func (e *ExternalPolicy) Validate() error {
+func (e *ExternalPolicy) ValidateAndNormalize() error {
 
 	// get message printer because this function is called by CLI
 	msgPrinter := i18n.GetMessagePrinter()
@@ -33,6 +35,7 @@ func (e *ExternalPolicy) Validate() error {
 		}
 	}
 
+	// accepts string "true" or "false" for PROP_NODE_PRIVILEGED, but change them to boolean
 	if e.Properties.HasProperty(PROP_NODE_PRIVILEGED) {
 		privProp, err := e.Properties.GetProperty(PROP_NODE_PRIVILEGED)
 		if err != nil {
@@ -47,6 +50,25 @@ func (e *ExternalPolicy) Validate() error {
 				}
 			} else {
 				return errors.New(msgPrinter.Sprintf("Property %s must have a boolean value (true or false).", PROP_NODE_PRIVILEGED))
+			}
+		}
+	}
+
+	// accepts string "true" or "false" for PROP_SVC_PRIVILEGED, but change them to boolean
+	if e.Properties.HasProperty(PROP_SVC_PRIVILEGED) {
+		privProp, err := e.Properties.GetProperty(PROP_SVC_PRIVILEGED)
+		if err != nil {
+			return err
+		}
+		if _, ok := privProp.Value.(bool); !ok {
+			if privStr, ok := privProp.Value.(string); ok && (privStr == "true" || privStr == "false") {
+				if privStr == "true" {
+					e.Properties.Add_Property(Property_Factory(PROP_SVC_PRIVILEGED, true), true)
+				} else {
+					e.Properties.Add_Property(Property_Factory(PROP_SVC_PRIVILEGED, false), true)
+				}
+			} else {
+				return errors.New(msgPrinter.Sprintf("Property %s must have a boolean value (true or false).", PROP_SVC_PRIVILEGED))
 			}
 		}
 	}

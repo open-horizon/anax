@@ -328,7 +328,7 @@ func NodeAddPolicyString(org, credToUse, node, policyStr string, quieter bool) {
 	}
 
 	//Check the policy file format
-	err = policyFile.Validate()
+	err = policyFile.ValidateAndNormalize()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in '%s': %v", policyStr, err))
 	}

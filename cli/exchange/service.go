@@ -536,7 +536,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	}
 
 	//Check the policy file format
-	err = policyFile.Validate()
+	err = policyFile.ValidateAndNormalize()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}
@@ -569,7 +569,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	policyFile.Properties = properties
 
 	//Check the policy file format again
-	err = policyFile.Validate()
+	err = policyFile.ValidateAndNormalize()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}

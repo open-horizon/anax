@@ -399,7 +399,7 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	}
 
 	//Check the policy file format
-	err = policyFile.Validate()
+	err = policyFile.ValidateAndNormalize()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect policy format in file %s: %v", jsonFilePath, err))
 	}
@@ -646,7 +646,7 @@ func verifyNodeUserInput(org string, credToUse string, node exchange.Device, nId
 func verifyNodeUserInputsForPolicy(org string, credToUse string, node exchange.Device, ui []policy.UserInput) {
 	msgPrinter := i18n.GetMessagePrinter()
 	msgPrinter.Printf("Verifying userInputs for node using policy.")
-        msgPrinter.Println()
+	msgPrinter.Println()
 
 	if len(ui) != 0 {
 		all_services := []common.AbstractServiceFile{}

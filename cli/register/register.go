@@ -85,7 +85,7 @@ func ReadAndVerifyPolicFile(jsonFilePath string, nodePol *externalpolicy.Externa
 	}
 
 	//Check the policy file format
-	err = nodePol.Validate()
+	err = nodePol.ValidateAndNormalize()
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect node policy format in file %s: %v", jsonFilePath, err))
 	}
