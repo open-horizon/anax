@@ -308,6 +308,10 @@ Environment Variables:
 	exServiceRemovePolicyService := exServiceRemovePolicyCmd.Arg("service", msgPrinter.Sprintf("Remove policy for this service.")).Required().String()
 	exServiceRemovePolicyForce := exServiceRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
+	exServiceListnode := exServiceCmd.Command("listnode", msgPrinter.Sprintf("Display the nodes that the service is running on."))
+	exServiceListnodeService := exServiceListnode.Arg("service", msgPrinter.Sprintf("The service id. Use <org>/<svc> to specify a service from a different org.")).Required().String()
+	exServiceListnodeNodeOrg := exServiceListnode.Flag("node-org", msgPrinter.Sprintf("The node's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.")).Short('O').String()
+
 	exBusinessCmd := exchangeCmd.Command("deployment", msgPrinter.Sprintf("List and manage deployment policies in the Horizon Exchange.")).Alias("business")
 	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", msgPrinter.Sprintf("Display the deployment policies from the Horizon Exchange."))
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -870,6 +874,8 @@ Environment Variables:
 		exchange.ServiceAddPolicy(*exOrg, credToUse, *exServiceAddPolicyService, *exServiceAddPolicyJsonFile)
 	case exServiceRemovePolicyCmd.FullCommand():
 		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
+	case exServiceListnode.FullCommand():
+		exchange.ListServiceNodes(*exOrg, *exUserPw, *exServiceListnodeService, *exServiceListnodeNodeOrg)
 	case exBusinessListPolicyCmd.FullCommand():
 		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy, !*exBusinessListPolicyLong)
 	case exBusinessNewPolicyCmd.FullCommand():

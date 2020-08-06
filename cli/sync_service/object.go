@@ -320,7 +320,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 
 	// Call the MMS service over HTTP to add the object's metadata to the MMS.
 	urlPath := path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID)
-	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, wrapper)
+	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, wrapper, nil)
 
 	// The object's data might be quite large, so upload it in a second call that will stream the file contents
 	// to the MSS (CSS).
@@ -341,7 +341,7 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 
 		// Stream the file to the MMS (CSS).
 		urlPath = path.Join("api/v1/objects/", org, objectMeta.ObjectType, objectMeta.ObjectID, "data")
-		cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file)
+		cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{204}, file, nil)
 
 		// Restore HTTP request override if necessary.
 		if setHTTPOverride {

@@ -191,12 +191,12 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 		// Service exists, update it
 		msgPrinter.Printf("Updating %s in the Exchange...", exchId)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput, nil)
 	} else {
 		// Service not there, create it
 		msgPrinter.Printf("Creating %s in the Exchange...", exchId)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput)
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services", cliutils.OrgAndCreds(org, userPw), []int{201}, svcInput, nil)
 	}
 
 	// Store the public key in the exchange, if they are used
@@ -211,7 +211,7 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 		baseName := filepath.Base(pubKeyToStore)
 		msgPrinter.Printf("Storing %s with the service in the Exchange...", baseName)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+org+"/services/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes, nil)
 	}
 
 	// Store registry auth tokens in the exchange, if they gave us some
@@ -234,7 +234,7 @@ func SignAndPublish(sf *common.ServiceFile, org, userPw, jsonFilePath, keyFilePa
 		msgPrinter.Printf("Storing %s with the service in the Exchange...", regTok)
 		msgPrinter.Println()
 		regTokExch := ServiceDockAuthExch{Registry: regstry, UserName: username, Token: token}
-		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+org+"/services/"+exchId+"/dockauths", cliutils.OrgAndCreds(org, userPw), []int{201}, regTokExch, nil)
 	}
 
 	// If necessary, tell the user to push the container images to the docker registry. Get the list of images they need to manually push
@@ -577,7 +577,7 @@ func ServiceAddPolicy(org string, credToUse string, service string, jsonFilePath
 	// add/replace service policy
 	msgPrinter.Printf("Updating Service policy  and re-evaluating all agreements based on this Service policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+svcorg+"/services/"+service+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
 
 	msgPrinter.Printf("Service policy updated.")
 	msgPrinter.Println()
@@ -672,4 +672,51 @@ func GetOpYamlArchiveFromClusterDepl(deploymentConfig string) []byte {
 	}
 
 	return nil
+}
+
+type ServiceNode struct {
+	OrgId          string `json:"orgid"`
+	ServiceUrl     string `json:"serviceURL"`
+	ServiceVersion string `json:"serviceVersion"`
+	ServiceArch    string `json:"serviceArch"`
+}
+
+// List the nodes that a service is running on.
+func ListServiceNodes(org, userPw, svcId, nodeOrg string) {
+	//check for ExchangeUrl early on
+	var exchUrl = cliutils.GetExchangeUrl()
+
+	// if nodeOrg is not specified, default to service org
+	if nodeOrg == "" {
+		nodeOrg = org
+	}
+
+	// extract service id
+	var svcOrg string
+	svcOrg, svcId = cliutils.TrimOrg(org, svcId)
+
+	// get service from the Exchange
+	var services exchange.GetServicesResponse
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+svcOrg+"/services"+cliutils.AddSlash(svcId), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &services)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, fmt.Sprintf("service id does not exist in the Exchange: %v/%v", svcOrg, svcId))
+	} else {
+		// extract org id, service url, version, and arch from Exchange
+		var svcNode ServiceNode
+		for id, _ := range services.Services {
+			svcNode = ServiceNode{OrgId: svcOrg, ServiceUrl: services.Services[id].URL, ServiceVersion: services.Services[id].Version, ServiceArch: services.Services[id].Arch}
+			break
+		}
+
+		// structure we are writing to
+		var listNodes map[string]interface{}
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+nodeOrg+"/search/nodes/service", cliutils.OrgAndCreds(org, userPw), []int{201}, svcNode, &listNodes)
+
+		// print list
+		jsonBytes, err := json.MarshalIndent(listNodes, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, fmt.Sprintf("failed to marshal 'hzn exchange service listnode' output: %v", err))
+		}
+		fmt.Printf("%s\n", jsonBytes)
+	}
 }

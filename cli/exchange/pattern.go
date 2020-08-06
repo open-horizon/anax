@@ -161,7 +161,7 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 	}
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
 	msgPrinter.Printf("Pattern %v/%v updated in the Horizon Exchange", patOrg, pattern)
 	msgPrinter.Println()
 }
@@ -308,12 +308,12 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		// Pattern exists, update it
 		msgPrinter.Printf("Updating %s in the Exchange...", exchId)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput, nil)
 	} else {
 		// Pattern not there, create it
 		msgPrinter.Printf("Creating %s in the Exchange...", exchId)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput)
+		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput, nil)
 	}
 
 	// Store the public key in the exchange, if they gave it to us
@@ -326,7 +326,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		baseName := filepath.Base(pubKeyFilePath)
 		msgPrinter.Printf("Storing %s with the pattern in the Exchange...", baseName)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes, nil)
 	}
 }
 
