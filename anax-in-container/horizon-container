@@ -208,15 +208,19 @@ start() {
 	#checkrc $? "mkdir -p $serviceStorageDir/service_storage"
 
 	# Get the latest horizon image
-	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
+	# $HC_DOCKER_IMAGE and $HC_DOCKER_TAG are intentionally undocumented env vars that allow us to test the staging version of the docker image
+	dockerImage='openhorizon/amd64_anax'
 	dockerTag='latest'
-	# $HC_DOCKER_TAG is an intentionally undocumented env var that allows us to test the staging version of the docker image
+	if [[ -n "$HC_DOCKER_IMAGE" ]]; then
+		dockerImage="$HC_DOCKER_IMAGE"
+	fi
 	if [[ -n "$HC_DOCKER_TAG" ]]; then
 		dockerTag="$HC_DOCKER_TAG"
 	fi
+	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
 	if [[ -z "$HC_DONT_PULL" ]]; then
-		docker pull openhorizon/amd64_anax:$dockerTag
-		checkrc $? "docker pull openhorizon/amd64_anax:$dockerTag"
+		docker pull $dockerImage:$dockerTag
+		checkrc $? "docker pull $dockerImage:$dockerTag"
 	fi
 
 	if [[ -n $HZN_ICP_CA_CERT_PATH ]]; then
@@ -226,7 +230,7 @@ start() {
 	fi
 
 	# Start the horizon container
-	echo "Starting the Horizon agent container openhorizon/amd64_anax:$dockerTag..."
+	echo "Starting the Horizon agent container $dockerImage:$dockerTag..."
 	# Note: docker will automatically create the ${DOCKER_NAME}_var and ${DOCKER_NAME}_etc volumes if necessary
 
 	anaxPort=$HZN_AGENT_PORT
@@ -241,10 +245,10 @@ start() {
 
 	if isMacos; then
 		DOCKER_HOST=tcp://host.docker.internal:$SOCAT_LISTEN_PORT
-		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
+		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e ANAX_DOCKER_ENDPOINT=${DOCKER_HOST} -e DOCKER_HOST=${DOCKER_HOST} -e HOST_OS=mac -e DOCKER_NAME=${DOCKER_NAME} $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	else
-		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} openhorizon/amd64_anax:$dockerTag
+		docker run $DOCKER_ADD_HOSTS -d -t --restart always --name $DOCKER_NAME --privileged -p 127.0.0.1:$HORIZON_AGENT_PORT:$anaxPort -e DOCKER_NAME=${DOCKER_NAME} -v /var/run/docker.sock:/var/run/docker.sock $defaultFileMountArg $icpCertMount -v ${DOCKER_NAME}_var:/var/horizon/ -v ${DOCKER_NAME}_etc:/etc/horizon/ -v ${fssHostSharePath}:/var/tmp/horizon/${DOCKER_NAME} $dockerImage:$dockerTag
 		checkrc $? "docker run"
 	fi
 
