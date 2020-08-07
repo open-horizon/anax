@@ -10,7 +10,7 @@ import (
 )
 
 // ObjectDownLoad is to download data to a file named ${objectType}_${objectId}
-func ObjectDownLoad(org string, userPw string, objType string, objId string, filePath string) {
+func ObjectDownLoad(org string, userPw string, objType string, objId string, filePath string, overwrite bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -55,12 +55,16 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 					filePath = filePath + "/"
 				}
 				fileName = fmt.Sprintf("%s%s_%s", filePath, objType, objId)
+			} else {
+				fileName = filePath
 			}
 		}
 	}
 
-	if _, err := os.Stat(fileName); err == nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("File %s already exists. Please specify different file path or file name. Or remove file and retry object download", fileName))
+	if !overwrite {
+		if _, err := os.Stat(fileName); err == nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("File %s already exists. Please specify a different file path or file name. To overwrite the existing file, use the '--overwrite' flag.", fileName))
+		}
 	}
 
 	file, err := os.Create(fileName)

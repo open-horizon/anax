@@ -591,6 +591,7 @@ Environment Variables:
 	mmsObjectDownloadType := mmsObjectDownloadCmd.Flag("type", msgPrinter.Sprintf("The type of the object to download data. This flag must be used with -i.")).Short('t').Required().String()
 	mmsObjectDownloadId := mmsObjectDownloadCmd.Flag("id", msgPrinter.Sprintf("The id of the object to download data. This flag must be used with -t.")).Short('i').Required().String()
 	mmsObjectDownloadFile := mmsObjectDownloadCmd.Flag("file", msgPrinter.Sprintf("The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory")).Short('f').String()
+	mmsObjectDownloadOverwrite := mmsObjectDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists in the file system.")).Short('O').Bool()
 
 	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
 
@@ -993,7 +994,7 @@ Environment Variables:
 	case mmsObjectDeleteCmd.FullCommand():
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
-		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile)
+		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite)
 	case voucherInspectCmd.FullCommand():
 		sdo.VoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():
