@@ -799,7 +799,11 @@ func (m GovernanceMaintenanceMessage) String() string {
 }
 
 func (m GovernanceMaintenanceMessage) ShortString() string {
-	return m.String()
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ShortString()
+	}
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
 func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment persistence.DeploymentConfig) *GovernanceMaintenanceMessage {
