@@ -1313,7 +1313,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 	case *WorkloadConfigureCommand:
 		cmd := command.(*WorkloadConfigureCommand)
 
-		glog.V(3).Infof("ContainerWorker received workload configure command: %v", cmd)
+		glog.V(3).Infof("ContainerWorker received workload configure command: %v", cmd.ShortString())
 
 		agreementId := cmd.AgreementLaunchContext.AgreementId
 
@@ -1426,7 +1426,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 	case *ContainerConfigureCommand:
 		cmd := command.(*ContainerConfigureCommand)
 
-		glog.V(3).Infof("ContainerWorker received container configure command: %v", cmd)
+		glog.V(3).Infof("ContainerWorker received container configure command: %v", cmd.ShortString())
 
 		lc := cmd.ContainerLaunchContext
 
@@ -1620,7 +1620,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 	case *ContainerMaintenanceCommand:
 		cmd := command.(*ContainerMaintenanceCommand)
-		glog.V(3).Infof("ContainerWorker received maintenance command: %v", cmd)
+		glog.V(3).Infof("ContainerWorker received maintenance command: %v", cmd.ShortString())
 
 		cMatches := make([]docker.APIContainers, 0)
 
@@ -1679,7 +1679,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 	case *ContainerStopCommand:
 		cmd := command.(*ContainerStopCommand)
 
-		glog.V(3).Infof("ContainerWorker received infrastructure container stop command: %v", cmd)
+		glog.V(3).Infof("ContainerWorker received infrastructure container stop command: %v", cmd.ShortString())
 		if err := b.ResourcesRemove([]string{cmd.Msg.ContainerName}); err != nil {
 			glog.Errorf("Error removing resources: %v", err)
 		}
@@ -1689,7 +1689,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 	case *MaintainMicroserviceCommand:
 		cmd := command.(*MaintainMicroserviceCommand)
-		glog.V(3).Infof("ContainerWorker received service maintenance command: %v", cmd)
+		glog.V(3).Infof("ContainerWorker received service maintenance command: %v", cmd.ShortString())
 
 		cMatches := make([]docker.APIContainers, 0)
 
@@ -1929,7 +1929,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	if err != nil {
 		return fmt.Errorf("Unable to list networks: %v", err)
 	}
-	glog.V(3).Infof("Existing networks: %v", networks)
+	glog.V(5).Infof("Existing networks: %v", networks)
 
 	freeNets := make([]docker.Network, 0)
 	destroy := func(container *docker.APIContainers, agreementId string) error {

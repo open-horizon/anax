@@ -19,7 +19,11 @@ func (c WorkloadConfigureCommand) String() string {
 }
 
 func (c WorkloadConfigureCommand) ShortString() string {
-	return c.String()
+	lc := ""
+	if c.AgreementLaunchContext != nil {
+		lc = c.AgreementLaunchContext.ShortString()
+	}
+	return fmt.Sprintf("AgreementLaunchContext: %v, DeploymentDescription: %v", lc, c.DeploymentDescription)
 }
 
 func (b *ContainerWorker) NewWorkloadConfigureCommand(deploymentDescription *containermessage.DeploymentDescription, agreementLaunchContext *events.AgreementLaunchContext) *WorkloadConfigureCommand {
@@ -40,7 +44,11 @@ func (c ContainerConfigureCommand) String() string {
 }
 
 func (c ContainerConfigureCommand) ShortString() string {
-	return c.String()
+	lc := ""
+	if c.ContainerLaunchContext != nil {
+		lc = c.ContainerLaunchContext.ShortString()
+	}
+	return fmt.Sprintf("ContainerLaunchContext: %v, DeploymentDescription: %v", lc, c.DeploymentDescription)
 }
 
 func (b *ContainerWorker) NewContainerConfigureCommand(deploymentDescription *containermessage.DeploymentDescription, containerLaunchContext *events.ContainerLaunchContext) *ContainerConfigureCommand {

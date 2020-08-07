@@ -5,6 +5,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/semanticversion"
 	"reflect"
+	"strings"
 )
 
 type AbstractUserInput interface {
@@ -28,6 +29,10 @@ func (s Input) String() string {
 	return fmt.Sprintf("Name: %v, "+
 		"Value: %v",
 		s.Name, s.Value)
+}
+
+func (s Input) ShortString() string {
+	return fmt.Sprintf("%v: %v", s.Name, s.Value)
 }
 
 // compare two Input's
@@ -59,6 +64,18 @@ func (s UserInput) String() string {
 		"ServiceVersionRange: %v, "+
 		"Inputs: %v",
 		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange, s.Inputs)
+}
+
+func (s UserInput) ShortString() string {
+	inputs := []string{}
+	if s.Inputs != nil && len(s.Inputs) != 0 {
+		for _, ui := range s.Inputs {
+			inputs = append(inputs, ui.ShortString())
+		}
+	}
+	return fmt.Sprintf("Service: %v/%v %v %v, "+
+		"Inputs: %v",
+		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange, strings.Join(inputs, ","))
 }
 
 // The following functions implement AbstractUserInput interface

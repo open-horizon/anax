@@ -757,7 +757,7 @@ func (w *AgreementWorker) registerNode(ms *[]exchange.Microservice) error {
 		pdr.RegisteredServices = &tmp
 	}
 
-	glog.V(3).Infof(logString(fmt.Sprintf("Registering services and pattern: %v.", pdr)))
+	glog.V(3).Infof(logString(fmt.Sprintf("Registering services and pattern: %v.", pdr.ShortString())))
 
 	patchDevice := exchange.GetHTTPPatchDeviceHandler(w)
 	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
@@ -801,7 +801,7 @@ func (w *AgreementWorker) patchNodeKey() error {
 	resp = new(exchange.PutDeviceResponse)
 	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
 
-	glog.V(3).Infof(logString(fmt.Sprintf("patching messaging key to node entry: %v at %v", pdr, targetURL)))
+	glog.V(3).Infof(logString(fmt.Sprintf("patching messaging key to node entry: %v at %v", pdr.ShortString(), targetURL)))
 
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PATCH", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {

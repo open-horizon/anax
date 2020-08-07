@@ -204,9 +204,9 @@ then
   # Start Anax
   echo "Starting Anax1 for tests."
   if [ ${CERT_LOC} -eq "1" ]; then
-    /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
+    /usr/local/bin/anax -v=3 -alsologtostderr=true -config /etc/colonus/anax-combined.config >/tmp/anax.log 2>&1 &
   else
-    /usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
+    /usr/local/bin/anax -v=3 -alsologtostderr=true -config /etc/colonus/anax-combined-no-cert.config >/tmp/anax.log 2>&1 &
   fi
 
   sleep 5
@@ -248,15 +248,15 @@ then
     if [ "$OLDAGBOT" == "1" ]
     then
       echo "Starting the OLD Agreement Bot 1."
-      su agbotuser -c "/usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
+      su agbotuser -c "/usr/bin/old-anax -v=3 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
     else
       echo "Starting Agreement Bot 1."
-      su agbotuser -c "/usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
+      su agbotuser -c "/usr/local/bin/anax -v=3 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
 
       if [ "$MULTIAGBOT" == "1" ]; then
         sleep 5
         echo "Starting Agreement Bot 2."
-        su agbotuser -c "/usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot2.config >/tmp/agbot2.log 2>&1 &"
+        su agbotuser -c "/usr/local/bin/anax -v=3 -alsologtostderr=true -config /etc/agbot/agbot2.config >/tmp/agbot2.log 2>&1 &"
       fi
     fi
 
