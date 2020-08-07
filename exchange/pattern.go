@@ -384,12 +384,11 @@ type SearchExchangePatternRequest struct {
 	ServiceURL   string   `json:"serviceUrl,omitempty"`
 	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
 	SecondsStale int      `json:"secondsStale"`
-	StartIndex   int      `json:"startIndex"`
 	NumEntries   int      `json:"numEntries"`
 }
 
 func (a SearchExchangePatternRequest) String() string {
-	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.StartIndex, a.NumEntries)
+	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.NumEntries)
 }
 
 type SearchExchangePatternResponse struct {
@@ -405,9 +404,32 @@ func (r SearchExchangePatternResponse) String() string {
 func CreateSearchPatternRequest() *SearchExchangePatternRequest {
 
 	ser := &SearchExchangePatternRequest{
-		StartIndex: 0,
-		NumEntries: 100,
+		NumEntries: 0,
 	}
 
 	return ser
+}
+
+func GetPatternNodes(ec ExchangeContext, policyOrg string, patternId string, req *SearchExchangePatternRequest) (*[]SearchResultDevice, error) {
+	// Invoke the exchange
+	var resp interface{}
+	resp = new(SearchExchangePatternResponse)
+	targetURL := ec.GetExchangeURL() + "orgs/" + policyOrg + "/patterns/" + GetId(patternId) + "/search"
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "POST", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), *req, &resp); err != nil {
+			if !strings.Contains(err.Error(), "status: 404") {
+				return nil, err
+			} else {
+				empty := make([]SearchResultDevice, 0, 0)
+				return &empty, nil
+			}
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			dev := resp.(*SearchExchangePatternResponse).Devices
+			return &dev, nil
+		}
+	}
 }

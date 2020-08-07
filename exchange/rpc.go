@@ -982,7 +982,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				} else {
 					return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
 				}
-			} else if (method == "PUT" || method == "POST" || method == "PATCH") && (httpResp.StatusCode != http.StatusCreated && httpResp.StatusCode != http.StatusNoContent) {
+			} else if (method == "PUT" || method == "POST" || method == "PATCH") && ((httpResp.StatusCode != http.StatusCreated && httpResp.StatusCode != http.StatusNoContent && httpResp.StatusCode != http.StatusConflict) || (httpResp.StatusCode == http.StatusConflict && !strings.Contains(url, "business/policies/"))) {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
 			} else if method == "DELETE" && httpResp.StatusCode != http.StatusNoContent {
 				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil

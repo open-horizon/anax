@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/businesspolicy"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/externalpolicy"
 	"strings"
 	"time"
@@ -73,19 +74,25 @@ type GetBusinessPolicyResponse struct {
 type SearchExchBusinessPolRequest struct {
 	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
 	ChangedSince uint64   `json:"changedSince"`
+	Session      string   `json:"session"`
+	NumEntries   uint64   `json:"numEntries"`
 }
 
 func (a SearchExchBusinessPolRequest) String() string {
-	return fmt.Sprintf("NodeOrgIds: %v, ChangedSince: %v", a.NodeOrgIds, a.ChangedSince)
+	return fmt.Sprintf("NodeOrgIds: %v, ChangedSince: %v, Session: %v, NumEntries: %v", a.NodeOrgIds, time.Unix(int64(a.ChangedSince), 0).Format(cutil.ExchangeTimeFormat), a.Session, a.NumEntries)
 }
 
+// This struct is a merge of 2 possible responses that can come from the policy search API.
 type SearchExchBusinessPolResponse struct {
 	Devices   []SearchResultDevice `json:"nodes"`
 	LastIndex int                  `json:"lastIndex"`
+	AgbotId   string               `json:"agbot"`    // The internal agbot id (UUID)
+	Offset    string               `json:"offset"`   // The current timestamp wihtin the exchange that marks the latest changed node given to an agbot
+	Session   string               `jsaon:"session"` // The session token used by the agbot for this series of searches
 }
 
 func (r SearchExchBusinessPolResponse) String() string {
-	return fmt.Sprintf("Devices: %v, LastIndex: %v", r.Devices, r.LastIndex)
+	return fmt.Sprintf("Devices: %v, LastIndex: %v, AgbotId: %v, Exchange offset: %v, Session: %v", r.Devices, r.LastIndex, r.AgbotId, r.Offset, r.Session)
 }
 
 // Retrieve the node policy object from the exchange. The input device Id is assumed to be prefixed with its org.
@@ -249,6 +256,29 @@ func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v business policies for %v", len(pols), org)))
 			}
 			return pols, nil
+		}
+	}
+}
+
+func GetPolicyNodes(ec ExchangeContext, policyOrg string, policyName string, req *SearchExchBusinessPolRequest) (*SearchExchBusinessPolResponse, error) {
+	// Invoke the exchange
+	var resp interface{}
+	resp = new(SearchExchBusinessPolResponse)
+	targetURL := ec.GetExchangeURL() + "orgs/" + policyOrg + "/business/policies/" + policyName + "/search"
+	for {
+		// TODO: Need special handling for a 409 because the session is invalid (or old).
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "POST", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), *req, &resp); err != nil {
+			if !strings.Contains(err.Error(), "status: 404") {
+				return nil, err
+			} else {
+				return resp.(*SearchExchBusinessPolResponse), nil
+			}
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			return resp.(*SearchExchBusinessPolResponse), nil
 		}
 	}
 }
