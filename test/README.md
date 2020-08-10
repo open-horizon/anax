@@ -13,6 +13,31 @@ The project will create 3 containers:
   - Where anax runs, built initially from openhorizon/anax source, uses local copy of source afterwards unless told otherwise
 And depending on which PATTERN is chosen, a series of workload containers
 
+## QuickStart 
+
+```
+sudo apt update -qq -y && sudo apt install -qq -y ssh git jq curl build-essential docker-compose
+sudo addgroup ${USER} docker
+sudo snap install microk8s --classic --channel=1.18/stable
+wget https://golang.org/dl/go1.14.7.linux-amd64.tar.gz
+sudo tar xzf go1.14.7.linux-amd64.tar.gz -C /usr/local/
+export PATH=$PATH:/usr/local/go/bin
+export GOPATH=${HOME}/go
+mkdir ${GOPATH}
+export ANAX_SOURCE=${HOME}/GIT/anax
+mkdir -p ${ANAX_SOURCE}
+git clone http://github.com/open-horizon/anax.git ${ANAX_SOURCE}
+export HZN_ORG_ID="userdev"
+export HZN_EXCHANGE_USER_AUTH="userdev/userdevadmin:userdevadminpw"
+export HZN_EXCHANGE_URL=http://localhost:8090/v1
+export HZN_FSS_CSSURL=https://localhost:9443
+export HZN_SSL_SKIP_VERIFY=1
+cd ${ANAX_SOURCE}
+make
+cd test
+make test TEST_VARS="NOLOOP=1 TEST_PATTERNS=all"
+```
+
 ## Building and running
 
 ### One time steps to setup your environment
