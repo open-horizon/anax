@@ -158,15 +158,21 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 		user, _ := cliutils.SplitIdToken(userPw)
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("user '%s' does not exist with the specified password.", user))
 	} else if httpCode == 403 {
-		// Access denied means the node exists and is owned by another user. Figure out who and tell the user
+		// Access denied means either the node exists and is owned by another user or it doesn't exist but user reached the maxNodes threshold.
 		var nodesOutput exchange.GetDevicesResponse
-		httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200}, &nodesOutput)
-		var ok bool
-		var ourNode exchange.Device
-		if ourNode, ok = nodesOutput.Devices[cliutils.OrgAndCreds(org, nodeId)]; !ok {
-			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in exchange nodes output", cliutils.OrgAndCreds(org, nodeId)))
+		httpCode = cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &nodesOutput)
+		if httpCode == 200 {
+			// Node exists. Figure out who is the owner and tell the user
+			var ok bool
+			var ourNode exchange.Device
+			if ourNode, ok = nodesOutput.Devices[cliutils.OrgAndCreds(org, nodeId)]; !ok {
+				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("key '%s' not found in exchange nodes output", cliutils.OrgAndCreds(org, nodeId)))
+			}
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("can not update existing node %s because it is owned by another user (%s)", nodeId, ourNode.Owner))
+		} else if httpCode == 404 {
+			// Node doesn't exist. MaxNodes reached
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("can not create node %s because maxNodes limit has been reached", nodeId))
 		}
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("can not update existing node %s because it is owned by another user (%s)", nodeId, ourNode.Owner))
 	} else if httpCode == 201 {
 		if nodeExists {
 			msgPrinter.Printf("Node %v updated.", nodeId)
