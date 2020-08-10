@@ -78,7 +78,7 @@ func MakeExternalPolicyHeaderName(id string) string {
 // Generate a policy from the external policy.
 func GenPolicyFromExternalPolicy(extPol *externalpolicy.ExternalPolicy, polName string) (*Policy, error) {
 	// validate first
-	if err := extPol.Validate(); err != nil {
+	if err := extPol.ValidateAndNormalize(); err != nil {
 		return nil, fmt.Errorf("Failed to validate the external policy: %v", extPol)
 	}
 
