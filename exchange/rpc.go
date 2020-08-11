@@ -390,13 +390,21 @@ func (p PutDeviceRequest) ShortString() string {
 // Please patch one field at a time.
 type PatchDeviceRequest struct {
 	UserInput          *[]policy.UserInput `json:"userInput,omitempty"`
-	Pattern            string              `json:"pattern,omitempty"`
-	Arch               string              `json:"arch,omitempty"`
+	Pattern            *string             `json:"pattern,omitempty"`
+	Arch               *string             `json:"arch,omitempty"`
 	RegisteredServices *[]Microservice     `json:"registeredServices,omitempty"`
 }
 
 func (p PatchDeviceRequest) String() string {
-	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v", p.UserInput, p.RegisteredServices, p.Pattern)
+	pattern := "nil"
+	if p.Pattern != nil {
+		pattern = *p.Pattern
+	}
+	arch := "nil"
+	if p.Arch != nil {
+		arch = *p.Arch
+	}
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", p.UserInput, p.RegisteredServices, pattern, arch)
 }
 
 type PostMessage struct {

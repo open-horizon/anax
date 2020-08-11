@@ -17,6 +17,17 @@ import (
 	"time"
 )
 
+const (
+	// pollinterval update types
+	UPDATE_TYPE_RESET      = "RESET"      // set the poll interval to min
+	UPDATE_TYPE_ALERT      = "ALERT"      // set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
+	UPDATE_TYPE_NEW_CONFIG = "NEW_CONFIG" // adjust the poll interval according to the new configuration
+	UPDATE_TYPE_NO_CHANGES = "NO_CHANGES" // increate poll interval because there are no changes
+
+	// alert level
+	POLL_INTERVAL_ALERT_LEVEL = 2
+)
+
 type ChangesWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
@@ -25,8 +36,8 @@ type ChangesWorker struct {
 	pollMaxInterval   int    // The maximum time to wait between polls to the exchange.
 	pollAdjustment    int    // The amount to increase the polling time, each time it is increased.
 	pollInitTime      int64  // THe time when the polling starts 10sec interval
-	noMsgCount        int    // How many consecutive polls have returned no changes.
 	agreementReached  bool   // True when ths node has seen at least one agreement.
+	noMsgCount        int    // How many consecutive polls have returned no changes.
 	changeID          uint64 // The current change Id in the exchange.
 	lastHeartbeat     int64  // Last time a heartbeat was successful.
 	heartBeatFailed   bool   // Remember that the heartbeat has failed.
@@ -127,7 +138,8 @@ func (w *ChangesWorker) Initialize() bool {
 
 	// Retrieve the node's heartbeat intervals if we can.
 	if w.GetExchangeToken() != "" {
-		w.getNodeHeartbeatIntervals()
+		w.getHeartbeatIntervals()
+		w.updatePollingInterval(UPDATE_TYPE_RESET)
 	}
 
 	return true
@@ -145,24 +157,20 @@ func (w *ChangesWorker) NewEvent(incoming events.Message) {
 	case *events.AgreementReachedMessage:
 		w.Commands <- NewAgreementCommand()
 
+	case *events.ProposalAcceptedMessage:
+		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_RESET)
+
 	case *events.NodePolicyMessage:
-		w.Commands <- NewResetIntervalCommand()
+		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_ALERT)
 
 	case *events.NodeUserInputMessage:
-		w.Commands <- NewResetIntervalCommand()
+		w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_ALERT)
 
 	case *events.GovernanceWorkloadCancelationMessage:
 		msg, _ := incoming.(*events.GovernanceWorkloadCancelationMessage)
 		switch msg.Event().Id {
 		case events.AGREEMENT_ENDED:
-			w.Commands <- NewResetIntervalCommand()
-		}
-
-	case *events.ApiAgreementCancelationMessage:
-		msg, _ := incoming.(*events.ApiAgreementCancelationMessage)
-		switch msg.Event().Id {
-		case events.AGREEMENT_ENDED:
-			w.Commands <- NewResetIntervalCommand()
+			w.Commands <- NewUpdateIntervalCommand(UPDATE_TYPE_ALERT)
 		}
 
 	case *events.ExchangeChangesShutdownMessage:
@@ -190,8 +198,9 @@ func (w *ChangesWorker) NewEvent(incoming events.Message) {
 func (w *ChangesWorker) CommandHandler(command worker.Command) bool {
 
 	switch command.(type) {
-	case *ResetIntervalCommand:
-		w.resetPollingInterval()
+	case *UpdateIntervalCommand:
+		cmd, _ := command.(*UpdateIntervalCommand)
+		w.updatePollingInterval(cmd.UpdateType)
 
 		// When the command handler gets called by the worker framework, the noworkhandler timer is restarted.
 		// Therefore, if there is a steady flow of commands coming into the command handler, the noworkhandler
@@ -265,13 +274,17 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			resourceTypes[events.CHANGE_MESSAGE_TYPE] = true
 		} else if change.IsNode(w.GetExchangeId()) {
 			resourceTypes[events.CHANGE_NODE_TYPE] = true
-			w.getNodeHeartbeatIntervals()
+			if updated := w.getHeartbeatIntervals(); updated {
+				w.updatePollingInterval(UPDATE_TYPE_NEW_CONFIG)
+			}
 		} else if change.IsNodePolicy(w.GetExchangeId()) {
 			resourceTypes[events.CHANGE_NODE_POLICY_TYPE] = true
 		} else if change.IsNodeError(w.GetExchangeId()) {
 			resourceTypes[events.CHANGE_NODE_ERROR_TYPE] = true
 		} else if change.IsOrg() {
-			w.getNodeHeartbeatIntervals()
+			if updated := w.getHeartbeatIntervals(); updated {
+				w.updatePollingInterval(UPDATE_TYPE_NEW_CONFIG)
+			}
 		} else if change.IsService() {
 			resourceTypes[events.CHANGE_SERVICE_TYPE] = true
 		} else {
@@ -329,7 +342,9 @@ func (w *ChangesWorker) postProcessChanges(changes *exchange.ExchangeChanges, in
 
 	// Recalculate a new polling interval if necessary.
 	if w.Config.Edge.ExchangeMessageDynamicPoll {
-		w.updatePollingInterval(interestingChanges)
+		if !interestingChanges {
+			w.updatePollingInterval(UPDATE_TYPE_NO_CHANGES)
+		}
 	}
 }
 
@@ -346,7 +361,7 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 			// The exchange context is configured for minimal retries and a small interval. This will cause retries
 			// to end quickly and to be handled like errors here. When there are errors, the "no work interval" is kept
 			// minimal so that the worker itself will retry very soon.
-			w.resetPollingInterval()
+			w.updatePollingInterval(UPDATE_TYPE_RESET)
 
 			// If the heartbeat has been failing for the configured grace period, let other workers know that the heartbeat
 			// has failed. The message is sent out only when the heartbeat state changes from success to failed after the configured
@@ -399,49 +414,67 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 	return false
 }
 
-// A stepping function for slowly increasing the time interval between polls to the exchange for changes.
-// If there are no agreements, leave the polling interval alone.
-// If a msg was received in the last interval, reduce the interval to the starting configured interval.
-// Otherwise, increase the polling interval if enough polls have passed. The algorithm is a simple function that
-// slowly increases the polling interval at first and then increases it's length more quickly as more and more
-// polls come back with no messages.
-func (w *ChangesWorker) updatePollingInterval(msgReceived bool) {
+// Setting up the new polling interval according to the updateType:
+// 	 UPDATE_TYPE_RESET:  set the poll interval to min
+//	 UPDATE_TYPE_ALERT:  set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
+//	 UPDATE_TYPE_NEW_CONFIG: adjust the poll interval according to the new configuration from node or node org
+//	 UPDATE_TYPE_NO_CHANGES: increate poll interval because there are no changes
 
-	if msgReceived {
-		w.resetPollingInterval()
-		return
-	}
+func (w *ChangesWorker) updatePollingInterval(updateType string) {
 
-	if (!w.agreementReached && (w.pollInitTime == 0 || time.Since(time.Unix(w.pollInitTime, 0)).Seconds() < float64(w.Config.Edge.InitialPollingBuffer))) || (w.pollInterval >= w.pollMaxInterval) {
-		return
-	}
-
-	w.noMsgCount += 1
-
-	if w.noMsgCount >= (w.pollMaxInterval / w.pollInterval) {
-		w.pollInterval += w.pollAdjustment
-		if w.pollInterval > w.pollMaxInterval {
-			w.pollInterval = w.pollMaxInterval
+	if updateType == UPDATE_TYPE_RESET {
+		// set the polling interval to minial. This is the case where agreement negotiation started when the node needs to
+		// watch the upcoming messages more closely.
+		if w.pollInterval != w.pollMinInterval {
+			w.pollInterval = w.pollMinInterval
+			w.SetNoWorkInterval(w.pollInterval)
+			glog.V(3).Infof(chglog(fmt.Sprintf("Resetting poll interval to %v, max interval is %v, increment is %v.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
 		}
 		w.noMsgCount = 0
-		w.SetNoWorkInterval(w.pollInterval)
-		glog.V(3).Infof(chglog(fmt.Sprintf("Increasing change poll interval to %v, increment is %v", w.pollInterval, w.pollAdjustment)))
+	} else if updateType == UPDATE_TYPE_ALERT {
+		// This is the case when the node should be watching the changes more often than max but not as frequent as min.
+		// It is called alert.
+		// For excample: node policy changed, node userinput changed, node itself changed, service changed,
+		// agreement canceled etc.
+		// Set the polling interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL.
+		// If the current pollInterval is smaller than the alert value, keep the current because it may
+		// be in the middle of the agreement negotiation.
+		mPollInterval := (w.pollMinInterval + w.pollMaxInterval) / POLL_INTERVAL_ALERT_LEVEL
+		if w.pollInterval > mPollInterval {
+			w.pollInterval = mPollInterval
+			w.SetNoWorkInterval(w.pollInterval)
+			glog.V(3).Infof(chglog(fmt.Sprintf("Setting poll interval to alert level %v, max interval is %v, increment is %v.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
+		}
+		w.noMsgCount = 0
+	} else if updateType == UPDATE_TYPE_NO_CHANGES {
+		// This is the case where there are no new changes.
+		// Slowly increasing the time interval between polls to the exchange for changes.
+		if (!w.agreementReached && (w.pollInitTime == 0 || time.Since(time.Unix(w.pollInitTime, 0)).Seconds() < float64(w.Config.Edge.InitialPollingBuffer))) || (w.pollInterval >= w.pollMaxInterval) {
+			return
+		}
+
+		w.noMsgCount += 1
+
+		if w.noMsgCount >= (w.pollMaxInterval / w.pollInterval) {
+			w.pollInterval += w.pollAdjustment
+			if w.pollInterval > w.pollMaxInterval {
+				w.pollInterval = w.pollMaxInterval
+			}
+			w.noMsgCount = 0
+			w.SetNoWorkInterval(w.pollInterval)
+			glog.V(3).Infof(chglog(fmt.Sprintf("Increasing change poll interval to %v, max interval is %v, increment is %v.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
+		}
+	} else if updateType == UPDATE_TYPE_NEW_CONFIG {
+		// max, min and adjust poll interval could have been changed, we will try to keep the
+		// polling run as is unless the poll interval is greater than the max.
+		if w.pollInterval > w.pollMaxInterval {
+			w.pollInterval = w.pollMaxInterval
+			w.SetNoWorkInterval(w.pollInterval)
+			glog.V(3).Infof(chglog(fmt.Sprintf("Setting poll interval to %v, max interval is %v, increment is %v due to the node or org heartbeat config changes.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
+		}
+	} else {
+		glog.Warningf(chglog(fmt.Sprintf("The update type '%v' passed to the updatePollingInterval function is not supported.", updateType)))
 	}
-
-	return
-
-}
-
-// Reset the polling interval step function to its starting values because there is activity in the system which might
-// cause changes to occur in the exchange.
-func (w *ChangesWorker) resetPollingInterval() {
-	if w.pollInterval != w.pollMinInterval {
-		w.pollInterval = w.pollMinInterval
-		w.SetNoWorkInterval(w.pollInterval)
-		glog.V(3).Infof(chglog(fmt.Sprintf("Resetting poll interval to %v, increment is %v", w.pollInterval, w.pollAdjustment)))
-	}
-	w.noMsgCount = 0
-	return
 }
 
 // This function gets called when the device registers and is assigned an id and token which can be used to authenticate
@@ -454,7 +487,8 @@ func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 	w.pollInitTime = time.Now().Unix()
 
 	// Retrieve the node's heartbeat configuration from the node itself, and update the worker.
-	w.getNodeHeartbeatIntervals()
+	w.getHeartbeatIntervals()
+	w.updatePollingInterval(UPDATE_TYPE_RESET)
 
 	// Call the exchange to retrieve the current max change id. Use a custom exchange context that blocks (retries forever)
 	// until we can get the max change ID.
@@ -474,14 +508,19 @@ func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 
 }
 
-// This function gets called retrieve the node's heartbeat configuration, if there is any.
-func (w *ChangesWorker) getNodeHeartbeatIntervals() {
+// This function retrieves the node's and node org's heartbeat configuration, if there is any,
+// and setup the exchange polling min, max and increment intervals. The node def takes precedence,
+// then the org def, then the config file. It allows the node to override one of the settings from the org,
+// and the org can override one of the defaults from the config.
+func (w *ChangesWorker) getHeartbeatIntervals() bool {
 
 	updated := false
 
 	// Retrieve the node's heartbeat configuration from the node itself.
-	if node, err := exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), ""); err != nil {
+	node, err := exchange.GetHTTPDeviceHandler(w)(w.GetExchangeId(), "")
+	if err != nil {
 		glog.Errorf(chglog(fmt.Sprintf("Error retrieving node %v heartbeat intervals, error: %v", w.GetExchangeId(), err)))
+		return false
 	} else if node != nil {
 		if node.HeartbeatIntv.MinInterval != 0 && w.pollMinInterval != node.HeartbeatIntv.MinInterval {
 			w.pollMinInterval = node.HeartbeatIntv.MinInterval
@@ -495,37 +534,42 @@ func (w *ChangesWorker) getNodeHeartbeatIntervals() {
 			w.pollAdjustment = node.HeartbeatIntv.IntervalAdjustment
 			updated = true
 		}
-	}
-	// Reconcile the new values from the node with the existing poll interval, by resetting the poll interval to the starting value.
-	if updated {
-		glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat Poll intervals from node min: %v, max: %v, increment: %v", w.pollMinInterval, w.pollMaxInterval, w.pollAdjustment)))
-		w.resetPollingInterval()
-		return
+	} else {
+		glog.Errorf(chglog(fmt.Sprintf("Error retrieving node %v heartbeat intervals, error: %v", w.GetExchangeId(), err)))
+		return false
 	}
 
 	// Retrieve the heartbeat configuration from the node's org
 	nodeorg := exchange.GetOrg(w.GetExchangeId())
 	if org, err := exchange.GetHTTPExchangeOrgHandler(w)(nodeorg); err != nil {
 		glog.Errorf(chglog(fmt.Sprintf("Error retrieving node's org %v heartbeat intervals, error: %v", nodeorg, err)))
+		return false
 	} else if org != nil {
-		if org.HeartbeatIntv.MinInterval != 0 && w.pollMinInterval != org.HeartbeatIntv.MinInterval {
+		if node.HeartbeatIntv.MinInterval == 0 && org.HeartbeatIntv.MinInterval != 0 && w.pollMinInterval != org.HeartbeatIntv.MinInterval {
 			w.pollMinInterval = org.HeartbeatIntv.MinInterval
 			updated = true
 		}
-		if org.HeartbeatIntv.MaxInterval != 0 && w.pollMaxInterval != org.HeartbeatIntv.MaxInterval {
+		if node.HeartbeatIntv.MaxInterval == 0 && org.HeartbeatIntv.MaxInterval != 0 && w.pollMaxInterval != org.HeartbeatIntv.MaxInterval {
 			w.pollMaxInterval = org.HeartbeatIntv.MaxInterval
 			updated = true
 		}
-		if org.HeartbeatIntv.IntervalAdjustment != 0 && w.pollAdjustment != org.HeartbeatIntv.IntervalAdjustment {
+		if node.HeartbeatIntv.IntervalAdjustment == 0 && org.HeartbeatIntv.IntervalAdjustment != 0 && w.pollAdjustment != org.HeartbeatIntv.IntervalAdjustment {
 			w.pollAdjustment = org.HeartbeatIntv.IntervalAdjustment
 			updated = true
 		}
 	}
-	// Reconcile the new values from the node's org with the existing poll interval, by resetting the poll interval to the starting value.
+
 	if updated {
-		glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat Poll intervals from node's org min: %v, max: %v, increment: %v", w.pollMinInterval, w.pollMaxInterval, w.pollAdjustment)))
-		w.resetPollingInterval()
+		// make sure that the min interval is not greater than the max
+		if w.pollMaxInterval < w.pollMinInterval {
+			glog.V(3).Infof(chglog(fmt.Sprintf("Max poll interval %v cannot be samller than the min %v. Will make max poll interval equals to then min poll interval.", w.pollMaxInterval, w.pollMinInterval)))
+			w.pollMaxInterval = w.pollMinInterval
+		}
+
+		glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat Poll intervals updated from node definition and node's org definiton. min: %v, max: %v, increment: %v", w.pollMinInterval, w.pollMaxInterval, w.pollAdjustment)))
 	}
+
+	return updated
 }
 
 // Utility logging function

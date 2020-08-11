@@ -74,6 +74,7 @@ const (
 	DEVICE_AGREEMENTS_SYNCED EventId = "DEVICE_AGREEMENTS_SYNCED"
 	DEVICE_CONTAINERS_SYNCED EventId = "DEVICE_CONTAINERS_SYNCED"
 	WORKLOAD_UPGRADE         EventId = "WORKLOAD_UPGRADE"
+	PROPOSAL_ACCEPTED        EventId = "PROPOSAL_ACCEPTED"
 
 	// Node related
 	START_UNCONFIGURE            EventId = "UNCONFIGURE_NODE"
@@ -1925,6 +1926,30 @@ func (w *ExchangeChangeMessage) GetChange() interface{} {
 
 func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {
 	return &ExchangeChangeMessage{
+		event: Event{
+			Id: id,
+		},
+	}
+}
+
+type ProposalAcceptedMessage struct {
+	event Event
+}
+
+func (w *ProposalAcceptedMessage) Event() Event {
+	return w.event
+}
+
+func (w *ProposalAcceptedMessage) String() string {
+	return w.ShortString()
+}
+
+func (w *ProposalAcceptedMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v", w.event)
+}
+
+func NewProposalAcceptedMessage(id EventId) *ProposalAcceptedMessage {
+	return &ProposalAcceptedMessage{
 		event: Event{
 			Id: id,
 		},

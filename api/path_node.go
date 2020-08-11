@@ -240,7 +240,8 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// update the arch for the exchange node
 	pdr := exchange.PatchDeviceRequest{}
-	pdr.Arch = cutil.ArchString()
+	tmpArch := cutil.ArchString()
+	pdr.Arch = &tmpArch
 	if err := patchDeviceHandler(deviceId, *device.Token, &pdr); err != nil {
 		return errorhandler(NewSystemError(fmt.Sprintf("error adding architecture for the exchange node. %v", err))), nil, nil
 	}
