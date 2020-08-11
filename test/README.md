@@ -28,7 +28,7 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `export ANAX_SOURCE=</path/to/anax>`
 - Set up a single node k8s for testing, follow the instructions here:
   - https://microk8s.io/docs/
-  - make sure you install from the 1.14 channel: `sudo snap install microk8s --classic --channel=1.14/stable`
+  - make sure you install from the 1.18 channel: `sudo snap install microk8s --classic --channel=1.18/stable`
   - see also https://microk8s.io/docs/setting-snap-channel when deciding when to upgrade to a newer Kubernetes
 - Clone this repo  
   - `git clone git@github.com:open-horizon/anax.git`
