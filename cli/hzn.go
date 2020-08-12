@@ -608,6 +608,7 @@ Environment Variables:
 	// tfine
 	voucherListCmd := voucherCmd.Command("list", msgPrinter.Sprintf("List the imported SDO vouchers."))
 	voucherToList := voucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the details of this SDO voucher.")).String()
+	voucherListLong := voucherListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the vouchers, show all the imported vouchers in their entirity, instead of just the device UUID. When listing a specific voucher, show more details.")).Short('l').Bool()
 
 
 	app.VersionFlag = nil
@@ -1010,6 +1011,6 @@ Environment Variables:
 	
 	// tfine
 	case voucherListCmd.FullCommand():
-		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList)
+		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
 	}
 }

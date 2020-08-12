@@ -151,12 +151,13 @@ type ImportResponse struct {
 	NodeToken string `json:"nodeToken"`
 }
 
-//tfine list the all the uploaded SDO vouchers, or a single voucher
-func VoucherList(org, userCreds, voucher string) {
+// call GET sdoURL/vouchers/[<device-uuid>] to get the uploaded vouchers
+func getVouchers (org, userCreds, apiMsg string, voucher string) ([]byte, string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
 
 	// setup HTTP parameters and URL
+	var respBodyBytes []byte
 	var requestBodyBytes []byte
 	var sdoURL string
 	url := cliutils.GetSdoSvcUrl()
@@ -169,15 +170,15 @@ func VoucherList(org, userCreds, voucher string) {
 
 	creds := cliutils.OrgAndCreds(org, userCreds)
 	method := http.MethodGet
-	apiMsg := method + " " + sdoURL
+	apiMsg = method + " " + sdoURL
 	httpClient := cliutils.GetHTTPClient(config.HTTPRequestTimeoutS)
 
 	resp := cliutils.InvokeRestApi(httpClient, method, sdoURL, creds, requestBodyBytes, "SDO Owner Service", apiMsg)
 	defer resp.Body.Close()
 	httpCode := resp.StatusCode
 	cliutils.Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
 
+	respBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 	}
@@ -188,10 +189,42 @@ func VoucherList(org, userCreds, voucher string) {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
 	}
 
-	// list the UUIDs of all the imported vouchers 
+	return respBodyBytes, apiMsg
+}
+
+// when one voucher is specified or the -l flag is used, list the full voucher
+func listFullVoucher (respBodyBytes []byte, apiMsg string) []byte {
+	msgPrinter := i18n.GetMessagePrinter()
+	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
+
+	var output interface{}
+	err := json.Unmarshal(respBodyBytes, &output)
+	if err != nil {
+		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
+	}
+
+	jsonBytes, err := json.MarshalIndent(output, "", cliutils.JSON_INDENT)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+	}
+
+	return jsonBytes
+}
+
+// list the all the uploaded SDO vouchers, or a single voucher
+func VoucherList(org, userCreds, voucher string, namesOnly bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
+
+	// call the ocs-api to get the uploaded vouchers
+	var respBodyBytes []byte
+	var apiMsg string
+	respBodyBytes, apiMsg = getVouchers(org, userCreds, apiMsg, voucher)
+
+	// no voucher was specified, list all uploaded vouchers
 	if voucher == "" {
 		output := []string{}
-		err = json.Unmarshal(respBodyBytes, &output)
+		err := json.Unmarshal(respBodyBytes, &output)
 		if err != nil {
 			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
 		}
@@ -200,20 +233,41 @@ func VoucherList(org, userCreds, voucher string) {
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
 		}
-		fmt.Printf("%s\n", jsonBytes)
-		
+
+		// list only the uuid's of imported vouchers
+		if namesOnly {
+			fmt.Printf("%s\n", jsonBytes)
+
+		} else { // list full details of all imported vouchers
+			for i := range output {
+				respBodyBytes, apiMsg = getVouchers(org, userCreds, apiMsg, output[i])
+				jsonBytes := listFullVoucher(respBodyBytes, apiMsg)
+				fmt.Printf("%s\n", jsonBytes)
+				fmt.Printf("\n")
+			}
+		}
+
 	} else { // list the details of a single imported voucher 
-		vouch := Voucher{}
-		err = json.Unmarshal(respBodyBytes, &vouch)
+		vouch := InspectOutput{}
+		err := json.Unmarshal(respBodyBytes, &vouch)
 		if err != nil {
 			cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
 		}
-		
-		jsonBytes, err := json.MarshalIndent(vouch, "", cliutils.JSON_INDENT)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+		if namesOnly { // list only short relavent details of voucher
+			if err = parseVoucherBytes(respBodyBytes, &vouch); err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("parsing the json from %s: %v", voucher, err))
+			}
+	
+			jsonBytes, err := json.MarshalIndent(vouch, "", cliutils.JSON_INDENT)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn exchange service list' output: %v", err))
+			}
+			fmt.Printf("%s\n", jsonBytes)
+
+		} else { // list full details of voucher
+			jsonBytes := listFullVoucher(respBodyBytes, apiMsg)
+			fmt.Printf("%s\n", jsonBytes)
 		}
-		fmt.Printf("%s\n", jsonBytes)
 	}
 }
 
