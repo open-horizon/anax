@@ -53,6 +53,7 @@ DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 AGBOT_SAPI_URL ?= https://localhost:8083
 ICP_HOST_IP ?= 0
+DOCKER_AGBOT_ADD_HOST ?= "localhost:127.0.0.1"
 
 export PREBUILT_DOCKER_REG_URL ?= ""
 export PREBUILT_DOCKER_REG_USER ?= ""
@@ -99,6 +100,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-p 127.0.0.1:8085:8085 \
 		--name "$(DOCKER_AGBOT_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
+		--add-host "$(DOCKER_AGBOT_ADD_HOST)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
 		-v ~/.docker:/home/agbotuser/.docker \

@@ -138,3 +138,5 @@ The following environment variables are needed in addition ot the Remote Environ
 - `export PREBUILT_DOCKER_REG_PW=<Docker Password`
 - `export PREBUILT_ANAX_VERSION=<Version of Anax (defaults to nightly)>`
 - `export PREBUILT_ESS_VERSION=<Version of ESS (defaults to nightly)>`
+
+Occasionally you may need to test against a remote environment that is not recognizable by the existing DNS settings. You can add a host override setting as a flag to the Make command. Add `DOCKER_AGBOT_ADD_HOST=<hostname>:<ip>`.
