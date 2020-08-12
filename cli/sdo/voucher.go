@@ -151,7 +151,7 @@ type ImportResponse struct {
 	NodeToken string `json:"nodeToken"`
 }
 
-// call GET sdoURL/vouchers/[<device-uuid>] to get the uploaded vouchers
+// call GET sdoURL/vouchers/[<device-uuid>] to get the uploaded vouchers 
 func getVouchers (org, userCreds, apiMsg string, voucher string) ([]byte, string) {
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
@@ -192,7 +192,7 @@ func getVouchers (org, userCreds, apiMsg string, voucher string) ([]byte, string
 	return respBodyBytes, apiMsg
 }
 
-// when one voucher is specified or the -l flag is used, list the full voucher
+// called when the -l flag is used to list the full voucher
 func listFullVoucher (respBodyBytes []byte, apiMsg string) []byte {
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))

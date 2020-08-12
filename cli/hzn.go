@@ -605,10 +605,9 @@ Environment Variables:
 	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
 	voucherImportPattern := voucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
 
-	// tfine
-	voucherListCmd := voucherCmd.Command("list", msgPrinter.Sprintf("List the imported SDO vouchers."))
-	voucherToList := voucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the details of this SDO voucher.")).String()
-	voucherListLong := voucherListCmd.Flag("long", msgPrinter.Sprintf("When listing all of the vouchers, show all the imported vouchers in their entirity, instead of just the device UUID. When listing a specific voucher, show more details.")).Short('l').Bool()
+	voucherListCmd := voucherCmd.Command("list", msgPrinter.Sprintf("List the imported SDO ownership vouchers."))
+	voucherToList := voucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this SDO ownership voucher.")).String()
+	voucherListLong := voucherListCmd.Flag("long", msgPrinter.Sprintf("When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.")).Short('l').Bool()
 
 
 	app.VersionFlag = nil
