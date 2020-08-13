@@ -185,9 +185,6 @@ func getVouchers (org, userCreds, apiMsg string, voucher string) ([]byte, string
 	if httpCode != 200 {
 		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(respBodyBytes)))
 	}
-	if err != nil {
-		cliutils.Fatal(cliutils.HTTP_ERROR, msgPrinter.Sprintf("json unmarshalling HTTP response '%s' from %s: %v", string(respBodyBytes), apiMsg, err))
-	}
 
 	return respBodyBytes, apiMsg
 }
@@ -197,6 +194,7 @@ func listFullVoucher (respBodyBytes []byte, apiMsg string) []byte {
 	msgPrinter := i18n.GetMessagePrinter()
 	cliutils.Verbose(msgPrinter.Sprintf("Listing imported SDO vouchers."))
 
+	// unmarshalling to interface{} to catch the full voucher json due to its varying element types within each array 
 	var output interface{}
 	err := json.Unmarshal(respBodyBytes, &output)
 	if err != nil {
@@ -381,7 +379,7 @@ func import1Voucher(org, userCreds, sdoUrl string, voucherFileReader io.Reader, 
 	// Doing the equivalent of: hzn exchange node create -org "org" -n "$nodeId:$nodeToken" -u "user:pw" (with optional pattern)
 	//todo: try to get the device arch from the voucher
 	//exchange.NodeCreate(org, "", importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", "", persistence.DEVICE_TYPE_DEVICE, true)
-	NodeAddDevice(org, importResponse.NodeId, importResponse.NodeToken, userCreds, "amd64", patternName, quieter)
+	NodeAddDevice(org, importResponse.NodeId, importResponse.NodeToken, userCreds, "", patternName, quieter)
 
 	// Create the node policy in the exchange, if they specified it
 	var policyStr string

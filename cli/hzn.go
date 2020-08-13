@@ -1007,8 +1007,6 @@ Environment Variables:
 		sdo.VoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():
 		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
-	
-	// tfine
 	case voucherListCmd.FullCommand():
 		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
 	}
