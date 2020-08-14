@@ -65,13 +65,13 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, min i
 	// check constraints on min, max, amnd adjust
 	// if any negative values for heartbeat, throw error
 	negFlags := []string{}
-	if min <= 0 {
+	if min < 0 {
 		negFlags = append(negFlags, "--heartbeatmin")
 	}
-	if max <= 0 {
-		negFlags = append(negFlags, "--hearbeatmax")
+	if max < 0 {
+		negFlags = append(negFlags, "--heartbeatmax")
 	}
-	if adjust <= 0 {
+	if adjust < 0 {
 		negFlags = append(negFlags, "--heartbeatadjust")
 	}
 
@@ -134,13 +134,13 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, min i
 		// check constraints
 		// if any negative values for heartbeat, throw error
 		negFlags := []string{}
-		if min <= 0 {
+		if min < 0 {
 			negFlags = append(negFlags, "--heartbeatmin")
 		}
-		if max <= 0 {
-			negFlags = append(negFlags, "--hearbeatmax")
+		if max < 0 {
+			negFlags = append(negFlags, "--heartbeatmax")
 		}
-		if adjust <= 0 {
+		if adjust < 0 {
 			negFlags = append(negFlags, "--heartbeatadjust")
 		}
 
