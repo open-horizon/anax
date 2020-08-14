@@ -306,7 +306,8 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 	}
 
 	// Now we just need to handle adding new patterns or update existing patterns
-	for patternId, pattern := range definedPatterns {
+	for patternId, pat := range definedPatterns {
+		pattern := pat
 		if !pm.servePattern(org, exchange.GetId(patternId)) {
 			continue
 		}
