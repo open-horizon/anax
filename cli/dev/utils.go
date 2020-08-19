@@ -402,6 +402,11 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 		Collaborators: config.Collaborators{},
 	}
 
+	// Create the folder for SSL certificates (under authentication path)
+	if err := os.MkdirAll(config.GetESSSSLClientCertPath(), 0755); err != nil {
+		return nil, err
+	}
+
 	return container.CreateCLIContainerWorker(config)
 }
 
@@ -427,6 +432,25 @@ func CommonExecutionSetup(homeDirectory string, userInputFile string, projectTyp
 	}
 
 	return dir, userInputs, cw
+}
+
+// This function is used to clear all service's files & folders (such as UDS socket and auth folder) that will not be needed anymore
+func ExecutionTearDown(cw *container.ContainerWorker) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Remove the UDS socket file
+	err := os.RemoveAll(cw.Config.GetFileSyncServiceAPIListen())
+	if err != nil {
+		msgPrinter.Printf("Failed to remove the UDS socket file: %v", err)
+		msgPrinter.Println()
+	}
+
+	// Clear the File Sync Service API authentication credential folder
+	if err := os.RemoveAll(cw.GetAuthenticationManager().AuthPath); err != nil {
+		msgPrinter.Printf("Failed to remove FSS Authentication credential folder, error: %v", err)
+		msgPrinter.Println()
+	}
 }
 
 func findContainers(serviceName string, cw *container.ContainerWorker) ([]docker.APIContainers, error) {
