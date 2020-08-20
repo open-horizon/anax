@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
@@ -58,7 +60,7 @@ func FindConfigstateForOutput(db *bolt.DB) (*Configstate, error) {
 func UpdateConfigstate(cfg *Configstate,
 	errorhandler ErrorHandler,
 	getPatterns exchange.PatternHandler,
-	resolveService exchange.ServiceResolverHandler,
+	resolveService exchange.ServiceDefResolverHandler,
 	getService exchange.ServiceHandler,
 	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler,
@@ -104,8 +106,7 @@ func UpdateConfigstate(cfg *Configstate,
 		pattern_org, pattern_name, pat := persistence.GetFormatedPatternString(pDevice.Pattern, pDevice.Org)
 		pDevice.Pattern = pat
 
-		common_apispec_list, pattern, err := getSpecRefsForPattern(pDevice.GetNodeType(), pattern_name, pattern_org, getPatterns, resolveService, db, config, true)
-
+		common_apispec_list, pattern, err := getSpecRefsForPattern(pDevice.GetNodeType(), pattern_name, pattern_org, getPatterns, resolveService, db, config, true, true)
 		if err != nil {
 			LogDeviceEvent(db, persistence.SEVERITY_ERROR, persistence.NewMessageMeta(EL_API_ERR_GET_SREFS_FOR_PATTERN, pattern_name, err.Error()), persistence.EC_ERROR_NODE_CONFIG_REG, pDevice)
 			return errorhandler(err), nil, nil
@@ -187,11 +188,28 @@ func UpdateConfigstate(cfg *Configstate,
 
 }
 
+// check if the node has the 'openhorizon.allowPrivileged' set to true
+func nodeAllowPrivilegedService(db *bolt.DB) (bool, error) {
+	nodePol, err := FindNodePolicyForOutput(db)
+	if err != nil {
+		return false, err
+	}
+	nodePriv := false
+	if nodePol != nil && nodePol.Properties != nil && nodePol.Properties.HasProperty(externalpolicy.PROP_NODE_PRIVILEGED) {
+		privProv, err := nodePol.Properties.GetProperty(externalpolicy.PROP_NODE_PRIVILEGED)
+		if err != nil {
+			return false, err
+		}
+		nodePriv = privProv.Value.(bool)
+	}
+	return nodePriv, nil
+}
+
 // Common function used to create/configure a service on an edge node. The boolean response indicates that an error occurred
 // and was handled (or no error occurred).
 func configureService(service *Service,
 	getPatterns exchange.PatternHandler,
-	resolveService exchange.ServiceResolverHandler,
+	resolveService exchange.ServiceDefResolverHandler,
 	getService exchange.ServiceHandler,
 	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler,
@@ -312,10 +330,11 @@ func workloadConfigPresent(sd *exchange.ServiceDefinition, wUrl string, wOrg, wV
 func getSpecRefsForPattern(nodeType string, patName string,
 	patOrg string,
 	getPatterns exchange.PatternHandler,
-	resolveService exchange.ServiceResolverHandler,
+	resolveService exchange.ServiceDefResolverHandler,
 	db *bolt.DB,
 	config *config.HorizonConfig,
-	checkWorkloadConfig bool) (*policy.APISpecList, *exchange.Pattern, error) {
+	checkWorkloadConfig bool,
+	checkNodePrivilege bool) (*policy.APISpecList, *exchange.Pattern, error) {
 
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("getSpecRefsForPattern %v org %v. Check service config: %v", patName, patOrg, checkWorkloadConfig)))
 
@@ -346,6 +365,16 @@ func getSpecRefsForPattern(nodeType string, patName string,
 		return nil, nil, NewAPIUserInputError(fmt.Sprintf("cannot configure a dependent service on a node that is using a service based pattern: %v", patId), "microservice")
 	}
 
+	// get node policy and then check if it has PROP_NODE_PRIVILEGED to true
+	nodePriv := false
+	var err1 error
+	if checkNodePrivilege {
+		nodePriv, err1 = nodeAllowPrivilegedService(db)
+		if err1 != nil {
+			return nil, nil, NewSystemError(fmt.Sprintf("Error getting node openhorizon.allowPrivileged setting. %v", err))
+		}
+	}
+
 	for _, service := range patternDef.Services {
 
 		// Ignore top-level services that don't match this node's hardware architecture.
@@ -358,7 +387,7 @@ func getSpecRefsForPattern(nodeType string, patName string,
 		// we need to iterate each "workloadChoice" to grab the version.
 		for _, serviceChoice := range service.ServiceVersions {
 
-			apiSpecList, serviceDef, _, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
+			dependentDefs, serviceDef, topSvcID, err := resolveService(service.ServiceURL, service.ServiceOrg, serviceChoice.Version, service.ServiceArch)
 			if err != nil {
 				return nil, nil, NewSystemError(fmt.Sprintf("Error resolving service %v/%v %v %v, error %v", service.ServiceOrg, service.ServiceURL, serviceChoice.Version, thisArch, err))
 			}
@@ -380,11 +409,36 @@ func getSpecRefsForPattern(nodeType string, patName string,
 				}
 			}
 
-			// Look for inconsistencies in the hardware architecture of the list of dependencies.
-			if apiSpecList != nil {
-				for _, apiSpec := range *apiSpecList {
-					if apiSpec.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(apiSpec.Arch) != thisArch {
-						return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", apiSpec, service.ServiceOrg, service.ServiceURL, thisArch))
+			if checkNodePrivilege {
+				if svcPriv, err := compcheck.DeploymentRequiresPrivilege(serviceDef.GetDeploymentString(), nil); err != nil {
+					return nil, nil, NewSystemError(fmt.Sprintf("Error checking if service %v requires privileged mode. %v", topSvcID, err))
+				} else if svcPriv && !nodePriv {
+					return nil, nil, NewSystemError(fmt.Sprintf("Service %v requires privileged mode, but the node does not have openhorizon.allowPrivileged property set to true.", topSvcID))
+				}
+			}
+
+			if dependentDefs != nil {
+				apiSpecList := new(policy.APISpecList)
+
+				for sId, dDef := range dependentDefs {
+					// Look for inconsistencies in the hardware architecture of the list of dependencies.
+					if dDef.Arch != thisArch && config.ArchSynonyms.GetCanonicalArch(dDef.Arch) != thisArch {
+						return nil, nil, NewSystemError(fmt.Sprintf("The referenced service %v by service %v/%v has a hardware architecture that is not supported by this node: %v.", sId, service.ServiceOrg, service.ServiceURL, thisArch))
+					}
+
+					// generate apiSpecList from dependent def
+					newAPISpec := policy.APISpecification_Factory(dDef.URL, exchange.GetOrg(sId), dDef.Version, dDef.Arch)
+					if dDef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || dDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
+						newAPISpec.ExclusiveAccess = false
+					}
+					apiSpecList.Add_API_Spec(newAPISpec)
+				}
+
+				if checkNodePrivilege {
+					if svcPriv, err, privSvcs := compcheck.ServicesRequirePrivilege(&dependentDefs, nil); err != nil {
+						return nil, nil, NewSystemError(fmt.Sprintf("Error checking if dependent services for %v require privileged mode. %v", topSvcID, err))
+					} else if svcPriv && !nodePriv {
+						return nil, nil, NewSystemError(fmt.Sprintf("Dependent services %v for %v require privileged mode, but the node does not have openhorizon.allowPrivileged property set to true.", privSvcs, topSvcID))
 					}
 				}
 
@@ -392,7 +446,6 @@ func getSpecRefsForPattern(nodeType string, patName string,
 				(*completeAPISpecList) = completeAPISpecList.MergeWith(apiSpecList)
 			}
 		}
-
 	}
 
 	// If the pattern search doesnt find any microservices/services then there might be a problem.

@@ -129,7 +129,7 @@ func FindServiceConfigForOutput(pm *policy.PolicyManager, db *bolt.DB) (map[stri
 func CreateService(service *Service,
 	errorhandler ErrorHandler,
 	getPatterns exchange.PatternHandler,
-	resolveService exchange.ServiceResolverHandler,
+	resolveService exchange.ServiceDefResolverHandler,
 	getService exchange.ServiceHandler,
 	getDevice exchange.DeviceHandler,
 	patchDevice exchange.PatchDeviceHandler,
@@ -203,7 +203,7 @@ func CreateService(service *Service,
 			// We might be registering a dependent service, so look through the pattern and get a list of all dependent services, then
 			// come up with a common version for all references. If the service we're registering is one of these, then use the
 			// common version range in our service instead of the version range that was passed as input.
-			common_apispec_list, exchPattern, err := getSpecRefsForPattern(nodeType, pattern_name, pattern_org, getPatterns, resolveService, db, config, false)
+			common_apispec_list, exchPattern, err := getSpecRefsForPattern(nodeType, pattern_name, pattern_org, getPatterns, resolveService, db, config, false, false)
 			if err != nil {
 				return errorhandler(err), nil, nil
 			}

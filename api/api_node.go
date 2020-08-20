@@ -192,7 +192,7 @@ func (a *API) nodeconfigstate(w http.ResponseWriter, r *http.Request) {
 		}
 
 		patternHandler := exchange.GetHTTPExchangePatternHandler(a)
-		serviceResolver := exchange.GetHTTPServiceResolverHandler(a)
+		serviceResolver := exchange.GetHTTPServiceDefResolverHandler(a)
 		getService := exchange.GetHTTPServiceHandler(a)
 		getDevice := exchange.GetHTTPDeviceHandler(a)
 		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
