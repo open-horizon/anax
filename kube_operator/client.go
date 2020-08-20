@@ -177,7 +177,7 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 		}
 	}
 	// Add the custom resource definitions to the client schema
-	kindToGVRMap := map[string]schema.GroupVersionResource{}
+	kindToGVRMap := map[string][]schema.GroupVersionResource{}
 	for _, crd := range apiObjMap[K8S_CRD_TYPE] {
 		newCRD := crd.Object.(*v1beta1.CustomResourceDefinition)
 
@@ -191,7 +191,13 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 		if err != nil {
 			return err
 		}
-		kindToGVRMap[newCRD.Spec.Names.Kind] = schema.GroupVersionResource{Resource: newCRD.Spec.Names.Plural, Group: newCRD.Spec.Group, Version: newCRD.Spec.Version}
+		if newCRD.Spec.Versions != nil {
+			for _, version := range newCRD.Spec.Versions {
+				kindToGVRMap[newCRD.Spec.Names.Kind] = append(kindToGVRMap[newCRD.Spec.Names.Kind], schema.GroupVersionResource{Resource: newCRD.Spec.Names.Plural, Group: newCRD.Spec.Group, Version: version.Name})
+			}
+		} else if newCRD.Spec.Version != "" {
+			kindToGVRMap[newCRD.Spec.Names.Kind] = append(kindToGVRMap[newCRD.Spec.Names.Kind], schema.GroupVersionResource{Resource: newCRD.Spec.Names.Plural, Group: newCRD.Spec.Group, Version: newCRD.Spec.Version})
+		}
 	}
 
 	// Create the custom resources in the cluster
@@ -199,7 +205,7 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 		cr := make(map[string]interface{})
 		err := yaml.UnmarshalStrict([]byte(crStr.Body), &cr)
 		if err != nil {
-			return fmt.Errorf("Error unmarshaling custom resource in deployment. %v", err)
+			return fmt.Errorf(kwlog(fmt.Sprintf("Error unmarshaling custom resource in deployment. %v", err)))
 		}
 
 		newCr := makeAllKeysStrings(cr).(map[string]interface{})
@@ -208,14 +214,34 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 		if err != nil {
 			return err
 		}
-		crClient := dynClient.Resource(kindToGVRMap[newCr["kind"].(string)])
+
+		crClients := map[string]dynamic.NamespaceableResourceInterface{}
+		for _, gvr := range kindToGVRMap[newCr["kind"].(string)] {
+			crClients[gvr.Version] = dynClient.Resource(gvr)
+		}
 
 		unstructCr := unstructured.Unstructured{Object: newCr}
+
+		resourceName := ""
+		if typedCrMetadata, ok := newCr["metadata"].(map[string]interface{}); ok {
+			if name, ok := typedCrMetadata["name"]; ok {
+				resourceName = fmt.Sprintf("%v", name)
+			}
+		}
 
 		// the cluster has to create the endpoint for the custom resource, this can take some time
 		glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", newCr)))
 		for {
-			_, err := crClient.Namespace(namespace).Create(&unstructCr, metav1.CreateOptions{})
+			for version, crClient := range crClients {
+				_, err = crClient.Namespace(namespace).Create(&unstructCr, metav1.CreateOptions{})
+				if err != nil {
+					glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s with version %v. Error was: %v", resourceName, version, err)))
+				} else {
+					glog.V(3).Infof(kwlog("Sucessfully created custom resource."))
+					break
+				}
+
+			}
 			if err != nil {
 				time.Sleep(time.Second * 5)
 			} else {
@@ -532,6 +558,12 @@ func makeAllKeysStrings(unmarshYaml interface{}) interface{} {
 			}
 		}
 		return retMap
+	} else if reflect.ValueOf(unmarshYaml).Kind() == reflect.Slice {
+		correctedSlice := make([]interface{}, len(unmarshYaml.([]interface{})))
+		for _, elem := range unmarshYaml.([]interface{}) {
+			correctedSlice = append(correctedSlice, makeAllKeysStrings(elem))
+		}
+		return correctedSlice
 	}
 	return unmarshYaml
 }
