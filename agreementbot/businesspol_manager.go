@@ -36,6 +36,30 @@ func (p *ServicePolicyEntry) ShortString() string {
 	return p.String()
 }
 
+// return a pointer to a copy of ServicePolicyEntry
+func (p *ServicePolicyEntry) DeepCopy() *ServicePolicyEntry {
+	var newPolicy *externalpolicy.ExternalPolicy
+	if p.Policy == nil {
+		newPolicy = nil
+	} else {
+		newPolicy = p.Policy.DeepCopy()
+	}
+
+	newUpdated := p.Updated
+
+	var newHash []byte
+	if p.Hash == nil {
+		newHash = nil
+	} else {
+		newHash := make([]byte, len(p.Hash))
+		copy(newHash, p.Hash)
+	}
+
+	copyP := ServicePolicyEntry{Policy: newPolicy, Updated: newUpdated, Hash: newHash}
+	return &copyP
+
+}
+
 func NewServicePolicyEntry(p *externalpolicy.ExternalPolicy, svcId string) (*ServicePolicyEntry, error) {
 	pSE := new(ServicePolicyEntry)
 	pSE.Updated = uint64(time.Now().Unix())
@@ -54,6 +78,40 @@ type BusinessPolicyEntry struct {
 	Updated         uint64                         `json:"updatedTime,omitempty"`     // the time when this entry was updated
 	Hash            []byte                         `json:"hash,omitempty"`            // a hash of the business policy to compare for matadata changes in the exchange
 	ServicePolicies map[string]*ServicePolicyEntry `json:"servicePolicies,omitempty"` // map of the service id and service policies
+}
+
+// return a pointer to a copy of BusinessPolicyEntry
+func (p *BusinessPolicyEntry) DeepCopy() *BusinessPolicyEntry {
+	var newPolicy *policy.Policy
+	if p.Policy == nil {
+		newPolicy = nil
+	} else {
+		newPolicy = p.Policy.DeepCopy()
+	}
+
+	newUpdated := p.Updated
+
+	var newHash []byte
+	if p.Hash == nil {
+		newHash = nil
+	} else {
+		newHash := make([]byte, len(p.Hash))
+		copy(newHash, p.Hash)
+	}
+
+	var newServePolicy map[string]*ServicePolicyEntry
+	if p.ServicePolicies == nil {
+		newServePolicy = nil
+	} else {
+		newServePolicy = make(map[string]*ServicePolicyEntry)
+		for k, v := range p.ServicePolicies {
+			newServePolicy[k] = v.DeepCopy()
+		}
+	}
+
+	copyBusinessPolicyEntry := BusinessPolicyEntry{Policy: newPolicy, Updated: newUpdated, Hash: newHash, ServicePolicies: newServePolicy}
+	return &copyBusinessPolicyEntry
+
 }
 
 // Create a new BusinessPolicyEntry. It converts the businesspolicy to internal policy format.
@@ -348,6 +406,37 @@ func (pm *BusinessPolicyManager) GetServedNodeOrgs(polOrg string, polName string
 		}
 	}
 	return node_orgs
+}
+
+// Getters for BusinessPolicyManager
+// return a copy of the ServedPolicies field
+func (pm *BusinessPolicyManager) GetServedPolicies() map[string]exchange.ServedBusinessPolicy {
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
+
+	copyServedPol := make(map[string]exchange.ServedBusinessPolicy)
+	for key, sp := range pm.ServedPolicies {
+		copyServedPol[key] = sp
+	}
+
+	return copyServedPol
+}
+
+// return a copy of the OrgPolicies field
+func (pm *BusinessPolicyManager) GetOrgPolicies() map[string]map[string]*BusinessPolicyEntry {
+	pm.polMapLock.Lock()
+	defer pm.polMapLock.Unlock()
+
+	copyOrgPol := make(map[string]map[string]*BusinessPolicyEntry)
+	for org, _ := range pm.OrgPolicies {
+		OrgPolNames := make(map[string]*BusinessPolicyEntry)
+		for n, polEntry := range pm.OrgPolicies[org] {
+			OrgPolNames[n] = polEntry.DeepCopy()
+		}
+		copyOrgPol[org] = OrgPolNames
+	}
+
+	return copyOrgPol
 }
 
 // Given a list of policy_org/policy/node_org triplets that this agbot is supposed to serve, save that list and

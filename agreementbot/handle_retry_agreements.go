@@ -43,7 +43,7 @@ func (w *AgreementBotWorker) handleRetryAgreements() {
 					searchError = true
 					break
 				}
-			} else if pBE := w.BusinessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
+			} else if pBE := businessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
 				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
 				if err := w.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, now, nodeFilter(retryMap[consumerPolicy.Header.Name])); err != nil {
 					searchError = true

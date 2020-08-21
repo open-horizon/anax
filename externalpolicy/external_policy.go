@@ -97,3 +97,27 @@ func (e *ExternalPolicy) MergeWith(newPol *ExternalPolicy, replaceExsiting bool)
 		(&e.Constraints).MergeWith(&newPol.Constraints)
 	}
 }
+
+// return a pointer to a copy of ExternalPolicy
+func (e *ExternalPolicy) DeepCopy() *ExternalPolicy {
+	var copyProp PropertyList
+	if e.Properties == nil {
+		copyProp = nil
+	} else {
+		copyProp = make(PropertyList, len(e.Properties))
+		copy(copyProp, e.Properties)
+	}
+
+	var copyCons ConstraintExpression
+	if e.Constraints == nil {
+		copyCons = nil
+	} else {
+		copyCons := make(ConstraintExpression, len(e.Constraints))
+		copy(copyCons, e.Constraints)
+	}
+
+	copyE := ExternalPolicy{Properties: copyProp, Constraints: copyCons}
+
+	return &copyE
+
+}

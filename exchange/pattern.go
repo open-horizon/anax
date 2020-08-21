@@ -47,6 +47,31 @@ func (w Pattern) ShortString() string {
 		w.AgreementProtocols)
 }
 
+// return a pointer to a copy of Pattern
+func (w Pattern) DeepCopy() *Pattern {
+	newPattern := Pattern{Owner: w.Owner, Label: w.Label, Description: w.Description, Public: w.Public}
+
+	if w.Services != nil {
+		newServices := make([]ServiceReference, len(w.Services))
+		copy(newServices, w.Services)
+		newPattern.Services = newServices
+	}
+
+	if w.AgreementProtocols != nil {
+		newAgPro := make([]AgreementProtocol, len(w.AgreementProtocols))
+		copy(newAgPro, w.AgreementProtocols)
+		newPattern.AgreementProtocols = newAgPro
+	}
+
+	if w.UserInput != nil {
+		newUserInput := make([]policy.UserInput, len(w.UserInput))
+		copy(newUserInput, w.UserInput)
+		newPattern.UserInput = newUserInput
+	}
+
+	return &newPattern
+}
+
 type WorkloadPriority struct {
 	PriorityValue     int `json:"priority_value,omitempty"`     // The priority of the workload
 	Retries           int `json:"retries,omitempty"`            // The number of retries before giving up and moving to the next priority
