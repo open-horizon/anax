@@ -63,7 +63,7 @@ rpmbuild: require-version
 	tar -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz .
 	rm -rf $(RPMROOT)/BUILD/horizon-cli-*
 	rm -f $(RPMROOT)/SRPMS/$(RPMNAME)*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)*rpm.gz
-	rpmbuild --target $(rpm_arch)-linux -ba $(RPMNAME).spec
+	rpmbuild --target $(rpm_arch)-linux $(RPM_OPTS) -ba $(RPMNAME).$(rpm_arch).spec
 	gzip --keep $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$(VERSION)-$(BUILD_NUMBER).$(rpm_arch).rpm
 	rm -f $(RPMNAME)-$(VERSION)   # remove the sym link
 
