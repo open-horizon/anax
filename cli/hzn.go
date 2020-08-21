@@ -537,6 +537,21 @@ Environment Variables:
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", msgPrinter.Sprintf("Remove a project dependency."))
 
 	agbotCmd := app.Command("agbot", msgPrinter.Sprintf("List and manage Horizon agreement bot resources."))
+
+	agbotCacheCmd := agbotCmd.Command("cache", msgPrinter.Sprintf("Manage cached agbot-serving organizations, patterns, and deployment policies."))
+	agbotCacheServedOrg := agbotCacheCmd.Command("servedorg", msgPrinter.Sprintf("List served pattern orgs and deployment policy orgs."))
+	agbotCacheServedOrgList := agbotCacheServedOrg.Command("list", msgPrinter.Sprintf("Display served pattern orgs and deployment policy orgs."))
+	agbotCachePattern := agbotCacheCmd.Command("pattern", msgPrinter.Sprintf("List patterns cached in the agbot."))
+	agbotCachePatternList := agbotCachePattern.Command("list", msgPrinter.Sprintf("Display served patterns cached in the agbot."))
+	agbotCachePatternListOrg := agbotCachePatternList.Flag("org", msgPrinter.Sprintf("Display patterns under this org.")).Short('o').String()
+	agbotCachePatternListName := agbotCachePatternList.Arg("name", msgPrinter.Sprintf("Display this pattern.")).String()
+	agbotCachePatternListLong := agbotCachePatternList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
+	agbotCacheDeployPol := agbotCacheCmd.Command("deploymentpol", msgPrinter.Sprintf("List served deployment policies cached in the agbot."))
+	agbotCacheDeployPolList := agbotCacheDeployPol.Command("list", msgPrinter.Sprintf("Display served deployment policies cached in the agbot."))
+	agbotCacheDeployPolListOrg := agbotCacheDeployPolList.Flag("org", msgPrinter.Sprintf("Display policies under this org.")).Short('o').String()
+	agbotCacheDeployPolListName := agbotCacheDeployPolList.Arg("name", msgPrinter.Sprintf("Display this policy.")).String()
+	agbotCacheDeployPolListLong := agbotCacheDeployPolList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
+
 	agbotListCmd := agbotCmd.Command("list", msgPrinter.Sprintf("Display general information about this Horizon agbot node."))
 	agbotAgreementCmd := agbotCmd.Command("agreement", msgPrinter.Sprintf("List or manage the active or archived agreements this Horizon agreement bot has with edge nodes."))
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list", msgPrinter.Sprintf("List the active or archived agreements this Horizon agreement bot has with edge nodes."))
@@ -823,6 +838,14 @@ Environment Variables:
 		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
+
+	case agbotCacheServedOrgList.FullCommand():
+		agreementbot.GetServedOrgs()
+	case agbotCachePatternList.FullCommand():
+		agreementbot.GetPatterns(*agbotCachePatternListOrg, *agbotCachePatternListName, *agbotCachePatternListLong)
+	case agbotCacheDeployPolList.FullCommand():
+		agreementbot.GetPolicies(*agbotCacheDeployPolListOrg, *agbotCacheDeployPolListName, *agbotCacheDeployPolListLong)
+
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
