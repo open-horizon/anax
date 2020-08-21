@@ -112,6 +112,147 @@ func (a *API) GetName() string {
 	return a.name
 }
 
+type ServedOrgs struct {
+	ServedPatterns map[string]exchange.ServedPattern        `json:"servedPatterns"`
+	ServedPolicies map[string]exchange.ServedBusinessPolicy `json:"servedPolicies"`
+}
+
+func (a *API) ListServedOrgs(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		pmServedPatterns := patternManager.GetServedPatterns()
+		bmServedPolicies := businessPolManager.GetServedPolicies()
+		// retrieve info to write
+		info := ServedOrgs{ServedPatterns: pmServedPatterns, ServedPolicies: bmServedPolicies}
+		writeResponse(w, info, http.StatusOK)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) ListPatterns(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		pathVars := mux.Vars(r)
+		org := pathVars["org"]
+		name := pathVars["name"]
+		long := r.URL.Query().Get("long")
+		pmOrgPats := patternManager.GetOrgPatterns()
+
+		if org == "" {
+			// if no org, display detailed or undetailed all orgs and names
+			if long != "" {
+				writeResponse(w, pmOrgPats, http.StatusOK)
+			} else {
+				cachedPatterns := make(map[string][]string)
+				for org, patterns := range pmOrgPats {
+					patternIds := make([]string, 0, len(patterns))
+					for k := range patterns {
+						patternIds = append(patternIds, k)
+					}
+					cachedPatterns[org] = patternIds
+				}
+
+				writeResponse(w, cachedPatterns, http.StatusOK)
+			}
+		} else if patternManager.hasOrg(org) {
+			if name == "" {
+				// if org is specified and valid and no name is specified, display all patterns under org
+				if long != "" {
+					writeResponse(w, pmOrgPats, http.StatusOK)
+				} else {
+					cachedPatterns := make(map[string][]string)
+					for o, patterns := range pmOrgPats {
+						patternIds := make([]string, 0, len(patterns))
+						for k := range patterns {
+							patternIds = append(patternIds, k)
+						}
+						cachedPatterns[o] = patternIds
+					}
+					writeResponse(w, cachedPatterns[org], http.StatusOK)
+				}
+				// if name is specified and valid, display detailed
+			} else if _, hasName := pmOrgPats[org][name]; hasName {
+				writeResponse(w, pmOrgPats[org][name], http.StatusOK)
+				// else throw 404 error
+			} else {
+				writeResponse(w, "pattern not found in the pattern management cache.", http.StatusNotFound)
+			}
+		} else {
+			writeResponse(w, "organization not found in the pattern management cache.", http.StatusNotFound)
+		}
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) ListDeploy(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		pathVars := mux.Vars(r)
+		org := pathVars["org"]
+		name := pathVars["name"]
+		long := r.URL.Query().Get("long")
+		bmOrgPols := businessPolManager.GetOrgPolicies()
+		if org == "" {
+			// if no org, display detailed or undetailed all orgs and names
+			if long != "" {
+				writeResponse(w, bmOrgPols, http.StatusOK)
+			} else {
+				cachedPol := make(map[string][]string)
+				for org, policies := range bmOrgPols {
+					polIds := make([]string, 0, len(policies))
+					for k := range policies {
+						polIds = append(polIds, k)
+					}
+					cachedPol[org] = polIds
+				}
+
+				writeResponse(w, cachedPol, http.StatusOK)
+			}
+		} else if businessPolManager.hasOrg(org) {
+			if name == "" {
+				// if org is specified and valid and no name is specified, display all deployment policies under org
+				if long != "" {
+					writeResponse(w, bmOrgPols[org], http.StatusOK)
+				} else {
+					cachedPol := make(map[string][]string)
+					for o, policies := range bmOrgPols {
+						polIds := make([]string, 0, len(policies))
+						for k := range policies {
+							polIds = append(polIds, k)
+						}
+						cachedPol[o] = polIds
+					}
+
+					writeResponse(w, cachedPol[org], http.StatusOK)
+				}
+				// if name is specified and valid, display detailed
+			} else if _, hasName := bmOrgPols[org][name]; hasName {
+				writeResponse(w, bmOrgPols[org][name], http.StatusOK)
+				// else throw error
+			} else {
+				writeResponse(w, "policy not found in the deployment policy management cache.", http.StatusNotFound)
+			}
+		} else {
+			writeResponse(w, "organization not found in the deployment policy management cache.", http.StatusNotFound)
+		}
+
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
 // A local implementation of the ExchangeContext interface because the API object is not an anax worker.
 func (a *API) GetExchangeId() string {
 	if a.EC != nil {
@@ -193,6 +334,13 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
 		router.HandleFunc("/node", a.node).Methods("GET", "DELETE", "OPTIONS")
 		router.HandleFunc("/config", a.config).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/servedorg", a.ListServedOrgs).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/pattern", a.ListPatterns).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/pattern/{org}", a.ListPatterns).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/pattern/{org}/{name}", a.ListPatterns).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/deploymentpol", a.ListDeploy).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/deploymentpol/{org}", a.ListDeploy).Methods("GET", "OPTIONS")
+		router.HandleFunc("/cache/deploymentpol/{org}/{name}", a.ListDeploy).Methods("GET", "OPTIONS")
 
 		if err := http.ListenAndServe(apiListen, nocache(router)); err != nil {
 			glog.Fatalf(APIlogString(fmt.Sprintf("failed to start listener on %v, error %v", apiListen, err)))
