@@ -65,7 +65,6 @@ type Config struct {
 	SurfaceErrorCheckIntervalS       int       // Deprecated. Used to be how often the node will check for errors that are no longer active and update the exchange. Default is 15 seconds
 	SurfaceErrorAgreementPersistentS int       // How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
 	InitialPollingBuffer             int       // the number of seconds to wait before increasing the polling interval while there is no agreement on the node.
-	MaxAgreementPrelaunchTimeM       int64     // The maximum numbers of minutes to wait for workload to start in an agreement
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -221,7 +220,6 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollInterval:    ExchangeMessagePollInterval_DEFAULT,
 				ExchangeMessagePollMaxInterval: ExchangeMessagePollMaxInterval_DEFAULT,
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
-				MaxAgreementPrelaunchTimeM:     EdgeMaxAgreementPrelaunchTimeM_DEFAULT,
 			},
 			AgreementBot: AGConfig{
 				MessageKeyCheck:    AgbotMessageKeyCheck_DEFAULT,

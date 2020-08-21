@@ -26,6 +26,15 @@ import (
 )
 
 // TODO: make this module more aware of long-running setup operations like image downloading and dockerfile loading
+// the max time we'll let a contract remain unconfigured by the provider
+const MAX_CONTRACT_UNCONFIGURED_TIME_M = 20
+
+const MAX_CONTRACT_PRELAUNCH_TIME_M = 10
+
+const MAX_MICROPAYMENT_UNPAID_RUN_DURATION_M = 60
+
+// enforced only after the workloads are running
+const MAX_AGREEMENT_ACCEPTANCE_WAIT_TIME_M = 20
 
 // related to agreement cleanup status
 const STATUS_WORKLOAD_DESTROYED = 500
@@ -457,7 +466,7 @@ func (w *GovernanceWorker) governAgreements() {
 				// For finalized agreements, make sure the workload has been started in time.
 				if ag.AgreementExecutionStartTime == 0 {
 					// workload not started yet and in an agreement ...
-					if (int64(ag.AgreementAcceptedTime) + (w.Config.Edge.MaxAgreementPrelaunchTimeM * 60)) < time.Now().Unix() {
+					if (int64(ag.AgreementAcceptedTime) + (MAX_CONTRACT_PRELAUNCH_TIME_M * 60)) < time.Now().Unix() {
 						glog.Infof(logString(fmt.Sprintf("terminating agreement %v because it hasn't been launched in max allowed time. This could be because of a workload failure.", ag.CurrentAgreementId)))
 						reason := w.producerPH[ag.AgreementProtocol].GetTerminationCode(producer.TERM_REASON_NOT_EXECUTED_TIMEOUT)
 						eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
