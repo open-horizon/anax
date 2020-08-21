@@ -33,6 +33,30 @@ func (p *PatternEntry) ShortString() string {
 	return fmt.Sprintf("Files: %v", p.PolicyFileNames)
 }
 
+// return a pointer to a copy of PatternEntry
+func (p *PatternEntry) DeepCopy() *PatternEntry {
+	newEntry := PatternEntry{Updated: p.Updated}
+
+	if p.Pattern != nil {
+		newEntry.Pattern = p.Pattern.DeepCopy()
+	}
+
+	if p.Hash != nil {
+		newHash := make([]byte, len(p.Hash))
+		copy(newHash, p.Hash)
+		newEntry.Hash = newHash
+	}
+
+	if p.PolicyFileNames != nil {
+		newPolicyFileNames := make([]string, len(p.PolicyFileNames))
+		copy(newPolicyFileNames, p.PolicyFileNames)
+		newEntry.PolicyFileNames = newPolicyFileNames
+	}
+
+	return &newEntry
+
+}
+
 func hashPattern(p *exchange.Pattern) ([]byte, error) {
 	if ps, err := json.Marshal(p); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to marshal pattern %v to a string, error %v", p, err))
@@ -78,11 +102,15 @@ func (pe *PatternEntry) UpdateEntry(pattern *exchange.Pattern, newHash []byte) {
 
 type PatternManager struct {
 	spMapLock      sync.Mutex                          // The lock that protects the map of ServedPatterns because it is referenced from another thread.
+	patMapLock     sync.Mutex                          // The lock that protects the map of PatternEntry because it is referenced from another thread.
 	ServedPatterns map[string]exchange.ServedPattern   // served node org, pattern org and pattern triplets
 	OrgPatterns    map[string]map[string]*PatternEntry // all served paterns by this agbot
 }
 
 func (pm *PatternManager) String() string {
+	pm.patMapLock.Lock()
+	defer pm.patMapLock.Unlock()
+
 	res := "Pattern Manager: "
 	for org, orgMap := range pm.OrgPatterns {
 		res += fmt.Sprintf("Org: %v ", org)
@@ -101,6 +129,9 @@ func (pm *PatternManager) String() string {
 }
 
 func (p *PatternManager) ShortString() string {
+	p.patMapLock.Lock()
+	defer p.patMapLock.Unlock()
+
 	res := "Pattern Manager: "
 	for org, orgMap := range p.OrgPatterns {
 		res += fmt.Sprintf("Org: %v ", org)
@@ -204,10 +235,44 @@ func (pm *PatternManager) GetAllPatternOrgs() []string {
 	return orgs
 }
 
+// Getters for PatternManager
+// return a copy of the ServedPatterns field
+func (pm *PatternManager) GetServedPatterns() map[string]exchange.ServedPattern {
+	pm.spMapLock.Lock()
+	defer pm.spMapLock.Unlock()
+
+	copyServedPat := make(map[string]exchange.ServedPattern)
+	for key, sp := range pm.ServedPatterns {
+		copyServedPat[key] = sp
+	}
+
+	return copyServedPat
+}
+
+// return a copy of the OrgPatterns field
+func (pm *PatternManager) GetOrgPatterns() map[string]map[string]*PatternEntry {
+	pm.patMapLock.Lock()
+	defer pm.patMapLock.Unlock()
+
+	copyOrgPat := make(map[string]map[string]*PatternEntry)
+
+	for org, _ := range pm.OrgPatterns {
+		OrgPatNames := make(map[string]*PatternEntry)
+		for n, patEntry := range pm.OrgPatterns[org] {
+			OrgPatNames[n] = patEntry.DeepCopy()
+		}
+		copyOrgPat[org] = OrgPatNames
+	}
+
+	return copyOrgPat
+}
+
 // Given a list of pattern_org/pattern/node_org triplets that this agbot is supposed to serve, save that list and
 // convert it to map of maps (keyed by org and pattern name) to hold all the pattern meta data. This
 // will allow the PatternManager to know when the pattern metadata changes.
 func (pm *PatternManager) SetCurrentPatterns(servedPatterns map[string]exchange.ServedPattern, policyPath string) error {
+	pm.patMapLock.Lock()
+	defer pm.patMapLock.Unlock()
 
 	// Exit early if nothing to do
 	if len(pm.OrgPatterns) == 0 && len(pm.ServedPatterns) == 0 && len(servedPatterns) == 0 {
@@ -266,6 +331,8 @@ func createPolicyFiles(pe *PatternEntry, patternId string, pattern *exchange.Pat
 // the PatternManager. When new or updated patterns are discovered, generate policy files for each pattern so that
 // the agbot can start serving the workloads and services.
 func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[string]exchange.Pattern, policyPath string) error {
+	pm.patMapLock.Lock()
+	defer pm.patMapLock.Unlock()
 
 	// If there is no pattern in the org, delete the pattern entries for the org from the pm and all of the policy files in the org.
 	// This is the case where pattern or the org has been deleted but the agbot still hosts the pattern on the exchange.
@@ -358,7 +425,6 @@ func (pm *PatternManager) UpdatePatternPolicies(org string, definedPatterns map[
 // When an org is removed from the list of supported orgs and patterns, remove the org
 // from the PatternManager and delete all the policy files for it.
 func (pm *PatternManager) deleteOrg(policyPath string, org string) error {
-
 	// Delete all the policy files that are pattern based for the org
 	if err := policy.DeletePolicyFilesForOrg(policyPath, org, true); err != nil {
 		glog.Errorf("Error deleting policy files for org %v. %v", org, err)
@@ -374,7 +440,6 @@ func (pm *PatternManager) deleteOrg(policyPath string, org string) error {
 
 // When a pattern is removed, remove the pattern from the PatternManager and delete all the policy files for it.
 func (pm *PatternManager) deletePattern(policyPath string, org string, pattern string) error {
-
 	// delete the policy files
 	if err := policy.DeletePolicyFilesForPattern(policyPath, org, pattern); err != nil {
 		glog.Errorf("Error deleting policy files for pattern %v/%v. %v", org, pattern, err)
