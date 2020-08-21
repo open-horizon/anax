@@ -308,6 +308,10 @@ Environment Variables:
 	exServiceRemovePolicyService := exServiceRemovePolicyCmd.Arg("service", msgPrinter.Sprintf("Remove policy for this service.")).Required().String()
 	exServiceRemovePolicyForce := exServiceRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
+	exServiceListnode := exServiceCmd.Command("listnode", msgPrinter.Sprintf("Display the nodes that the service is running on."))
+	exServiceListnodeService := exServiceListnode.Arg("service", msgPrinter.Sprintf("The service id. Use <org>/<svc> to specify a service from a different org.")).Required().String()
+	exServiceListnodeNodeOrg := exServiceListnode.Flag("node-org", msgPrinter.Sprintf("The node's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.")).Short('O').String()
+
 	exBusinessCmd := exchangeCmd.Command("deployment", msgPrinter.Sprintf("List and manage deployment policies in the Horizon Exchange.")).Alias("business")
 	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", msgPrinter.Sprintf("Display the deployment policies from the Horizon Exchange."))
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -591,6 +595,7 @@ Environment Variables:
 	mmsObjectDownloadType := mmsObjectDownloadCmd.Flag("type", msgPrinter.Sprintf("The type of the object to download data. This flag must be used with -i.")).Short('t').Required().String()
 	mmsObjectDownloadId := mmsObjectDownloadCmd.Flag("id", msgPrinter.Sprintf("The id of the object to download data. This flag must be used with -t.")).Short('i').Required().String()
 	mmsObjectDownloadFile := mmsObjectDownloadCmd.Flag("file", msgPrinter.Sprintf("The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory")).Short('f').String()
+	mmsObjectDownloadOverwrite := mmsObjectDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists in the file system.")).Short('O').Bool()
 
 	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
 
@@ -870,6 +875,8 @@ Environment Variables:
 		exchange.ServiceAddPolicy(*exOrg, credToUse, *exServiceAddPolicyService, *exServiceAddPolicyJsonFile)
 	case exServiceRemovePolicyCmd.FullCommand():
 		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
+	case exServiceListnode.FullCommand():
+		exchange.ListServiceNodes(*exOrg, *exUserPw, *exServiceListnodeService, *exServiceListnodeNodeOrg)
 	case exBusinessListPolicyCmd.FullCommand():
 		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy, !*exBusinessListPolicyLong)
 	case exBusinessNewPolicyCmd.FullCommand():
@@ -993,7 +1000,7 @@ Environment Variables:
 	case mmsObjectDeleteCmd.FullCommand():
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
-		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile)
+		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite)
 	case voucherInspectCmd.FullCommand():
 		sdo.VoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():

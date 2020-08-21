@@ -313,7 +313,7 @@ func NodeAddDevice(org, nodeId, nodeToken, userPw, arch, patternName string, qui
 	}
 
 	putNodeReqBody := anaxExchange.PutDeviceRequest{Token: nodeToken, Name: nodeId, NodeType: persistence.DEVICE_TYPE_DEVICE, Pattern: patternName, PublicKey: []byte(""), Arch: arch}
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReqBody)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201}, putNodeReqBody, nil)
 }
 
 // This is the same as exchange.NodeAddPolicy(), except that the node policy is a string, not a file
@@ -346,7 +346,7 @@ func NodeAddPolicyString(org, credToUse, node, policyStr string, quieter bool) {
 		msgPrinter.Printf("Adding/updating node policy...")
 		msgPrinter.Println()
 	}
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchangeUrl, "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchangeUrl, "orgs/"+org+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
 
 	//msgPrinter.Printf("Node policy updated.")
 	//msgPrinter.Println()

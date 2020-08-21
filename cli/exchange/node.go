@@ -143,14 +143,14 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 			msgPrinter.Println()
 		}
 		patchNodeReq := NodeExchangePatchToken{Token: nodeToken}
-		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, patchNodeReq)
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, patchNodeReq, nil)
 	} else {
 		// create the node with given node type
 		if nodeType == "" {
 			nodeType = persistence.DEVICE_TYPE_DEVICE
 		}
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, NodeType: nodeType, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch}
-		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq)
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq, nil)
 	}
 
 	if httpCode == 401 {
@@ -265,7 +265,7 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 
 		msgPrinter.Printf("Updating %v for node %v/%v in the Horizon Exchange.", k, nodeOrg, node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, patch, nil)
 		msgPrinter.Printf("Attribute %v updated.", k)
 		msgPrinter.Println()
 
@@ -308,7 +308,7 @@ func NodeSetToken(org, credToUse, node, token string) {
 	var nodeOrg string
 	nodeOrg, node = cliutils.TrimOrg(org, node)
 	patchNodeReq := NodeExchangePatchToken{Token: token}
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node, cliutils.OrgAndCreds(org, credToUse), []int{201}, patchNodeReq, nil)
 }
 
 func NodeConfirm(org, node, token string, nodeIdTok string) {
@@ -420,7 +420,7 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	// add/replce node policy
 	msgPrinter.Printf("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
 
 	msgPrinter.Printf("Node policy updated.")
 	msgPrinter.Println()
@@ -466,7 +466,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		newPolicy.Properties = newProp
 		msgPrinter.Printf("Updating Node %s policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
 		msgPrinter.Printf("Node %s policy properties updated in the horizon exchange.", node)
 		msgPrinter.Println()
 	} else if _, ok = findAttrType["constraints"]; ok {
@@ -483,7 +483,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		newPolicy.Constraints = newConstr
 		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
 		msgPrinter.Printf("Node %s policy constraints updated in the horizon exchange.", node)
 		msgPrinter.Println()
 	} else {
