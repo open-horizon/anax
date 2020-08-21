@@ -713,10 +713,14 @@ func ListServiceNodes(org, userPw, svcId, nodeOrg string) {
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+nodeOrg+"/search/nodes/service", cliutils.OrgAndCreds(org, userPw), []int{201}, svcNode, &listNodes)
 
 		// print list
-		jsonBytes, err := json.MarshalIndent(listNodes, "", cliutils.JSON_INDENT)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, fmt.Sprintf("failed to marshal 'hzn exchange service listnode' output: %v", err))
+		if nodes, ok := listNodes["nodes"]; !ok {
+			fmt.Println("[]")
+		} else {
+			jsonBytes, err := json.MarshalIndent(nodes, "", cliutils.JSON_INDENT)
+			if err != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, fmt.Sprintf("failed to marshal 'hzn exchange service listnode' output: %v", err))
+			}
+			fmt.Printf("%s\n", jsonBytes)
 		}
-		fmt.Printf("%s\n", jsonBytes)
 	}
 }
