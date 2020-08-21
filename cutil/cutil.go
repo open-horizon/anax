@@ -756,7 +756,10 @@ func GetClusterCountInfo() (float64, float64, float64, string, string, error) {
 	if err != nil {
 		glog.Warningf("Failed to get kubernetes server version: %v", err)
 	}
-	version := versionObj.GitVersion
+	version := ""
+	if versionObj != nil {
+		version = versionObj.GitVersion
+	}
 	availMem := float64(0)
 	totalMem := float64(0)
 	cpu := float64(0)
