@@ -654,11 +654,25 @@ func ConvertPropertyToExchangeFormat(prop *externalpolicy.Property) (*MSProp, er
 }
 
 // Functions and types for working with organizations in the exchange
+type OrgLimits struct {
+	MaxNodes int `json:"maxNodes"`
+}
+
+func (o OrgLimits) String() string {
+	return fmt.Sprintf("MaxNodes: %v", o.MaxNodes)
+}
+
 type Organization struct {
 	Label         string              `json:"label,omitempty"`
 	Description   string              `json:"description,omitempty"`
+	Tags          map[string]string   `json:"tags,omitempty"`
 	HeartbeatIntv *HeartbeatIntervals `json:"heartbeatIntervals,omitempty"`
+	Limits        *OrgLimits          `json:"limits,omitempty"`
 	LastUpdated   string              `json:"lastUpdated,omitempty"`
+}
+
+func (o Organization) String() string {
+	return fmt.Sprintf("Label: %v, Description: %v, Tags %v, HeartbeatIntv %v, Limits %v", o.Label, o.Description, o.Tags, o.HeartbeatIntv, o.Limits)
 }
 
 type GetOrganizationResponse struct {
