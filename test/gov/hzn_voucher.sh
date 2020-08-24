@@ -230,4 +230,51 @@ else
 fi
 export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
 
+# Test hzn voucher list
+echo -e "${PREFIX} Testing 'hzn voucher list' without HZN_EXCHANGE_USER_AUTH set"
+unset HZN_EXCHANGE_USER_AUTH
+cmdOutput=$(hzn voucher list 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'exchange user authentication must be specified'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher list' without HZN_EXCHANGE_USER_AUTH set: exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+export HZN_EXCHANGE_USER_AUTH="$USERDEV_ADMIN_AUTH"
+
+echo -e "${PREFIX} Testing 'hzn voucher list' without HZN_ORG_ID set"
+unset HZN_ORG_ID
+cmdOutput=$(hzn voucher list 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'Error:'*'organization ID must be specified'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher list' without HZN_ORG_ID set: exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+export HZN_ORG_ID=$HZN_ORG_ID_SAVE
+
+echo -e "${PREFIX} Testing 'hzn voucher list' without HZN_SDO_SVC_URL set"
+unset HZN_SDO_SVC_URL
+cmdOutput=$(hzn voucher list 2>&1)
+rc=$?
+if [[ $rc -eq 7 && "$cmdOutput" == *'Error:'*'Could not get'*'HZN_SDO_SVC_URL'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher list' without HZN_SDO_SVC_URL set: exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+export HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL_SAVE
+
+echo -e "${PREFIX} Testing 'hzn voucher list <voucher> 2nd-arg'"
+cmdOutput=$(hzn voucher list file-not-there 2nd-arg 2>&1)
+rc=$?
+if [[ $rc -eq 1 && "$cmdOutput" == *'error:'*'unexpected 2nd-arg'* ]]; then
+	echo -e "${PREFIX} received expected error response."
+else
+	echo -e "${PREFIX} Failed: Wrong error response from 'hzn voucher list <voucher> 2nd-arg': exit code: $rc, output: $cmdOutput."
+	exit 1
+fi
+
 echo -e "${PREFIX} Done"
