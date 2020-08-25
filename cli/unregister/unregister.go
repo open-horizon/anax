@@ -1,6 +1,8 @@
 package unregister
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
@@ -10,6 +12,8 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"net/http"
+	"os"
+	"path"
 	"time"
 )
 
@@ -33,6 +37,14 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 	// get the node
 	horDevice := api.HorizonDevice{}
 	cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+
+	if deepClean {
+		err := backupEventLogs()
+		if err != nil {
+			msgPrinter.Printf("Cannot backup eventlogs: %v", err)
+			msgPrinter.Println()
+		}
+	}
 
 	if horDevice.Org == nil || *horDevice.Org == "" {
 		msgPrinter.Printf("The node is not registered.")
@@ -287,4 +299,38 @@ func RemoveServiceContainers() error {
 	} else {
 		return fmt.Errorf(err_string)
 	}
+}
+
+// backupEventLogs loads eventlogs from eventlog API , marshals them into the JSON format
+// and saves the bkp file into horizon folder with name of backup time
+func backupEventLogs() error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	msgPrinter.Println("Backing up eventlogs...")
+
+	// get the eventlog from anax
+	elogs := make([]persistence.EventLogRaw, 0)
+	cliutils.HorizonGet("eventlog/all", []int{200}, &elogs, false)
+
+	elogsJson, err := json.MarshalIndent(elogs, "", cliutils.JSON_INDENT)
+	if err != nil {
+		return errors.New(msgPrinter.Sprintf("cannot marshal eventlogs from local anax DB, eventlogs will not be saved"))
+	}
+
+	fileName := path.Join("/tmp/", fmt.Sprintf("eventlogs_bkp_%s.txt", time.Now().Format(time.RFC3339)))
+	file, err := os.Create(fileName)
+	if err != nil {
+		return errors.New(msgPrinter.Sprintf("failed to backup eventlogs file %v. %v", fileName, err))
+	}
+	defer file.Close()
+
+	if _, err := file.Write(elogsJson); err != nil {
+		return errors.New(msgPrinter.Sprintf("failed to save the eventlogs to file %v. %v", fileName, err))
+	}
+
+	msgPrinter.Printf("Saved eventlog into file %s", fileName)
+	msgPrinter.Println()
+
+	return nil
 }
