@@ -383,6 +383,7 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 		// Process the message if it's a proposal.
 		deleteMessage := true
+		proposalAccepted := false
 
 		if msgProtocol, err := abstractprotocol.ExtractProtocol(protocolMsg); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to extract agreement protocol name from message %v", protocolMsg)))
@@ -394,7 +395,13 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 		} else if pDevice, err := persistence.FindExchangeDevice(w.db); err != nil {
 			glog.Errorf(logString(fmt.Sprintf("unable to get device from the local database. %v", err)))
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURED {
-			deleteMessage = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
+
+			deleteMessage, proposalAccepted = w.producerPH[msgProtocol].HandleProposalMessage(p, protocolMsg, exchangeMsg)
+
+			if proposalAccepted {
+				// send a message to let the changes worker know that we have received a proposal message
+				w.Messages() <- events.NewProposalAcceptedMessage(events.PROPOSAL_ACCEPTED)
+			}
 		} else if pDevice != nil && pDevice.Config.State == persistence.CONFIGSTATE_CONFIGURING {
 			w.AddDeferredCommand(cmd)
 			return true
@@ -774,7 +781,8 @@ func (w *AgreementWorker) patchPattern() error {
 
 	pdr := exchange.PatchDeviceRequest{}
 	if dev.Pattern != "" {
-		pdr.Pattern = dev.Pattern
+		tmpPattern := dev.Pattern
+		pdr.Pattern = &tmpPattern
 		if err := exchange.GetHTTPPatchDeviceHandler(w)(w.GetExchangeId(), w.GetExchangeToken(), &pdr); err != nil {
 			return err
 		} else {

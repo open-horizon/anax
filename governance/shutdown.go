@@ -241,45 +241,52 @@ func (w *GovernanceWorker) nodeShutDownForPattenChanged(dev *persistence.Exchang
 func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 
 	// If the node entry has already been removed form the exchange, skip this step.
-	exDev, err := exchange.GetExchangeDevice(w.limitedRetryEC.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	_, err := exchange.GetExchangeDevice(w.limitedRetryEC.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
 	if err != nil && strings.Contains(err.Error(), "status: 401") {
 		return nil
 	} else if err != nil {
 		return errors.New(fmt.Sprintf("error reading node from exchange: %v", err))
 	}
 
-	// CreateDevicePut will include the existing message key in the returned object, and the Pattern field will be an empty string.
-	// Preserve the rest of the existing fields on the PUT.
-	pdr := exchange.CreateDevicePut(w.GetExchangeToken(), exDev.Name)
-	if exDev.RegisteredServices != nil && len(exDev.RegisteredServices) != 0 {
-		pdr.RegisteredServices = []exchange.Microservice{}
+	patchDevice := exchange.GetHTTPPatchDeviceHandler(w)
+
+	// clear the registeredServices
+	glog.V(3).Infof(logString(fmt.Sprintf("clearing node registerServices entry in exchange.")))
+	pdrRS := exchange.PatchDeviceRequest{}
+	tmpRS := make([]exchange.Microservice, 0)
+	pdrRS.RegisteredServices = &tmpRS
+	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrRS); err != nil {
+		return errors.New(fmt.Sprintf("error clearing node registerServices entry in exchange.", err))
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("cleared node registeredServices entry in exchange.")))
 	}
-	pdr.SoftwareVersions = exDev.SoftwareVersions
-	pdr.MsgEndPoint = exDev.MsgEndPoint
-	pdr.NodeType = exDev.NodeType
 
-	if keepUI {
-		pdr.UserInput = exDev.UserInput
+	// clear the pattern
+	glog.V(3).Infof(logString(fmt.Sprintf("clearing node pattern entry in exchange.")))
+	pdrPattern := exchange.PatchDeviceRequest{}
+	pattern := ""
+	pdrPattern.Pattern = &pattern
+	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrPattern); err != nil {
+		return errors.New(fmt.Sprintf("error clearing node pattern entry in exchange.", err))
+	} else {
+		glog.V(3).Infof(logString(fmt.Sprintf("cleared node pattern entry in exchange.")))
 	}
 
-	var resp interface{}
-	resp = new(exchange.PutDeviceResponse)
-	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId())
-
-	glog.V(3).Infof(logString(fmt.Sprintf("clearing node entry in exchange: %v", pdr.ShortString())))
-
-	for {
-		if err, tpErr := exchange.InvokeExchange(w.Config.Collaborators.HTTPClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), pdr, &resp); err != nil {
-			return err
-		} else if tpErr != nil {
-			glog.Warningf(tpErr.Error())
-			time.Sleep(10 * time.Second)
-			continue
+	// clear the userInput if needed
+	if !keepUI {
+		// clear the user input
+		glog.V(3).Infof(logString(fmt.Sprintf("clearing node userInput entry in exchange.")))
+		pdrUI := exchange.PatchDeviceRequest{}
+		tmpUI := make([]policy.UserInput, 0)
+		pdrUI.UserInput = &tmpUI
+		if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrUI); err != nil {
+			return errors.New(fmt.Sprintf("error clearing node userInput entry in exchange.", err))
 		} else {
-			glog.V(3).Infof(logString(fmt.Sprintf("cleared node entry in exchange: %v", resp)))
-			return nil
+			glog.V(3).Infof(logString(fmt.Sprintf("cleared node userInput entry in exchange.")))
 		}
 	}
+
+	return nil
 }
 
 // Terminate all active agreements and wait until they are all archived.
@@ -432,7 +439,8 @@ func (w *GovernanceWorker) patchNodeKey(httpClientFactory *config.HTTPClientFact
 func (w *GovernanceWorker) patchNodePattern(pattern string) error {
 
 	pdr := exchange.PatchDeviceRequest{}
-	pdr.Pattern = pattern
+	tmpPattern := pattern
+	pdr.Pattern = &tmpPattern
 
 	var resp interface{}
 	resp = new(exchange.PutDeviceResponse)

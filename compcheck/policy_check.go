@@ -230,7 +230,7 @@ func policyCompatible(getDeviceHandler exchange.DeviceHandler,
 			}
 		} else {
 			// validate the service policy
-			if err := input.ServicePolicy.Validate(); err != nil {
+			if err := input.ServicePolicy.ValidateAndNormalize(); err != nil {
 				return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the service policy. %v", err)), COMPCHECK_VALIDATION_ERROR)
 			}
 
@@ -375,7 +375,7 @@ func processNodePolicy(nodePolicyHandler exchange.NodePolicyHandler,
 	}
 
 	if inputNP != nil {
-		if err := inputNP.Validate(); err != nil {
+		if err := inputNP.ValidateAndNormalize(); err != nil {
 			return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the node policy. %v", err)), COMPCHECK_VALIDATION_ERROR)
 		} else {
 			// give nodeId a default if it is empty
@@ -432,7 +432,7 @@ func GetNodePolicy(nodePolicyHandler exchange.NodePolicyHandler, nodeId string, 
 
 	// validate the policy
 	extPolicy := nodePolicy.GetExternalPolicy()
-	if err := extPolicy.Validate(); err != nil {
+	if err := extPolicy.ValidateAndNormalize(); err != nil {
 		return nil, nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the node policy for node %v. %v", nodeId, err)), COMPCHECK_VALIDATION_ERROR)
 	}
 
@@ -562,7 +562,7 @@ func GetServicePolicyWithId(serviceIdPolicyHandler exchange.ServicePolicyWithIdH
 	} else {
 		// validate the policy
 		extPolicy := servicePolicy.GetExternalPolicy()
-		if err := extPolicy.Validate(); err != nil {
+		if err := extPolicy.ValidateAndNormalize(); err != nil {
 			return nil, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Error validating the service policy %v. %v", svcId, err)), COMPCHECK_VALIDATION_ERROR)
 		}
 		return &extPolicy, nil
@@ -591,7 +591,7 @@ func GetServicePolicy(servicePolicyHandler exchange.ServicePolicyHandler, svcUrl
 		return nil, sId, nil
 	} else {
 		extPolicy := servicePolicy.GetExternalPolicy()
-		if err := extPolicy.Validate(); err != nil {
+		if err := extPolicy.ValidateAndNormalize(); err != nil {
 			return nil, sId, NewCompCheckError(fmt.Errorf(msgPrinter.Sprintf("Failed to validate the service policy for %v/%v %v %v. %v", svcOrg, svcUrl, svcVersion, svcArch, err)), COMPCHECK_VALIDATION_ERROR)
 		}
 		return &extPolicy, sId, nil

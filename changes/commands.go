@@ -31,13 +31,15 @@ func NewAgreementCommand() *AgreementCommand {
 	return &AgreementCommand{}
 }
 
-type ResetIntervalCommand struct {
+type UpdateIntervalCommand struct {
+	// the update type. It can be RESET, set to MEDIAN which usually is (max+min)/2
+	UpdateType string
 }
 
-func (c ResetIntervalCommand) ShortString() string {
-	return fmt.Sprintf("ResetIntervalCommand")
+func (c UpdateIntervalCommand) ShortString() string {
+	return fmt.Sprintf("UpdateIntervalCommand: UpdateType: %v", c.UpdateType)
 }
 
-func NewResetIntervalCommand() *ResetIntervalCommand {
-	return &ResetIntervalCommand{}
+func NewUpdateIntervalCommand(updateType string) *UpdateIntervalCommand {
+	return &UpdateIntervalCommand{UpdateType: updateType}
 }

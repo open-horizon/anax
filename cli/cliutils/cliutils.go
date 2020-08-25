@@ -1184,7 +1184,7 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 // ExchangePutPost runs a PUT, POST or PATCH to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
 // as json. Otherwise the struct will be marshaled to json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
-func ExchangePutPost(service string, method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}) (httpCode int) {
+func ExchangePutPost(service string, method string, urlBase string, urlSuffix string, credentials string, goodHttpCodes []int, body interface{}, structure interface{}) (httpCode int) {
 	url := urlBase + "/" + urlSuffix
 	apiMsg := method + " " + url
 
@@ -1201,8 +1201,8 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if !isGoodCode(httpCode, goodHttpCodes) {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read exchange body response from %s: %v", apiMsg, err))
 		}
@@ -1212,7 +1212,32 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s", httpCode, apiMsg, string(bodyBytes)))
 		}
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("bad HTTP code %d from %s: %s, %s", httpCode, apiMsg, respMsg.Code, respMsg.Msg))
+	} else if len(bodyBytes) > 0 && structure != nil { // the DP front-end of exchange will return nothing when auth problem
+		switch s := structure.(type) {
+		case *[]byte:
+			// This is the signal that they want the raw body back
+			*s = bodyBytes
+		case *string:
+			// If the structure to fill in is just a string, unmarshal/remarshal it to get it in json indented form, and then return as a string
+			//todo: this gets it in json indented form, but also returns the fields in random order (because they were interpreted as a map)
+			var jsonStruct interface{}
+			err = json.Unmarshal(bodyBytes, &jsonStruct)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal exchange body response from %s: %v", apiMsg, err))
+			}
+			jsonBytes, err := json.MarshalIndent(jsonStruct, "", JSON_INDENT)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal exchange output from %s: %v", apiMsg, err))
+			}
+			*s = string(jsonBytes)
+		default:
+			err = json.Unmarshal(bodyBytes, structure)
+			if err != nil {
+				Fatal(JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal exchange body response from %s: %v", apiMsg, err))
+			}
+		}
 	}
+
 	return
 }
 

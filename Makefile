@@ -499,7 +499,7 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 	fi
 endif
 
-i18n-catalog: $(TMPGOPATH)/bin/gotext
+i18n-catalog: deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	rm -Rf vendor; \
 	go mod vendor; \
@@ -510,7 +510,7 @@ i18n-catalog: $(TMPGOPATH)/bin/gotext
 	rm -Rf vendor; \
 	mv -f go.mod.save go.mod; \
 
-i18n-translation: deps i18n-catalog
+i18n-translation: i18n-catalog
 	@echo "Copying message files for translation"
 	cd $(PKGPATH) && \
 		export PKGPATH=$(PKGPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \

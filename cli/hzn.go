@@ -308,6 +308,10 @@ Environment Variables:
 	exServiceRemovePolicyService := exServiceRemovePolicyCmd.Arg("service", msgPrinter.Sprintf("Remove policy for this service.")).Required().String()
 	exServiceRemovePolicyForce := exServiceRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
+	exServiceListnode := exServiceCmd.Command("listnode", msgPrinter.Sprintf("Display the nodes that the service is running on."))
+	exServiceListnodeService := exServiceListnode.Arg("service", msgPrinter.Sprintf("The service id. Use <org>/<svc> to specify a service from a different org.")).Required().String()
+	exServiceListnodeNodeOrg := exServiceListnode.Flag("node-org", msgPrinter.Sprintf("The node's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.")).Short('O').String()
+
 	exBusinessCmd := exchangeCmd.Command("deployment", msgPrinter.Sprintf("List and manage deployment policies in the Horizon Exchange.")).Alias("business")
 	exBusinessListPolicyCmd := exBusinessCmd.Command("listpolicy", msgPrinter.Sprintf("Display the deployment policies from the Horizon Exchange."))
 	exBusinessListPolicyIdTok := exBusinessListPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -533,6 +537,21 @@ Environment Variables:
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", msgPrinter.Sprintf("Remove a project dependency."))
 
 	agbotCmd := app.Command("agbot", msgPrinter.Sprintf("List and manage Horizon agreement bot resources."))
+
+	agbotCacheCmd := agbotCmd.Command("cache", msgPrinter.Sprintf("Manage cached agbot-serving organizations, patterns, and deployment policies."))
+	agbotCacheServedOrg := agbotCacheCmd.Command("servedorg", msgPrinter.Sprintf("List served pattern orgs and deployment policy orgs."))
+	agbotCacheServedOrgList := agbotCacheServedOrg.Command("list", msgPrinter.Sprintf("Display served pattern orgs and deployment policy orgs."))
+	agbotCachePattern := agbotCacheCmd.Command("pattern", msgPrinter.Sprintf("List patterns cached in the agbot."))
+	agbotCachePatternList := agbotCachePattern.Command("list", msgPrinter.Sprintf("Display served patterns cached in the agbot."))
+	agbotCachePatternListOrg := agbotCachePatternList.Flag("org", msgPrinter.Sprintf("Display patterns under this org.")).Short('o').String()
+	agbotCachePatternListName := agbotCachePatternList.Arg("name", msgPrinter.Sprintf("Display this pattern.")).String()
+	agbotCachePatternListLong := agbotCachePatternList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
+	agbotCacheDeployPol := agbotCacheCmd.Command("deploymentpol", msgPrinter.Sprintf("List served deployment policies cached in the agbot."))
+	agbotCacheDeployPolList := agbotCacheDeployPol.Command("list", msgPrinter.Sprintf("Display served deployment policies cached in the agbot."))
+	agbotCacheDeployPolListOrg := agbotCacheDeployPolList.Flag("org", msgPrinter.Sprintf("Display policies under this org.")).Short('o').String()
+	agbotCacheDeployPolListName := agbotCacheDeployPolList.Arg("name", msgPrinter.Sprintf("Display this policy.")).String()
+	agbotCacheDeployPolListLong := agbotCacheDeployPolList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
+
 	agbotListCmd := agbotCmd.Command("list", msgPrinter.Sprintf("Display general information about this Horizon agbot node."))
 	agbotAgreementCmd := agbotCmd.Command("agreement", msgPrinter.Sprintf("List or manage the active or archived agreements this Horizon agreement bot has with edge nodes."))
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list", msgPrinter.Sprintf("List the active or archived agreements this Horizon agreement bot has with edge nodes."))
@@ -591,6 +610,7 @@ Environment Variables:
 	mmsObjectDownloadType := mmsObjectDownloadCmd.Flag("type", msgPrinter.Sprintf("The type of the object to download data. This flag must be used with -i.")).Short('t').Required().String()
 	mmsObjectDownloadId := mmsObjectDownloadCmd.Flag("id", msgPrinter.Sprintf("The id of the object to download data. This flag must be used with -t.")).Short('i').Required().String()
 	mmsObjectDownloadFile := mmsObjectDownloadCmd.Flag("file", msgPrinter.Sprintf("The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory")).Short('f').String()
+	mmsObjectDownloadOverwrite := mmsObjectDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists in the file system.")).Short('O').Bool()
 
 	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
 
@@ -604,6 +624,10 @@ Environment Variables:
 	voucherImportExample := voucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
 	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
 	voucherImportPattern := voucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
+
+	voucherListCmd := voucherCmd.Command("list", msgPrinter.Sprintf("List the imported SDO ownership vouchers."))
+	voucherToList := voucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this SDO ownership voucher.")).String()
+	voucherListLong := voucherListCmd.Flag("long", msgPrinter.Sprintf("When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.")).Short('l').Bool()
 
 	app.VersionFlag = nil
 
@@ -741,6 +765,10 @@ Environment Variables:
 		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		voucherUserPw = cliutils.RequiredWithDefaultEnvVar(voucherUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
+	if strings.HasPrefix(fullCmd, "voucher list") {
+		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		voucherUserPw = cliutils.RequiredWithDefaultEnvVar(voucherUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
 
 	// key file defaults
 	switch fullCmd {
@@ -818,6 +846,14 @@ Environment Variables:
 		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
+
+	case agbotCacheServedOrgList.FullCommand():
+		agreementbot.GetServedOrgs()
+	case agbotCachePatternList.FullCommand():
+		agreementbot.GetPatterns(*agbotCachePatternListOrg, *agbotCachePatternListName, *agbotCachePatternListLong)
+	case agbotCacheDeployPolList.FullCommand():
+		agreementbot.GetPolicies(*agbotCacheDeployPolListOrg, *agbotCacheDeployPolListName, *agbotCacheDeployPolListLong)
+
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
@@ -870,6 +906,8 @@ Environment Variables:
 		exchange.ServiceAddPolicy(*exOrg, credToUse, *exServiceAddPolicyService, *exServiceAddPolicyJsonFile)
 	case exServiceRemovePolicyCmd.FullCommand():
 		exchange.ServiceRemovePolicy(*exOrg, credToUse, *exServiceRemovePolicyService, *exServiceRemovePolicyForce)
+	case exServiceListnode.FullCommand():
+		exchange.ListServiceNodes(*exOrg, *exUserPw, *exServiceListnodeService, *exServiceListnodeNodeOrg)
 	case exBusinessListPolicyCmd.FullCommand():
 		exchange.BusinessListPolicy(*exOrg, credToUse, *exBusinessListPolicyPolicy, !*exBusinessListPolicyLong)
 	case exBusinessNewPolicyCmd.FullCommand():
@@ -993,10 +1031,12 @@ Environment Variables:
 	case mmsObjectDeleteCmd.FullCommand():
 		sync_service.ObjectDelete(*mmsOrg, *mmsUserPw, *mmsObjectDeleteType, *mmsObjectDeleteId)
 	case mmsObjectDownloadCmd.FullCommand():
-		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile)
+		sync_service.ObjectDownLoad(*mmsOrg, *mmsUserPw, *mmsObjectDownloadType, *mmsObjectDownloadId, *mmsObjectDownloadFile, *mmsObjectDownloadOverwrite)
 	case voucherInspectCmd.FullCommand():
 		sdo.VoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():
 		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
+	case voucherListCmd.FullCommand():
+		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
 	}
 }

@@ -83,15 +83,26 @@ func SyncNodePolicyWithExchange(db *bolt.DB, pDevice *persistence.ExchangeDevice
 // node policy to the exchange again and then returns the new node policy. If the exchange node policy already has the built-in properties,
 // it just returns the one from the exchange.
 func GetProcessedExchangeNodePolicy(pDevice *persistence.ExchangeDevice, getExchangeNodePolicy exchange.NodePolicyHandler, putExchangeNodePolicy exchange.PutNodePolicyHandler, db *bolt.DB) (*exchange.ExchangePolicy, error) {
+	// get the node policy from the exchange
 	exchangeNodePolicy, err := getExchangeNodePolicy(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id))
 	if err != nil {
 		return nil, fmt.Errorf("Unable to retrieve the node policy from the exchange. Error: %v", err)
 	}
 
+	// verify the exchange node policy, it will convert PROP_NODE_PRIVILEGED to boolean in case user sets it to string "true" or "false".
+	if exchangeNodePolicy != nil {
+		if err := exchangeNodePolicy.ValidateAndNormalize(); err != nil {
+			return nil, fmt.Errorf("Node policy in the exchange does not validate. %v", err)
+		}
+	}
+
+	// get the local node policy
 	existingPol, err := persistence.FindNodePolicy(db)
 	if err != nil {
 		glog.V(2).Infof("Failed to retrieve node policy from local db: %v", err)
 	}
+
+	// update the exchange node policy with the built-in policies if it does not contain the built-in's.
 	builtinPolicyReadOnly := &externalpolicy.ExternalPolicy{}
 	builtinPolicyReadWrite := &externalpolicy.ExternalPolicy{}
 	if (exchangeNodePolicy != nil && exchangeNodePolicy.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) || (existingPol != nil && existingPol.Properties.HasProperty(externalpolicy.PROP_NODE_HARDWAREID)) {
@@ -210,7 +221,7 @@ func SetDefaultNodePolicy(config *config.HorizonConfig, pDevice *persistence.Exc
 	}
 
 	// verify the policy before saving it
-	if err := nodePolicy.Validate(); err != nil {
+	if err := nodePolicy.ValidateAndNormalize(); err != nil {
 		return nil, fmt.Errorf("Node policy with built-in properties does not validate. %v", err)
 	}
 
@@ -347,7 +358,7 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 	nodePutPolicyHandler exchange.PutNodePolicyHandler) error {
 
 	// verify the policy
-	if err := nodePolicy.Validate(); err != nil {
+	if err := nodePolicy.ValidateAndNormalize(); err != nil {
 		return fmt.Errorf("Node policy does not validate. %v", err)
 	}
 
@@ -366,7 +377,7 @@ func UpdateNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, nodePoli
 	}
 
 	// verify the policy again
-	if err := nodePolicy.Validate(); err != nil {
+	if err := nodePolicy.ValidateAndNormalize(); err != nil {
 		return fmt.Errorf("Node policy with built-in properties does not validate. %v", err)
 	}
 
@@ -407,7 +418,7 @@ func PatchNodePolicy(pDevice *persistence.ExchangeDevice, db *bolt.DB, patchObje
 		return nil, fmt.Errorf("Unable to determine type of patch. %T %v", patchObject, patchObject)
 	}
 
-	if err := localNodePolicy.Validate(); err != nil {
+	if err := localNodePolicy.ValidateAndNormalize(); err != nil {
 		return nil, err
 	}
 

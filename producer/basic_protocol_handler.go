@@ -60,15 +60,17 @@ func (c *BasicProtocolHandler) AcceptCommand(cmd worker.Command) bool {
 	return false
 }
 
-func (c *BasicProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) bool {
+func (c *BasicProtocolHandler) HandleProposalMessage(proposal abstractprotocol.Proposal, protocolMsg string, exchangeMsg *exchange.DeviceMessage) (bool, bool) {
 
 	if handled, reply, tcPolicy := c.HandleProposal(c.agreementPH, proposal, protocolMsg, []map[string]string{}, exchangeMsg); handled {
 		if reply != nil {
 			c.PersistProposal(proposal, reply, tcPolicy, protocolMsg)
+			return handled, reply.ProposalAccepted()
+		} else {
+			return handled, false
 		}
-		return handled
 	}
-	return false
+	return false, false
 
 }
 

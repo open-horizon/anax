@@ -58,13 +58,16 @@ const HZN_FSS_CERT_KEY_FILE = "key.pem"
 const HZN_FSS_POLLING_RATE = 60
 
 // The Default starting exchange message polling interval.
-const ExchangeMessagePollInterval_DEFAULT = 10
+const ExchangeMessagePollInterval_DEFAULT = 20
 
 // The Default message poll interval maximum.
 const ExchangeMessagePollMaxInterval_DEFAULT = 120
 
 // The Default message poll increment size.
-const ExchangeMessagePollIncrement_DEFAULT = 10
+const ExchangeMessagePollIncrement_DEFAULT = 20
+
+// The maximum numbers of minutes to wait for workload to start in an agreement
+const EdgeMaxAgreementPrelaunchTimeM_DEFAULT = 10
 
 // The Default interval at which the agbot verifies that its message key is present in the exchange.
 const AgbotMessageKeyCheck_DEFAULT = 60

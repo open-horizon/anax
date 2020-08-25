@@ -63,7 +63,7 @@ func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool) {
 	}
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: isAdmin, Email: email}
-	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postUserReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postUserReq, nil)
 }
 
 type UserExchangePatchAdmin struct {
@@ -73,7 +73,7 @@ type UserExchangePatchAdmin struct {
 func UserSetAdmin(org, userPwCreds, user string, isAdmin bool) {
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	patchUserReq := UserExchangePatchAdmin{Admin: isAdmin}
-	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, patchUserReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, patchUserReq, nil)
 }
 
 func UserRemove(org, userPwCreds, user string, force bool) {

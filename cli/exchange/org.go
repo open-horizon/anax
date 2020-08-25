@@ -65,13 +65,13 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, min i
 	// check constraints on min, max, amnd adjust
 	// if any negative values for heartbeat, throw error
 	negFlags := []string{}
-	if min <= 0 {
+	if min < 0 {
 		negFlags = append(negFlags, "--heartbeatmin")
 	}
-	if max <= 0 {
-		negFlags = append(negFlags, "--hearbeatmax")
+	if max < 0 {
+		negFlags = append(negFlags, "--heartbeatmax")
 	}
-	if adjust <= 0 {
+	if adjust < 0 {
 		negFlags = append(negFlags, "--heartbeatadjust")
 	}
 
@@ -98,7 +98,7 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, min i
 	// add org to exchange
 	orgHb := exchange.HeartbeatIntervals{MinInterval: min, MaxInterval: max, IntervalAdjustment: adjust}
 	postOrgReq := exchange.Organization{Label: label, Description: desc, HeartbeatIntv: &orgHb}
-	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postOrgReq)
+	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postOrgReq, nil)
 
 	msgPrinter.Printf("Organization %v is successfully added to the Exchange.", theOrg)
 	msgPrinter.Println()
@@ -111,7 +111,7 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, min i
 	// if --label is specified, update it
 	if label != "" {
 		newOrgLabel := exchange.Organization{Label: label}
-		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgLabel)
+		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgLabel, nil)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("org %s not found.", theOrg))
 		}
@@ -120,7 +120,7 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, min i
 	// if --description is specified, update it
 	if desc != "" {
 		newOrgDesc := exchange.Organization{Description: desc}
-		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgDesc)
+		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgDesc, nil)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("org %s not found.", theOrg))
 		}
@@ -134,13 +134,13 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, min i
 		// check constraints
 		// if any negative values for heartbeat, throw error
 		negFlags := []string{}
-		if min <= 0 {
+		if min < 0 {
 			negFlags = append(negFlags, "--heartbeatmin")
 		}
-		if max <= 0 {
-			negFlags = append(negFlags, "--hearbeatmax")
+		if max < 0 {
+			negFlags = append(negFlags, "--heartbeatmax")
 		}
-		if adjust <= 0 {
+		if adjust < 0 {
 			negFlags = append(negFlags, "--heartbeatadjust")
 		}
 
@@ -162,7 +162,7 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, min i
 
 		orgHb := exchange.HeartbeatIntervals{MinInterval: min, MaxInterval: max, IntervalAdjustment: adjust}
 		newOrgHeartbeaat := exchange.Organization{HeartbeatIntv: &orgHb}
-		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgHeartbeaat)
+		httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, newOrgHeartbeaat, nil)
 		if httpCode == 404 {
 			cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("org %s not found.", theOrg))
 		}

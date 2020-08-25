@@ -28,7 +28,7 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `export ANAX_SOURCE=</path/to/anax>`
 - Set up a single node k8s for testing, follow the instructions here:
   - https://microk8s.io/docs/
-  - make sure you install from the 1.14 channel: `sudo snap install microk8s --classic --channel=1.14/stable`
+  - make sure you install from the 1.18 channel: `sudo snap install microk8s --classic --channel=1.18/stable`
   - see also https://microk8s.io/docs/setting-snap-channel when deciding when to upgrade to a newer Kubernetes
 - Clone this repo  
   - `git clone git@github.com:open-horizon/anax.git`
@@ -108,7 +108,7 @@ Here is a full description of all the variables you can use to setup the test th
   - Does all the above, plus removes the agbot and exchange base images, our docker test network, and all dangling docker images
   - NOTE: This is the only 'clean' command which requires re-running `make`
 
-### Remote environment testing
+### Remote Environment Testing
 
 - `export DOCKER_EXCH="Exchange's URL"`
 - `export CSS_URL="CSS's URL"`
@@ -124,3 +124,19 @@ Here is a full description of all the variables you can use to setup the test th
 - `make build-remote`
 - `make test-remote`
 - `make stop` # used between runs
+
+### Remote Environment - Continuous Integration (CI) Testing
+The e2edev tests can be run against pre-built anax and hzn binaries and against a remote management hub. This is useful in a CI environment where we want to utilize binaries that have already been built instead of always rebuilding them. This is to remove the chance of any build environment inconsistencies from the time a binary was built to the time it was deployed to the time it was tested. 
+
+Execute the following target. All other existing options are valid.
+```
+make test-remote-prebuilt
+```
+The following environment variables are needed in addition ot the Remote Environment Testing variables specified in the previous section.
+- `export PREBUILT_DOCKER_REG_URL=<Docker Registry URL>`
+- `export PREBUILT_DOCKER_REG_USER=<Docker User>`
+- `export PREBUILT_DOCKER_REG_PW=<Docker Password`
+- `export PREBUILT_ANAX_VERSION=<Version of Anax (defaults to nightly)>`
+- `export PREBUILT_ESS_VERSION=<Version of ESS (defaults to nightly)>`
+
+Occasionally you may need to test against a remote environment that is not recognizable by the existing DNS settings. You can add a host override setting as a flag to the Make command. Add `DOCKER_AGBOT_ADD_HOST=<hostname>:<ip>`.

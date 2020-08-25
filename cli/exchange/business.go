@@ -92,9 +92,9 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	}
 
 	//add/overwrite business policy file
-	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 403}, policyFile)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 403}, policyFile, nil)
 	if httpCode == 403 {
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile, nil)
 		msgPrinter.Printf("Deployment policy: %v/%v updated in the Horizon Exchange", polOrg, policy)
 		msgPrinter.Println()
 	} else {
@@ -138,7 +138,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		}
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
 		msgPrinter.Println()
 	} else if _, ok := findPatchType["properties"]; ok {
@@ -156,7 +156,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		patch["properties"] = newValue
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
 		msgPrinter.Println()
 	} else if _, ok := findPatchType["constraints"]; ok {
@@ -173,7 +173,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		newValue = patch["constraints"]
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
 		msgPrinter.Println()
 	} else if _, ok := findPatchType["userInput"]; ok {
@@ -182,7 +182,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
 		}
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
 		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
 		msgPrinter.Println()
 		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
@@ -198,7 +198,7 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			}
 			msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
 			msgPrinter.Println()
-			cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch)
+			cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
 			msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
 			msgPrinter.Println()
 		} else {

@@ -53,6 +53,13 @@ DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 AGBOT_SAPI_URL ?= https://localhost:8083
 ICP_HOST_IP ?= 0
+DOCKER_AGBOT_ADD_HOST ?= "localhost:127.0.0.1"
+
+export PREBUILT_DOCKER_REG_URL ?= ""
+export PREBUILT_DOCKER_REG_USER ?= ""
+export PREBUILT_DOCKER_REG_PW ?= ""
+export PREBUILT_ANAX_VERSION ?= nightly
+export PREBUILT_ESS_VERSION ?= nightly
 
 ifndef verbose
 .SILENT:
@@ -93,6 +100,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-p 127.0.0.1:8085:8085 \
 		--name "$(DOCKER_AGBOT_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
+		--add-host "$(DOCKER_AGBOT_ADD_HOST)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
 		-v ~/.docker:/home/agbotuser/.docker \
@@ -241,11 +249,24 @@ $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
 	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
 
-agbot-docker-prereqs: $(ANAX_SOURCE)/anax
+get-anax:
+
+ifeq ($(MAKECMDGOALS),test-remote-prebuilt)
+get-anax: agbot-prereq-download-anax
+else
+get-anax: agbot-prereq-build-anax
+endif
+
+agbot-prereq-build-anax: $(ANAX_SOURCE)/anax
 	@echo "Configuring agbot prerequisites"
 	if [[ "$(shell docker images -q $(DOCKER_ANAX_K8S_INAME) 2>/dev/null)" == "" ]]; then \
 		cd $(ANAX_SOURCE) && make anax-k8s-image; \
 	fi
+
+agbot-prereq-download-anax: 
+	gov/setup_agbot.sh
+
+agbot-docker-prereqs: get-anax
 	mkdir -p /tmp/ess-store/ /tmp/ess-auth/ /tmp/service_storage/ /tmp/hzndev/
 	mkdir -p $(AGBOT_TEMPFS)/usr/local/bin $(AGBOT_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
@@ -288,6 +309,12 @@ test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
 test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg run-agbot copy-cert
+	@echo -e  "\nBootstrapping the exchange"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
+	@echo -e  "\nStarting tests"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
+
+test-remote-prebuilt: clean run-dockerreg run-agbot copy-cert
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
 	@echo -e  "\nStarting tests"

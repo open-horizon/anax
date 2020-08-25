@@ -94,7 +94,7 @@ func AgbotAddPattern(org, userPw, agbot, patternOrg, pattern, nodeOrg string) {
 		nodeOrg = patternOrg
 	}
 	input := ServedPattern{PatternOrg: patternOrg, Pattern: pattern, NodeOrg: nodeOrg}
-	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input, nil)
 	if httpCode == 409 {
 		i18n.GetMessagePrinter().Printf("Pattern '%s' with org '%s' and node org '%s' already exists in agbot '%s'", pattern, patternOrg, nodeOrg, agbot)
 		i18n.GetMessagePrinter().Println()
@@ -141,7 +141,7 @@ func AgbotAddBusinessPolicy(org, userPw, agbot, polOrg string) {
 	input := exchange.ServedBusinessPolicy{BusinessPolOrg: polOrg, BusinessPol: "*", NodeOrg: polOrg}
 	i18n.GetMessagePrinter().Printf("Adding Business policy org %s' to agbot '%s'. The agbot will start looking for nodes that are compatible with this policy.", polOrg, agbot)
 	i18n.GetMessagePrinter().Println()
-	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPw), []int{201, 409}, input, nil)
 	if httpCode == 409 {
 		i18n.GetMessagePrinter().Printf("Business policy org %s' already exists in agbot '%s'", polOrg, agbot)
 		i18n.GetMessagePrinter().Println()
