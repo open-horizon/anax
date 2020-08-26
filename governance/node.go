@@ -263,7 +263,7 @@ func (w *GovernanceWorker) changeNodePattern(dev *persistence.ExchangeDevice, ne
 
 	//set node config state to
 	patternHandler := exchange.GetHTTPExchangePatternHandler(w)
-	serviceResolver := exchange.GetHTTPServiceResolverHandler(w)
+	serviceResolver := exchange.GetHTTPServiceDefResolverHandler(w)
 	getService := exchange.GetHTTPServiceHandler(w)
 	getDevice := exchange.GetHTTPDeviceHandler(w)
 	patchDevice := exchange.GetHTTPPatchDeviceHandler(w)

@@ -460,7 +460,7 @@ func EvaluatePatternPrivilegeCompatability(getServiceResolvedDef exchange.Servic
 					(*allSvcs)[fmt.Sprintf("%s/%s", inputSvcDef.GetOrg(), inputSvcDef.GetURL())] = exchSvcDef
 				}
 			}
-			workLoadPriv, err, privWorkloads := servicesRequirePrivilege(allSvcs, msgPrinter)
+			workLoadPriv, err, privWorkloads := ServicesRequirePrivilege(allSvcs, msgPrinter)
 			if err != nil {
 				return nil, err
 			}
@@ -516,7 +516,7 @@ func GetAllServices(getServiceResolvedDef exchange.ServiceDefResolverHandler, ge
 // this function takes as a parameter a map of service ids to deployment strings
 // Returns true if any of the service listed require privilge to run
 // returns a slice of service ids of any services that require privilege to run
-func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (bool, error, []string) {
+func ServicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition, msgPrinter *message.Printer) (bool, error, []string) {
 	privSvcs := []string{}
 	reqPriv := false
 
@@ -529,7 +529,7 @@ func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition
 	}
 
 	for sId, sDef := range *serviceDefs {
-		if priv, err := deploymentRequiresPrivilege(sDef.GetDeploymentString(), msgPrinter); err != nil {
+		if priv, err := DeploymentRequiresPrivilege(sDef.GetDeploymentString(), msgPrinter); err != nil {
 			return false, err, nil
 		} else if priv {
 			reqPriv = true
@@ -540,7 +540,7 @@ func servicesRequirePrivilege(serviceDefs *map[string]exchange.ServiceDefinition
 }
 
 // Check if the deployment string given uses the privileged flag or network=host
-func deploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Printer) (bool, error) {
+func DeploymentRequiresPrivilege(deploymentString string, msgPrinter *message.Printer) (bool, error) {
 	if deploymentString == "" {
 		return false, nil
 	}
