@@ -1031,7 +1031,14 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 
 	var requestBody io.Reader
 	if bodyType == HTTP_REQ_BODYTYPE_FILE {
-		requestBody = body.(*os.File)
+		file := body.(*os.File)
+		requestBody = file
+		if fileInfo, err := file.Stat(); err != nil {
+			msgPrinter.Printf("Failed to get file info: %v", err)
+			msgPrinter.Println()
+		} else {
+			bodyLen = int(fileInfo.Size())
+		}
 	} else {
 		requestBody = bytes.NewBuffer(jsonBytes)
 		bodyLen = len(jsonBytes)
@@ -1063,6 +1070,20 @@ func InvokeRestApi(httpClient *http.Client, method string, url string, credentia
 		// requestBody is nil if body is nil.
 		requestBody, bodyLen, bodyType := createRequestBody(body, apiMsg)
 
+		if requestBody != nil && bodyType == HTTP_REQ_BODYTYPE_FILE && bodyLen != 0 {
+			// Calculate and show progress of file uploading
+			totalSent := 0
+			requestBody = &progressReader{requestBody, func(r int) {
+				if r > 0 {
+					totalSent += r
+					msgPrinter.Printf("\rUploading: %.2f %s", float32(totalSent)/float32(bodyLen)*100, "%")
+				} else {
+					// Clear the progress info when the file has been fully uploaded
+					msgPrinter.Printf("\r")
+				}
+
+			}}
+		}
 		// If we're retrying with an os.File body, then re-open it.
 		if retryCount > 1 && body != nil {
 			switch body.(type) {
@@ -1687,4 +1708,16 @@ func GetNewDockerImageName(image string, dontTouchImage bool, pullImage bool) st
 		}
 	}
 	return image
+}
+
+// progressReader is an io.Reader wrapper with progress reporting function
+type progressReader struct {
+	io.Reader
+	Reporter func(r int)
+}
+
+func (pr *progressReader) Read(p []byte) (n int, err error) {
+	n, err = pr.Reader.Read(p)
+	pr.Reporter(n)
+	return n, err
 }
