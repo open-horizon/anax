@@ -6,7 +6,10 @@ This support provides the way to build and run a container running the Horizon e
 - You want to run the Horizon agent on your Mac, for development, testing, or quick experimentation, and you have docker but not a VM (or you just don't want manage a separate VM). This is a very low barrier to entry for trying out horizon (if you happen to have a mac).
 - The flexibility of running the Horizon agent in a container is probably useful for other situations we don't know about yet.
 
-**Note:** This support is currently only tested for amd64.
+> **Note:** Currently supported architectures for running Horizon Agent (anax) in container:
+>
+> - amd64
+> - ppc64le
 
 ## Build and Push the Horizon agent Container
 
@@ -78,7 +81,7 @@ horizon-container start 1 /etc/default/horizon.stg
 
 ## Manually Starting the Horizon agent Container
 
-The horizon-container script handles all of the details of invoking the Horizon agent container, but in case you need to do something out of the ordinary, here are the main commands to run it manually on a **linux** machine:
+The horizon-container script handles all of the details of invoking the Horizon agent container, but in case you need to do something out of the ordinary, here are the main commands to run it manually on a **linux** machine (for `amd64` arch):
 
 
 ```
