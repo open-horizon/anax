@@ -501,6 +501,7 @@ endif
 
 i18n-catalog: deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
+	unset GOPATH; \
 	rm -Rf vendor; \
 	go mod vendor; \
 	mv -f go.mod go.mod.save; \
