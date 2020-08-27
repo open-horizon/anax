@@ -698,7 +698,7 @@ function install_linux(){
 	    log_info "Adding $PKG_APT_REPO to /etc/sources to install with apt"
 	    set -x
 	    add-apt-repository "deb $PKG_APT_REPO ${CODENAME}-$APT_REPO_BRANCH main"
-	    apt-get install bluehorizon -y -f
+	    apt-get install horizon -y -f
 	    { set +x; } 2>/dev/null
     else
     	log_info "Checking if hzn is installed..."
@@ -712,7 +712,7 @@ function install_linux(){
 			log_notify "Something's wrong. Can't get the agent verison, installing it..."
 			set -x
 	        set +e
-	        dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
+	        dpkg -i ${PACKAGES}/horizon*_${ARCH}.deb
 	        set -e
 	        { set +x; } 2>/dev/null
         	log_notify "Resolving any dependency errors..."
@@ -743,7 +743,7 @@ function install_linux(){
 					log_notify "Installing older packages ${PACKAGE_VERSION}..."
 					set -x
 		        	set +e
-		        	dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
+		        	dpkg -i ${PACKAGES}/horizon*_${ARCH}.deb
 		        	set -e
 		        	{ set +x; } 2>/dev/null
 		        	log_notify "Resolving any dependency errors..."
@@ -755,7 +755,7 @@ function install_linux(){
 					log_notify "Installing newer package (${PACKAGE_VERSION}) ..."
 					set -x
 		        	set +e
-		        	dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
+		        	dpkg -i ${PACKAGES}/horizon*_${ARCH}.deb
 		        	set -e
 		        	{ set +x; } 2>/dev/null
 		        	log_notify "Resolving any dependency errors..."
@@ -769,7 +769,7 @@ function install_linux(){
         log_notify "hzn not found, installing it..."
         set -x
         set +e
-        dpkg -i ${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb
+        dpkg -i ${PACKAGES}/horizon*_${ARCH}.deb
         set -e
         { set +x; } 2>/dev/null
         log_notify "Resolving any dependency errors..."
@@ -1293,22 +1293,9 @@ function detect_distro() {
 function detect_arch() {
     log_debug "detect_arch() begin"
 
-    # detecting architecture
-    uname="$(uname -m)"
-    if [[ "$uname" =~ "aarch64" ]]; then
-        ARCH="arm64"
-    elif [[ "$uname" =~ "arm" ]]; then
-        ARCH="armhf"
-    elif [[ "$uname" == "x86_64" ]]; then
-        ARCH="amd64"
-    elif [[ "$uname" == "ppc64le" ]]; then
-        ARCH="ppc64el"
-    else
-        (>&2 echo "Unknown architecture $uname")
-        exit 1
-    fi
-
-    log_info "Detected architecture is ${ARCH}"
+    ARCH=$(dpkg --print-architecture)
+    #todo: support RPM-based distros too
+    log_info "System architecture is ${ARCH}"
 
     log_debug "detect_arch() end"
 }
@@ -1359,11 +1346,11 @@ function check_requirements() {
         		PACKAGES="${PKG_PATH}"
       		else
         		# checking the package tree for linux
-        		PACKAGES="${PKG_PATH}/${OS}/${DISTRO}/${CODENAME}/${ARCH}"
+        		PACKAGES="${PKG_PATH}/${OS}/${DISTRO}/${CODENAME}/${ARCH}"   #todo: remove ${DISTRO}/${CODENAME}
         	fi
 
         	log_info "Checking path with packages ${PACKAGES}"
-        	check_exist w "${PACKAGES}/*horizon*${DISTRO}.${CODENAME}*.deb" "Linux installation"
+        	check_exist w "${PACKAGES}/horizon*_${ARCH}.deb" "Linux installation"
 	fi
 
         if [ $(id -u) -ne 0 ]; then
