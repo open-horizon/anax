@@ -170,7 +170,7 @@ func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intend
 	if err != nil {
 		return err
 	}
-	opStatus, err := client.Status(kd.OperatorYamlArchive)
+	opStatus, err := client.Status(kd.OperatorYamlArchive, agId)
 	if err != nil {
 		return err
 	}
