@@ -499,9 +499,8 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 	fi
 endif
 
-i18n-catalog: deps $(TMPGOPATH)/bin/gotext
+i18n-catalog: gopathlinks deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
-	unset GOPATH; \
 	rm -Rf vendor; \
 	go mod vendor; \
 	mv -f go.mod go.mod.save; \
@@ -518,7 +517,7 @@ i18n-translation: i18n-catalog
 			tools/copy-i18n-messages
 
 
-$(TMPGOPATH)/bin/gotext: gopathlinks
+$(TMPGOPATH)/bin/gotext:
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
