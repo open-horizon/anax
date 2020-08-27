@@ -136,6 +136,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// Loop through each change to identify resources that we are interested in, and then send out event messages
 	// to notify the other workers that they have some work to do.
 	for _, change := range changes.Changes {
+		exchange.DeleteCacheResourceFromChange(change, "")
 		glog.V(5).Infof(chglog(fmt.Sprintf("Change: %v", change)))
 
 		if change.IsAgbotMessage(w.GetExchangeId()) {

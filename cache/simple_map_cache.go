@@ -37,6 +37,15 @@ func (c *SimpleMapCache) Put(key string, obj interface{}) {
 	c.cache[key] = obj
 }
 
+func (c *SimpleMapCache) Delete(key string) {
+	c.Maplock.Lock()
+	defer c.Maplock.Unlock()
+
+	if c.cache != nil {
+		delete(c.cache, key)
+	}
+}
+
 // Create the internal map if necessary. This function assumes that the caller already holds the cache lock.
 func (c *SimpleMapCache) createCache() {
 	if c.cache == nil {

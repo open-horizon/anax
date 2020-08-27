@@ -173,6 +173,10 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	resp = new(GetDevicesResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
 
+	if cachedResource := GetNodeFromCache(GetOrg(deviceId), GetId(deviceId)); cachedResource != nil {
+		return cachedResource, nil
+	}
+
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
@@ -197,6 +201,7 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
 		}
@@ -209,6 +214,8 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	var resp interface{}
 	resp = new(PutDeviceResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+
+	cachedNode := DeleteCacheNodeWriteThru(GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
@@ -229,6 +236,9 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device %v to exchange %v", deviceId, pdr)))
+			if cachedNode != nil {
+				UpdateCacheNodePutWriteThru(GetOrg(deviceId), GetId(deviceId), cachedNode, pdr)
+			}
 			return resp.(*PutDeviceResponse), nil
 		}
 	}
@@ -240,6 +250,8 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 	var resp interface{}
 	resp = new(PostDeviceResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+
+	cachedNode := DeleteCacheNodeWriteThru(GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
@@ -260,6 +272,9 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr)))
+			if cachedNode != nil {
+				UpdateCacheNodePatchWriteThru(GetOrg(deviceId), GetId(deviceId), cachedNode, pdr)
+			}
 			return nil
 		}
 	}
@@ -1082,6 +1097,10 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	resp = ""
 	targetURL := exchangeUrl + "admin/version"
 
+	if exchVers := GetExchangeVersionFromCache(exchangeUrl); exchVers != "" {
+		return exchVers, nil
+	}
+
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
@@ -1106,6 +1125,8 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 			if strings.HasSuffix(v, "\n") {
 				v = v[:len(v)-1]
 			}
+
+			UpdateCache(exchangeUrl, EXCH_VERS_TYPE_CACHE, v)
 
 			return v, nil
 		}
