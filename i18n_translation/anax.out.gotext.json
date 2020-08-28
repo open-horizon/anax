@@ -3,140 +3,348 @@
   "language": "en",
   "messages": [
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "The constraint expression contains unmatched parentheses."
+      "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
+      "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+      "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+      "id": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "unable to read node policy from the local database. {Arg_1}"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
+      "id": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "Unable to read node object from the local database. {Arg_1}"
     },
     {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+      "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
+      "translation": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}"
     },
     {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+      "id": "Node policy updated with the Exchange copy: {Arg_1}",
+      "translation": "Node policy updated with the Exchange copy: {Arg_1}"
     },
     {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "Error starting containers: {Arg_1}"
+      "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
+      "translation": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}"
     },
     {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
+      "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}"
     },
     {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
     },
     {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
     },
     {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+      "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
+      "translation": "Unable to sync the node with the Exchange copy. Error: {Arg_1}"
     },
     {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
+      "translation": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}"
     },
     {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
     },
     {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
     },
     {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax terminating. Failed to instantiate docker client. {Arg_1}"
+      "id": "anax terminating, unable to sync up containers.",
+      "translation": "anax terminating, unable to sync up containers."
     },
     {
-      "id": "no service name",
-      "translation": "no service name"
+      "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+      "translation": "anax terminating, unable to complete agreement sync up. {Arg_1}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "no docker image for service {ServiceName}"
+      "id": "No input found.",
+      "translation": "No input found."
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "failed to marshal body for {D}: {Err}"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "Unauthorized. No exchange user id is supplied."
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "Failed to authenticate the user with the Exchange. {Err}"
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "user input {Name} has no default value and is not set"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "Input body couldn't be deserialized to JSON object. {Err}"
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "'requiredServices' is not supported for cluster type service."
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to PolicyCheck object. {Err}"
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "Failed to convert version {Ver} for service {ReqSvc} to version range expression."
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to UserInputCheck object. {Err}"
     },
     {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "Error retrieving service from the Exchange for {ReqSvc}. {Err}"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "Input body couldn't be deserialized to CompCheck object. {Err}"
     },
     {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "The required service {SId} has the wrong service type: {SType}."
+      "id": "No exchange user id is supplied.",
+      "translation": "No exchange user id is supplied."
     },
     {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}."
+      "id": "No exchange user organization id is supplied.",
+      "translation": "No exchange user organization id is supplied."
     },
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "No exchange user password or api key is supplied."
     },
     {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "Wrong organization id, user id or password."
     },
     {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}"
+      "id": "Internal server error",
+      "translation": "Internal server error"
     },
     {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}"
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "Error parsing the selections {Form}. {Err}"
     },
     {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "Compatibility Error: Properties do not satisfy node constraint. {Err}"
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "Error getting {Resource} for output, error {Err}"
     },
     {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}"
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
     },
     {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}."
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "Error in updating node {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "Error in node unregistration. {Arg_1}"
+    },
+    {
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "Error verifiying exchange version. error: {Arg_1}"
+    },
+    {
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "Error in creating or replacing node policy. {Arg_1}"
+    },
+    {
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "Error in patching node policy. {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "Error in deleting node policy. {Arg_1}"
+    },
+    {
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "Error in updating node user input. {Arg_1}"
+    },
+    {
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "Error in patching node user input. {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "Error in deleting node userinput. {Arg_1}"
+    },
+    {
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "Start node configuration/registration for node {Arg_1}."
+    },
+    {
+      "id": "Start updating node {Arg_1}.",
+      "translation": "Start updating node {Arg_1}."
+    },
+    {
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "Complete node update for {Arg_1}."
+    },
+    {
+      "id": "Start node unregistration.",
+      "translation": "Start node unregistration."
+    },
+    {
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "Node unregistration complete for node {Arg_1}."
+    },
+    {
+      "id": "Error unregistering the node. The node is not found from the database.",
+      "translation": "Error unregistering the node. The node is not found from the database."
+    },
+    {
+      "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "Unable to read node object from database, error {Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "Error in node configuration. The node is not found from the database."
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "Failed get user input from local db. {Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "Error saving new node config state to database: {Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "Complete node configuration/registration for node {Arg_1}."
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "Error in service configuration for {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Ignoring service. {Arg_1}",
+      "translation": "Ignoring service. {Arg_1}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "New node policy: {Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "Deleted node policy"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "New node user input: {Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "No node user input to detele"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "Deleted all node user input"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Start service auto configuration for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Complete service configuration for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable."
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "Error configuring service {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "Error changing service configstate {Arg_1}, error {Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "Error converting the selections into Selectors: {Err}"
     },
     {
       "id": "Name, or Org is empty string.",
@@ -153,6 +361,14 @@
     {
       "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
       "translation": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false)."
+    },
+    {
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
+    },
+    {
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Node heartbeat restored for node {Arg_1}/{Arg_2}."
     },
     {
       "id": "[verbose] {M}",
@@ -379,6 +595,14 @@
       "translation": "failed to marshal exchange body for {ApiMsg}: {Err}"
     },
     {
+      "id": "Failed to get file info: {Err}",
+      "translation": "Failed to get file info: {Err}"
+    },
+    {
+      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
+      "translation": "Uploading: {Float32totalSent__float32bodyLen__100} {}"
+    },
+    {
       "id": "unable to open object file {Name}: {Err}",
       "translation": "unable to open object file {Name}: {Err}"
     },
@@ -511,396 +735,44 @@
       "translation": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is."
     },
     {
-      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
+      "id": "no service name",
+      "translation": "no service name"
     },
     {
-      "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
+      "id": "no docker image for service {ServiceName}",
+      "translation": "no docker image for service {ServiceName}"
     },
     {
-      "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "failed to marshal body for {D}: {Err}"
     },
     {
-      "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}"
     },
     {
-      "id": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "unable to read node policy from the local database. {Arg_1}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "user input {Name} has no default value and is not set"
     },
     {
-      "id": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "Unable to read node object from the local database. {Arg_1}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "'requiredServices' is not supported for cluster type service."
     },
     {
-      "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
-      "translation": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "Failed to convert version {Ver} for service {ReqSvc} to version range expression."
     },
     {
-      "id": "Node policy updated with the Exchange copy: {Arg_1}",
-      "translation": "Node policy updated with the Exchange copy: {Arg_1}"
+      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "translation": "Error retrieving service from the Exchange for {ReqSvc}. {Err}"
     },
     {
-      "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
-      "translation": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}"
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "The required service {SId} has the wrong service type: {SType}."
     },
     {
-      "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}"
-    },
-    {
-      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
-    },
-    {
-      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
-    },
-    {
-      "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
-      "translation": "Unable to sync the node with the Exchange copy. Error: {Arg_1}"
-    },
-    {
-      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
-      "translation": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
-    },
-    {
-      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
-    },
-    {
-      "id": "anax terminating, unable to sync up containers.",
-      "translation": "anax terminating, unable to sync up containers."
-    },
-    {
-      "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
-      "translation": "anax terminating, unable to complete agreement sync up. {Arg_1}"
-    },
-    {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Node heartbeat restored for node {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "No input found.",
-      "translation": "No input found."
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "Unauthorized. No exchange user id is supplied."
-    },
-    {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Failed to authenticate the user with the Exchange. {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "Input body couldn't be deserialized to JSON object. {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to PolicyCheck object. {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to UserInputCheck object. {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "Input body couldn't be deserialized to CompCheck object. {Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "No exchange user id is supplied."
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "No exchange user organization id is supplied."
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "No exchange user password or api key is supplied."
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "Wrong organization id, user id or password."
-    },
-    {
-      "id": "Internal server error",
-      "translation": "Internal server error"
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "unable to make directory for self signed MMS API certificate, error {Err}"
-    },
-    {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "unable to generate random number for MMS API certificate serial number, error {Err}"
-    },
-    {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "unable to generate private key for MMS API certificate, error {Err}"
-    },
-    {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "unable to create MMS API certificate, error {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
-    },
-    {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "Error parsing the selections {Form}. {Err}"
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "Error getting {Resource} for output, error {Err}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
-    },
-    {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "Error in updating node {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "Error in node unregistration. {Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "Error verifiying exchange version. error: {Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "Error in creating or replacing node policy. {Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "Error in patching node policy. {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "Error in deleting node policy. {Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "Error in updating node user input. {Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "Error in patching node user input. {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "Error in deleting node userinput. {Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "Start node configuration/registration for node {Arg_1}."
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "Start updating node {Arg_1}."
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "Complete node update for {Arg_1}."
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "Start node unregistration."
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "Node unregistration complete for node {Arg_1}."
-    },
-    {
-      "id": "Error unregistering the node. The node is not found from the database.",
-      "translation": "Error unregistering the node. The node is not found from the database."
-    },
-    {
-      "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "Input error for node unregistration. {Arg_1} is an incorrect value for block"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "Unable to read node object from database, error {Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "Error in node configuration. The node is not found from the database."
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "Failed get user input from local db. {Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "Error saving new node config state to database: {Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "Complete node configuration/registration for node {Arg_1}."
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "Error in service configuration for {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "Error getting service references for pattern {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Ignoring service. {Arg_1}",
-      "translation": "Ignoring service. {Arg_1}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "New node policy: {Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "Deleted node policy"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "New node user input: {Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "No node user input to detele"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "Deleted all node user input"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "Start service configuration with user input for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Start service auto configuration for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Complete service configuration for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "Complete service auto configuration for {Arg_1}/{Arg_2}."
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable."
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "Error configuring service {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "Error changing service configstate {Arg_1}, error {Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "Error converting the selections into Selectors: {Err}"
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}."
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -1339,24 +1211,64 @@
       "translation": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name."
     },
     {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "Deployment config {Arg_1} contains unsupported capability for a workload"
     },
     {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
     },
     {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
     },
     {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
     },
     {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "Error starting containers: {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Error starting containers for agreement {Arg_1}: {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax terminating. Failed to instantiate docker client. {Arg_1}"
     },
     {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1391,28 +1303,12 @@
       "translation": "Property {Name} has invalid value type {ActualType}"
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring} is not a valid version string."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "Input version string {V1} or {V2} is not a valid single version string."
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "The constraint expression contains unmatched parentheses."
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -1729,6 +1625,118 @@
     {
       "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
       "translation": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern."
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}"
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "Compatibility Error: Properties do not satisfy node constraint. {Err}"
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}"
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}."
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "unable to make directory for self signed MMS API certificate, error {Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "unable to generate random number for MMS API certificate serial number, error {Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "unable to generate private key for MMS API certificate, error {Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "unable to create MMS API certificate, error {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "unable to close MMS API certificate file {ServerCertificate}, error {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: Whitespace is not permitted in {Expr}."
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring} is not a valid version string."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive."
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: Incorrect number of versions in expression: {Expr}."
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "Input version string {V1} or {V2} is not a valid single version string."
     }
   ]
 }
