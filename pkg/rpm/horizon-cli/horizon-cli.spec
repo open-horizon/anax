@@ -10,7 +10,7 @@ Epoch: 1
 License: Apache License Version 2.0
 Source: horizon-cli-%{version}.tar.gz
 Packager: Open-horizon
-BuildArch: x86_64
+BuildArch: %{_arch}
 Provides: horizon-cli = %{version}
 #todo: restore: Requires: docker
 
@@ -47,7 +47,7 @@ cp -a fs/* $RPM_BUILD_ROOT/
 #%defattr(-, root, root)
 /usr/horizon
 /etc/horizon
-/etc/bash_completion.d/hzn_bash_autocomplete.sh
+/etc/bash_completion.d
 /usr/share/man
 
 %post

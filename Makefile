@@ -188,7 +188,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	  export GOPATH=$(TMPGOPATH); \
 	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
 	    envsubst < cli/cliconfig/hzn.json.tmpl > $(CLI_CONFIG_FILE)
-	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
+	if [[ ! -z "$(arch)" && "$(arch)" == "$(shell tools/arch-tag)" && "$(opsys)" == "$(shell uname -s)" ]]; then \
 	  	mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
 		for loc in $(SUPPORTED_LOCALES) ; do \
 			HZN_LANG=$$loc $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \

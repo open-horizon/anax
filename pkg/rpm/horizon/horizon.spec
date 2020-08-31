@@ -10,7 +10,7 @@ Epoch: 1
 License: Apache License Version 2.0
 Source: horizon-%{version}.tar.gz
 Packager: Open-horizon
-BuildArch: x86_64
+BuildArch: %{_arch}
 Provides: horizon = %{version}
 
 # Note: in RHEL/CentOS 8.x, docker-ce does not automatically install cleanly.

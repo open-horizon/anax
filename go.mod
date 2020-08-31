@@ -26,7 +26,6 @@ require (
 	github.com/lib/pq v1.0.1-0.20181016162627-9eb73efc1fcc
 	github.com/mattn/go-shellwords v1.0.4-0.20181023065652-3c0603ff9671 // indirect
 	github.com/mibk/dupl v1.0.0 // indirect
-	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/open-horizon/edge-sync-service v0.10.11
 	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152

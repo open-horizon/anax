@@ -2,14 +2,39 @@
 
 ## Building the Horizon RPMs
 
-You can build them on a Linux or Mac host. From this directory run:
+Before manually invoking RPM build scripts, make sure you have passed `VERSION`
+and `BUILD_NUMBER` environment variables. `BUILD_NUMBER` may be blank if you're
+providing optional `DISTRO` tag. For example, this set of variables gives `horizon` and `horizon-cli` packages of version 2.26.12 relevant for using at RHEL8.x platforms:
 
-```bashr
-make -C horizon
-make -C horizon-cli
+```bash
+export VERSION=2.26.12
+export BUILD_NUMBER=
+export DISTRO=el8
 ```
 
-Note where it wrote the rpm files.
+> NOTE: When you'll build RPM on host with different architecture (cross-compilation), make sure you're also exporting variables below along with version and build number (example for `ppc64le` arch of destination platform):
+
+```bash
+export arch=ppc64el
+export rpm_arch=ppc64le
+```
+
+You can build RPMs on a Linux or Mac host. This command executes build process for both `horizon` and `horizon-cli` packages:
+
+```bash
+make all
+```
+
+If you would like to create RPMs for Open Horizon packages separately, try these commands:
+
+```bash
+# For `horizon` package
+make -C horizon rpmbuild
+# For `horizon-cli` package
+make -C horizon-cli rpmbuild
+```
+
+Note where it wrote the rpm files. Usually the location is `$HOME/rpmbuild/RPMS/`.
 
 ## Installing the Horizon RPMs
 
