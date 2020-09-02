@@ -256,7 +256,7 @@ func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 	tmpRS := make([]exchange.Microservice, 0)
 	pdrRS.RegisteredServices = &tmpRS
 	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrRS); err != nil {
-		return errors.New(fmt.Sprintf("error clearing node registerServices entry in exchange.", err))
+		return errors.New(fmt.Sprintf("error clearing node registerServices entry in exchange. %v", err))
 	} else {
 		glog.V(3).Infof(logString(fmt.Sprintf("cleared node registeredServices entry in exchange.")))
 	}
@@ -267,7 +267,7 @@ func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 	pattern := ""
 	pdrPattern.Pattern = &pattern
 	if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrPattern); err != nil {
-		return errors.New(fmt.Sprintf("error clearing node pattern entry in exchange.", err))
+		return errors.New(fmt.Sprintf("error clearing node pattern entry in exchange. %v", err))
 	} else {
 		glog.V(3).Infof(logString(fmt.Sprintf("cleared node pattern entry in exchange.")))
 	}
@@ -280,7 +280,7 @@ func (w *GovernanceWorker) clearNodePatternAndMS(keepUI bool) error {
 		tmpUI := make([]policy.UserInput, 0)
 		pdrUI.UserInput = &tmpUI
 		if err := patchDevice(w.GetExchangeId(), w.GetExchangeToken(), &pdrUI); err != nil {
-			return errors.New(fmt.Sprintf("error clearing node userInput entry in exchange.", err))
+			return errors.New(fmt.Sprintf("error clearing node userInput entry in exchange. %v", err))
 		} else {
 			glog.V(3).Infof(logString(fmt.Sprintf("cleared node userInput entry in exchange.")))
 		}
