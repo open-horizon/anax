@@ -7,6 +7,17 @@ import (
 	"reflect"
 )
 
+type AbstractUserInput interface {
+	GetServiceOrgid() string
+	GetServiceUrl() string
+	GetServiceArch() string
+	GetServiceVersionRange() string
+	GetInputLength() int
+	GetInputNames() []string
+	GetInputValue(string) (interface{}, error)
+	GetInputType(string) (string, error)
+}
+
 type Input struct {
 	Name  string      `json:"name"`
 	Value interface{} `json:"value"`
@@ -48,6 +59,67 @@ func (s UserInput) String() string {
 		"ServiceVersionRange: %v, "+
 		"Inputs: %v",
 		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange, s.Inputs)
+}
+
+// The following functions implement AbstractUserInput interface
+func (s UserInput) GetServiceOrgid() string {
+	return s.ServiceOrgid
+}
+
+func (s UserInput) GetServiceUrl() string {
+	return s.ServiceUrl
+}
+
+func (s UserInput) GetServiceArch() string {
+	return s.ServiceArch
+}
+
+func (s UserInput) GetServiceVersionRange() string {
+	if s.ServiceVersionRange == "" {
+		return "[0.0.0,INFINITY)"
+	} else {
+		return s.ServiceVersionRange
+	}
+}
+
+func (s UserInput) GetInputLength() int {
+	if s.Inputs != nil {
+		return len(s.Inputs)
+	}
+	return 0
+}
+
+func (s UserInput) GetInputNames() []string {
+	names := []string{}
+	if s.Inputs != nil {
+		for _, ui := range s.Inputs {
+			names = append(names, ui.Name)
+		}
+	}
+	return names
+}
+
+// return value nil means the given attribute name is not found
+func (s UserInput) GetInputValue(name string) (interface{}, error) {
+	if s.Inputs != nil {
+		for _, ui := range s.Inputs {
+			if ui.Name == name {
+				return ui.Value, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("Variable %v is not in the user input.", name)
+}
+
+func (s UserInput) GetInputType(name string) (string, error) {
+	if s.Inputs != nil {
+		for _, ui := range s.Inputs {
+			if ui.Name == name {
+				return ui.Type, nil
+			}
+		}
+	}
+	return "", fmt.Errorf("Variable %v is not in the user input.", name)
 }
 
 // Make a copy of this object

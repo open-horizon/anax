@@ -8,7 +8,6 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
@@ -296,7 +295,7 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 // workload container.
 func createEnvVarMap(agreementId string,
 	workloadPW string,
-	global []register.GlobalSet,
+	global []common.GlobalSet,
 	msURL string,
 	configVar map[string]interface{},
 	defaultVar []exchange.UserInput,
@@ -335,7 +334,7 @@ func createEnvVarMap(agreementId string,
 
 	// The set of global attributes in the project's userinput file might not all be applicable to all services, so we will
 	// create a shortened list of global attribute that only apply to this service.
-	shortGlobals := make([]register.GlobalSet, 0, 10)
+	shortGlobals := make([]common.GlobalSet, 0, 10)
 	for _, inputGlobal := range global {
 		if len(inputGlobal.ServiceSpecs) == 0 || (inputGlobal.ServiceSpecs[0].Url == msURL && inputGlobal.ServiceSpecs[0].Org == org) {
 			shortGlobals = append(shortGlobals, inputGlobal)
@@ -407,7 +406,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 }
 
 // This function is used to setup context to execute a service container.
-func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *register.InputFile, *container.ContainerWorker) {
+func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *common.UserInputFile_Old, *container.ContainerWorker) {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -468,7 +467,7 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.Cont
 	return containerNetworks, nil
 }
 
-func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []common.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// Collect all the service networks that have to be connected to the caller's container.
 	ms_networks := map[string]docker.ContainerNetwork{}
@@ -499,8 +498,8 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 
 func startDependent(dir string,
 	serviceDef *common.ServiceFile,
-	globals []register.GlobalSet, // API attributes
-	configUserInputs []register.MicroWork, // indicates configured variables
+	globals []common.GlobalSet, // API attributes
+	configUserInputs []common.MicroWork, // indicates configured variables
 	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// get message printer
@@ -562,9 +561,9 @@ func startDependent(dir string,
 func StartContainers(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	version string,
-	globals []register.GlobalSet, // API attributes
+	globals []common.GlobalSet, // API attributes
 	defUserInputs []exchange.UserInput, // indicates variable defaults
-	configUserInputs []register.MicroWork, // indicates configured variables
+	configUserInputs []common.MicroWork, // indicates configured variables
 	org string,
 	dc *common.DeploymentConfig,
 	cw *container.ContainerWorker,
@@ -703,7 +702,7 @@ func stopContainers(dc *common.DeploymentConfig, cw *container.ContainerWorker, 
 }
 
 // Get the images into the local docker server for services
-func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *register.InputFile) error {
+func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *common.UserInputFile_Old) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

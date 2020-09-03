@@ -9,12 +9,12 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/unregister"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
-	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"k8s.io/client-go/rest"
@@ -26,51 +26,29 @@ import (
 	"time"
 )
 
-// These structs are used to parse the registration input file. These are also used by the hzn dev code.
-type GlobalSet struct {
-	Type         string                   `json:"type"`
-	ServiceSpecs persistence.ServiceSpecs `json:"service_specs,omitempty"`
-	Variables    map[string]interface{}   `json:"variables"`
-}
-
-func (g GlobalSet) String() string {
-	return fmt.Sprintf("Global Array element, type: %v, service_specs: %v, variables: %v", g.Type, g.ServiceSpecs, g.Variables)
-}
-
-// Use for services. This is used by other cli sub-cmds too.
-type MicroWork struct {
-	Org          string                 `json:"org"`
-	Url          string                 `json:"url"`
-	VersionRange string                 `json:"versionRange,omitempty"` //optional
-	Variables    map[string]interface{} `json:"variables"`
-}
-
-func (m MicroWork) String() string {
-	return fmt.Sprintf("Org: %v, URL: %v, VersionRange: %v, Variables: %v", m.Org, m.Url, m.VersionRange, m.Variables)
-}
-
-type InputFile struct {
-	Global   []GlobalSet `json:"global,omitempty"`
-	Services []MicroWork `json:"services,omitempty"`
-}
-
-func ReadInputFile(filePath string, inputFileStruct *InputFile) {
-	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
-	err := json.Unmarshal(newBytes, inputFileStruct)
-	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to unmarshal json input file %s: %v", filePath, err))
-	}
-}
-
-func ReadInputFileWithPolicyInputFormat(filePath string, inputFileList *[]policy.UserInput) error {
-	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
-	err := json.Unmarshal(newBytes, inputFileList)
-	return err
-}
-
 type ExchangeNodes struct {
 	LastIndex int                        `json:"lastIndex"`
 	Nodes     map[string]exchange.Device `json:"nodes"`
+}
+
+// read the user input file that contains the global attributes and service userinput settings.
+// it supports both old and new format.
+func ReadUserInputFile(filePath string) *common.UserInputFile {
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// read the file
+	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
+
+	// create UserInputFile object
+	if uif, err := common.NewUserInputFileFromJsonBytes(newBytes); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to create UserInputFile object from file %s. %v", filePath, err))
+	} else {
+		return uif
+	}
+
+	return nil
 }
 
 // read and verify a node policy file
@@ -100,18 +78,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	org, pattern, waitService, waitOrg = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg)
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
-	// Read input file 1st, so we don't get half way thru registration before finding the problem
-	inputFileStruct := InputFile{}
-	policyInputFileList := []policy.UserInput{}
-	usePolicyInputFormat := true
+	var userInputFileObj *common.UserInputFile
 	if inputFile != "" {
 		msgPrinter.Printf("Reading input file %s...", inputFile)
 		msgPrinter.Println()
-		err := ReadInputFileWithPolicyInputFormat(inputFile, &policyInputFileList)
-		if err != nil {
-			usePolicyInputFormat = false
-			ReadInputFile(inputFile, &inputFileStruct)
-		}
+		userInputFileObj = ReadUserInputFile(inputFile)
+		cliutils.Verbose(msgPrinter.Sprintf("Retrieved user input object from file %v: %v", inputFile, userInputFileObj))
 	}
 
 	// read and verify the node policy if it specified
@@ -331,19 +303,14 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		RegistrationFailure()
 	}
 
-	// Process the input file and call /attribute, /service/config to set the specified variables
-	if inputFile != "" {
-		if !usePolicyInputFormat {
-			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
-
+	// Process the input file and call /attribute to set the specified variables
+	if userInputFileObj != nil {
+		if !userInputFileObj.IsGlobalsEmpty() {
 			// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
-			// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
+			msgPrinter.Printf("Setting global variables...")
+			msgPrinter.Println()
 			attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
-			if len(inputFileStruct.Global) > 0 {
-				msgPrinter.Printf("Setting global variables...")
-				msgPrinter.Println()
-			}
-			for _, g := range inputFileStruct.Global {
+			for _, g := range userInputFileObj.GetGlobal() {
 				attr.Type = &g.Type
 				attr.ServiceSpecs = &g.ServiceSpecs
 				attr.Mappings = &g.Variables
@@ -362,44 +329,24 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 					RegistrationFailure()
 				}
 			}
+		}
 
-			// Set the service variables
-			attr = api.NewAttribute("UserInputAttributes", "service", false, false, map[string]interface{}{}) // we reuse this for each service
-			emptyStr := ""
-			service := api.Service{Name: &emptyStr} // we reuse this too
-			if len(inputFileStruct.Services) > 0 {
-				msgPrinter.Printf("Setting service variables...")
-				msgPrinter.Println()
-			}
-			for _, m := range inputFileStruct.Services {
-				service.Org = &m.Org
-				service.Url = &m.Url
-				service.VersionRange = &m.VersionRange
-				attr.Mappings = &m.Variables
-				attrSlice := []api.Attribute{*attr}
-				service.Attributes = &attrSlice
-				err, _ := SetServiceConfig(timeout, inputFile, service)
-				if err != nil {
-					msgPrinter.Printf("Error encountered while setting service variables: %v", err)
-					msgPrinter.Println()
-					RegistrationFailure()
-				}
-			}
-		} else {
-			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
+		// Set the service variables using new format
+		newUserInputs, _ := userInputFileObj.GetNewFormat(true)
+		if newUserInputs != nil && len(newUserInputs) > 0 {
 			// use policy.UserInput struct
-			//httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, policyInputFileList)
-			err := SetUserInput(timeout, "node/userinput", policyInputFileList)
+			err := SetUserInput(timeout, "node/userinput", newUserInputs)
 			if err != nil {
 				msgPrinter.Printf("Error setting user input variables: %v", err)
 				msgPrinter.Println()
 				RegistrationFailure()
 			}
 		}
+	}
 
-	} else {
+	if inputFile == "" {
 		// Technically an input file is not required, but it is not the common case, so warn them
-		msgPrinter.Printf("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
+		msgPrinter.Printf("Note: no input file was specified. This is only valid if none of the services need variables set.")
 		msgPrinter.Println()
 		msgPrinter.Printf("However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.")
 		msgPrinter.Println()
@@ -822,7 +769,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	// Loop thru each service, find the highest version of that service, and then record the user input for it
 	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
-	templateFile := InputFile{Global: []GlobalSet{}}
+	templateFile := common.UserInputFile{Global: []common.GlobalSet{}}
 	for _, s := range allRequiredSvcs {
 		var userInput []exchange.UserInput
 		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
@@ -835,7 +782,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 		// Get the user input from this service
 		if len(userInput) > 0 {
-			svcInput := MicroWork{Org: s.Org, Url: s.URL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
+			svcInput := common.MicroWork{Org: s.Org, Url: s.URL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
 			for _, u := range userInput {
 				svcInput.Variables[u.Name] = u.DefaultValue
 			}

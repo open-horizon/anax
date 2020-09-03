@@ -8,7 +8,6 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
@@ -24,7 +23,7 @@ const DEFAULT_GLOBALSET_TYPE = ""
 
 // Sort of like a constructor, it creates an in memory object except that it is created from the user input config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
-func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputFile, string, error) {
+func GetUserInputs(homeDirectory string, userInputFile string) (*common.UserInputFile_Old, string, error) {
 
 	userInputFilePath := path.Join(homeDirectory, USERINPUT_FILE)
 	if userInputFile != "" {
@@ -37,13 +36,13 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputF
 		if exists, err := UserInputExists(homeDirectory); err != nil {
 			return nil, "", err
 		} else if !exists {
-			ui := new(register.InputFile)
-			ui.Global = []register.GlobalSet{}
-			ui.Services = []register.MicroWork{}
+			ui := new(common.UserInputFile_Old)
+			ui.Global = []common.GlobalSet{}
+			ui.Services = []common.MicroWork{}
 			return ui, "", nil
 		}
 	}
-	userInputs := new(register.InputFile)
+	userInputs := new(common.UserInputFile_Old)
 
 	fileBytes := cliconfig.ReadJsonFileWithLocalConfig(userInputFilePath)
 
@@ -61,7 +60,7 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*register.InputF
 }
 
 // Given a userinput file, extract the configured variables based on the type of project.
-func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile string) ([]register.MicroWork, error) {
+func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile string) ([]common.MicroWork, error) {
 	if uif, _, err := GetUserInputs(homeDirectory, userInputFile); err != nil {
 		return nil, err
 	} else {
@@ -74,16 +73,16 @@ func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile stri
 func CreateUserInputs(directory string, specRef string) error {
 
 	// Create a user input config object with fillins/place-holders for configuration.
-	res := new(register.InputFile)
-	res.Global = []register.GlobalSet{}
+	res := new(common.UserInputFile_Old)
+	res.Global = []common.GlobalSet{}
 
 	// Create a skeletal array with one element for variable configuration.
 	user_vars := map[string]interface{}{}
 	if specRef != "" {
 		user_vars = map[string]interface{}{}
 	}
-	res.Services = []register.MicroWork{
-		register.MicroWork{
+	res.Services = []common.MicroWork{
+		common.MicroWork{
 			Org:       "$HZN_ORG_ID",
 			Url:       "$SERVICE_NAME",
 			Variables: user_vars,
@@ -125,7 +124,7 @@ func AddConfiguredUserInputs(configVars map[string]interface{}, envvars map[stri
 
 // Convert each attribute in the global set of attributes to a persistent attribute. This enables us to reuse the validation
 // logic and to reuse the logic that converts persistent attributes to environment variables.
-func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute, error) {
+func GlobalSetAsAttributes(global []common.GlobalSet) ([]persistence.Attribute, error) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -163,7 +162,7 @@ func GlobalSetAsAttributes(global []register.GlobalSet) ([]persistence.Attribute
 
 // Validate that the userinputs file is complete and coherent with the rest of the definitions in the project.
 // If the file is not valid the reason will be returned in the error.
-func ValidateUserInput(i *register.InputFile, directory string, originalUserInputFilePath string, projectType string) error {
+func ValidateUserInput(i *common.UserInputFile_Old, directory string, originalUserInputFilePath string, projectType string) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -256,7 +255,7 @@ func validateConfiguredVariables(variables map[string]interface{}, definesVar fu
 	return nil
 }
 
-func getConfiguredVariables(configEntries []register.MicroWork, url string) map[string]interface{} {
+func getConfiguredVariables(configEntries []common.MicroWork, url string) map[string]interface{} {
 	// Get the variables intended to configure this dependency from this project's userinput file.
 	var configVars map[string]interface{}
 
@@ -272,7 +271,7 @@ func getConfiguredVariables(configEntries []register.MicroWork, url string) map[
 
 // Given a userinput file, a dependency definition and a set of configured user input variables, copy the configured variables
 // into the userinput file.
-func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []register.MicroWork) (*register.InputFile, error) {
+func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []common.MicroWork) (*common.UserInputFile_Old, error) {
 
 	currentUIs, _, err := GetUserInputs(homeDirectory, "")
 	if err != nil {
@@ -301,7 +300,7 @@ func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServi
 
 }
 
-func SetUserInputsVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []register.MicroWork) error {
+func SetUserInputsVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []common.MicroWork) error {
 
 	if currentUIs, err := UpdateVariableConfiguration(homeDirectory, sDef, configuredVars); err != nil {
 		return err
