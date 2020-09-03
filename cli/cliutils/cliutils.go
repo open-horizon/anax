@@ -1164,7 +1164,27 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 
 	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+
+	respBody := io.Reader(resp.Body)
+	if resp.Header.Get("Content-type") == "application/octet-stream" {
+		// Show progress of binary files downloading
+		msgPrinter.Print("Downloading object")
+		chunkNumber := 0
+		respBody = &progressReader{resp.Body, func(r int) {
+			chunkNumber++
+			if r > 0 {
+				// Show progress every 5 chunks to make the loading line shorter
+				if chunkNumber%5 == 0 {
+					fmt.Print(".")
+				}
+			} else {
+				// Go to new line when the file has been fully downloaded
+				msgPrinter.Println()
+			}
+		}}
+	}
+
+	bodyBytes, err := ioutil.ReadAll(respBody)
 	if err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("failed to read body response from %s: %v", apiMsg, err))
 	}
