@@ -32,10 +32,6 @@ else
   fi
 fi
 
-echo -e "Copy public key into anax folder:"
-cp $KEY_TEST_DIR/*public.pem /root/.colonus/. &> /dev/null
-
-
 # clone the open-horizon/examples repository, remove old code first
 echo "-e clone the open-horizon/examples to get the poc templates."
 cd /root
