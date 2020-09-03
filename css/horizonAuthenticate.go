@@ -399,6 +399,7 @@ func (auth *HorizonAuthenticate) invokeExchange(url string, user string, pw stri
 	// Add the basic auth header so that the exchange will authenticate.
 	req.SetBasicAuth(user, pw)
 	req.Header.Add("Accept", "application/json")
+	req.Close = true
 
 	// Send the request to verify the user.
 	resp, err := auth.httpClient.Do(req)
