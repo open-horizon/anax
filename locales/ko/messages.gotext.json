@@ -2,103 +2,12 @@
   "language": "ko",
   "messages": [
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "제한조건 표현식 {Dconstraints}의 유형이 {Dconstraints_1}이지만 문자열 배열이 요구됩니다.",
-      "placeholders": [
-        {
-          "id": "Dconstraints",
-          "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 1,
-          "expr": "dconstraints"
-        },
-        {
-          "id": "Dconstraints_1",
-          "string": "%[2]T",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
-          "argNum": 2,
-          "expr": "dconstraints"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "message": "The constraint expression contains unmatched parentheses.",
-      "translation": "제한조건 표현식에 짝이 맞지 않는 소괄호가 포함되어 있습니다.",
-      "fuzzy": true
-    },
-    {
       "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
-        "Deployment config {Arg_1} contains unsupported capability for a workload"
+        "EL_AG_UNABLE_READ_POL_FILE",
+        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
       ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 기능이 포함되어 있음",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
-        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "배치 구성 {Arg_1}에 인프라 컨테이너에 대한 지원되지 않는 기능이 포함되어 있습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
-        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
-        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
-      ],
-      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "배치 구성 {Arg_1}에 {Arg_2}에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_3}",
+      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "{Arg_2} 서비스에 대한 정책 파일 {Arg_1}을(를) 읽을 수 없습니다. 오류: {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -126,11 +35,11 @@
     },
     {
       "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
-        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
+        "EL_AG_START_ADVERTISE_POL",
+        "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
       ],
-      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "배치 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
+      "message": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} 서비스에 대해 Exchange로 정책 광고를 시작합니다.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -151,11 +60,11 @@
     },
     {
       "id": [
-        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
-        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
+        "EL_AG_UNABLE_ADVERTISE_POL",
+        "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
       ],
-      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "{Arg_2} 계약에 대한 배치 대체 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
+      "message": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} 서비스에 대해 Exchange로 정책을 광고할 수 없습니다. 오류: {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -183,29 +92,11 @@
     },
     {
       "id": [
-        "EL_CONT_START_CONTAINER_ERROR",
-        "Error starting containers: {Arg_1}"
+        "EL_AG_COMPLETE_ADVERTISE_POL",
+        "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
       ],
-      "message": "Error starting containers: {Arg_1}",
-      "translation": "컨테이너를 시작하는 중에 오류 발생: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
-        "Error starting containers for agreement {Arg_1}: {Arg_2}"
-      ],
-      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "{Arg_1} 계약에 대한 컨테이너를 시작하는 중에 오류 발생: {Arg_2}",
+      "message": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} 서비스에 대해 Exchange로 정책 광고를 완료하십시오.",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -226,11 +117,164 @@
     },
     {
       "id": [
-        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
-        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
+        "unable to read node policy from the local database. {Arg_1}"
       ],
-      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "{Arg_1} 계약에 대한 컨테이너를 다시 시작하는 중에 오류 발생: {Arg_2}",
+      "message": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "로컬 데이터베이스에서 노드 정책을 읽을 수 없습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_READ_NODE_FROM_DB",
+        "Unable to read node object from the local database. {Arg_1}"
+      ],
+      "message": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "로컬 데이터베이스에서 노드 오브젝트를 읽을 수 없습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
+        "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
+      "translation": "Exchange 사본과 로컬 노드 정책을 동기화할 수 없습니다. 오류: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
+        "Node policy updated with the Exchange copy: {Arg_1}"
+      ],
+      "message": "Node policy updated with the Exchange copy: {Arg_1}",
+      "translation": "Exchange 사본으로 노드 정책이 업데이트됨: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
+        "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
+      "translation": "Exchange 사본과 로컬 노드 사용자 입력을 동기화할 수 없습니다. 오류: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
+        "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}"
+      ],
+      "message": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "Exchange 사본으로 노드 사용자 입력이 업데이트되었습니다. 변경된 사용자 입력은 {Arg_1}입니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_CANNOT_VERIFY_AG",
+        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
+      ],
+      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "노드가 이용자와의 {Arg_1} 계약을 확인할 수 없습니다. 취소합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_IS_OFFLINE",
+        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
+      ],
+      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "노드가 오프라인입니다. 연결이 복원될 때까지 정기적 오프라인 오류 메시지 로깅이 줄어듭니다.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
+        "Unable to sync the node with the Exchange copy. Error: {Arg_1}"
+      ],
+      "message": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
+      "translation": "노드를 Exchange 사본과 동기화할 수 없습니다. 오류: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
+        "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}"
+      ],
+      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
+      "translation": "Exchange에서 노드 리소스 {Arg_1}의 서비스 구성 상태를 검색할 수 없습니다. 오류 {Arg_2}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -251,11 +295,29 @@
     },
     {
       "id": [
-        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
-        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
+        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
       ],
-      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "{Arg_1}에 대한 새 컨테이너를 시작하기 전 오래된 컨테이너를 정리하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
+      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "저장된 노드 exchange 패턴을 로컬 데이터베이스에서 검색할 수 없습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
+        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
+      ],
+      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "새 노드 exchange 패턴 {Arg_1}을(를) 로컬 데이터베이스에 저장할 수 없습니다. 오류: {Arg_2}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -276,86 +338,20 @@
     },
     {
       "id": [
-        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
-        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+        "EL_AG_TERM_UNABLE_SYNC_CONTAINERS",
+        "anax terminating, unable to sync up containers."
       ],
-      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1}의 서비스 재시도에 대한 상위 컨테이너 목록을 가져오는 데 실패했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
+      "message": "anax terminating, unable to sync up containers.",
+      "translation": "anax 종료 중, 컨테이너를 동기화할 수 없습니다.",
       "fuzzy": true
     },
     {
       "id": [
-        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
-        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+        "EL_AG_TERM_UNABLE_SYNC_AGS",
+        "anax terminating, unable to complete agreement sync up. {Arg_1}"
       ],
-      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 서비스의 상위와의 네트워크 연결을 복원하는 데 실패했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR",
-        "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
-      ],
-      "message": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax 종료 중. 구성에 지정된 서비스 스토리지 디렉토리에 액세스할 수 없음: {Arg_1}. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT",
-        "anax terminating. Failed to instantiate iptables client. {Arg_1}"
-      ],
-      "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax 종료 중. iptables 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
+      "message": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+      "translation": "anax 종료 중, 계약 동기화를 완료할 수 없습니다. {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -368,57 +364,139 @@
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT",
-        "anax terminating. Failed to instantiate docker client. {Arg_1}"
-      ],
-      "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax 종료 중. docker 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
+      "id": "No input found.",
+      "message": "No input found.",
+      "translation": "입력을 찾을 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "message": "Unauthorized. No exchange user id is supplied.",
+      "translation": "권한이 없습니다. exchange 사용자 ID가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "message": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "사용자를 Exchange에 인증하는 데 실패했습니다. {Err}",
       "placeholders": [
         {
-          "id": "Arg_1",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "no service name",
-      "message": "no service name",
-      "translation": "서비스 이름 없음",
-      "fuzzy": true
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "message": "no docker image for service {ServiceName}",
-      "translation": "서비스 {ServiceName}의 Docker 이미지 없음",
-      "placeholders": [
-        {
-          "id": "ServiceName",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "serviceName"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "message": "failed to marshal body for {D}: {Err}",
-      "translation": "{D}의 본문을 마샬링하는 데 실패함: {Err}",
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "message": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "입력 본문을 JSON 오브젝트로 역직렬화하지 못했습니다. {Err}",
       "placeholders": [
         {
-          "id": "D",
+          "id": "Err",
           "string": "%[1]v",
-          "type": "interface{}",
-          "underlyingType": "interface{}",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "d"
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "입력 본문을 PolicyCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "입력 본문을 UserInputCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "입력 본문을 CompCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "message": "No exchange user id is supplied.",
+      "translation": "exchange 사용자 ID가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "message": "No exchange user organization id is supplied.",
+      "translation": "exchange 사용자 조직 ID가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "message": "No exchange user password or api key is supplied.",
+      "translation": "exchange 사용자 비밀번호 또는 API 키가 제공되지 않았습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "message": "Wrong organization id, user id or password.",
+      "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Internal server error",
+      "message": "Internal server error",
+      "translation": "내부 서버 오류",
+      "fuzzy": true
+    },
+    {
+      "id": "Error parsing the selections {Form}. {Err}",
+      "message": "Error parsing the selections {Form}. {Err}",
+      "translation": "선택사항 {Form}을(를) 구문 분석하는 중에 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Form",
+          "string": "%[1]v",
+          "type": "net/url.Values",
+          "underlyingType": "map[string][]string",
+          "argNum": 1,
+          "expr": "r.Form"
         },
         {
           "id": "Err",
@@ -432,17 +510,17 @@
       "fuzzy": true
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "배치 필드 {StringjsonBytes}에 대한 JSON을 역마샬링하는 데 실패함: {Err}",
+      "id": "Error getting {Resource} for output, error {Err}",
+      "message": "Error getting {Resource} for output, error {Err}",
+      "translation": "출력을 위해 {Resource}을(를) 가져오는 중에 오류가 발생했습니다. 오류 {Err}",
       "placeholders": [
         {
-          "id": "StringjsonBytes",
-          "string": "%[1]s",
+          "id": "Resource",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "string(jsonBytes)"
+          "expr": "resource"
         },
         {
           "id": "Err",
@@ -456,303 +534,1076 @@
       "fuzzy": true
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "message": "user input {Name} has no default value and is not set",
-      "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음",
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
+        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 구성/등록을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 노드 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
       "placeholders": [
         {
-          "id": "Name",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ui.Name"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "message": "'requiredServices' is not supported for cluster type service.",
-      "translation": "클러스터 유형 서비스에는 'requiredServices'가 지원되지 않습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "message": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "{ReqSvc} 서비스의 {Ver} 버전을 버전 범위 표현식으로 변환하지 못했습니다.",
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
+        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 구성/등록을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 configstate 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
       "placeholders": [
         {
-          "id": "Ver",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "ReqSvc",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 2,
-          "expr": "reqSvc"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "message": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "{ReqSvc}에 대해 Exchange에서 서비스를 검색하는 중에 오류가 발생했습니다. {Err}",
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
+        "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 업데이트를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 노드 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
       "placeholders": [
         {
-          "id": "ReqSvc",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
-          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
-          "argNum": 1,
-          "expr": "reqSvc"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "Err",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "message": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "필수 서비스 {SId}의 서비스 유형이 잘못됨: {SType}.",
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
+        "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 정책을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 정책 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
       "placeholders": [
         {
-          "id": "SId",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sId"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "SType",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "sType"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "message": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "필수 서비스 {SId}의 종속 서비스 {Id}에 대한 서비스 유형이 잘못됨: {SType1}.",
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
+        "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 정책 패치를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 제한조건 표현식 또는 특성 목록 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
       "placeholders": [
         {
-          "id": "Id",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "id"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "SId",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "sId"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
+        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 정책 패치를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문에 제한조건 표현식 또는 특성 목록 {Arg_1}이(가) 없습니다. 오류: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "SType1",
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
+        "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
+      ],
+      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "노드 사용자 입력을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 UserInput 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_REG",
+        "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 노드에 대한 노드 구성/등록에 오류가 있습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UPDATE",
+        "Error in updating node {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 노드를 업데이트하는 중에 오류가 발생했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UNREG",
+        "Error in node unregistration. {Arg_1}"
+      ],
+      "message": "Error in node unregistration. {Arg_1}",
+      "translation": "노드 등록 취소 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
+        "Error verifiying exchange version. error: {Arg_1}"
+      ],
+      "message": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "exchange 버전을 확인하는 중에 오류가 발생했습니다. 오류: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_CREATE",
+        "Error in creating or replacing node policy. {Arg_1}"
+      ],
+      "message": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "노드 정책을 작성하거나 바꾸는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_PATCH",
+        "Error in patching node policy. {Arg_1}"
+      ],
+      "message": "Error in patching node policy. {Arg_1}",
+      "translation": "노드 정책을 패치하는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_POLICY_DEL",
+        "Error in deleting node policy. {Arg_1}"
+      ],
+      "message": "Error in deleting node policy. {Arg_1}",
+      "translation": "노드 정책을 삭제하는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_UPDATE",
+        "Error in updating node user input. {Arg_1}"
+      ],
+      "message": "Error in updating node user input. {Arg_1}",
+      "translation": "노드 사용자 입력을 업데이트하는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_PATCH",
+        "Error in patching node user input. {Arg_1}"
+      ],
+      "message": "Error in patching node user input. {Arg_1}",
+      "translation": "노드 사용자 입력을 패치하는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_IN_NODE_UI_DEL",
+        "Error in deleting node userinput. {Arg_1}"
+      ],
+      "message": "Error in deleting node userinput. {Arg_1}",
+      "translation": "노드 userinput을 삭제하는 중에 오류가 발생했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_REG",
+        "Start node configuration/registration for node {Arg_1}."
+      ],
+      "message": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "{Arg_1} 노드에 대한 노드 구성/등록을 시작합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_UPDATE",
+        "Start updating node {Arg_1}."
+      ],
+      "message": "Start updating node {Arg_1}.",
+      "translation": "{Arg_1} 노드 업데이트를 시작합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_UPDATE",
+        "Complete node update for {Arg_1}."
+      ],
+      "message": "Complete node update for {Arg_1}.",
+      "translation": "{Arg_1}에 대한 노드 업데이트를 완료합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_NODE_UNREG",
+        "Start node unregistration."
+      ],
+      "message": "Start node unregistration.",
+      "translation": "노드 등록 취소를 시작합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_NODE_UNREG",
+        "Node unregistration complete for node {Arg_1}."
+      ],
+      "message": "Node unregistration complete for node {Arg_1}.",
+      "translation": "{Arg_1} 노드에 대한 노드 등록 취소를 완료합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_NOT_FOUND",
+        "Error unregistering the node. The node is not found from the database."
+      ],
+      "message": "Error unregistering the node. The node is not found from the database.",
+      "translation": "노드를 등록 취소하는 중에 오류가 발생했습니다. 데이터베이스에서 노드를 찾을 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
+        "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
+      ],
+      "message": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "노드를 등록 취소하는 중에 오류가 발생했습니다. 구성 해제하려면 노드가 '구성됨' 또는 '구성 중' 상태여야 합니다.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "노드 등록 취소에 대한 입력 오류가 발생했습니다. {Arg_1}은(는) removeNode에 대해 올바르지 않은 값입니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "노드 등록 취소에 대한 입력 오류가 발생했습니다. {Arg_1}은(는) deepClean에 대해 올바르지 않은 값입니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
+        "Input error for node unregistration. {Arg_1} is an incorrect value for block"
+      ],
+      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "노드 등록 취소에 대한 입력 오류가 발생했습니다. {Arg_1}은(는) block에 대해 올바르지 않은 값입니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_READ_NODE_FROM_DB",
+        "Unable to read node object from database, error {Arg_1}"
+      ],
+      "message": "Unable to read node object from database, error {Arg_1}",
+      "translation": "데이터베이스에서 노드 오브젝트를 읽을 수 없습니다. 오류 {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
+        "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
+      ],
+      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "데이터베이스에서 새 노드 구성 상태(구성 해제 중)를 저장하는 중에 오류 발생: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_CONF_NOT_FOUND",
+        "Error in node configuration. The node is not found from the database."
+      ],
+      "message": "Error in node configuration. The node is not found from the database.",
+      "translation": "노드 구성에서 오류가 발생했습니다. 데이터베이스에서 노드를 찾을 수 없습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_NODE_CONF_WRONG_STATE",
+        "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
+      ],
+      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "노드 구성에서 오류가 발생했습니다. 상태를 {Arg_1}(으)로 변경하려면 노드가 '구성됨' 또는 '구성 중' 상태여야 합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_UNSUP_NODE_STATE_TRANS",
+        "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
+      ],
+      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "'{Arg_1}'에서 '{Arg_2}'(으)로의 노드 상태 전이는 지원되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_FAIL_GET_UI_FROM_DB",
+        "Failed get user input from local db. {Arg_1}"
+      ],
+      "message": "Failed get user input from local db. {Arg_1}",
+      "translation": "로컬 데이터베이스에서 사용자 입력을 가져오는 데 실패했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
+        "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
+      ],
+      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "로컬 사용자 입력에서 {Arg_1}/{Arg_2} 서비스에 대한 환경 설정을 찾는 데 실패했습니다. 오류: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
           "string": "%[3]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 3,
-          "expr": "sType1"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "호환성 오류: 스키마 버전이 동일하지 않음, 이용자 정책: {Version}, 생성자 정책: {Version_1}",
+      "id": [
+        "EL_API_ERR_SAVE_NODE_CONFSTATE",
+        "Error saving new node config state to database: {Arg_1}"
+      ],
+      "message": "Error saving new node config state to database: {Arg_1}",
+      "translation": "데이터베이스에 새 노드 구성 상태를 저장하는 중에 오류 발생: {Arg_1}",
       "placeholders": [
         {
-          "id": "Version",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "consumer_policy.Header.Version"
-        },
-        {
-          "id": "Version_1",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "producer_policy.Header.Version"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "message": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "호환성 오류: 노드 특성 {Properties}이(가) 제한조건 요구사항 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
+      "id": [
+        "EL_API_COMPLETE_NODE_REG",
+        "Complete node configuration/registration for node {Arg_1}."
+      ],
+      "message": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "{Arg_1} 노드에 대한 노드 구성/등록을 완료합니다.",
       "placeholders": [
         {
-          "id": "Properties",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
-          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
-          "argNum": 1,
-          "expr": "producer_policy.Properties"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_SVC_CONF",
+        "Error in service configuration for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1}에 대한 서비스 구성에서 오류가 발생했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "Constraints",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
-          "underlyingType": "[]string",
-          "argNum": 2,
-          "expr": "consumer_policy.Constraints"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_GET_SREFS_FOR_PATTERN",
+        "Error getting service references for pattern {Arg_1}. {Arg_2}"
+      ],
+      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 패턴에 대한 서비스 참조를 가져오는 중에 오류가 발생했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "Err",
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_IGNORE_TYPE_MISMATCH",
+        "Ignoring service. {Arg_1}"
+      ],
+      "message": "Ignoring service. {Arg_1}",
+      "translation": "서비스를 무시합니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NEW_NODE_POL",
+        "New node policy: {Arg_1}"
+      ],
+      "message": "New node policy: {Arg_1}",
+      "translation": "새 노드 정책: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NODE_POL_DELETED",
+        "Deleted node policy"
+      ],
+      "message": "Deleted node policy",
+      "translation": "삭제된 노드 정책",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NEW_NODE_UI",
+        "New node user input: {Arg_1}"
+      ],
+      "message": "New node user input: {Arg_1}",
+      "translation": "새 노드 사용자 입력: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_NO_NODE_UI_TO_DEL",
+        "No node user input to detele"
+      ],
+      "message": "No node user input to detele",
+      "translation": "삭제할 노드 사용자 입력 없음",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_DELETED_ALL_NODE_UI",
+        "Deleted all node user input"
+      ],
+      "message": "Deleted all node user input",
+      "translation": "모든 노드 사용자 입력이 삭제됨",
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_SVC_CONFIG",
+        "Start service configuration with user input for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2}에 대한 사용자 입력으로 서비스 구성을 시작합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_START_SVC_AUTO_CONFIG",
+        "Start service auto configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2}에 대한 서비스 자동 구성을 시작합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_SVC_CONFIG",
+        "Complete service configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2}에 대한 서비스 구성을 완료합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_SVC_AUTO_CONFIG",
+        "Complete service auto configuration for {Arg_1}/{Arg_2}."
+      ],
+      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2}에 대한 서비스 자동 구성을 완료합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
+        "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable."
+      ],
+      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "{Arg_2}/{Arg_3}에 대한 서비스 구성에서 {Arg_1} 변수가 누락되었습니다. 배치 정책에 누락된 변수에 대한 설정이 없는 경우 이로 인해 계약에 실패할 수 있습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
           "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "err"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "message": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "호환성 오류: 노드 특성이 제한조건 요구사항을 만족시키지 않습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
+      "id": [
+        "EL_API_ERR_CONFIG_SVC",
+        "Error configuring service {Arg_1}. {Arg_2}"
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "message": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "호환성 오류: 특성 {Properties}이(가) 노드 제한조건 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
+      "message": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 서비스를 구성하는 중에 오류가 발생했습니다. {Arg_2}",
       "placeholders": [
         {
-          "id": "Properties",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
-          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
-          "argNum": 1,
-          "expr": "consumer_policy.Properties"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "Constraints",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
-          "underlyingType": "[]string",
-          "argNum": 2,
-          "expr": "producer_policy.Constraints"
-        },
-        {
-          "id": "Err",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "err"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "message": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "호환성 오류: 특성이 노드 제한조건을 만족시키지 않습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
+      "id": [
+        "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
+        "Error changing service configstate {Arg_1}, error {Arg_2}"
       ],
-      "fuzzy": true
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "message": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "호환성 오류: {AgreementProtocols}과(와) {AgreementProtocols_1} 간에 공통 계약 프로토콜이 없습니다. 근본적 오류: {Err}",
+      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "서비스 configstate {Arg_1}을(를) 변경하는 중에 오류가 발생했습니다. 오류 {Arg_2}",
       "placeholders": [
         {
-          "id": "AgreementProtocols",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
-          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
-          "argNum": 1,
-          "expr": "producer_policy.AgreementProtocols"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "AgreementProtocols_1",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
-          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
-          "argNum": 2,
-          "expr": "consumer_policy.AgreementProtocols"
-        },
-        {
-          "id": "Err",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "err"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "message": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "호환성 오류: 데이터 확인이 생성자의 경우 {DataVerify}, 이용자의 경우 {DataVerify_1}(으)로 서로 호환되지 않습니다.",
+      "id": [
+        "EL_API_START_CHANGE_SVC_CONFIGSTATE",
+        "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
+      ],
+      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 시작합니다.",
       "placeholders": [
         {
-          "id": "DataVerify",
+          "id": "Arg_1",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/policy.DataVerification",
-          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
-          "argNum": 1,
-          "expr": "producer_policy.DataVerify"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         },
         {
-          "id": "DataVerify_1",
+          "id": "Arg_2",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/policy.DataVerification",
-          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
-          "argNum": 2,
-          "expr": "consumer_policy.DataVerify"
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
+        "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
+      ],
+      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 완료합니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "message": "Error converting the selections into Selectors: {Err}",
+      "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -797,6 +1648,63 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "externalpolicy.PROP_SVC_PRIVILEGED"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_FAILED",
+        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트가 실패했습니다. 오류: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_AG_NODE_HB_RESTORED",
+        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트를 복원했습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
         }
       ],
       "fuzzy": true
@@ -1930,6 +2838,46 @@
       "fuzzy": true
     },
     {
+      "id": "Failed to get file info: {Err}",
+      "message": "Failed to get file info: {Err}",
+      "translation": "파일 정보를 가져올 수 없음: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
+      "message": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
+      "translation": "업로드 중: {Float32totalSent__float32bodyLen__100} {}",
+      "placeholders": [
+        {
+          "id": "Float32totalSent__float32bodyLen__100",
+          "string": "%.2[1]f",
+          "type": "float32",
+          "underlyingType": "float32",
+          "argNum": 1,
+          "expr": "float32(totalSent) / float32(bodyLen) * 100"
+        },
+        {
+          "id": "",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "\"%\""
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "unable to open object file {Name}: {Err}",
       "message": "unable to open object file {Name}: {Err}",
       "translation": "오브젝트 파일 {Name}을(를) 열 수 없음: {Err}",
@@ -2610,1873 +3558,197 @@
       "fuzzy": true
     },
     {
-      "id": [
-        "EL_AG_UNABLE_READ_POL_FILE",
-        "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "{Arg_2} 서비스에 대한 정책 파일 {Arg_1}을(를) 읽을 수 없습니다. 오류: {Arg_3}",
+      "id": "no service name",
+      "message": "no service name",
+      "translation": "서비스 이름 없음",
+      "fuzzy": true
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "message": "no docker image for service {ServiceName}",
+      "translation": "서비스 {ServiceName}의 Docker 이미지 없음",
       "placeholders": [
         {
-          "id": "Arg_1",
+          "id": "ServiceName",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "message": "failed to marshal body for {D}: {Err}",
+      "translation": "{D}의 본문을 마샬링하는 데 실패함: {Err}",
+      "placeholders": [
+        {
+          "id": "D",
           "string": "%[1]v",
-          "type": "",
+          "type": "interface{}",
           "underlyingType": "interface{}",
-          "argNum": 1
+          "argNum": 1,
+          "expr": "d"
         },
         {
-          "id": "Arg_2",
+          "id": "Err",
           "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "배치 필드 {StringjsonBytes}에 대한 JSON을 역마샬링하는 데 실패함: {Err}",
+      "placeholders": [
+        {
+          "id": "StringjsonBytes",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "string(jsonBytes)"
         },
         {
-          "id": "Arg_3",
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "message": "user input {Name} has no default value and is not set",
+      "translation": "사용자 입력 {Name}이(가) 기본값을 갖고 있지 않으며 설정되지 않음",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ui.Name"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "message": "'requiredServices' is not supported for cluster type service.",
+      "translation": "클러스터 유형 서비스에는 'requiredServices'가 지원되지 않습니다.",
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "message": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "{ReqSvc} 서비스의 {Ver} 버전을 버전 범위 표현식으로 변환하지 못했습니다.",
+      "placeholders": [
+        {
+          "id": "Ver",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver"
+        },
+        {
+          "id": "ReqSvc",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 2,
+          "expr": "reqSvc"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "message": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "translation": "{ReqSvc}에 대해 Exchange에서 서비스를 검색하는 중에 오류가 발생했습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "ReqSvc",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/exchange.ServiceDependency",
+          "underlyingType": "struct{URL string \"json:\\\"url\\\"\"; Org string \"json:\\\"org\\\"\"; Version string \"json:\\\"version,omitempty\\\"\"; VersionRange string \"json:\\\"versionRange\\\"\"; Arch string \"json:\\\"arch\\\"\"}",
+          "argNum": 1,
+          "expr": "reqSvc"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "message": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "필수 서비스 {SId}의 서비스 유형이 잘못됨: {SType}.",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
+        },
+        {
+          "id": "SType",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sType"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "message": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "필수 서비스 {SId}의 종속 서비스 {Id}에 대한 서비스 유형이 잘못됨: {SType1}.",
+      "placeholders": [
+        {
+          "id": "Id",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "id"
+        },
+        {
+          "id": "SId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "sId"
+        },
+        {
+          "id": "SType1",
           "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_START_ADVERTISE_POL",
-        "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} 서비스에 대해 Exchange로 정책 광고를 시작합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_ADVERTISE_POL",
-        "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}"
-      ],
-      "message": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} 서비스에 대해 Exchange로 정책을 광고할 수 없습니다. 오류: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_COMPLETE_ADVERTISE_POL",
-        "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} 서비스에 대해 Exchange로 정책 광고를 완료하십시오.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_POL_FROM_DB",
-        "unable to read node policy from the local database. {Arg_1}"
-      ],
-      "message": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "로컬 데이터베이스에서 노드 정책을 읽을 수 없습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_FROM_DB",
-        "Unable to read node object from the local database. {Arg_1}"
-      ],
-      "message": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "로컬 데이터베이스에서 노드 오브젝트를 읽을 수 없습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_POL_WITH_EXCH",
-        "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
-      "translation": "Exchange 사본과 로컬 노드 정책을 동기화할 수 없습니다. 오류: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_POL_SYNCED_WITH_EXCH",
-        "Node policy updated with the Exchange copy: {Arg_1}"
-      ],
-      "message": "Node policy updated with the Exchange copy: {Arg_1}",
-      "translation": "Exchange 사본으로 노드 정책이 업데이트됨: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_UI_WITH_EXCH",
-        "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
-      "translation": "Exchange 사본과 로컬 노드 사용자 입력을 동기화할 수 없습니다. 오류: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_UI_SYNCED_WITH_EXCH",
-        "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}"
-      ],
-      "message": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "Exchange 사본으로 노드 사용자 입력이 업데이트되었습니다. 변경된 사용자 입력은 {Arg_1}입니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_CANNOT_VERIFY_AG",
-        "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it"
-      ],
-      "message": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "노드가 이용자와의 {Arg_1} 계약을 확인할 수 없습니다. 취소합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_IS_OFFLINE",
-        "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored"
-      ],
-      "message": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "노드가 오프라인입니다. 연결이 복원될 때까지 정기적 오프라인 오류 메시지 로깅이 줄어듭니다.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_SYNC_NODE_WITH_EXCH",
-        "Unable to sync the node with the Exchange copy. Error: {Arg_1}"
-      ],
-      "message": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
-      "translation": "노드를 Exchange 사본과 동기화할 수 없습니다. 오류: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_ERR_RETRIEVE_SVC_CONFIGSTATE_FROM_EXCH",
-        "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}"
-      ],
-      "message": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
-      "translation": "Exchange에서 노드 리소스 {Arg_1}의 서비스 구성 상태를 검색할 수 없습니다. 오류 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_READ_NODE_EXCH_PATTERN_FROM_DB",
-        "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}"
-      ],
-      "message": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "저장된 노드 exchange 패턴을 로컬 데이터베이스에서 검색할 수 없습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_UNABLE_WRITE_NODE_EXCH_PATTERN_TO_DB",
-        "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}"
-      ],
-      "message": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "새 노드 exchange 패턴 {Arg_1}을(를) 로컬 데이터베이스에 저장할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_TERM_UNABLE_SYNC_CONTAINERS",
-        "anax terminating, unable to sync up containers."
-      ],
-      "message": "anax terminating, unable to sync up containers.",
-      "translation": "anax 종료 중, 컨테이너를 동기화할 수 없습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_TERM_UNABLE_SYNC_AGS",
-        "anax terminating, unable to complete agreement sync up. {Arg_1}"
-      ],
-      "message": "anax terminating, unable to complete agreement sync up. {Arg_1}",
-      "translation": "anax 종료 중, 계약 동기화를 완료할 수 없습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_HB_FAILED",
-        "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
-      ],
-      "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트가 실패했습니다. 오류: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_AG_NODE_HB_RESTORED",
-        "Node heartbeat restored for node {Arg_1}/{Arg_2}."
-      ],
-      "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} 노드에 대한 노드 하트비트를 복원했습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "No input found.",
-      "message": "No input found.",
-      "translation": "입력을 찾을 수 없습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "message": "Unauthorized. No exchange user id is supplied.",
-      "translation": "권한이 없습니다. exchange 사용자 ID가 제공되지 않았습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "사용자를 Exchange에 인증하는 데 실패했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "message": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "입력 본문을 JSON 오브젝트로 역직렬화하지 못했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "입력 본문을 PolicyCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "입력 본문을 UserInputCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "message": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "입력 본문을 CompCheck 오브젝트로 역직렬화하지 못했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "message": "No exchange user id is supplied.",
-      "translation": "exchange 사용자 ID가 제공되지 않았습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "message": "No exchange user organization id is supplied.",
-      "translation": "exchange 사용자 조직 ID가 제공되지 않았습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "message": "No exchange user password or api key is supplied.",
-      "translation": "exchange 사용자 비밀번호 또는 API 키가 제공되지 않았습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "message": "Wrong organization id, user id or password.",
-      "translation": "조직 ID, 사용자 ID 또는 비밀번호가 잘못되었습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": "Internal server error",
-      "message": "Internal server error",
-      "translation": "내부 서버 오류",
-      "fuzzy": true
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "message": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "자체 서명된 MMS API 인증서의 디렉토리를 작성할 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "MMS API 인증서 일련 번호를 위한 난수를 생성할 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "message": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "MMS API 인증서의 개인 키를 생성할 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "message": "unable to create MMS API certificate, error {Err}",
-      "translation": "MMS API 인증서를 작성할 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 인증서를 {ServerCertificate} 파일에 쓸 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "ServerCertificate",
-          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
-          "argNum": 1,
-          "expr": "common.Configuration.ServerCertificate"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 인증서를 {ServerCertificate} 파일에 인코딩할 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "ServerCertificate",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "common.Configuration.ServerCertificate"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "MMS API 인증서 파일 {ServerCertificate}을(를) 닫을 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "ServerCertificate",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "common.Configuration.ServerCertificate"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "MMS API 인증서 개인 키를 {ServerKey} 파일에 쓸 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "ServerKey",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "common.Configuration.ServerKey"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "MMS API 인증서 개인 키를 {ServerKey} 파일에 인코딩할 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "ServerKey",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "common.Configuration.ServerKey"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "MMS API 인증서 개인 키 파일 {ServerKey}을(를) 닫을 수 없습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "ServerKey",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "common.Configuration.ServerKey"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "message": "Error parsing the selections {Form}. {Err}",
-      "translation": "선택사항 {Form}을(를) 구문 분석하는 중에 오류가 발생했습니다. {Err}",
-      "placeholders": [
-        {
-          "id": "Form",
-          "string": "%[1]v",
-          "type": "net/url.Values",
-          "underlyingType": "map[string][]string",
-          "argNum": 1,
-          "expr": "r.Form"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "message": "Error getting {Resource} for output, error {Err}",
-      "translation": "출력을 위해 {Resource}을(를) 가져오는 중에 오류가 발생했습니다. 오류 {Err}",
-      "placeholders": [
-        {
-          "id": "Resource",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "resource"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_REG",
-        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 구성/등록을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 노드 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UNREG",
-        "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 구성/등록을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 configstate 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UPDATE",
-        "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 업데이트를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 노드 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY",
-        "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 정책을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 정책 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_POLICY_PATCH",
-        "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 정책 패치를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 제한조건 표현식 또는 특성 목록 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_POLICY_PATCH_INPUT_PROPERTY_ERROR",
-        "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 정책 패치를 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문에 제한조건 표현식 또는 특성 목록 {Arg_1}이(가) 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_PARSING_INPUT_FOR_NODE_UI",
-        "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}"
-      ],
-      "message": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "노드 사용자 입력을 위해 입력을 구문 분석하는 중에 오류가 발생했습니다. 입력 본문을 UserInput 오브젝트 {Arg_1}(으)로 역직렬화할 수 없습니다. 오류: {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_REG",
-        "Error in node configuration/registration for node {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 노드에 대한 노드 구성/등록에 오류가 있습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UPDATE",
-        "Error in updating node {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 노드를 업데이트하는 중에 오류가 발생했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UNREG",
-        "Error in node unregistration. {Arg_1}"
-      ],
-      "message": "Error in node unregistration. {Arg_1}",
-      "translation": "노드 등록 취소 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_VERIFY_EXCH_VERSION",
-        "Error verifiying exchange version. error: {Arg_1}"
-      ],
-      "message": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "exchange 버전을 확인하는 중에 오류가 발생했습니다. 오류: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_CREATE",
-        "Error in creating or replacing node policy. {Arg_1}"
-      ],
-      "message": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "노드 정책을 작성하거나 바꾸는 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_PATCH",
-        "Error in patching node policy. {Arg_1}"
-      ],
-      "message": "Error in patching node policy. {Arg_1}",
-      "translation": "노드 정책을 패치하는 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_POLICY_DEL",
-        "Error in deleting node policy. {Arg_1}"
-      ],
-      "message": "Error in deleting node policy. {Arg_1}",
-      "translation": "노드 정책을 삭제하는 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_UPDATE",
-        "Error in updating node user input. {Arg_1}"
-      ],
-      "message": "Error in updating node user input. {Arg_1}",
-      "translation": "노드 사용자 입력을 업데이트하는 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_PATCH",
-        "Error in patching node user input. {Arg_1}"
-      ],
-      "message": "Error in patching node user input. {Arg_1}",
-      "translation": "노드 사용자 입력을 패치하는 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_IN_NODE_UI_DEL",
-        "Error in deleting node userinput. {Arg_1}"
-      ],
-      "message": "Error in deleting node userinput. {Arg_1}",
-      "translation": "노드 userinput을 삭제하는 중에 오류가 발생했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_REG",
-        "Start node configuration/registration for node {Arg_1}."
-      ],
-      "message": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "{Arg_1} 노드에 대한 노드 구성/등록을 시작합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_UPDATE",
-        "Start updating node {Arg_1}."
-      ],
-      "message": "Start updating node {Arg_1}.",
-      "translation": "{Arg_1} 노드 업데이트를 시작합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_UPDATE",
-        "Complete node update for {Arg_1}."
-      ],
-      "message": "Complete node update for {Arg_1}.",
-      "translation": "{Arg_1}에 대한 노드 업데이트를 완료합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_NODE_UNREG",
-        "Start node unregistration."
-      ],
-      "message": "Start node unregistration.",
-      "translation": "노드 등록 취소를 시작합니다.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_UNREG",
-        "Node unregistration complete for node {Arg_1}."
-      ],
-      "message": "Node unregistration complete for node {Arg_1}.",
-      "translation": "{Arg_1} 노드에 대한 노드 등록 취소를 완료합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_NOT_FOUND",
-        "Error unregistering the node. The node is not found from the database."
-      ],
-      "message": "Error unregistering the node. The node is not found from the database.",
-      "translation": "노드를 등록 취소하는 중에 오류가 발생했습니다. 데이터베이스에서 노드를 찾을 수 없습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_NOT_IN_STATE",
-        "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it."
-      ],
-      "message": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "노드를 등록 취소하는 중에 오류가 발생했습니다. 구성 해제하려면 노드가 '구성됨' 또는 '구성 중' 상태여야 합니다.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_RN",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "노드 등록 취소에 대한 입력 오류가 발생했습니다. {Arg_1}은(는) removeNode에 대해 올바르지 않은 값입니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_DC",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "노드 등록 취소에 대한 입력 오류가 발생했습니다. {Arg_1}은(는) deepClean에 대해 올바르지 않은 값입니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_UNREG_WRONG_VALUE_FOR_BLOCK",
-        "Input error for node unregistration. {Arg_1} is an incorrect value for block"
-      ],
-      "message": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "노드 등록 취소에 대한 입력 오류가 발생했습니다. {Arg_1}은(는) block에 대해 올바르지 않은 값입니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_READ_NODE_FROM_DB",
-        "Unable to read node object from database, error {Arg_1}"
-      ],
-      "message": "Unable to read node object from database, error {Arg_1}",
-      "translation": "데이터베이스에서 노드 오브젝트를 읽을 수 없습니다. 오류 {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SAVE_NODE_CONF_TO_DB",
-        "Error saving new node config state (unconfiguring) in the database: {Arg_1}"
-      ],
-      "message": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "데이터베이스에서 새 노드 구성 상태(구성 해제 중)를 저장하는 중에 오류 발생: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_CONF_NOT_FOUND",
-        "Error in node configuration. The node is not found from the database."
-      ],
-      "message": "Error in node configuration. The node is not found from the database.",
-      "translation": "노드 구성에서 오류가 발생했습니다. 데이터베이스에서 노드를 찾을 수 없습니다.",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_NODE_CONF_WRONG_STATE",
-        "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}."
-      ],
-      "message": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "노드 구성에서 오류가 발생했습니다. 상태를 {Arg_1}(으)로 변경하려면 노드가 '구성됨' 또는 '구성 중' 상태여야 합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_UNSUP_NODE_STATE_TRANS",
-        "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported."
-      ],
-      "message": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "'{Arg_1}'에서 '{Arg_2}'(으)로의 노드 상태 전이는 지원되지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_FAIL_GET_UI_FROM_DB",
-        "Failed get user input from local db. {Arg_1}"
-      ],
-      "message": "Failed get user input from local db. {Arg_1}",
-      "translation": "로컬 데이터베이스에서 사용자 입력을 가져오는 데 실패했습니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_FAIL_FIND_SVC_PREF_FROM_UI",
-        "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}"
-      ],
-      "message": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "로컬 사용자 입력에서 {Arg_1}/{Arg_2} 서비스에 대한 환경 설정을 찾는 데 실패했습니다. 오류: {Arg_3}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SAVE_NODE_CONFSTATE",
-        "Error saving new node config state to database: {Arg_1}"
-      ],
-      "message": "Error saving new node config state to database: {Arg_1}",
-      "translation": "데이터베이스에 새 노드 구성 상태를 저장하는 중에 오류 발생: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_NODE_REG",
-        "Complete node configuration/registration for node {Arg_1}."
-      ],
-      "message": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "{Arg_1} 노드에 대한 노드 구성/등록을 완료합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_SVC_CONF",
-        "Error in service configuration for {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1}에 대한 서비스 구성에서 오류가 발생했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_GET_SREFS_FOR_PATTERN",
-        "Error getting service references for pattern {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 패턴에 대한 서비스 참조를 가져오는 중에 오류가 발생했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_IGNORE_TYPE_MISMATCH",
-        "Ignoring service. {Arg_1}"
-      ],
-      "message": "Ignoring service. {Arg_1}",
-      "translation": "서비스를 무시합니다. {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NEW_NODE_POL",
-        "New node policy: {Arg_1}"
-      ],
-      "message": "New node policy: {Arg_1}",
-      "translation": "새 노드 정책: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NODE_POL_DELETED",
-        "Deleted node policy"
-      ],
-      "message": "Deleted node policy",
-      "translation": "삭제된 노드 정책",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NEW_NODE_UI",
-        "New node user input: {Arg_1}"
-      ],
-      "message": "New node user input: {Arg_1}",
-      "translation": "새 노드 사용자 입력: {Arg_1}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_NO_NODE_UI_TO_DEL",
-        "No node user input to detele"
-      ],
-      "message": "No node user input to detele",
-      "translation": "삭제할 노드 사용자 입력 없음",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_DELETED_ALL_NODE_UI",
-        "Deleted all node user input"
-      ],
-      "message": "Deleted all node user input",
-      "translation": "모든 노드 사용자 입력이 삭제됨",
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_SVC_CONFIG",
-        "Start service configuration with user input for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2}에 대한 사용자 입력으로 서비스 구성을 시작합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_SVC_AUTO_CONFIG",
-        "Start service auto configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2}에 대한 서비스 자동 구성을 시작합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_SVC_CONFIG",
-        "Complete service configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2}에 대한 서비스 구성을 완료합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_SVC_AUTO_CONFIG",
-        "Complete service auto configuration for {Arg_1}/{Arg_2}."
-      ],
-      "message": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2}에 대한 서비스 자동 구성을 완료합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_MISS_VAR_IN_SVC_CONFIG",
-        "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable."
-      ],
-      "message": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "{Arg_2}/{Arg_3}에 대한 서비스 구성에서 {Arg_1} 변수가 누락되었습니다. 배치 정책에 누락된 변수에 대한 설정이 없는 경우 이로 인해 계약에 실패할 수 있습니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        },
-        {
-          "id": "Arg_3",
-          "string": "%[3]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 3
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_CONFIG_SVC",
-        "Error configuring service {Arg_1}. {Arg_2}"
-      ],
-      "message": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 서비스를 구성하는 중에 오류가 발생했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_ERR_CHANGE_SVC_CONFIGSTATE",
-        "Error changing service configstate {Arg_1}, error {Arg_2}"
-      ],
-      "message": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "서비스 configstate {Arg_1}을(를) 변경하는 중에 오류가 발생했습니다. 오류 {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_START_CHANGE_SVC_CONFIGSTATE",
-        "Start changing service configuration state to {Arg_1} for {Arg_2} for the node."
-      ],
-      "message": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 시작합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE",
-        "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node."
-      ],
-      "message": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "노드의 {Arg_2}에 대해 {Arg_1}(으)로의 서비스 구성 상태 변경을 완료합니다.",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "message": "Error converting the selections into Selectors: {Err}",
-      "translation": "선택사항을 선택기로 변환하는 중에 오류 발생: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
+          "argNum": 3,
+          "expr": "sType1"
         }
       ],
       "fuzzy": true
@@ -6319,7 +5591,7 @@
     {
       "id": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
       "message": "Variable {Name} for service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} specified in the user input is not used. Please make sure it is a correct name.",
-      "translation": "사용자 입력에 지정된 서비스 {ServiceOrgid}/{ServiceUrl} 버전 {ServiceVersionRange} arch {ServiceArch}이(가) 사용되지 않습니다. 이름이 올바른지 확인하십시오.",
+      "translation": "사용자 입력에 지정된 서비스 {ServiceOrgid}/{ServiceUrl} 버전 {ServiceVersionRange} arch {ServiceArch}에 대한 변수 {Name}이(가) 사용되지 않습니다. 이름이 올바른지 확인하십시오.",
       "placeholders": [
         {
           "id": "Name",
@@ -6366,11 +5638,47 @@
     },
     {
       "id": [
-        "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
-        "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL",
+        "Deployment config {Arg_1} contains unsupported capability for a workload"
       ],
-      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "{Arg_1} 계약이 이미 있습니다. 제안을 무시합니다: {Arg_2}",
+      "message": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 기능이 포함되어 있음",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT",
+        "Deployment config {Arg_1} contains unsupported capability for infrastructure container."
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "배치 구성 {Arg_1}에 인프라 컨테이너에 대한 지원되지 않는 기능이 포함되어 있습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND",
+        "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}"
+      ],
+      "message": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "배치 구성 {Arg_1}에 워크로드에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_2}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6391,36 +5699,11 @@
     },
     {
       "id": [
-        "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
-        "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+        "EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR",
+        "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}"
       ],
-      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "{Arg_1} 계약에 대한 TsAndCs를 역마샬링하는 중에 오류를 수신했습니다. {Arg_2}",
-      "placeholders": [
-        {
-          "id": "Arg_1",
-          "string": "%[1]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 1
-        },
-        {
-          "id": "Arg_2",
-          "string": "%[2]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 2
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": [
-        "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
-        "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
-      ],
-      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "agbot {Arg_4}에서 {Arg_2}/{Arg_3} 서비스에 대한 {Arg_1} 계약을 사용하는 중에 노드에서 제안 메시지를 수신했습니다.",
+      "message": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "배치 구성 {Arg_1}에 {Arg_2}에 대한 지원되지 않는 바인드가 포함되어 있습니다. {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6442,24 +5725,17 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 3
-        },
-        {
-          "id": "Arg_4",
-          "string": "%[4]v",
-          "type": "",
-          "underlyingType": "interface{}",
-          "argNum": 4
         }
       ],
       "fuzzy": true
     },
     {
       "id": [
-        "EL_PROD_NODE_REJECTED_PROPOSAL",
-        "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY",
+        "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}"
       ],
-      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "노드에서 {Arg_1}/{Arg_2} 서비스에 대한 제안을 거부했습니다.",
+      "message": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "배치 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6480,11 +5756,11 @@
     },
     {
       "id": [
-        "EL_PROD_ERR_HANDLE_PROPOSAL",
-        "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+        "EL_CONT_ERROR_UNMARSHAL_DEPLOY_OVERRIDE",
+        "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}"
       ],
-      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} 서비스에 대한 제안을 처리하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
+      "message": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "{Arg_2} 계약에 대한 배치 대체 문자열 {Arg_1}을(를) 역마샬링하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6506,6 +5782,210 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR",
+        "Error starting containers: {Arg_1}"
+      ],
+      "message": "Error starting containers: {Arg_1}",
+      "translation": "컨테이너를 시작하는 중에 오류 발생: {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_START_CONTAINER_ERROR_FOR_AG",
+        "Error starting containers for agreement {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "{Arg_1} 계약에 대한 컨테이너를 시작하는 중에 오류 발생: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG",
+        "Error restarting containers for agreements {Arg_1}: {Arg_2}"
+      ],
+      "message": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "{Arg_1} 계약에 대한 컨테이너를 다시 시작하는 중에 오류 발생: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_CLEAN_OLD_CONTAINER_ERROR",
+        "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}"
+      ],
+      "message": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "{Arg_1}에 대한 새 컨테이너를 시작하기 전 오래된 컨테이너를 정리하는 중에 오류가 발생했습니다. 오류: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC",
+        "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1}의 서비스 재시도에 대한 상위 컨테이너 목록을 가져오는 데 실패했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_FAIL_RESTORE_NW_WITH_PARENT",
+        "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}"
+      ],
+      "message": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 서비스의 상위와의 네트워크 연결을 복원하는 데 실패했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_ACCESS_STORAGE_DIR",
+        "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}"
+      ],
+      "message": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax 종료 중. 구성에 지정된 서비스 스토리지 디렉토리에 액세스할 수 없음: {Arg_1}. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_IPTABLE_CLIENT",
+        "anax terminating. Failed to instantiate iptables client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax 종료 중. iptables 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_CONT_TERM_UNABLE_INIT_DOCKER_CLIENT",
+        "anax terminating. Failed to instantiate docker client. {Arg_1}"
+      ],
+      "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax 종료 중. docker 클라이언트를 인스턴스화하지 못했습니다. {Arg_1}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
         }
       ],
       "fuzzy": true
@@ -6687,107 +6167,33 @@
       "fuzzy": true
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression: 공백은 {Expr}에서 허용되지 않습니다.",
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "message": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "제한조건 표현식 {Dconstraints}의 유형이 {Dconstraints_1}이지만 문자열 배열이 요구됩니다.",
       "placeholders": [
         {
-          "id": "Expr",
+          "id": "Dconstraints",
           "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
           "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "message": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression: {Verstring}은(는) 올바른 버전 문자열이 아닙니다.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 시작되지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 끝나지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Verstring",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "ver_string"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression: 표현식 {Expr}에서 버전 번호가 올바르지 않습니다.",
-      "placeholders": [
-        {
-          "id": "Expr",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "expr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "message": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "입력 버전 문자열 {V1} 또는 {V2}은(는) 올바른 단일 버전 문자열이 아닙니다.",
-      "placeholders": [
-        {
-          "id": "V1",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "v1"
+          "expr": "dconstraints"
         },
         {
-          "id": "V2",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
+          "id": "Dconstraints_1",
+          "string": "%[2]T",
+          "type": "interface{}",
+          "underlyingType": "interface{}",
           "argNum": 2,
-          "expr": "v2"
+          "expr": "dconstraints"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "message": "The constraint expression contains unmatched parentheses.",
+      "translation": "제한조건 표현식에 짝이 맞지 않는 소괄호가 포함되어 있습니다.",
       "fuzzy": true
     },
     {
@@ -8880,6 +8286,640 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 1
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "호환성 오류: 스키마 버전이 동일하지 않음, 이용자 정책: {Version}, 생성자 정책: {Version_1}",
+      "placeholders": [
+        {
+          "id": "Version",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "consumer_policy.Header.Version"
+        },
+        {
+          "id": "Version_1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "producer_policy.Header.Version"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "message": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "호환성 오류: 노드 특성 {Properties}이(가) 제한조건 요구사항 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "Properties",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "producer_policy.Properties"
+        },
+        {
+          "id": "Constraints",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "consumer_policy.Constraints"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "message": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "호환성 오류: 노드 특성이 제한조건 요구사항을 만족시키지 않습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "message": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "호환성 오류: 특성 {Properties}이(가) 노드 제한조건 {Constraints}을(를) 만족시키지 않습니다. 근본적 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "Properties",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.PropertyList",
+          "underlyingType": "[]github.com/open-horizon/anax/externalpolicy.Property",
+          "argNum": 1,
+          "expr": "consumer_policy.Properties"
+        },
+        {
+          "id": "Constraints",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/externalpolicy.ConstraintExpression",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "producer_policy.Constraints"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "message": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "호환성 오류: 특성이 노드 제한조건을 만족시키지 않습니다. {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "message": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "호환성 오류: {AgreementProtocols}과(와) {AgreementProtocols_1} 간에 공통 계약 프로토콜이 없습니다. 근본적 오류: {Err}",
+      "placeholders": [
+        {
+          "id": "AgreementProtocols",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
+          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
+          "argNum": 1,
+          "expr": "producer_policy.AgreementProtocols"
+        },
+        {
+          "id": "AgreementProtocols_1",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/policy.AgreementProtocolList",
+          "underlyingType": "[]github.com/open-horizon/anax/policy.AgreementProtocol",
+          "argNum": 2,
+          "expr": "consumer_policy.AgreementProtocols"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "message": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "호환성 오류: 데이터 확인이 생성자의 경우 {DataVerify}, 이용자의 경우 {DataVerify_1}(으)로 서로 호환되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "DataVerify",
+          "string": "%[1]v",
+          "type": "github.com/open-horizon/anax/policy.DataVerification",
+          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
+          "argNum": 1,
+          "expr": "producer_policy.DataVerify"
+        },
+        {
+          "id": "DataVerify_1",
+          "string": "%[2]v",
+          "type": "github.com/open-horizon/anax/policy.DataVerification",
+          "underlyingType": "struct{Enabled bool \"json:\\\"enabled,omitempty\\\"\"; URL string \"json:\\\"URL,omitempty\\\"\"; URLUser string \"json:\\\"URLUser,omitempty\\\"\"; URLPassword string \"json:\\\"URLPassword,omitempty\\\"\"; Interval int \"json:\\\"interval,omitempty\\\"\"; CheckRate int \"json:\\\"check_rate,omitempty\\\"\"; Metering github.com/open-horizon/anax/policy.Meter \"json:\\\"metering,omitempty\\\"\"}",
+          "argNum": 2,
+          "expr": "consumer_policy.DataVerify"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_AG_EXISTS_IGNORE_PROPOSAL",
+        "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}"
+      ],
+      "message": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "{Arg_1} 계약이 이미 있습니다. 제안을 무시합니다: {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_ERR_DEMARSH_TC_FOR_AG",
+        "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}"
+      ],
+      "message": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "{Arg_1} 계약에 대한 TsAndCs를 역마샬링하는 중에 오류를 수신했습니다. {Arg_2}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_NODE_REJECTED_PROPOSAL_MSG",
+        "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}."
+      ],
+      "message": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "agbot {Arg_4}에서 {Arg_2}/{Arg_3} 서비스에 대한 {Arg_1} 계약을 사용하는 중에 노드에서 제안 메시지를 수신했습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        },
+        {
+          "id": "Arg_4",
+          "string": "%[4]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 4
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_NODE_REJECTED_PROPOSAL",
+        "Node rejected the proposal for service {Arg_1}/{Arg_2}."
+      ],
+      "message": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "노드에서 {Arg_1}/{Arg_2} 서비스에 대한 제안을 거부했습니다.",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": [
+        "EL_PROD_ERR_HANDLE_PROPOSAL",
+        "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}"
+      ],
+      "message": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} 서비스에 대한 제안을 처리하는 중에 오류가 발생했습니다. 오류: {Arg_3}",
+      "placeholders": [
+        {
+          "id": "Arg_1",
+          "string": "%[1]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 1
+        },
+        {
+          "id": "Arg_2",
+          "string": "%[2]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "message": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "자체 서명된 MMS API 인증서의 디렉토리를 작성할 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "message": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "MMS API 인증서 일련 번호를 위한 난수를 생성할 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "message": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "MMS API 인증서의 개인 키를 생성할 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "message": "unable to create MMS API certificate, error {Err}",
+      "translation": "MMS API 인증서를 작성할 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "message": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "MMS API 인증서를 {ServerCertificate} 파일에 쓸 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServerCertificate",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerCertificate"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "message": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "MMS API 인증서를 {ServerCertificate} 파일에 인코딩할 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServerCertificate",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerCertificate"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "message": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "MMS API 인증서 파일 {ServerCertificate}을(를) 닫을 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServerCertificate",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerCertificate"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "message": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "MMS API 인증서 개인 키를 {ServerKey} 파일에 쓸 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServerKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "message": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "MMS API 인증서 개인 키를 {ServerKey} 파일에 인코딩할 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServerKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "message": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "MMS API 인증서 개인 키 파일 {ServerKey}을(를) 닫을 수 없습니다. 오류 {Err}",
+      "placeholders": [
+        {
+          "id": "ServerKey",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "common.Configuration.ServerKey"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "message": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression: 공백은 {Expr}에서 허용되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Expr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "message": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression: {Verstring}은(는) 올바른 버전 문자열이 아닙니다.",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 시작되지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "message": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression: {Verstring}은(는) 포함 또는 제외 지시문으로 끝나지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Verstring",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "ver_string"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "message": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression: 표현식 {Expr}에서 버전 번호가 올바르지 않습니다.",
+      "placeholders": [
+        {
+          "id": "Expr",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "expr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "message": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "입력 버전 문자열 {V1} 또는 {V2}은(는) 올바른 단일 버전 문자열이 아닙니다.",
+      "placeholders": [
+        {
+          "id": "V1",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "v1"
+        },
+        {
+          "id": "V2",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "v2"
         }
       ],
       "fuzzy": true
