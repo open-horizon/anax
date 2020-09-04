@@ -775,6 +775,18 @@
       "translation": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}."
     },
     {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "failed to unmarshal json input {JsonBytes}: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Error getting new user input format. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "Failed to create json object for user input. {Err1}"
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "translation": "Deployment policy and pattern are mutually exclusive."
     },
