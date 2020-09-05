@@ -2864,9 +2864,9 @@
             "fuzzy": true
         },
         {
-            "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-            "message": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-            "translation": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
+            "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+            "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+            "translation": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -2875,14 +2875,6 @@
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "sample_dir"
-                },
-                {
-                    "id": "Sampledir_1",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
                     "expr": "sample_dir"
                 }
             ],
@@ -9353,7 +9345,7 @@
                 {
                     "id": "GlobalSet",
                     "string": "%[1]v",
-                    "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+                    "type": "github.com/open-horizon/anax/common.GlobalSet",
                     "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
                     "argNum": 1,
                     "expr": "gs"
@@ -9378,7 +9370,7 @@
                 {
                     "id": "GlobalSet",
                     "string": "%[1]v",
-                    "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+                    "type": "github.com/open-horizon/anax/common.GlobalSet",
                     "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
                     "argNum": 1,
                     "expr": "gs"
@@ -9403,8 +9395,8 @@
                 {
                     "id": "Global",
                     "string": "%[1]v",
-                    "type": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
-                    "underlyingType": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
+                    "type": "[]github.com/open-horizon/anax/common.GlobalSet",
+                    "underlyingType": "[]github.com/open-horizon/anax/common.GlobalSet",
                     "argNum": 1,
                     "expr": "global"
                 },
@@ -9436,7 +9428,7 @@
                 {
                     "id": "GlobalSet",
                     "string": "%[2]v",
-                    "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+                    "type": "github.com/open-horizon/anax/common.GlobalSet",
                     "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
                     "argNum": 2,
                     "expr": "gs"
@@ -9494,7 +9486,7 @@
                 {
                     "id": "MicroWork",
                     "string": "%[3]v",
-                    "type": "github.com/open-horizon/anax/cli/register.MicroWork",
+                    "type": "github.com/open-horizon/anax/common.MicroWork",
                     "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
                     "argNum": 3,
                     "expr": "ms"
@@ -15083,6 +15075,31 @@
             "fuzzy": true
         },
         {
+            "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+            "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+            "translation": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "FilePath",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "filePath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
             "message": "Incorrect node policy format in file {JsonFilePath}: {Err}",
             "translation": "Incorrect node policy format in file {JsonFilePath}: {Err}",
@@ -15120,6 +15137,31 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "inputFile"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+            "message": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+            "translation": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "InputFile",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "inputFile"
+                },
+                {
+                    "id": "UserInputFileObj",
+                    "string": "%[2]v",
+                    "type": "*github.com/open-horizon/anax/common.UserInputFile",
+                    "underlyingType": "*github.com/open-horizon/anax/common.UserInputFile",
+                    "argNum": 2,
+                    "expr": "userInputFileObj"
                 }
             ],
             "fuzzy": true
@@ -15581,23 +15623,6 @@
             "fuzzy": true
         },
         {
-            "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-            "message": "usePolicyInputFormat: {UsePolicyInputFormat}",
-            "translation": "usePolicyInputFormat: {UsePolicyInputFormat}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "UsePolicyInputFormat",
-                    "string": "%[1]t",
-                    "type": "bool",
-                    "underlyingType": "bool",
-                    "argNum": 1,
-                    "expr": "usePolicyInputFormat"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "Setting global variables...",
             "message": "Setting global variables...",
             "translation": "Setting global variables...",
@@ -15622,33 +15647,9 @@
             "fuzzy": true
         },
         {
-            "id": "Setting service variables...",
-            "message": "Setting service variables...",
-            "translation": "Setting service variables...",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "Error encountered while setting service variables: {Err}",
-            "message": "Error encountered while setting service variables: {Err}",
-            "translation": "Error encountered while setting service variables: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Err",
-                    "string": "%[1]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-            "message": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-            "translation": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
+            "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+            "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+            "translation": "Note: no input file was specified. This is only valid if none of the services need variables set.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -19760,6 +19761,65 @@
                     "underlyingType": "string",
                     "argNum": 3,
                     "expr": "sType1"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+            "message": "failed to unmarshal json input {JsonBytes}: {Err}",
+            "translation": "failed to unmarshal json input {JsonBytes}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "JsonBytes",
+                    "string": "%[1]v",
+                    "type": "[]byte",
+                    "underlyingType": "[]byte",
+                    "argNum": 1,
+                    "expr": "jsonBytes"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error getting new user input format. {Err1}",
+            "message": "Error getting new user input format. {Err1}",
+            "translation": "Error getting new user input format. {Err1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err1",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err1"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to create json object for user input. {Err1}",
+            "message": "Failed to create json object for user input. {Err1}",
+            "translation": "Failed to create json object for user input. {Err1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err1",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err1"
                 }
             ],
             "fuzzy": true
