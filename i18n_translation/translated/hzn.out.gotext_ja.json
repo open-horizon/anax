@@ -4751,20 +4751,20 @@
       "translation": "コマンドを待機中にエラーが発生しました: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog を開けなかったか、存在しません: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} を開けなかったか、存在しません: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog は stats を取得できませんでした: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} は stats を取得できませんでした: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "/var/log/syslog から読み取り中にエラーが発生しました: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "{SysLogPath} から読み取り中にエラーが発生しました: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "/var/log/syslog の状態がわかりません: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "{SysLogPath} の状態がわかりません: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
