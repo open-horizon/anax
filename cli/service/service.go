@@ -4,6 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+	"runtime"
+	"strings"
+	"time"
+
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
@@ -12,13 +20,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
-	"io"
-	"net/http"
-	"os"
-	"os/exec"
-	"runtime"
-	"strings"
-	"time"
 )
 
 type APIServices struct {
@@ -169,10 +170,19 @@ func LogMac(instanceId string, tailing bool) {
 
 func LogLinux(instanceId string, tailing bool) {
 	msgPrinter := i18n.GetMessagePrinter()
+	// Determine the system log file based on linux distribution
+	sysLogPath := "/var/log/messages"
+	_, err := os.Stat("/etc/redhat-release")
+	if os.IsNotExist(err) {
+		_, err := os.Stat("/etc/centos-release")
+		if os.IsNotExist(err) {
+			sysLogPath = "/var/log/syslog"
+		}
+	}
 	// The requested service is running, so grab the records from syslog for this service.
-	file, err := os.Open("/var/log/syslog")
+	file, err := os.Open(sysLogPath)
 	if err != nil {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist: %v", err))
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("%v could not be opened or does not exist: %v", sysLogPath, err))
 	}
 	defer file.Close()
 	// Check file stats and capture the current size of the file if we will be tailing it.
@@ -180,7 +190,7 @@ func LogLinux(instanceId string, tailing bool) {
 	if tailing {
 		fi, err := file.Stat()
 		if err != nil {
-			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not get stats: %v", err))
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("%v could not get stats: %v", sysLogPath, err))
 		}
 		file_size = fi.Size()
 	}
@@ -203,7 +213,7 @@ func LogLinux(instanceId string, tailing bool) {
 			} else {
 				// If the error is not EOF then we assume the error is due to log rotation so we silently
 				// ignore the error and keep trying.
-				cliutils.Verbose(msgPrinter.Sprintf("Error reading from /var/log/syslog: %v", err))
+				cliutils.Verbose(msgPrinter.Sprintf("Error reading from %v: %v", sysLogPath, err))
 			}
 		} else if strings.Contains(line, "workload-"+instanceId) {
 			// If the requested service id is in the current syslog record, display it.
@@ -212,9 +222,9 @@ func LogLinux(instanceId string, tailing bool) {
 		// Re-check syslog file size via stats in case syslog was logrotated.
 		// If were tailing and there was a non-EOF error, we will always come here.
 		if tailing {
-			fi_new, err := os.Stat("/var/log/syslog")
+			fi_new, err := os.Stat(sysLogPath)
 			if err != nil {
-				cliutils.Verbose(msgPrinter.Sprintf("Unable to state /var/log/syslog: %v", err))
+				cliutils.Verbose(msgPrinter.Sprintf("Unable to state %v: %v", sysLogPath, err))
 				time.Sleep(1 * time.Second)
 				continue
 			}
@@ -225,16 +235,16 @@ func LogLinux(instanceId string, tailing bool) {
 			} else {
 				// Log rotation has occurred. Re-open the new syslog file and capture the current size.
 				file.Close()
-				file, err = os.Open("/var/log/syslog")
+				file, err = os.Open(sysLogPath)
 				if err != nil {
-					cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not be opened or does not exist: %v", err))
+					cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("%v could not be opened or does not exist: %v", sysLogPath, err))
 				}
 				defer file.Close()
 				// Setup a new reader on the new file.
 				reader = bufio.NewReader(file)
 				fi, err := file.Stat()
 				if err != nil {
-					cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("/var/log/syslog could not get stats: %v", err))
+					cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("%v could not get stats: %v", sysLogPath, err))
 				}
 				file_size = fi.Size()
 			}

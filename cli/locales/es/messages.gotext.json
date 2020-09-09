@@ -15917,64 +15917,96 @@
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "message": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog no se ha podido abrir o no existe: {Err}",
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} no se ha podido abrir o no existe: {Err}",
       "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
         {
           "id": "Err",
           "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "message": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog no ha podido obtener estadísticas: {Err}",
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} no ha podido obtener estadísticas: {Err}",
       "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
         {
           "id": "Err",
           "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "message": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Se ha producido un error al leer de /var/log/syslog: {Err}",
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Se ha producido un error al leer de {SysLogPath}: {Err}",
       "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
         {
           "id": "Err",
           "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "message": "Unable to state /var/log/syslog: {Err}",
-      "translation": "No se ha podido establecer /var/log/syslog: {Err}",
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "No se ha podido establecer {SysLogPath}: {Err}",
       "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
         {
           "id": "Err",
           "string": "%[1]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],

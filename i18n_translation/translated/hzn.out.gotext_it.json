@@ -4751,20 +4751,20 @@
       "translation": "Errore durante l'attesa del comando: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog non può essere aperto o non esiste: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} non può essere aperto o non esiste: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "Impossibile ottenere le statistiche per /var/log/syslog: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "Impossibile ottenere le statistiche per {SysLogPath}: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Errore durante la lettura da /var/log/syslog: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Errore durante la lettura da {SysLogPath}: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Impossibile determinare /var/log/syslog: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossibile determinare {SysLogPath}: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",

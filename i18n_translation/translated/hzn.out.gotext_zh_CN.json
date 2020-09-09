@@ -4751,20 +4751,20 @@
       "translation": "等待命令出错：{Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog 无法打开或不存在：{Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 无法打开或不存在：{Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog 无法获取统计信息：{Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 无法获取统计信息：{Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "读取 /var/log/syslog 出错：{Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "读取 {SysLogPath} 出错：{Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "无法声明 /var/log/syslog：{Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "无法声明 {SysLogPath}：{Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",

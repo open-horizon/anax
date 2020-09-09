@@ -4747,20 +4747,20 @@
       "translation": "Error waiting for command: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog could not be opened or does not exist: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} could not be opened or does not exist: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog could not get stats: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} could not get stats: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Error reading from /var/log/syslog: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Error reading from {SysLogPath}: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Unable to state /var/log/syslog: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Unable to state {SysLogPath}: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
