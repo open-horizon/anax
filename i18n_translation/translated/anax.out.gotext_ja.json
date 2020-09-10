@@ -775,6 +775,18 @@
       "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
     },
     {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "JSON 入力 {JsonBytes} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。{Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。{Err1}"
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "translation": "デプロイメント・ポリシーとパターンは同時に指定することはできません。"
     },

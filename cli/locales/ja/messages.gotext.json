@@ -2583,9 +2583,9 @@
       "fuzzy": true
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "message": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "このパターンの一部であるノードおよびサービスで必要となる変数を設定またはオーバーライドする JSON ファイル。 {Sampledir}/node_reg_input.json および {Sampledir_1}/more-examples.json を参照してください。 標準入力から読み取るには、-f- を指定します。",
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "このノードにデプロイされるサービスで必要なユーザー入力変数を設定またはオーバーライドする JSON ファイル。{Sampledir}/user_input.json を参照してください。標準入力から読み取るには、-f- を指定します。",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -2593,14 +2593,6 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "sample_dir"
-        },
-        {
-          "id": "Sampledir_1",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
           "expr": "sample_dir"
         }
       ],
@@ -8594,7 +8586,7 @@
         {
           "id": "GlobalSet",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 1,
           "expr": "gs"
@@ -8618,7 +8610,7 @@
         {
           "id": "GlobalSet",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 1,
           "expr": "gs"
@@ -8642,8 +8634,8 @@
         {
           "id": "Global",
           "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
-          "underlyingType": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "[]github.com/open-horizon/anax/common.GlobalSet",
+          "underlyingType": "[]github.com/open-horizon/anax/common.GlobalSet",
           "argNum": 1,
           "expr": "global"
         },
@@ -8674,7 +8666,7 @@
         {
           "id": "GlobalSet",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 2,
           "expr": "gs"
@@ -8730,7 +8722,7 @@
         {
           "id": "MicroWork",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/cli/register.MicroWork",
+          "type": "github.com/open-horizon/anax/common.MicroWork",
           "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 3,
           "expr": "ms"
@@ -14015,6 +14007,30 @@
       "fuzzy": true
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "ファイル {FilePath} から UserInputFile オブジェクトを作成できません。{Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "message": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "ファイル {JsonFilePath} にノード・ポリシー・フォーマットの誤りがあります: {Err}",
@@ -14050,6 +14066,30 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "message": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "ファイル {InputFile} からユーザー入力オブジェクトを取得しました: {UserInputFileObj}",
+      "placeholders": [
+        {
+          "id": "InputFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "inputFile"
+        },
+        {
+          "id": "UserInputFileObj",
+          "string": "%[2]v",
+          "type": "*github.com/open-horizon/anax/common.UserInputFile",
+          "underlyingType": "*github.com/open-horizon/anax/common.UserInputFile",
+          "argNum": 2,
+          "expr": "userInputFileObj"
         }
       ],
       "fuzzy": true
@@ -14483,22 +14523,6 @@
       "fuzzy": true
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "message": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "placeholders": [
-        {
-          "id": "UsePolicyInputFormat",
-          "string": "%[1]t",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "usePolicyInputFormat"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Setting global variables...",
       "message": "Setting global variables...",
       "translation": "グローバル変数を設定中...",
@@ -14521,31 +14545,9 @@
       "fuzzy": true
     },
     {
-      "id": "Setting service variables...",
-      "message": "Setting service variables...",
-      "translation": "サービス変数を設定中...",
-      "fuzzy": true
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "message": "Error encountered while setting service variables: {Err}",
-      "translation": "サービス変数の設定中にエラーが発生しました: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "message": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "警告: 入力ファイルが指定されていません。 これは、いずれのサービスにも (GPS 座標を含む) 変数を設定する必要がない場合にのみ有効です。",
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "注: 入力ファイルが指定されていません。これは、いずれのサービスにも変数を設定する必要がない場合にのみ有効です。",
       "fuzzy": true
     },
     {
@@ -18017,7 +18019,7 @@
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
       "message": "failed to backup eventlogs file {FileName}. {Err}",
-      "translation": "イベント・ログ・ファイル {FileName} のバックアップに失敗しました。{Err}",
+      "translation": "イベント・ログ・ファイル {FileName} のバックアップに失敗しました。 {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -18041,7 +18043,7 @@
     {
       "id": "failed to save the eventlogs to file {FileName}. {Err}",
       "message": "failed to save the eventlogs to file {FileName}. {Err}",
-      "translation": "イベント・ログのファイル {FileName} への保存に失敗しました。{Err}",
+      "translation": "イベント・ログのファイル {FileName} への保存に失敗しました。 {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -18400,6 +18402,62 @@
           "underlyingType": "string",
           "argNum": 3,
           "expr": "sType1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "message": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "JSON 入力 {JsonBytes} のアンマーシャルに失敗しました: {Err}",
+      "placeholders": [
+        {
+          "id": "JsonBytes",
+          "string": "%[1]v",
+          "type": "[]byte",
+          "underlyingType": "[]byte",
+          "argNum": 1,
+          "expr": "jsonBytes"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "message": "Error getting new user input format. {Err1}",
+      "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "message": "Failed to create json object for user input. {Err1}",
+      "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
         }
       ],
       "fuzzy": true

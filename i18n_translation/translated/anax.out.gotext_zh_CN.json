@@ -775,6 +775,18 @@
       "translation": "所需服务 {SId} 的相依服务 {Id} 存在错误的服务类型 {SType1}。"
     },
     {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "对 JSON 输入 {JsonBytes} 进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "获取新用户输入格式时出错。{Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "未能为用户输入创建 JSON 对象。{Err1}"
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "translation": "部署策略与模式互斥。"
     },

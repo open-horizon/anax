@@ -2583,9 +2583,9 @@
       "fuzzy": true
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "message": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "用來設定或置換節點及屬於此型樣之服務所需變數的 JSON 檔案。 請參閱 {Sampledir}/node_reg_input.json 及 {Sampledir_1}/more-examples.json。 指定 -f- 以從 stdin 中讀取。",
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "用來設定或置換將部署至此節點之服務所需的使用者輸入變數的 JSON 檔案。請參閱 {Sampledir}/user_input.json。指定 -f- 以從 stdin 中讀取。",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -2593,14 +2593,6 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "sample_dir"
-        },
-        {
-          "id": "Sampledir_1",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
           "expr": "sample_dir"
         }
       ],
@@ -8594,7 +8586,7 @@
         {
           "id": "GlobalSet",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 1,
           "expr": "gs"
@@ -8618,7 +8610,7 @@
         {
           "id": "GlobalSet",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 1,
           "expr": "gs"
@@ -8642,8 +8634,8 @@
         {
           "id": "Global",
           "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
-          "underlyingType": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "[]github.com/open-horizon/anax/common.GlobalSet",
+          "underlyingType": "[]github.com/open-horizon/anax/common.GlobalSet",
           "argNum": 1,
           "expr": "global"
         },
@@ -8674,7 +8666,7 @@
         {
           "id": "GlobalSet",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 2,
           "expr": "gs"
@@ -8730,7 +8722,7 @@
         {
           "id": "MicroWork",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/cli/register.MicroWork",
+          "type": "github.com/open-horizon/anax/common.MicroWork",
           "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 3,
           "expr": "ms"
@@ -14015,6 +14007,30 @@
       "fuzzy": true
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。{Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "message": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "檔案 {JsonFilePath} 中的節點原則格式不正確：{Err}",
@@ -14050,6 +14066,30 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "message": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "已從檔案 {InputFile} 擷取使用者輸入物件：{UserInputFileObj}",
+      "placeholders": [
+        {
+          "id": "InputFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "inputFile"
+        },
+        {
+          "id": "UserInputFileObj",
+          "string": "%[2]v",
+          "type": "*github.com/open-horizon/anax/common.UserInputFile",
+          "underlyingType": "*github.com/open-horizon/anax/common.UserInputFile",
+          "argNum": 2,
+          "expr": "userInputFileObj"
         }
       ],
       "fuzzy": true
@@ -14483,22 +14523,6 @@
       "fuzzy": true
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "message": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat：{UsePolicyInputFormat}",
-      "placeholders": [
-        {
-          "id": "UsePolicyInputFormat",
-          "string": "%[1]t",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "usePolicyInputFormat"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Setting global variables...",
       "message": "Setting global variables...",
       "translation": "正在設定廣域變數...",
@@ -14521,31 +14545,9 @@
       "fuzzy": true
     },
     {
-      "id": "Setting service variables...",
-      "message": "Setting service variables...",
-      "translation": "正在設定服務變數...",
-      "fuzzy": true
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "message": "Error encountered while setting service variables: {Err}",
-      "translation": "設定服務變數時發生錯誤：{Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "message": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "警告：未指定輸入檔。 僅當沒有任何服務需要變數集（包括 GPS 座標）時此選項才有效。",
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "附註：未指定輸入檔。僅當沒有任何服務需要設定變數時，此選項才有效。",
       "fuzzy": true
     },
     {
@@ -18017,7 +18019,7 @@
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
       "message": "failed to backup eventlogs file {FileName}. {Err}",
-      "translation": "無法備份事件日誌檔案 {FileName}。{Err}",
+      "translation": "無法備份事件日誌檔案 {FileName}。 {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -18041,7 +18043,7 @@
     {
       "id": "failed to save the eventlogs to file {FileName}. {Err}",
       "message": "failed to save the eventlogs to file {FileName}. {Err}",
-      "translation": "無法將事件日誌儲存至檔案 {FileName}。{Err}",
+      "translation": "無法將事件日誌儲存至檔案 {FileName}。 {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -18400,6 +18402,62 @@
           "underlyingType": "string",
           "argNum": 3,
           "expr": "sType1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "message": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "無法解除配置 json 輸入 {JsonBytes}：{Err}",
+      "placeholders": [
+        {
+          "id": "JsonBytes",
+          "string": "%[1]v",
+          "type": "[]byte",
+          "underlyingType": "[]byte",
+          "argNum": 1,
+          "expr": "jsonBytes"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "message": "Error getting new user input format. {Err1}",
+      "translation": "取得新的使用者輸入格式時發生錯誤。{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "message": "Failed to create json object for user input. {Err1}",
+      "translation": "無法建立使用者輸入的 json 物件。{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
         }
       ],
       "fuzzy": true

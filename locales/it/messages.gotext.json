@@ -3754,6 +3754,62 @@
       "fuzzy": true
     },
     {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "message": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "impossibile annullare il marshalling dell'input json {JsonBytes}: {Err}",
+      "placeholders": [
+        {
+          "id": "JsonBytes",
+          "string": "%[1]v",
+          "type": "[]byte",
+          "underlyingType": "[]byte",
+          "argNum": 1,
+          "expr": "jsonBytes"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "message": "Error getting new user input format. {Err1}",
+      "translation": "Errore durante l'acquisizione del nuovo formato di input utente. {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "message": "Failed to create json object for user input. {Err1}",
+      "translation": "Impossibile creare l'oggetto json per l'input utente. {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "message": "Deployment policy and pattern are mutually exclusive.",
       "translation": "La politica di distribuzione ed il modello si escludono reciprocamente.",

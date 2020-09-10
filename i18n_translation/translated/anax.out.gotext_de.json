@@ -775,6 +775,18 @@
       "translation": "Der abhängige Service {Id} für den erforderlichen Service {SId} hat den falschen Servicetyp: {SType1}."
     },
     {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "Unmarshalling der JSON-Eingabe {JsonBytes} fehlgeschlagen: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Fehler beim Abrufen des neuen Benutzereingabeformats. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "Das JSON-Objekt für die Benutzereingabe konnte nicht erstellt werden. {Err1}"
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "translation": "Eine Bereitstellungsrichtlinie und ein Muster schließen sich gegenseitig aus."
     },

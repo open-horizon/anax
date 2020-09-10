@@ -1127,8 +1127,8 @@
       "translation": "As credenciais do usuário para criar o recurso do nó no Horizon Exchange, caso ele ainda não exista. Se não especificado, HZN_EXCHANGE_USER_AUTH será usado como padrão."
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "Um arquivo JSON que configura ou substitui as variáveis necessárias para os nós e serviços que fazem parte deste padrão. Consulte {Sampledir}/node_reg_input.json e {Sampledir_1}/more-examples.json. Especifique -f- para ler a partir de stdin."
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "Um arquivo JSON que configura ou substitui variáveis de entrada do usuário necessárias pelos serviços que serão implementados para este nó. Consulte {Sampledir}/user_input.json. Especifique -f- para ler a partir de stdin."
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -4275,12 +4275,20 @@
       "translation": "Uma lista de propriedades de política que descrevem o objeto."
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "Não é possível criar o objeto UserInputFile do arquivo {FilePath}. {Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "Formato de política do nó incorreto no arquivo {JsonFilePath}: {Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "Lendo o arquivo de entrada {InputFile}..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "Objeto de entrada do usuário recuperado do arquivo {InputFile}: {UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "Erro ao inicializar o nó: {Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "Configurando variáveis globais..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "Erro ao configurar variáveis de entrada do usuário: {Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "Configurando variáveis de serviço..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "Erro encontrado ao configurar variáveis de serviço: {Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "Aviso: nenhum arquivo de entrada foi especificado. Isso é válido apenas se nenhum dos serviços precisar de variáveis configuradas (incluindo coordenadas de GPS)."
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "Nota: nenhum arquivo de entrada foi especificado. Isso só é válido se nenhum dos serviços precisar de variáveis configuradas."
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "O serviço dependente {Id} para o serviço necessário {SId} tem o tipo de serviço errado: {SType1}."
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "Falha ao desserializar a entrada json {JsonBytes}: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Erro ao obter o novo formato de entrada do usuário. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "Falha ao criar o objeto json para a entrada do usuário. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
