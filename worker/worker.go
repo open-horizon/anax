@@ -293,7 +293,7 @@ func (w *BaseWorker) HandleFrameworkCommands(command Command) (bool, bool) {
 
 // This function handles commands for the worker. Returns true when the worker should terminate.
 func (w *BaseWorker) internalCommandhandler(worker Worker, command Command) bool {
-	glog.V(2).Infof(cdLogString(fmt.Sprintf("%v received command: %v", w.GetName(), command.ShortString())))
+	glog.V(2).Infof(cdLogString(fmt.Sprintf("%v received command (%T): %v", w.GetName(), command, command.ShortString())))
 	glog.V(5).Infof(cdLogString(fmt.Sprintf("%v received command: %v", w.GetName(), command)))
 
 	// Let the framework handle the command first
@@ -307,7 +307,7 @@ func (w *BaseWorker) internalCommandhandler(worker Worker, command Command) bool
 	if handled := worker.CommandHandler(command); !handled {
 		glog.Errorf(cdLogString(fmt.Sprintf("%v received unknown command (%T): %v", w.GetName(), command, command)))
 	} else {
-		glog.V(2).Infof(cdLogString(fmt.Sprintf("%v handled command %v", w.GetName(), command)))
+		glog.V(2).Infof(cdLogString(fmt.Sprintf("%v handled command (%T)", w.GetName(), command)))
 	}
 	return false
 }

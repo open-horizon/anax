@@ -267,7 +267,7 @@ func (b *ImageFetchWorker) CommandHandler(command worker.Command) bool {
 	case *FetchCommand:
 
 		cmd := command.(*FetchCommand)
-		if lc := b.getLaunchContext(cmd.LaunchContext); lc == nil {
+		if lc := events.GetLaunchContext(cmd.LaunchContext); lc == nil {
 			glog.Errorf("Incoming event was not a known launch context: %T", cmd.LaunchContext)
 		} else {
 			glog.V(5).Infof("LaunchContext(%T): %v", lc, lc)
@@ -320,23 +320,16 @@ type FetchCommand struct {
 }
 
 func (f FetchCommand) ShortString() string {
-	return fmt.Sprintf("%v", f)
+	lc := ""
+	lcObj := events.GetLaunchContext(f.LaunchContext)
+	if lcObj != nil {
+		lc = lcObj.ShortString()
+	}
+	return fmt.Sprintf("LaunchContext: %v", lc)
 }
 
 func (t *ImageFetchWorker) NewFetchCommand(launchContext interface{}) *FetchCommand {
 	return &FetchCommand{
 		LaunchContext: launchContext,
 	}
-}
-
-func (t *ImageFetchWorker) getLaunchContext(launchContext interface{}) events.LaunchContext {
-	switch launchContext.(type) {
-	case *events.ContainerLaunchContext:
-		lc := launchContext.(events.LaunchContext)
-		return lc
-	case *events.AgreementLaunchContext:
-		lc := launchContext.(events.LaunchContext)
-		return lc
-	}
-	return nil
 }

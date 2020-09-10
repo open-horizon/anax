@@ -3,6 +3,7 @@ package events
 import (
 	"fmt"
 	"github.com/open-horizon/anax/containermessage"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/persistence"
 	"time"
 )
@@ -154,7 +155,7 @@ func (c AgreementLaunchContext) String() string {
 }
 
 func (c AgreementLaunchContext) ShortString() string {
-	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v", c.AgreementProtocol, c.AgreementId)
+	return fmt.Sprintf("AgreementProtocol: %v, AgreementId: %v, Configure: %v", c.AgreementProtocol, c.AgreementId, c.Configure.ShortString())
 }
 
 func (c AgreementLaunchContext) ContainerConfig() ContainerConfig {
@@ -188,6 +189,20 @@ type ContainerConfig struct {
 func (c ContainerConfig) String() string {
 	return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, ClusterDeployment: %v, ClusterDeploymentSignature: %v, Overrides: %v, ImageDockerAuths: %v",
 		c.Deployment, c.DeploymentSignature, c.DeploymentUserInfo, "********", c.ClusterDeploymentSignature, c.Overrides, c.ImageDockerAuths)
+}
+
+func (c ContainerConfig) ShortString() string {
+	if c.Deployment != "" {
+		return fmt.Sprintf("Deployment: %v, DeploymentSignature: %v, DeploymentUserInfo: %v, c.Overrides %v",
+			c.Deployment, cutil.TruncateDisplayString(c.DeploymentSignature, 10), c.DeploymentUserInfo, c.Overrides)
+	}
+
+	if c.ClusterDeployment != "" {
+		return fmt.Sprintf("ClusterDeployment: %v, ClusterDeploymentSignature: %v",
+			cutil.TruncateDisplayString(c.ClusterDeployment, 10), cutil.TruncateDisplayString(c.ClusterDeploymentSignature, 10))
+	}
+
+	return ""
 }
 
 func NewContainerConfig(deployment string, deploymentSignature string, deploymentUserInfo string,
@@ -225,7 +240,7 @@ func (c ContainerLaunchContext) String() string {
 }
 
 func (c ContainerLaunchContext) ShortString() string {
-	return c.String()
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure.ShortString(), c.EnvironmentAdditions, c.Name, c.AgreementIds, c.Microservices, c.ServicePathElement, c.IsRetry)
 }
 
 func (c ContainerLaunchContext) ContainerConfig() ContainerConfig {
@@ -274,7 +289,11 @@ func (e LoadContainerMessage) String() string {
 }
 
 func (e LoadContainerMessage) ShortString() string {
-	return e.String()
+	lc := ""
+	if e.launchContext != nil {
+		lc = e.launchContext.ShortString()
+	}
+	return fmt.Sprintf("event: %v, launch context: %v", e.event, lc)
 }
 
 func (e *LoadContainerMessage) Event() Event {
@@ -727,7 +746,11 @@ func (e AgreementReachedMessage) String() string {
 }
 
 func (e AgreementReachedMessage) ShortString() string {
-	return fmt.Sprintf("event: %v, launch context: %v", e.event, e.launchContext.ShortString())
+	lc := ""
+	if e.launchContext != nil {
+		lc = e.launchContext.ShortString()
+	}
+	return fmt.Sprintf("event: %v, launch context: %v", e.event, lc)
 }
 
 func (e *AgreementReachedMessage) Event() Event {
@@ -764,7 +787,12 @@ func (b *ImageFetchMessage) String() string {
 }
 
 func (b *ImageFetchMessage) ShortString() string {
-	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, b.LaunchContext)
+	lc := ""
+	lcObj := GetLaunchContext(b.LaunchContext)
+	if lcObj != nil {
+		lc = lcObj.ShortString()
+	}
+	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, lc)
 }
 
 func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}) *ImageFetchMessage {
@@ -799,7 +827,11 @@ func (m GovernanceMaintenanceMessage) String() string {
 }
 
 func (m GovernanceMaintenanceMessage) ShortString() string {
-	return m.String()
+	depStr := ""
+	if m.Deployment != nil {
+		depStr = m.Deployment.ToString()
+	}
+	return fmt.Sprintf("Event: %v, AgreementProtocol: %v, AgreementId: %v, Deployment: %v", m.event, m.AgreementProtocol, m.AgreementId, depStr)
 }
 
 func NewGovernanceMaintenanceMessage(id EventId, protocol string, agreementId string, deployment persistence.DeploymentConfig) *GovernanceMaintenanceMessage {
@@ -894,7 +926,7 @@ func (m ContainerMessage) String() string {
 }
 
 func (m ContainerMessage) ShortString() string {
-	return m.String()
+	return fmt.Sprintf("event: %v, ServiceName: %v, ServicePort: %v, LaunchContext: %v", m.event.Id, m.ServiceName, m.ServicePort, m.LaunchContext.ShortString())
 }
 
 func (b ContainerMessage) Event() Event {
@@ -1954,4 +1986,16 @@ func NewProposalAcceptedMessage(id EventId) *ProposalAcceptedMessage {
 			Id: id,
 		},
 	}
+}
+
+func GetLaunchContext(launchContext interface{}) LaunchContext {
+	switch launchContext.(type) {
+	case *ContainerLaunchContext:
+		lc := launchContext.(LaunchContext)
+		return lc
+	case *AgreementLaunchContext:
+		lc := launchContext.(LaunchContext)
+		return lc
+	}
+	return nil
 }

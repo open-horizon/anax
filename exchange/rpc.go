@@ -67,7 +67,7 @@ func (m Microservice) String() string {
 }
 
 func (m Microservice) ShortString() string {
-	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v, ConfigState: %v", m.Url, m.NumAgreements, m.Properties, m.ConfigState)
+	return fmt.Sprintf("URL: %v, NumAgreements: %v, ConfigState: %v", m.Url, m.NumAgreements, m.ConfigState)
 }
 
 // structs and types for working with microservice based exchange searches
@@ -145,7 +145,7 @@ func (d Device) String() string {
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v, RegisteredServices URLs:", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
+	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -200,7 +200,8 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 			if dev, there := devs[deviceId]; !there {
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev.ShortString())))
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("device details for %v: %v", deviceId, dev)))
 				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
@@ -271,7 +272,7 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 				continue
 			}
 		} else {
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr.ShortString())))
 			if cachedNode != nil {
 				UpdateCacheNodePatchWriteThru(GetOrg(deviceId), GetId(deviceId), cachedNode, pdr)
 			}
@@ -420,6 +421,35 @@ func (p PatchDeviceRequest) String() string {
 		arch = *p.Arch
 	}
 	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", p.UserInput, p.RegisteredServices, pattern, arch)
+}
+
+func (p PatchDeviceRequest) ShortString() string {
+	var registeredServices []string
+	if p.RegisteredServices != nil {
+		registeredServices = []string{}
+		for _, ms := range *p.RegisteredServices {
+			registeredServices = append(registeredServices, ms.ShortString())
+		}
+	}
+
+	var userInput []string
+	if p.UserInput != nil {
+		userInput = []string{}
+		for _, ui := range *p.UserInput {
+			userInput = append(userInput, ui.ShortString())
+		}
+	}
+
+	pattern := "nil"
+	if p.Pattern != nil {
+		pattern = *p.Pattern
+	}
+	arch := "nil"
+	if p.Arch != nil {
+		arch = *p.Arch
+	}
+
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", userInput, registeredServices, pattern, arch)
 }
 
 type PostMessage struct {
