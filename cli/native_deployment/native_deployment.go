@@ -395,6 +395,9 @@ func (p *NativeDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to stop service dependencies, %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, err))
 	}
 
+	// Perform the execution teardown.
+	dev.ExecutionTearDown(cw)
+
 	// Stop the file sync service infrastructure containers if any now that the service(s) are stopped.
 	sserr := sync_service.Stop(cw.GetClient())
 	if sserr != nil {
