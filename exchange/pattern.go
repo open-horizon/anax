@@ -224,14 +224,22 @@ func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, patter
 				continue
 			}
 		} else {
-			pats := resp.(*GetPatternResponse).Patterns
-
-			// log the pat with signatures truncated
-			pats_sa := make([]string, len(pats))
-			for _, pat := range pats {
-				pats_sa = append(pats_sa, pat.ShortString())
+			var pats map[string]Pattern
+			if resp != nil {
+				pats = resp.(*GetPatternResponse).Patterns
 			}
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found patterns for %v, %v", org, pats_sa)))
+
+			if pattern != "" {
+				pat0 := ""
+				for _, pat := range pats {
+					// log the pat with signatures truncated
+					pat0 = pat.ShortString()
+					break
+				}
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found pattern for %v, %v", org, pat0)))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v patterns for %v.", len(pats), org)))
+			}
 
 			return pats, nil
 		}
