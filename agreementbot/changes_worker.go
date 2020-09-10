@@ -143,7 +143,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			batchedEvents[events.CHANGE_AGBOT_MESSAGE_TYPE] = true
 
 		} else if change.IsAgbotServedPolicy(w.GetExchangeId()) || change.IsAgbotServedPattern(w.GetExchangeId()) {
-			w.orgList = w.gatherServedOrgs(&change)
+			w.updateServedOrgs(&change)
 
 		} else if change.IsAgbotAgreement(w.GetExchangeId()) {
 			batchedEvents[events.CHANGE_AGBOT_AGREEMENT_TYPE] = true
@@ -323,6 +323,49 @@ func (w *ChangesWorker) gatherServedOrgs(change *exchange.ExchangeChange) []stri
 
 	glog.V(3).Infof(chglog(fmt.Sprintf("Agbot serving orgs: %v", orgList)))
 	return orgList
+}
+
+// this function updates the worker's served org list and delete the cached resources related to any org that has changed
+func (w *ChangesWorker) updateServedOrgs(change *exchange.ExchangeChange) {
+	oldServedOrgs := w.orgList
+	newServedOrgs := w.gatherServedOrgs(change)
+
+	changedOrgs := []string{}
+
+	for _, oldOrg := range oldServedOrgs {
+		found := false
+		for _, newOrg := range newServedOrgs {
+			if oldOrg == newOrg {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// oldOrg is no longer being served by this agbot
+			changedOrgs = append(changedOrgs, oldOrg)
+		}
+	}
+	for _, newOrg := range newServedOrgs {
+		found := false
+		for _, oldOrg := range oldServedOrgs {
+			if newOrg == oldOrg {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// newOrg was not previously served by this agbot, but is now
+			changedOrgs = append(changedOrgs, newOrg)
+		}
+	}
+
+	// we need to remove the cached exchange resources from the orgs that have been added or removed from the served list
+	for _, changedOrg := range changedOrgs {
+		exchange.DeleteOrgCachedResources(changedOrg)
+	}
+
+	// update the agbot's served org list
+	w.orgList = newServedOrgs
 }
 
 // Verify that an org exists

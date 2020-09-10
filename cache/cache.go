@@ -4,6 +4,7 @@ import ()
 
 type Cache interface {
 	Get(key string) interface{}
+	GetKeys() []string
 	Put(key string, obj interface{})
 	Delete(key string)
 }
