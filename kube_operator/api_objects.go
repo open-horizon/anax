@@ -12,6 +12,7 @@ import (
 	crdv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiv1client "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1"
 	apiv1beta1client "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -174,6 +175,10 @@ type RoleRbacV1 struct {
 func (r RoleRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating role %v", r)))
 	_, err := c.Client.RbacV1().Roles(namespace).Create(r.RoleObject)
+	if err != nil && errors.IsAlreadyExists(err) {
+		r.Uninstall(c, namespace)
+		_, err = c.Client.RbacV1().Roles(namespace).Create(r.RoleObject)
+	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster role: %v", err)))
 	}
@@ -205,6 +210,10 @@ type RolebindingRbacV1 struct {
 func (rb RolebindingRbacV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating rolebinding %v", rb)))
 	_, err := c.Client.RbacV1().RoleBindings(namespace).Create(rb.RolebindingObject)
+	if err != nil && errors.IsAlreadyExists(err) {
+		rb.Uninstall(c, namespace)
+		_, err = c.Client.RbacV1().RoleBindings(namespace).Create(rb.RolebindingObject)
+	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster rolebinding: %v", err)))
 	}
@@ -235,6 +244,10 @@ type ServiceAccountCoreV1 struct {
 func (sa ServiceAccountCoreV1) Install(c KubeClient, namespace string) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating service account %v", sa)))
 	_, err := c.Client.CoreV1().ServiceAccounts(namespace).Create(sa.ServiceAccountObject)
+	if err != nil && errors.IsAlreadyExists(err) {
+		sa.Uninstall(c, namespace)
+		_, err = c.Client.CoreV1().ServiceAccounts(namespace).Create(sa.ServiceAccountObject)
+	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the cluster service account: %v", err)))
 	}
@@ -274,6 +287,10 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 
 	// Create the config map.
 	mapName, err := c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+	if err != nil && errors.IsAlreadyExists(err) {
+		d.Uninstall(c, namespace)
+		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+	}
 	if err != nil {
 		return err
 	}
@@ -281,6 +298,11 @@ func (d DeploymentAppsV1) Install(c KubeClient, namespace string) error {
 	// Let the operator know about the config map
 	dWithEnv := addConfigMapVarToDeploymentObject(*d.DeploymentObject, mapName)
 	_, err = c.Client.AppsV1().Deployments(namespace).Create(&dWithEnv)
+	if err != nil && errors.IsAlreadyExists(err) {
+		d.Uninstall(c, namespace)
+		mapName, err = c.CreateConfigMap(envAdds, d.AgreementId, namespace)
+		_, err = c.Client.AppsV1().Deployments(namespace).Create(&dWithEnv)
+	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error creating the operator deployment: %v", err)))
 	}
@@ -344,6 +366,10 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 	crds := apiClient.CustomResourceDefinitions()
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
 	_, err = crds.Create(cr.CustomResourceDefinitionObject)
+	if err != nil && errors.IsAlreadyExists(err) {
+		cr.Uninstall(c, namespace)
+		_, err = crds.Create(cr.CustomResourceDefinitionObject)
+	}
 	if err != nil {
 		return err
 	}
@@ -367,6 +393,7 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 	}
 
 	// the cluster has to create the endpoint for the custom resource, this can take some time
+	// the cr cannot exist without the crd so we don't have to worry about it already existing
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", cr.CustomResourceObject)))
 	for {
 		_, err = crClient.Namespace(namespace).Create(cr.CustomResourceObject, metav1.CreateOptions{})
@@ -512,6 +539,10 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	crds := apiClient.CustomResourceDefinitions()
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating custom resource definition %v", cr.CustomResourceDefinitionObject)))
 	_, err = crds.Create(cr.CustomResourceDefinitionObject)
+	if err != nil && errors.IsAlreadyExists(err) {
+		cr.Uninstall(c, namespace)
+		_, err = crds.Create(cr.CustomResourceDefinitionObject)
+	}
 	if err != nil {
 		return fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to create custom resource definition %s: %v", cr.Name(), err)))
 	}
@@ -535,6 +566,7 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 	}
 
 	// the cluster has to create the endpoint for the custom resource, this can take some time
+	// the cr cannot exist without the crd so we don't have to worry about it already existing
 	glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", cr.CustomResourceObject)))
 	for {
 		_, err = crClient.Namespace(namespace).Create(cr.CustomResourceObject, metav1.CreateOptions{})
