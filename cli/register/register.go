@@ -10,11 +10,13 @@ import (
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/unregister"
 	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"k8s.io/client-go/rest"
@@ -25,11 +27,6 @@ import (
 	"strings"
 	"time"
 )
-
-type ExchangeNodes struct {
-	LastIndex int                        `json:"lastIndex"`
-	Nodes     map[string]exchange.Device `json:"nodes"`
-}
 
 // read the user input file that contains the global attributes and service userinput settings.
 // it supports both old and new format.
@@ -192,9 +189,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	}
 
 	// See if the node exists in the exchange, and create if it doesn't
-	var nodes ExchangeNodes
+	var devicesResp exchange.GetDevicesResponse
 	exchangePattern := ""
-	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &devicesResp)
 
 	if httpCode != 200 {
 		if userPw == "" {
@@ -203,7 +200,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 
 		cliutils.SetWhetherUsingApiKey(userPw)
 		userOrg, userAuth := cliutils.TrimOrg(org, userPw)
-		httpCode1 := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), nil, &nodes)
+		httpCode1 := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), nil, &devicesResp)
 		if httpCode1 != 200 {
 			// node does not exist, create it
 			msgPrinter.Printf("Node %s/%s does not exist in the Exchange with the specified token, creating/updating it...", org, nodeId)
@@ -215,7 +212,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			msgPrinter.Println()
 			patchNodeReq := cliexchange.NodeExchangePatchToken{Token: nodeToken}
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, patchNodeReq, nil)
-			for nId, n := range nodes.Nodes {
+			for nId, n := range devicesResp.Devices {
 				exchangePattern = n.Pattern
 
 				// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
@@ -228,7 +225,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the Exchange", org, nodeId)
 		msgPrinter.Println()
-		for nId, n := range nodes.Nodes {
+		for nId, n := range devicesResp.Devices {
 			exchangePattern = n.Pattern
 
 			// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
@@ -697,12 +694,32 @@ type SvcMapValue struct {
 	VersionRanges  []string // all the version ranges we find for this service as we descend thru the required services
 	HighestVersion string   // filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
 	UserInputs     []exchange.UserInput
+	Privileged     bool
 }
 
 // AddAllRequiredSvcs
 func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequiredSvcs map[string]*SvcMapValue) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// Get the service from the exchange so we can get its required services
+	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
+
+	nodeOrg, nodeIdTok := cliutils.TrimOrg(org, nodeCreds)
+	nodeId, _ := cliutils.SplitIdToken(nodeIdTok)
+
+	var nodes exchange.GetDevicesResponse
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeId, nodeCreds, []int{200}, &nodes)
+
+	// Make sure that the node type and the service type match
+	serviceType := highestSvc.GetServiceType()
+	for nId, n := range nodes.Devices {
+		if serviceType != exchange.SERVICE_TYPE_BOTH && n.GetNodeType() != serviceType {
+			msgPrinter.Printf("Ignoring version %s of service %s/%s with node type mismatch: the service type '%v' does not match the node type '%v' of the Exchange node %v.", versionRange, org, url, serviceType, n.GetNodeType(), nId)
+			msgPrinter.Println()
+			return
+		}
+	}
 
 	// Add this service to the service map
 	cliutils.Verbose(msgPrinter.Sprintf("found: %s, %s, %s, %s", org, url, arch, versionRange))
@@ -718,16 +735,20 @@ func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequi
 		allRequiredSvcs[svcKey] = &SvcMapValue{Org: org, URL: url, Arch: arch} // this must be a ptr to the struct or go won't let us modify it in the map
 	}
 	allRequiredSvcs[svcKey].VersionRanges = append(allRequiredSvcs[svcKey].VersionRanges, versionRange) // add this version to this service in our map
-
-	// Get the service from the exchange so we can get its required services
-	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
-	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version // in case we don't encounter this service again, we already know the highest version for getting the user input from
+	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version                                         // in case we don't encounter this service again, we already know the highest version for getting the user input from
 	allRequiredSvcs[svcKey].UserInputs = highestSvc.UserInputs
+
+	// check if the service contains privileged
+	if priv, err := compcheck.DeploymentRequiresPrivilege(highestSvc.Deployment, msgPrinter); err != nil {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to check if deployment requires privileged: %v", err))
+	} else if priv {
+		allRequiredSvcs[svcKey].Privileged = true
+	}
 
 	// Loop thru this service's required services, adding them to our map
 	for _, s := range highestSvc.RequiredServices {
 		// This will add this svc to our map and keep descending down the required services
-		AddAllRequiredSvcs(nodeCreds, s.Org, s.URL, s.Arch, s.Version, allRequiredSvcs)
+		AddAllRequiredSvcs(nodeCreds, s.Org, s.URL, s.Arch, s.VersionRange, allRequiredSvcs)
 	}
 }
 
@@ -769,7 +790,9 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	// Loop thru each service, find the highest version of that service, and then record the user input for it
 	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
-	templateFile := common.UserInputFile{Global: []common.GlobalSet{}}
+	svcInputs := make([]policy.UserInput, 0, len(allRequiredSvcs))
+
+	containsPrivilegedSvc := false
 	for _, s := range allRequiredSvcs {
 		var userInput []exchange.UserInput
 		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
@@ -782,16 +805,20 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 		// Get the user input from this service
 		if len(userInput) > 0 {
-			svcInput := common.MicroWork{Org: s.Org, Url: s.URL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
-			for _, u := range userInput {
-				svcInput.Variables[u.Name] = u.DefaultValue
+			svcInput := policy.UserInput{ServiceOrgid: s.Org, ServiceUrl: s.URL, ServiceVersionRange: "[0.0.0,INFINITY)", Inputs: make([]policy.Input, len(userInput))}
+			for i, u := range userInput {
+				svcInput.Inputs[i] = policy.Input{Name: u.Name, Value: u.DefaultValue, Type: u.Type}
 			}
-			templateFile.Services = append(templateFile.Services, svcInput)
+			svcInputs = append(svcInputs, svcInput)
+		}
+
+		if s.Privileged {
+			containsPrivilegedSvc = true
 		}
 	}
 
-	// Output the template file
-	jsonBytes, err := json.MarshalIndent(templateFile, "", cliutils.JSON_INDENT)
+	// Output the file
+	jsonBytes, err := json.MarshalIndent(svcInputs, "", cliutils.JSON_INDENT)
 	if err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the user input template file: %v", err))
 	}
@@ -799,8 +826,33 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
 		cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the user input template file: %v", err))
 	}
+
 	msgPrinter.Printf("Wrote %s", inputFile)
 	msgPrinter.Println()
+
+	// Create example node policy file if at least one service contains privileged in the deployment string
+	if containsPrivilegedSvc {
+		allowPrivilegedPolicyExample := externalpolicy.ExternalPolicy{
+			Properties: externalpolicy.PropertyList{
+				externalpolicy.Property{
+					Name:  "openhorizon.allowPrivileged",
+					Value: true,
+				},
+			},
+		}
+		nodePolicySampleFile := inputFile + "_np.json"
+		// Output the file
+		jsonBytes, err := json.MarshalIndent(allowPrivilegedPolicyExample, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the example node policy file: %v", err))
+		}
+		if err := ioutil.WriteFile(nodePolicySampleFile, jsonBytes, 0644); err != nil {
+			cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the example node policy file: %v", err))
+		} else {
+			msgPrinter.Printf("One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: %s", nodePolicySampleFile)
+			msgPrinter.Println()
+		}
+	}
 }
 
 // this function parses the error returned by the registration process to see if the error
