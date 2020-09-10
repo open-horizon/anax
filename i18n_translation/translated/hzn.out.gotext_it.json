@@ -1127,8 +1127,8 @@
       "translation": "Le credenziali utente per creare la risorsa del nodo in Horizon Exchange, se non già esistente. Se non specificato, HZN_EXCHANGE_USER_AUTH verrà utilizzato come valore predefinito."
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "Un file JSON che imposta o sovrascrive le variabili richieste dal nodo e i servizi che fanno parte di questo modello. Vedere {Sampledir}/node_reg_input.json e {Sampledir_1}/more-examples.json. Specificare -f- per leggere da stdin."
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "Un file JSON che imposta o sovrascrive le variabili di input utente richieste dai servizi che verranno distribuiti su questo nodo. Consultare {Sampledir}/user_input.json. Specificare -f- per leggere da stdin."
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -1724,15 +1724,15 @@
     },
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "Gestisci le organizzazioni, i modelli e le politiche di distribuzione che servono agbot memorizzato nella cache. "
+      "translation": "Gestisci le organizzazioni, i modelli e le politiche di distribuzione che servono agbot memorizzato nella cache."
     },
     {
       "id": "List served pattern orgs and deployment policy orgs.",
-      "translation": "Elenca le org di modello e le org di politica della distribuzione "
+      "translation": "Elenca le org di modello e le org di politica della distribuzione"
     },
     {
       "id": "Display served pattern orgs and deployment policy orgs.",
-      "translation": "Visualizza le org di modello e le org di politica della distribuzione. "
+      "translation": "Visualizza le org di modello e le org di politica della distribuzione."
     },
     {
       "id": "List patterns cached in the agbot.",
@@ -1744,15 +1744,15 @@
     },
     {
       "id": "Display patterns under this org.",
-      "translation": "Visualizza i modelli in questa organizzazione. "
+      "translation": "Visualizza i modelli in questa organizzazione."
     },
     {
       "id": "Display this pattern.",
-      "translation": "Visualizza questo modello "
+      "translation": "Visualizza questo modello"
     },
     {
       "id": "Display detailed info.",
-      "translation": "Visualizza le informazioni dettagliate "
+      "translation": "Visualizza le informazioni dettagliate"
     },
     {
       "id": "List served deployment policies cached in the agbot.",
@@ -1764,11 +1764,11 @@
     },
     {
       "id": "Display policies under this org.",
-      "translation": "Visualizza le politiche in questa organizzazione. "
+      "translation": "Visualizza le politiche in questa organizzazione."
     },
     {
       "id": "Display this policy.",
-      "translation": "Visualizza questa politica. "
+      "translation": "Visualizza questa politica."
     },
     {
       "id": "Display general information about this Horizon agbot node.",
@@ -2012,11 +2012,11 @@
     },
     {
       "id": "List the imported SDO ownership vouchers.",
-      "translation": "Elenca i voucher di proprietà SDO importati "
+      "translation": "Elenca i voucher di proprietà SDO importati"
     },
     {
       "id": "List the full details of this SDO ownership voucher.",
-      "translation": "Elenca i dettagli completi di questo voucher di proprietà SDO. "
+      "translation": "Elenca i dettagli completi di questo voucher di proprietà SDO."
     },
     {
       "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
@@ -2084,7 +2084,7 @@
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
-      "translation": "org deve essere specificata con un -o quando è specificato il nome modello. "
+      "translation": "org deve essere specificata con un -o quando è specificato il nome modello."
     },
     {
       "id": "failed to marshal output: {Err}",
@@ -2096,15 +2096,15 @@
     },
     {
       "id": "{Org}/{Name} does not exist in the pattern management cache.",
-      "translation": "{Org}/{Name} non esiste nella cache di gestione del modello "
+      "translation": "{Org}/{Name} non esiste nella cache di gestione del modello"
     },
     {
       "id": "org must be specified with -o when deployment policy name is specified.",
-      "translation": "org deve essere specificata con -o quando è specificato il nome della politica di distribuzione. "
+      "translation": "org deve essere specificata con -o quando è specificato il nome della politica di distribuzione."
     },
     {
       "id": "{Org} does not exist in the deployment policy management cache.",
-      "translation": "{Org} non esiste nella cache di gestione della politica di distribuzione. "
+      "translation": "{Org} non esiste nella cache di gestione della politica di distribuzione."
     },
     {
       "id": "{Org}/{Name} does not exist in the deployment policy management cache.",
@@ -4275,12 +4275,20 @@
       "translation": "Un elenco di proprietà della politica che descrivono l'oggetto."
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "Impossibile creare l'oggetto UserInputFile dal file {FilePath}. {Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "Formato della politica del nodo non corretto nel file {JsonFilePath}: {Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "Lettura del file di input {InputFile}..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "Oggetto di input utente richiamato dal file {InputFile}: {UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "Errore inizializzazione del nodo: {Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "Impostazione delle variabili globali..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "Errore durante l'impostazione delle variabili di input utente: {Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "Impostazione delle variabili del servizio..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "Errore riscontrato durante l'impostazione delle variabili di servizio: {Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "Avvertenza: nessun file di input specificato. Questo è valido solo se nessuno dei servizi richiede variabili impostate (incluse le coordinate GPS)."
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "Nota: non è stato specificato alcun file di input. Questo è valido solo se nessun servizio richiede variabili impostate. "
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -4616,7 +4612,7 @@
     },
     {
       "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
-      "translation": "Utilizzare il comando 'hzn deploycheck all -p' per verificare che il nodo, la configurazione del servizio e il modello sono compatibili. "
+      "translation": "Utilizzare il comando 'hzn deploycheck all -p' per verificare che il nodo, la configurazione del servizio e il modello sono compatibili."
     },
     {
       "id": "{Format2006_01_02_150405}: {Message}",
@@ -4644,7 +4640,7 @@
     },
     {
       "id": "Listing imported SDO vouchers.",
-      "translation": "Elenco dei voucher SDO importati "
+      "translation": "Elenco dei voucher SDO importati"
     },
     {
       "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
@@ -5332,7 +5328,7 @@
     },
     {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
-      "translation": "impossibile eseguire il marshalling dei log eventi dal DB anax locale, i log eventi non verranno salvati. "
+      "translation": "impossibile eseguire il marshalling dei log eventi dal DB anax locale, i log eventi non verranno salvati."
     },
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "Il servizio dipendente {Id} per il servizio richiesto {SId} ha un tipo di servizio errato: {SType1}."
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "impossibile annullare il marshalling dell'input json {JsonBytes}: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Errore durante l'acquisizione del nuovo formato di input utente. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "Impossibile creare l'oggetto json per l'input utente. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",

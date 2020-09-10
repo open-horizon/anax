@@ -1127,8 +1127,8 @@
       "translation": "Die Benutzerberechtigungsnachweise zum Erstellen der Knotenressource in Horizon Exchange, falls diese noch nicht vorhanden ist. Werden keine angegeben, wird standardmäßig HZN_EXCHANGE_USER_AUTH verwendet. "
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "Eine JSON-Datei, von der Variablen festgelegt oder überschrieben werden, die für den Knoten und die Services erforderlich sind, die Teil dieses Musters sind. Weitere Informationen finden Sie unter {Sampledir}/node_reg_input.json und {Sampledir_1}/more-examples.json. Geben Sie -f- an, damit die Standardeingabe gelesen wird."
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "Eine JSON-Datei, von der Benutzereingabevariablen festgelegt oder überschrieben werden, die für die Services erforderlich sind, die auf diesem Knoten bereitgestellt werden. Informationen hierzu finden Sie unter {Sampledir}/user_input.json. Geben Sie -f- an, damit die Standardeingabe gelesen wird."
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -4275,12 +4275,20 @@
       "translation": "Eine Liste der Richtlinieneigenschaften, von denen das Objekt beschrieben wird."
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "Das Objekt 'UserInputFile' kann nicht aus der Datei {FilePath} erstellt werden. {Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "Fehlerhaftes Knotenrichtlinienformat in Datei {JsonFilePath}: {Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "Eingabedatei {InputFile} wird gelesen..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "Das Benutzereingabeobjekt wurde aus der Datei {InputFile} abgerufen: {UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "Fehler beim Initialisieren des Knotens: {Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "Globale Variablen werden festgelegt..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "Fehler beim Festlegen der Benutzereingabevariablen: {Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "Die Servicevariablen werden festgelegt..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "Beim Festlegen der Servicevariablen ist ein Fehler aufgetreten: {Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "Warnung: Keine Eingabedatei angegeben. Dies ist nur gültig, wenn für keinen der Services Variablen (einschließlich GPS-Koordinaten) festgelegt werden müssen. "
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "Hinweis: Keine Eingabedatei angegeben. Dies ist nur gültig, wenn für keinen der Services Variablen festgelegt werden müssen. "
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "Der abhängige Service {Id} für den erforderlichen Service {SId} hat den falschen Servicetyp: {SType1}."
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "Unmarshalling der JSON-Eingabe {JsonBytes} fehlgeschlagen: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Fehler beim Abrufen des neuen Benutzereingabeformats. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "Das JSON-Objekt für die Benutzereingabe konnte nicht erstellt werden. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",

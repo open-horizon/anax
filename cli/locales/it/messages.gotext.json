@@ -2583,9 +2583,9 @@
       "fuzzy": true
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "message": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "Un file JSON che imposta o sovrascrive le variabili richieste dal nodo e i servizi che fanno parte di questo modello. Vedere {Sampledir}/node_reg_input.json e {Sampledir_1}/more-examples.json. Specificare -f- per leggere da stdin.",
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "Un file JSON che imposta o sovrascrive le variabili di input utente richieste dai servizi che verranno distribuiti su questo nodo. Consultare {Sampledir}/user_input.json. Specificare -f- per leggere da stdin.",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -2593,14 +2593,6 @@
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "sample_dir"
-        },
-        {
-          "id": "Sampledir_1",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
           "expr": "sample_dir"
         }
       ],
@@ -3555,19 +3547,19 @@
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
       "message": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "Gestisci le organizzazioni, i modelli e le politiche di distribuzione che servono agbot memorizzato nella cache. ",
+      "translation": "Gestisci le organizzazioni, i modelli e le politiche di distribuzione che servono agbot memorizzato nella cache.",
       "fuzzy": true
     },
     {
       "id": "List served pattern orgs and deployment policy orgs.",
       "message": "List served pattern orgs and deployment policy orgs.",
-      "translation": "Elenca le org di modello e le org di politica della distribuzione ",
+      "translation": "Elenca le org di modello e le org di politica della distribuzione",
       "fuzzy": true
     },
     {
       "id": "Display served pattern orgs and deployment policy orgs.",
       "message": "Display served pattern orgs and deployment policy orgs.",
-      "translation": "Visualizza le org di modello e le org di politica della distribuzione. ",
+      "translation": "Visualizza le org di modello e le org di politica della distribuzione.",
       "fuzzy": true
     },
     {
@@ -3585,19 +3577,19 @@
     {
       "id": "Display patterns under this org.",
       "message": "Display patterns under this org.",
-      "translation": "Visualizza i modelli in questa organizzazione. ",
+      "translation": "Visualizza i modelli in questa organizzazione.",
       "fuzzy": true
     },
     {
       "id": "Display this pattern.",
       "message": "Display this pattern.",
-      "translation": "Visualizza questo modello ",
+      "translation": "Visualizza questo modello",
       "fuzzy": true
     },
     {
       "id": "Display detailed info.",
       "message": "Display detailed info.",
-      "translation": "Visualizza le informazioni dettagliate ",
+      "translation": "Visualizza le informazioni dettagliate",
       "fuzzy": true
     },
     {
@@ -3615,13 +3607,13 @@
     {
       "id": "Display policies under this org.",
       "message": "Display policies under this org.",
-      "translation": "Visualizza le politiche in questa organizzazione. ",
+      "translation": "Visualizza le politiche in questa organizzazione.",
       "fuzzy": true
     },
     {
       "id": "Display this policy.",
       "message": "Display this policy.",
-      "translation": "Visualizza questa politica. ",
+      "translation": "Visualizza questa politica.",
       "fuzzy": true
     },
     {
@@ -3987,13 +3979,13 @@
     {
       "id": "List the imported SDO ownership vouchers.",
       "message": "List the imported SDO ownership vouchers.",
-      "translation": "Elenca i voucher di proprietà SDO importati ",
+      "translation": "Elenca i voucher di proprietà SDO importati",
       "fuzzy": true
     },
     {
       "id": "List the full details of this SDO ownership voucher.",
       "message": "List the full details of this SDO ownership voucher.",
-      "translation": "Elenca i dettagli completi di questo voucher di proprietà SDO. ",
+      "translation": "Elenca i dettagli completi di questo voucher di proprietà SDO.",
       "fuzzy": true
     },
     {
@@ -4193,7 +4185,7 @@
     {
       "id": "org must be specified with -o when pattern name is specified.",
       "message": "org must be specified with -o when pattern name is specified.",
-      "translation": "org deve essere specificata con un -o quando è specificato il nome modello. ",
+      "translation": "org deve essere specificata con un -o quando è specificato il nome modello.",
       "fuzzy": true
     },
     {
@@ -4231,7 +4223,7 @@
     {
       "id": "{Org}/{Name} does not exist in the pattern management cache.",
       "message": "{Org}/{Name} does not exist in the pattern management cache.",
-      "translation": "{Org}/{Name} non esiste nella cache di gestione del modello ",
+      "translation": "{Org}/{Name} non esiste nella cache di gestione del modello",
       "placeholders": [
         {
           "id": "Org",
@@ -4255,13 +4247,13 @@
     {
       "id": "org must be specified with -o when deployment policy name is specified.",
       "message": "org must be specified with -o when deployment policy name is specified.",
-      "translation": "org deve essere specificata con -o quando è specificato il nome della politica di distribuzione. ",
+      "translation": "org deve essere specificata con -o quando è specificato il nome della politica di distribuzione.",
       "fuzzy": true
     },
     {
       "id": "{Org} does not exist in the deployment policy management cache.",
       "message": "{Org} does not exist in the deployment policy management cache.",
-      "translation": "{Org} non esiste nella cache di gestione della politica di distribuzione. ",
+      "translation": "{Org} non esiste nella cache di gestione della politica di distribuzione.",
       "placeholders": [
         {
           "id": "Org",
@@ -8594,7 +8586,7 @@
         {
           "id": "GlobalSet",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 1,
           "expr": "gs"
@@ -8618,7 +8610,7 @@
         {
           "id": "GlobalSet",
           "string": "%[1]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 1,
           "expr": "gs"
@@ -8642,8 +8634,8 @@
         {
           "id": "Global",
           "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
-          "underlyingType": "[]github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "[]github.com/open-horizon/anax/common.GlobalSet",
+          "underlyingType": "[]github.com/open-horizon/anax/common.GlobalSet",
           "argNum": 1,
           "expr": "global"
         },
@@ -8674,7 +8666,7 @@
         {
           "id": "GlobalSet",
           "string": "%[2]v",
-          "type": "github.com/open-horizon/anax/cli/register.GlobalSet",
+          "type": "github.com/open-horizon/anax/common.GlobalSet",
           "underlyingType": "struct{Type string \"json:\\\"type\\\"\"; ServiceSpecs github.com/open-horizon/anax/persistence.ServiceSpecs \"json:\\\"service_specs,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 2,
           "expr": "gs"
@@ -8730,7 +8722,7 @@
         {
           "id": "MicroWork",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/cli/register.MicroWork",
+          "type": "github.com/open-horizon/anax/common.MicroWork",
           "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
           "argNum": 3,
           "expr": "ms"
@@ -14015,6 +14007,30 @@
       "fuzzy": true
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "Impossibile creare l'oggetto UserInputFile dal file {FilePath}. {Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "message": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "Formato della politica del nodo non corretto nel file {JsonFilePath}: {Err}",
@@ -14050,6 +14066,30 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "message": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "Oggetto di input utente richiamato dal file {InputFile}: {UserInputFileObj}",
+      "placeholders": [
+        {
+          "id": "InputFile",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "inputFile"
+        },
+        {
+          "id": "UserInputFileObj",
+          "string": "%[2]v",
+          "type": "*github.com/open-horizon/anax/common.UserInputFile",
+          "underlyingType": "*github.com/open-horizon/anax/common.UserInputFile",
+          "argNum": 2,
+          "expr": "userInputFileObj"
         }
       ],
       "fuzzy": true
@@ -14483,22 +14523,6 @@
       "fuzzy": true
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "message": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "placeholders": [
-        {
-          "id": "UsePolicyInputFormat",
-          "string": "%[1]t",
-          "type": "bool",
-          "underlyingType": "bool",
-          "argNum": 1,
-          "expr": "usePolicyInputFormat"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Setting global variables...",
       "message": "Setting global variables...",
       "translation": "Impostazione delle variabili globali...",
@@ -14521,31 +14545,9 @@
       "fuzzy": true
     },
     {
-      "id": "Setting service variables...",
-      "message": "Setting service variables...",
-      "translation": "Impostazione delle variabili del servizio...",
-      "fuzzy": true
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "message": "Error encountered while setting service variables: {Err}",
-      "translation": "Errore riscontrato durante l'impostazione delle variabili di servizio: {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "message": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "Avvertenza: nessun file di input specificato. Questo è valido solo se nessuno dei servizi richiede variabili impostate (incluse le coordinate GPS).",
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "Nota: non è stato specificato alcun file di input. Questo è valido solo se nessun servizio richiede variabili impostate. ",
       "fuzzy": true
     },
     {
@@ -15287,7 +15289,7 @@
     {
       "id": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
       "message": "Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.",
-      "translation": "Utilizzare il comando 'hzn deploycheck all -p' per verificare che il nodo, la configurazione del servizio e il modello sono compatibili. ",
+      "translation": "Utilizzare il comando 'hzn deploycheck all -p' per verificare che il nodo, la configurazione del servizio e il modello sono compatibili.",
       "fuzzy": true
     },
     {
@@ -15419,7 +15421,7 @@
     {
       "id": "Listing imported SDO vouchers.",
       "message": "Listing imported SDO vouchers.",
-      "translation": "Elenco dei voucher SDO importati ",
+      "translation": "Elenco dei voucher SDO importati",
       "fuzzy": true
     },
     {
@@ -18011,7 +18013,7 @@
     {
       "id": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
       "message": "cannot marshal eventlogs from local anax DB, eventlogs will not be saved",
-      "translation": "impossibile eseguire il marshalling dei log eventi dal DB anax locale, i log eventi non verranno salvati. ",
+      "translation": "impossibile eseguire il marshalling dei log eventi dal DB anax locale, i log eventi non verranno salvati.",
       "fuzzy": true
     },
     {
@@ -18400,6 +18402,62 @@
           "underlyingType": "string",
           "argNum": 3,
           "expr": "sType1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "message": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "impossibile annullare il marshalling dell'input json {JsonBytes}: {Err}",
+      "placeholders": [
+        {
+          "id": "JsonBytes",
+          "string": "%[1]v",
+          "type": "[]byte",
+          "underlyingType": "[]byte",
+          "argNum": 1,
+          "expr": "jsonBytes"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "message": "Error getting new user input format. {Err1}",
+      "translation": "Errore durante l'acquisizione del nuovo formato di input utente. {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "message": "Failed to create json object for user input. {Err1}",
+      "translation": "Impossibile creare l'oggetto json per l'input utente. {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
         }
       ],
       "fuzzy": true

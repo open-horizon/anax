@@ -775,6 +775,18 @@
       "translation": "필수 서비스 {SId}의 종속 서비스 {Id}에 대한 서비스 유형이 잘못됨: {SType1}."
     },
     {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "JSON 입력 {JsonBytes}을(를) 역마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "새 사용자 입력 형식을 가져오는 중에 오류가 발생했습니다. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "사용자 입력에 대한 JSON 오브젝트를 작성하지 못했습니다. {Err1}"
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "translation": "배치 정책과 패턴은 상호 배타적입니다."
     },

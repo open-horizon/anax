@@ -212,7 +212,7 @@
     },
     {
       "id": "Ignoring service. {Arg_1}",
-      "translation": "Ignorando servicio. {Arg_1}"
+      "translation": "Se está ignorando el servicio. {Arg_1}"
     },
     {
       "id": "New node policy: {Arg_1}",
@@ -1127,8 +1127,8 @@
       "translation": "Las credenciales de usuario para crear el recurso de nodo en Horizon Exchange si es que no existe ya. Si no se especifica, se utilizará HZN_EXCHANGE_USER_AUTH como valor predeterminado."
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "Un archivo JSON que establece o altera temporalmente variables que el nodo necesita y servicios que forman parte de este patrón. Consulte {Sampledir}/node_reg_input.json y {Sampledir_1}/more-examples.json. Especifique -f- para leer de la entrada estándar."
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "Un archivo JSON que establece o altera temporalmente variables de entrada de usuario que los servicios que se desplegarán en este nodo necesitan. Consulte {Sampledir}/user_input.json. Especifique -f- para leer de la entrada estándar."
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -1976,23 +1976,23 @@
     },
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
-      "translation": "Listar y gestionar cupones de propiedad de SDO de Horizon."
+      "translation": "Listar y gestionar cupones de propiedad SDO de Horizon."
     },
     {
       "id": "Display properties of the SDO ownership voucher.",
-      "translation": "Visualizar propiedades del cupón de propiedad de SDO."
+      "translation": "Visualizar propiedades del cupón de propiedad SDO."
     },
     {
       "id": "The SDO ownership voucher file.",
-      "translation": "El archivo de cupones de propiedad de SDO."
+      "translation": "El archivo de cupones de propiedad SDO."
     },
     {
       "id": "Imports the SDO ownership voucher so that the corresponding device can be booted, configured, and registered. HZN_SDO_SVC_URL must be set in the environment, /etc/default/horizon, or one of the hzn.json files.",
-      "translation": "Importa el cupón de propiedad de SDO de modo que el dispositivo correspondiente se pueda arrancar, configurar y registrar. HZN_SDO_SVC_URL debe establecerse en el entorno, /etc/default/horizon, o uno de los archivos hzn.json"
+      "translation": "Importa el cupón de propiedad SDO de modo que el dispositivo correspondiente se pueda arrancar, configurar y registrar. HZN_SDO_SVC_URL debe establecerse en el entorno, /etc/default/horizon, o uno de los archivos hzn.json"
     },
     {
       "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
-      "translation": "El archivo de cupones de propiedad de SDO. Debe tener la extensión de tipo de archivo: json, tar, tar.gz, tgz o zip. Si tiene algunos de los formatos tar/zip, todos los archivos json del mismo se importarán (otros archivos/directorios se ignorarán en silencio)."
+      "translation": "El archivo de cupones de propiedad SDO. Debe tener la extensión de tipo de archivo: json, tar, tar.gz, tgz o zip. Si tiene algunos de los formatos tar/zip, todos los archivos json del mismo se importarán (otros archivos/directorios se ignorarán en silencio)."
     },
     {
       "id": "Horizon user credentials to import a voucher. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.",
@@ -2012,11 +2012,11 @@
     },
     {
       "id": "List the imported SDO ownership vouchers.",
-      "translation": "Listar los cupones de propiedad de SDO importados."
+      "translation": "Listar los cupones de propiedad SDO importados."
     },
     {
       "id": "List the full details of this SDO ownership voucher.",
-      "translation": "Listar los detalles completos del cupón de propiedad de SDO."
+      "translation": "Listar los detalles completos del cupón de propiedad SDO."
     },
     {
       "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
@@ -4275,12 +4275,20 @@
       "translation": "Una lista de propiedades de política que describen el objeto."
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "No se puede crear el objeto UserInputFile del archivo {FilePath}. {Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "Formato de política de nodo incorrecto en el archivo {JsonFilePath}: {Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "Leyendo el archivo de entrada {InputFile}..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "Objeto de entrada de usuario recuperado del archivo {InputFile}: {UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "Error al inicializar el nodo: {Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "Estableciendo variables globales..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "Error al establecer variables de entrada de usuario: {Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "Estableciendo variables de servicio..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "Error encontrado al establecer variables de servicio: {Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "Aviso: no se ha especificado ningún archivo. Esto solo es válido si ninguno de los servicios necesita que se establezcan variables (incluidas las coordenadas GPS)."
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "Nota: no se ha especificado ningún archivo. Esto solo es válido si ninguno de los servicios necesita que se establezcan variables."
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -4644,7 +4640,7 @@
     },
     {
       "id": "Listing imported SDO vouchers.",
-      "translation": "Listando los cupones de SDO importados."
+      "translation": "Listando los cupones SDO importados."
     },
     {
       "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
@@ -4952,7 +4948,7 @@
     },
     {
       "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "Una lista de expresiones de restricción con el formato <nombre de propiedad> <operador> <valor de propiedad>, separadas por los operadores booleanos AND (&&) o OR (||)."
+      "translation": "Una lista de expresiones de restricción con el formato <nombre de propiedad> <operador> <valor de propiedad>, separadas por los operadores booleanos AND (&&) u OR (||)."
     },
     {
       "id": "The service(s) that will use this object.",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "El servicio dependiente {Id} para el servicio necesario {SId} tiene el tipo de servicio incorrecto: {SType1}."
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "No se ha podido desordenar la entrada json {JsonBytes}: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Error al obtener el formato de entrada del nuevo usuario. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "No se ha podido crear el objeto json para la entrada de usuario. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",

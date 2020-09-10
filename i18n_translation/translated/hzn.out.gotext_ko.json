@@ -1127,8 +1127,8 @@
       "translation": "아직 없는 경우 Horizon exchange에서 노드 리소스를 작성하는 데 필요한 사용자 인증 정보입니다. 지정하지 않은 경우 HZN_EXCHANGE_USER_AUTH가 기본값으로 사용됩니다."
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "이 패턴의 일부인 노드와 서비스에 필요한 변수를 설정하거나 대체하는 JSON 파일입니다. {Sampledir}/node_reg_input.json과 {Sampledir_1}/more-examples.json을 참조하십시오. stdin에서 읽으려면 -f-를 지정하십시오."
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "이 노드에 배치할 서비스에 필요한 사용자 입력 변수를 설정하거나 대체하는 JSON 파일입니다. {Sampledir}/user_input.json을 참조하십시오. stdin에서 읽으려면 -f-를 지정하십시오."
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -1724,51 +1724,51 @@
     },
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "캐시된 agbot 제공 조직, 패턴 및 배치 정책을 관리합니다. "
+      "translation": "캐시된 agbot 제공 조직, 패턴 및 배치 정책을 관리합니다."
     },
     {
       "id": "List served pattern orgs and deployment policy orgs.",
-      "translation": "제공된 패턴 조직 및 배치 정책 조직을 나열합니다. "
+      "translation": "제공된 패턴 조직 및 배치 정책 조직을 나열합니다."
     },
     {
       "id": "Display served pattern orgs and deployment policy orgs.",
-      "translation": "제공된 패턴 조직 및 배치 정책 조직을 표시합니다. "
+      "translation": "제공된 패턴 조직 및 배치 정책 조직을 표시합니다."
     },
     {
       "id": "List patterns cached in the agbot.",
-      "translation": "agbot에 캐시된 패턴을 나열합니다. "
+      "translation": "agbot에 캐시된 패턴을 나열합니다."
     },
     {
       "id": "Display served patterns cached in the agbot.",
-      "translation": "agbot에 캐시된 제공된 패턴을 표시합니다. "
+      "translation": "agbot에 캐시된 제공된 패턴을 표시합니다."
     },
     {
       "id": "Display patterns under this org.",
-      "translation": "이 조직의 패턴을 표시합니다. "
+      "translation": "이 조직의 패턴을 표시합니다."
     },
     {
       "id": "Display this pattern.",
-      "translation": "이 패턴을 표시합니다. "
+      "translation": "이 패턴을 표시합니다."
     },
     {
       "id": "Display detailed info.",
-      "translation": "세부 정보를 표시합니다. "
+      "translation": "세부 정보를 표시합니다."
     },
     {
       "id": "List served deployment policies cached in the agbot.",
-      "translation": "agbot에 캐시된 제공된 배치 정책을 나열합니다. "
+      "translation": "agbot에 캐시된 제공된 배치 정책을 나열합니다."
     },
     {
       "id": "Display served deployment policies cached in the agbot.",
-      "translation": "agbot에 캐시된 제공된 배치 정책을 표시합니다. "
+      "translation": "agbot에 캐시된 제공된 배치 정책을 표시합니다."
     },
     {
       "id": "Display policies under this org.",
-      "translation": "이 조직의 정책을 표시합니다. "
+      "translation": "이 조직의 정책을 표시합니다."
     },
     {
       "id": "Display this policy.",
-      "translation": "이 정책을 표시합니다. "
+      "translation": "이 정책을 표시합니다."
     },
     {
       "id": "Display general information about this Horizon agbot node.",
@@ -2012,15 +2012,15 @@
     },
     {
       "id": "List the imported SDO ownership vouchers.",
-      "translation": "가져온 SDO 소유권 바우처를 나열합니다. "
+      "translation": "가져온 SDO 소유권 바우처를 나열합니다."
     },
     {
       "id": "List the full details of this SDO ownership voucher.",
-      "translation": "이 SDO 소유권 바우처의 전체 세부사항을 나열합니다. "
+      "translation": "이 SDO 소유권 바우처의 전체 세부사항을 나열합니다."
     },
     {
       "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
-      "translation": "바우처 UUID를 지정하면 해당 바우처의 전체 컨텐츠가 나열되고, 그렇지 않으면 가져온 모든 바우처의 전체 컨텐츠가 나열됩니다. "
+      "translation": "바우처 UUID를 지정하면 해당 바우처의 전체 컨텐츠가 나열되고, 그렇지 않으면 가져온 모든 바우처의 전체 컨텐츠가 나열됩니다."
     },
     {
       "id": "The mms command is not supported on an edge cluster node.",
@@ -2084,7 +2084,7 @@
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
-      "translation": "조직은 패턴 이름이 지정될 때 -o와 함께 지정되어야 합니다. "
+      "translation": "조직은 패턴 이름이 지정될 때 -o와 함께 지정되어야 합니다."
     },
     {
       "id": "failed to marshal output: {Err}",
@@ -2092,23 +2092,23 @@
     },
     {
       "id": "{Org} does not exist in the pattern management cache.",
-      "translation": "패턴 관리 캐시에 {Org}이(가) 없습니다. "
+      "translation": "패턴 관리 캐시에 {Org}이(가) 없습니다."
     },
     {
       "id": "{Org}/{Name} does not exist in the pattern management cache.",
-      "translation": "패턴 관리 캐시에 {Org}/{Name}이(가) 없습니다. "
+      "translation": "패턴 관리 캐시에 {Org}/{Name}이(가) 없습니다."
     },
     {
       "id": "org must be specified with -o when deployment policy name is specified.",
-      "translation": "배치 정책 이름을 지정하면 조직은 -o로 지정되어야 합니다. "
+      "translation": "배치 정책 이름을 지정하면 조직은 -o로 지정되어야 합니다."
     },
     {
       "id": "{Org} does not exist in the deployment policy management cache.",
-      "translation": "배치 정책 관리 캐시에 {Org}이(가) 없습니다. "
+      "translation": "배치 정책 관리 캐시에 {Org}이(가) 없습니다."
     },
     {
       "id": "{Org}/{Name} does not exist in the deployment policy management cache.",
-      "translation": "배치 정책 관리 캐시에 {Org}/{Name}이(가) 없습니다. "
+      "translation": "배치 정책 관리 캐시에 {Org}/{Name}이(가) 없습니다."
     },
     {
       "id": "failed to marshal 'policy list' output: {Err}",
@@ -4275,12 +4275,20 @@
       "translation": "오브젝트를 설명하는 정책 특성의 목록입니다."
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "{FilePath} 파일에서 UserInputFile 오브젝트를 작성할 수 없습니다. {Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "{JsonFilePath} 파일의 노드 정책 형식이 올바르지 않음: {Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "입력 파일 {InputFile}을(를) 읽는 중..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "{InputFile} 파일에서 사용자 입력 오브젝트를 검색함: {UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "노드 초기화 중 오류 발생: {Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "글로벌 변수 설정 중..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "사용자 입력 변수 설정 중 오류 발생: {Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "서비스 변수 설정 중..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "서비스 변수 설정 중 오류 발생: {Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "경고: 입력 파일이 지정되지 않았습니다. 이는 서비스에 변수 세트(GPS 좌표 포함)가 필요하지 않은 경우에만 유효합니다."
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "참고: 입력 파일이 지정되지 않았습니다. 이는 서비스에 변수 세트가 필요하지 않은 경우에만 유효합니다."
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -4644,7 +4640,7 @@
     },
     {
       "id": "Listing imported SDO vouchers.",
-      "translation": "가져온 SDO 바우처를 나열합니다. "
+      "translation": "가져온 SDO 바우처를 나열합니다."
     },
     {
       "id": "json unmarshalling HTTP response '{StringrespBodyBytes}' from {ApiMsg}: {Err}",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "필수 서비스 {SId}의 종속 서비스 {Id}에 대한 서비스 유형이 잘못됨: {SType1}."
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "JSON 입력 {JsonBytes}을(를) 역마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "새 사용자 입력 형식을 가져오는 중에 오류가 발생했습니다. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "사용자 입력에 대한 JSON 오브젝트를 작성하지 못했습니다. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",

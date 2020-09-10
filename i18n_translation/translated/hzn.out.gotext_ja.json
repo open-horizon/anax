@@ -1127,8 +1127,8 @@
       "translation": "Horizon Exchange 内にノード・リソースが存在しない場合、ノード・リソースを作成するためのユーザー資格情報。 指定されていない場合、HZN_EXCHANGE_USER_AUTH がデフォルトとして使用されます。"
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "このパターンの一部であるノードおよびサービスで必要となる変数を設定またはオーバーライドする JSON ファイル。 {Sampledir}/node_reg_input.json および {Sampledir_1}/more-examples.json を参照してください。 標準入力から読み取るには、-f- を指定します。"
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "このノードにデプロイされるサービスで必要なユーザー入力変数を設定またはオーバーライドする JSON ファイル。{Sampledir}/user_input.json を参照してください。標準入力から読み取るには、-f- を指定します。"
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -4275,12 +4275,20 @@
       "translation": "オブジェクトを示すポリシー・プロパティーのリスト。"
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "ファイル {FilePath} から UserInputFile オブジェクトを作成できません。{Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "ファイル {JsonFilePath} にノード・ポリシー・フォーマットの誤りがあります: {Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "入力ファイル {InputFile} を読み取り中..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "ファイル {InputFile} からユーザー入力オブジェクトを取得しました: {UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "ノードの初期化中にエラーが発生しました: {Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat: {UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "グローバル変数を設定中..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "ユーザー入力変数の設定中にエラーが発生しました: {Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "サービス変数を設定中..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "サービス変数の設定中にエラーが発生しました: {Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "警告: 入力ファイルが指定されていません。 これは、いずれのサービスにも (GPS 座標を含む) 変数を設定する必要がない場合にのみ有効です。"
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "注: 入力ファイルが指定されていません。これは、いずれのサービスにも変数を設定する必要がない場合にのみ有効です。"
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -5336,11 +5332,11 @@
     },
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
-      "translation": "イベント・ログ・ファイル {FileName} のバックアップに失敗しました。{Err}"
+      "translation": "イベント・ログ・ファイル {FileName} のバックアップに失敗しました。 {Err}"
     },
     {
       "id": "failed to save the eventlogs to file {FileName}. {Err}",
-      "translation": "イベント・ログのファイル {FileName} への保存に失敗しました。{Err}"
+      "translation": "イベント・ログのファイル {FileName} への保存に失敗しました。 {Err}"
     },
     {
       "id": "Saved eventlog into file {FileName}",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "必須サービス {SId} の従属サービス {Id} のサービス・タイプが正しくありません: {SType1}。"
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "JSON 入力 {JsonBytes} のアンマーシャルに失敗しました: {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。{Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。{Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",

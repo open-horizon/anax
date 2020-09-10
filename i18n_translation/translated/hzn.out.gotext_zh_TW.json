@@ -1127,8 +1127,8 @@
       "translation": "用來在 Horizon Exchange 中建立尚不存在的節點資源的使用者認證。 如果未指定，則將使用 HZN_EXCHANGE_USER_AUTH 作為預設值。"
     },
     {
-      "id": "A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See {Sampledir}/node_reg_input.json and {Sampledir_1}/more-examples.json. Specify -f- to read from stdin.",
-      "translation": "用來設定或置換節點及屬於此型樣之服務所需變數的 JSON 檔案。 請參閱 {Sampledir}/node_reg_input.json 及 {Sampledir_1}/more-examples.json。 指定 -f- 以從 stdin 中讀取。"
+      "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
+      "translation": "用來設定或置換將部署至此節點之服務所需的使用者輸入變數的 JSON 檔案。請參閱 {Sampledir}/user_input.json。指定 -f- 以從 stdin 中讀取。"
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -4275,12 +4275,20 @@
       "translation": "說明物件的原則內容清單。"
     },
     {
+      "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
+      "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。{Err}"
+    },
+    {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
       "translation": "檔案 {JsonFilePath} 中的節點原則格式不正確：{Err}"
     },
     {
       "id": "Reading input file {InputFile}...",
       "translation": "正在讀取輸入檔 {InputFile}..."
+    },
+    {
+      "id": "Retrieved user input object from file {InputFile}: {UserInputFileObj}",
+      "translation": "已從檔案 {InputFile} 擷取使用者輸入物件：{UserInputFileObj}"
     },
     {
       "id": "hzn cli is configured with exchange url {ExchUrlBase} from {ExchangeUrlLocation} and the horizon agent is configured with exchange url {AnaxExchUrlBase} from {ExchangeUrlLocationFromAnax}. hzn register will not work with mismatched exchange urls.",
@@ -4395,10 +4403,6 @@
       "translation": "起始設定節點時發生錯誤：{Err}"
     },
     {
-      "id": "usePolicyInputFormat: {UsePolicyInputFormat}",
-      "translation": "usePolicyInputFormat：{UsePolicyInputFormat}"
-    },
-    {
       "id": "Setting global variables...",
       "translation": "正在設定廣域變數..."
     },
@@ -4407,16 +4411,8 @@
       "translation": "設定使用者輸入變數時發生錯誤：{Err}"
     },
     {
-      "id": "Setting service variables...",
-      "translation": "正在設定服務變數..."
-    },
-    {
-      "id": "Error encountered while setting service variables: {Err}",
-      "translation": "設定服務變數時發生錯誤：{Err}"
-    },
-    {
-      "id": "Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).",
-      "translation": "警告：未指定輸入檔。 僅當沒有任何服務需要變數集（包括 GPS 座標）時此選項才有效。"
+      "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
+      "translation": "附註：未指定輸入檔。僅當沒有任何服務需要設定變數時，此選項才有效。"
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -5336,11 +5332,11 @@
     },
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
-      "translation": "無法備份事件日誌檔案 {FileName}。{Err}"
+      "translation": "無法備份事件日誌檔案 {FileName}。 {Err}"
     },
     {
       "id": "failed to save the eventlogs to file {FileName}. {Err}",
-      "translation": "無法將事件日誌儲存至檔案 {FileName}。{Err}"
+      "translation": "無法將事件日誌儲存至檔案 {FileName}。 {Err}"
     },
     {
       "id": "Saved eventlog into file {FileName}",
@@ -5441,6 +5437,18 @@
     {
       "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
       "translation": "必要服務 {SId} 的相依服務 {Id} 具有錯誤的服務類型：{SType1}。"
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "無法解除配置 json 輸入 {JsonBytes}：{Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "取得新的使用者輸入格式時發生錯誤。{Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "無法建立使用者輸入的 json 物件。{Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
