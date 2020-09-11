@@ -238,8 +238,16 @@ func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[
 				continue
 			}
 		} else {
-			pols := resp.(*GetBusinessPolicyResponse).BusinessPolicy
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found business policy for %v, %v", org, pols)))
+			var pols map[string]ExchangeBusinessPolicy
+			if resp != nil {
+				pols = resp.(*GetBusinessPolicyResponse).BusinessPolicy
+			}
+
+			if policy_id != "" {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found business policy for %v, %v", org, pols)))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v business policies for %v", len(pols), org)))
+			}
 			return pols, nil
 		}
 	}
