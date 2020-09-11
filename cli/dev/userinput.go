@@ -1,8 +1,6 @@
 package dev
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/api"
@@ -13,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"path"
 	"path/filepath"
 )
@@ -23,7 +22,7 @@ const DEFAULT_GLOBALSET_TYPE = ""
 
 // Sort of like a constructor, it creates an in memory object except that it is created from the user input config
 // file in the current project. This function assumes the caller has determined the exact location of the file.
-func GetUserInputs(homeDirectory string, userInputFile string) (*common.UserInputFile_Old, string, error) {
+func GetUserInputs(homeDirectory string, userInputFile string) (*common.UserInputFile, string, error) {
 
 	userInputFilePath := path.Join(homeDirectory, USERINPUT_FILE)
 	if userInputFile != "" {
@@ -36,23 +35,17 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*common.UserInpu
 		if exists, err := UserInputExists(homeDirectory); err != nil {
 			return nil, "", err
 		} else if !exists {
-			ui := new(common.UserInputFile_Old)
-			ui.Global = []common.GlobalSet{}
-			ui.Services = []common.MicroWork{}
+			ui := new(common.UserInputFile)
+			ui.Services = []policy.AbstractUserInput{}
 			return ui, "", nil
 		}
 	}
-	userInputs := new(common.UserInputFile_Old)
 
 	fileBytes := cliconfig.ReadJsonFileWithLocalConfig(userInputFilePath)
 
-	// We decode this JSON file using a decoder with the UseNumber flag set so that the attribute API code we reuse for parsing
-	// the GlobalSet attributes will have the right metadata.
-	decoder := json.NewDecoder(bytes.NewReader(fileBytes))
-	decoder.UseNumber()
-
-	if err := decoder.Decode(userInputs); err != nil {
-		return nil, "", errors.New(i18n.GetMessagePrinter().Sprintf("unable to demarshal %v file, error: %v", userInputFilePath, err))
+	userInputs, err := common.NewUserInputFileFromJsonBytes(fileBytes)
+	if err != nil {
+		return nil, "", err
 	}
 
 	return userInputs, userInputFilePath, nil
@@ -60,7 +53,7 @@ func GetUserInputs(homeDirectory string, userInputFile string) (*common.UserInpu
 }
 
 // Given a userinput file, extract the configured variables based on the type of project.
-func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile string) ([]common.MicroWork, error) {
+func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile string) ([]policy.AbstractUserInput, error) {
 	if uif, _, err := GetUserInputs(homeDirectory, userInputFile); err != nil {
 		return nil, err
 	} else {
@@ -72,20 +65,16 @@ func GetUserInputsVariableConfiguration(homeDirectory string, userInputFile stri
 // in the file system.
 func CreateUserInputs(directory string, specRef string) error {
 
-	// Create a user input config object with fillins/place-holders for configuration.
-	res := new(common.UserInputFile_Old)
-	res.Global = []common.GlobalSet{}
+	// Create a skeletal array with one element for input configuration.
+	var inputs = make([]policy.Input, 0)
 
-	// Create a skeletal array with one element for variable configuration.
-	user_vars := map[string]interface{}{}
-	if specRef != "" {
-		user_vars = map[string]interface{}{}
-	}
-	res.Services = []common.MicroWork{
-		common.MicroWork{
-			Org:       "$HZN_ORG_ID",
-			Url:       "$SERVICE_NAME",
-			Variables: user_vars,
+	// Create a user input config object with fillins/place-holders for configuration.
+	res := []policy.UserInput{
+		{
+			ServiceOrgid:        "$HZN_ORG_ID",
+			ServiceUrl:          "$SERVICE_NAME",
+			ServiceVersionRange: "[0.0.0,INFINITY)",
+			Inputs:              inputs,
 		},
 	}
 
@@ -162,7 +151,7 @@ func GlobalSetAsAttributes(global []common.GlobalSet) ([]persistence.Attribute, 
 
 // Validate that the userinputs file is complete and coherent with the rest of the definitions in the project.
 // If the file is not valid the reason will be returned in the error.
-func ValidateUserInput(i *common.UserInputFile_Old, directory string, originalUserInputFilePath string, projectType string) error {
+func ValidateUserInput(i *common.UserInputFile, directory string, originalUserInputFilePath string, projectType string) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -192,19 +181,19 @@ func ValidateUserInput(i *common.UserInputFile_Old, directory string, originalUs
 			// Validate the tuple identifiers. With services, there can be tuples for the service in this project as well as services
 			// that are dependencies. Only the tuple for the current project's definition is validated here. The tuples for the
 			// dependencies are validated in dependency validation functions.
-			if ms.Url == sDef.URL {
+			if ms.GetServiceUrl() == sDef.URL {
 				foundDefinitionTuple = true
 				// For every variable that is set in the userinput file, make sure that variable is defined in the service definition.
-				if err := validateConfiguredVariables(ms.Variables, sDef.DefinesVariable); err != nil {
+				if err := validateConfiguredVariables(ms.GetInputMap(), sDef.DefinesVariable); err != nil {
 					return errors.New(msgPrinter.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
 				}
 				// For every variable that is defined without a default, make sure it is set.
-				if err := sDef.RequiredVariablesAreSet(ms.Variables); err != nil {
+				if err := sDef.RequiredVariablesAreSet(ms.GetInputNames()); err != nil {
 					return errors.New(fmt.Sprintf("%v: %v", originalUserInputFilePath, err))
 				}
 			}
 
-			if err := validateServiceTuple(ms.Org, ms.VersionRange, ms.Url); err != nil {
+			if err := validateServiceTuple(ms.GetServiceOrgid(), ms.GetServiceVersionRange(), ms.GetServiceUrl()); err != nil {
 				return errors.New(msgPrinter.Sprintf("%v: services array element at index %v is %v %v", originalUserInputFilePath, ix, ms, err))
 			}
 
@@ -212,7 +201,7 @@ func ValidateUserInput(i *common.UserInputFile_Old, directory string, originalUs
 
 		if !foundDefinitionTuple {
 			// For every variable that is defined without a default, make sure it is set.
-			if err := sDef.RequiredVariablesAreSet(map[string]interface{}{}); err != nil {
+			if err := sDef.RequiredVariablesAreSet([]string{}); err != nil {
 				if originalUserInputFilePath != "" {
 					return errors.New(msgPrinter.Sprintf("%v: services array does not contain an element for %v. Error: %v", originalUserInputFilePath, sDef.URL, err))
 				} else {
@@ -255,14 +244,14 @@ func validateConfiguredVariables(variables map[string]interface{}, definesVar fu
 	return nil
 }
 
-func getConfiguredVariables(configEntries []common.MicroWork, url string) map[string]interface{} {
+func getConfiguredVariables(configEntries []policy.AbstractUserInput, url string) map[string]interface{} {
 	// Get the variables intended to configure this dependency from this project's userinput file.
 	var configVars map[string]interface{}
 
 	// Run through the list looking for the element that matches the input URL.
 	for _, ce := range configEntries {
-		if ce.Url == url {
-			configVars = ce.Variables
+		if ce.GetServiceUrl() == url {
+			configVars = ce.GetInputMap()
 			break
 		}
 	}
@@ -271,7 +260,7 @@ func getConfiguredVariables(configEntries []common.MicroWork, url string) map[st
 
 // Given a userinput file, a dependency definition and a set of configured user input variables, copy the configured variables
 // into the userinput file.
-func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []common.MicroWork) (*common.UserInputFile_Old, error) {
+func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []policy.AbstractUserInput) (*common.UserInputFile, error) {
 
 	currentUIs, _, err := GetUserInputs(homeDirectory, "")
 	if err != nil {
@@ -286,7 +275,7 @@ func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServi
 	for _, currentCV := range configuredVars {
 		found := false
 		for _, currentUI := range currentUIs.Services {
-			if currentUI.Url == currentCV.Url && currentUI.Org == currentCV.Org {
+			if currentUI.GetServiceUrl() == currentCV.GetServiceUrl() && currentUI.GetServiceOrgid() == currentCV.GetServiceOrgid() {
 				found = true
 				break
 			}
@@ -300,12 +289,11 @@ func UpdateVariableConfiguration(homeDirectory string, sDef common.AbstractServi
 
 }
 
-func SetUserInputsVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []common.MicroWork) error {
-
+func SetUserInputsVariableConfiguration(homeDirectory string, sDef common.AbstractServiceFile, configuredVars []policy.AbstractUserInput) error {
 	if currentUIs, err := UpdateVariableConfiguration(homeDirectory, sDef, configuredVars); err != nil {
 		return err
 	} else {
-		return CreateFile(homeDirectory, USERINPUT_FILE, currentUIs)
+		return CreateUserInputFile(homeDirectory, currentUIs)
 	}
 }
 
@@ -322,10 +310,10 @@ func RemoveConfiguredVariables(homeDirectory string, theDep common.AbstractServi
 
 	if IsServiceProject(homeDirectory) {
 		for ix, dep := range userInputs.Services {
-			if dep.Url == theDep.GetURL() {
+			if dep.GetServiceUrl() == theDep.GetURL() {
 				userInputs.Services = append(userInputs.Services[:ix], userInputs.Services[ix+1:]...)
 				// Harden the updated user inputs.
-				if err := CreateFile(homeDirectory, USERINPUT_FILE, userInputs); err != nil {
+				if err := CreateUserInputFile(homeDirectory, userInputs); err != nil {
 					return err
 				}
 

@@ -13,6 +13,7 @@ import (
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"io/ioutil"
 	"os"
@@ -247,7 +248,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 
 // Validate that the dependencies are complete and coherent with the rest of the definitions in the project.
 // Any errors will be returned to the caller.
-func ValidateDependencies(directory string, userInputs *common.UserInputFile_Old, userInputsFilePath string, projectType string, userCreds string, autoAddDep bool) error {
+func ValidateDependencies(directory string, userInputs *common.UserInputFile, userInputsFilePath string, projectType string, userCreds string, autoAddDep bool) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -314,7 +315,7 @@ func ValidateDependencies(directory string, userInputs *common.UserInputFile_Old
 	return nil
 }
 
-func ValidateService(directory string, fInfo os.FileInfo, userInputs *common.UserInputFile_Old, userInputsFilePath string) error {
+func ValidateService(directory string, fInfo os.FileInfo, userInputs *common.UserInputFile, userInputsFilePath string) error {
 	d, err := GetServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fInfo.Name())
 	if err != nil {
 		return err
@@ -324,13 +325,13 @@ func ValidateService(directory string, fInfo os.FileInfo, userInputs *common.Use
 	return validateDependencyUserInputs(d, d.GetUserInputs(), userInputs.Services, userInputsFilePath)
 }
 
-func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []common.MicroWork, userInputsFilePath string) error {
+func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []policy.AbstractUserInput, userInputsFilePath string) error {
 	for _, ui := range uis {
 		if ui.DefaultValue == "" {
 			found := false
 			for _, msUI := range configUserInputs {
-				if d.GetURL() == msUI.Url && (d.GetOrg() == "" || msUI.Org == "" || d.GetOrg() == msUI.Org) {
-					if _, ok := msUI.Variables[ui.Name]; ok {
+				if d.GetURL() == msUI.GetServiceUrl() && (d.GetOrg() == "" || msUI.GetServiceOrgid() == "" || d.GetOrg() == msUI.GetServiceOrgid()) {
+					if _, ok := msUI.GetInputMap()[ui.Name]; ok {
 						found = true
 						break
 					}
@@ -547,7 +548,7 @@ func fetchLocalProjectDependency(homeDirectory string, project string, userInput
 	}
 
 	// Update the user input file in the filesystem.
-	if err := CreateFile(homeDirectory, USERINPUT_FILE, currentUIs); err != nil {
+	if err := CreateUserInputFile(homeDirectory, currentUIs); err != nil {
 		return err
 	}
 
@@ -614,7 +615,7 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef common.Abstract
 		return err
 	}
 	for _, currentUI := range varConfigs {
-		if currentUI.Url == sDef.GetURL() && currentUI.Org == sDef.GetOrg() && currentUI.VersionRange == sDef.GetVersion() {
+		if currentUI.GetServiceUrl() == sDef.GetURL() && currentUI.GetServiceOrgid() == sDef.GetOrg() && currentUI.GetServiceVersionRange() == sDef.GetVersion() {
 			// The new dependency already has userinputs configured in this project.
 			cliutils.Verbose(msgPrinter.Sprintf("The current project already has userinputs defined for this dependency."))
 			foundUIs = true
@@ -625,22 +626,27 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef common.Abstract
 	// If there are no variables already defined, and there are non-defaulted variables, then add skeletal variables.
 	if !foundUIs {
 		foundNonDefault := false
-		vars := make(map[string]interface{})
+		inputs := make([]policy.Input, 0, len(sDef.GetUserInputs()))
 		for _, ui := range sDef.GetUserInputs() {
 			if ui.DefaultValue == "" {
 				foundNonDefault = true
-				vars[ui.Name] = ""
+				inputs = append(inputs, policy.Input{
+					Name:  ui.Name,
+					Type:  ui.Type,
+					Value: "",
+				})
 			}
 		}
 
 		if foundNonDefault {
-			skelVarConfig := common.MicroWork{
-				Org:          sDef.GetOrg(),
-				Url:          sDef.GetURL(),
-				VersionRange: sDef.GetVersion(),
-				Variables:    vars,
+			skelVarConfig := policy.UserInput{
+				ServiceOrgid:        sDef.GetOrg(),
+				ServiceUrl:          sDef.GetURL(),
+				ServiceArch:         sDef.GetArch(),
+				ServiceVersionRange: sDef.GetVersion(),
+				Inputs:              inputs,
 			}
-			if err := SetUserInputsVariableConfiguration(homeDirectory, sDef, []common.MicroWork{skelVarConfig}); err != nil {
+			if err := SetUserInputsVariableConfiguration(homeDirectory, sDef, []policy.AbstractUserInput{skelVarConfig}); err != nil {
 				return err
 			}
 

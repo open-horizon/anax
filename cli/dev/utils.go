@@ -19,6 +19,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
@@ -127,6 +128,18 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 	} else {
 		return nil
 	}
+}
+
+// This function takes the common UserInput object marshals it into JSON and writes it to a file in the project.
+func CreateUserInputFile(directory string, ui *common.UserInputFile) error {
+	// Convert the object to JSON and write it.
+	filePath := path.Join(directory, USERINPUT_FILE)
+	if bytes, err := ui.GetOutputJsonBytes(false); err != nil {
+		return err
+	} else if err := ioutil.WriteFile(filePath, bytes, 0664); err != nil {
+		return errors.New(i18n.GetMessagePrinter().Sprintf("unable to write json object for userinput to file %v, error: %v", filePath, err))
+	}
+	return nil
 }
 
 // Common verification before executing a sub command.
@@ -411,7 +424,7 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 }
 
 // This function is used to setup context to execute a service container.
-func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *common.UserInputFile_Old, *container.ContainerWorker) {
+func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *common.UserInputFile, *container.ContainerWorker) {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -491,7 +504,7 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.Cont
 	return containerNetworks, nil
 }
 
-func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []common.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// Collect all the service networks that have to be connected to the caller's container.
 	ms_networks := map[string]docker.ContainerNetwork{}
@@ -523,7 +536,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 func startDependent(dir string,
 	serviceDef *common.ServiceFile,
 	globals []common.GlobalSet, // API attributes
-	configUserInputs []common.MicroWork, // indicates configured variables
+	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// get message printer
@@ -587,7 +600,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	version string,
 	globals []common.GlobalSet, // API attributes
 	defUserInputs []exchange.UserInput, // indicates variable defaults
-	configUserInputs []common.MicroWork, // indicates configured variables
+	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	org string,
 	dc *common.DeploymentConfig,
 	cw *container.ContainerWorker,
@@ -726,7 +739,7 @@ func stopContainers(dc *common.DeploymentConfig, cw *container.ContainerWorker, 
 }
 
 // Get the images into the local docker server for services
-func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *common.UserInputFile_Old) error {
+func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *common.UserInputFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

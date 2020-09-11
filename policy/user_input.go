@@ -17,6 +17,7 @@ type AbstractUserInput interface {
 	GetInputNames() []string
 	GetInputValue(string) (interface{}, error)
 	GetInputType(string) (string, error)
+	GetInputMap() map[string]interface{}
 }
 
 type Input struct {
@@ -137,6 +138,16 @@ func (s UserInput) GetInputType(name string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("Variable %v is not in the user input.", name)
+}
+
+func (s UserInput) GetInputMap() map[string]interface{} {
+	inputs := make(map[string]interface{})
+	if s.Inputs != nil {
+		for _, ui := range s.Inputs {
+			inputs[ui.Name] = ui.Value
+		}
+	}
+	return inputs
 }
 
 // Make a copy of this object
