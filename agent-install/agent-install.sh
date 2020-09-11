@@ -28,6 +28,7 @@ HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
 PERMANENT_CERT_PATH='/etc/horizon/agent-install.crt'
 ANAX_DEFAULT_PORT=8510
+AGENT_CFG_FILE_DEFAULT='agent-install.cfg'
 
 # edge cluster agent deployment
 SERVICE_ACCOUNT_NAME="agent-service-account"
@@ -55,8 +56,8 @@ Required Input Variables (via flag, environment, or config file):
     HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH, USE_EDGE_CLUSTER_REGISTRY (only for edge cluster type)
 
 Options/Flags:
-    -c    Path to a certificate file. Default: ./agent-install.cfg . (equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k    Path to a configuration file. Default: ./agent-install.cfg, if present (equivalent to AGENT_CFG_FILE)
+    -c    Path to a certificate file. Default: ./agent-install.crt . (equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
+    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present (equivalent to AGENT_CFG_FILE)
     -i    Installation packages location (default: current directory). if the argument begins with 'http' or 'https', will use as an APT repository (equivalent to PKG_PATH)
     -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (equivalent to AGENT_INSTALL_ZIP)
     -j    File location for the public key for an APT repository specified with '-i' (equivalent to PKG_APT_KEY)
@@ -207,20 +208,19 @@ function read_config_file() {
     local cfg_file=$1
 
     if [[ -z "$cfg_file" ]]; then
-        log_warning "Configuration file not specified. All required input variables must be set via command arguments or the environment."
-    elif [[ -f "$cfg_file" ]]; then
-        log_verbose "Using configuration file: $cfg_file"
-    else
+        log_info "Configuration file not specified. All required input variables must be set via command arguments or the environment."
+    elif [[ ! -f "$cfg_file" ]]; then
         log_fatal 1 "Configuration file $cfg_file not found."
+    else
+        log_verbose "Using configuration file: $cfg_file"
+        # Read/parse the config file. Note: omitting IFS= because we want leading and trailing whitespace trimmed. Also -n $line handles the case where there is not a newline at the end of the last line.
+        while read -r line || [[ -n "$line" ]]; do
+            if [[ -z $line || ${line:0:1} == '#' ]]; then continue; fi   # ignore empty or commented lines
+            #echo "'$line'"
+            local var_name="CFG_${line%%=*}"   # the variable name is the line with everything after the 1st = removed
+            IFS= read -r "$var_name" <<<"${line#*=}"   # set the variable to the line with everything before the 1st = removed
+        done < "$cfg_file"
     fi
-
-    # Read/parse the config file. Note: omitting IFS= because we want leading and trailing whitespace trimmed. Also -n $line handles the case where there is not a newline at the end of the last line.
-    while read -r line || [[ -n "$line" ]]; do
-        if [[ -z $line || ${line:0:1} == '#' ]]; then continue; fi   # ignore empty or commented lines
-        #echo "'$line'"
-        local var_name="CFG_${line%%=*}"   # the variable name is the line with everything after the 1st = removed
-        IFS= read -r "$var_name" <<<"${line#*=}"   # set the variable to the line with everything before the 1st = removed
-    done < "$cfg_file"
 
     log_debug "read_config_file() end"
 }
@@ -277,7 +277,7 @@ function get_all_variables() {
     get_variable AGENT_INSTALL_ZIP
     if [[ -n $AGENT_INSTALL_ZIP ]]; then
         if [[ -f "$AGENT_INSTALL_ZIP" ]]; then
-            rm -f agent-install.cfg agent-install.crt horizon*   # clean up files from a previous run
+            rm -f "$AGENT_CFG_FILE_DEFAULT" agent-install.crt horizon*   # clean up files from a previous run
             log_info "Unpacking $AGENT_INSTALL_ZIP ..."
             tar -zxf $AGENT_INSTALL_ZIP
         else
@@ -286,7 +286,11 @@ function get_all_variables() {
     fi
 
     # Next get config file values (cmd line was already parsed), so get_variable can apply the precedence order
-    get_variable AGENT_CFG_FILE 'agent-install.cfg'
+    get_variable AGENT_CFG_FILE
+    if [[ -z $AGENT_CFG_FILE && -f $AGENT_CFG_FILE_DEFAULT ]]; then
+        # Only apply this default if the file is actually there
+        AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT
+    fi
     read_config_file "$AGENT_CFG_FILE"
 
     # Now that we have the values from cmd line and config file, we can get all of the variables
