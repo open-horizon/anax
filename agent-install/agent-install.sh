@@ -17,9 +17,13 @@ VERB_VERBOSE=4
 VERB_DEBUG=5
 
 SUPPORTED_OS=("macos" "linux")
-SUPPORTED_LINUX_DISTRO=("ubuntu" "raspbian" "debian")
-SUPPORTED_LINUX_VERSION=("bionic" "buster" "xenial" "stretch")
-SUPPORTED_ARCH=("amd64" "arm64" "armhf")
+SUPPORTED_LINUX_DISTRO=("ubuntu" "raspbian" "debian" "rhel" "centos")
+DEBIAN_VARIANTS_REGEX='^(ubuntu|raspbian|debian)$'
+SUPPORTED_DEBIAN_VERSION=("bionic" "buster" "xenial" "stretch")   # all debian variants
+SUPPORTED_DEBIAN_ARCH=("amd64" "arm64" "armhf")
+REDHAT_VARIANTS_REGEX='^(rhel|centos)$'
+SUPPORTED_REDHAT_VERSION=("8.1" "8.2")   # for fedora versions see https://fedoraproject.org/wiki/Releases
+SUPPORTED_REDHAT_ARCH=("x86_64" "aarch64")
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
 PERMANENT_CERT_PATH='/etc/horizon/agent-install.crt'
@@ -337,8 +341,7 @@ function get_all_variables() {
 
     # Adjust some of the variable values or add related variables
     OS=$(get_os)
-    ARCH=$(get_arch)
-    log_info "OS: $OS, ARCH: $ARCH"
+    log_info "OS: $OS"
 
     # The edge node id can be specified 3 different ways: -d (NODE_ID), the first part of -a (HZN_EXCHANGE_NODE_AUTH), or HZN_DEVICE_ID. Need to reconcile all of them.
     local node_id   # just used in this section of code to sort out this mess
@@ -521,7 +524,6 @@ function store_cert_file_permanently() {
     elif [[ -n $cert_file ]]; then
         # Cert file specified, but relative path. Move it to a permanent place
         abs_certificate="$PERMANENT_CERT_PATH"
-        log_info "Moving $cert_file to permanent location $abs_certificate ..."
         sudo mkdir -p "$(dirname $abs_certificate)"
         chk $? "creating $(dirname $abs_certificate)"
         sudo cp "$cert_file" "$abs_certificate"
@@ -537,7 +539,8 @@ function is_horizon_defaults_correct() {
     local exchange_url=$1
     local css_url=$2
     local device_id=$3
-    local anax_port=$4   # optional
+    local cert_file=$4   # optional
+    local anax_port=$5   # optional
 
     local horizon_defaults_value
 
@@ -554,6 +557,12 @@ function is_horizon_defaults_correct() {
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if [[ $horizon_defaults_value != $device_id ]]; then return 1; fi
 
+    if [[ -n $cert_file ]]; then
+        horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' /etc/default/horizon || true)
+        horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
+        if [[ $horizon_defaults_value != $cert_file ]]; then return 1; fi
+    fi
+
     if [[ -n $anax_port ]]; then
         horizon_defaults_value=$(grep -E '^HZN_AGENT_PORT=' /etc/default/horizon || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
@@ -564,12 +573,36 @@ function is_horizon_defaults_correct() {
     return 0   #todo: also check cert and org id
 }
 
+# If a variable already exists in /etc/default/horizon, update its value. Otherwise add it to the file.
+function add_to_or_update_horizon_defaults() {
+    log_debug "add_to_or_update_horizon_defaults() begin"
+    local variable=$1 value=$2 filename=$3;
+    # Note: we have to use sudo to update the file in case we are on macos, where usually they aren't root, and the defaults file is usually owned by root.
+
+    # First ensure the last line of the file has a newline at the end (or the appends below will have a problem)
+    # This tail cmd gets the last char, but cmd substitution deletes any newline, so its value is empty of the last char was a newline.
+    if [[ ! -z $(tail -c 1 "$filename") ]]; then
+        sudo sh -c "echo >> '$filename'"   # file did not end in newline, so add one
+    fi
+
+    # Now update or add the variable
+    if grep -q "^$variable=" "$filename"; then
+        sudo sed -i.bak "s%^$variable=.*%$variable=$value%g" "$filename"
+    else
+        sudo sh -c "echo '$variable=$value' >> '$filename'"
+    fi
+    # this way of doing it in a single line is just kept for reference:
+    # grep -q "^$variable=" "$filename" && sudo sed -i.bak "s/^$variable=.*/$variable=$value/" "$filename" || sudo sh -c "echo '$variable=$value' >> '$filename'"
+    log_debug "add_to_or_update_horizon_defaults() end"
+}
+
 # Create or update /etc/default/horizon file for mac or linux
 # Side-effect: sets HORIZON_DEFAULTS_CHANGED to true or false
 function create_or_update_horizon_defaults() {
     log_debug "create_or_update_horizon_defaults() begin"
     local anax_port=$1   # optional
     local abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")
+    log_verbose "Permament localtion of certificate file: $abs_certificate"
 
     if [[ ! -f /etc/default/horizon ]]; then
         log_info "Creating /etc/default/horizon ..."
@@ -581,20 +614,20 @@ function create_or_update_horizon_defaults() {
             echo "HZN_AGENT_PORT=$anax_port" >> /etc/default/horizon
         fi
         HORIZON_DEFAULTS_CHANGED='true'
-    elif is_horizon_defaults_correct "$HZN_EXCHANGE_URL" "$HZN_FSS_CSSURL" "$NODE_ID" "$anax_port"; then
+    elif is_horizon_defaults_correct "$HZN_EXCHANGE_URL" "$HZN_FSS_CSSURL" "$NODE_ID" "$abs_certificate" "$anax_port"; then
         log_info "/etc/default/horizon already has the correct values. Not modifying it."
         HORIZON_DEFAULTS_CHANGED='false'
     else
-        # File already exists, but isn't correct. Update it (in case they have other variables in there they want preserved)
+        # File already exists, but isn't correct. Update it (do not overwrite it in case they have other variables in there they want preserved)
         log_info "Updating /etc/default/horizon ..."
-        sudo sed -i.bak -e "s~^HZN_EXCHANGE_URL=[^ ]*~HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}~g" \
-                -e "s~^HZN_DEVICE_ID=[^ ]*~HZN_DEVICE_ID=${NODE_ID}~g" \
-                -e "s~^HZN_FSS_CSSURL=[^ ]*~HZN_FSS_CSSURL=${HZN_FSS_CSSURL}~g" /etc/default/horizon
+        add_to_or_update_horizon_defaults 'HZN_EXCHANGE_URL' "$HZN_EXCHANGE_URL" /etc/default/horizon
+        add_to_or_update_horizon_defaults 'HZN_FSS_CSSURL' "$HZN_FSS_CSSURL" /etc/default/horizon
+        add_to_or_update_horizon_defaults 'HZN_DEVICE_ID' "$NODE_ID" /etc/default/horizon
         if [[ -n $abs_certificate ]]; then
-            sudo sed -i.bak -e "s~^HZN_MGMT_HUB_CERT_PATH=[^ ]*~HZN_MGMT_HUB_CERT_PATH=${abs_certificate}~g" /etc/default/horizon
+            add_to_or_update_horizon_defaults 'HZN_MGMT_HUB_CERT_PATH' "$abs_certificate" /etc/default/horizon
         fi
         if [[ -n $anax_port ]]; then
-            sudo sed -i.bak -e "s~^HZN_AGENT_PORT=[^ ]*~HZN_AGENT_PORT=${anax_port}~g" /etc/default/horizon
+            add_to_or_update_horizon_defaults 'HZN_AGENT_PORT' "$anax_port" /etc/default/horizon
         fi
         HORIZON_DEFAULTS_CHANGED='true'
     fi
@@ -662,9 +695,9 @@ function check_and_set_anax_port() {
     log_debug "check_and_set_anax_port() end"
 }
 
-# Ensure the software prereqs for a linux device are installed
-function linux_device_install_prereqs() {
-    log_debug "linux_device_install_prereqs() begin"
+# Ensure the software prereqs for a debian variant device are installed
+function debian_device_install_prereqs() {
+    log_debug "debian_device_install_prereqs() begin"
     log_info "Updating apt package index..."
     runCmdQuietly apt-get update -q
     log_info "Installing prerequisites, this could take a minute..."
@@ -676,12 +709,12 @@ function linux_device_install_prereqs() {
         add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
         runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
     fi
-    log_debug "linux_device_install_prereqs() end"
+    log_debug "debian_device_install_prereqs() end"
 }
 
 # Install the deb pkgs on a device
-function install_linux_device_horizon_pkgs() {
-    log_debug "install_linux_device_horizon_pkgs() begin"
+function install_debian_device_horizon_pkgs() {
+    log_debug "install_debian_device_horizon_pkgs() begin"
     if [[ -n "$PKG_APT_REPO" ]]; then
         log_info "Installing horizon via the APT repository $PKG_APT_REPO ..."
         if [[ -n "$PKG_APT_KEY" ]]; then
@@ -692,27 +725,28 @@ function install_linux_device_horizon_pkgs() {
         add-apt-repository "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
         runCmdQuietly apt-get install -yqf horizon
     else
-        # Install the horizon pkgs in the PACKAGES
+        # Install the horizon pkgs in the PACKAGES dir
         if [[ ${PACKAGES:0:1} != '/' ]]; then
-            PACKAGES="$PWD/$PACKAGES"   # to install pkg files with apt-get install, they must be absolute paths
+            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
         fi
         log_info "Installing the horizon packages in $PACKAGES ..."
         # No need to check what is already installed, because this will install the pkgs if they are newer.
         # Note: i don't think this supports installing an older version of the pkgs than what is currently installed. Let's just document that they have to uninstall the deb pkgs first if that's what they want to do.
+        #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
         runCmdQuietly apt-get install -yqf ${PACKAGES}/horizon*_${ARCH}.deb
     fi
-    log_debug "install_linux_device_horizon_pkgs() end"
+    log_debug "install_debian_device_horizon_pkgs() end"
 }
 
-function install_linux() {
-    log_debug "install_linux() begin"
-    log_info "Linux distribution: ${DISTRO}, release: ${CODENAME}"
+# Install the agent and register it on a debian variant
+function install_debian() {
+    log_debug "install_debian() begin"
 
     check_and_set_anax_port   # sets ANAX_PORT
 
-    linux_device_install_prereqs
+    debian_device_install_prereqs
 
-    install_linux_device_horizon_pkgs
+    install_debian_device_horizon_pkgs
 
     check_existing_exch_node_is_correct_type "device"
 
@@ -724,7 +758,69 @@ function install_linux() {
 
     registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
 
-    log_debug "install_linux() end"
+    log_debug "install_debian() end"
+}
+
+# Ensure the software prereqs for a redhat variant device are installed
+function redhat_device_install_prereqs() {
+    log_debug "redhat_device_install_prereqs() begin"
+    
+    # Need EPEL for at least jq
+    if [[ -z "$(dnf repolist -q epel)" ]]; then
+        dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+    fi
+
+    log_info "Installing prerequisites, this could take a minute..."
+    dnf install -yq curl jq
+
+    if ! isCmdInstalled docker; then
+        # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
+        log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
+    fi
+    log_debug "redhat_device_install_prereqs() end"
+}
+
+# Install the rpm pkgs on a redhat variant device
+function install_redhat_device_horizon_pkgs() {
+    log_debug "install_redhat_device_horizon_pkgs() begin"
+    if [[ -n "$PKG_APT_REPO" ]]; then
+        log_fatal 1 "Installing horizon RPMs via repository $PKG_APT_REPO is not supported at this time"
+        #future: support this
+    else
+        # Install the horizon pkgs in the PACKAGES dir
+        if [[ ${PACKAGES:0:1} != '/' ]]; then
+            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
+        fi
+        log_info "Installing the horizon packages in $PACKAGES ..."
+        # No need to check what is already installed, because this will install the pkgs if they are newer.
+        # Note: i don't think this supports installing an older version of the pkgs than what is currently installed. Let's just document that they have to uninstall the deb pkgs first if that's what they want to do.
+        #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
+        dnf install -yq ${PACKAGES}/horizon*.${ARCH}.rpm
+    fi
+    log_debug "install_redhat_device_horizon_pkgs() end"
+}
+
+# Install the agent and register it on a redhat variant
+function install_redhat() {
+    log_debug "install_redhat() begin"
+
+    check_and_set_anax_port   # sets ANAX_PORT
+
+    redhat_device_install_prereqs
+
+    install_redhat_device_horizon_pkgs
+
+    check_existing_exch_node_is_correct_type "device"
+
+    create_or_update_horizon_defaults "$ANAX_PORT"
+
+    log_verbose "Restarting the horizon agent service..."
+    systemctl restart horizon.service   # because we updated /etc/default/horizon
+    wait_until_agent_ready
+
+    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+
+    log_debug "install_redhat() end"
 }
 
 # Install the mac pkg that provides hzn, horizon-container, etc.
@@ -1034,47 +1130,42 @@ function get_os() {
 function detect_distro() {
     log_debug "detect_distro() begin"
 
-    #if isCmdInstalled lsb_release; then
+    if isCmdInstalled lsb_release; then
         DISTRO=$(lsb_release -si | tr '[:upper:]' '[:lower:]')
         DISTRO_VERSION_NUM=$(lsb_release -sr)
         CODENAME=$(lsb_release -sc)
 
-    #todo: i don't think the rest of this is needed because lsb_release seems to be on every debian variant
-    #elif [[ -f /etc/os-release ]]; then
-    #    . /etc/os-release
-    #    DISTRO=$ID
-    #    DISTRO_VERSION_NUM=$VERSION_ID
-    #    CODENAME=$VERSION_CODENAME
-    #elif [[ -f /etc/lsb-release ]]; then
-    #    . /etc/lsb-release
-    #    DISTRO=$DISTRIB_ID
-    #    DISTRO_VERSION_NUM=$DISTRIB_RELEASE
-    #    CODENAME=$DISTRIB_CODENAME
-    #else
-    #    log_fatal 2 "Cannot detect Linux version"
-    #fi
-    # Raspbian has a codename embedded in a version
-    #if [[ "$DISTRO" == "raspbian" ]]; then
-    #    CODENAME=$(echo ${VERSION} | sed -e 's/.*(\(.*\))/\1/')
-    #fi
+    # need these for redhat variants
+    elif [[ -f /etc/os-release ]]; then
+        . /etc/os-release
+        DISTRO=$ID
+        DISTRO_VERSION_NUM=$VERSION_ID
+        CODENAME=$VERSION_CODENAME   # is empty for RHEL
+    elif [[ -f /etc/lsb-release ]]; then
+        . /etc/lsb-release
+        DISTRO=$DISTRIB_ID
+        DISTRO_VERSION_NUM=$DISTRIB_RELEASE
+        CODENAME=$DISTRIB_CODENAME
+    else
+        log_fatal 2 "Cannot detect Linux version"
+    fi
 
     log_verbose "Detected distribution: ${DISTRO}, verison: ${DISTRO_VERSION_NUM}, codename: ${CODENAME}"
 
     log_debug "detect_distro() end"
 }
 
-# Returns hardware architecture the way we want it on linux and mac
+# Returns hardware architecture the way we want it for the pkgs on linux and mac
 function get_arch() {
+    local distro=$1   # optional, because not needed for macos
     if [[ $OS == 'linux' ]]; then
-        dpkg --print-architecture
-        #todo: support RPM-based distros too
-    elif [[ $OS == 'macos' ]]; then
-        local uname_arch=$(uname -m)
-        if [[ $uname_arch == 'x86_64' ]]; then
-            echo 'amd64'
-        else
-            echo 'unknown'   #future: support macos on arm
+        if [[ $DISTRO =~ $DEBIAN_VARIANTS_REGEX ]]; then
+            dpkg --print-architecture
+        elif [[ $DISTRO =~ $REDHAT_VARIANTS_REGEX ]]; then
+            uname -m   # x86_64 or aarch64 (i think)
         fi
+    elif [[ $OS == 'macos' ]]; then
+        uname -m   # e.g. x86_64. We don't currently use ARCH on macos
     fi
 }
 
@@ -1097,30 +1188,49 @@ function check_support() {
 }
 
 # Checks if OS, distro, and arch are supported. Also verifies the pkgs exist.
-# Side-effect: sets PACKAGES to the dir where the local pkgs are. #todo: remove
+# Side-effect: sets PACKAGES to the dir where the local pkgs are. Also sets: DISTRO, DISTRO_VERSION_NUM, CODENAME, ARCH
 function check_device_os_and_pkgs() {
     log_debug "check_device_os_and_pkgs() begin"
 
     check_support "${SUPPORTED_OS[*]}" "$OS" 'operating systems'
 
     if [[ "$OS" == "linux" ]]; then
+        ensureWeAreRoot
         detect_distro
         check_support "${SUPPORTED_LINUX_DISTRO[*]}" "$DISTRO" 'linux distros'
-        check_support "${SUPPORTED_LINUX_VERSION[*]}" "$CODENAME" 'linux distro versions'
-        check_support "${SUPPORTED_ARCH[*]}" "$ARCH" 'architectures'
+        ARCH=$(get_arch $DISTRO)
+        if [[ $DISTRO =~ $DEBIAN_VARIANTS_REGEX ]]; then
+            check_support "${SUPPORTED_DEBIAN_VERSION[*]}" "$CODENAME" 'debian distro versions'
+            check_support "${SUPPORTED_DEBIAN_ARCH[*]}" "$ARCH" 'debian architectures'
+            log_info "Linux distribution: ${DISTRO}, release codename: ${CODENAME}"
 
-        if [[ -z "$PKG_APT_REPO" ]]; then
-            if ls $PKG_PATH/horizon*_${ARCH}.deb 1>/dev/null 2>&1; then
-                log_verbose "found packages at $PKG_PATH"
-                PACKAGES="$PKG_PATH"
-            else
-                log_fatal 2 "horizon packages not found under $PKG_PATH"
+            if [[ -z "$PKG_APT_REPO" ]]; then
+                if ls $PKG_PATH/horizon*_${ARCH}.deb 1>/dev/null 2>&1; then
+                    log_verbose "found packages at $PKG_PATH"
+                    PACKAGES="$PKG_PATH"
+                else
+                    log_fatal 2 "horizon packages not found under $PKG_PATH"
+                fi
             fi
+        elif [[ $DISTRO =~ $REDHAT_VARIANTS_REGEX ]]; then
+            check_support "${SUPPORTED_REDHAT_VERSION[*]}" "$DISTRO_VERSION_NUM" 'redhat distro versions'
+            check_support "${SUPPORTED_REDHAT_ARCH[*]}" "$ARCH" 'redhat architectures'
+            log_info "Linux distribution: ${DISTRO}, release version: ${DISTRO_VERSION_NUM}"
+
+            if [[ -z "$PKG_APT_REPO" ]]; then
+                if ls $PKG_PATH/horizon*.${ARCH}.rpm 1>/dev/null 2>&1; then
+                    log_verbose "found packages at $PKG_PATH"
+                    PACKAGES="$PKG_PATH"
+                else
+                    log_fatal 2 "horizon packages not found under $PKG_PATH"
+                fi
+            fi
+        else
+            log_fatal 5 "Unrecognized distro: $DISTRO"
         fi
 
-        ensureWeAreRoot
-
     elif [[ "$OS" == "macos" ]]; then
+        ARCH=$(get_arch)
         if [[ -z "$PKG_APT_REPO" ]]; then
             if ls $PKG_PATH/horizon-cli-*.pkg 1>/dev/null 2>&1 && [[ -f $PKG_PATH/$MAC_PACKAGE_CERT ]]; then
                 log_verbose "found packages at $PKG_PATH"
@@ -1762,12 +1872,20 @@ find_node_id_in_mapping_file   # for bulk install. Sets NODE_ID if it finds it i
 
 log_info "Node type: ${AGENT_DEPLOY_TYPE}"
 if [[ "${AGENT_DEPLOY_TYPE}" == "device" ]]; then
-    check_device_os_and_pkgs
+    check_device_os_and_pkgs   # sets: PACKAGES, DISTRO, DISTRO_VERSION_NUM, CODENAME, ARCH
 
     if [[ "$OS" == "linux" ]]; then
-        install_linux ${OS} ${DISTRO} ${CODENAME} ${ARCH}
+        if [[ $DISTRO =~ $DEBIAN_VARIANTS_REGEX ]]; then
+            install_debian
+        elif [[ $DISTRO =~ $REDHAT_VARIANTS_REGEX ]]; then
+            install_redhat
+        else
+            log_fatal 5 "Unrecognized distro: $DISTRO"
+        fi
     elif [[ "$OS" == "macos" ]]; then
         install_macos
+    else
+        log_fatal 5 "Unrecognized OS: $OS"
     fi
 
     add_autocomplete
