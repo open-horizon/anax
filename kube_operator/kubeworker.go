@@ -165,12 +165,12 @@ func (w *KubeWorker) uninstallKubeOperator(kd *persistence.KubeDeploymentConfig,
 }
 
 func (w *KubeWorker) operatorStatus(kd *persistence.KubeDeploymentConfig, intendedState string, agId string) error {
-	glog.V(5).Infof(kwlog(fmt.Sprintf("begin listing operator status %v", kd)))
+	glog.V(5).Infof(kwlog(fmt.Sprintf("begin listing operator status %v", kd.ToString())))
 	client, err := NewKubeClient()
 	if err != nil {
 		return err
 	}
-	opStatus, err := client.Status(kd.OperatorYamlArchive)
+	opStatus, err := client.Status(kd.OperatorYamlArchive, agId)
 	if err != nil {
 		return err
 	}

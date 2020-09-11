@@ -59,9 +59,6 @@ else
   fi
 fi
 
-echo -e "Copy public key into anax folder:"
-cp $KEY_TEST_DIR/*public.pem /root/.colonus/. &> /dev/null
-
 # cpu service
 VERS="1.0"
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json

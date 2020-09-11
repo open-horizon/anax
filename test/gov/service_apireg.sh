@@ -58,8 +58,6 @@ else
   fi
 fi
 
-echo -e "Copy public key into anax folder:"
-cp $KEY_TEST_DIR/*public.pem /root/.colonus/. &> /dev/null
 
 # test service amd64
 read -d '' sdef <<EOF

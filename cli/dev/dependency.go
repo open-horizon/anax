@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
@@ -248,7 +247,7 @@ func DependenciesExists(directory string, okToCreate bool) (bool, error) {
 
 // Validate that the dependencies are complete and coherent with the rest of the definitions in the project.
 // Any errors will be returned to the caller.
-func ValidateDependencies(directory string, userInputs *register.InputFile, userInputsFilePath string, projectType string, userCreds string, autoAddDep bool) error {
+func ValidateDependencies(directory string, userInputs *common.UserInputFile_Old, userInputsFilePath string, projectType string, userCreds string, autoAddDep bool) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -315,7 +314,7 @@ func ValidateDependencies(directory string, userInputs *register.InputFile, user
 	return nil
 }
 
-func ValidateService(directory string, fInfo os.FileInfo, userInputs *register.InputFile, userInputsFilePath string) error {
+func ValidateService(directory string, fInfo os.FileInfo, userInputs *common.UserInputFile_Old, userInputsFilePath string) error {
 	d, err := GetServiceDefinition(path.Join(directory, DEFAULT_DEPENDENCY_DIR), fInfo.Name())
 	if err != nil {
 		return err
@@ -325,7 +324,7 @@ func ValidateService(directory string, fInfo os.FileInfo, userInputs *register.I
 	return validateDependencyUserInputs(d, d.GetUserInputs(), userInputs.Services, userInputsFilePath)
 }
 
-func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []register.MicroWork, userInputsFilePath string) error {
+func validateDependencyUserInputs(d common.AbstractServiceFile, uis []exchange.UserInput, configUserInputs []common.MicroWork, userInputsFilePath string) error {
 	for _, ui := range uis {
 		if ui.DefaultValue == "" {
 			found := false
@@ -635,13 +634,13 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef common.Abstract
 		}
 
 		if foundNonDefault {
-			skelVarConfig := register.MicroWork{
+			skelVarConfig := common.MicroWork{
 				Org:          sDef.GetOrg(),
 				Url:          sDef.GetURL(),
 				VersionRange: sDef.GetVersion(),
 				Variables:    vars,
 			}
-			if err := SetUserInputsVariableConfiguration(homeDirectory, sDef, []register.MicroWork{skelVarConfig}); err != nil {
+			if err := SetUserInputsVariableConfiguration(homeDirectory, sDef, []common.MicroWork{skelVarConfig}); err != nil {
 				return err
 			}
 

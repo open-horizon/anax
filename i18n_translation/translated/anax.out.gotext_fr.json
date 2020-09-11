@@ -3,514 +3,6 @@
   "language": "fr",
   "messages": [
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "L'expression de contrainte {Dconstraints} est de type {Dconstraints_1}, alors qu'elle devrait être un tableau de chaînes"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "L'expression de contrainte comporte des parenthèses sans correspondance."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de charge de travail non prise en charge."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de conteneur d'infrastructure non prise en charge."
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour la charge de travail, {Arg_2}"
-    },
-    {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour {Arg_2}, {Arg_3}"
-    },
-    {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "Erreur lors de la désérialisation de la chaîne de déploiement {Arg_1}. Erreur : {Arg_2}"
-    },
-    {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "Erreur lors de la désérialisation de la chaîne de remplacement {Arg_1} pour l'accord {Arg_2}. Erreur : {Arg_3}"
-    },
-    {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "Erreur lors du démarrage des conteneurs : {Arg_1}"
-    },
-    {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "Erreur lors du démarrage des conteneurs pour l'accord {Arg_1} : {Arg_2}"
-    },
-    {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "Erreur lors du redémarrage des conteneurs pour les accords {Arg_1} : {Arg_2}"
-    },
-    {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "Erreur lors du nettoyage des anciens conteneurs avant de démarrer les nouveaux conteneurs pour {Arg_1}. Erreur : {Arg_2}"
-    },
-    {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "Impossible d'obtenir la liste des conteneurs parents pour une nouvelle tentative de service pour {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "Impossible de restaurer la connexion réseau avec les parents pour le service {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "Anax est en cours d'arrêt. Impossible d'accéder au répertoire de stockage de service spécifié dans config : {Arg_1}. {Arg_2}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}"
-    },
-    {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}"
-    },
-    {
-      "id": "no service name",
-      "translation": "Aucun nom de service"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "Aucune image Docker pour le service {ServiceName}"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "L'entrée utilisateur {Name} n'a pas de valeur par défaut et n'est pas définie"
-    },
-    {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "'requiredServices' n'est pas pris en charge pour le service de type cluster."
-    },
-    {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "Impossible de convertir la version {Ver} de service {ReqSvc} en une expression de plage de versions."
-    },
-    {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "Erreur lors de la récupération du service à partir d'Exchange pour {ReqSvc}. {Err}"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "Le service requis {SId} possède le mauvais type de service : {SType}."
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "Le service dépendant {Id} du service requis {SId} possède le mauvais type de service : {SType1}."
-    },
-    {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Erreur de compatibilité : Les versions de schéma ne sont pas identiques, Règle consommateur : {Version}, Règle fournisseur {Version_1}"
-    },
-    {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "Erreur de compatibilité : Les propriétés de noeud {Properties} ne satisfont pas les exigences de contrainte {Constraints}. Erreur sous-jacente : {Err}"
-    },
-    {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "Erreur de compatibilité : Les propriétés de noeud ne satisfont pas les exigences de contrainte. {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "Erreur de compatibilité : Les propriétés {Properties} ne satisfont pas la contrainte de noeud {Constraints}. Erreur sous-jacente : {Err}"
-    },
-    {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "Erreur de compatibilité : les propriétés ne satisfont pas la contrainte de noeud. {Err}"
-    },
-    {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "Erreur de compatibilité : Aucun protocole d'accord commun entre {AgreementProtocols} et {AgreementProtocols_1}. Erreur sous-jacente : {Err}"
-    },
-    {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "Erreur de compatibilité : La vérification des données doit être compatible, le fournisseur obtient {DataVerify} et le consommateur {DataVerify_1}."
-    },
-    {
-      "id": "Name, or Org is empty string.",
-      "translation": "La chaîne Name ou Org est vide."
-    },
-    {
-      "id": "The serviceVersions array is empty.",
-      "translation": "Le tableau serviceVersions est vide."
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "Les propriétés comportent une propriété non valide : {Err}"
-    },
-    {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "La propriété {PROPSVCPRIVILEGED} doit avoir une valeur booléenne (true ou false)."
-    },
-    {
-      "id": "[verbose] {M}",
-      "translation": "[prolixe] {M}"
-    },
-    {
-      "id": "Error: {Msg}",
-      "translation": "Erreur : {Msg}"
-    },
-    {
-      "id": "Warning: {Msg}",
-      "translation": "Avertissement : {Msg}"
-    },
-    {
-      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "Echec de la désérialisation des octets à partir de {ErrMsg} : {Err}"
-    },
-    {
-      "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "Echec de la sérialisation du type de données à partir de {ErrMsg} : {Err}"
-    },
-    {
-      "id": "problem testing api key match: {Err}",
-      "translation": "Problème lors du test de correspondance des clés d'API : {Err}"
-    },
-    {
-      "id": "Using API key",
-      "translation": "Utilisation d'une clé d'API"
-    },
-    {
-      "id": "unable to create docker client: {Err}",
-      "translation": "Impossible de créer le client Docker : {Err}"
-    },
-    {
-      "id": "docker auth domainName: {DomainName}",
-      "translation": "Nom de domaine d'autorisation Docker : {DomainName}"
-    },
-    {
-      "id": "unable to find docker credentials for {Domain}",
-      "translation": "Impossible de trouver les données d'identification Docker pour {Domain}"
-    },
-    {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Push vers {Repository} :{Tag}..."
-    },
-    {
-      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "Impossible d'obtenir les données d'identification Docker à partir de ~/.docker/config.json : {Err}. Vous devrez peut-être exécuter 'docker login...' pour fournir les données d'identification du registre d'image."
-    },
-    {
-      "id": "unable to push docker image {Repository____tag}: {Err}",
-      "translation": "Impossible d'envoyer par commande push l'image Docker {Repository____tag} : {Err}"
-    },
-    {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Impossible de trouver le digest dans la sortie push Docker"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Pull {Repository} :{Tag}..."
-    },
-    {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "Impossible d'extraire par commande pull l'image Docker {Repository____tag}. Les données d'identification n'ont pas été trouvées. Vous devrez peut-être exécuter 'docker login...' si le registre d'images est privé. Erreur : {Err}"
-    },
-    {
-      "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "Impossible d'extraire par commande pull l'image Docker {Repository____tag} : {Err}"
-    },
-    {
-      "id": "the id can not contain more than 1 '/'",
-      "translation": "L'ID ne doit pas contenir plus de 1 '/'"
-    },
-    {
-      "id": "reading stdin failed: {Err}",
-      "translation": "Echec de la lecture de stdin : {Err}"
-    },
-    {
-      "id": "reading {FilePath} failed: {Err}",
-      "translation": "Echec de la lecture {FilePath} : {Err}"
-    },
-    {
-      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "Avertissement : La variable d'environnement '{EnvVarName}' est référencée dans le fichier d'entrée, mais elle n'est pas définie dans l'environnement."
-    },
-    {
-      "id": "Error reading input, error {Err}",
-      "translation": "Erreur lors de la lecture de l'entrée, erreur {Err}"
-    },
-    {
-      "id": "Exiting.",
-      "translation": "Sortie."
-    },
-    {
-      "id": "Error reading HTTP response, error {Err}",
-      "translation": "Erreur lors de la lecture de la réponse HTTP, erreur {Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez 'systemctl status horizon' pour vérifier si l'agent Horizon est en cours d'exécution. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. L'erreur associée est la suivante : {Err}"
-    },
-    {
-      "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} - Echec de la nouvelle demande : {Err}"
-    },
-    {
-      "id": "HTTP code: {HttpCode}",
-      "translation": "Code HTTP : {HttpCode}"
-    },
-    {
-      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "Code HTTP incorrect à partir de {ApiMsg} : {HttpCode}"
-    },
-    {
-      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "Code HTTP incorrect à partir de {ApiMsg} : {HttpCode}"
-    },
-    {
-      "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "Code HTTP incorrect {HttpCode} à partir de {ApiMsg} : {Body}"
-    },
-    {
-      "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps pour {ApiMsg} : {Err}"
-    },
-    {
-      "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "Echec de la désérialisation des octets. {Err}"
-    },
-    {
-      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "Erreur d'obtention de {OldMgmtHubCertPath} depuis {ANAXOVERWRITEFILE} : {Err}"
-    },
-    {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "Erreur rencontrée lors de la lecture du fichier de certificat ICP {IcpCertPath} : {Err}"
-    },
-    {
-      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "Erreur lors de l'obtention de HZN_EXCHANGE_URL à partir de {ANAXOVERWRITEFILE}. {Err}"
-    },
-    {
-      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
-      "translation": "Erreur lors de l'obtention de ExchangeUrl à partir de {ANAXCONFIGFILE}. {Err}"
-    },
-    {
-      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
-      "translation": "La variable HZN_EXCHANGE_URL n'est pas définie. Récupérez-la à partir de la configuration de l'agent Horizon sur le noeud."
-    },
-    {
-      "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "Impossible d'obtenir l'URL Exchange à partir de la variable d'environnement HZN_EXCHANGE_URL ou de l'agent Horizon."
-    },
-    {
-      "id": "The exchange url: {ExchUrl}",
-      "translation": "URL Exchange : {ExchUrl}"
-    },
-    {
-      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "Erreur lors de l'obtention de HZN_FSS_CSSURL à partir de {ANAXOVERWRITEFILE}. {Err}"
-    },
-    {
-      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
-      "translation": "Erreur lors de l'obtention de l'URL du service de gestion des modèles à partir de {ANAXCONFIGFILE}. {Err}"
-    },
-    {
-      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
-      "translation": "La variable HZN_FSS_CSSURL n'est pas définie. Récupérez-la à partir de la configuration de l'agent Horizon sur le noeud."
-    },
-    {
-      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
-      "translation": "Impossible d'obtenir l'adresse URL du service de gestion des modèles à partir de la variable d'environnement HZN_FSS_CSSURL ou de l'agent Horizon."
-    },
-    {
-      "id": "The model management service url: {MmsUrl}",
-      "translation": "URL du service de gestion des modèles : {MmsUrl}"
-    },
-    {
-      "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
-      "translation": "La variable HZN_SDO_SVC_URL n'est pas définie. Récupérez-la à partir de {ANAXOVERWRITEFILE}."
-    },
-    {
-      "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "Erreur lors de l'obtention de HZN_SDO_SVC_URL à partir de {ANAXOVERWRITEFILE} : {Err}"
-    },
-    {
-      "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
-      "translation": "Impossible d'obtenir la valeur HZN_SDO_SVC_URL depuis l'environnement, {ANAXOVERWRITEFILE}, ou l'un des fichiers hzn.json."
-    },
-    {
-      "id": "The SDO service url: {SdoUrl}",
-      "translation": "URL du service SDO : {SdoUrl}"
-    },
-    {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. L'erreur associée est la suivante : {Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. L'erreur associée est la suivante : {Err}"
-    },
-    {
-      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps Exchange pour {ApiMsg} : {Err}"
-    },
-    {
-      "id": "unable to open object file {Name}: {Err}",
-      "translation": "impossible d'ouvrir le fichier objet {Name} : {Err}"
-    },
-    {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
-      "translation": "Une erreur HTTP {Err} s'est produite lors de l'appel de l'API REST {ApiMsg} du service {Service}. Statut HTTP : {Httpstatus}. Une nouvelle tentative sera effectuée."
-    },
-    {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "Une erreur HTTP {Err} s'est produite lors de l'appel de l'API REST {ApiMsg} du service {Service}. Statut HTTP : {Httpstatus}."
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "Code HTTP {HttpCode} incorrect de {ApiMsg}, sortie : {StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation de la sortie Exchange de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps Exchange de {ApiMsg} : {Err}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "Code HTTP {HttpCode} incorrect de {ApiMsg} : {Code}, {Msg}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
-      "translation": "Code HTTP {HttpCode} incorrect de {ApiMsg}"
-    },
-    {
-      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateur -u ou -n, variable HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH"
-    },
-    {
-      "id": "Verifying public key file ...",
-      "translation": "Vérification du fichier de clé publique..."
-    },
-    {
-      "id": "provided public key is not valid; error: {Err}",
-      "translation": "La clé publique fournie n'est pas valide. Erreur : {Err}"
-    },
-    {
-      "id": "Checking private key file format ...",
-      "translation": "Vérification du format de fichier de clé privée..."
-    },
-    {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "La clé privée fournie n'est pas valide. Erreur : {Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
-    },
-    {
-      "id": "{Err}. Please create the signing key.",
-      "translation": "{Err}. Veuillez créer la clé de signature."
-    },
-    {
-      "id": "running: {CmdStr}",
-      "translation": "en cours d'exécution : {CmdStr}"
-    },
-    {
-      "id": "did not get a command object",
-      "translation": "Aucun objet de commande renvoyé"
-    },
-    {
-      "id": "Could not get Stdin pipe, error: {Err}",
-      "translation": "Impossible d'obtenir le pipe Stdin, erreur : {Err}"
-    },
-    {
-      "id": "could not retrieve output from command, error: {Err}",
-      "translation": "Impossible de récupérer la sortie de la commande, erreur : {Err}"
-    },
-    {
-      "id": "could not retrieve stderr from command, error: {Err}",
-      "translation": "Impossible de récupérer stderr de la commande, erreur : {Err}"
-    },
-    {
-      "id": "Unable to start command, error: {Err}",
-      "translation": "Impossible de lancer la commande, erreur : {Err}"
-    },
-    {
-      "id": "Unable to write to stdin of command, error: {Err}",
-      "translation": "Impossible d'écrire dans l'entrée standard (stdin) de la commande, erreur : {Err}"
-    },
-    {
-      "id": "Unable to close stdin, error: {Err}",
-      "translation": "Impossible de fermer stdin, erreur : {Err}"
-    },
-    {
-      "id": "could not read stdout, error: {Err}",
-      "translation": "Impossible de lire la sortie standard (stdout), erreur : {Err}"
-    },
-    {
-      "id": "could not read stderr, error: {Err}",
-      "translation": "Impossible de lire l'erreur standard (stderr), erreur : {Err}"
-    },
-    {
-      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "Echec de la commande : {Err}, stderr : {StringstderrBytes}"
-    },
-    {
-      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
-      "translation": "Impossible d'utiliser {HTTPRequestTimeoutOverride} pour définir le délai d'attente de demande, la valeur n'est pas un nombre valide : {EnvTimeout}"
-    },
-    {
-      "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "Délai d'attente de demande HTTP défini sur {RequestTimeout} secondes"
-    },
-    {
-      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
-      "translation": "Erreur lors de la conversion de la variable d'environnement HZN_HTTP_RETRIES {MaxRetriess} en entier. {Err1}"
-    },
-    {
-      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
-      "translation": "Erreur lors de la conversion de la variable d'environnement HZN_HTTP_RETRY_INTERVAL {RetryIntervals} en entier. {Err1}"
-    },
-    {
-      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
-      "translation": "{Image} analysée en : domaine={Domain}, chemin={Path}, balise={Tag}"
-    },
-    {
-      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
-      "translation": "Avertissement : Impossible d'analyser le chemin de l'image '{Image}'. Celle-ci n'est pas envoyée (push) vers un registre Docker, mais juste incluse telle quelle dans la zone 'deployment'."
-    },
-    {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
       "translation": "Impossible de lire le fichier de règles {Arg_1} pour le service {Arg_2}, erreur : {Arg_3}"
     },
@@ -583,14 +75,6 @@
       "translation": "Anax est en cours d'arrêt. Impossible de terminer la synchronisation de l'accord. {Arg_1}"
     },
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Echec de la pulsation du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Restauration de la pulsation du noeud {Arg_1}/{Arg_2}."
-    },
-    {
       "id": "No input found.",
       "translation": "Aucune entrée trouvée."
     },
@@ -637,46 +121,6 @@
     {
       "id": "Internal server error",
       "translation": "Erreur de serveur interne"
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "Impossible de créer le répertoire pour le certificat d'API MMS autosigné. Erreur {Err}"
-    },
-    {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "Impossible de générer un numéro aléatoire pour le numéro de série du certificat d'API MMS. Erreur {Err}"
-    },
-    {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "Impossible de générer la clé privée pour le certificat d'API MMS. Erreur {Err}"
-    },
-    {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "Impossible de créer le certificat d'API MMS. Erreur {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "Impossible d'écrire le fichier du certificat d'API MMS dans le fichier {ServerCertificate}. Erreur {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "Impossible de coder le certificat d'API MMS dans le fichier {ServerCertificate}. Erreur {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "Impossible de fermer le fichier certificat d'API MMS {ServerCertificate}. Erreur {Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "Impossible d'écrire la clé privée du certificat d'API MMS dans le fichier {ServerKey}. Erreur {Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "Impossible de coder la clé privée du certificat d'API MMS dans le fichier {ServerKey}. Erreur {Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "Impossible de fermer le fichier de la clé privée du certificat d'API MMS {ServerKey}. Erreur {Err}"
     },
     {
       "id": "Error parsing the selections {Form}. {Err}",
@@ -903,6 +347,446 @@
       "translation": "Erreur lors de la conversion des sélections en sélecteurs : {Err}"
     },
     {
+      "id": "Name, or Org is empty string.",
+      "translation": "La chaîne Name ou Org est vide."
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "Le tableau serviceVersions est vide."
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "Les propriétés comportent une propriété non valide : {Err}"
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "La propriété {PROPSVCPRIVILEGED} doit avoir une valeur booléenne (true ou false)."
+    },
+    {
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Echec de la pulsation du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "Restauration de la pulsation du noeud {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "[verbose] {M}",
+      "translation": "[prolixe] {M}"
+    },
+    {
+      "id": "Error: {Msg}",
+      "translation": "Erreur : {Msg}"
+    },
+    {
+      "id": "Warning: {Msg}",
+      "translation": "Avertissement : {Msg}"
+    },
+    {
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "translation": "Echec de la désérialisation des octets à partir de {ErrMsg} : {Err}"
+    },
+    {
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+      "translation": "Echec de la sérialisation du type de données à partir de {ErrMsg} : {Err}"
+    },
+    {
+      "id": "problem testing api key match: {Err}",
+      "translation": "Problème lors du test de correspondance des clés d'API : {Err}"
+    },
+    {
+      "id": "Using API key",
+      "translation": "Utilisation d'une clé d'API"
+    },
+    {
+      "id": "unable to create docker client: {Err}",
+      "translation": "Impossible de créer le client Docker : {Err}"
+    },
+    {
+      "id": "docker auth domainName: {DomainName}",
+      "translation": "Nom de domaine d'autorisation Docker : {DomainName}"
+    },
+    {
+      "id": "unable to find docker credentials for {Domain}",
+      "translation": "Impossible de trouver les données d'identification Docker pour {Domain}"
+    },
+    {
+      "id": "Pushing {Repository}:{Tag}...",
+      "translation": "Push vers {Repository} :{Tag}..."
+    },
+    {
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "translation": "Impossible d'obtenir les données d'identification Docker à partir de ~/.docker/config.json : {Err}. Vous devrez peut-être exécuter 'docker login...' pour fournir les données d'identification du registre d'image."
+    },
+    {
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+      "translation": "Impossible d'envoyer par commande push l'image Docker {Repository____tag} : {Err}"
+    },
+    {
+      "id": "could not find the image digest in the docker push output",
+      "translation": "Impossible de trouver le digest dans la sortie push Docker"
+    },
+    {
+      "id": "Pulling {Repository}:{Tag}...",
+      "translation": "Pull {Repository} :{Tag}..."
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "translation": "Impossible d'extraire par commande pull l'image Docker {Repository____tag}. Les données d'identification n'ont pas été trouvées. Vous devrez peut-être exécuter 'docker login...' si le registre d'images est privé. Erreur : {Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+      "translation": "Impossible d'extraire par commande pull l'image Docker {Repository____tag} : {Err}"
+    },
+    {
+      "id": "the id can not contain more than 1 '/'",
+      "translation": "L'ID ne doit pas contenir plus de 1 '/'"
+    },
+    {
+      "id": "reading stdin failed: {Err}",
+      "translation": "Echec de la lecture de stdin : {Err}"
+    },
+    {
+      "id": "reading {FilePath} failed: {Err}",
+      "translation": "Echec de la lecture {FilePath} : {Err}"
+    },
+    {
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "translation": "Avertissement : La variable d'environnement '{EnvVarName}' est référencée dans le fichier d'entrée, mais elle n'est pas définie dans l'environnement."
+    },
+    {
+      "id": "Error reading input, error {Err}",
+      "translation": "Erreur lors de la lecture de l'entrée, erreur {Err}"
+    },
+    {
+      "id": "Exiting.",
+      "translation": "Sortie."
+    },
+    {
+      "id": "Error reading HTTP response, error {Err}",
+      "translation": "Erreur lors de la lecture de la réponse HTTP, erreur {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez 'systemctl status horizon' pour vérifier si l'agent Horizon est en cours d'exécution. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. L'erreur associée est la suivante : {Err}"
+    },
+    {
+      "id": "{ApiMsg} new request failed: {Err}",
+      "translation": "{ApiMsg} - Echec de la nouvelle demande : {Err}"
+    },
+    {
+      "id": "HTTP code: {HttpCode}",
+      "translation": "Code HTTP : {HttpCode}"
+    },
+    {
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "Code HTTP incorrect à partir de {ApiMsg} : {HttpCode}"
+    },
+    {
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "Code HTTP incorrect à partir de {ApiMsg} : {HttpCode}"
+    },
+    {
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "translation": "Code HTTP incorrect {HttpCode} à partir de {ApiMsg} : {Body}"
+    },
+    {
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+      "translation": "Echec de la sérialisation du corps pour {ApiMsg} : {Err}"
+    },
+    {
+      "id": "Failed to unmarshal bytes. {Err}",
+      "translation": "Echec de la désérialisation des octets. {Err}"
+    },
+    {
+      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "Erreur d'obtention de {OldMgmtHubCertPath} depuis {ANAXOVERWRITEFILE} : {Err}"
+    },
+    {
+      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "translation": "Erreur rencontrée lors de la lecture du fichier de certificat ICP {IcpCertPath} : {Err}"
+    },
+    {
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "Erreur lors de l'obtention de HZN_EXCHANGE_URL à partir de {ANAXOVERWRITEFILE}. {Err}"
+    },
+    {
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "translation": "Erreur lors de l'obtention de ExchangeUrl à partir de {ANAXCONFIGFILE}. {Err}"
+    },
+    {
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "translation": "La variable HZN_EXCHANGE_URL n'est pas définie. Récupérez-la à partir de la configuration de l'agent Horizon sur le noeud."
+    },
+    {
+      "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "Impossible d'obtenir l'URL Exchange à partir de la variable d'environnement HZN_EXCHANGE_URL ou de l'agent Horizon."
+    },
+    {
+      "id": "The exchange url: {ExchUrl}",
+      "translation": "URL Exchange : {ExchUrl}"
+    },
+    {
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "Erreur lors de l'obtention de HZN_FSS_CSSURL à partir de {ANAXOVERWRITEFILE}. {Err}"
+    },
+    {
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "translation": "Erreur lors de l'obtention de l'URL du service de gestion des modèles à partir de {ANAXCONFIGFILE}. {Err}"
+    },
+    {
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "translation": "La variable HZN_FSS_CSSURL n'est pas définie. Récupérez-la à partir de la configuration de l'agent Horizon sur le noeud."
+    },
+    {
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "translation": "Impossible d'obtenir l'adresse URL du service de gestion des modèles à partir de la variable d'environnement HZN_FSS_CSSURL ou de l'agent Horizon."
+    },
+    {
+      "id": "The model management service url: {MmsUrl}",
+      "translation": "URL du service de gestion des modèles : {MmsUrl}"
+    },
+    {
+      "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+      "translation": "La variable HZN_SDO_SVC_URL n'est pas définie. Récupérez-la à partir de {ANAXOVERWRITEFILE}."
+    },
+    {
+      "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "Erreur lors de l'obtention de HZN_SDO_SVC_URL à partir de {ANAXOVERWRITEFILE} : {Err}"
+    },
+    {
+      "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+      "translation": "Impossible d'obtenir la valeur HZN_SDO_SVC_URL depuis l'environnement, {ANAXOVERWRITEFILE}, ou l'un des fichiers hzn.json."
+    },
+    {
+      "id": "The SDO service url: {SdoUrl}",
+      "translation": "URL du service SDO : {SdoUrl}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. L'erreur associée est la suivante : {Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. L'erreur associée est la suivante : {Err}"
+    },
+    {
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "translation": "Echec de la sérialisation du corps Exchange pour {ApiMsg} : {Err}"
+    },
+    {
+      "id": "Failed to get file info: {Err}",
+      "translation": "Impossible d'obtenir les informations sur le fichier : {Err}"
+    },
+    {
+      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
+      "translation": "Téléchargement en cours : {Float32totalSent__float32bodyLen__100} {}"
+    },
+    {
+      "id": "unable to open object file {Name}: {Err}",
+      "translation": "impossible d'ouvrir le fichier objet {Name} : {Err}"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "Une erreur HTTP {Err} s'est produite lors de l'appel de l'API REST {ApiMsg} du service {Service}. Statut HTTP : {Httpstatus}. Une nouvelle tentative sera effectuée."
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "Une erreur HTTP {Err} s'est produite lors de l'appel de l'API REST {ApiMsg} du service {Service}. Statut HTTP : {Httpstatus}."
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "Code HTTP {HttpCode} incorrect de {ApiMsg}, sortie : {StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "Echec de la désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "Echec de la sérialisation de la sortie Exchange de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "translation": "Echec de la lecture de la réponse du corps Exchange de {ApiMsg} : {Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "translation": "Code HTTP {HttpCode} incorrect de {ApiMsg} : {Code}, {Msg}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "translation": "Code HTTP {HttpCode} incorrect de {ApiMsg}"
+    },
+    {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "translation": "L'authentification Exchange doit être spécifiée avec l'une des valeurs suivantes : indicateur -u ou -n, variable HZN_EXCHANGE_USER_AUTH ou HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+      "id": "Verifying public key file ...",
+      "translation": "Vérification du fichier de clé publique..."
+    },
+    {
+      "id": "provided public key is not valid; error: {Err}",
+      "translation": "La clé publique fournie n'est pas valide. Erreur : {Err}"
+    },
+    {
+      "id": "Checking private key file format ...",
+      "translation": "Vérification du format de fichier de clé privée..."
+    },
+    {
+      "id": "provided private key is not valid; error: {Err}",
+      "translation": "La clé privée fournie n'est pas valide. Erreur : {Err}"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
+    },
+    {
+      "id": "{Err}. Please create the signing key.",
+      "translation": "{Err}. Veuillez créer la clé de signature."
+    },
+    {
+      "id": "running: {CmdStr}",
+      "translation": "en cours d'exécution : {CmdStr}"
+    },
+    {
+      "id": "did not get a command object",
+      "translation": "Aucun objet de commande renvoyé"
+    },
+    {
+      "id": "Could not get Stdin pipe, error: {Err}",
+      "translation": "Impossible d'obtenir le pipe Stdin, erreur : {Err}"
+    },
+    {
+      "id": "could not retrieve output from command, error: {Err}",
+      "translation": "Impossible de récupérer la sortie de la commande, erreur : {Err}"
+    },
+    {
+      "id": "could not retrieve stderr from command, error: {Err}",
+      "translation": "Impossible de récupérer stderr de la commande, erreur : {Err}"
+    },
+    {
+      "id": "Unable to start command, error: {Err}",
+      "translation": "Impossible de lancer la commande, erreur : {Err}"
+    },
+    {
+      "id": "Unable to write to stdin of command, error: {Err}",
+      "translation": "Impossible d'écrire dans l'entrée standard (stdin) de la commande, erreur : {Err}"
+    },
+    {
+      "id": "Unable to close stdin, error: {Err}",
+      "translation": "Impossible de fermer stdin, erreur : {Err}"
+    },
+    {
+      "id": "could not read stdout, error: {Err}",
+      "translation": "Impossible de lire la sortie standard (stdout), erreur : {Err}"
+    },
+    {
+      "id": "could not read stderr, error: {Err}",
+      "translation": "Impossible de lire l'erreur standard (stderr), erreur : {Err}"
+    },
+    {
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "translation": "Echec de la commande : {Err}, stderr : {StringstderrBytes}"
+    },
+    {
+      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "translation": "Impossible d'utiliser {HTTPRequestTimeoutOverride} pour définir le délai d'attente de demande, la valeur n'est pas un nombre valide : {EnvTimeout}"
+    },
+    {
+      "id": "HTTP request timeout set to {RequestTimeout} seconds",
+      "translation": "Délai d'attente de demande HTTP défini sur {RequestTimeout} secondes"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
+      "translation": "Erreur lors de la conversion de la variable d'environnement HZN_HTTP_RETRIES {MaxRetriess} en entier. {Err1}"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
+      "translation": "Erreur lors de la conversion de la variable d'environnement HZN_HTTP_RETRY_INTERVAL {RetryIntervals} en entier. {Err1}"
+    },
+    {
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} analysée en : domaine={Domain}, chemin={Path}, balise={Tag}"
+    },
+    {
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "Avertissement : Impossible d'analyser le chemin de l'image '{Image}'. Celle-ci n'est pas envoyée (push) vers un registre Docker, mais juste incluse telle quelle dans la zone 'deployment'."
+    },
+    {
+      "id": "no service name",
+      "translation": "Aucun nom de service"
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "translation": "Aucune image Docker pour le service {ServiceName}"
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}"
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "L'entrée utilisateur {Name} n'a pas de valeur par défaut et n'est pas définie"
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "'requiredServices' n'est pas pris en charge pour le service de type cluster."
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "Impossible de convertir la version {Ver} de service {ReqSvc} en une expression de plage de versions."
+    },
+    {
+      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "translation": "Erreur lors de la récupération du service à partir d'Exchange pour {ReqSvc}. {Err}"
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "Le service requis {SId} possède le mauvais type de service : {SType}."
+    },
+    {
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "Le service dépendant {Id} du service requis {SId} possède le mauvais type de service : {SType1}."
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "Echec de la désérialisation de l'entrée json {JsonBytes} : {Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "Erreur lors de l'obtention du nouveau format d'entrée utilisateur. {Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "Echec de la création de l'objet json pour l'entrée utilisateur. {Err1}"
+    },
+    {
       "id": "Deployment policy and pattern are mutually exclusive.",
       "translation": "La règle de déploiement et le pattern s'excluent mutuellement."
     },
@@ -920,7 +804,7 @@
     },
     {
       "id": "Error marshaling object {In}. {Arg_2}",
-      "translation": "Erreur de la désérialisation de l'objet {In}. {Arg_2}"
+      "translation": "Erreur de la sérialisation de l'objet {In}. {Arg_2}"
     },
     {
       "id": "Failed to convert input to PolicyCheck object. {Err}",
@@ -1339,24 +1223,64 @@
       "translation": "La variable {Name} associée au service {ServiceOrgid}/{ServiceUrl} version {ServiceVersionRange} arch {ServiceArch} spécifiée dans l'entrée utilisateur n'est pas utilisée. Assurez-vous que le nom est correct."
     },
     {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "L'accord {Arg_1} existe déjà, la proposition est ignorée : {Arg_2}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de charge de travail non prise en charge."
     },
     {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "Une erreur s'est produite lors de la désérialisation de TsAndCs pour l'accord {Arg_1}, {Arg_2}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "La configuration du déploiement {Arg_1} contient une fonctionnalité de conteneur d'infrastructure non prise en charge."
     },
     {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "Le noeud a reçu un message de proposition à l'aide de l'accord {Arg_1} pour le service {Arg_2}/{Arg_3} à partir de l'agbot {Arg_4}."
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour la charge de travail, {Arg_2}"
     },
     {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "Le noeud a rejeté la proposition pour le service {Arg_1}/{Arg_2}."
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "La configuration du déploiement {Arg_1} contient une liaison non prise en charge pour {Arg_2}, {Arg_3}"
     },
     {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Erreur lors du traitement de la proposition pour le service {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "Erreur lors de la désérialisation de la chaîne de déploiement {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "Erreur lors de la désérialisation de la chaîne de remplacement {Arg_1} pour l'accord {Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "Erreur lors du démarrage des conteneurs : {Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "Erreur lors du démarrage des conteneurs pour l'accord {Arg_1} : {Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "Erreur lors du redémarrage des conteneurs pour les accords {Arg_1} : {Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "Erreur lors du nettoyage des anciens conteneurs avant de démarrer les nouveaux conteneurs pour {Arg_1}. Erreur : {Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "Impossible d'obtenir la liste des conteneurs parents pour une nouvelle tentative de service pour {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "Impossible de restaurer la connexion réseau avec les parents pour le service {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "Anax est en cours d'arrêt. Impossible d'accéder au répertoire de stockage de service spécifié dans config : {Arg_1}. {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}"
     },
     {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1391,28 +1315,12 @@
       "translation": "La propriété {Name} possède un type de valeur {ActualType} non valide."
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression : Les espaces blancs ne sont pas autorisés dans {Expr}."
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "L'expression de contrainte {Dconstraints} est de type {Dconstraints_1}, alors qu'elle devrait être un tableau de chaînes"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression : {Verstring} n'est pas une chaîne de version valide."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression : {Verstring} ne commence pas par une directive d'inclusion ou d'exclusion."
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression : {Verstring} ne se termine pas par une directive d'inclusion ou d'exclusion."
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression : Nombre incorrect de versions dans l'expression : {Expr}."
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "La chaîne de version d'entrée {V1} ou {V2} n'est pas une chaîne de version unique valide."
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "L'expression de contrainte comporte des parenthèses sans correspondance."
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -1729,6 +1637,118 @@
     {
       "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
       "translation": "Nouveau pattern {Arg_1} vérifié. Les accords seront annulés et le noeud réenregistré avec le nouveau pattern."
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "Erreur de compatibilité : Les versions de schéma ne sont pas identiques, Règle consommateur : {Version}, Règle fournisseur {Version_1}"
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "Erreur de compatibilité : Les propriétés de noeud {Properties} ne satisfont pas les exigences de contrainte {Constraints}. Erreur sous-jacente : {Err}"
+    },
+    {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "Erreur de compatibilité : Les propriétés de noeud ne satisfont pas les exigences de contrainte. {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "Erreur de compatibilité : Les propriétés {Properties} ne satisfont pas la contrainte de noeud {Constraints}. Erreur sous-jacente : {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "Erreur de compatibilité : les propriétés ne satisfont pas la contrainte de noeud. {Err}"
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "Erreur de compatibilité : Aucun protocole d'accord commun entre {AgreementProtocols} et {AgreementProtocols_1}. Erreur sous-jacente : {Err}"
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "Erreur de compatibilité : La vérification des données doit être compatible, le fournisseur obtient {DataVerify} et le consommateur {DataVerify_1}."
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "L'accord {Arg_1} existe déjà, la proposition est ignorée : {Arg_2}"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "Une erreur s'est produite lors de la désérialisation de TsAndCs pour l'accord {Arg_1}, {Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "Le noeud a reçu un message de proposition à l'aide de l'accord {Arg_1} pour le service {Arg_2}/{Arg_3} à partir de l'agbot {Arg_4}."
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "Le noeud a rejeté la proposition pour le service {Arg_1}/{Arg_2}."
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "Erreur lors du traitement de la proposition pour le service {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "Impossible de créer le répertoire pour le certificat d'API MMS autosigné. Erreur {Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "Impossible de générer un numéro aléatoire pour le numéro de série du certificat d'API MMS. Erreur {Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "Impossible de générer la clé privée pour le certificat d'API MMS. Erreur {Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "Impossible de créer le certificat d'API MMS. Erreur {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "Impossible d'écrire le fichier du certificat d'API MMS dans le fichier {ServerCertificate}. Erreur {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "Impossible de coder le certificat d'API MMS dans le fichier {ServerCertificate}. Erreur {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "Impossible de fermer le fichier certificat d'API MMS {ServerCertificate}. Erreur {Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "Impossible d'écrire la clé privée du certificat d'API MMS dans le fichier {ServerKey}. Erreur {Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "Impossible de coder la clé privée du certificat d'API MMS dans le fichier {ServerKey}. Erreur {Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "Impossible de fermer le fichier de la clé privée du certificat d'API MMS {ServerKey}. Erreur {Err}"
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression : Les espaces blancs ne sont pas autorisés dans {Expr}."
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression : {Verstring} n'est pas une chaîne de version valide."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression : {Verstring} ne commence pas par une directive d'inclusion ou d'exclusion."
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression : {Verstring} ne se termine pas par une directive d'inclusion ou d'exclusion."
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression : Nombre incorrect de versions dans l'expression : {Expr}."
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "La chaîne de version d'entrée {V1} ou {V2} n'est pas une chaîne de version unique valide."
     }
   ]
 }

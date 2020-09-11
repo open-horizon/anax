@@ -5,6 +5,7 @@ import ()
 type Cache interface {
 	Get(key string) interface{}
 	Put(key string, obj interface{})
+	Delete(key string)
 }
 
 // A simple map cache is a cache that allows the caller to store a single object per key. The entire set
