@@ -25,6 +25,20 @@ func (c *SimpleMapCache) Get(key string) interface{} {
 	}
 }
 
+// GetKeys returns a slice containing all map keys in the cache
+func (c *SimpleMapCache) GetKeys() []string {
+	c.Maplock.Lock()
+	defer c.Maplock.Unlock()
+
+	keys := []string{}
+
+	for key := range c.cache {
+		keys = append(keys, key)
+	}
+
+	return keys
+}
+
 // Store the cached object by input key.
 func (c *SimpleMapCache) Put(key string, obj interface{}) {
 	c.Maplock.Lock()

@@ -219,6 +219,26 @@ func DeleteCacheResource(resourceType string, resourceKey string) interface{} {
 	return retResource
 }
 
+// DeleteOrgCachedResources will delete all cached resources from the given org
+func DeleteOrgCachedResources(org string) {
+	glog.V(5).Infof("Delete all resources from org %v", org)
+	if ExchangeResourceCache == nil || ExchangeResourceCache.allResources == nil {
+		return
+	}
+
+	ExchangeResourceCache.Lock.Lock()
+	defer ExchangeResourceCache.Lock.Unlock()
+
+	for _, cache := range ExchangeResourceCache.allResources {
+		orgResourceKeys := cache.GetKeys()
+		for _, orgResourceKey := range orgResourceKeys {
+			if strings.Index(orgResourceKey, fmt.Sprintf("%s/", org)) == 0 {
+				cache.Delete(orgResourceKey)
+			}
+		}
+	}
+}
+
 // DeleteCacheNodeWriteThru will delete the given node and return the typed node resource
 func DeleteCacheNodeWriteThru(nodeOrg string, nodeId string) *Device {
 	nodeDef := GetNodeFromCache(nodeOrg, nodeId)
@@ -309,6 +329,8 @@ func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) {
 	} else if change.IsServicePolicy() {
 		id, arch, vers := svcInformationFromSvcId(change.ID)
 		DeleteCacheResource(SVC_POL_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, id, arch, vers))
+	} else if change.IsOrg() && (change.Operation == CHANGE_OPERATION_CREATED || change.Operation == CHANGE_OPERATION_DELETED) {
+		DeleteOrgCachedResources(change.OrgID)
 	}
 }
 
