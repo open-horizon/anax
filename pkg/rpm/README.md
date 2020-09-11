@@ -37,9 +37,3 @@ Once you have installed and configured the Horizon RPMS by following one of the 
   ```bash
   hzn register -n <nodeid:nodetoken> -p IBM/pattern-ibm.helloworld -s ibm.helloworld --serviceorg IBM
   ```
-
-- The `hzn service log` command does not work correctly, so view the edge service output like this:
-
-  ```bash
-  tail -f /var/log/messages | grep ibm.helloworld
-  ```
