@@ -1173,6 +1173,8 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 	var oIndex string
 	var targetURL string
 
+	var cacheMapKey string
+
 	switch oType {
 	case PATTERN:
 		pat_resp, err := GetPatterns(ec.GetHTTPFactory(), oOrg, oURL, ec.GetExchangeURL(), ec.GetExchangeId(), ec.GetExchangeToken())
@@ -1197,6 +1199,13 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		} else if ms_resp == nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
 		}
+
+		cachedKeys := GetServiceKeysFromCache(oOrg, oURL, oArch, oVersion)
+		if cachedKeys != nil {
+			return *cachedKeys, nil
+		}
+		cacheMapKey = ServicePolicyCacheMapKey(oOrg, oURL, oArch, oVersion)
+
 		oIndex = ms_id
 		targetURL = fmt.Sprintf("%vorgs/%v/services/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 
@@ -1204,7 +1213,7 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys received wrong type parameter: %v. It should be one of %v, or %v.", oType, PATTERN, SERVICE)))
 	}
 
-	// get all the singining key names for the object
+	// get all the signing key names for the object
 	var resp_KeyNames interface{}
 	resp_KeyNames = ""
 
@@ -1274,6 +1283,10 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 				break
 			}
 		}
+	}
+
+	if oType == SERVICE {
+		UpdateCache(cacheMapKey, SVC_KEY_TYPE_CACHE, ret)
 	}
 
 	return ret, nil
