@@ -28,6 +28,8 @@ const HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
 // The env var that holds the path to an SSL CA certificate that should be used when accessing the exchange API.
 const HZN_EXCHANGE_CA_CERT = "HZN_EXCHANGE_CA_CERT"
 
+const EX_ROOT_USER = "root"
+
 // HorizonAuthenticate is the Horizon plugin for authentication used by the Cloud sync service (CSS). This plugin
 // can be used in environments where authentication is handled by something else in the network before
 // the CSS or where the CSS itself is deployed with a public facing API and so this plugin utilizes the exchange
@@ -77,13 +79,14 @@ func ExchangeCACert() string {
 }
 
 // Authenticate authenticates a particular appKey/appSecret pair and indicates
-// whether it is an edge node, an agbot, an org admin, or plain user. Also returned is the
+// whether it is an edge node, an agbot, an org admin, plain user, or node user. Also returned is the
 // user's org and identity.
 //
 // When this authenticator is using the exchange to authenticate, the expected form for an appKey is:
 // <org>/<destination type>/<destination id> - for a node identity, where destination type is mapped to a pattern in horizon and destination id is the node id.
 // <org>/<agbot id> - for an agbot identity, where agbot id is the agbot's exchange Id.
 // <org>/<user> - for a real person user
+// <org>/<node id> for a node user
 //
 // When this authenticator is allowing something infront of it in the network to do the authentication, the expected form for an appKey is irrelevant.
 // What's important is what's in the HTTP request header:
@@ -156,12 +159,12 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 			}
 		} else {
 			authCode = security.AuthEdgeNode
-			authOrg = parts[0]
-			authId = parts[1] + "/" + parts[2]
+			authOrg = parts[0] //orgId
+			authId = parts[1] + "/" + parts[2] //destinationType/destinationId (pattern/nodeId)
 		}
 
 	} else if parts := strings.Split(appKey, "/"); len(parts) == 2 {
-		// If the appKey is shaped like a user identity or an agbot identity, then let's make sure it is one of these.
+		// If the appKey is shaped like a user identity, a node user identity or an agbot identity, then let's make sure it is one of these.
 		// The identity is checked for agbot first because it is expected to be an agbot most of the time.
 
 		// A 2 part '/' delimited identity could be an agbot identity.
@@ -180,31 +183,49 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 			}
 
 		} else {
-			// Check if the identity is a user, since we know its not an agbot.
+			// Check if the identity is a user, since we know its not an agbot. If an error is returned, check if the identity is a node user.
 			if trace.IsLogging(logger.WARNING) {
 				log.Warning(cssALS(fmt.Sprintf("unable to verify identity %v as agbot, error %v", appKey, err)))
 			}
 			if trace.IsLogging(logger.TRACE) {
 				trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as a user %v", appKey)))
 			}
-			if admin, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
-				if log.IsLogging(logger.ERROR) {
-					log.Error(cssALS(fmt.Sprintf("unable to verify identity %v as user, error %v", appKey, err)))
+			// appkey: {org}/{username} or {org}/iamapikey. 
+			// parts[1] is {username} or iamapikey, parts[0] is {orgId}
+			if admin, username, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
+				if log.IsLogging(logger.WARNING) {
+					log.Warning(cssALS(fmt.Sprintf("unable to verify identity %v as user, error %v", appKey, err)))
+				}
+				if trace.IsLogging(logger.TRACE) {
+					trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as an exchange node %v", appKey)))
+				}
+				// Check if the identity is an exchange node
+				// appkey: {org}/{nodeId}. appSecret is {nodeToken}. 
+				// parts[0] is {orgId}, parts[1] is {nodeId}
+				if err := auth.verifyNodeIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
+					if log.IsLogging(logger.ERROR) {
+						log.Error(cssALS(fmt.Sprintf("unable to verify identity %v as exchange node, error %v", appKey, err)))
+					}
+				} else {
+					authCode = security.AuthNodeUser
+					authOrg = parts[0]
+					authId = parts[1]
 				}
 			} else if admin {
-				authCode = security.AuthAdmin
+				// root/root:{pwd} is super user across all orgs
+				authCode = security.AuthSyncAdmin
 				authOrg = parts[0]
-				authId = parts[1]
+				authId = username
 			} else {
 				authCode = security.AuthUser
 				authOrg = parts[0]
-				authId = parts[1]
+				authId = username
 			}
 		}
 
 	} else {
 		if log.IsLogging(logger.ERROR) {
-			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, <org>/<agbot id> for an agbot, or <org>/<user id> for a user.", appKey)))
+			log.Error(cssALS(fmt.Sprintf("request identity %v is not in a supported format, must be either <org>/<destination type>/<destination id> for a node, <org>/<agbot id> for an agbot, <org>/<user id> for a user, or <org>/<node id> for a node user.", appKey)))
 		}
 	}
 
@@ -220,6 +241,7 @@ type UserDefinition struct {
 	Admin       bool   `json:"admin"`
 	Email       string `json:"email"`
 	LastUpdated string `json:"lastUpdated,omitempty"`
+	UpdatedBy   string `json:"updatedBy,omitempty"`
 }
 
 type GetUsersResponse struct {
@@ -227,9 +249,9 @@ type GetUsersResponse struct {
 	LastIndex int                       `json:"lastIndex"`
 }
 
-// Returns true,nil for users that are admins, false,nil for users that are valid but aren't admins,
-// and false,error otherwise.
-func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, appSecret string, exURL string) (bool, error) {
+// Returns true, ${username}, nil for users that are admins. Returns false, ${username}, nil for users that are valid but aren't admins,
+// and false, "", error otherwise.
+func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, appSecret string, exURL string) (bool, string, error) {
 
 	// Log which API we're about to use.
 	url := fmt.Sprintf("%v/orgs/%v/users/%v", exURL, orgId, id)
@@ -247,7 +269,7 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 
 	// If there was an error invoking the HTTP API, return it.
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	// Log the HTTP response code.
@@ -258,17 +280,42 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 	// If the response code was not expected, then return the error.
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		if resp.StatusCode == 401 {
-			return false, errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v, either the user is undefined or the user's password is incorrect.", user, resp.StatusCode))
+			return false, "", errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v, either the user is undefined or the user's password is incorrect.", user, resp.StatusCode))
 		} else {
-			return false, errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v", user, resp.StatusCode))
+			return false, "", errors.New(fmt.Sprintf("unable to verify user %v in the exchange, HTTP code %v", user, resp.StatusCode))
 		}
 	} else {
+		users := new(GetUsersResponse)
+		if bodyBytes, err := ioutil.ReadAll(resp.Body); err != nil {
+			return false, "", errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
+		} else if err = json.Unmarshal(bodyBytes, users); err != nil {
+			return false, "", errors.New(fmt.Sprintf("failed to unmarshal exchange body response from %s to user: %v", apiMsg, err))
+		} else {
+			for key := range users.Users {
+				// key is {orgid}/{username}
+				orgAndUsername := strings.Split(key, "/")
+				if len(orgAndUsername) != 2 {
+					return false, "", errors.New(fmt.Sprintf("exchange user %s in invalid format, should be {orgId}/{username}", key))
+				}
+				exOrgId := orgAndUsername[0]
+				exUsername := orgAndUsername[1]
 
-		// Read in the response object to clear out the socket and then return true because the user is known to be valid.
-		if _, err := ioutil.ReadAll(resp.Body); err != nil {
-			return false, errors.New(fmt.Sprintf("unable to read HTTP response to %v, error %v", apiMsg, err))
+				// authAdmin for root/root:{pwd}
+				if exOrgId == EX_ROOT_USER && exUsername == EX_ROOT_USER {
+					// exchange root user, should be authAdmin in CSS
+					return true, EX_ROOT_USER, nil
+
+				}
+
+				// authUser for regular user {org}/iamapikey:{apikey} ({org}/{username}:{pwd})
+				if exOrgId == orgId {
+					return false, exUsername, nil
+				}
+			}
+
 		}
-		return true, nil
+
+		return false, "", errors.New(fmt.Sprintf("no exchange user found %v", apiMsg))
 
 	}
 }

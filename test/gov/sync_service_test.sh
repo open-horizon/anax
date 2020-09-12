@@ -2,11 +2,121 @@
 
 echo "Testing model management APIs"
 
+# Verify a response. The inputs are:
+# $1 - the response
+# $2 - expected result
+# $3 - error message
+function verify {
+    respContains=$(echo $1 | grep "$2")
+    if [ "${respContains}" == "" ]; then
+        echo -e "\nERROR: $3. Output was:"
+        echo -e "$1"
+        exit 1
+    fi
+}
+
 if [ ${CERT_LOC} -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
 fi
+
+# Adding users to ACL
+# userdev/userdevadmin and e2edev@somecomp.com/e2edevadmin already been added as aclWriter to all objects
+# add userdev/useranax1 as aclReader to all object types (can't create/update/delete object, can get object or object data)
+echo "Adding userdev/useranax1 as aclReader to all object types"
+read -d '' objectacl1 <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "user",
+      "Username": "useranax1",
+      "ACLRole": "aclReader"
+    }
+  ]
+}
+EOF
+
+ADDUSERTOOBJACL=$(echo "$objectacl1" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/userdev" --data @-)
+if [ "$ADDUSERTOOBJACL" != "204" ]
+then
+  echo -e "$objectacl1 \nPUT object acl returned:"
+  echo $ADDUSERTOOBJACL
+  exit -1
+fi
+
+TEST_ACL_OBJ_TYPE="testacl"
+# add e2edev@somecomp.com/anax1 as aclWriter to object type "testacl".
+echo "Adding e2edev@somecomp.com/anax1 as aclWriter to object type \"$TEST_ACL_OBJ_TYPE\""
+read -d '' objectacl2 <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "user",
+      "Username": "anax1",
+      "ACLRole": "aclWriter"
+    }
+  ]
+}
+EOF
+
+ADDUSERTOOBJACL=$(echo "$objectacl2" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/e2edev@somecomp.com/${TEST_ACL_OBJ_TYPE}" --data @-)
+if [ "$ADDUSERTOOBJACL" != "204" ]
+then
+  echo -e "$objectacl2 \nPUT object acl returned:"
+  echo $ADDUSERTOOBJACL
+  exit -1
+fi
+
+# Adding nodes to ACL
+# add node userdev/an12345 as aclReader to all object types (can't create/update/delete object, can get object or object data)
+echo "Adding node userdev/an12345 as aclReader to all object types"
+read -d '' objectacl3 <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "node",
+      "Username": "an12345",
+      "ACLRole": "aclReader"
+    }
+  ]
+}
+EOF
+
+ADDNODETOOBJACL=$(echo "$objectacl3" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/userdev" --data @-)
+if [ "$ADDNODETOOBJACL" != "204" ]
+then
+  echo -e "$objectacl3 \nPUT object acl returned:"
+  echo $ADDNODETOOBJACL
+  exit -1
+fi
+
+# add e2edev@somecomp.com/an12345 as aclWriter to object type "testacl".
+echo "Adding node e2edev@somecomp.com/an12345 as aclWriter to object type \"$TEST_ACL_OBJ_TYPE\""
+read -d '' objectacl4 <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "node",
+      "Username": "an12345",
+      "ACLRole": "aclWriter"
+    }
+  ]
+}
+EOF
+
+ADDNODETOOBJACL=$(echo "$objectacl4" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/e2edev@somecomp.com/${TEST_ACL_OBJ_TYPE}" --data @-)
+if [ "$ADDNODETOOBJACL" != "204" ]
+then
+  echo -e "$objectacl4 \nPUT object acl returned:"
+  echo $ADDNODETOOBJACL
+  exit -1
+fi
+
 
 # Test what happens when an invalid user id format is attempted
 UFORMAT=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
@@ -49,6 +159,10 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
 else
   FILE_SIZE=512
 fi
+
+
+echo "test hzn mms cli with user:"
+hzn exchange user list
 
 #Test timeout support for upload of large files to the CSS
 dd if=/dev/zero of=/tmp/data.txt count=$FILE_SIZE bs=1048576
@@ -144,8 +258,34 @@ then
   exit -1
 fi
 
-# When apply no flag, should get all 5 results
-TARGET_NUM_OBJS=5
+# adding an object with object type: testacl
+read -d '' resmeta <<EOF
+{
+  "objectID": "test_acl1",
+  "objectType": "${TEST_ACL_OBJ_TYPE}",
+  "destinationType": "",
+  "destinationID": "",
+  "version": "1.0.0",
+  "description": "test acl",
+  "expiration": "2032-10-02T15:00:00Z"
+}
+EOF
+
+echo "$resmeta" > /tmp/meta.json
+
+
+hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Failed to publish mms object: $RC"
+  exit -1
+fi
+
+echo "Start testing hzn mms object list for user "
+
+# When apply no flag, should get all 6 results
+TARGET_NUM_OBJS=6
 OBJS_CMD=$(hzn mms object list | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
@@ -163,7 +303,7 @@ do
 done
 
 # -l
-TARGET_NUM_OBJS=5
+TARGET_NUM_OBJS=6
 OBJS_CMD=$(hzn mms object list -l | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
@@ -181,7 +321,7 @@ do
 done
 
 # -d
-TARGET_NUM_OBJS=5
+TARGET_NUM_OBJS=6
 OBJS_CMD=$(hzn mms object list -d | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
@@ -242,7 +382,7 @@ fi
 
 if [ "${TEST_PATTERNS}" != "" ]
 then
-
+  # pattern case
   # --destinationType
   DEST_TYPE=test
   DEST_ID=testDestId2
@@ -295,6 +435,7 @@ then
   fi
 
 else
+  # policy case
   # hzn mms object list --policy
   TARGET_NUM_OBJS=2
   OBJS_CMD=$(hzn mms object list --policy=true | awk '{if(NR>1)print}')
@@ -419,7 +560,7 @@ if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
 fi
 
 # --data=true
-TARGET_NUM_OBJS=4
+TARGET_NUM_OBJS=5
 OBJS_CMD=$(hzn mms object list --data=true | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 RESULT_OBJ_ID="test3"
@@ -459,8 +600,264 @@ if [ $? -eq 0 ]; then
     exit -1
 fi
 
+echo "Testing MMS ACL object access"
+
+HZN_ORG_ID_BEFORE_MODIFY=$HZN_ORG_ID
+HZN_EX_USER_AUTH_BEFORE_MODIFY=$HZN_EXCHANGE_USER_AUTH
+
+# test user/node who has READ access to all object types
+# $1 - USER_ORG
+# $2 - USER_REG_USERNAME
+# $3 - USER_REG_USERPWD
+# $4 - Expected number of object returned by list object cli
+# $5 - Object Type to download
+# $6 - Object ID to download
+function testUserHaveAccessToALLObjects {
+    echo "Testing MMS ACL access for ${2} in ${1} org"
+
+    USER_REG_USER_AUTH="${1}/${2}:${3}"
+    export HZN_EXCHANGE_USER_AUTH=${USER_REG_USER_AUTH}
+    export HZN_ORG_ID=${1}
+
+    # list
+    OBJS_CMD=$(hzn mms object list | awk '{if(NR>1)print}')
+    NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+    if [ "${4}" != "${NUM_OBJS}" ]
+    then
+        echo -e "Got unexpected number of objects when listing all objects for user ${USER_REG_USERNAME} in org ${USER_ORG}"
+        exit -1
+    fi
+
+    # download
+    echo "user ${2} is dowloading object: ${5} ${6}"
+    
+    DOWNLOADED_FILE="${5}_${6}"
+    if [ -f "$DOWNLOADED_FILE" ]; then
+        echo "$DOWNLOADED_FILE already exists. Deleted before downloading..."
+        rm -f $DOWNLOADED_FILE
+	if [ $? -ne 0 ]; then
+	    echo -e "Failed to remove $DOWNLOADED_FILE"
+	    exit -1
+	fi
+    fi
+
+    resp=$(hzn mms object download -t ${5} -i ${6} 2>&1)
+    respContains=$(echo $resp | grep "Unauthorized")
+    if [ "${respContains}" != "" ]; then
+        echo -e "\nERROR: Failed to download mms object ${5} ${6} for user ${2}. Output was:"
+        echo -e "$resp"
+        exit 1
+    fi
+
+    # publish
+    resp=$(hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt 2>&1)
+    #echo "publish resp: $resp"
+    verify "$resp" "Unauthorized" "Got unexpected error with updating object by ${2} only have READ access"
+}
+
+# test user/node who has Write access to some object types
+# $1 - USER_ORG
+# $2 - USER_REG_USERNAME
+# $3 - USER_REG_USERPWD
+# $4 - Expected number of object returned by list object cli
+# $5 - Object Type that user have access
+# $6 - Object ID that user have access
+# $7 - Object Type that user doesn't have access
+# $8 - Object ID that user doesn't have access
+function testUserHaveAccessToSomeObjects {
+    echo "Testing MMS ACL access for ${2} in ${1} org"
+    USER_REG_USER_AUTH="${1}/${2}:${3}"
+    export HZN_EXCHANGE_USER_AUTH=${USER_REG_USER_AUTH}
+    export HZN_ORG_ID=${1}
+
+    # list
+    hzn mms object list
+    OBJS_CMD=$(hzn mms object list | awk '{if(NR>1)print}')
+    NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
+    if [ "${4}" != "${NUM_OBJS}" ]
+    then
+        echo -e "Got unexpected number of objects when listing all objects for ${2} in org ${1}"
+        exit -1
+    fi
+
+    for (( ix=0; ix<$NUM_OBJS; ix++ ))
+    do
+        OBJ_TYPE=$(echo $OBJS_CMD | jq -r '.['${ix}'].objectType') 
+        if [ ${OBJ_TYPE} != ${5} ]; then
+            echo -e "Got object in unexpected objectType ${OBJ_TYPE} for user ${2} in org ${1}"
+            exit -1
+        fi
+    done
 
 
+    # download
+    # have access to "testacl" object type
+    echo "user ${2} is dowloading object: ${5} ${6}"
 
+    DOWNLOADED_FILE="${5}_${6}"
+    if [ -f "$DOWNLOADED_FILE" ]; then
+        echo "$DOWNLOADED_FILE already exists. Deleted before downloading..."
+        rm -f $DOWNLOADED_FILE
+        if [ $? -ne 0 ]; then
+            echo -e "Failed to remove $DOWNLOADED_FILE"
+            exit -1
+        fi
+    fi
+
+    resp=$(hzn mms object download -t ${5} -i ${6} 2>&1)
+    respContains=$(echo $resp | grep "Unauthorized")
+    if [ "${respContains}" != "" ]; then
+        echo -e "\nERROR: Failed to download mms object ${5} ${6} for user ${2}. Output was:"
+        echo -e "$resp"
+        exit 1
+    fi
+
+    # don't have access to "model" object type
+    echo "user ${2} is dowloading object: ${7} ${8}"
+    resp=$(hzn mms object download -t ${7} -i ${8} 2>&1)
+    verify "$resp" "Unauthorized" "User ${2} should not have access to download mms object ${7} ${8}"
+
+    # publish
+    # have access to update object with "testacl" object type
+    read -d '' resmeta <<EOF
+    {
+      "objectID": "${6}",
+      "objectType": "${5}",
+      "destinationType": "",
+      "destinationID": "",
+      "version": "1.0.0",
+      "description": "test acl - test update by user",
+      "expiration": "2032-10-02T15:00:00Z"
+    }
+EOF
+
+    echo "$resmeta" > /tmp/meta.json
+    hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
+    RC=$?
+    if [ $RC -ne 0 ]
+    then
+        echo -e "Failed to publish mms object ${5} ${6} by user ${2} in the org ${1}: $RC"
+        exit -1
+    fi
+
+    # don't have access to update object with "test" object type
+    read -d '' resmeta <<EOF
+    {
+      "objectID": "${8}",
+      "objectType": "${7}",
+      "destinationType": "test",
+      "version": "1.0.0",
+      "description": "test acl - test update by user"
+    }
+EOF
+
+    echo "$resmeta" > /tmp/meta.json
+    resp=$(hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt 2>&1)
+    verify "$resp" "Unauthorized" "Got unexpected error with updating object in object type ${7} by ${2}"
+
+}
+
+# test user/node can only GET public object, but can't update object
+# $1 - USER_ORG
+# $2 - USER_REG_USERNAME
+# $3 - USER_REG_USERPWD
+# $4 - Org of public object
+# $5 - Object Type of the public object
+# $6 - Object ID of the public object
+function verifyUserAccessForPublicObject {
+    echo "Verify user $1/$2 has READ access to public object in $4 org"
+
+    # user can get object metadata and object data
+    # Test what happens when an unknown user id is attempted
+    GET_OBJ_CODE=$(curl -o -IL -s -X GET -w "%{http_code}" $CERT_VAR -u ${1}/${2}:${3} --header 'Content-Type: application/json' "${CSS_URL}/api/v1/objects/${4}/${5}/${6}")
+    echo "GET_OBJ_CODE: $GET_OBJ_CODE"
+    if [ "$GET_OBJ_CODE" != "200" ]
+    then
+        echo -e "Error testing CSS API with get public object, should have received 200, received $GET_OBJ_CODE"
+        exit -1
+    fi
+
+    GET_OBJ_DATA_CODE=$(curl -o -IL -s -X GET -w "%{http_code}" $CERT_VAR -u ${1}/${2}:${3} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data")
+    echo "GET_OBJ_DATA_CODE: $GET_OBJ_DATA_CODE"
+    if [ "$GET_OBJ_DATA_CODE" != "200" ]
+    then
+        echo -e "Error testing CSS API with get public object data, should have received 200, received $GET_OBJ_DATA_CODE"
+        exit -1
+    fi
+
+    echo "Verify user $1/$2 doesn't have WRITE access to public object in $4 org"
+    # user can't update object metadata or object data
+read -d '' resmeta <<EOF
+{
+  "data": [],
+  "meta": {
+  	"objectID": "${6}",
+  	"objectType": "${5}",
+  	"destinationID": "",
+  	"destinationType": "",
+  	"version": "2.0.0",
+    "description": "test update public object",
+    "public": true
+  }
+}
+EOF
+
+    ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${1}/${2}:${3} "${CSS_URL}/api/v1/objects/${4}/${5}/${6}" --data @-)
+    echo "PUT_OBJ_CODE: $ADDM"
+    if [ "$ADDM" == "204" ]
+    then
+        echo -e "$resmeta \nPUT returned:"
+        echo $ADDM
+        echo -e "Public object should not be updated by user $2 in org $1"
+        exit -1
+    fi
+
+    DATA=/tmp/data.txt
+
+    ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${1}/${2}:${3} "${CSS_URL}/api/v1/objects/${4}/${5}/${6}/data" --data-binary @${DATA})
+    echo "PUT_OBJ_DATA_CODE: $ADDM"
+    if [ "$ADDM" == "204" ]
+    then
+        echo -e "$resmeta \nPUT returned:"
+        echo $ADDM
+        echo -e "Public object data should not be updated by user $2 in org $1"
+        exit -1
+    fi
+}
+
+PUBLIC_OBJ_ORG="IBM"
+PUBLIC_OBJ_TYPE="public"
+PUBLIC_OBJ_ID="public.tgz"
+
+#userdev/useranax1 as aclReader to all object types (can't create/update/delete object, can get object or object data)
+USER_ORG="userdev"
+USER_REG_USERNAME="useranax1"
+USER_REG_USERPWD="useranax1pw"
+TARGET_NUM_OBJS=2
+testUserHaveAccessToALLObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID
+verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
+
+# node userdev/an12345 as aclReader to all object types (can't create/update/delete object, can get object or object data)
+NODE_ID="an12345"
+NODE_TOKEN="abcdefg"
+testUserHaveAccessToALLObjects $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID
+verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
+
+# e2edev@somecomp.com/anax1 as aclWriter to object type "testacl"
+# noce e2edev@somecomp.com/an12345 as aclWriter to object type "testacl"
+USER_ORG="e2edev@somecomp.com"
+USER_REG_USERNAME="anax1"
+USER_REG_USERPWD="anax1pw"
+TARGET_NUM_OBJS=1
+TEST_ACL_OBJ_ID="test_acl1"
+testUserHaveAccessToSomeObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $TEST_ACL_OBJ_TYPE $TEST_ACL_OBJ_ID $OBJECT_TYPE $OBJECT_ID
+verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
+
+testUserHaveAccessToSomeObjects $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS $TEST_ACL_OBJ_TYPE $TEST_ACL_OBJ_ID $OBJECT_TYPE $OBJECT_ID
+verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
+
+# set back to the value before sync service testing
+export HZN_ORG_ID=${HZN_ORG_ID_BEFORE_MODIFY}
+export HZN_EXCHANGE_USER_AUTH=${HZN_EX_USER_AUTH_BEFORE_MODIFY}
 
 echo "Testing model management APIs successful"

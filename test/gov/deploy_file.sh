@@ -42,6 +42,11 @@ then
   FILENAME=policy-${FILENAME}
 fi
 
+IS_PUBLIC_OBJ=false
+if [ "${3}" == "IBM" ]; then
+  IS_PUBLIC_OBJ=true
+fi
+
 # Setup the file sync service object metadata, based on the input parameters.
 read -d '' resmeta <<EOF
 {
@@ -53,34 +58,109 @@ read -d '' resmeta <<EOF
   	"destinationType": "${DEST_TYPE}",
   	"version": "${2}",
     "description": "a file",
-    "destinationPolicy": ${OBJ_POLICY}
+    "destinationPolicy": ${OBJ_POLICY},
+    "public": ${IS_PUBLIC_OBJ}
   }
 }
 EOF
 
-admin_user="${3}admin"
-admin_pw="${3}adminpw"
-if [ "${3}" == "e2edev@somecomp.com" ]; then
-  admin_user="e2edevadmin"
-  admin_pw="e2edevadminpw"
-fi
+if [ "${3}" == "IBM" ]; then
+    # deploy public object to IBM using exchange root credentials
+    ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:${EXCH_ROOTPW} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 
-ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+    if [ "$ADDM" != "204" ]
+    then
+        echo -e "$resmeta \nPUT returned:"
+        echo $ADDM
+        exit -1
+    fi
 
-if [ "$ADDM" != "204" ]
-then
-  echo -e "$resmeta \nPUT returned:"
-  echo $ADDM
-  exit -1
-fi
+    ADDF=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:${EXCH_ROOTPW} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
 
-ADDF=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+    if [ "$ADDF" == "204" ]
+    then
+        echo -e "Data file ${1} added successfully"
+    else
+        echo -e "Data file PUT returned:"
+        echo $ADDF
+        exit -1
+    fi
 
-if [ "$ADDF" == "204" ]
-then
-  echo -e "Data file ${1} added successfully"
 else
-  echo -e "Data file PUT returned:"
-  echo $ADDF
-  exit -1
+    admin_user="${3}admin"
+    admin_pw="${3}adminpw"
+    if [ "${3}" == "e2edev@somecomp.com" ]; then
+        admin_user="e2edevadmin"
+        admin_pw="e2edevadminpw"
+    fi
+
+ read -d '' objectacl <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "user",
+      "Username": "${admin_user}",
+      "ACLRole": "aclWriter"
+    }
+  ]
+}
+EOF
+
+  # add admin_user to CSS ACL objects list
+  ADDUSERTOACL=$(echo "$objectacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/${3}" --data @-)
+  if [ "$ADDUSERTOACL" != "204" ]
+  then
+    echo -e "$objectacl \nPUT object acl returned:"
+    echo $ADDUSERTOACL
+    exit -1
+  fi
+
+  read -d '' destinationacl <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "user",
+      "Username": "*",
+      "ACLRole": "aclWriter"
+    },
+    {
+      "ACLUserType": "node",
+      "Username": "*",
+      "ACLRole": "aclWriter"
+    }
+  ]
+}
+EOF
+
+  # add * to CSS ACL destinations list
+  ADDALLTODESTACL=$(echo "$destinationacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/destinations/${3}" --data @-)
+  if [ "$ADDALLTODESTACL" != "204" ]
+  then
+    echo -e "$destinationacl \nPUT object acl returned:"
+    echo $ADDALLTODESTACL
+    exit -1
+  fi
+
+  ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
+
+  if [ "$ADDM" != "204" ]
+  then
+    echo -e "$resmeta \nPUT returned:"
+    echo $ADDM
+    exit -1
+  fi
+  
+  ADDF=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} --header 'Content-Type:application/octet-stream' "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}/data" --data-binary @${1})
+
+  if [ "$ADDF" == "204" ]
+  then
+    echo -e "Data file ${1} added successfully"
+  else
+    echo -e "Data file PUT returned:"
+    echo $ADDF
+    exit -1
+  fi
+
 fi
