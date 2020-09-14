@@ -355,8 +355,8 @@
       "translation": "Create the organization resource in the Horizon Exchange."
     },
     {
-      "id": "Create this organization.",
-      "translation": "Create this organization."
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "Create this organization and assign it to an agbot."
     },
     {
       "id": "Label for new organization.",
@@ -365,6 +365,10 @@
     {
       "id": "Description for new organization.",
       "translation": "Description for new organization."
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags."
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -377,6 +381,14 @@
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "The number of seconds to increment the agent's heartbeat interval."
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit."
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'."
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
@@ -395,16 +407,24 @@
       "translation": "New description for organization."
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "New minimum number of seconds the between agent heartbeats to the Exchange."
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags."
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "New maximum number of seconds between agent heartbeats to the Exchange."
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute."
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "New value for the number of seconds to increment the agent's heartbeat interval."
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute."
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute."
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -3031,10 +3051,6 @@
       "translation": "error creating {HORIZONGITIGNOREFILE} for source code management. {Err}"
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "unable to demarshal {UserInputFilePath} file, error: {Err}"
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}"
     },
@@ -3055,8 +3071,8 @@
       "translation": "{USERINPUTFILE} has error: {Err}"
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}"
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}"
     },
     {
       "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
@@ -3123,6 +3139,10 @@
       "translation": "unable to write json object for {FileName} to file {FilePath}, error: {Err}"
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "unable to write json object for userinput to file {FilePath}, error: {Err}"
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag"
     },
@@ -3177,6 +3197,14 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "translation": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}"
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "translation": "Failed to remove the UDS socket file: {Err}"
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "Failed to remove FSS Authentication credential folder, error: {Err}"
     },
     {
       "id": "unable to list containers, {Err}",
@@ -3707,24 +3735,32 @@
       "translation": "{Negatives}, {N}"
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "Invalid input for {Negatives}. Only positive integers are allowed."
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "Invalid input for {Negatives}. Negative integer is not allowed."
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "The value for --heartbeatmin must be less than the value for --heartbeatmax."
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax."
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "Invalid input for --max-nodes. Negative integer is not allowed."
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "Organization {TheOrg} is successfully added to the Exchange."
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "org {TheOrg} not found."
+      "id": "No agbot found in the Exchange.",
+      "translation": "No agbot found in the Exchange."
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update."
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}"
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3735,8 +3771,32 @@
       "translation": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?"
     },
     {
+      "id": "org {TheOrg} not found.",
+      "translation": "org {TheOrg} not found."
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "translation": "Organization {TheOrg} is successfully removed."
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed."
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max})."
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "Empty string is specified with -t, all tags will be removed."
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'."
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -4531,8 +4591,16 @@
       "translation": "found no services in the Exchange matched: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}."
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "found: {Org}, {Url}, {Arch}, {VersionRange}"
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "Failed to check if deployment requires privileged: {Err}"
     },
     {
       "id": "did not find pattern '{PatKey}' as expected",
@@ -4553,6 +4621,18 @@
     {
       "id": "Wrote {InputFile}",
       "translation": "Wrote {InputFile}"
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "translation": "failed to marshal the example node policy file: {Err}"
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "translation": "problem writing the example node policy file: {Err}"
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}"
     },
     {
       "id": "Status of the services you are watching:",
@@ -4747,20 +4827,20 @@
       "translation": "Error waiting for command: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog could not be opened or does not exist: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} could not be opened or does not exist: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog could not get stats: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} could not get stats: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Error reading from /var/log/syslog: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Error reading from {SysLogPath}: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Unable to state /var/log/syslog: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Unable to state {SysLogPath}: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",

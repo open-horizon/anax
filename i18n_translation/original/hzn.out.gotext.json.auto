@@ -1485,9 +1485,9 @@
             "fuzzy": true
         },
         {
-            "id": "Create this organization.",
-            "message": "Create this organization.",
-            "translation": "Create this organization.",
+            "id": "Create this organization and assign it to an agbot.",
+            "message": "Create this organization and assign it to an agbot.",
+            "translation": "Create this organization and assign it to an agbot.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1502,6 +1502,13 @@
             "id": "Description for new organization.",
             "message": "Description for new organization.",
             "translation": "Description for new organization.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+            "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+            "translation": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1523,6 +1530,20 @@
             "id": "The number of seconds to increment the agent's heartbeat interval.",
             "message": "The number of seconds to increment the agent's heartbeat interval.",
             "translation": "The number of seconds to increment the agent's heartbeat interval.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+            "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+            "translation": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+            "message": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+            "translation": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1555,23 +1576,37 @@
             "fuzzy": true
         },
         {
-            "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-            "message": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-            "translation": "New minimum number of seconds the between agent heartbeats to the Exchange.",
+            "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+            "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+            "translation": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-            "message": "New maximum number of seconds between agent heartbeats to the Exchange.",
-            "translation": "New maximum number of seconds between agent heartbeats to the Exchange.",
+            "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+            "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+            "translation": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
         {
-            "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-            "message": "New value for the number of seconds to increment the agent's heartbeat interval.",
-            "translation": "New value for the number of seconds to increment the agent's heartbeat interval.",
+            "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+            "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+            "translation": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+            "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+            "translation": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+            "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+            "translation": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -9312,31 +9347,6 @@
             "fuzzy": true
         },
         {
-            "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-            "message": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-            "translation": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "UserInputFilePath",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "userInputFilePath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
             "message": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
             "translation": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
@@ -9462,9 +9472,9 @@
             "fuzzy": true
         },
         {
-            "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-            "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-            "translation": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
+            "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+            "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+            "translation": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -9484,10 +9494,10 @@
                     "expr": "ix"
                 },
                 {
-                    "id": "MicroWork",
+                    "id": "AbstractUserInput",
                     "string": "%[3]v",
-                    "type": "github.com/open-horizon/anax/common.MicroWork",
-                    "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
+                    "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
+                    "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
                     "argNum": 3,
                     "expr": "ms"
                 },
@@ -9875,6 +9885,31 @@
             "fuzzy": true
         },
         {
+            "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+            "message": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+            "translation": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "FilePath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "filePath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
             "message": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
             "translation": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
@@ -10204,6 +10239,40 @@
                     "underlyingType": "interface{Error() string}",
                     "argNum": 3,
                     "expr": "cerr"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to remove the UDS socket file: {Err}",
+            "message": "Failed to remove the UDS socket file: {Err}",
+            "translation": "Failed to remove the UDS socket file: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+            "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
+            "translation": "Failed to remove FSS Authentication credential folder, error: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -12541,9 +12610,9 @@
             "fuzzy": true
         },
         {
-            "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-            "message": "Invalid input for {Negatives}. Only positive integers are allowed.",
-            "translation": "Invalid input for {Negatives}. Only positive integers are allowed.",
+            "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+            "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
+            "translation": "Invalid input for {Negatives}. Negative integer is not allowed.",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -12558,9 +12627,16 @@
             "fuzzy": true
         },
         {
-            "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-            "message": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-            "translation": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
+            "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+            "message": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+            "translation": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+            "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
+            "translation": "Invalid input for --max-nodes. Negative integer is not allowed.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -12582,26 +12658,41 @@
             "fuzzy": true
         },
         {
-            "id": "org {TheOrg} not found.",
-            "message": "org {TheOrg} not found.",
-            "translation": "org {TheOrg} not found.",
+            "id": "No agbot found in the Exchange.",
+            "message": "No agbot found in the Exchange.",
+            "translation": "No agbot found in the Exchange.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+            "message": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+            "translation": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "TheOrg",
-                    "string": "%[1]s",
+                    "id": "Agbot",
+                    "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
+                    "expr": "agbot"
+                },
+                {
+                    "id": "TheOrg",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
                     "expr": "theOrg"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-            "message": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-            "translation": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
+            "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+            "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+            "translation": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -12640,6 +12731,23 @@
             "fuzzy": true
         },
         {
+            "id": "org {TheOrg} not found.",
+            "message": "org {TheOrg} not found.",
+            "translation": "org {TheOrg} not found.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TheOrg",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "theOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Organization {TheOrg} is successfully removed.",
             "message": "Organization {TheOrg} is successfully removed.",
             "translation": "Organization {TheOrg} is successfully removed.",
@@ -12652,6 +12760,97 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "theOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+            "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+            "translation": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "JoinnegFlags_",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "strings.Join(negFlags, \",\")"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+            "message": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+            "translation": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Min",
+                    "string": "%[1]v",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 1,
+                    "expr": "min"
+                },
+                {
+                    "id": "Max",
+                    "string": "%[2]v",
+                    "type": "int",
+                    "underlyingType": "int",
+                    "argNum": 2,
+                    "expr": "max"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Empty string is specified with -t, all tags will be removed.",
+            "message": "Empty string is specified with -t, all tags will be removed.",
+            "translation": "Empty string is specified with -t, all tags will be removed.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+            "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+            "translation": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Tag",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "tag"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+            "message": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+            "translation": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "AgOrg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "agOrg"
+                },
+                {
+                    "id": "Ag1",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "ag1"
                 }
             ],
             "fuzzy": true
@@ -16109,6 +16308,63 @@
             "fuzzy": true
         },
         {
+            "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+            "message": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+            "translation": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "VersionRange",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "versionRange"
+                },
+                {
+                    "id": "Org",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "org"
+                },
+                {
+                    "id": "Url",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "url"
+                },
+                {
+                    "id": "ServiceType",
+                    "string": "%[4]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 4,
+                    "expr": "serviceType"
+                },
+                {
+                    "id": "NodeType",
+                    "string": "%[5]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 5,
+                    "expr": "n.GetNodeType()"
+                },
+                {
+                    "id": "NId",
+                    "string": "%[6]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 6,
+                    "expr": "nId"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
             "message": "found: {Org}, {Url}, {Arch}, {VersionRange}",
             "translation": "found: {Org}, {Url}, {Arch}, {VersionRange}",
@@ -16145,6 +16401,23 @@
                     "underlyingType": "string",
                     "argNum": 4,
                     "expr": "versionRange"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Failed to check if deployment requires privileged: {Err}",
+            "message": "Failed to check if deployment requires privileged: {Err}",
+            "translation": "Failed to check if deployment requires privileged: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -16246,6 +16519,57 @@
                     "underlyingType": "string",
                     "argNum": 1,
                     "expr": "inputFile"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to marshal the example node policy file: {Err}",
+            "message": "failed to marshal the example node policy file: {Err}",
+            "translation": "failed to marshal the example node policy file: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "problem writing the example node policy file: {Err}",
+            "message": "problem writing the example node policy file: {Err}",
+            "translation": "problem writing the example node policy file: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+            "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+            "translation": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodePolicySampleFile",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nodePolicySampleFile"
                 }
             ],
             "fuzzy": true
@@ -17105,68 +17429,100 @@
             "fuzzy": true
         },
         {
-            "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-            "message": "/var/log/syslog could not be opened or does not exist: {Err}",
-            "translation": "/var/log/syslog could not be opened or does not exist: {Err}",
+            "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+            "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+            "translation": "{SysLogPath} could not be opened or does not exist: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Err",
+                    "id": "SysLogPath",
                     "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
+                    "argNum": 2,
                     "expr": "err"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "/var/log/syslog could not get stats: {Err}",
-            "message": "/var/log/syslog could not get stats: {Err}",
-            "translation": "/var/log/syslog could not get stats: {Err}",
+            "id": "{SysLogPath} could not get stats: {Err}",
+            "message": "{SysLogPath} could not get stats: {Err}",
+            "translation": "{SysLogPath} could not get stats: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Err",
+                    "id": "SysLogPath",
                     "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
+                    "argNum": 2,
                     "expr": "err"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "Error reading from /var/log/syslog: {Err}",
-            "message": "Error reading from /var/log/syslog: {Err}",
-            "translation": "Error reading from /var/log/syslog: {Err}",
+            "id": "Error reading from {SysLogPath}: {Err}",
+            "message": "Error reading from {SysLogPath}: {Err}",
+            "translation": "Error reading from {SysLogPath}: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Err",
+                    "id": "SysLogPath",
                     "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
+                    "argNum": 2,
                     "expr": "err"
                 }
             ],
             "fuzzy": true
         },
         {
-            "id": "Unable to state /var/log/syslog: {Err}",
-            "message": "Unable to state /var/log/syslog: {Err}",
-            "translation": "Unable to state /var/log/syslog: {Err}",
+            "id": "Unable to state {SysLogPath}: {Err}",
+            "message": "Unable to state {SysLogPath}: {Err}",
+            "translation": "Unable to state {SysLogPath}: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Err",
+                    "id": "SysLogPath",
                     "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
-                    "argNum": 1,
+                    "argNum": 2,
                     "expr": "err"
                 }
             ],
