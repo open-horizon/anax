@@ -24,4 +24,4 @@ before_script:
 - docker ps
 
 script:
-  - 'if [ "${TRAVIS_PULL_REQUEST}" = "true" ]; then make test -C test TEST_VARS="${tests}"; fi'
+  - 'if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then make test -C test TEST_VARS="${tests}"; fi'
