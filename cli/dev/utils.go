@@ -727,12 +727,14 @@ func stopContainers(dc *common.DeploymentConfig, cw *container.ContainerWorker, 
 
 		cliutils.Verbose(msgPrinter.Sprintf("Found containers %v", containers))
 
-		// Locate the container and stop it.
+		// Locate the dev container(s) and stop it.
 		for _, c := range containers {
-			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
-			msgPrinter.Printf("Stop %v: %v with instance id prefix %v", logName, dc.CLIString(), msId)
-			msgPrinter.Println()
-			cw.ResourcesRemove([]string{msId})
+			if _, isDevService := c.Labels[container.LABEL_PREFIX+".dev_service"]; isDevService {
+				msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
+				msgPrinter.Printf("Stop %v: %v with instance id prefix %v", logName, dc.CLIString(), msId)
+				msgPrinter.Println()
+				cw.ResourcesRemove([]string{msId})
+			}
 		}
 	}
 	return nil
