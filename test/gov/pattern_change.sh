@@ -329,8 +329,8 @@ echo -e "${PREFIX} change node pattern on the exchange to sns"
 RES=$(curl -sLX PATCH $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json'  -u $auth  -d  '{"pattern":"e2edev@somecomp.com/sns"}' "${HZN_EXCHANGE_URL}/orgs/$org/nodes/an12345")
 results "$RES"
 
-echo "Sleeping 60 seconds..."
-sleep 60
+echo "Sleeping 90 seconds..."
+sleep 90
 
 checkNodePattern "e2edev@somecomp.com/sns"
 verify_agreements
