@@ -361,12 +361,18 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 
 	// Now drop into the long wait for a service to get started on the node.
 	if waitService != "" {
-		msgPrinter.Printf("Horizon node is registered. Workload services should begin executing shortly.")
-		msgPrinter.Println()
+		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+			msgPrinter.Printf("NOTE: The -s flag is currently not supported for nodeType: %s. Node registration will complete without waiting for the service to start.", nodeType)
+			msgPrinter.Println()
+			msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+			msgPrinter.Println()
+		} else {
+			msgPrinter.Printf("Horizon node is registered. Workload services should begin executing shortly.")
+			msgPrinter.Println()
 
-		// Wait for the service to be started.
-		WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
-
+			// Wait for the service to be started.
+			WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
+		}
 	} else {
 		msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 		msgPrinter.Println()
