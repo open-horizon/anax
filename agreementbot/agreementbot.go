@@ -8,7 +8,6 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -19,7 +18,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -45,23 +43,18 @@ var businessPolManager *BusinessPolicyManager
 
 // must be safely-constructed!!
 type AgreementBotWorker struct {
-	worker.BaseWorker  // embedded field
-	db                 persistence.AgbotDatabase
-	httpClient         *http.Client // a shared HTTP client instance for this worker
-	pm                 *policy.PolicyManager
-	consumerPH         *ConsumerPHMgr
-	ready              bool
-	NHManager          *NodeHealthManager
-	GovTiming          DVState
-	shutdownStarted    bool
-	lastAgMakingTime   uint64 // the start time for the last agreement making cycle, only used by non-pattern case
-	MMSObjectPM        *MMSObjectPolicyManager
-	lastSearchComplete bool
-	lastSearchTime     uint64
-	searchThread       chan bool
-	retryAgreements    *RetryAgreements
-	rescanLock         sync.Mutex // The lock that protects the rescanNeeded flag. The rescanNeeded flag can be changed on different threads.
-	rescanNeeded       bool       // A broad indicator that something policy or pattern related changed, and therefore the agbot needs to rescan all nodes.
+	worker.BaseWorker // embedded field
+	db                persistence.AgbotDatabase
+	httpClient        *http.Client // a shared HTTP client instance for this worker
+	pm                *policy.PolicyManager
+	consumerPH        *ConsumerPHMgr
+	ready             bool
+	NHManager         *NodeHealthManager
+	GovTiming         DVState
+	shutdownStarted   bool
+	MMSObjectPM       *MMSObjectPolicyManager
+	noworkDispatch    int64       // The last time the NoWorkHandler was dispatched.
+	nodeSearch        *NodeSearch // The object that controls node searches and the state of search sessions.
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
@@ -70,20 +63,16 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 
 	baseWorker := worker.NewBaseWorker(name, cfg, ec)
 	worker := &AgreementBotWorker{
-		BaseWorker:         baseWorker,
-		db:                 db,
-		httpClient:         cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		consumerPH:         NewConsumerPHMgr(),
-		ready:              false,
-		NHManager:          NewNodeHealthManager(),
-		GovTiming:          DVState{},
-		shutdownStarted:    false,
-		lastAgMakingTime:   0,
-		lastSearchComplete: true,
-		lastSearchTime:     0,
-		searchThread:       make(chan bool, 10),
-		retryAgreements:    NewRetryAgreements(),
-		rescanNeeded:       false,
+		BaseWorker:      baseWorker,
+		db:              db,
+		httpClient:      cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		consumerPH:      NewConsumerPHMgr(),
+		ready:           false,
+		NHManager:       NewNodeHealthManager(),
+		GovTiming:       DVState{},
+		shutdownStarted: false,
+		noworkDispatch:  time.Now().Unix(),
+		nodeSearch:      NewNodeSearch(),
 	}
 
 	patternManager = NewPatternManager()
@@ -244,18 +233,18 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewPolicyChangeCommand(msg)
 		case events.CHANGE_AGBOT_AGREEMENT_TYPE:
 			// An agbot agreement has changed.
-			w.setRescanNeeded()
+			w.nodeSearch.SetRescanNeeded()
 		case events.CHANGE_SERVICE_POLICY_TYPE:
 			w.Commands <- NewServicePolicyChangeCommand(msg)
 		case events.CHANGE_NODE_POLICY_TYPE:
 			// A node policy has changed.
-			w.setRescanNeeded()
+			w.nodeSearch.SetRescanNeeded()
 		case events.CHANGE_NODE_AGREEMENT_TYPE:
 			// A node agreement has changed.
-			w.setRescanNeeded()
+			w.nodeSearch.SetRescanNeeded()
 		case events.CHANGE_NODE_TYPE:
 			// The node itself has changed.
-			w.setRescanNeeded()
+			w.nodeSearch.SetRescanNeeded()
 		}
 
 	default: //nothing
@@ -342,6 +331,9 @@ func (w *AgreementBotWorker) Initialize() bool {
 	}
 
 	glog.Info("AgreementBot worker started")
+
+	// Tell the node search component to initialize itself.
+	w.nodeSearch.Init(w.db, w.pm, w.consumerPH, w.Messages(), w, w.Config)
 
 	// Make sure that our public key is registered in the exchange so that other parties
 	// can send us messages.
@@ -443,7 +435,7 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 			}
 
 			// Cached policy has changed, make sure we rescan the nodes.
-			w.setRescanNeeded()
+			w.nodeSearch.SetRescanNeeded()
 
 		}
 
@@ -579,26 +571,17 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		return false
 	}
 
+	// When the command handler gets called by the worker framework, the noworkhandler timer is restarted.
+	// Therefore, if there is a steady flow of commands coming into the command handler, the noworkhandler
+	// might never get control. Given that, the noworkhandler will be explicitly invoked by the command handler
+	// if it hasn't run in a while.
+	if time.Since(time.Unix(w.noworkDispatch, 0)).Seconds() >= float64(w.Config.AgreementBot.NewContractIntervalS*2) {
+		glog.V(5).Infof(AWlogString(fmt.Sprintf("early NoWorkhandler dispatch")))
+		w.NoWorkHandler()
+	}
+
 	return true
 
-}
-
-func (w *AgreementBotWorker) setRescanNeeded() {
-	w.rescanLock.Lock()
-	defer w.rescanLock.Unlock()
-	w.rescanNeeded = true
-}
-
-func (w *AgreementBotWorker) unsetRescanNeeded() {
-	w.rescanLock.Lock()
-	defer w.rescanLock.Unlock()
-	w.rescanNeeded = false
-}
-
-func (w *AgreementBotWorker) isRescanNeeded() bool {
-	w.rescanLock.Lock()
-	defer w.rescanLock.Unlock()
-	return w.rescanNeeded
 }
 
 func (w *AgreementBotWorker) processProtocolMessage() {
@@ -656,15 +639,13 @@ func (w *AgreementBotWorker) processProtocolMessage() {
 
 func (w *AgreementBotWorker) NoWorkHandler() {
 
+	w.noworkDispatch = time.Now().Unix()
+
 	glog.V(3).Infof("AgreementBotWorker queueing deferred commands")
 	for _, cph := range w.consumerPH.GetAll() {
 		w.consumerPH.Get(cph).HandleDeferredCommands()
 	}
 	glog.V(4).Infof("AgreementBotWorker done queueing deferred commands")
-
-	// Combinations of nodes and policies that seem to be compatible but which fail to make an agreement
-	// due to unfortunate timing, will be retried by this function.
-	w.handleRetryAgreements()
 
 	// Report protocol specific buffered queue sizes
 	w.reportWorkQueues()
@@ -675,36 +656,12 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 	// the agreement protocol process. If there are any, then we will hold the quiesce from completing.
 	if !w.ShutdownStarted() {
 
-		// If the search has completed, remember it and log the completion.
-		select {
-		case w.lastSearchComplete = <-w.searchThread:
-			glog.V(3).Infof(AWlogString(fmt.Sprintf("Done Polling Exchange, next scan starts from %v.", time.Unix(int64(w.lastAgMakingTime), 0).Format(cutil.ExchangeTimeFormat))))
-		default:
-			if !w.lastSearchComplete {
-				glog.V(5).Infof(AWlogString("waiting for search results."))
-			}
-		}
-
-		// Ensure that no messages are missed.
+		// Ensure that no messages are missed, and then perform a node scan if necessary. If the agreement protocol work queues are
+		// at their configured max depth, then don't bother processing anything so that the protocol worker threads have a chance
+		// to catch up.
 		if !w.workQueuesAtDepth() {
 			w.processProtocolMessage()
-		}
-
-		// If there is still no rescan needed but it's been a while since the last full scan, then do a full scan anyway.
-		if w.lastSearchComplete && !w.isRescanNeeded() && !w.workQueuesAtDepth() && (w.Config.GetAgbotFullRescan() != 0 && (uint64(time.Now().Unix())-w.lastSearchTime) >= w.Config.GetAgbotFullRescan()) {
-			w.lastSearchTime = uint64(time.Now().Unix())
-			glog.V(3).Infof(AWlogString(fmt.Sprintf("Polling Exchange (full rescan), starting from %v.", time.Unix(int64(w.lastAgMakingTime), 0).Format(cutil.ExchangeTimeFormat))))
-			w.lastSearchComplete = false
-			go w.findAndMakeAgreements()
-		}
-
-		// If a search has not been started recently, start one now.
-		if w.lastSearchComplete && w.isRescanNeeded() && !w.workQueuesAtDepth() && ((uint64(time.Now().Unix()) - w.lastSearchTime) >= uint64(w.Config.AgreementBot.NewContractIntervalS)) {
-			w.lastSearchTime = uint64(time.Now().Unix())
-			glog.V(3).Infof(AWlogString(fmt.Sprintf("Polling Exchange, starting from %v.", time.Unix(int64(w.lastAgMakingTime), 0).Format(cutil.ExchangeTimeFormat))))
-			w.lastSearchComplete = false
-			w.unsetRescanNeeded()
-			go w.findAndMakeAgreements()
+			w.nodeSearch.Scan()
 		}
 
 	} else {
@@ -774,161 +731,6 @@ func (w *AgreementBotWorker) workQueuesAtDepth() bool {
 	return false
 }
 
-// Go through all the patterns and business polices and make agreements.
-func (w *AgreementBotWorker) findAndMakeAgreements() {
-	// current timestamp to be saved as the last agreement making cycle start time later.
-	currentAgMakingStartTime := uint64(time.Now().Unix()) - 1
-	searchError := false
-
-	// Get a list of all the orgs this agbot is serving.
-	allOrgs := w.pm.GetAllPolicyOrgs()
-	for _, org := range allOrgs {
-		// Get a copy of all policies in the policy manager that pulls from the policy files so that we can safely iterate the list.
-		patternPolicies := w.pm.GetAllAvailablePolicies(org)
-		for _, consumerPolicy := range patternPolicies {
-			if consumerPolicy.PatternId != "" {
-				if err := w.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0, nil); err != nil {
-					// Dont move the changed since time forward since there was an error.
-					searchError = true
-					break
-				}
-			} else if pBE := businessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
-				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
-				if err := w.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated, nil); err != nil {
-					// Dont move the changed since time forward since there was an error.
-					searchError = true
-					break
-				}
-			}
-		}
-		if searchError {
-			break
-		}
-	}
-
-	// Done scanning all nodes across all policies.
-	if !searchError {
-		w.lastAgMakingTime = currentAgMakingStartTime
-	}
-
-	w.searchThread <- true
-}
-
-// Returns true if the input nodeId should be filtered out.
-type SearchFilter func(nodeId string) bool
-
-// Search the exchange and make agreements with any device that is eligible based on the policies we have and
-// agreement protocols that we support.
-func (w *AgreementBotWorker) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64, filter SearchFilter) error {
-
-	if devices, err := w.searchExchange(consumerPolicy, org, polName, polLastUpdateTime); err != nil {
-		glog.Errorf("AgreementBotWorker received error searching for %v, error: %v", consumerPolicy, err)
-		return err
-	} else {
-
-		// Get all the agreements for this policy that are still active.
-		pendingAgreementFilter := func() persistence.AFilter {
-			return func(a persistence.Agreement) bool {
-				return a.PolicyName == consumerPolicy.Header.Name && a.AgreementTimedout == 0
-			}
-		}
-
-		ags := make(map[string][]persistence.Agreement)
-
-		// The agreements with this policy could be part of any supported agreement protocol.
-		for _, agp := range policy.AllAgreementProtocols() {
-			// Find all agreements that are in progress. They might be waiting for a reply or not yet finalized.
-			// TODO: To support more than 1 agreement (maxagreements > 1) with this device for this policy, we need to adjust this logic.
-			if agreements, err := w.db.FindAgreements([]persistence.AFilter{persistence.UnarchivedAFilter(), pendingAgreementFilter()}, agp); err != nil {
-				glog.Errorf("AgreementBotWorker received error trying to find pending agreements for protocol %v: %v", agp, err)
-			} else {
-				ags[agp] = agreements
-			}
-		}
-
-		for _, dev := range *devices {
-
-			if filter != nil && filter(dev.Id) {
-				continue
-			}
-
-			glog.V(3).Infof("AgreementBotWorker picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)
-			glog.V(5).Infof("AgreementBotWorker picked up %v", dev)
-
-			// Check for agreements already in progress with this device
-			if found := w.alreadyMakingAgreementWith(&dev, consumerPolicy, ags); found {
-				glog.V(5).Infof("AgreementBotWorker skipping device id %v, agreement attempt already in progress with %v", dev.Id, consumerPolicy.Header.Name)
-				continue
-			}
-
-			// If the device is not ready to make agreements yet, then skip it.
-			if dev.PublicKey == "" {
-				glog.V(5).Infof("AgreementBotWorker skipping device id %v, node is not ready to exchange messages", dev.Id)
-				continue
-			}
-
-			producerPolicy := policy.Policy_Factory(consumerPolicy.Header.Name)
-
-			// Get the cached service policies from the business policy manager. The returned value
-			// is a map keyed by the service id.
-			// There could be many service versions defined in a business policy.
-			// The policy manager only caches the ones that are used by an old agreement for this business policy.
-			// The cached ones may not be what the new agreement will use. If the new agreement chooses a
-			// new service version, then the new service policy will be put into the cache.
-			svcPolicies := make(map[string]externalpolicy.ExternalPolicy, 0)
-			if consumerPolicy.PatternId == "" {
-				svcPolicies = businessPolManager.GetServicePoliciesForPolicy(org, polName)
-			}
-
-			// Select a worker pool based on the agreement protocol that will be used. This is decided by the
-			// consumer policy.
-			protocol := policy.Select_Protocol(producerPolicy, consumerPolicy)
-			cmd := NewMakeAgreementCommand(*producerPolicy, *consumerPolicy, org, polName, dev, svcPolicies)
-
-			bcType, bcName, bcOrg := producerPolicy.RequiresKnownBC(protocol)
-
-			if !w.consumerPH.Has(protocol) {
-				glog.Errorf("AgreementBotWorker unable to find protocol handler for %v.", protocol)
-			} else if bcType != "" && !w.consumerPH.Get(protocol).IsBlockchainWritable(bcType, bcName, bcOrg) {
-				// Get that blockchain running if it isn't up.
-				glog.V(5).Infof("AgreementBotWorker skipping device id %v, requires blockchain %v %v %v that isnt ready yet.", dev.Id, bcType, bcName, bcOrg)
-				w.BaseWorker.Manager.Messages <- events.NewNewBCContainerMessage(events.NEW_BC_CLIENT, bcType, bcName, bcOrg, w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
-				continue
-			} else if !w.consumerPH.Get(protocol).AcceptCommand(cmd) {
-				glog.Errorf("AgreementBotWorker protocol handler for %v not accepting new agreement commands.", protocol)
-			} else {
-				w.consumerPH.Get(protocol).HandleMakeAgreement(cmd, w.consumerPH.Get(protocol))
-				glog.V(5).Infof("AgreementBotWorker queued agreement attempt for policy %v and protocol %v", consumerPolicy.Header.Name, protocol)
-			}
-		}
-
-	}
-	return nil
-
-}
-
-// Check all agreement protocol buckets to see if there are any agreements with this device.
-// Return true if there is already an agreement for this node and policy.
-func (w *AgreementBotWorker) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy, allAgreements map[string][]persistence.Agreement) bool {
-
-	// Check to see if we're already doing something with this device.
-	for _, ags := range allAgreements {
-		// Look for any agreements with the current node.
-		for _, ag := range ags {
-			if ag.DeviceId == dev.Id {
-				if ag.AgreementFinalizedTime != 0 {
-					glog.V(5).Infof("AgreementBotWorker sending agreement verify for %v", ag.CurrentAgreementId)
-					w.consumerPH.Get(ag.AgreementProtocol).VerifyAgreement(&ag, w.consumerPH.Get(ag.AgreementProtocol))
-					w.retryAgreements.AddRetry(consumerPolicy.Header.Name, dev.Id)
-				}
-				return true
-			}
-		}
-	}
-	return false
-
-}
-
 func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
 
 	worker.GetWorkerStatusManager().SetSubworkerStatus(w.GetName(), name, worker.STATUS_STARTED)
@@ -994,27 +796,6 @@ func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
 	}
 }
 
-// This function runs through the agbot policy and builds a list of properties and values that
-// it wants to search on.
-func RetrieveAllProperties(version string, arch string, pol *policy.Policy) (*externalpolicy.PropertyList, error) {
-	pl := new(externalpolicy.PropertyList)
-
-	for _, p := range pol.Properties {
-		*pl = append(*pl, p)
-	}
-
-	if version != "" {
-		*pl = append(*pl, externalpolicy.Property{Name: "version", Value: version})
-	}
-	*pl = append(*pl, externalpolicy.Property{Name: "arch", Value: arch})
-
-	if len(pol.AgreementProtocols) != 0 {
-		*pl = append(*pl, externalpolicy.Property{Name: "agreementProtocols", Value: pol.AgreementProtocols.As_String_Array()})
-	}
-
-	return pl, nil
-}
-
 func DeleteConsumerAgreement(httpClient *http.Client, url string, agbotId string, token string, agreementId string) error {
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("deleting agreement %v in exchange", agreementId)))
@@ -1053,104 +834,6 @@ func DeleteMessage(msgId int, agbotId, agbotToken, exchangeURL string, httpClien
 		} else {
 			glog.V(3).Infof("Deleted exchange message %v", msgId)
 			return nil
-		}
-	}
-}
-
-// Search the exchange for devices to make agreements with. The system should be operating such that devices are
-// not returned from the exchange (for any given set of search criteria) once an agreement which includes those
-// criteria has been reached. This prevents the agbot from continually sending proposals to devices that are
-// already in an agreement.
-//
-// There are 2 ways to search the exchange; (a) by pattern and service or workload URL, or (b) by business policy.
-// If the agbot is working with a policy file that was generated from a pattern, then it will do searches
-// by pattern. If the agbot is working with a business policy, then it will do searches by the business policy.
-func (w *AgreementBotWorker) searchExchange(pol *policy.Policy, polOrg string, polName string, polLastUpdateTime uint64) (*[]exchange.SearchResultDevice, error) {
-
-	// If it is a pattern based policy, search by workload URL and pattern.
-	if pol.PatternId != "" {
-		// Get a list of node orgs that the agbot is serving for this pattern.
-		nodeOrgs := patternManager.GetServedNodeOrgs(polOrg, exchange.GetId(pol.PatternId))
-		if len(nodeOrgs) == 0 {
-			glog.V(3).Infof("Policy file for pattern %v exists but currently the agbot is not serving this policy for any organizations.", pol.PatternId)
-			empty := make([]exchange.SearchResultDevice, 0, 0)
-			return &empty, nil
-		}
-
-		// Setup the search request body
-		ser := exchange.CreateSearchPatternRequest()
-		ser.SecondsStale = w.Config.AgreementBot.ActiveDeviceTimeoutS
-		ser.NodeOrgIds = nodeOrgs
-		ser.ServiceURL = cutil.FormOrgSpecUrl(pol.Workloads[0].WorkloadURL, pol.Workloads[0].Org)
-
-		// Invoke the exchange
-		var resp interface{}
-		resp = new(exchange.SearchExchangePatternResponse)
-		targetURL := w.GetExchangeURL() + "orgs/" + polOrg + "/patterns/" + exchange.GetId(pol.PatternId) + "/search"
-		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
-				if !strings.Contains(err.Error(), "status: 404") {
-					return nil, err
-				} else {
-					empty := make([]exchange.SearchResultDevice, 0, 0)
-					return &empty, nil
-				}
-			} else if tpErr != nil {
-				glog.Warningf(tpErr.Error())
-				time.Sleep(10 * time.Second)
-				continue
-			} else {
-				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchangePatternResponse).Devices))
-				dev := resp.(*exchange.SearchExchangePatternResponse).Devices
-				return &dev, nil
-			}
-		}
-
-	} else {
-		// Get a list of node orgs that the agbot is serving for this business policy.
-		nodeOrgs := businessPolManager.GetServedNodeOrgs(polOrg, polName)
-		if len(nodeOrgs) == 0 {
-			glog.V(3).Infof("Business policy %v/%v exists but currently the agbot is not serving this policy for any organizations.", polOrg, polName)
-			empty := make([]exchange.SearchResultDevice, 0, 0)
-			return &empty, nil
-		}
-
-		// to make the search more efficient, the exchange only searchs the nodes what have been changed since bp_check_time.
-		// if there is change for the business policy since last cycle, all nodes need to be checked again.
-		bp_check_time := w.lastAgMakingTime
-		if polLastUpdateTime > w.lastAgMakingTime {
-			bp_check_time = 0
-		}
-
-		// Setup the search request body
-		ser := exchange.SearchExchBusinessPolRequest{
-			NodeOrgIds:   nodeOrgs,
-			ChangedSince: bp_check_time,
-		}
-
-		glog.V(3).Infof(AWlogString(fmt.Sprintf("searching %v with %v", pol.Header.Name, ser)))
-
-		// Invoke the exchange
-		var resp interface{}
-		resp = new(exchange.SearchExchBusinessPolResponse)
-		targetURL := w.GetExchangeURL() + "orgs/" + polOrg + "/business/policies/" + polName + "/search"
-		for {
-			if err, tpErr := exchange.InvokeExchange(w.httpClient, "POST", targetURL, w.GetExchangeId(), w.GetExchangeToken(), ser, &resp); err != nil {
-				if !strings.Contains(err.Error(), "status: 404") {
-					return nil, err
-				} else {
-					empty := make([]exchange.SearchResultDevice, 0, 0)
-					return &empty, nil
-				}
-			} else if tpErr != nil {
-				glog.Warningf(tpErr.Error())
-				time.Sleep(10 * time.Second)
-				continue
-			} else {
-				glog.V(3).Infof("AgreementBotWorker found %v devices in exchange.", len(resp.(*exchange.SearchExchBusinessPolResponse).Devices))
-				dev := resp.(*exchange.SearchExchBusinessPolResponse).Devices
-				return &dev, nil
-			}
 		}
 	}
 }
@@ -1450,7 +1133,7 @@ func (w *AgreementBotWorker) generatePolicyFromPatterns(msg *events.ExchangeChan
 	}
 
 	// Cached policy has changed, make sure we rescan the nodes.
-	w.setRescanNeeded()
+	w.nodeSearch.SetRescanNeeded()
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("done scanning patterns for updates")))
 	return nil
@@ -1563,7 +1246,7 @@ func (w *AgreementBotWorker) updateServicePolicies(msg *events.ExchangeChangeMes
 	}
 
 	// Cached policy has changed, make sure we rescan the nodes.
-	w.setRescanNeeded()
+	w.nodeSearch.SetRescanNeeded()
 
 	glog.V(5).Infof(AWlogString(fmt.Sprintf("done scanning service policies for updates")))
 

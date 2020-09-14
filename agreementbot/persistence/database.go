@@ -67,4 +67,10 @@ type AgbotDatabase interface {
 	DisableRollbackChecking(deviceid string, policyName string) (*WorkloadUsage, error)
 
 	DeleteWorkloadUsage(deviceid string, policyName string) error
+
+	// Function related to persistence of search sessions with the Exchange.
+	ObtainSearchSession(policyName string) (string, uint64, error)
+	UpdateSearchSessionChangedSince(currentChangedSince uint64, newChangedSince uint64, policyName string) (bool, error)
+	ResetAllChangedSince(newChangedSince uint64) error
+	DumpSearchSessions() error
 }

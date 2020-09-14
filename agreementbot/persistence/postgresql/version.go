@@ -3,7 +3,7 @@ package postgresql
 import ()
 
 // Constants for the SQL statements that are used to work with the database version. The entire database schema has a single
-// version that is kept in the version table. Agbots automatically upgrade the database during initilaization based on their version
+// version that is kept in the version table. Agbots automatically upgrade the database during initialization based on their version
 // and the version in the database.
 
 // version schema:
