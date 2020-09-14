@@ -10,7 +10,7 @@ Epoch: 1
 License: Apache License Version 2.0
 Source: horizon-%{version}.tar.gz
 Packager: Open-horizon
-BuildArch: aarch64
+BuildArch: %{_arch}
 Provides: horizon = %{version}
 
 # Note: in RHEL/CentOS 8.x, docker-ce does not automatically install cleanly.
@@ -40,7 +40,7 @@ Open-horizon edge node agent
 
 %install
 # The install phase puts all of the files in the paths they should be in when the rpm is installed on a system.
-# The $RPM_BUILD_ROOT is a simulated root file system and usually has a value like: ~/rpmbuild/BUILDROOT/horizon-1.0.0-1.aarch64
+# The $RPM_BUILD_ROOT is a simulated root file system and usually has a value like: ~/rpmbuild/BUILDROOT/horizon-1.0.0-1.x86_64
 # Following the LSB Filesystem Hierarchy Standard: https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/horizon/{bin,samples} $RPM_BUILD_ROOT/etc/default $RPM_BUILD_ROOT/etc/horizon/trust/

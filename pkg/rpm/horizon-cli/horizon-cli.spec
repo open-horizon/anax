@@ -10,7 +10,7 @@ Epoch: 1
 License: Apache License Version 2.0
 Source: horizon-cli-%{version}.tar.gz
 Packager: Open-horizon
-BuildArch: x86_64
+BuildArch: %{_arch}
 Provides: horizon-cli = %{version}
 #todo: restore: Requires: docker
 

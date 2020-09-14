@@ -163,10 +163,7 @@ else ifeq ($(opsys_local),Darwin)
 	COMPILE_ARGS_LOCAL += GOOS=darwin
 endif
 
-NO_DEBUG_PKGS := $(shell if [ -f /etc/os-release ];then . /etc/os-release;DISTRO=$$ID;VER=$$VERSION_ID; \
-elif type lsb_release >/dev/null 2>&1;then DISTRO=$$(lsb_release -si);VER=$$(lsb_release -sr); \
-elif [ -f /etc/lsb-release ];then . /etc/lsb-release;DISTRO=$$DISTRIB_ID;VER=$$DISTRIB_RELEASE;fi; \
-if [[ "$$DISTRO" == fedora && $$VER -ge 27 ]];then echo true;elif [[ $$DISTRO =~ ^(centos|rhel)$$ && $$VER -ge 7 ]];then echo true;fi)
+NO_DEBUG_PKGS := $(shell tools/no-debug-pkg)
 ifeq (${NO_DEBUG_PKGS},true)
 	GO_BUILD_OPTS =-ldflags="-linkmode=external"
 	export RPM_OPTS =--define="%debug_package %{nil}"
