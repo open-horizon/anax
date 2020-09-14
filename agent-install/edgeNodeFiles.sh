@@ -502,7 +502,7 @@ function createTarFile () {
 	elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
 		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt horizon-cli*"
 	else
-		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt bluehorizon* horizon-cli* horizon_*"
+		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* horizon_*"
 	fi
 	echo "tar -czvf agentInstallFiles-$EDGE_NODE_TYPE.tar.gz $(ls $FILES_TO_COMPRESS)"
 

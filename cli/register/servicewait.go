@@ -5,6 +5,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/cli/deploycheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
@@ -271,10 +272,13 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		msgPrinter.Println()
 		if pattern == "" {
 			msgPrinter.Printf("Use the 'hzn deploycheck all -b' or 'hzn deploycheck all -B' command to verify that node, service configuration and deployment policy is compatible.")
+			msgPrinter.Println()
 		} else {
-			msgPrinter.Printf("Use the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.")
+			msgPrinter.Printf("Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.")
+			msgPrinter.Println()
+			deploycheck.AllCompatible(userOrg, userPw, "", nodeArch, nodeType, "", "",
+				"", "", pattern, "", "", []string{}, false, false)
 		}
-		msgPrinter.Println()
 	} else {
 		for _, ss := range servSpecArr {
 			logArr := []string{}

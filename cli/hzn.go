@@ -351,13 +351,13 @@ Environment Variables:
 	nodeIdTok := registerCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the Exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.")).Short('n').PlaceHolder("ID:TOK").String()
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
-	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See %v/node_reg_input.json and %v/more-examples.json. Specify -f- to read from stdin.", sample_dir, sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
+	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See %v/user_input.json. Specify -f- to read from stdin.", sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
 
 	nodeOrgFlag := registerCmd.Flag("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('o').String()
-	patternFlag := registerCmd.Flag("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments and --policy flag. ")).Short('p').String()
-	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation. Mutually exclusive with -p argument.")).String()
+	patternFlag := registerCmd.Flag("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('p').String()
+	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.")).String()
 	org := registerCmd.Arg("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.")).String()
-	pattern := registerCmd.Arg("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o, -p and --policy.")).String()
+	pattern := registerCmd.Arg("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.")).String()
 	waitServiceFlag := registerCmd.Flag("service", msgPrinter.Sprintf("Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.")).Short('s').String()
 	waitServiceOrgFlag := registerCmd.Flag("serviceorg", msgPrinter.Sprintf("The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.")).String()
 	waitTimeoutFlag := registerCmd.Flag("timeout", msgPrinter.Sprintf("The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.")).Short('t').Default("60").Int()
@@ -537,6 +537,21 @@ Environment Variables:
 	devDependencyRemoveCmd := devDependencyCmd.Command("remove", msgPrinter.Sprintf("Remove a project dependency."))
 
 	agbotCmd := app.Command("agbot", msgPrinter.Sprintf("List and manage Horizon agreement bot resources."))
+
+	agbotCacheCmd := agbotCmd.Command("cache", msgPrinter.Sprintf("Manage cached agbot-serving organizations, patterns, and deployment policies."))
+	agbotCacheServedOrg := agbotCacheCmd.Command("servedorg", msgPrinter.Sprintf("List served pattern orgs and deployment policy orgs."))
+	agbotCacheServedOrgList := agbotCacheServedOrg.Command("list", msgPrinter.Sprintf("Display served pattern orgs and deployment policy orgs."))
+	agbotCachePattern := agbotCacheCmd.Command("pattern", msgPrinter.Sprintf("List patterns cached in the agbot."))
+	agbotCachePatternList := agbotCachePattern.Command("list", msgPrinter.Sprintf("Display served patterns cached in the agbot."))
+	agbotCachePatternListOrg := agbotCachePatternList.Flag("org", msgPrinter.Sprintf("Display patterns under this org.")).Short('o').String()
+	agbotCachePatternListName := agbotCachePatternList.Arg("name", msgPrinter.Sprintf("Display this pattern.")).String()
+	agbotCachePatternListLong := agbotCachePatternList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
+	agbotCacheDeployPol := agbotCacheCmd.Command("deploymentpol", msgPrinter.Sprintf("List served deployment policies cached in the agbot."))
+	agbotCacheDeployPolList := agbotCacheDeployPol.Command("list", msgPrinter.Sprintf("Display served deployment policies cached in the agbot."))
+	agbotCacheDeployPolListOrg := agbotCacheDeployPolList.Flag("org", msgPrinter.Sprintf("Display policies under this org.")).Short('o').String()
+	agbotCacheDeployPolListName := agbotCacheDeployPolList.Arg("name", msgPrinter.Sprintf("Display this policy.")).String()
+	agbotCacheDeployPolListLong := agbotCacheDeployPolList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
+
 	agbotListCmd := agbotCmd.Command("list", msgPrinter.Sprintf("Display general information about this Horizon agbot node."))
 	agbotAgreementCmd := agbotCmd.Command("agreement", msgPrinter.Sprintf("List or manage the active or archived agreements this Horizon agreement bot has with edge nodes."))
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list", msgPrinter.Sprintf("List the active or archived agreements this Horizon agreement bot has with edge nodes."))
@@ -609,6 +624,10 @@ Environment Variables:
 	voucherImportExample := voucherImportCmd.Flag("example", msgPrinter.Sprintf("Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.")).Short('e').String()
 	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
 	voucherImportPattern := voucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
+
+	voucherListCmd := voucherCmd.Command("list", msgPrinter.Sprintf("List the imported SDO ownership vouchers."))
+	voucherToList := voucherListCmd.Arg("voucher", msgPrinter.Sprintf("List the full details of this SDO ownership voucher.")).String()
+	voucherListLong := voucherListCmd.Flag("long", msgPrinter.Sprintf("When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.")).Short('l').Bool()
 
 	app.VersionFlag = nil
 
@@ -746,6 +765,10 @@ Environment Variables:
 		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		voucherUserPw = cliutils.RequiredWithDefaultEnvVar(voucherUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
+	if strings.HasPrefix(fullCmd, "voucher list") {
+		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		voucherUserPw = cliutils.RequiredWithDefaultEnvVar(voucherUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
 
 	// key file defaults
 	switch fullCmd {
@@ -823,6 +846,14 @@ Environment Variables:
 		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
+
+	case agbotCacheServedOrgList.FullCommand():
+		agreementbot.GetServedOrgs()
+	case agbotCachePatternList.FullCommand():
+		agreementbot.GetPatterns(*agbotCachePatternListOrg, *agbotCachePatternListName, *agbotCachePatternListLong)
+	case agbotCacheDeployPolList.FullCommand():
+		agreementbot.GetPolicies(*agbotCacheDeployPolListOrg, *agbotCacheDeployPolListName, *agbotCacheDeployPolListLong)
+
 	case exAgbotListCmd.FullCommand():
 		exchange.AgbotList(*exOrg, *exUserPw, *exAgbot, !*exAgbotLong)
 	case exAgbotListPatsCmd.FullCommand():
@@ -1005,5 +1036,7 @@ Environment Variables:
 		sdo.VoucherInspect(*voucherInspectFile)
 	case voucherImportCmd.FullCommand():
 		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
+	case voucherListCmd.FullCommand():
+		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
 	}
 }

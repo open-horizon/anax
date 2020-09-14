@@ -3,378 +3,6 @@
   "language": "zh-CN",
   "messages": [
     {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号失败。 错误：{Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号已复原。"
-    },
-    {
-      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
-      "translation": "从数据库中检索协议 {Arg_1} 出错，错误：{Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
-      "translation": "无法从数据库检索用于 MeteringNotification 消息的协议 {Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
-      "translation": "无法从数据库检索用于 Cancel 消息的协议 {Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
-      "translation": "无法从数据库检索用于 ReplyAck 消息的协议 {Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
-      "translation": "无法从数据库检索用于 DataReceived 消息的协议 {Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
-      "translation": "无法从数据库检索已取消归档的协议。 {Arg_1}"
-    },
-    {
-      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-      "translation": "在数据库中将协议 {Arg_1} 标记为 '已终止' 出错：{Arg_2}。"
-    },
-    {
-      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
-      "translation": "从数据库中获取服务定义 {Arg_1} 出错。 {Arg_2}"
-    },
-    {
-      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
-      "translation": "从数据库中检索用于 {Arg_1}/{Arg_2} 版本 {Arg_3} 键 {Arg_4} 的所有服务实例出错。 {Arg_5}"
-    },
-    {
-      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
-      "translation": "从数据库中检索用于 {Arg_1} 的所有服务实例出错。 {Arg_2}"
-    },
-    {
-      "id": "Error retrieving all service instances from database, error: {Arg_1}",
-      "translation": "从数据库中检索所有服务实例出错，错误：{Arg_1}"
-    },
-    {
-      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
-      "translation": "从数据库中获取服务实例 {Arg_1} 出错。 {Arg_2}"
-    },
-    {
-      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
-      "translation": "从数据库中检索工作负载 {Arg_1} 的匹配协议出错。 错误：{Arg_2}"
-    },
-    {
-      "id": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
-      "translation": "将数据库中的节点配置状态持久保存至 {Arg_1} 出错。 错误：{Arg_2}"
-    },
-    {
-      "id": "Error retrieving device from database. Error: {Arg_1}",
-      "translation": "从数据库检索设备出错。 错误：{Arg_1}"
-    },
-    {
-      "id": "Error deleting node exchange pattern from the local database. {Arg_1}",
-      "translation": "从本地数据库删除节点 Exchange 模式出错。 {Arg_1}"
-    },
-    {
-      "id": "Error retrieving node {Arg_1} from the Exchange: {Arg_2}",
-      "translation": "检索 Exchange 中的节点 {Arg_1} 时发生错误：{Arg_2}"
-    },
-    {
-      "id": "Error updating registeredServices for node {Arg_1} in the Exchange: {Arg_2}",
-      "translation": "在 Exchange 中的更新节点 {Arg_1} 的 registeredServices 时发生错误：{Arg_2}"
-    },
-    {
-      "id": "Image loaded for {Arg_1}/{Arg_2}.",
-      "translation": "已装入 {Arg_1}/{Arg_2} 的映像。"
-    },
-    {
-      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
-      "translation": "已装入服务 {Arg_1}/{Arg_2} 的映像。"
-    },
-    {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。"
-    },
-    {
-      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
-      "translation": "装入服务 {Arg_1}/{Arg_2} 的映像出错。"
-    },
-    {
-      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "终止 {Arg_1} 的协议开始。 终止原因：{Arg_2}"
-    },
-    {
-      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
-      "translation": "服务 {Arg_1} 的协议已达成。 协议标识为 {Arg_2}。"
-    },
-    {
-      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
-      "translation": "在 agbot 上，{Arg_1} 的协议不再有效。 节点会将其取消。"
-    },
-    {
-      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
-      "translation": "{Arg_1}/{Arg_2} 的工作负载服务容器正在正常运行。"
-    },
-    {
-      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "终止 {Arg_1} 的协议完成。 终止原因：{Arg_2}"
-    },
-    {
-      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-      "translation": "在 Exchange 中删除 {Arg_1} 的协议出错：{Arg_2}。 将会重试。"
-    },
-    {
-      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
-      "translation": "针对 {Arg_1}，与 agbot 进行协议验证出错，错误：{Arg_2}"
-    },
-    {
-      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
-      "translation": "ReplyAck 已指出 agbot 不想为 {Arg_1} 履行协议。 节点将取消该协议"
-    },
-    {
-      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
-      "translation": "节点从 agbot {Arg_3} 接收到针对 {Arg_1}/{Arg_2} 的 Cancel 消息。"
-    },
-    {
-      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
-      "translation": "处理针对 {Arg_1} 的 ReplyAck 消息出错。 {Arg_2}"
-    },
-    {
-      "id": "Error handling ReplyAck message. {Arg_1}",
-      "translation": "处理 ReplyAck 消息出错。 {Arg_1}"
-    },
-    {
-      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
-      "translation": "处理针对 {Arg_1} 的 DataReceived 消息出错。 {Arg_2}"
-    },
-    {
-      "id": "Error handling DataReceived message. {Arg_1}",
-      "translation": "处理 DataReceived 消息出错。 {Arg_1}"
-    },
-    {
-      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
-      "translation": "处理针对 {Arg_1} 的 MeterNotification 消息出错。 {Arg_2}"
-    },
-    {
-      "id": "Error handling MeterNotification message. {Arg_1}",
-      "translation": "处理 MeterNotification 消息出错。 {Arg_1}"
-    },
-    {
-      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
-      "translation": "处理针对 {Arg_1} 的 Cancel 消息出错。 {Arg_2}"
-    },
-    {
-      "id": "Error handling Cancel message. {Arg_1}",
-      "translation": "处理 Cancel 消息出错。 {Arg_1}"
-    },
-    {
-      "id": "Start workload service for {Arg_1}/{Arg_2}.",
-      "translation": "启动用于 {Arg_1}/{Arg_2} 的工作负载服务。"
-    },
-    {
-      "id": "Workload destroyed for {Arg_1}",
-      "translation": "{Arg_1} 的工作负载已销毁"
-    },
-    {
-      "id": "Service containers for {Arg_1} started.",
-      "translation": "用于 {Arg_1} 的服务容器已启动。"
-    },
-    {
-      "id": "Complete cleaning up the service instance {Arg_1}.",
-      "translation": "清除服务实例 {Arg_1} 完成。"
-    },
-    {
-      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
-      "translation": "启动用于 {Arg_1}/{Arg_2} 的相依服务。"
-    },
-    {
-      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
-      "translation": "启动用于 {Arg_1}/{Arg_2} 的相依服务出错。 {Arg_3}"
-    },
-    {
-      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
-      "translation": "针对协议 {Arg_4} 启动相依服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 出错。 {Arg_5}"
-    },
-    {
-      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
-      "translation": "因为协议 {Arg_2} 已结束，清除服务 {Arg_1} 开始。"
-    },
-    {
-      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "启动服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 出错，错误：{Arg_4}"
-    },
-    {
-      "id": "Error getting all the services from agreements: {Arg_1}",
-      "translation": "从协议中获取所有服务出错：{Arg_1}"
-    },
-    {
-      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
-      "translation": "启动无协议服务 {Arg_1}/{Arg_2}。"
-    },
-    {
-      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
-      "translation": "启动无协议服务 {Arg_1}/{Arg_2} 及其从属项完成。"
-    },
-    {
-      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
-      "translation": "无法启动无协议服务 {Arg_1}/{Arg_2}，错误：{Arg_3}"
-    },
-    {
-      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
-      "translation": "无法启动无协议服务，在 Exchange 中搜索模式 {Arg_1} 出错，错误：{Arg_2}"
-    },
-    {
-      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
-      "translation": "无法启动无协议服务，在 Exchange 中找不到模式 {Arg_1}"
-    },
-    {
-      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
-      "translation": "无法启动无协议服务 {Arg_1}/{Arg_2}，找不到本地服务定义"
-    },
-    {
-      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 升级到版本 {Arg_4} 开始。"
-    },
-    {
-      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 升级到版本 {Arg_4} 完成。"
-    },
-    {
-      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 升级到版本 {Arg_4} 失败，错误：{Arg_5}"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
-      "translation": "因为协议的服务未能启动，开始将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级。"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
-      "translation": "因为服务未能启动，开始将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级。"
-    },
-    {
-      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
-      "translation": "因为升级失败，开始将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级。"
-    },
-    {
-      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级失败，错误：{Arg_4}"
-    },
-    {
-      "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
-      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 降级到版本 {Arg_4} 已完成。"
-    },
-    {
-      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
-      "translation": "对于 {Arg_1}/{Arg_2} 版本 {Arg_3} 键 {Arg_4}，查找所要降级到的新服务定义出错。 错误：{Arg_5}"
-    },
-    {
-      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
-      "translation": "对于 {Arg_1}/{Arg_2} 版本 {Arg_3}，找不到要降级到的更低版本。"
-    },
-    {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
-      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 降级到版本 {Arg_4} 出错。 错误：{Arg_5}"
-    },
-    {
-      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
-      "translation": "将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级出错。 {Arg_4}"
-    },
-    {
-      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
-      "translation": "因为服务失败，开始针对相依服务 {Arg_2} 版本 {Arg_3} 重试第 {Arg_1} 次。"
-    },
-    {
-      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-      "translation": "针对相依服务 {Arg_2} 版本 {Arg_3} 重试第 {Arg_1} 次失败。"
-    },
-    {
-      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-      "translation": "获取 {Arg_1} 版本 {Arg_2} 的服务重试计数失败。 {Arg_3}"
-    },
-    {
-      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
-      "translation": "在数据库中更新服务实例 {Arg_1} 的重试开始状态出错。 {Arg_2}"
-    },
-    {
-      "id": "Node pattern changed on the Exchange from {Arg_1} to {Arg_2}.",
-      "translation": "Exchange 上的节点模式已从 {Arg_1} 更改为 {Arg_2}。"
-    },
-    {
-      "id": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
-      "translation": "使用新模式 {Arg_1} 重新注册节点时遇到错误。 {Arg_2}"
-    },
-    {
-      "id": "Start re-registering node after pattern changed to {Arg_1}.",
-      "translation": "正在模式更改为 {Arg_1} 之后开始重新注册节点。"
-    },
-    {
-      "id": "Complete re-registering node after pattern changed to {Arg_1}.",
-      "translation": "正在模式更改为 {Arg_1} 之后完成重新注册节点。"
-    },
-    {
-      "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
-      "translation": "Exchange 上的节点模式已重新更改。 将使用新模式 {Arg_1} 注册该节点"
-    },
-    {
-      "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
-      "translation": "验证新节点模式 {Arg_1} 出错：{Arg_2}"
-    },
-    {
-      "id": "The node will keep using the old pattern {Arg_1}",
-      "translation": "该节点将继续使用旧模式 {Arg_1}"
-    },
-    {
-      "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
-      "translation": "新模式 {Arg_1} 已通过验证。 将取消协议，并使用新模式重新注册该节点。"
-    },
-    {
-      "id": "No input found.",
-      "translation": "找不到输入。"
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "未获授权。 未提供 Exchange 用户标识。"
-    },
-    {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "未能使用 Exchange 认证用户。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "输入主体未能反序列化为 JSON 对象。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "输入主体未能反序列化为 PolicyCheck 对象。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "输入主体未能反序列化为 UserInputCheck 对象。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "输入主体未能反序列化为 CompCheck 对象。 {Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "未提供 Exchange 用户标识。"
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "未提供 Exchange 用户组织标识。"
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "未提供 Exchange 用户密码或 API 密钥。"
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "组织标识、用户标识或密码错误。"
-    },
-    {
-      "id": "Internal server error",
-      "translation": "内部服务器错误"
-    },
-    {
       "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
       "translation": "无法读取用于服务 {Arg_2} 的策略文件 {Arg_1}，错误：{Arg_3}"
     },
@@ -447,32 +75,716 @@
       "translation": "正在终止 anax，无法完成协议同步。 {Arg_1}"
     },
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "兼容性错误：模式版本不相同，使用者策略：{Version}，生产者策略：{Version_1}"
+      "id": "No input found.",
+      "translation": "找不到输入。"
     },
     {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "兼容性错误：节点属性 {Properties} 未满足约束需求 {Constraints}。 底层错误：{Err}"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "未获授权。 未提供 Exchange 用户标识。"
     },
     {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "兼容性错误：节点属性未满足约束需求。 {Err}"
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "未能使用 Exchange 认证用户。 {Err}"
     },
     {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "兼容性错误：属性 {Properties} 未满足节点约束 {Constraints}。 底层错误：{Err}"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "输入主体未能反序列化为 JSON 对象。 {Err}"
     },
     {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "兼容性错误：属性未满足节点约束。 {Err}"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 PolicyCheck 对象。 {Err}"
     },
     {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "兼容性错误：在 {AgreementProtocols} 与 {AgreementProtocols_1} 之间没有公共的协议。 底层错误：{Err}"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 UserInputCheck 对象。 {Err}"
     },
     {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "兼容性错误：数据验证必须兼容，但生产者的数据验证为 {DataVerify}，使用者的数据验证为 {DataVerify_1}。"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "输入主体未能反序列化为 CompCheck 对象。 {Err}"
+    },
+    {
+      "id": "No exchange user id is supplied.",
+      "translation": "未提供 Exchange 用户标识。"
+    },
+    {
+      "id": "No exchange user organization id is supplied.",
+      "translation": "未提供 Exchange 用户组织标识。"
+    },
+    {
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "未提供 Exchange 用户密码或 API 密钥。"
+    },
+    {
+      "id": "Wrong organization id, user id or password.",
+      "translation": "组织标识、用户标识或密码错误。"
+    },
+    {
+      "id": "Internal server error",
+      "translation": "内部服务器错误"
+    },
+    {
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "解析选定项目 {Form} 出错。 {Err}"
+    },
+    {
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "获取用于输出的 {Resource} 出错，错误：{Err}"
+    },
+    {
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点配置/注册的输入出错。 输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点配置/注册的输入出错。 输入主体未能反序列化为配置状态对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点更新的输入出错。 输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点策略的输入出错。 输入主体未能反序列化为策略对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点策略修补程序的输入出错。 输入主体未能反序列化到约束表达式或属性列表中：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点策略修补程序的输入出错。 输入主体未包含约束表达式或属性列表：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "解析用于节点用户输入的输入出错。 输入主体未能反序列化为用户输入对象：{Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "针对节点 {Arg_1} 进行的节点配置/注册出错。 {Arg_2}"
+    },
+    {
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "更新节点 {Arg_1} 出错。 {Arg_2}"
+    },
+    {
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "注销节点出错。 {Arg_1}"
+    },
+    {
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "验证 Exchange 版本出错。 错误：{Arg_1}"
+    },
+    {
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "创建或替换节点策略出错。 {Arg_1}"
+    },
+    {
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "修补节点策略出错。 {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "删除节点策略出错。 {Arg_1}"
+    },
+    {
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "更新节点用户输入出错。 {Arg_1}"
+    },
+    {
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "修补节点用户输入出错。 {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "删除节点用户输入出错。 {Arg_1}"
+    },
+    {
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "针对节点 {Arg_1} 进行的节点配置/注册开始。"
+    },
+    {
+      "id": "Start updating node {Arg_1}.",
+      "translation": "开始更新节点 {Arg_1}。"
+    },
+    {
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "针对 {Arg_1} 进行的节点更新完成。"
+    },
+    {
+      "id": "Start node unregistration.",
+      "translation": "开始注销节点。"
+    },
+    {
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "针对节点 {Arg_1} 进行的节点注销完成。"
+    },
+    {
+      "id": "Error unregistering the node. The node is not found from the database.",
+      "translation": "注销节点时发生错误。 在数据库中找不到该节点。"
+    },
+    {
+      "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "注销节点时发生错误。 节点必须处于 '已配置' 或 '正在配置' 状态才能取消配置。"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "用于注销节点的输入错误。 对于 removeNode，{Arg_1} 不是正确的值"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "用于注销节点的输入错误。 对于 deepClean，{Arg_1} 不是正确的值"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "用于注销节点的输入错误。 对于 block，{Arg_1} 不是正确的值"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "无法从数据库读取节点对象，错误：{Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "在数据库中保存新的节点配置状态（取消配置）出错：{Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "节点配置出错。 在数据库中找不到该节点。"
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "节点配置出错。 节点必须处于 '已配置' 或 '正在配置' 状态才能将状态更改为 {Arg_1}。"
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "不支持节点状态从 '{Arg_1}' 过渡到 '{Arg_2}'。"
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "从本地数据库获取用户输入失败。 {Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "从本地用户输入中找不到用于服务 {Arg_1}/{Arg_2} 的首选项，错误：{Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "将新节点配置状态保存到数据库出错：{Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "针对节点 {Arg_1} 进行的节点配置/注册完成。"
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "{Arg_1} 的服务配置出错。 {Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "获取模式 {Arg_1} 的服务引用出错。 {Arg_2}"
+    },
+    {
+      "id": "Ignoring service. {Arg_1}",
+      "translation": "忽略服务。 {Arg_1}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "新节点策略：{Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "已删除节点策略"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "新的节点用户输入：{Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "没有可删除的节点用户输入"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "已删除所有节点用户输入"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 使用用户输入进行的服务配置开始。"
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置开始。"
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务配置完成。"
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置完成。"
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "在 {Arg_2}/{Arg_3} 的服务配置中，缺失变量 {Arg_1}。 如果部署策略中不包含缺失变量的设置，可能会阻止协议。"
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "配置服务 {Arg_1} 出错。 {Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "更改服务配置状态 {Arg_1} 出错，错误：{Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 开始。"
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 完成。"
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "将选定项目转换为选择器出错：{Err}"
+    },
+    {
+      "id": "Name, or Org is empty string.",
+      "translation": "名称或组织是空字符串。"
+    },
+    {
+      "id": "The serviceVersions array is empty.",
+      "translation": "serviceVersions 数组为空。"
+    },
+    {
+      "id": "properties contains an invalid property: {Err}",
+      "translation": "properties 包含无效的属性：{Err}"
+    },
+    {
+      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "{PROPSVCPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
+    },
+    {
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号失败。 错误：{Arg_3}"
+    },
+    {
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "对于节点 {Arg_1}/{Arg_2}，节点脉动信号已复原。"
+    },
+    {
+      "id": "[verbose] {M}",
+      "translation": "[verbose] {M}"
+    },
+    {
+      "id": "Error: {Msg}",
+      "translation": "错误：{Msg}"
+    },
+    {
+      "id": "Warning: {Msg}",
+      "translation": "警告：{Msg}"
+    },
+    {
+      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
+      "translation": "对 {ErrMsg} 中的字节进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "failed to marshal data type from {ErrMsg}: {Err}",
+      "translation": "对 {ErrMsg} 中的数据类型进行序列化失败：{Err}"
+    },
+    {
+      "id": "problem testing api key match: {Err}",
+      "translation": "测试 API 密钥匹配时遇到问题：{Err}"
+    },
+    {
+      "id": "Using API key",
+      "translation": "正在使用 API 密钥"
+    },
+    {
+      "id": "unable to create docker client: {Err}",
+      "translation": "无法创建 Docker 客户机：{Err}"
+    },
+    {
+      "id": "docker auth domainName: {DomainName}",
+      "translation": "Docker 认证域名：{DomainName}"
+    },
+    {
+      "id": "unable to find docker credentials for {Domain}",
+      "translation": "找不到 {Domain} 的 Docker 凭证"
+    },
+    {
+      "id": "Pushing {Repository}:{Tag}...",
+      "translation": "正在推送 {Repository}:{Tag}..."
+    },
+    {
+      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
+      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。 可能需要运行 'docker login ...'，以提供映像注册表的凭证。"
+    },
+    {
+      "id": "unable to push docker image {Repository____tag}: {Err}",
+      "translation": "无法推送 Docker 映像 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "could not find the image digest in the docker push output",
+      "translation": "在 Docker 推送输出中找不到映像摘要"
+    },
+    {
+      "id": "Pulling {Repository}:{Tag}...",
+      "translation": "正在拉取 {Repository}:{Tag}..."
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}"
+    },
+    {
+      "id": "unable to pull docker image {Repository____tag}: {Err}",
+      "translation": "无法拉取 Docker 映像 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "the id can not contain more than 1 '/'",
+      "translation": "标识不得包含多个 '/'"
+    },
+    {
+      "id": "reading stdin failed: {Err}",
+      "translation": "读取 stdin 失败：{Err}"
+    },
+    {
+      "id": "reading {FilePath} failed: {Err}",
+      "translation": "读取 {FilePath} 失败：{Err}"
+    },
+    {
+      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
+      "translation": "警告：在输入文件中引用了环境变量 '{EnvVarName}'，但未在环境中定义该变量。"
+    },
+    {
+      "id": "Error reading input, error {Err}",
+      "translation": "读取输入出错，错误：{Err}"
+    },
+    {
+      "id": "Exiting.",
+      "translation": "正在退出。"
+    },
+    {
+      "id": "Error reading HTTP response, error {Err}",
+      "translation": "读取 HTTP 响应出错，错误：{Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 具体错误为：{Err}"
+    },
+    {
+      "id": "{ApiMsg} new request failed: {Err}",
+      "translation": "{ApiMsg} 新请求失败：{Err}"
+    },
+    {
+      "id": "HTTP code: {HttpCode}",
+      "translation": "HTTP 代码：{HttpCode}"
+    },
+    {
+      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码不正确：{HttpCode}"
+    },
+    {
+      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码不正确：{HttpCode}"
+    },
+    {
+      "id": "Failed to read body response from {ApiMsg}: {Err}",
+      "translation": "读取来自 {ApiMsg} 的主体响应失败：{Err}"
+    },
+    {
+      "id": "failed to read body response from {ApiMsg}: {Err}",
+      "translation": "读取来自 {ApiMsg} 的主体响应失败：{Err}"
+    },
+    {
+      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的主体响应进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的主体响应进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确：{Body}"
+    },
+    {
+      "id": "failed to marshal body for {ApiMsg}: {Err}",
+      "translation": "对 {ApiMsg} 的主体进行序列化失败：{Err}"
+    },
+    {
+      "id": "Failed to unmarshal bytes. {Err}",
+      "translation": "对字节进行取消序列化失败。 {Err}"
+    },
+    {
+      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 {OldMgmtHubCertPath} 出错：{Err}"
+    },
+    {
+      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
+      "translation": "读取 ICP 证书文件 {IcpCertPath} 遇到错误：{Err}"
+    },
+    {
+      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_EXCHANGE_URL 出错。 {Err}"
+    },
+    {
+      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
+      "translation": "从 {ANAXCONFIGFILE} 获取 ExchangeUrl 出错。 {Err}"
+    },
+    {
+      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
+      "translation": "未设置 HZN_EXCHANGE_URL，从节点上的 Horizon 代理程序配置获取。"
+    },
+    {
+      "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
+      "translation": "无法从环境变量 HZN_EXCHANGE_URL 或 Horizon 代理程序获取 Exchange URL"
+    },
+    {
+      "id": "The exchange url: {ExchUrl}",
+      "translation": "Exchange URL：{ExchUrl}"
+    },
+    {
+      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_FSS_CSSURL 出错。 {Err}"
+    },
+    {
+      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
+      "translation": "从 {ANAXCONFIGFILE} 获取模型管理服务 URL 出错。 {Err}"
+    },
+    {
+      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
+      "translation": "未设置 HZN_FSS_CSSURL，从节点上的 Horizon 代理程序配置获取。"
+    },
+    {
+      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
+      "translation": "未能从环境变量 HZN_FSS_CSSURL 或 Horizon 代理程序获取模型管理服务 URL"
+    },
+    {
+      "id": "The model management service url: {MmsUrl}",
+      "translation": "模型管理服务 URL：{MmsUrl}"
+    },
+    {
+      "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
+      "translation": "未设置 HZN_SDO_SVC_URL，将从 {ANAXOVERWRITEFILE} 获取。"
+    },
+    {
+      "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
+      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_SDO_SVC_URL 时发生错误：{Err}"
+    },
+    {
+      "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
+      "translation": "无法从 {ANAXOVERWRITEFILE} 环境或某个 hzn.json 文件中获取 HZN_SDO_SVC_URL 值。"
+    },
+    {
+      "id": "The SDO service url: {SdoUrl}",
+      "translation": "SDO 服务 URL：{SdoUrl}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 具体错误为：{Err}"
+    },
+    {
+      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 具体错误为：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
+      "translation": "对 {ApiMsg} 的 Exchange 主体进行序列化失败：{Err}"
+    },
+    {
+      "id": "Failed to get file info: {Err}",
+      "translation": "未能获取文件信息：{Err}"
+    },
+    {
+      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
+      "translation": "正在上载：{Float32totalSent__float32bodyLen__100} {}"
+    },
+    {
+      "id": "unable to open object file {Name}: {Err}",
+      "translation": "无法打开对象文件 {Name}：{Err}"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
+      "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。 HTTP 状态：{Httpstatus}。 将会重试。"
+    },
+    {
+      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
+      "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。 HTTP 状态：{Httpstatus}。"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}"
+    },
+    {
+      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
+      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行序列化失败：{Err}"
+    },
+    {
+      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
+      "translation": "读取来自 {ApiMsg} 的 Exchange 主体响应失败：{Err}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确：{Code}，{Msg}"
+    },
+    {
+      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
+      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确"
+    },
+    {
+      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
+      "translation": "必须使用下列其中一项来指定 Exchange 认证：-u 标志、-n 标志、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
+    },
+    {
+      "id": "Verifying public key file ...",
+      "translation": "正在验证公用密钥文件..."
+    },
+    {
+      "id": "provided public key is not valid; error: {Err}",
+      "translation": "提供的公用密钥无效；错误：{Err}"
+    },
+    {
+      "id": "Checking private key file format ...",
+      "translation": "正在检查专用密钥文件格式..."
+    },
+    {
+      "id": "provided private key is not valid; error: {Err}",
+      "translation": "提供的专用密钥无效；错误：{Err}"
+    },
+    {
+      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
+      "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
+    },
+    {
+      "id": "{Err}. Please create the signing key.",
+      "translation": "{Err}。 请创建签名密钥。"
+    },
+    {
+      "id": "running: {CmdStr}",
+      "translation": "正在运行：{CmdStr}"
+    },
+    {
+      "id": "did not get a command object",
+      "translation": "未能获取命令对象"
+    },
+    {
+      "id": "Could not get Stdin pipe, error: {Err}",
+      "translation": "未能获取 Stdin 管道，错误：{Err}"
+    },
+    {
+      "id": "could not retrieve output from command, error: {Err}",
+      "translation": "未能检索来自命令的输出，错误：{Err}"
+    },
+    {
+      "id": "could not retrieve stderr from command, error: {Err}",
+      "translation": "未能检索来自命令的 stderr，错误：{Err}"
+    },
+    {
+      "id": "Unable to start command, error: {Err}",
+      "translation": "无法启动命令，错误：{Err}"
+    },
+    {
+      "id": "Unable to write to stdin of command, error: {Err}",
+      "translation": "无法写至命令的 stdin，错误：{Err}"
+    },
+    {
+      "id": "Unable to close stdin, error: {Err}",
+      "translation": "无法关闭 stdin，错误：{Err}"
+    },
+    {
+      "id": "could not read stdout, error: {Err}",
+      "translation": "未能读取 stdout，错误：{Err}"
+    },
+    {
+      "id": "could not read stderr, error: {Err}",
+      "translation": "未能读取 stderr，错误：{Err}"
+    },
+    {
+      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
+      "translation": "命令失败：{Err}，stderr：{StringstderrBytes}"
+    },
+    {
+      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
+      "translation": "无法使用 {HTTPRequestTimeoutOverride} 来设置请求超时，值不是有效的数字：{EnvTimeout}"
+    },
+    {
+      "id": "HTTP request timeout set to {RequestTimeout} seconds",
+      "translation": "HTTP 请求超时已设置为 {RequestTimeout} 秒"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
+      "translation": "将环境变量 HZN_HTTP_RETRIES {MaxRetriess} 转换为整数时出错。 {Err1}"
+    },
+    {
+      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
+      "translation": "将环境变量 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 转换为整数时出错。 {Err1}"
+    },
+    {
+      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
+      "translation": "{Image} 已解析为：域 = {Domain}，路径 = {Path}，标记 = {Tag}"
+    },
+    {
+      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
+      "translation": "警告：未能解析映像路径 '{Image}'。 不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。"
+    },
+    {
+      "id": "no service name",
+      "translation": "没有服务名称"
+    },
+    {
+      "id": "no docker image for service {ServiceName}",
+      "translation": "没有用于服务 {ServiceName} 的 Docker 映像"
+    },
+    {
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "对 {D} 的主体进行序列化失败：{Err}"
+    },
+    {
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "对部署字段 {StringjsonBytes} 的 JSON 进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "用户输入 {Name} 没有缺省值，未进行设置"
+    },
+    {
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "集群类型服务不支持“requiredServices”。"
+    },
+    {
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "未能将服务 {ReqSvc} 的版本 {Ver} 转换为版本范围表达式。"
+    },
+    {
+      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "translation": "从 Exchange 检索 {ReqSvc} 的服务时发生错误。 {Err}"
+    },
+    {
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "所需服务 {SId} 存在错误的服务类型 {SType}。"
+    },
+    {
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "所需服务 {SId} 的相依服务 {Id} 存在错误的服务类型 {SType1}。"
+    },
+    {
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "对 JSON 输入 {JsonBytes} 进行取消序列化失败：{Err}"
+    },
+    {
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "获取新用户输入格式时出错。{Err1}"
+    },
+    {
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "未能为用户输入创建 JSON 对象。{Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -787,10 +1099,6 @@
       "translation": "输入服务规范对象不得为 Null。"
     },
     {
-      "id": "Error retrieving service from the Exchange for {SvcSpec}. {Err}",
-      "translation": "从 Exchange 检索 {SvcSpec} 的服务时发生错误。 {Err}"
-    },
-    {
       "id": "Error verifing user input for service {SId}. {Err}",
       "translation": "验证服务 {SId} 的用户输入出错。 {Err}"
     },
@@ -915,310 +1223,6 @@
       "translation": "未使用用户输入中所指定的服务 {ServiceOrgid}/{ServiceUrl} 版本 {ServiceVersionRange} 体系结构 {ServiceArch} 的变量 {Name}。 请确保变量名称正确无误。"
     },
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "约束表达式 {Dconstraints} 的类型为 {Dconstraints_1}，但期望字符串数组"
-    },
-    {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "约束表达式包含未配对的圆括号。"
-    },
-    {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "解析选定项目 {Form} 出错。 {Err}"
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "获取用于输出的 {Resource} 出错，错误：{Err}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点配置/注册的输入出错。 输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点配置/注册的输入出错。 输入主体未能反序列化为配置状态对象：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点更新的输入出错。 输入主体未能反序列化为节点对象：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略的输入出错。 输入主体未能反序列化为策略对象：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略修补程序的输入出错。 输入主体未能反序列化到约束表达式或属性列表中：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点策略修补程序的输入出错。 输入主体未包含约束表达式或属性列表：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "解析用于节点用户输入的输入出错。 输入主体未能反序列化为用户输入对象：{Arg_1}，错误：{Arg_2}"
-    },
-    {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "针对节点 {Arg_1} 进行的节点配置/注册出错。 {Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "更新节点 {Arg_1} 出错。 {Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "注销节点出错。 {Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "验证 Exchange 版本出错。 错误：{Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "创建或替换节点策略出错。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "修补节点策略出错。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "删除节点策略出错。 {Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "更新节点用户输入出错。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "修补节点用户输入出错。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "删除节点用户输入出错。 {Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "针对节点 {Arg_1} 进行的节点配置/注册开始。"
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "开始更新节点 {Arg_1}。"
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "针对 {Arg_1} 进行的节点更新完成。"
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "开始注销节点。"
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "针对节点 {Arg_1} 进行的节点注销完成。"
-    },
-    {
-      "id": "Error unregistring the node. The node is not found from the database.",
-      "translation": "注销节点出错。 在数据库中找不到该节点。"
-    },
-    {
-      "id": "Error unregistring the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "注销节点出错。 节点必须处于 '已配置' 或 '正在配置' 状态才能取消配置。"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "用于注销节点的输入错误。 对于 removeNode，{Arg_1} 不是正确的值"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "用于注销节点的输入错误。 对于 deepClean，{Arg_1} 不是正确的值"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "用于注销节点的输入错误。 对于 block，{Arg_1} 不是正确的值"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "无法从数据库读取节点对象，错误：{Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "在数据库中保存新的节点配置状态（取消配置）出错：{Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "节点配置出错。 在数据库中找不到该节点。"
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "节点配置出错。 节点必须处于 '已配置' 或 '正在配置' 状态才能将状态更改为 {Arg_1}。"
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "不支持节点状态从 '{Arg_1}' 过渡到 '{Arg_2}'。"
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "从本地数据库获取用户输入失败。 {Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "从本地用户输入中找不到用于服务 {Arg_1}/{Arg_2} 的首选项，错误：{Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "将新节点配置状态保存到数据库出错：{Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "针对节点 {Arg_1} 进行的节点配置/注册完成。"
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "{Arg_1} 的服务配置出错。 {Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "获取模式 {Arg_1} 的服务引用出错。 {Arg_2}"
-    },
-    {
-      "id": "Ignoring service. {Arg_1}",
-      "translation": "忽略服务。 {Arg_1}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "新节点策略：{Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "已删除节点策略"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "新的节点用户输入：{Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "没有可删除的节点用户输入"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "已删除所有节点用户输入"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 使用用户输入进行的服务配置开始。"
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置开始。"
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务配置完成。"
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "针对 {Arg_1}/{Arg_2} 进行的服务自动配置完成。"
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "在 {Arg_2}/{Arg_3} 的服务配置中，缺失变量 {Arg_1}。 如果部署策略中不包含缺失变量的设置，可能会阻止协议。"
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "配置服务 {Arg_1} 出错。 {Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "更改服务配置状态 {Arg_1} 出错，错误：{Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 开始。"
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "对于节点的 {Arg_2}，将服务配置状态更改为 {Arg_1} 完成。"
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "将选定项目转换为选择器出错：{Err}"
-    },
-    {
-      "id": "no service name",
-      "translation": "没有服务名称"
-    },
-    {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "没有用于服务 {ServiceName} 的 Docker 映像"
-    },
-    {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "对 {D} 的主体进行序列化失败：{Err}"
-    },
-    {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "对部署字段 {StringjsonBytes} 的 JSON 进行取消序列化失败：{Err}"
-    },
-    {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "用户输入 {Name} 没有缺省值，未进行设置"
-    },
-    {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "集群类型服务不支持“requiredServices”。"
-    },
-    {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "未能将服务 {ReqSvc} 的版本 {Ver} 转换为版本范围表达式。"
-    },
-    {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "所需服务 {SId} 存在错误的服务类型 {SType}。"
-    },
-    {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "所需服务 {SId} 的相依服务 {Id} 存在错误的服务类型 {SType1}。"
-    },
-    {
-      "id": "properties contains an invalid property: {Err}",
-      "translation": "properties 包含无效的属性：{Err}"
-    },
-    {
-      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "{PROPNODEPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
-    },
-    {
-      "id": "Property must include a name and a value: {Property}",
-      "translation": "属性必须包括名称和值：{Property}"
-    },
-    {
-      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "属性 {Name} 的属性类型 {DeclaredType} 无效。 允许使用的属性类型包括：版本、字符串、整型、布尔型、浮点型和字符串列表。"
-    },
-    {
-      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
-      "translation": "属性值的类型为 {ActualType}，但期望的类型为 {DeclaredType}"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not an integer type",
-      "translation": "属性 {Name} 的值 {Value} 不是整数类型"
-    },
-    {
-      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
-      "translation": "属性 {Name} 的值 {Value} 不是有效的字符串。 请定义类型，或将值更改为字符串。"
-    },
-    {
-      "id": "Property {Name} with value {Value} is not a valid verion string",
-      "translation": "值为 {Value} 的属性 {Name} 不是有效的版本字符串"
-    },
-    {
-      "id": "Property {Name} has invalid value type {ActualType}",
-      "translation": "属性 {Name} 的值类型 {ActualType} 无效"
-    },
-    {
       "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
       "translation": "部署配置 {Arg_1} 包含工作负载所不支持的功能"
     },
@@ -1279,40 +1283,388 @@
       "translation": "正在终止 anax。 未能例示 docker 客户机。 {Arg_1}"
     },
     {
-      "id": "Name, or Org is empty string.",
-      "translation": "名称或组织是空字符串。"
+      "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
+      "translation": "{PROPNODEPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
     },
     {
-      "id": "The serviceVersions array is empty.",
-      "translation": "serviceVersions 数组为空。"
+      "id": "Property must include a name and a value: {Property}",
+      "translation": "属性必须包括名称和值：{Property}"
     },
     {
-      "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
-      "translation": "{PROPSVCPRIVILEGED} 属性必须包含布尔值（true 或 false）。"
+      "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
+      "translation": "属性 {Name} 的属性类型 {DeclaredType} 无效。 允许使用的属性类型包括：版本、字符串、整型、布尔型、浮点型和字符串列表。"
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "版本表达式：在 {Expr} 中不允许有空格。"
+      "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
+      "translation": "属性值的类型为 {ActualType}，但期望的类型为 {DeclaredType}"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。"
+      "id": "Value {Value} of property {Name} is not an integer type",
+      "translation": "属性 {Name} 的值 {Value} 不是整数类型"
     },
     {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。"
+      "id": "Value {Value} of property {Name} is not a valid string. Please define type or change value to a string.",
+      "translation": "属性 {Name} 的值 {Value} 不是有效的字符串。 请定义类型，或将值更改为字符串。"
     },
     {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。"
+      "id": "Property {Name} with value {Value} is not a valid verion string",
+      "translation": "值为 {Value} 的属性 {Name} 不是有效的版本字符串"
     },
     {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。"
+      "id": "Property {Name} has invalid value type {ActualType}",
+      "translation": "属性 {Name} 的值类型 {ActualType} 无效"
     },
     {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "输入版本字符串 {V1} 或 {V2} 不是有效的单版本字符串。"
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "约束表达式 {Dconstraints} 的类型为 {Dconstraints_1}，但期望字符串数组"
+    },
+    {
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "约束表达式包含未配对的圆括号。"
+    },
+    {
+      "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
+      "translation": "从数据库中检索协议 {Arg_1} 出错，错误：{Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for MeteringNotification message, error {Arg_2}",
+      "translation": "无法从数据库检索用于 MeteringNotification 消息的协议 {Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for Cancel message, error {Arg_2}",
+      "translation": "无法从数据库检索用于 Cancel 消息的协议 {Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for ReplyAck message, error {Arg_2}",
+      "translation": "无法从数据库检索用于 ReplyAck 消息的协议 {Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve agreement {Arg_1} from database for DataReceived message, error {Arg_2}",
+      "translation": "无法从数据库检索用于 DataReceived 消息的协议 {Arg_1}，错误：{Arg_2}"
+    },
+    {
+      "id": "Unable to retrieve unarchived agreements from database. {Arg_1}",
+      "translation": "无法从数据库检索已取消归档的协议。 {Arg_1}"
+    },
+    {
+      "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
+      "translation": "在数据库中将协议 {Arg_1} 标记为 '已终止' 出错：{Arg_2}。"
+    },
+    {
+      "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
+      "translation": "从数据库中获取服务定义 {Arg_1} 出错。 {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service instances from database for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. {Arg_5}",
+      "translation": "从数据库中检索用于 {Arg_1}/{Arg_2} 版本 {Arg_3} 键 {Arg_4} 的所有服务实例出错。 {Arg_5}"
+    },
+    {
+      "id": "Error retrieving all service instances from database for {Arg_1}. {Arg_2}",
+      "translation": "从数据库中检索用于 {Arg_1} 的所有服务实例出错。 {Arg_2}"
+    },
+    {
+      "id": "Error retrieving all service instances from database, error: {Arg_1}",
+      "translation": "从数据库中检索所有服务实例出错，错误：{Arg_1}"
+    },
+    {
+      "id": "Error getting service instance {Arg_1} from db. {Arg_2}",
+      "translation": "从数据库中获取服务实例 {Arg_1} 出错。 {Arg_2}"
+    },
+    {
+      "id": "Error retrieving matching agreements from database for workloads {Arg_1}. Error: {Arg_2}",
+      "translation": "从数据库中检索工作负载 {Arg_1} 的匹配协议出错。 错误：{Arg_2}"
+    },
+    {
+      "id": "Error perisisting node config state in database to {Arg_1}. Error: {Arg_2}",
+      "translation": "将数据库中的节点配置状态持久保存至 {Arg_1} 出错。 错误：{Arg_2}"
+    },
+    {
+      "id": "Error retrieving device from database. Error: {Arg_1}",
+      "translation": "从数据库检索设备出错。 错误：{Arg_1}"
+    },
+    {
+      "id": "Error deleting node exchange pattern from the local database. {Arg_1}",
+      "translation": "从本地数据库删除节点 Exchange 模式出错。 {Arg_1}"
+    },
+    {
+      "id": "Error retrieving node {Arg_1} from the Exchange: {Arg_2}",
+      "translation": "检索 Exchange 中的节点 {Arg_1} 时发生错误：{Arg_2}"
+    },
+    {
+      "id": "Error updating registeredServices for node {Arg_1} in the Exchange: {Arg_2}",
+      "translation": "在 Exchange 中的更新节点 {Arg_1} 的 registeredServices 时发生错误：{Arg_2}"
+    },
+    {
+      "id": "Image loaded for {Arg_1}/{Arg_2}.",
+      "translation": "已装入 {Arg_1}/{Arg_2} 的映像。"
+    },
+    {
+      "id": "Image loaded for service {Arg_1}/{Arg_2}.",
+      "translation": "已装入服务 {Arg_1}/{Arg_2} 的映像。"
+    },
+    {
+      "id": "Error loading image for {Arg_1}/{Arg_2}.",
+      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。"
+    },
+    {
+      "id": "Error loading image for service {Arg_1}/{Arg_2}.",
+      "translation": "装入服务 {Arg_1}/{Arg_2} 的映像出错。"
+    },
+    {
+      "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+      "translation": "终止 {Arg_1} 的协议开始。 终止原因：{Arg_2}"
+    },
+    {
+      "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",
+      "translation": "服务 {Arg_1} 的协议已达成。 协议标识为 {Arg_2}。"
+    },
+    {
+      "id": "Agreement for {Arg_1} no longer valid on the agbot. Node will cancel it.",
+      "translation": "在 agbot 上，{Arg_1} 的协议不再有效。 节点会将其取消。"
+    },
+    {
+      "id": "Workload service containers for {Arg_1}/{Arg_2} are up and running.",
+      "translation": "{Arg_1}/{Arg_2} 的工作负载服务容器正在正常运行。"
+    },
+    {
+      "id": "Complete terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
+      "translation": "终止 {Arg_1} 的协议完成。 终止原因：{Arg_2}"
+    },
+    {
+      "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
+      "translation": "在 Exchange 中删除 {Arg_1} 的协议出错：{Arg_2}。 将会重试。"
+    },
+    {
+      "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
+      "translation": "针对 {Arg_1}，与 agbot 进行协议验证出错，错误：{Arg_2}"
+    },
+    {
+      "id": "ReplyAck indicated that the agbot did not want to pursue the agreement for {Arg_1}. Node will cancel the agreement",
+      "translation": "ReplyAck 已指出 agbot 不想为 {Arg_1} 履行协议。 节点将取消该协议"
+    },
+    {
+      "id": "Node received Cancel message for {Arg_1}/{Arg_2} from agbot {Arg_3}.",
+      "translation": "节点从 agbot {Arg_3} 接收到针对 {Arg_1}/{Arg_2} 的 Cancel 消息。"
+    },
+    {
+      "id": "Error handling ReplyAck message for {Arg_1}. {Arg_2}",
+      "translation": "处理针对 {Arg_1} 的 ReplyAck 消息出错。 {Arg_2}"
+    },
+    {
+      "id": "Error handling ReplyAck message. {Arg_1}",
+      "translation": "处理 ReplyAck 消息出错。 {Arg_1}"
+    },
+    {
+      "id": "Error handling DataReceived message for {Arg_1}. {Arg_2}",
+      "translation": "处理针对 {Arg_1} 的 DataReceived 消息出错。 {Arg_2}"
+    },
+    {
+      "id": "Error handling DataReceived message. {Arg_1}",
+      "translation": "处理 DataReceived 消息出错。 {Arg_1}"
+    },
+    {
+      "id": "Error handling MeterNotification message for {Arg_1}. {Arg_2}",
+      "translation": "处理针对 {Arg_1} 的 MeterNotification 消息出错。 {Arg_2}"
+    },
+    {
+      "id": "Error handling MeterNotification message. {Arg_1}",
+      "translation": "处理 MeterNotification 消息出错。 {Arg_1}"
+    },
+    {
+      "id": "Error handling Cancel message for {Arg_1}. {Arg_2}",
+      "translation": "处理针对 {Arg_1} 的 Cancel 消息出错。 {Arg_2}"
+    },
+    {
+      "id": "Error handling Cancel message. {Arg_1}",
+      "translation": "处理 Cancel 消息出错。 {Arg_1}"
+    },
+    {
+      "id": "Start workload service for {Arg_1}/{Arg_2}.",
+      "translation": "启动用于 {Arg_1}/{Arg_2} 的工作负载服务。"
+    },
+    {
+      "id": "Workload destroyed for {Arg_1}",
+      "translation": "{Arg_1} 的工作负载已销毁"
+    },
+    {
+      "id": "Service containers for {Arg_1} started.",
+      "translation": "用于 {Arg_1} 的服务容器已启动。"
+    },
+    {
+      "id": "Complete cleaning up the service instance {Arg_1}.",
+      "translation": "清除服务实例 {Arg_1} 完成。"
+    },
+    {
+      "id": "Start dependent services for {Arg_1}/{Arg_2}.",
+      "translation": "启动用于 {Arg_1}/{Arg_2} 的相依服务。"
+    },
+    {
+      "id": "Encountered error starting dependen services for {Arg_1}/{Arg_2}. {Arg_3}",
+      "translation": "启动用于 {Arg_1}/{Arg_2} 的相依服务出错。 {Arg_3}"
+    },
+    {
+      "id": "Error starting dependen service {Arg_1}/{Arg_2} version {Arg_3} for agreement {Arg_4}. {Arg_5}",
+      "translation": "针对协议 {Arg_4} 启动相依服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 出错。 {Arg_5}"
+    },
+    {
+      "id": "Start cleaning up service {Arg_1} because agreement {Arg_2} ended.",
+      "translation": "因为协议 {Arg_2} 已结束，清除服务 {Arg_1} 开始。"
+    },
+    {
+      "id": "Error starting service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+      "translation": "启动服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 出错，错误：{Arg_4}"
+    },
+    {
+      "id": "Error getting all the services from agreements: {Arg_1}",
+      "translation": "从协议中获取所有服务出错：{Arg_1}"
+    },
+    {
+      "id": "Start agreement-less service {Arg_1}/{Arg_2}.",
+      "translation": "启动无协议服务 {Arg_1}/{Arg_2}。"
+    },
+    {
+      "id": "Complete starting agreement-less service {Arg_1}/{Arg_2} and its dependents.",
+      "translation": "启动无协议服务 {Arg_1}/{Arg_2} 及其从属项完成。"
+    },
+    {
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, error {Arg_3}",
+      "translation": "无法启动无协议服务 {Arg_1}/{Arg_2}，错误：{Arg_3}"
+    },
+    {
+      "id": "Unable to start agreement-less services, error searching for pattern {Arg_1} in exchange, error: {Arg_2}",
+      "translation": "无法启动无协议服务，在 Exchange 中搜索模式 {Arg_1} 出错，错误：{Arg_2}"
+    },
+    {
+      "id": "Unable to start agreement-less services, pattern {Arg_1} not found in exchange",
+      "translation": "无法启动无协议服务，在 Exchange 中找不到模式 {Arg_1}"
+    },
+    {
+      "id": "Unable to start agreement-less service {Arg_1}/{Arg_2}, local service definition not found",
+      "translation": "无法启动无协议服务 {Arg_1}/{Arg_2}，找不到本地服务定义"
+    },
+    {
+      "id": "Start upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 升级到版本 {Arg_4} 开始。"
+    },
+    {
+      "id": "Complete upgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 升级到版本 {Arg_4} 完成。"
+    },
+    {
+      "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
+      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 升级到版本 {Arg_4} 失败，错误：{Arg_5}"
+    },
+    {
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
+      "translation": "因为协议的服务未能启动，开始将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级。"
+    },
+    {
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service failed to start.",
+      "translation": "因为服务未能启动，开始将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级。"
+    },
+    {
+      "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because upgrading failed.",
+      "translation": "因为升级失败，开始将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级。"
+    },
+    {
+      "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
+      "translation": "将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级失败，错误：{Arg_4}"
+    },
+    {
+      "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
+      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 降级到版本 {Arg_4} 已完成。"
+    },
+    {
+      "id": "Error finding the new service definition to downgrade to for {Arg_1}/{Arg_2} version {Arg_3} key {Arg_4}. error: {Arg_5}",
+      "translation": "对于 {Arg_1}/{Arg_2} 版本 {Arg_3} 键 {Arg_4}，查找所要降级到的新服务定义出错。 错误：{Arg_5}"
+    },
+    {
+      "id": "Could not find lower version to downgrade for {Arg_1}/{Arg_2} version {Arg_3}.",
+      "translation": "对于 {Arg_1}/{Arg_2} 版本 {Arg_3}，找不到要降级到的更低版本。"
+    },
+    {
+      "id": "Error downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}. Error: {Arg_5}",
+      "translation": "将服务 {Arg_1}/{Arg_2} 从版本 {Arg_3} 降级到版本 {Arg_4} 出错。 错误：{Arg_5}"
+    },
+    {
+      "id": "Error downgrading service {Arg_1}/{Arg_2} version {Arg_3}. {Arg_4}",
+      "translation": "将服务 {Arg_1}/{Arg_2} 版本 {Arg_3} 降级出错。 {Arg_4}"
+    },
+    {
+      "id": "Start retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3} because service failed.",
+      "translation": "因为服务失败，开始针对相依服务 {Arg_2} 版本 {Arg_3} 重试第 {Arg_1} 次。"
+    },
+    {
+      "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
+      "translation": "针对相依服务 {Arg_2} 版本 {Arg_3} 重试第 {Arg_1} 次失败。"
+    },
+    {
+      "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
+      "translation": "获取 {Arg_1} 版本 {Arg_2} 的服务重试计数失败。 {Arg_3}"
+    },
+    {
+      "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
+      "translation": "在数据库中更新服务实例 {Arg_1} 的重试开始状态出错。 {Arg_2}"
+    },
+    {
+      "id": "Node pattern changed on the Exchange from {Arg_1} to {Arg_2}.",
+      "translation": "Exchange 上的节点模式已从 {Arg_1} 更改为 {Arg_2}。"
+    },
+    {
+      "id": "Encountered error while re-registering node with new pattern {Arg_1}. {Arg_2}",
+      "translation": "使用新模式 {Arg_1} 重新注册节点时遇到错误。 {Arg_2}"
+    },
+    {
+      "id": "Start re-registering node after pattern changed to {Arg_1}.",
+      "translation": "在模式更改为 {Arg_1} 之后开始重新注册节点。"
+    },
+    {
+      "id": "Complete re-registering node after pattern changed to {Arg_1}.",
+      "translation": "在模式更改为 {Arg_1} 之后完成重新注册节点。"
+    },
+    {
+      "id": "Node pattern changed again on the Exchange. Will register the node with the new pattern: {Arg_1}",
+      "translation": "Exchange 上的节点模式已重新更改。 将使用新模式 {Arg_1} 注册该节点"
+    },
+    {
+      "id": "Error validating new node pattern {Arg_1}: {Arg_2}",
+      "translation": "验证新节点模式 {Arg_1} 出错：{Arg_2}"
+    },
+    {
+      "id": "The node will keep using the old pattern {Arg_1}",
+      "translation": "该节点将继续使用旧模式 {Arg_1}"
+    },
+    {
+      "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
+      "translation": "新模式 {Arg_1} 已通过验证。 将取消协议，并使用新模式重新注册该节点。"
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "兼容性错误：模式版本不相同，使用者策略：{Version}，生产者策略：{Version_1}"
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "兼容性错误：节点属性 {Properties} 未满足约束需求 {Constraints}。 底层错误：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "兼容性错误：节点属性未满足约束需求。 {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "兼容性错误：属性 {Properties} 未满足节点约束 {Constraints}。 底层错误：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "兼容性错误：属性未满足节点约束。 {Err}"
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "兼容性错误：在 {AgreementProtocols} 与 {AgreementProtocols_1} 之间没有公共的协议。 底层错误：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "兼容性错误：数据验证必须兼容，但生产者的数据验证为 {DataVerify}，使用者的数据验证为 {DataVerify_1}。"
     },
     {
       "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
@@ -1375,360 +1727,28 @@
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
     },
     {
-      "id": "[verbose] {M}",
-      "translation": "[verbose] {M}"
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "版本表达式：在 {Expr} 中不允许有空格。"
     },
     {
-      "id": "Error: {Msg}",
-      "translation": "错误：{Msg}"
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "版本表达式：{Verstring} 不是有效的版本字符串。"
     },
     {
-      "id": "Warning: {Msg}",
-      "translation": "警告：{Msg}"
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令开头。"
     },
     {
-      "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "对 {ErrMsg} 中的字节进行取消序列化失败：{Err}"
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "版本表达式：{Verstring} 未以包括或排除伪指令结尾。"
     },
     {
-      "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "对 {ErrMsg} 中的数据类型进行序列化失败：{Err}"
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "版本表达式：表达式 {Expr} 中的版本数不正确。"
     },
     {
-      "id": "problem testing api key match: {Err}",
-      "translation": "测试 API 密钥匹配时遇到问题：{Err}"
-    },
-    {
-      "id": "Using API key",
-      "translation": "正在使用 API 密钥"
-    },
-    {
-      "id": "unable to create docker client: {Err}",
-      "translation": "无法创建 Docker 客户机：{Err}"
-    },
-    {
-      "id": "docker auth domainName: {DomainName}",
-      "translation": "Docker 认证域名：{DomainName}"
-    },
-    {
-      "id": "unable to find docker credentials for {Domain}",
-      "translation": "找不到 {Domain} 的 Docker 凭证"
-    },
-    {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
-    },
-    {
-      "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
-      "translation": "未能从 ~/.docker/config.json 获取 Docker 凭证：{Err}。 可能需要运行 'docker login ...'，以提供映像注册表的凭证。"
-    },
-    {
-      "id": "unable to push docker image {Repository____tag}: {Err}",
-      "translation": "无法推送 Docker 映像 {Repository____tag}：{Err}"
-    },
-    {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送输出中找不到映像摘要"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在拉取 {Repository}:{Tag}..."
-    },
-    {
-      "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "无法拉取 Docker 映像 {Repository____tag}。 找不到 Docker 凭证。 如果映像注册表是私有的，您可能需要运行 'docker login ...'。 错误：{Err}"
-    },
-    {
-      "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "无法拉取 Docker 映像 {Repository____tag}：{Err}"
-    },
-    {
-      "id": "the id can not contain more than 1 '/'",
-      "translation": "标识不得包含多个 '/'"
-    },
-    {
-      "id": "reading stdin failed: {Err}",
-      "translation": "读取 stdin 失败：{Err}"
-    },
-    {
-      "id": "reading {FilePath} failed: {Err}",
-      "translation": "读取 {FilePath} 失败：{Err}"
-    },
-    {
-      "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
-      "translation": "警告：在输入文件中引用了环境变量 '{EnvVarName}'，但未在环境中定义该变量。"
-    },
-    {
-      "id": "Error reading input, error {Err}",
-      "translation": "读取输入出错，错误：{Err}"
-    },
-    {
-      "id": "Exiting.",
-      "translation": "正在退出。"
-    },
-    {
-      "id": "Error reading HTTP response, error {Err}",
-      "translation": "读取 HTTP 响应出错，错误：{Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 具体错误为：{Err}"
-    },
-    {
-      "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} 新请求失败：{Err}"
-    },
-    {
-      "id": "HTTP code: {HttpCode}",
-      "translation": "HTTP 代码：{HttpCode}"
-    },
-    {
-      "id": "Bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码不正确：{HttpCode}"
-    },
-    {
-      "id": "bad HTTP code from {ApiMsg}: {HttpCode}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码不正确：{HttpCode}"
-    },
-    {
-      "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "读取来自 {ApiMsg} 的主体响应失败：{Err}"
-    },
-    {
-      "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "读取来自 {ApiMsg} 的主体响应失败：{Err}"
-    },
-    {
-      "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的主体响应进行取消序列化失败：{Err}"
-    },
-    {
-      "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的主体响应进行取消序列化失败：{Err}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确：{Body}"
-    },
-    {
-      "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "对 {ApiMsg} 的主体进行序列化失败：{Err}"
-    },
-    {
-      "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "对字节进行取消序列化失败。 {Err}"
-    },
-    {
-      "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "从 {ANAXOVERWRITEFILE} 获取 {OldMgmtHubCertPath} 出错：{Err}"
-    },
-    {
-      "id": "Encountered error reading ICP cert file {IcpCertPath}: {Err}",
-      "translation": "读取 ICP 证书文件 {IcpCertPath} 遇到错误：{Err}"
-    },
-    {
-      "id": "Error getting HZN_EXCHANGE_URL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_EXCHANGE_URL 出错。 {Err}"
-    },
-    {
-      "id": "Error getting ExchangeUrl from {ANAXCONFIGFILE}. {Err}",
-      "translation": "从 {ANAXCONFIGFILE} 获取 ExchangeUrl 出错。 {Err}"
-    },
-    {
-      "id": "HZN_EXCHANGE_URL is not set, get it from horizon agent configuration on the node.",
-      "translation": "未设置 HZN_EXCHANGE_URL，从节点上的 Horizon 代理程序配置获取。"
-    },
-    {
-      "id": "Could not get the Exchange url from environment variable HZN_EXCHANGE_URL or the horizon agent",
-      "translation": "无法从环境变量 HZN_EXCHANGE_URL 或 Horizon 代理程序获取 Exchange URL"
-    },
-    {
-      "id": "The exchange url: {ExchUrl}",
-      "translation": "Exchange URL：{ExchUrl}"
-    },
-    {
-      "id": "Error getting HZN_FSS_CSSURL from {ANAXOVERWRITEFILE}. {Err}",
-      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_FSS_CSSURL 出错。 {Err}"
-    },
-    {
-      "id": "Error getting model management service Url from {ANAXCONFIGFILE}. {Err}",
-      "translation": "从 {ANAXCONFIGFILE} 获取模型管理服务 URL 出错。 {Err}"
-    },
-    {
-      "id": "HZN_FSS_CSSURL is not set, get it from horizon agent configuration on the node.",
-      "translation": "未设置 HZN_FSS_CSSURL，从节点上的 Horizon 代理程序配置获取。"
-    },
-    {
-      "id": "Could not get the model management service url from environment variable HZN_FSS_CSSURL or the horizon agent",
-      "translation": "未能从环境变量 HZN_FSS_CSSURL 或 Horizon 代理程序获取模型管理服务 URL"
-    },
-    {
-      "id": "The model management service url: {MmsUrl}",
-      "translation": "模型管理服务 URL：{MmsUrl}"
-    },
-    {
-      "id": "HZN_SDO_SVC_URL is not set, get it from {ANAXOVERWRITEFILE}.",
-      "translation": "未设置 HZN_SDO_SVC_URL，将从 {ANAXOVERWRITEFILE} 获取。"
-    },
-    {
-      "id": "Error getting HZN_SDO_SVC_URL from {ANAXOVERWRITEFILE}: {Err}",
-      "translation": "从 {ANAXOVERWRITEFILE} 获取 HZN_SDO_SVC_URL 时发生错误：{Err}"
-    },
-    {
-      "id": "Could not get the HZN_SDO_SVC_URL value from the environment, {ANAXOVERWRITEFILE}, or one of the hzn.json files",
-      "translation": "无法从 {ANAXOVERWRITEFILE} 环境或某个 hzn.json 文件中获取 HZN_SDO_SVC_URL 值。"
-    },
-    {
-      "id": "The SDO service url: {SdoUrl}",
-      "translation": "SDO 服务 URL：{SdoUrl}"
-    },
-    {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 具体错误为：{Err}"
-    },
-    {
-      "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 具体错误为：{Err}"
-    },
-    {
-      "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "对 {ApiMsg} 的 Exchange 主体进行序列化失败：{Err}"
-    },
-    {
-      "id": "unable to open object file {Name}: {Err}",
-      "translation": "无法打开对象文件 {Name}：{Err}"
-    },
-    {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}. Will retry.",
-      "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。 HTTP 状态：{Httpstatus}。 将会重试。"
-    },
-    {
-      "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "调用 {Service} REST API {ApiMsg} 时遇到 HTTP 错误：{Err}。 HTTP 状态：{Httpstatus}。"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}, output: {StringbodyBytes}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确，输出：{StringbodyBytes}"
-    },
-    {
-      "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的 Exchange 主体响应进行取消序列化失败：{Err}"
-    },
-    {
-      "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "对来自 {ApiMsg} 的 Exchange 输出进行序列化失败：{Err}"
-    },
-    {
-      "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "读取来自 {ApiMsg} 的 Exchange 主体响应失败：{Err}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确：{Code}，{Msg}"
-    },
-    {
-      "id": "bad HTTP code {HttpCode} from {ApiMsg}",
-      "translation": "来自 {ApiMsg} 的 HTTP 代码 {HttpCode} 不正确"
-    },
-    {
-      "id": "exchange authentication must be specified with one of the following: the -u flag, the -n flag, HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH",
-      "translation": "必须使用下列其中一项来指定 Exchange 认证：-u 标志、-n 标志、HZN_EXCHANGE_USER_AUTH 或 HZN_EXCHANGE_NODE_AUTH"
-    },
-    {
-      "id": "Verifying public key file ...",
-      "translation": "正在验证公用密钥文件..."
-    },
-    {
-      "id": "provided public key is not valid; error: {Err}",
-      "translation": "提供的公用密钥无效；错误：{Err}"
-    },
-    {
-      "id": "Checking private key file format ...",
-      "translation": "正在检查专用密钥文件格式..."
-    },
-    {
-      "id": "provided private key is not valid; error: {Err}",
-      "translation": "提供的专用密钥无效；错误：{Err}"
-    },
-    {
-      "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "获取 {KeyFile} 文件的绝对路径失败。 {Err}"
-    },
-    {
-      "id": "{Err}. Please create the signing key.",
-      "translation": "{Err}。 请创建签名密钥。"
-    },
-    {
-      "id": "running: {CmdStr}",
-      "translation": "正在运行：{CmdStr}"
-    },
-    {
-      "id": "did not get a command object",
-      "translation": "未能获取命令对象"
-    },
-    {
-      "id": "Could not get Stdin pipe, error: {Err}",
-      "translation": "未能获取 Stdin 管道，错误：{Err}"
-    },
-    {
-      "id": "could not retrieve output from command, error: {Err}",
-      "translation": "未能检索来自命令的输出，错误：{Err}"
-    },
-    {
-      "id": "could not retrieve stderr from command, error: {Err}",
-      "translation": "未能检索来自命令的 stderr，错误：{Err}"
-    },
-    {
-      "id": "Unable to start command, error: {Err}",
-      "translation": "无法启动命令，错误：{Err}"
-    },
-    {
-      "id": "Unable to write to stdin of command, error: {Err}",
-      "translation": "无法写至命令的 stdin，错误：{Err}"
-    },
-    {
-      "id": "Unable to close stdin, error: {Err}",
-      "translation": "无法关闭 stdin，错误：{Err}"
-    },
-    {
-      "id": "could not read stdout, error: {Err}",
-      "translation": "未能读取 stdout，错误：{Err}"
-    },
-    {
-      "id": "could not read stderr, error: {Err}",
-      "translation": "未能读取 stderr，错误：{Err}"
-    },
-    {
-      "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "命令失败：{Err}，stderr：{StringstderrBytes}"
-    },
-    {
-      "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
-      "translation": "无法使用 {HTTPRequestTimeoutOverride} 来设置请求超时，值不是有效的数字：{EnvTimeout}"
-    },
-    {
-      "id": "HTTP request timeout set to {RequestTimeout} seconds",
-      "translation": "HTTP 请求超时已设置为 {RequestTimeout} 秒"
-    },
-    {
-      "id": "Error converting environmental variable HZN_HTTP_RETRIES {MaxRetriess} to integer. {Err1}",
-      "translation": "将环境变量 HZN_HTTP_RETRIES {MaxRetriess} 转换为整数时出错。 {Err1}"
-    },
-    {
-      "id": "Error converting environmental variable HZN_HTTP_RETRY_INTERVAL {RetryIntervals} to integer. {Err1}",
-      "translation": "将环境变量 HZN_HTTP_RETRY_INTERVAL {RetryIntervals} 转换为整数时出错。 {Err1}"
-    },
-    {
-      "id": "{Image} parsed into: domain={Domain}, path={Path}, tag={Tag}",
-      "translation": "{Image} 已解析为：域 = {Domain}，路径 = {Path}，标记 = {Tag}"
-    },
-    {
-      "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
-      "translation": "警告：未能解析映像路径 '{Image}'。 不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。"
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "输入版本字符串 {V1} 或 {V2} 不是有效的单版本字符串。"
     }
   ]
 }

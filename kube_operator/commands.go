@@ -2,6 +2,7 @@ package kube_operator
 
 import (
 	"fmt"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/persistence"
 )
 
@@ -10,7 +11,12 @@ type InstallCommand struct {
 }
 
 func (i InstallCommand) ShortString() string {
-	return fmt.Sprintf("%v", i)
+	lc := ""
+	lcObj := events.GetLaunchContext(i.LaunchContext)
+	if lcObj != nil {
+		lc = lcObj.ShortString()
+	}
+	return fmt.Sprintf("LaunchContext: %v", lc)
 }
 
 func NewInstallCommand(launchContext interface{}) *InstallCommand {

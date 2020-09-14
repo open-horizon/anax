@@ -34,14 +34,15 @@ func (e ExchangeChange) String() string {
 }
 
 // constants for resource type values
-const RESOURCE_NODE_MSG = "nodemsgs"                     // A message was delivered to the node
-const RESOURCE_AGBOT_MSG = "agbotmsgs"                   // A message was delivered to the agbot
-const RESOURCE_NODE = "node"                             // A change was made to the node
-const RESOURCE_AGBOT = "agbot"                           // A change was made to the agbot
-const RESOURCE_NODE_POLICY = "nodepolicies"              // A change was made to the node policy
-const RESOURCE_NODE_AGREEMENTS = "nodeagreements"        // A change was made to one of the agreements on the node
-const RESOURCE_NODE_ERROR = "nodeerrors"                 // A change was made to the node errors
-const RESOURCE_ORG = "org"                               // A change was made to the org
+const RESOURCE_NODE_MSG = "nodemsgs"              // A message was delivered to the node
+const RESOURCE_AGBOT_MSG = "agbotmsgs"            // A message was delivered to the agbot
+const RESOURCE_NODE = "node"                      // A change was made to the node
+const RESOURCE_AGBOT = "agbot"                    // A change was made to the agbot
+const RESOURCE_NODE_POLICY = "nodepolicies"       // A change was made to the node policy
+const RESOURCE_NODE_AGREEMENTS = "nodeagreements" // A change was made to one of the agreements on the node
+const RESOURCE_NODE_STATUS = "nodestatus"
+const RESOURCE_NODE_ERROR = "nodeerrors" // A change was made to the node errors
+const RESOURCE_NODE_SERVICES_CONFIGSTATE = "services_configstate"
 const RESOURCE_SERVICE = "service"                       // A change was made to a service
 const RESOURCE_AGBOT_SERVED_POLICY = "agbotbusinesspols" // A served deployment policy change occurred
 const RESOURCE_AGBOT_SERVED_PATTERN = "agbotpatterns"    // A served pattern change occurred
@@ -49,6 +50,13 @@ const RESOURCE_AGBOT_PATTERN = "pattern"                 // A pattern change occ
 const RESOURCE_AGBOT_POLICY = "policy"                   // A policy change occurred
 const RESOURCE_AGBOT_SERVICE_POLICY = "servicepolicies"  // A service policy changed
 const RESOURCE_AGBOT_AGREEMENTS = "agbotagreements"      // A change was made to one of the agreements on the agbot
+const RESOURCE_ORG = "org"                               // A change was made to the org
+
+// constants for operation values
+const CHANGE_OPERATION_CREATED = "created"
+const CHANGE_OPERATION_CREATED_MODIFIED = "created/modified"
+const CHANGE_OPERATION_MODIFIED = "modified"
+const CHANGE_OPERATION_DELETED = "deleted"
 
 // functions for interrogating change types
 func (e ExchangeChange) IsMessage(node string) bool {
@@ -95,6 +103,24 @@ func (e ExchangeChange) IsNodeAgreement(node string) bool {
 		return changeNode == node && e.Resource == RESOURCE_NODE_AGREEMENTS
 	} else {
 		return e.Resource == RESOURCE_NODE_AGREEMENTS
+	}
+}
+
+func (e ExchangeChange) IsNodeStatus(node string) bool {
+	if node != "" {
+		changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+		return changeNode == node && e.Resource == RESOURCE_NODE_STATUS
+	} else {
+		return e.Resource == RESOURCE_NODE_STATUS
+	}
+}
+
+func (e ExchangeChange) IsNodeServiceConfigState(node string) bool {
+	if node != "" {
+		changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
+		return changeNode == node && e.Resource == RESOURCE_NODE_SERVICES_CONFIGSTATE
+	} else {
+		return e.Resource == RESOURCE_NODE_SERVICES_CONFIGSTATE
 	}
 }
 

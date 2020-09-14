@@ -277,8 +277,8 @@ func DecideOnProposal(p ProtocolHandler,
 	} else {
 		termsAndConditions = tcPolicy
 		producerPolicy = pPolicy
-		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("TsAndCs: %v", tcPolicy.String())))
-		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("Producer Policy: %v", pPolicy.String())))
+		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("TsAndCs: %v", tcPolicy.ShortString())))
+		glog.V(3).Infof(AAPlogString(p.Name(), fmt.Sprintf("Producer Policy: %v", pPolicy.ShortString())))
 
 		// now add the node's built-in properties to the producer policy
 		isCluster := device.IsEdgeCluster()

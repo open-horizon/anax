@@ -28,7 +28,7 @@ require (
 	github.com/mibk/dupl v1.0.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/open-horizon/edge-sync-service v0.10.11
+	github.com/open-horizon/edge-sync-service v0.10.12
 	github.com/open-horizon/edge-utilities v0.0.0-20190711093331-0908b45a7152
 	github.com/open-horizon/rsapss-tool v0.0.0-20190416131035-2fc75eb3b6ea
 	github.com/opencontainers/go-digest v1.0.0-rc1.0.20180430190053-c9281466c8b2 // indirect
@@ -42,11 +42,11 @@ require (
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/vbatts/tar-split v0.11.1 // indirect
-	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b // indirect
-	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
-	golang.org/x/text v0.3.3-0.20191031172631-4b67af870c6f
+	golang.org/x/text v0.3.3
+	golang.org/x/tools v0.0.0-20200823205832-c024452afbcd // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20200420144010-e5e8543f8aeb // indirect
 	google.golang.org/grpc v1.28.1 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
@@ -61,3 +61,4 @@ require (
 	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect
 	mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b // indirect
 )
+

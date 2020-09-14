@@ -92,6 +92,10 @@ func (r SearchExchBusinessPolResponse) String() string {
 func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error) {
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting node policy for %v.", deviceId)))
 
+	if cachedNodePol := GetNodePolicyFromCache(GetOrg(deviceId), GetId(deviceId)); cachedNodePol != nil {
+		return cachedNodePol, nil
+	}
+
 	// Get the node policy object. There should only be 1.
 	var resp interface{}
 	resp = new(ExchangePolicy)
@@ -122,6 +126,7 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 			if nodePolicy.GetLastUpdated() == "" {
 				return nil, nil
 			} else {
+				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_POL_TYPE_CACHE, nodePolicy)
 				return nodePolicy, nil
 			}
 		}
@@ -155,6 +160,7 @@ func PutNodePolicy(ec ExchangeContext, deviceId string, ep *ExchangePolicy) (*Pu
 			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device policy for %v to exchange %v", deviceId, ep)))
+			UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_POL_TYPE_CACHE, ep)
 			return resp.(*PutDeviceResponse), nil
 		}
 	}
@@ -187,6 +193,7 @@ func DeleteNodePolicy(ec ExchangeContext, deviceId string) error {
 			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("deleted device policy for %v from the exchange.", deviceId)))
+			DeleteCacheResource(NODE_POL_TYPE_CACHE, NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)))
 			return nil
 		}
 	}
@@ -231,8 +238,16 @@ func GetBusinessPolicies(ec ExchangeContext, org string, policy_id string) (map[
 				continue
 			}
 		} else {
-			pols := resp.(*GetBusinessPolicyResponse).BusinessPolicy
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found business policy for %v, %v", org, pols)))
+			var pols map[string]ExchangeBusinessPolicy
+			if resp != nil {
+				pols = resp.(*GetBusinessPolicyResponse).BusinessPolicy
+			}
+
+			if policy_id != "" {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found business policy for %v, %v", org, pols)))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v business policies for %v", len(pols), org)))
+			}
 			return pols, nil
 		}
 	}

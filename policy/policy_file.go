@@ -488,17 +488,17 @@ func (self *Policy) String() string {
 func (self *Policy) ShortString() string {
 	res := ""
 	res += fmt.Sprintf("Name: %v Version: %v, Pattern: %v", self.Header.Name, self.Header.Version, self.PatternId)
-	res += ", API Specifications "
-	for _, apiSpec := range self.APISpecs {
-		res += fmt.Sprintf("Ref: %v Org: %v Version: %v Exclusive: %v Arch: %v ", apiSpec.SpecRef, apiSpec.Org, apiSpec.Version, apiSpec.ExclusiveAccess, apiSpec.Arch)
-	}
-	res += fmt.Sprintf(", Agreement Protocol: %v", self.AgreementProtocols)
 	res += ", Workloads: "
 	for _, wl := range self.Workloads {
-		res += fmt.Sprintf("Deployment: %v ", wl.Deployment)
+		res += wl.ShortString() + "\n"
 	}
-	res += fmt.Sprintf(", Data Verification: %v", self.DataVerify)
-	res += fmt.Sprintf(", Node Health: %v", self.NodeH)
+
+	propString := ""
+	if self.Properties != nil {
+		propString = self.Properties.ShortString()
+	}
+	res += fmt.Sprintf("Properties: %v\n", propString)
+	res += fmt.Sprintf("Constraints: %v\n", self.Constraints)
 
 	return res
 }

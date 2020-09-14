@@ -4,7 +4,7 @@
 echo "Building resource packages."
 
 EXEC_DIR=$PWD
-cd /root/resources
+cd /root/resources/private
 
 RESOURCE_ORG1=e2edev@somecomp.com
 RESOURCE_ORG2=userdev
@@ -53,3 +53,19 @@ for dir in */; do
 
 	cd ..
 done
+
+echo "Making resource tarball for public resource"
+cd /root/resources/public
+RESOURCE_ORG=IBM
+RESOURCE_TYPE=public
+
+res=$(find . -not -name "*.tgz" -not -path ".")
+tar -czvf public.tgz $res
+
+echo "Installing resource package public.tgz."
+ls /root/resources/public
+$EXEC_DIR/deploy_file.sh /root/resources/public/public.tgz 1.0.0 ${RESOURCE_ORG} ${RESOURCE_TYPE} none none none
+if [ $? -ne 0 ]
+then
+	exit -1
+fi

@@ -747,7 +747,7 @@ func SetServicePolicyPrivilege(getServiceResolvedDef exchange.ServiceDefResolver
 		}
 	}
 
-	runtimePriv, err, _ := servicesRequirePrivilege(&svcList, msgPrinter)
+	runtimePriv, err, _ := ServicesRequirePrivilege(&svcList, msgPrinter)
 	if err != nil {
 		return nil, nil, "", err
 	}

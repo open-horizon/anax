@@ -87,7 +87,7 @@ function stopServices {
 # $2 - project name
 function deploy {
     cd $1
-    deploy=$(hzn exchange service publish -v -k /tmp/*private.key -K /tmp/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploy=$(hzn exchange service publish -v -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
     deploying=$(echo ${deploy} | grep "HTTP code: 201")
     if [ "${deploying}" == "" ]; then
         echo -e "\nERROR: $2 did not deploy. Output was:"
@@ -164,7 +164,7 @@ if [ $? -ne 0 ]; then exit $?; fi
 
 echo -e "Starting the top level service in the Horizon test environment."
 
-startDev=$(hzn dev service start -v -m /root/resources/basicres/basicres.tgz -m /root/resources/multires/multires.tgz -t model 2>&1)
+startDev=$(hzn dev service start -v -m /root/resources/private/basicres/basicres.tgz -m /root/resources/private/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo ${startDev} | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
 if [ "${startedServices}" != "3" ]; then
     echo -e "${startedServices}"
@@ -192,18 +192,23 @@ stopServices
 
 echo -e "Deploying services."
 
-cd /tmp
-echo -e "Generate signing keys."
-hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
-if [ $? -ne 0 ]
+KEY_TEST_DIR="/tmp/keytest"
+mkdir -p $KEY_TEST_DIR
+
+cd $KEY_TEST_DIR
+ls *.key &> /dev/null
+if [ $? -eq 0 ]
 then
+    echo -e "Using existing key"
+else
+  echo -e "Generate new signing keys:"
+  hzn key create -l 4096 e2edev@somecomp.com e2edev@gmail.com -d .
+  if [ $? -ne 0 ]
+  then
     echo -e "hzn key create failed."
-    exit 1
+    exit 2
+  fi
 fi
-
-echo -e "Copy public key into anax folder for use at runtime."
-
-cp /tmp/*public.pem /root/.colonus/.
 
 echo -e "Logging into the e2edev@somecomp.com docker registry."
 echo ${DOCKER_REG_PW} | docker login -u=${DOCKER_REG_USER} --password-stdin localhost:443
@@ -238,8 +243,8 @@ then
 
   echo -e "Removing keys"
 
-  rm -rf /tmp/*public.pem
-  rm -rf /tmp/*private.key
+  rm -rf $KEY_TEST_DIR/*public.pem
+  rm -rf $KEY_TEST_DIR/*private.key
   rm -rf /root/.colonus/*public.pem
 
 fi

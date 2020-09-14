@@ -268,6 +268,7 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// to notify the other workers that they have some work to do.
 	resourceTypes := w.createSupportedResourceTypes(false)
 	for _, change := range changes.Changes {
+		exchange.DeleteCacheResourceFromChange(change, w.GetExchangeId())
 		glog.V(3).Infof(chglog(fmt.Sprintf("Change: %v", change)))
 
 		if change.IsMessage(w.GetExchangeId()) {

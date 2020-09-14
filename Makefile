@@ -84,7 +84,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.4.0$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.4.1$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -97,7 +97,7 @@ CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.4.0$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.4.1$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -508,7 +508,7 @@ ifneq ($(GOPATH),$(TMPGOPATH))
 	fi
 endif
 
-i18n-catalog: $(TMPGOPATH)/bin/gotext
+i18n-catalog: gopathlinks deps $(TMPGOPATH)/bin/gotext
 	@echo "Creating message catalogs"
 	rm -Rf vendor; \
 	go mod vendor; \
@@ -519,14 +519,14 @@ i18n-catalog: $(TMPGOPATH)/bin/gotext
 	rm -Rf vendor; \
 	mv -f go.mod.save go.mod; \
 
-i18n-translation: deps i18n-catalog
+i18n-translation: i18n-catalog
 	@echo "Copying message files for translation"
 	cd $(PKGPATH) && \
 		export PKGPATH=$(PKGPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \
 			tools/copy-i18n-messages
 
 
-$(TMPGOPATH)/bin/gotext: gopathlinks
+$(TMPGOPATH)/bin/gotext:
 	if [ ! -e "$(TMPGOPATH)/bin/gotext" ]; then \
 		echo "Fetching gotext"; \
 		export GOPATH=$(TMPGOPATH); export PATH=$(TMPGOPATH)/bin:$$PATH; \

@@ -334,7 +334,7 @@ func GetContainerStatus(deployment string, key string, infrastructure bool, cont
 			container_status.State = fmt.Sprintf("Unknown, error: %v", err)
 			status = append(status, container_status)
 		} else {
-			if kubeStatus, err := kc.Status(kdc.OperatorYamlArchive); err != nil {
+			if kubeStatus, err := kc.Status(kdc.OperatorYamlArchive, ""); err != nil {
 				container_status.State = fmt.Sprintf("Unknown, error: %v", err)
 				status = append(status, container_status)
 			} else {
@@ -361,7 +361,7 @@ func GetOperatorStatus(deployment string) (interface{}, error) {
 		if err != nil {
 			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
 		}
-		opStatus, err := client.OperatorStatus(kd.OperatorYamlArchive)
+		opStatus, err := client.OperatorStatus(kd.OperatorYamlArchive, "")
 		if err != nil {
 			return nil, fmt.Errorf(logString(fmt.Sprintf("Error retrieving operator status from cluster, error: %v", err)))
 		}

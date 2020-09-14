@@ -67,7 +67,7 @@ func (m Microservice) String() string {
 }
 
 func (m Microservice) ShortString() string {
-	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v, ConfigState: %v", m.Url, m.NumAgreements, m.Properties, m.ConfigState)
+	return fmt.Sprintf("URL: %v, NumAgreements: %v, ConfigState: %v", m.Url, m.NumAgreements, m.ConfigState)
 }
 
 // structs and types for working with microservice based exchange searches
@@ -145,7 +145,7 @@ func (d Device) String() string {
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v, RegisteredServices URLs:", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
+	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -173,6 +173,10 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	resp = new(GetDevicesResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
 
+	if cachedResource := GetNodeFromCache(GetOrg(deviceId), GetId(deviceId)); cachedResource != nil {
+		return cachedResource, nil
+	}
+
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
@@ -196,7 +200,9 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 			if dev, there := devs[deviceId]; !there {
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev.ShortString())))
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("device details for %v: %v", deviceId, dev)))
+				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
 		}
@@ -209,6 +215,8 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 	var resp interface{}
 	resp = new(PutDeviceResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+
+	cachedNode := DeleteCacheNodeWriteThru(GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
@@ -229,6 +237,9 @@ func PutExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 			}
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("put device %v to exchange %v", deviceId, pdr)))
+			if cachedNode != nil {
+				UpdateCacheNodePutWriteThru(GetOrg(deviceId), GetId(deviceId), cachedNode, pdr)
+			}
 			return resp.(*PutDeviceResponse), nil
 		}
 	}
@@ -240,6 +251,8 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 	var resp interface{}
 	resp = new(PostDeviceResponse)
 	targetURL := exchangeUrl + "orgs/" + GetOrg(deviceId) + "/nodes/" + GetId(deviceId)
+
+	cachedNode := DeleteCacheNodeWriteThru(GetOrg(deviceId), GetId(deviceId))
 
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
@@ -259,7 +272,10 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 				continue
 			}
 		} else {
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr.ShortString())))
+			if cachedNode != nil {
+				UpdateCacheNodePatchWriteThru(GetOrg(deviceId), GetId(deviceId), cachedNode, pdr)
+			}
 			return nil
 		}
 	}
@@ -405,6 +421,35 @@ func (p PatchDeviceRequest) String() string {
 		arch = *p.Arch
 	}
 	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", p.UserInput, p.RegisteredServices, pattern, arch)
+}
+
+func (p PatchDeviceRequest) ShortString() string {
+	var registeredServices []string
+	if p.RegisteredServices != nil {
+		registeredServices = []string{}
+		for _, ms := range *p.RegisteredServices {
+			registeredServices = append(registeredServices, ms.ShortString())
+		}
+	}
+
+	var userInput []string
+	if p.UserInput != nil {
+		userInput = []string{}
+		for _, ui := range *p.UserInput {
+			userInput = append(userInput, ui.ShortString())
+		}
+	}
+
+	pattern := "nil"
+	if p.Pattern != nil {
+		pattern = *p.Pattern
+	}
+	arch := "nil"
+	if p.Arch != nil {
+		arch = *p.Arch
+	}
+
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", userInput, registeredServices, pattern, arch)
 }
 
 type PostMessage struct {
@@ -1082,6 +1127,10 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	resp = ""
 	targetURL := exchangeUrl + "admin/version"
 
+	if exchVers := GetExchangeVersionFromCache(exchangeUrl); exchVers != "" {
+		return exchVers, nil
+	}
+
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
@@ -1107,6 +1156,8 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 				v = v[:len(v)-1]
 			}
 
+			UpdateCache(exchangeUrl, EXCH_VERS_TYPE_CACHE, v)
+
 			return v, nil
 		}
 	}
@@ -1121,6 +1172,8 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 	// get object id and key target url
 	var oIndex string
 	var targetURL string
+
+	var cacheMapKey string
 
 	switch oType {
 	case PATTERN:
@@ -1146,6 +1199,13 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		} else if ms_resp == nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
 		}
+
+		cachedKeys := GetServiceKeysFromCache(oOrg, oURL, oArch, oVersion)
+		if cachedKeys != nil {
+			return *cachedKeys, nil
+		}
+		cacheMapKey = ServicePolicyCacheMapKey(oOrg, oURL, oArch, oVersion)
+
 		oIndex = ms_id
 		targetURL = fmt.Sprintf("%vorgs/%v/services/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 
@@ -1153,7 +1213,7 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys received wrong type parameter: %v. It should be one of %v, or %v.", oType, PATTERN, SERVICE)))
 	}
 
-	// get all the singining key names for the object
+	// get all the signing key names for the object
 	var resp_KeyNames interface{}
 	resp_KeyNames = ""
 
@@ -1223,6 +1283,10 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 				break
 			}
 		}
+	}
+
+	if oType == SERVICE {
+		UpdateCache(cacheMapKey, SVC_KEY_TYPE_CACHE, ret)
 	}
 
 	return ret, nil

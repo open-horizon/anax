@@ -308,19 +308,64 @@ func getSearchVersion(version string) (string, error) {
 	return searchVersion, nil
 }
 
+// The exchange cache holds all versions of the same service together and will return all like the exchange.
+// This function finds the specific version that we want
+func getServiceFromCache(url string, org string, version string, searchVersion string, arch string) (*ServiceDefinition, string, map[string]ServiceDefinition, error) {
+	svcDefMap := GetServiceFromCache(org, cutil.FormExchangeIdWithSpecRef(url), arch)
+	if svcDefMap == nil {
+		return nil, "", nil, nil
+	}
+	if searchVersion != "" {
+		for sId, svc := range svcDefMap {
+			if svc.Version == searchVersion {
+				return &svc, sId, svcDefMap, nil
+			}
+		}
+		return nil, "", svcDefMap, nil
+	}
+
+	vRange, err := semanticversion.Version_Expression_Factory(version)
+	if err != nil {
+		return nil, "", svcDefMap, errors.New(fmt.Sprintf("version range %v in error: %v", version, err))
+	}
+	_, highestDef, highestSId, err := GetHighestVersion(svcDefMap, vRange)
+	return &highestDef, highestSId, svcDefMap, nil
+}
+
+// Update the service definition cache with a changed service definition
+func updateServiceDefCache(newSvcDefs map[string]ServiceDefinition, cachedSvcDefs map[string]ServiceDefinition, svcOrg string, svcId string, svcArch string) {
+	if newSvcDefs != nil && cachedSvcDefs != nil {
+		for newSId, newSvcDef := range newSvcDefs {
+			cachedSvcDefs[newSId] = newSvcDef
+		}
+	}
+	if cachedSvcDefs == nil {
+		cachedSvcDefs = newSvcDefs
+	}
+	UpdateCache(ServiceCacheMapKey(svcOrg, svcId, svcArch), SVC_DEF_TYPE_CACHE, cachedSvcDefs)
+}
+
 // Retrieve service definition metadata from the exchange, by specific version or for all versions.
 func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, mArch string) (*ServiceDefinition, string, error) {
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting service definition %v %v %v %v", mURL, mOrg, mVersion, mArch)))
-
-	var resp interface{}
-	resp = new(GetServicesResponse)
 
 	// Figure out which version to filter the search with. Could be "".
 	searchVersion, err := getSearchVersion(mVersion)
 	if err != nil {
 		return nil, "", err
 	}
+
+	cachedSvc, cachedSvcId, cachedSvcDefs, err := getServiceFromCache(mURL, mOrg, mVersion, searchVersion, mArch)
+	if err != nil {
+		glog.Errorf("Error getting service from cache: %v", err)
+	}
+	if cachedSvc != nil {
+		return cachedSvc, cachedSvcId, nil
+	}
+
+	var resp interface{}
+	resp = new(GetServicesResponse)
 
 	// Search the exchange for the service definition
 	targetURL := fmt.Sprintf("%vorgs/%v/services?url=%v&arch=%v", ec.GetExchangeURL(), mOrg, mURL, mArch)
@@ -347,6 +392,9 @@ func GetService(ec ExchangeContext, mURL string, mOrg string, mVersion string, m
 				continue
 			}
 		} else {
+			if len(resp.(*GetServicesResponse).Services) > 0 {
+				updateServiceDefCache(resp.(*GetServicesResponse).Services, cachedSvcDefs, mOrg, mURL, mArch)
+			}
 			return processGetServiceResponse(mURL, mOrg, mVersion, mArch, searchVersion, resp.(*GetServicesResponse))
 		}
 	}
@@ -694,6 +742,11 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting docker auths for service %v.", service_id)))
 
+	cachedAuths := GetServiceDockAuthFromCache(service_id)
+	if cachedAuths != nil {
+		return *cachedAuths, nil
+	}
+
 	// get all the docker auths for the service
 	var resp_DockAuths interface{}
 	resp_DockAuths = ""
@@ -729,6 +782,7 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 		}
 	}
 
+	UpdateCache(service_id, SVC_DOCKAUTH_TYPE_CACHE, docker_auths)
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("returning service docker auths %v for service %v.", docker_auths, service_id)))
 	return docker_auths, nil
 }
@@ -786,6 +840,8 @@ func PostDeviceServicesConfigState(httpClientFactory *config.HTTPClientFactory, 
 	var resp interface{}
 	resp = ""
 
+	DeleteCacheNodeWriteThru(GetOrg(deviceId), GetId(deviceId))
+
 	retryCount := httpClientFactory.RetryCount
 	retryInterval := httpClientFactory.GetRetryInterval()
 	for {
@@ -828,7 +884,14 @@ func GetServicePolicy(ec ExchangeContext, url string, org string, version string
 		return nil, "", errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
 	}
 
+	if cachedPol := GetServicePolicyFromCache(org, url, version, arch); cachedPol != nil {
+		return cachedPol, s_id, nil
+	}
+
 	pol, err := GetServicePolicyWithId(ec, s_id)
+	if pol != nil {
+		UpdateCache(ServicePolicyCacheMapKey(org, url, version, arch), SVC_POL_TYPE_CACHE, pol)
+	}
 	return pol, s_id, err
 }
 

@@ -3,6 +3,7 @@ package exchange
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cutil"
 	"time"
 )
 
@@ -97,6 +98,19 @@ type ServedBusinessPolicy struct {
 
 type PatchAgbotPublicKey struct {
 	PublicKey []byte `json:"publicKey"`
+}
+
+func (p PatchAgbotPublicKey) String() string {
+	return fmt.Sprintf("PublicKey: %v", p.PublicKey)
+}
+
+func (p PatchAgbotPublicKey) ShortString() string {
+	if p.PublicKey == nil {
+		return fmt.Sprintf("PublicKey: nil")
+	} else {
+		pk := cutil.TruncateDisplayString(string(p.PublicKey), 30)
+		return fmt.Sprintf("PublicKey: %v", []byte(pk))
+	}
 }
 
 // This function creates the device registration message body.

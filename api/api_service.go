@@ -79,7 +79,7 @@ func (a *API) serviceconfig(w http.ResponseWriter, r *http.Request) {
 
 		getService := exchange.GetHTTPServiceHandler(a)
 		getPatterns := exchange.GetHTTPExchangePatternHandler(a)
-		resolveService := exchange.GetHTTPServiceResolverHandler(a)
+		resolveService := exchange.GetHTTPServiceDefResolverHandler(a)
 		getDevice := exchange.GetHTTPDeviceHandler(a)
 		patchDevice := exchange.GetHTTPPatchDeviceHandler(a)
 

@@ -1,5 +1,6 @@
 /*
-Sample for 'hzn userinput add/update -f' flag. It is used for setting up service user input values for the policy case.
+  Sample for 'hzn userinput add/update' -f flag and 'hzn regisrer' -f flag.
+  It is used for setting up service user input values.
 */
 [
   {
