@@ -22,6 +22,12 @@ func getDummyServiceResolver() exchange.ServiceResolverHandler {
 	}
 }
 
+func getDummyServiceDefResolver() exchange.ServiceDefResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+		return nil, nil, "", nil
+	}
+}
+
 func getDummyServiceHandler() exchange.ServiceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.ServiceDefinition, string, error) {
 		return nil, "", nil
@@ -154,6 +160,58 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 			LastUpdated:         "updated",
 		}
 		return &sl, &wl, []string{"x1", "x2"}, nil
+	}
+}
+
+func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.ServiceDefResolverHandler {
+	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
+		sd := []exchange.ServiceDependency{}
+		dep_defs := map[string]exchange.ServiceDefinition{}
+		if mUrl != "" {
+			dep := exchange.ServiceDefinition{
+				Owner:               "owner",
+				Label:               "label_dep",
+				Description:         "desc_dep",
+				Public:              false,
+				URL:                 mUrl,
+				Version:             mVersion,
+				Arch:                mArch,
+				Sharable:            "multiple",
+				RequiredServices:    []exchange.ServiceDependency{},
+				UserInputs:          []exchange.UserInput{},
+				Deployment:          "",
+				DeploymentSignature: "",
+				LastUpdated:         "updated",
+			}
+			dep_defs[mOrg+"/x2"] = dep
+			sd = append(sd, exchange.ServiceDependency{
+				URL:     mUrl,
+				Org:     mOrg,
+				Version: mVersion,
+				Arch:    mArch,
+			})
+		}
+
+		uis := []exchange.UserInput{}
+		if ui != nil {
+			uis = []exchange.UserInput{*ui}
+		}
+		wl := exchange.ServiceDefinition{
+			Owner:               "owner",
+			Label:               "label",
+			Description:         "desc",
+			Public:              false,
+			URL:                 wUrl,
+			Version:             wVersion,
+			Arch:                wArch,
+			Sharable:            "multiple",
+			RequiredServices:    sd,
+			UserInputs:          uis,
+			Deployment:          "",
+			DeploymentSignature: "",
+			LastUpdated:         "updated",
+		}
+		return dep_defs, &wl, "x1", nil
 	}
 }
 

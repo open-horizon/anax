@@ -104,7 +104,7 @@ func Test_UpdateConfigstate2services(t *testing.T) {
 	mURL := "http://utest.com/mservice"
 	mVersion := "1.0.0"
 	mArch := cutil.ArchString()
-	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
+	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
@@ -167,7 +167,7 @@ func Test_UpdateConfigstate2service_only(t *testing.T) {
 		NodeH:           exchange.NodeHealth{},
 	}
 
-	sResolver := getVariableServiceResolver("", "", "", "", nil)
+	sResolver := getVariableServiceDefResolver("", "", "", "", nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
@@ -233,7 +233,7 @@ func Test_UpdateConfigstate_Illegal_state_change_services(t *testing.T) {
 	mURL := "http://utest.com/mservice"
 	mVersion := "1.0.0"
 	mArch := cutil.ArchString()
-	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
+	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
@@ -314,7 +314,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 	mURL := "http://utest.com/mservice"
 	mVersion := "1.0.0"
 	mArch := cutil.ArchString()
-	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
+	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
 
 	patternHandler := getVariablePatternHandler(sref)
@@ -334,7 +334,7 @@ func Test_UpdateConfigstate_no_state_change_services(t *testing.T) {
 		t.Errorf("there should be 2 messages, received %v", len(msgs))
 	}
 
-	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceResolver(), getDummyServiceHandler(), getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
+	errHandled, cfg, msgs = UpdateConfigstate(cs, errorhandler, patternHandler, getDummyServiceDefResolver(), getDummyServiceHandler(), getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
 	if errHandled {
 		t.Errorf("unexpected error %v", myError)
@@ -392,7 +392,7 @@ func Test_UpdateConfigstateWith_services(t *testing.T) {
 	mURL := "http://utest.com/mservice"
 	mVersion := "1.0.0"
 	mArch := "amd64"
-	sResolver := getVariableServiceResolver(mURL, myOrg, mVersion, mArch, nil)
+	sResolver := getVariableServiceDefResolver(mURL, myOrg, mVersion, mArch, nil)
 
 	errHandled, cfg, msgs := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
@@ -460,7 +460,7 @@ func Test_UpdateConfigstate_unconfig_services(t *testing.T) {
 		},
 	}
 	patternHandler := getVariablePatternHandler(sr)
-	sResolver := getVariableServiceResolver(mURL, theOrg, mVersion, mArch, nil)
+	sResolver := getVariableServiceDefResolver(mURL, theOrg, mVersion, mArch, nil)
 
 	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
@@ -524,7 +524,7 @@ func Test_UpdateConfigstate_unconfig_top_level_services(t *testing.T) {
 		},
 	}
 	patternHandler := getVariablePatternHandler(sr)
-	sResolver := getVariableServiceResolver(mURL, theOrg, mVersion, mArch, &ui)
+	sResolver := getVariableServiceDefResolver(mURL, theOrg, mVersion, mArch, &ui)
 
 	errHandled, cfg, _ := UpdateConfigstate(cs, errorhandler, patternHandler, sResolver, sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), db, getBasicConfig())
 
