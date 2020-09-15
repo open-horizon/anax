@@ -131,7 +131,8 @@ func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{
 	if dc, ok := dep.(map[string]interface{}); !ok {
 		return false, nil
 	} else if s, ok := dc["services"]; !ok {
-		return false, nil
+		// Allow empty deployment string
+		return true, nil
 	} else if services, ok := s.(map[string]interface{}); !ok {
 		return false, nil
 	} else {
