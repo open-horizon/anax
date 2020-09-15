@@ -8,6 +8,7 @@
 # 5 - the destination type. The type of node that can receive the file (i.e. the node's pattern). Specify "none" to leave the field unset.
 # 6 - the destination id. The node's id. Specify "none" to leave the field unset.
 # 7 - the object policy (optional).
+# 8 - is public file
 
 if [ ${CERT_LOC} -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
@@ -59,7 +60,7 @@ read -d '' resmeta <<EOF
   	"version": "${2}",
     "description": "a file",
     "destinationPolicy": ${OBJ_POLICY},
-    "public": ${IS_PUBLIC_OBJ}
+    "public": ${8}
   }
 }
 EOF
@@ -93,55 +94,6 @@ else
         admin_user="e2edevadmin"
         admin_pw="e2edevadminpw"
     fi
-
- read -d '' objectacl <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "user",
-      "Username": "${admin_user}",
-      "ACLRole": "aclWriter"
-    }
-  ]
-}
-EOF
-
-  # add admin_user to CSS ACL objects list
-  ADDUSERTOACL=$(echo "$objectacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/${3}" --data @-)
-  if [ "$ADDUSERTOACL" != "204" ]
-  then
-    echo -e "$objectacl \nPUT object acl returned:"
-    echo $ADDUSERTOACL
-    exit -1
-  fi
-
-  read -d '' destinationacl <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "user",
-      "Username": "*",
-      "ACLRole": "aclWriter"
-    },
-    {
-      "ACLUserType": "node",
-      "Username": "*",
-      "ACLRole": "aclWriter"
-    }
-  ]
-}
-EOF
-
-  # add * to CSS ACL destinations list
-  ADDALLTODESTACL=$(echo "$destinationacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/destinations/${3}" --data @-)
-  if [ "$ADDALLTODESTACL" != "204" ]
-  then
-    echo -e "$destinationacl \nPUT object acl returned:"
-    echo $ADDALLTODESTACL
-    exit -1
-  fi
 
   ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 

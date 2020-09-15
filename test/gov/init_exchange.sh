@@ -142,6 +142,11 @@ echo "Creating Customer2 organization..."
 CR8C2ORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
 echo "$CR8C2ORG"
 
+# Register a hub admin user in the exchange
+echo "Creating a hub admin user in the exchange"
+CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"hubadminpw","email":"me%40gmail.com","hubAdmin":true}' "${EXCH_URL}/orgs/root/users/hubadmin" | jq -r '.msg')
+echo "$CR8EADM"
+
 # Register an e2edev@somecomp.com admin user in the exchange
 echo "Creating an admin user for e2edev@somecomp.com organization..."
 CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/e2edevadmin" | jq -r '.msg')

@@ -25,26 +25,26 @@ for dir in */; do
 
 	if [ "${TEST_PATTERNS}" != "" ]
 	then
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none none
+		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none none false
 		if [ $? -ne 0 ]
 		then
 			exit -1
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none none
+		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none none false
 		if [ $? -ne 0 ]
 		then
 			exit -1
 		fi
 	else
 
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)"
+		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
 		if [ $? -ne 0 ]
 		then
 			exit -1
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)"
+		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
 		if [ $? -ne 0 ]
 		then
 			exit -1
@@ -62,9 +62,9 @@ RESOURCE_TYPE=public
 res=$(find . -not -name "*.tgz" -not -path ".")
 tar -czvf public.tgz $res
 
-echo "Installing resource package public.tgz."
+echo "Installing resource package public.tgz. in ${RESOURCE_ORG} org"
 ls /root/resources/public
-$EXEC_DIR/deploy_file.sh /root/resources/public/public.tgz 1.0.0 ${RESOURCE_ORG} ${RESOURCE_TYPE} none none none
+$EXEC_DIR/deploy_file.sh /root/resources/public/public.tgz 1.0.0 ${RESOURCE_ORG} ${RESOURCE_TYPE} none none none true
 if [ $? -ne 0 ]
 then
 	exit -1
