@@ -327,6 +327,11 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			}
 		}
 
+		// overwrite container's entrypoint if it's set in deployment
+		if len(service.Entrypoint) != 0 {
+			serviceConfig.Config.Entrypoint = service.Entrypoint
+		}
+
 		// add the environment variable overrides
 		if len(deployment.Overrides) == 0 {
 			// nothing

@@ -35,6 +35,7 @@ Because Horizon uses the Docker API to start the containers on an edge node, man
     - `ephemeral_ports`: `[{"localhost_only":true, "port_and_protocol":"7777/udp"}, {"port_and_protocol":"8888"}...]` - publish a container port to an ephemeral host port. If `localhost_only` is set to true, the localhost ip address (`127.0.0.1`) will be used as the host network interface this port should listen on. Otherwise, all the host network interfaces on the host will be listened by this port. If the protocol is not specified after the port number for `port_and_protocol`, it defaults to `tcp`.
     - `command`: `["--myfirstarg","argvalue",...]` - override the start CMD specified the dockerfile, or append to the ENTRYPOINT specified in the dockerfile.
     - `network`: `"host"` - start the container with host network mode. When network is set to host, the service can only be deployed to nodes with property openhorizon.allowPrivileged set to true.
+    - `entrypoint`: `["executable", "param1", "param2"]` - override ENTRYPOINT specified in the dockerfile.
 
 ## clusterDeployment String Fields
 

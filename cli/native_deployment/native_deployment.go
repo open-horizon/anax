@@ -159,7 +159,7 @@ func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{
 }
 
 // This can't be a const because a map literal isn't a const in go
-var VALID_DEPLOYMENT_FIELDS = map[string]int8{"image": 1, "privileged": 1, "cap_add": 1, "environment": 1, "devices": 1, "binds": 1, "specific_ports": 1, "command": 1, "ports": 1, "ephemeral_ports": 1, "tmpfs": 1, "network": 1}
+var VALID_DEPLOYMENT_FIELDS = map[string]int8{"image": 1, "privileged": 1, "cap_add": 1, "environment": 1, "devices": 1, "binds": 1, "specific_ports": 1, "command": 1, "ports": 1, "ephemeral_ports": 1, "tmpfs": 1, "network": 1, "entrypoint": 1}
 
 // CheckDeploymentService verifies it has the required 'image' key, and checks for keys we don't recognize.
 // For now it only prints a warning for unrecognized keys, in case we recently added a key to anax and haven't updated hzn yet.
