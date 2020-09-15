@@ -187,6 +187,10 @@ func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error)
 		return nil, err
 	}
 
+	if len(apiObjMap[K8S_DEPLOYMENT_TYPE]) < 1 {
+		return nil, fmt.Errorf(kwlog(fmt.Sprintf("Error: failed to find operator deployment object.")))
+	}
+
 	status, err := apiObjMap[K8S_DEPLOYMENT_TYPE][0].Status(c, namespace)
 	if err != nil {
 		return nil, err
@@ -249,7 +253,7 @@ func processDeployment(tar string, envVars map[string]string, agId string) (map[
 	}
 
 	if len(customResources) != 1 {
-		return nil, "", fmt.Errorf("Expected one custom resource in deployment. Got %d", len(customResources))
+		return nil, "", fmt.Errorf(kwlog(fmt.Sprintf("Expected one custom resource in deployment. Got %d", len(customResources))))
 	}
 
 	unstructCr, err := unstructuredObjectFromYaml(customResources[0])
@@ -333,7 +337,22 @@ func getK8sObjectFromYaml(yamlFiles []YamlFile, sch *runtime.Scheme) ([]APIObjec
 	_ = v1scheme.AddToScheme(sch)
 	_ = scheme.AddToScheme(sch)
 
-	for _, fileStr := range yamlFiles {
+	// multiple yaml files can be in one file separated by '---'
+	// these are split here and rejoined with the single files
+	indivYamls := []YamlFile{}
+	for _, file := range yamlFiles {
+		if multFiles := strings.Split(file.Body, "---"); len(multFiles) > 1 {
+			for _, indivYaml := range multFiles {
+				if strings.TrimSpace(indivYaml) != "" {
+					indivYamls = append(indivYamls, YamlFile{Body: indivYaml})
+				}
+			}
+		} else {
+			indivYamls = append(indivYamls, file)
+		}
+	}
+
+	for _, fileStr := range indivYamls {
 		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
 		obj, gvk, err := decode([]byte(fileStr.Body), nil, nil)
 
