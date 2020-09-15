@@ -159,7 +159,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 			}
 		} else {
 			authCode = security.AuthEdgeNode
-			authOrg = parts[0] //orgId
+			authOrg = parts[0]                 //orgId
 			authId = parts[1] + "/" + parts[2] //destinationType/destinationId (pattern/nodeId)
 		}
 
@@ -190,7 +190,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 			if trace.IsLogging(logger.TRACE) {
 				trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as a user %v", appKey)))
 			}
-			// appkey: {org}/{username} or {org}/iamapikey. 
+			// appkey: {org}/{username} or {org}/iamapikey.
 			// parts[1] is {username} or iamapikey, parts[0] is {orgId}
 			if admin, username, err := auth.verifyUserIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 				if log.IsLogging(logger.WARNING) {
@@ -200,7 +200,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 					trace.Debug(cssALS(fmt.Sprintf("attempting authentication request as an exchange node %v", appKey)))
 				}
 				// Check if the identity is an exchange node
-				// appkey: {org}/{nodeId}. appSecret is {nodeToken}. 
+				// appkey: {org}/{nodeId}. appSecret is {nodeToken}.
 				// parts[0] is {orgId}, parts[1] is {nodeId}
 				if err := auth.verifyNodeIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err != nil {
 					if log.IsLogging(logger.ERROR) {
