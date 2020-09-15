@@ -115,8 +115,11 @@ func ValidateServiceDefinition(directory string, fileName string) error {
 	} else if sDef.Org == "" {
 		return errors.New(msgPrinter.Sprintf("%v: org must be set.", filePath))
 	} else {
-		if err := plugin_registry.DeploymentConfigPlugins.ValidatedByOne(sDef.Deployment, sDef.ClusterDeployment); err != nil {
-			return errors.New(msgPrinter.Sprintf("%v: deployment configuration, %v", filePath, err))
+		// Don't validate empty deployments
+		if !common.DeploymentIsEmpty(sDef.Deployment) {
+			if err := plugin_registry.DeploymentConfigPlugins.ValidatedByOne(sDef.Deployment, sDef.ClusterDeployment); err != nil {
+				return errors.New(msgPrinter.Sprintf("%v: deployment configuration, %v", filePath, err))
+			}
 		}
 		for ix, ui := range sDef.UserInputs {
 			if (ui.Name != "" && ui.Type == "") || (ui.Name == "" && (ui.Type != "" || ui.DefaultValue != "")) {
