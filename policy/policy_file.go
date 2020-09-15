@@ -590,10 +590,10 @@ func (self *Policy) NextHighestPriorityWorkload(currentPriority int, retryCount 
 		// We might not find the next highest priority workload because the lowest priority workload might be
 		// our only choice, even if it has exceeded its retry count.
 		if !foundSomething {
-			glog.V(3).Infof("Returning lowest priority workload choice: %v", self.Workloads[lowestPriorityWorkload])
+			glog.V(3).Infof("Returning lowest priority workload choice: %v", self.Workloads[lowestPriorityWorkload].ShortString())
 			return &self.Workloads[lowestPriorityWorkload]
 		} else {
-			glog.V(3).Infof("Returning workload choice: %v", self.Workloads[nextWorkload])
+			glog.V(3).Infof("Returning workload choice: %v", self.Workloads[nextWorkload].ShortString())
 			return &self.Workloads[nextWorkload]
 		}
 	}

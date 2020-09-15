@@ -203,7 +203,7 @@ func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy
 	pol.UserInput = make([]policy.UserInput, len(b.UserInput))
 	copy(pol.UserInput, b.UserInput)
 
-	glog.V(3).Infof("converted %v into %v", service, pol)
+	glog.V(3).Infof("converted %v into policy %v.", service, policyName)
 
 	return pol, nil
 }

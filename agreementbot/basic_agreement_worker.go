@@ -83,6 +83,10 @@ func (b BAgreementVerification) String() string {
 		b.workType, b.Verify, b.From, b.SenderId, pkey, b.MessageId)
 }
 
+func (b BAgreementVerification) ShortString() string {
+	return b.String()
+}
+
 // These are work items that represent extensions to the protocol.
 const AGREEMENT_VERIFICATION_REPLY = "AGREEMENT_VERIFY_REPLY"
 
@@ -123,6 +127,10 @@ func (b BAgreementVerificationReply) String() string {
 		b.workType, b.VerifyReply, b.From, b.SenderId, pkey, b.MessageId)
 }
 
+func (b BAgreementVerificationReply) ShortString() string {
+	return b.String()
+}
+
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
 
@@ -137,7 +145,7 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 			continue
 		}
 		workItem := *workItemPtr
-		glog.V(2).Infof(bwlogstring(a.workerID, fmt.Sprintf("received work: %v", workItem)))
+		glog.V(2).Infof(bwlogstring(a.workerID, fmt.Sprintf("received work: %v", workItem.ShortString())))
 
 		if workItem.Type() == INITIATE {
 			wi := workItem.(InitiateAgreement)

@@ -375,7 +375,7 @@ func (db *AgbotPostgresqlDB) insertWorkloadUsage(tx *sql.Tx, wu *persistence.Wor
 			return err
 		}
 	}
-	glog.V(2).Infof("Succeeded creating workload usage record %v", *wu)
+	glog.V(2).Infof("Succeeded creating workload usage record %v", wu.ShortString())
 
 	return nil
 }
@@ -389,7 +389,7 @@ func (db *AgbotPostgresqlDB) updateWorkloadUsage(tx *sql.Tx, wu *persistence.Wor
 	} else if _, err = tx.Exec(sqlStr, wu.DeviceId, wu.PolicyName, wum); err != nil {
 		return err
 	} else {
-		glog.V(2).Infof("Succeeded writing workload usage record %v", *wu)
+		glog.V(2).Infof("Succeeded writing workload usage record %v", wu.ShortString())
 	}
 
 	return nil

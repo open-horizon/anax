@@ -154,7 +154,7 @@ func (n *NodeSearch) findAndMakeAgreements() {
 	if len(retryMap) == 0 {
 		glog.V(5).Infof(AWlogString("agreement retry is empty"))
 	} else {
-		glog.V(3).Infof(AWlogString(fmt.Sprintf("Handling retries: %v", retryMap)))
+		glog.V(3).Infof(AWlogString(fmt.Sprintf("Handling retries for %v agreements.", len(retryMap))))
 	}
 
 	// Errors encountered during the search will cause the next set of searches to be performed with the same changedSince
