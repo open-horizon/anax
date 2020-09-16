@@ -22,7 +22,7 @@ else
 fi
 
 # Adding users to ACL
-# userdev/userdevadmin and e2edev@somecomp.com/e2edevadmin already been added as aclWriter to all objects
+# userdev/userdevadmin and e2edev@somecomp.com/e2edevadmin are org admin, should already have WRITE access within their orgs. Don't need to add them to ACL
 # add userdev/useranax1 as aclReader to all object types (can't create/update/delete object, can get object or object data)
 echo "Adding userdev/useranax1 as aclReader to all object types"
 read -d '' objectacl1 <<EOF
@@ -117,6 +117,43 @@ then
   exit -1
 fi
 
+# add all users and nodes to destination ACL for e2edev@somecomp.com and userdev org
+echo "Adding all users and nodes to destination ACL for e2edev@somecomp.com and userdev org"
+  read -d '' destinationacl <<EOF
+{
+  "action": "add",
+  "users": [
+    {
+      "ACLUserType": "user",
+      "Username": "*",
+      "ACLRole": "aclWriter"
+    },
+    {
+      "ACLUserType": "node",
+      "Username": "*",
+      "ACLRole": "aclWriter"
+    }
+  ]
+}
+EOF
+
+# add * to CSS ACL destinations list
+ADDALLTODESTACL=$(echo "$destinationacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/destinations/e2edev@somecomp.com" --data @-)
+if [ "$ADDALLTODESTACL" != "204" ]
+then
+  echo -e "$destinationacl \nPUT object acl for e2edev@somecomp.com org returned:"
+  echo $ADDALLTODESTACL
+  exit -1
+fi
+
+ADDALLTODESTACL=$(echo "$destinationacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/destinations/userdev" --data @-)
+if [ "$ADDALLTODESTACL" != "204" ]
+then
+  echo -e "$destinationacl \nPUT object acl for userdev org returned:"
+  echo $ADDALLTODESTACL
+  exit -1
+fi
+
 
 # Test what happens when an invalid user id format is attempted
 UFORMAT=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
@@ -159,7 +196,6 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
 else
   FILE_SIZE=512
 fi
-
 
 echo "test hzn mms cli with user:"
 hzn exchange user list
@@ -825,6 +861,43 @@ EOF
     fi
 }
 
+# test admin user can create public object
+# $1 - USER_ORG
+# $2 - USER_REG_USERNAME
+# $3 - USER_REG_USERPWD
+# $4 - Org of public object
+function verifyAdminUserCanCreatePublicObject {
+    echo "Verify user $1/$2 has WRITE access to public object in $4 org"
+
+    USER_REG_USER_AUTH="${1}/${2}:${3}"
+    export HZN_EXCHANGE_USER_AUTH=${USER_REG_USER_AUTH}
+    export HZN_ORG_ID=${1}
+
+    # hub admin can create public object in anyorg
+read -d '' resmeta <<EOF
+{
+  "objectID": "public_obj",
+  "objectType": "public",
+  "destinationOrgID": "${4}",
+  "destinationID": "",
+  "destinationType": "",
+  "version": "2.0.0",
+  "description": "test update public object by user ${2} in org ${1}",
+  "public": true
+}
+EOF
+
+    echo "$resmeta" > /tmp/meta.json
+    hzn mms object publish -o ${4} -m /tmp/meta.json -f /tmp/data.txt
+    RC=$?
+    if [ $RC -ne 0 ]
+    then
+        echo -e "Failed to publish mms object by user ${2} in the org ${1}: $RC"
+        exit -1
+    fi
+
+}
+
 PUBLIC_OBJ_ORG="IBM"
 PUBLIC_OBJ_TYPE="public"
 PUBLIC_OBJ_ID="public.tgz"
@@ -855,6 +928,18 @@ verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $
 
 testUserHaveAccessToSomeObjects $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS $TEST_ACL_OBJ_TYPE $TEST_ACL_OBJ_ID $OBJECT_TYPE $OBJECT_ID
 verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
+
+# root/hubadmin should be able to create object in IBM org
+USER_ORG="root"
+USER_REG_USERNAME="hubadmin"
+USER_REG_USERPWD="hubadminpw"
+verifyAdminUserCanCreatePublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG
+
+# ibm org admin should be able to create object in IBM org
+USER_ORG="IBM"
+USER_REG_USERNAME="ibmadmin"
+USER_REG_USERPWD="ibmadminpw"
+verifyAdminUserCanCreatePublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG
 
 # set back to the value before sync service testing
 export HZN_ORG_ID=${HZN_ORG_ID_BEFORE_MODIFY}
