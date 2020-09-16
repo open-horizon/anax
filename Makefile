@@ -163,6 +163,12 @@ else ifeq ($(opsys_local),Darwin)
 	COMPILE_ARGS_LOCAL += GOOS=darwin
 endif
 
+NO_DEBUG_PKGS := $(shell tools/no-debug-pkg)
+ifeq (${NO_DEBUG_PKGS},true)
+	GO_BUILD_OPTS =-ldflags="-linkmode=external"
+	export RPM_OPTS =--define="%debug_package %{nil}"
+endif
+
 
 ifndef verbose
 .SILENT:
@@ -176,7 +182,7 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(EXECUTABLE);
+	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(EXECUTABLE);
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
 	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
@@ -186,7 +192,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
+	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
 	    envsubst < cli/cliconfig/hzn.json.tmpl > $(CLI_CONFIG_FILE)
 	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
 	  	mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
@@ -198,7 +204,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 		echo "Producing $(CLI_TEMP_EXECUTABLE) under $(arch_local) for generating hzn man pages"; \
 		cd $(PKGPATH) && \
 	  	  export GOPATH=$(TMPGOPATH); \
-	    	$(COMPILE_ARGS_LOCAL) go build -o $(CLI_TEMP_EXECUTABLE) $(CLI_EXECUTABLE).go; \
+	    	$(COMPILE_ARGS_LOCAL) go build $(GO_BUILD_OPTS) -o $(CLI_TEMP_EXECUTABLE) $(CLI_EXECUTABLE).go; \
 	  		mkdir -p $(CLI_MAN_DIR) && $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
 			for loc in $(SUPPORTED_LOCALES) ; do \
 				HZN_LANG=$$loc $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
@@ -210,13 +216,13 @@ $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
+	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
 
 $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
+	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
 
 # Build the deb pkgs and put them in pkg/deb/debs/
 debpkgs:
