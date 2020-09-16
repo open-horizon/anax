@@ -302,7 +302,7 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 		ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
 
-		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service.ShortString(), pol)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into policy %v", service.ShortString(), policyName)))
 		policies = append(policies, pol)
 
 	}

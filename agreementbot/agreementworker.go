@@ -34,6 +34,7 @@ const STOP = "PROTOCOL_WORKER_STOP"
 
 type AgreementWork interface {
 	Type() string
+	ShortString() string
 }
 
 type InitiateAgreement struct {
@@ -70,6 +71,18 @@ func (c InitiateAgreement) String() string {
 	return res
 }
 
+func (c InitiateAgreement) ShortString() string {
+	servicePolKeys := []string{}
+	if c.ServicePolicies != nil {
+		for k, _ := range c.ServicePolicies {
+			servicePolKeys = append(servicePolKeys, k)
+		}
+	}
+
+	return fmt.Sprintf("Workitem: %v, Org: %v, Device: %v, ConsumerPolicyName: %v, Producer Policy: %v, Consumer Policy: %v, ServicePolicies: %v",
+		c.workType, c.Org, c.Device, c.ConsumerPolicyName, c.ProducerPolicy.ShortString(), c.ConsumerPolicy.ShortString(), servicePolKeys)
+}
+
 func (c InitiateAgreement) Type() string {
 	return c.workType
 }
@@ -95,6 +108,14 @@ func NewHandleReply(reply abstractprotocol.ProposalReply, senderId string, sende
 
 func (c HandleReply) String() string {
 	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Reply: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Reply, c.SenderPubKey)
+}
+
+func (c HandleReply) ShortString() string {
+	senderPubKey := ""
+	if c.SenderPubKey != nil {
+		senderPubKey = cutil.TruncateDisplayString(string(c.SenderPubKey), 10)
+	}
+	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Reply: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Reply, senderPubKey)
 }
 
 func (c HandleReply) Type() string {
@@ -124,6 +145,14 @@ func (c HandleDataReceivedAck) String() string {
 	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Ack: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Ack, c.SenderPubKey)
 }
 
+func (c HandleDataReceivedAck) ShortString() string {
+	senderPubKey := ""
+	if c.SenderPubKey != nil {
+		senderPubKey = cutil.TruncateDisplayString(string(c.SenderPubKey), 10)
+	}
+	return fmt.Sprintf("Workitem: %v, SenderId: %v, MessageId: %v, From: %v, Ack: %v, SenderPubKey: %x", c.workType, c.SenderId, c.MessageId, c.From, c.Ack, senderPubKey)
+}
+
 func (c HandleDataReceivedAck) Type() string {
 	return c.workType
 }
@@ -138,6 +167,10 @@ type CancelAgreement struct {
 
 func (c CancelAgreement) Type() string {
 	return c.workType
+}
+
+func (c CancelAgreement) ShortString() string {
+	return fmt.Sprintf("Workitem: %v, AgreementId: %v, Protocol: %v, Reason: %v, MessageId: %v", c.workType, c.AgreementId, c.Protocol, c.Reason, c.MessageId)
 }
 
 func NewCancelAgreement(agId string, protocol string, reason uint, messageId int) AgreementWork {
@@ -172,6 +205,10 @@ func (c HandleWorkloadUpgrade) Type() string {
 	return c.workType
 }
 
+func (c HandleWorkloadUpgrade) ShortString() string {
+	return fmt.Sprintf("Workitem: %v, AgreementId: %v, Device: %v, Protocol: %v, PolicyName: %v", c.workType, c.AgreementId, c.Device, c.Protocol, c.PolicyName)
+}
+
 type AsyncCancelAgreement struct {
 	workType    string
 	AgreementId string
@@ -181,6 +218,10 @@ type AsyncCancelAgreement struct {
 
 func (c AsyncCancelAgreement) Type() string {
 	return c.workType
+}
+
+func (c AsyncCancelAgreement) ShortString() string {
+	return fmt.Sprintf("Workitem: %v, AgreementId: %v, Protocol: %v, Reason: %v", c.workType, c.AgreementId, c.Protocol, c.Reason)
 }
 
 type ObjectPolicyChange struct {
@@ -199,6 +240,10 @@ func (c ObjectPolicyChange) Type() string {
 	return c.workType
 }
 
+func (c ObjectPolicyChange) ShortString() string {
+	return fmt.Sprintf("Workitem: %v, Event: %v", c.workType, c.Event)
+}
+
 type StopWorker struct {
 	workType string
 }
@@ -210,6 +255,10 @@ func NewStopWorker() AgreementWork {
 }
 
 func (c StopWorker) String() string {
+	return fmt.Sprintf("Workitem: %v", c.workType)
+}
+
+func (c StopWorker) ShortString() string {
 	return fmt.Sprintf("Workitem: %v", c.workType)
 }
 

@@ -193,7 +193,7 @@ func (n *PrioritizedWorkQueue) run() {
 		select {
 		case i, ok := <-n.inboundHigh:
 			if ok {
-				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound high: %v", *i)))
+				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound high: %v", (*i).ShortString())))
 				n.AddToHighPriorityBuffer(i)
 			} else {
 				// The channel must be closed now.
@@ -202,7 +202,7 @@ func (n *PrioritizedWorkQueue) run() {
 			}
 		case i, ok := <-inLowChan:
 			if ok {
-				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound low: %v", *i)))
+				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound low: %v", (*i).ShortString())))
 				n.AddToLowPriorityBuffer(i)
 			} else {
 				// The channel must be closed now.

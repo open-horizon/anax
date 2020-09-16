@@ -95,9 +95,9 @@ func (w Workload) ShortString() string {
 			"Version: %v, "+
 			"Org: %v, "+
 			"Arch: %v, "+
-			"Priority: %v, "+
-			"Deployment: %v",
-		w.WorkloadURL, w.Version, w.Org, w.Arch, w.Priority, w.Deployment)
+			"Deployment: %v, "+
+			"ClusterDeployment: %v",
+		w.WorkloadURL, w.Version, w.Org, w.Arch, w.Deployment, cutil.TruncateDisplayString(w.ClusterDeployment, 10))
 }
 
 // This function creates workload objects
