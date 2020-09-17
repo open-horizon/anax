@@ -6,16 +6,16 @@ ENV ANAX_LOG_LEVEL 3
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install pre-reqs for getting the horizon pkgs
-RUN apt-get update && apt-get upgrade -y && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg
+RUN apt-get update && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg --no-install-recommends
 
 # Set up the apt repos for docker and horizon
 RUN wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-    add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | apt-key add - && \
+    add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
+    wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | apt-key add - && \
     add-apt-repository "deb [arch=$(dpkg --print-architecture)] http://pkg.bluehorizon.network/linux/ubuntu $(lsb_release -cs)$HORIZON_REPO_CHANNEL main"
 
 # Install bluehorizon
-RUN apt-get update && apt-get install -y bluehorizon mosquitto-clients
+RUN apt-get update && apt-get install -y bluehorizon mosquitto-clients --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 #RUN systemctl restart horizon.service  # <- systemd not available in a container w/o hacks
 WORKDIR /root
