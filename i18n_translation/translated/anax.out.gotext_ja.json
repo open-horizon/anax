@@ -600,7 +600,7 @@
     },
     {
       "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
-      "translation": "アップロード: {Float32totalSent__float32bodyLen__100} {}"
+      "translation": "アップロード中: {Float32totalSent__float32bodyLen__100} {}"
     },
     {
       "id": "unable to open object file {Name}: {Err}",

@@ -355,8 +355,8 @@
       "translation": "Horizon Exchange에서 조직 리소스를 작성합니다."
     },
     {
-      "id": "Create this organization.",
-      "translation": "이 조직을 작성합니다."
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "이 조직을 작성하여 agbot에 지정합니다."
     },
     {
       "id": "Label for new organization.",
@@ -365,6 +365,10 @@
     {
       "id": "Description for new organization.",
       "translation": "새 조직에 대한 설명입니다."
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "새 조직에 대한 태그입니다. 형식은 mytag1=myvalue1입니다. 이 플래그를 반복하여 여러 태그를 지정할 수 있습니다."
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -377,6 +381,14 @@
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "에이전트의 하트비트 간격을 증가시키는 시간(초)입니다."
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "이 조직에 있을 수 있는 최대 노드 수입니다. 기본값은 무제한을 의미하는 0입니다."
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "이 조직에서 서비스 배치를 담당하도록 조직을 이 agbot에 추가합니다. agbot이 이 조직의 패턴 및 배치 정책을 사용하여 이 조직의 노드에 서비스를 배치합니다. 생략된 경우 exchange에서 발견된 첫 번째 agbot이 이 조직을 담당하게 됩니다. 형식은 'agbot_org/agbot_id'입니다."
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
@@ -395,16 +407,24 @@
       "translation": "조직에 대한 새 설명입니다."
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "Exchange에 대한 에이전트 하트비트 사이의 새로운 최소 시간(초)입니다."
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "조직에 대한 새 태그입니다. 형식은 mytag1=myvalue1입니다. 이 플래그를 반복하여 여러 태그를 지정할 수 있습니다. 모든 태그를 제거하려면 '-t \"\"'를 한 번 사용하십시오."
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "Exchange에 대한 에이전트 하트비트 사이의 새로운 최대 시간(초)입니다."
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Exchange에 대한 에이전트 하트비트 사이의 새로운 최소 시간(초)입니다. 기본 음의 정수 -1은 이 속성에 대한 변경사항이 없음을 의미합니다."
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "에이전트의 하트비트 간격을 증가시키는 시간(초)의 새 값입니다."
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Exchange에 대한 에이전트 하트비트 사이의 새로운 최대 시간(초)입니다. 기본 음의 정수 -1은 이 속성에 대한 변경사항이 없음을 의미합니다."
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "에이전트의 하트비트 간격을 증가시키는 시간(초)의 새 값입니다. 기본 음의 정수 -1은 이 속성에 대한 변경사항이 없음을 의미합니다."
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "이 조직에 있을 수 있는 새로운 최대 노드 수입니다. 기본 음의 정수 -1은 변경사항이 없음을 의미합니다."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -3031,10 +3051,6 @@
       "translation": "소스 코드 관리를 위해 {HORIZONGITIGNOREFILE}을(를) 작성하는 중에 오류가 발생했습니다. {Err}"
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "{UserInputFilePath} 파일을 역마샬링할 수 없습니다. 오류: {Err}"
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "userinput 속성 {GlobalSet}을(를) API 속성 {Attr}(으)로 변환했습니다."
     },
@@ -3055,8 +3071,8 @@
       "translation": "{USERINPUTFILE}에 오류가 있음: {Err}"
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: 색인 {Ix}의 서비스 배열 요소는 {MicroWork}입니다. {Err}"
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}: 색인 {Ix}의 서비스 배열 요소는 {AbstractUserInput}입니다. {Err}"
     },
     {
       "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
@@ -3123,6 +3139,10 @@
       "translation": "{FileName}의 JSON 오브젝트를 {FilePath} 파일에 쓸 수 없습니다. 오류: {Err}"
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "userinput의 JSON 오브젝트를 {FilePath} 파일에 쓸 수 없습니다. 오류: {Err}"
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "환경 변수 {DEVTOOLHZNORG}을(를) 설정하거나 --user-pw 플래그에서 사용자를 'org/user'로 지정해야 함"
     },
@@ -3177,6 +3197,14 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "translation": "'{ProjectType} {Cmd}'이(가) Container Worker를 작성할 수 없습니다. {Cerr}"
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "translation": "UDS 소켓 파일을 제거하는 데 실패함: {Err}"
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "FSS 인증의 인증 정보 폴더를 제거하는 데 실패했습니다. 오류: {Err}"
     },
     {
       "id": "unable to list containers, {Err}",
@@ -3707,24 +3735,32 @@
       "translation": "{Negatives}, {N}"
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "{Negatives}에 대한 입력이 올바르지 않습니다. 양의 정수만 허용됩니다."
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "{Negatives}에 대한 입력이 올바르지 않습니다. 음의 정수는 허용되지 않습니다."
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "--heartbeatmin 값은 --heartbeatmax 값보다 작아야 합니다."
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "--heartbeatmin 값은 --heartbeatmax 값보다 작거나 같아야 합니다."
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "--max-nodes에 대한 입력이 올바르지 않습니다. 음의 정수는 허용되지 않습니다."
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "{TheOrg} 조직이 Exchange에 추가되었습니다."
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "{TheOrg} 조직을 찾을 수 없습니다."
+      "id": "No agbot found in the Exchange.",
+      "translation": "Exchange에서 agbot을 찾을 수 없습니다."
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "업데이트하려면 --heartbeatmin, --heartbeatmax 및 --heartbeatadjust가 모두 0이 아니어야 합니다."
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "agbot {Agbot}은(는) {TheOrg} 조직에서 서비스 배치를 담당합니다."
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "--max-nodes에 대한 입력이 올바르지 않습니다. -1, 0 및 양의 정수만 허용됩니다."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3735,8 +3771,32 @@
       "translation": "경고: 이렇게 하면 이 조직이 소유한 모든 Exchange 리소스(노드, 서비스, 패턴 등)도 삭제됩니다. Horizon Exchange에서 {TheOrg} 사용자를 제거하시겠습니까?"
     },
     {
+      "id": "org {TheOrg} not found.",
+      "translation": "{TheOrg} 조직을 찾을 수 없습니다."
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "translation": "{TheOrg} 조직이 제거되었습니다."
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "{JoinnegFlags_}에 대한 입력이 올바르지 않습니다. -1, 0 및 양의 정수만 허용됩니다."
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "하트비트 minInterval 값({Min})은 하트비트 maxInterval 값({Max})보다 작거나 같아야 합니다."
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "비어 있는 문자열이 -t와 함께 지정되었으므로 모든 태그가 제거됩니다."
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "-t 또는 --tag 플래그에 대한 입력 {Tag}이(가) 올바르지 않습니다. 값 형식은 '-t mytag=myvalue' 또는 '--tag mytag=myvalue'입니다."
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "-a로 지정된 agbot '{AgOrg}/{Ag1}'을(를) Exchange에서 찾을 수 없음"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -4531,8 +4591,16 @@
       "translation": "일치하는 Exchange에서 서비스를 찾을 수 없음: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "노드 유형이 일치하지 않는 서비스 {Org}/{Url}의 버전 {VersionRange}을(를) 무시합니다. 서비스 유형 '{ServiceType}'이(가) Exchange 노드 {NId}의 노드 유형 '{NodeType}'과(와) 일치하지 않습니다."
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "발견됨: {Org}, {Url}, {Arch}, {VersionRange}"
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "배치에 권한이 필요한지 확인하는 데 실패함: {Err}"
     },
     {
       "id": "did not find pattern '{PatKey}' as expected",
@@ -4553,6 +4621,18 @@
     {
       "id": "Wrote {InputFile}",
       "translation": "{InputFile} 작성"
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "translation": "예제 노드 정책 파일을 마샬링하는 데 실패함: {Err}"
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "translation": "예제 노드 정책 파일을 작성하는 중에 문제점 발생: {Err}"
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "하나 이상의 서비스에서 배치 문자열에 권한 있음이 포함되어 있습니다. 노드 정책 파일이 권한 있음을 허용하는지 확인하십시오. 샘플 노드 정책 파일 {NodePolicySampleFile}이(가) 작성되었습니다."
     },
     {
       "id": "Status of the services you are watching:",
@@ -4747,20 +4827,20 @@
       "translation": "명령을 기다리는 중에 오류가 발생함: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog를 열 수 없거나 이 폴더가 존재하지 않음: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath}을(를) 열 수 없거나 존재하지 않음: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog에 대한 정보를 가져올 수 없었음: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath}에 대한 통게를 가져올 수 없음: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "/var/log/syslog에서 읽는 중에 오류가 발생함: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "{SysLogPath}에서 읽는 중에 오류가 발생함: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "/var/log/syslog에 대한 정보를 가져올 수 없음: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "{SysLogPath}에 대한 정보를 가져올 수 없음: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
