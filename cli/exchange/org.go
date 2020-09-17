@@ -87,12 +87,7 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, tags 
 
 	// indicate which flags are negative
 	if len(negFlags) > 0 {
-		negatives := ""
-		for _, n := range negFlags {
-			negatives = msgPrinter.Sprintf("%v, %v", negatives, n)
-		}
-
-		negatives = negatives[1:len(negatives)]
+		negatives := strings.Join(negFlags, ",")
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid input for %v. Negative integer is not allowed.", negatives))
 	}
 
