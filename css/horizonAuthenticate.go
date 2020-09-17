@@ -209,29 +209,20 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 						log.Error(cssALS(fmt.Sprintf("unable to verify identity %v as exchange node, error %v", appKey, err)))
 					}
 				} else {
+					// exchange node is AuthNodeUser. Without configuring ACLs, AuthNodeUser only has read access to public objects of any org
 					authCode = security.AuthNodeUser
 					authOrg = parts[0]
 					authId = parts[1]
 				}
-			} else if exchangeRole != "" {
-				if exchangeRole == EX_ROOT_USER || exchangeRole == EX_HUB_ADMIN {
-					// root/root:{pwd} and hub admin are super users across all orgs
-					authCode = security.AuthSyncAdmin
-					authOrg = parts[0]
-					authId = username
-				} else if exchangeRole == EX_ORG_ADMIN {
-					// exchange org admin is AuthAdmin (admin within org)
-					authCode = security.AuthAdmin
-					authOrg = parts[0]
-					authId = username
-				} else {
-					if log.IsLogging(logger.ERROR) {
-						log.Error(cssALS(fmt.Sprintf("returned invalid exchange role %s for user %s ", exchangeRole, appKey)))
-					}
-				}
-
+			} else if exchangeRole == EX_ROOT_USER || exchangeRole == EX_HUB_ADMIN {
+				// root/root:{pwd} and hub admin are super users across all orgs
+				authCode = security.AuthSyncAdmin
+				authOrg = parts[0]
+				authId = username
 			} else {
-				authCode = security.AuthUser
+				// exchange regular users are always mapped to authAdmin so that ACLs do not need to be configured in order for a regular user to get read/write access to objects in their own org.
+				// It also gives them read access to public objects in other orgs without needing an ACL
+				authCode = security.AuthAdmin
 				authOrg = parts[0]
 				authId = username
 			}
@@ -264,8 +255,8 @@ type GetUsersResponse struct {
 	LastIndex int                       `json:"lastIndex"`
 }
 
-// Returns ${exchange_auth}, ${username}, nil for users that are admins. Returns "", ${username}, nil for users that are valid but aren't admins,
-// and "", "", error otherwise.
+// Returns ${exchange_auth}, ${username}, nil for users that are valid user. Returns "", "", error for invalid user
+// ${exchange_auth} values: EX_ROOT_USER, EX_HUB_ADMIN, EX_ORG_ADMIN, ""
 func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, appSecret string, exURL string) (string, string, error) {
 
 	// Log which API we're about to use.

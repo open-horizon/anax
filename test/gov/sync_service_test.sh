@@ -21,140 +21,6 @@ else
   CERT_VAR=""
 fi
 
-# Adding users to ACL
-# userdev/userdevadmin and e2edev@somecomp.com/e2edevadmin are org admin, should already have WRITE access within their orgs. Don't need to add them to ACL
-# add userdev/useranax1 as aclReader to all object types (can't create/update/delete object, can get object or object data)
-echo "Adding userdev/useranax1 as aclReader to all object types"
-read -d '' objectacl1 <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "user",
-      "Username": "useranax1",
-      "ACLRole": "aclReader"
-    }
-  ]
-}
-EOF
-
-ADDUSERTOOBJACL=$(echo "$objectacl1" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/userdev" --data @-)
-if [ "$ADDUSERTOOBJACL" != "204" ]
-then
-  echo -e "$objectacl1 \nPUT object acl returned:"
-  echo $ADDUSERTOOBJACL
-  exit -1
-fi
-
-TEST_ACL_OBJ_TYPE="testacl"
-# add e2edev@somecomp.com/anax1 as aclWriter to object type "testacl".
-echo "Adding e2edev@somecomp.com/anax1 as aclWriter to object type \"$TEST_ACL_OBJ_TYPE\""
-read -d '' objectacl2 <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "user",
-      "Username": "anax1",
-      "ACLRole": "aclWriter"
-    }
-  ]
-}
-EOF
-
-ADDUSERTOOBJACL=$(echo "$objectacl2" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/e2edev@somecomp.com/${TEST_ACL_OBJ_TYPE}" --data @-)
-if [ "$ADDUSERTOOBJACL" != "204" ]
-then
-  echo -e "$objectacl2 \nPUT object acl returned:"
-  echo $ADDUSERTOOBJACL
-  exit -1
-fi
-
-# Adding nodes to ACL
-# add node userdev/an12345 as aclReader to all object types (can't create/update/delete object, can get object or object data)
-echo "Adding node userdev/an12345 as aclReader to all object types"
-read -d '' objectacl3 <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "node",
-      "Username": "an12345",
-      "ACLRole": "aclReader"
-    }
-  ]
-}
-EOF
-
-ADDNODETOOBJACL=$(echo "$objectacl3" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/userdev" --data @-)
-if [ "$ADDNODETOOBJACL" != "204" ]
-then
-  echo -e "$objectacl3 \nPUT object acl returned:"
-  echo $ADDNODETOOBJACL
-  exit -1
-fi
-
-# add e2edev@somecomp.com/an12345 as aclWriter to object type "testacl".
-echo "Adding node e2edev@somecomp.com/an12345 as aclWriter to object type \"$TEST_ACL_OBJ_TYPE\""
-read -d '' objectacl4 <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "node",
-      "Username": "an12345",
-      "ACLRole": "aclWriter"
-    }
-  ]
-}
-EOF
-
-ADDNODETOOBJACL=$(echo "$objectacl4" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/objects/e2edev@somecomp.com/${TEST_ACL_OBJ_TYPE}" --data @-)
-if [ "$ADDNODETOOBJACL" != "204" ]
-then
-  echo -e "$objectacl4 \nPUT object acl returned:"
-  echo $ADDNODETOOBJACL
-  exit -1
-fi
-
-# add all users and nodes to destination ACL for e2edev@somecomp.com and userdev org
-echo "Adding all users and nodes to destination ACL for e2edev@somecomp.com and userdev org"
-  read -d '' destinationacl <<EOF
-{
-  "action": "add",
-  "users": [
-    {
-      "ACLUserType": "user",
-      "Username": "*",
-      "ACLRole": "aclWriter"
-    },
-    {
-      "ACLUserType": "node",
-      "Username": "*",
-      "ACLRole": "aclWriter"
-    }
-  ]
-}
-EOF
-
-# add * to CSS ACL destinations list
-ADDALLTODESTACL=$(echo "$destinationacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/destinations/e2edev@somecomp.com" --data @-)
-if [ "$ADDALLTODESTACL" != "204" ]
-then
-  echo -e "$destinationacl \nPUT object acl for e2edev@somecomp.com org returned:"
-  echo $ADDALLTODESTACL
-  exit -1
-fi
-
-ADDALLTODESTACL=$(echo "$destinationacl" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW "${CSS_URL}/api/v1/security/destinations/userdev" --data @-)
-if [ "$ADDALLTODESTACL" != "204" ]
-then
-  echo -e "$destinationacl \nPUT object acl for userdev org returned:"
-  echo $ADDALLTODESTACL
-  exit -1
-fi
-
-
 # Test what happens when an invalid user id format is attempted
 UFORMAT=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")
 
@@ -294,11 +160,11 @@ then
   exit -1
 fi
 
-# adding an object with object type: testacl
+# adding an object with data for MMS access testing
 read -d '' resmeta <<EOF
 {
-  "objectID": "test_acl1",
-  "objectType": "${TEST_ACL_OBJ_TYPE}",
+  "objectID": "test_user_access",
+  "objectType": "test",
   "destinationType": "",
   "destinationID": "",
   "version": "1.0.0",
@@ -641,15 +507,17 @@ echo "Testing MMS ACL object access"
 HZN_ORG_ID_BEFORE_MODIFY=$HZN_ORG_ID
 HZN_EX_USER_AUTH_BEFORE_MODIFY=$HZN_EXCHANGE_USER_AUTH
 
-# test user/node who has READ access to all object types
+# test user/node should have READ and WRITE access to all object types in their org
 # $1 - USER_ORG
 # $2 - USER_REG_USERNAME
 # $3 - USER_REG_USERPWD
 # $4 - Expected number of object returned by list object cli
 # $5 - Object Type to download
 # $6 - Object ID to download
+# $7 - Object Type to publish
+# $8 - Object ID to publish
 function testUserHaveAccessToALLObjects {
-    echo "Testing MMS ACL access for ${2} in ${1} org"
+    echo "Testing MMS ACL access in same org for user/node ${1}/${2}"
 
     USER_REG_USER_AUTH="${1}/${2}:${3}"
     export HZN_EXCHANGE_USER_AUTH=${USER_REG_USER_AUTH}
@@ -686,9 +554,27 @@ function testUserHaveAccessToALLObjects {
     fi
 
     # publish
-    resp=$(hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt 2>&1)
-    #echo "publish resp: $resp"
-    verify "$resp" "Unauthorized" "Got unexpected error with updating object by ${2} only have READ access"
+    # have access to update object in user's org
+    read -d '' resmeta <<EOF
+    {
+      "objectID": "${8}",
+      "objectType": "${7}",
+      "destinationType": "",
+      "destinationID": "",
+      "version": "1.0.0",
+      "description": "test write access",
+      "expiration": "2032-10-02T15:00:00Z"
+    }
+EOF
+
+    echo "$resmeta" > /tmp/meta.json
+    hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
+    RC=$?
+    if [ $RC -ne 0 ]
+    then
+        echo -e "Failed to publish mms object ${7} ${8} by user ${2} in the org ${1}: $RC"
+        exit -1
+    fi
 }
 
 # test user/node who has Write access to some object types
@@ -696,11 +582,9 @@ function testUserHaveAccessToALLObjects {
 # $2 - USER_REG_USERNAME
 # $3 - USER_REG_USERPWD
 # $4 - Expected number of object returned by list object cli
-# $5 - Object Type that user have access
-# $6 - Object ID that user have access
-# $7 - Object Type that user doesn't have access
-# $8 - Object ID that user doesn't have access
-function testUserHaveAccessToSomeObjects {
+# $5 - Object Type that user doesn't have access
+# $6 - Object ID that user doesn't have access
+function testUserNotHaveAccessToPrivateObjects {
     echo "Testing MMS ACL access for ${2} in ${1} org"
     USER_REG_USER_AUTH="${1}/${2}:${3}"
     export HZN_EXCHANGE_USER_AUTH=${USER_REG_USER_AUTH}
@@ -716,71 +600,17 @@ function testUserHaveAccessToSomeObjects {
         exit -1
     fi
 
-    for (( ix=0; ix<$NUM_OBJS; ix++ ))
-    do
-        OBJ_TYPE=$(echo $OBJS_CMD | jq -r '.['${ix}'].objectType') 
-        if [ ${OBJ_TYPE} != ${5} ]; then
-            echo -e "Got object in unexpected objectType ${OBJ_TYPE} for user ${2} in org ${1}"
-            exit -1
-        fi
-    done
-
-
-    # download
-    # have access to "testacl" object type
+    # don't have access to get private object
     echo "user ${2} is dowloading object: ${5} ${6}"
-
-    DOWNLOADED_FILE="${5}_${6}"
-    if [ -f "$DOWNLOADED_FILE" ]; then
-        echo "$DOWNLOADED_FILE already exists. Deleted before downloading..."
-        rm -f $DOWNLOADED_FILE
-        if [ $? -ne 0 ]; then
-            echo -e "Failed to remove $DOWNLOADED_FILE"
-            exit -1
-        fi
-    fi
-
     resp=$(hzn mms object download -t ${5} -i ${6} 2>&1)
-    respContains=$(echo $resp | grep "Unauthorized")
-    if [ "${respContains}" != "" ]; then
-        echo -e "\nERROR: Failed to download mms object ${5} ${6} for user ${2}. Output was:"
-        echo -e "$resp"
-        exit 1
-    fi
+    verify "$resp" "Unauthorized" "User ${2} should not have access to download mms object ${5} ${6}"
 
-    # don't have access to "model" object type
-    echo "user ${2} is dowloading object: ${7} ${8}"
-    resp=$(hzn mms object download -t ${7} -i ${8} 2>&1)
-    verify "$resp" "Unauthorized" "User ${2} should not have access to download mms object ${7} ${8}"
-
-    # publish
-    # have access to update object with "testacl" object type
+     # don't have access to update private object
+    echo "user ${2} is publishing object: ${5} ${6}"
     read -d '' resmeta <<EOF
     {
       "objectID": "${6}",
       "objectType": "${5}",
-      "destinationType": "",
-      "destinationID": "",
-      "version": "1.0.0",
-      "description": "test acl - test update by user",
-      "expiration": "2032-10-02T15:00:00Z"
-    }
-EOF
-
-    echo "$resmeta" > /tmp/meta.json
-    hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
-    RC=$?
-    if [ $RC -ne 0 ]
-    then
-        echo -e "Failed to publish mms object ${5} ${6} by user ${2} in the org ${1}: $RC"
-        exit -1
-    fi
-
-    # don't have access to update object with "test" object type
-    read -d '' resmeta <<EOF
-    {
-      "objectID": "${8}",
-      "objectType": "${7}",
       "destinationType": "test",
       "version": "1.0.0",
       "description": "test acl - test update by user"
@@ -789,9 +619,10 @@ EOF
 
     echo "$resmeta" > /tmp/meta.json
     resp=$(hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt 2>&1)
-    verify "$resp" "Unauthorized" "Got unexpected error with updating object in object type ${7} by ${2}"
+    verify "$resp" "Unauthorized" "Got unexpected error with updating object in object type ${5} by ${2}"
 
 }
+
 
 # test user/node can only GET public object, but can't update object
 # $1 - USER_ORG
@@ -902,31 +733,19 @@ PUBLIC_OBJ_ORG="IBM"
 PUBLIC_OBJ_TYPE="public"
 PUBLIC_OBJ_ID="public.tgz"
 
-#userdev/useranax1 as aclReader to all object types (can't create/update/delete object, can get object or object data)
-USER_ORG="userdev"
-USER_REG_USERNAME="useranax1"
-USER_REG_USERPWD="useranax1pw"
-TARGET_NUM_OBJS=2
-testUserHaveAccessToALLObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID
-verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
-
-# node userdev/an12345 as aclReader to all object types (can't create/update/delete object, can get object or object data)
-NODE_ID="an12345"
-NODE_TOKEN="abcdefg"
-testUserHaveAccessToALLObjects $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID
-verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
-
-# e2edev@somecomp.com/anax1 as aclWriter to object type "testacl"
-# noce e2edev@somecomp.com/an12345 as aclWriter to object type "testacl"
+#e2edev@somecomp.com/anax1 has READ and WRITE access to all object types in e2edev@somecomp.com org
 USER_ORG="e2edev@somecomp.com"
 USER_REG_USERNAME="anax1"
 USER_REG_USERPWD="anax1pw"
-TARGET_NUM_OBJS=1
-TEST_ACL_OBJ_ID="test_acl1"
-testUserHaveAccessToSomeObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $TEST_ACL_OBJ_TYPE $TEST_ACL_OBJ_ID $OBJECT_TYPE $OBJECT_ID
+TARGET_NUM_OBJS=6
+testUserHaveAccessToALLObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID "test" "test_user_access"
 verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
 
-testUserHaveAccessToSomeObjects $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS $TEST_ACL_OBJ_TYPE $TEST_ACL_OBJ_ID $OBJECT_TYPE $OBJECT_ID
+# node e2edev@somecomp.com/an12345 has READ and WRITE access to all object types in e2edev@somecomp.com org
+NODE_ID="an12345"
+NODE_TOKEN="abcdefg"
+TARGET_NUM_OBJS=0
+testUserNotHaveAccessToPrivateObjects  $USER_ORG $NODE_ID $NODE_TOKEN $TARGET_NUM_OBJS "test" "test_user_access"
 verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
 
 # root/hubadmin should be able to create object in IBM org
