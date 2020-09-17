@@ -5,7 +5,9 @@ import (
 	"regexp"
 )
 
-var IllegalInputCharRegex = `[^-*+()?&! _\w\d.@,:/\\]`
+// \pL -- unicode letter
+// \pN -- unicode number
+var IllegalInputCharRegex = `[^-*+()?&! _\w\d.@,:/\\\pL\pN]`
 
 func InputIsIllegal(str string) (string, error) {
 	reg, err := regexp.Compile(IllegalInputCharRegex)
