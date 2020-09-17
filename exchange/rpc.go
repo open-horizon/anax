@@ -1121,9 +1121,7 @@ func IsTransportError(pResp *http.Response, err error) bool {
 			return true
 		} else if pResp.StatusCode == http.StatusServiceUnavailable {
 			//503: service unavailable
-			if _, ok := pResp.Header["Retry-After"]; ok {
-				return true
-			}
+			return true
 		}
 	}
 	return false
