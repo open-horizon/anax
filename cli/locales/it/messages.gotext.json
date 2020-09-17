@@ -1397,9 +1397,9 @@
       "fuzzy": true
     },
     {
-      "id": "Create this organization.",
-      "message": "Create this organization.",
-      "translation": "Creare questa organizzazione.",
+      "id": "Create this organization and assign it to an agbot.",
+      "message": "Create this organization and assign it to an agbot.",
+      "translation": "Crea questa organizzazione e la assegna ad un agbot. ",
       "fuzzy": true
     },
     {
@@ -1412,6 +1412,12 @@
       "id": "Description for new organization.",
       "message": "Description for new organization.",
       "translation": "Descrizione della nuova organizzazione.",
+      "fuzzy": true
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "Tag per la nuova organizzazione. Il formato è mytag1=myvalue1. Questo indicatore può essere ripetuto per specificare più tag. ",
       "fuzzy": true
     },
     {
@@ -1430,6 +1436,18 @@
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "message": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "Il numero di secondi per l'incremento dell'intervallo di heartbeat dell'agent.",
+      "fuzzy": true
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "Il numero massimo di nodi consentiti per questa organizzazione. Il valore predefinito è 0, che indica nessun limite. ",
+      "fuzzy": true
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "message": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "Aggiungere l'organizzazione a questo agbot, in modo che sia responsabile della distribuzione dei servizi in questa organizzazione. L'agbot distribuirà i servizi sui nodi in questa organizzazione, utilizzando i modelli e le politiche di distribuzione nell'organizzazione. Se omesso, il primo agbot trovato in Exchange diventerà responsabile per questa organizzazione. Il formato è 'agbot_org/agbot_id'. ",
       "fuzzy": true
     },
     {
@@ -1457,21 +1475,33 @@
       "fuzzy": true
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "message": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "Nuovo numero minimo di secondi tra gli heartbeat dell'agent verso Exchange.",
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "Nuovo tag per l'organizzazione. Il formato è mytag1=myvalue1. Questo indicatore può essere ripetuto per specificare più tag. Utilizzare '-t \"\"' una volta per rimuovere tutti i tag. ",
       "fuzzy": true
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "message": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "Nuovo numero massimo di secondi tra gli heartbeat dell'agent verso Exchange.",
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nuovo numero minimo di secondi tra gli heartbeat dell'agent verso Exchange. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo. ",
       "fuzzy": true
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "message": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "Nuoco valore per il numero di secondi per l'incremento dell'intervallo di heartbeat dell'agent.",
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nuovo numero massimo di secondi tra gli heartbeat dell'agent verso Exchange. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo. ",
+      "fuzzy": true
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nuovo valore per il numero di secondi per l'incremento dell'intervallo di heartbeat dell'agent. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo. ",
+      "fuzzy": true
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "Il nuovo numero massimo di nodi consentiti per questa organizzazione. Il numero intero negativo predefinito -1 indica nessuna modifica. ",
       "fuzzy": true
     },
     {
@@ -8555,30 +8585,6 @@
       "fuzzy": true
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "message": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "impossibile annullare il marshalling del file {UserInputFilePath}, errore: {Err}",
-      "placeholders": [
-        {
-          "id": "UserInputFilePath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "userInputFilePath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "message": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "Attributo di input utente: {GlobalSet} convertito in attributo API: {Attr}",
@@ -8699,9 +8705,9 @@
       "fuzzy": true
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: l'elemento di array di servizi all'indice {Ix} è {MicroWork} {Err}",
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}: l'elemento dell'array di servizi all'indice {Ix} è {AbstractUserInput} {Err}",
       "placeholders": [
         {
           "id": "OriginalUserInputFilePath",
@@ -8720,10 +8726,10 @@
           "expr": "ix"
         },
         {
-          "id": "MicroWork",
+          "id": "AbstractUserInput",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/common.MicroWork",
-          "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
+          "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9095,6 +9101,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "message": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "Impossibile scrivere l'oggetto json per l'input utente nel file {FilePath}, errore: {Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "message": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "È necessario impostare la variabile di ambiente {DEVTOOLHZNORG} o specificare l'utente come 'org/user' nell'indicatore --user-pw",
@@ -9410,6 +9440,38 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 3,
           "expr": "cerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "message": "Failed to remove the UDS socket file: {Err}",
+      "translation": "Impossibile rimuovere il file del socket UDS: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "Impossibile rimuovere la cartella delle credenziali di autenticazione FSS, errore: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -11615,9 +11677,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "message": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "Fornito input non valido per {Negatives}. Sono consentiti solo numeri interi positivi.",
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "Fornito input non valido per {Negatives}. I numeri interi negativi non sono consentiti. ",
       "placeholders": [
         {
           "id": "Negatives",
@@ -11631,9 +11693,15 @@
       "fuzzy": true
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "message": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "Il valore di --heartbeatmin deve essere inferiore al valore di --heartbeatmax.",
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "message": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "Il valore di --heartbeatmin deve essere minore o uguale al valore di --heartbeatmax.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "Input non valido per --max-nodes. I numeri interi negativi non sono consentiti. ",
       "fuzzy": true
     },
     {
@@ -11653,25 +11721,39 @@
       "fuzzy": true
     },
     {
-      "id": "org {TheOrg} not found.",
-      "message": "org {TheOrg} not found.",
-      "translation": "org {TheOrg} non trovata.",
+      "id": "No agbot found in the Exchange.",
+      "message": "No agbot found in the Exchange.",
+      "translation": "Nessun agbot trovato in Exchange. ",
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "message": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "L'agbot {Agbot} è responsabile della distribuzione dei servizi nell'organizzazione {TheOrg}",
       "placeholders": [
         {
-          "id": "TheOrg",
-          "string": "%[1]s",
+          "id": "Agbot",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
+          "expr": "agbot"
+        },
+        {
+          "id": "TheOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
           "expr": "theOrg"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "message": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin, --heartbeatmax e --heartbeatadjust devono tutti essere non-zero per poter eseguire l'aggiornamento.",
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "Input non valido per --max-nodes. Sono consentiti solo i valori -1, 0 ed i numeri interi positivi. ",
       "fuzzy": true
     },
     {
@@ -11707,6 +11789,22 @@
       "fuzzy": true
     },
     {
+      "id": "org {TheOrg} not found.",
+      "message": "org {TheOrg} not found.",
+      "translation": "org {TheOrg} non trovata.",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "message": "Organization {TheOrg} is successfully removed.",
       "translation": "Organizzazione {TheOrg} correttamente rimossa.",
@@ -11718,6 +11816,92 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "Input non valido per {JoinnegFlags_}. Sono consentiti solo i valori -1, 0 ed i numeri interi positivi. ",
+      "placeholders": [
+        {
+          "id": "JoinnegFlags_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(negFlags, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "message": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "Il valore di minInterval dell'heartbeat ({Min}) deve essere minore o uguale al valore di maxInterval dell'heartbeat ({Max}).",
+      "placeholders": [
+        {
+          "id": "Min",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "min"
+        },
+        {
+          "id": "Max",
+          "string": "%[2]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "max"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "message": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "È specificata una stringa vuota con -t, tutti i tag verranno rimossi. ",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "Input non valido per l'indicatore -t o --tag: {Tag}. Il formato valido è '-t mytag=myvalue' o '--tag mytag=myvalue'. ",
+      "placeholders": [
+        {
+          "id": "Tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "message": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "Impossibile trovare l'agbot '{AgOrg}/{Ag1}' specificato da -a in Exchange ",
+      "placeholders": [
+        {
+          "id": "AgOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agOrg"
+        },
+        {
+          "id": "Ag1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ag1"
         }
       ],
       "fuzzy": true
@@ -14547,7 +14731,7 @@
     {
       "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
       "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
-      "translation": "Nota: non è stato specificato alcun file di input. Questo è valido solo se nessun servizio richiede variabili impostate. ",
+      "translation": "Nota: non è stato specificato alcun file di input. Questo è valido solo se nessun servizio richiede variabili impostate.",
       "fuzzy": true
     },
     {
@@ -14977,6 +15161,62 @@
       "fuzzy": true
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "message": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "La versione {VersionRange} del servizio {Org}/{Url} con mancata corrispondenza del tipo di nodo viene ignorata: il tipo di servizio '{ServiceType}' non corrisponde al tipo di nodo '{NodeType}' del nodo Exchange {NId}. ",
+      "placeholders": [
+        {
+          "id": "VersionRange",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "versionRange"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "Url",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "url"
+        },
+        {
+          "id": "ServiceType",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "serviceType"
+        },
+        {
+          "id": "NodeType",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "n.GetNodeType()"
+        },
+        {
+          "id": "NId",
+          "string": "%[6]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 6,
+          "expr": "nId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "message": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "trovato: {Org}, {Url}, {Arch}, {VersionRange}",
@@ -15012,6 +15252,22 @@
           "underlyingType": "string",
           "argNum": 4,
           "expr": "versionRange"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "message": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "Impossibile verificare se la distribuzione richiede autorizzazioni: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -15108,6 +15364,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "message": "failed to marshal the example node policy file: {Err}",
+      "translation": "impossibile eseguire il marshalling del file della politica del nodo di esempio: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "message": "problem writing the example node policy file: {Err}",
+      "translation": "problema durante la scrittura del file della politica del nodo di esempio: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "Uno o più servizi contengono autorizzazioni nella stringa di distribuzione. Verificare che il file della politica del nodo consenta le autorizzazioni. È stato creato un file della politica del nodo di esempio: {NodePolicySampleFile}",
+      "placeholders": [
+        {
+          "id": "NodePolicySampleFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodePolicySampleFile"
         }
       ],
       "fuzzy": true
@@ -15243,7 +15547,7 @@
     {
       "id": "The following services might need more time to start executing, continuing analysis:",
       "message": "The following services might need more time to start executing, continuing analysis:",
-      "translation": "I seguenti servizio potrebbero richiedere più tempo per l'avvio dell'esecuzione, l'analisi continua:",
+      "translation": "I seguenti servizi potrebbero richiedere più tempo per l'avvio dell'esecuzione, l'analisi continua:",
       "fuzzy": true
     },
     {
@@ -15919,64 +16223,96 @@
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "message": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog non può essere aperto o non esiste: {Err}",
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} non può essere aperto o non esiste: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "message": "/var/log/syslog could not get stats: {Err}",
-      "translation": "Impossibile ottenere le statistiche per /var/log/syslog: {Err}",
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} non è riuscito ad ottenere le statistiche: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "message": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Errore durante la lettura da /var/log/syslog: {Err}",
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Errore durante la lettura da {SysLogPath}: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "message": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Impossibile determinare /var/log/syslog: {Err}",
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossibile determinare {SysLogPath}: {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -17773,13 +18109,13 @@
     {
       "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
       "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "Il nodo non è stato registrato correttamente, utilizzare 'hzn unregister -D' per assicurarsi che il nodo sia completamente reimpostato.",
+      "translation": "L'annullamento della registrazione del nodo non è stata completata correttamente, utilizzare 'hzn unregister -D' per assicurarsi che il nodo sia completamente reimpostato.",
       "fuzzy": true
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
       "message": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "{Err}\nIl nodo non è stato registrato correttamente, utilizzare 'hzn unregister -D' per assicurarsi che il nodo sia completamente reimpostato.",
+      "translation": "{Err}\nL'annullamento della registrazione del nodo non è stata completata correttamente, utilizzare 'hzn unregister -D' per assicurarsi che il nodo sia completamente reimpostato.",
       "placeholders": [
         {
           "id": "Err",
@@ -17929,7 +18265,7 @@
     {
       "id": "Waiting for agent service to restart and checking the node configuration state...",
       "message": "Waiting for agent service to restart and checking the node configuration state...",
-      "translation": "In attesa del riavvbio del servizio dell'agent e controllo dello stato di configurazione del nodo...",
+      "translation": "In attesa del riavvio del servizio dell'agent e controllo dello stato di configurazione del nodo...",
       "fuzzy": true
     },
     {

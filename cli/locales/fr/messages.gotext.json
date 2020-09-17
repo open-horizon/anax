@@ -1339,7 +1339,7 @@
     {
       "id": "List and manage Horizon Exchange resources.",
       "message": "List and manage Horizon Exchange resources.",
-      "translation": "Afficher et gérer les ressources Horizon Exchange.",
+      "translation": "Répertorier et gérer des ressources Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -1369,7 +1369,7 @@
     {
       "id": "List and manage organizations in the Horizon Exchange.",
       "message": "List and manage organizations in the Horizon Exchange.",
-      "translation": "Afficher et gérer les organisations dans Horizon Exchange.",
+      "translation": "Répertorier et gérer des organisations dans Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -1397,9 +1397,9 @@
       "fuzzy": true
     },
     {
-      "id": "Create this organization.",
-      "message": "Create this organization.",
-      "translation": "Créez cette organisation.",
+      "id": "Create this organization and assign it to an agbot.",
+      "message": "Create this organization and assign it to an agbot.",
+      "translation": "Créer cette organisation et l'attribuer à un agbot.",
       "fuzzy": true
     },
     {
@@ -1412,6 +1412,12 @@
       "id": "Description for new organization.",
       "message": "Description for new organization.",
       "translation": "Description de la nouvelle organisation.",
+      "fuzzy": true
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "Balise de la nouvelle organisation. Le format est mytag1=myvalue1. Cet indicateur peut être répété pour spécifier plusieurs balises.",
       "fuzzy": true
     },
     {
@@ -1429,7 +1435,19 @@
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "message": "The number of seconds to increment the agent's heartbeat interval.",
-      "translation": "Nombre de secondes pour incrémenter l'intervalle des pulsations de l'agent.",
+      "translation": "Nombre de secondes pour incrémenter l'intervalle des signaux de présence de l'agent.",
+      "fuzzy": true
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur par défaut est 0, ce  qui signifie qu'il n'y a pas de limite.",
+      "fuzzy": true
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "message": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "Ajoutez l'organisation à cet agbot si vous souhaitez qu'il se charge du déploiement des services au sein de cette organisation. L'agbot déploiera les services sur les noeuds de l'organisation à l'aide des patterns et des règles de déploiement de l'organisation. Si cette valeur est omise, le premier agbot trouvé dans Exchange sera responsable de cette organisation. Le format est 'agbot_org/agbot_id'.",
       "fuzzy": true
     },
     {
@@ -1457,21 +1475,33 @@
       "fuzzy": true
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "message": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "Nouveau nombre minimal de secondes entre les signaux de présence de l'agent sur Exchange.",
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "Nouvelle balise de l'organisation. Le format est mytag1=myvalue1. Cet indicateur peut être répété pour spécifier plusieurs balises. Utilisez '-t \"\"' une seule fois pour supprimer toutes les balises.",
       "fuzzy": true
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "message": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "Nouveau nombre maximal de secondes entre les signaux de présence de l'agent sur Exchange.",
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nouveau nombre minimal de secondes entre les signaux de présence de l'agent sur Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
       "fuzzy": true
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "message": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des pulsations de l'agent.",
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nouveau nombre maximal de secondes entre les signaux de présence de l'agent sur Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
+      "fuzzy": true
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des sinaux de présence de l'agent. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
+      "fuzzy": true
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté.",
       "fuzzy": true
     },
     {
@@ -1495,7 +1525,7 @@
     {
       "id": "List and manage users in the Horizon Exchange.",
       "message": "List and manage users in the Horizon Exchange.",
-      "translation": "Afficher et gérer les utilisateurs dans Horizon Exchange.",
+      "translation": "Répertorier et gérer des utilisateurs dans Horizon Exchange.",
       "fuzzy": true
     },
     {
@@ -1585,7 +1615,7 @@
     {
       "id": "List and manage nodes in the Horizon Exchange",
       "message": "List and manage nodes in the Horizon Exchange",
-      "translation": "Afficher et gérer les noeuds dans Horizon Exchange",
+      "translation": "Répertorier et gérer des noeuds dans Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -1825,7 +1855,7 @@
     {
       "id": "List and manage agbots in the Horizon Exchange",
       "message": "List and manage agbots in the Horizon Exchange",
-      "translation": "Afficher et gérer les agbots dans Horizon Exchange",
+      "translation": "Répertorier et gérer des agbots dans Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -1975,7 +2005,7 @@
     {
       "id": "List and manage patterns in the Horizon Exchange",
       "message": "List and manage patterns in the Horizon Exchange",
-      "translation": "Afficher et gérer les patterns dans Horizon Exchange",
+      "translation": "Répertorier et gérer des patterns dans Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -2123,7 +2153,7 @@
     {
       "id": "List and manage services in the Horizon Exchange",
       "message": "List and manage services in the Horizon Exchange",
-      "translation": "Afficher et gérer les services dans Horizon Exchange",
+      "translation": "Répertorier et gérer des services dans Horizon Exchange",
       "fuzzy": true
     },
     {
@@ -2585,7 +2615,7 @@
     {
       "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
       "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
-      "translation": "Fichier JSON qui définit ou écrase les variables d'entrée utilisateur requises par les services qui seront déployés sur ce noeud. Voir {Sampledir}/user_input.json. Spécifiez -f- pour pouvoir lire à partir de stdin.",
+      "translation": "Fichier JSON qui définit ou substitue les variables d'entrée utilisateur requises par les services qui seront déployés sur ce noeud. Voir {Sampledir}/user_input.json. Spécifiez -f- pour pouvoir lire à partir de stdin.",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -2613,7 +2643,7 @@
     {
       "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
       "message": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "translation": "Fichier JSON qui définit ou écrase la règle du noeud qui sera utilisé pour la règle basée sur la négociation de l'accord.",
+      "translation": "Fichier JSON qui définit ou substitue la règle du noeud qui sera utilisé pour la règle basée sur la négociation de l'accord.",
       "fuzzy": true
     },
     {
@@ -2649,7 +2679,7 @@
     {
       "id": "List and manage keys for signing and verifying services.",
       "message": "List and manage keys for signing and verifying services.",
-      "translation": "Afficher et gérer les clés pour la signature et la vérification des services.",
+      "translation": "Répertorier et gérer des clés pour la signature et la vérification des services.",
       "fuzzy": true
     },
     {
@@ -2757,7 +2787,7 @@
     {
       "id": "List and manage general information about this Horizon edge node.",
       "message": "List and manage general information about this Horizon edge node.",
-      "translation": "Afficher et gérer les informations générales sur le noeud de périphérie Horizon.",
+      "translation": "Répertorier et gérer les informations générales sur le noeud de périphérie Horizon.",
       "fuzzy": true
     },
     {
@@ -2769,7 +2799,7 @@
     {
       "id": "List and manage policy for this Horizon edge node.",
       "message": "List and manage policy for this Horizon edge node.",
-      "translation": "Afficher et gérer la règle pour ce noeud de périphérie Horizon.",
+      "translation": "Répertorier et gérer la règle pour ce noeud de périphérie Horizon.",
       "fuzzy": true
     },
     {
@@ -2787,7 +2817,7 @@
     {
       "id": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
       "message": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
-      "translation": "Créez ou remplacez la règle du noeud. Les propriétés intégrées du noeud ne peuvent pas être modifiées ou supprimées par cette commande, à l'exception d'openhorizon.allowPrivileged.",
+      "translation": "Créer ou remplacer la règle du noeud. Les propriétés intégrées du noeud ne peuvent pas être modifiées ou supprimées par cette commande, à l'exception d'openhorizon.allowPrivileged.",
       "fuzzy": true
     },
     {
@@ -3541,13 +3571,13 @@
     {
       "id": "List and manage Horizon agreement bot resources.",
       "message": "List and manage Horizon agreement bot resources.",
-      "translation": "Afficher et gérer les ressources du bot d'accord Horizon.",
+      "translation": "Répertorier et gérer les ressources du bot d'accord Horizon.",
       "fuzzy": true
     },
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
       "message": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "Gérer les règles déployées, les patterns et les organisations utilisant un agbot mis en cache.",
+      "translation": "Gérer les règles de déploiement, les patterns et les organisations utilisant un agbot en cache.",
       "fuzzy": true
     },
     {
@@ -3571,7 +3601,7 @@
     {
       "id": "Display served patterns cached in the agbot.",
       "message": "Display served patterns cached in the agbot.",
-      "translation": "Afficher les patterns mis en cache dans l'agbot.",
+      "translation": "Afficher les patterns utilisés mis en cache dans l'agbot.",
       "fuzzy": true
     },
     {
@@ -3727,7 +3757,7 @@
     {
       "id": "List and manage Horizon Model Management Service resources.",
       "message": "List and manage Horizon Model Management Service resources.",
-      "translation": "Afficher et gérer les ressources du service de gestion des modèles Horizon.",
+      "translation": "Répertorier et gérer les ressources du service de gestion des modèles Horizon.",
       "fuzzy": true
     },
     {
@@ -3925,7 +3955,7 @@
     {
       "id": "List and manage Horizon SDO ownership vouchers.",
       "message": "List and manage Horizon SDO ownership vouchers.",
-      "translation": "Afficher et gérer les coupons de propriété Horizon SDO.",
+      "translation": "Répertorier et gérer les coupons de propriété Horizon SDO.",
       "fuzzy": true
     },
     {
@@ -3991,7 +4021,7 @@
     {
       "id": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
       "message": "When a voucher uuid is specified the full contents of the voucher will be listed, otherwise the full contents of all the imported vouchers will be listed.",
-      "translation": "Lorsqu'un identificateur unique universel de coupon est indiqué, l'intégralité du contenu du coupon sera affichée ; sinon, l'intégralité du contenu de tous les coupons sera affichée.",
+      "translation": "Lorsqu'un identificateur unique universel de coupon est indiqué, l'intégralité du contenu du coupon sera affichée ; sinon, l'intégralité du contenu de tous les coupons sera répertoriée.",
       "fuzzy": true
     },
     {
@@ -8555,30 +8585,6 @@
       "fuzzy": true
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "message": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "Impossible de désérialiser le fichier {UserInputFilePath}. Erreur : {Err}",
-      "placeholders": [
-        {
-          "id": "UserInputFilePath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "userInputFilePath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "message": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "Conversion de l'attribut userinput {GlobalSet} en attribut d'API : {Attr}",
@@ -8699,9 +8705,9 @@
       "fuzzy": true
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath} : L'élément de tableau des services à l'index {Ix} est {MicroWork} {Err}",
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath} : L'élément de tableau des services à l'index {Ix} est {AbstractUserInput} {Err}",
       "placeholders": [
         {
           "id": "OriginalUserInputFilePath",
@@ -8720,10 +8726,10 @@
           "expr": "ix"
         },
         {
-          "id": "MicroWork",
+          "id": "AbstractUserInput",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/common.MicroWork",
-          "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
+          "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9095,6 +9101,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "message": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "Impossible d'écrire un objet json pour l'entrée utilisateur dans le fichier {FilePath}. Erreur : {Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "message": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "Vous devez définir la variable d'environnement {DEVTOOLHZNORG} ou spécifier l'utilisateur comme 'org/user' sur l'indicateur --user-pw",
@@ -9410,6 +9440,38 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 3,
           "expr": "cerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "message": "Failed to remove the UDS socket file: {Err}",
+      "translation": "Echec de la suppression du fichier socket UDS : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "Echec de la suppression du dossier des données d'authentification FSS. Erreur : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -11057,7 +11119,7 @@
     {
       "id": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
       "message": "Are you sure you want to remove node {NodeOrg}/{Node} from the Horizon Exchange (should not be done while an edge node is registered with this node id)?",
-      "translation": "Etes-vous sûr de vouloir retirer le noeud {NodeOrg}/{Node} d'Horizon Exchange (à ne pas faire si un noeud de périphérie est enregistré avec cet ID noeud) ?",
+      "translation": "Voulez-vous vraiment retirer le noeud {NodeOrg}/{Node} d'Horizon Exchange (à ne pas faire si un noeud de périphérie est enregistré avec cet ID noeud) ?",
       "placeholders": [
         {
           "id": "NodeOrg",
@@ -11141,7 +11203,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
-      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn exchange node addpolicy' pour mettre à jour la règle du noeud.",
+      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn exchange node addpolicy' pour mettre à jour la règle du noeud. ",
       "fuzzy": true
     },
     {
@@ -11299,7 +11361,7 @@
     {
       "id": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
       "message": "Are you sure you want to remove node policy for {NodeOrg}/{Node} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir retirer la règle de noeud pour {NodeOrg}/{Node} d'Horizon Exchange ?",
+      "translation": "Voulez-vous vraiment retirer la règle de noeud pour {NodeOrg}/{Node} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "NodeOrg",
@@ -11615,9 +11677,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "message": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "Entrée non valide pour {Negatives}. Seuls les entiers positifs sont autorisés.",
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "Entrée non valide pour {Negatives}. Les entiers négatifs ne sont pas autorisés.",
       "placeholders": [
         {
           "id": "Negatives",
@@ -11631,15 +11693,89 @@
       "fuzzy": true
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "message": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "La valeur de --heartbeatmin doit être inférieure à la valeur de --heartbeatmax.",
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "message": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "La valeur de --heartbeatmin doit être inférieure ou égale à la valeur de --heartbeatmax.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "Entrée non valide pour --max-nodes. Les entiers négatifs ne sont pas autorisés.",
       "fuzzy": true
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "message": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "L'organisation {TheOrg} a été ajoutée à Exchange.",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "No agbot found in the Exchange.",
+      "message": "No agbot found in the Exchange.",
+      "translation": "Aucun agbot trouvé dans Exchange.",
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "message": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "L'agbot {Agbot} est responsable du déploiement des services dans l'organisation {TheOrg}",
+      "placeholders": [
+        {
+          "id": "Agbot",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agbot"
+        },
+        {
+          "id": "TheOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "Entrée non valide pour --max-nodes. Seuls -1, 0 et les entiers positifs sont autorisés.",
+      "fuzzy": true
+    },
+    {
+      "id": "Organization {TheOrg} is successfully updated.",
+      "message": "Organization {TheOrg} is successfully updated.",
+      "translation": "L'organisation {TheOrg} a été mise à jour.",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
+      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
+      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc) risquent également d'être supprimées. Voulez-vous vraiment retirer l'utilisateur {TheOrg} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -11669,44 +11805,6 @@
       "fuzzy": true
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "message": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "Les valeurs de --heartbeatmin, --heartbeatmax et --heartbeatadjust doivent toutes être différentes de zéro pour la mise à jour.",
-      "fuzzy": true
-    },
-    {
-      "id": "Organization {TheOrg} is successfully updated.",
-      "message": "Organization {TheOrg} is successfully updated.",
-      "translation": "L'organisation {TheOrg} a été mise à jour.",
-      "placeholders": [
-        {
-          "id": "TheOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "theOrg"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "translation": "Avertissement : Cela risque de supprimer toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc). Etes-vous sûr de vouloir retirer l'utilisateur {TheOrg} d'Horizon Exchange ?",
-      "placeholders": [
-        {
-          "id": "TheOrg",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "theOrg"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Organization {TheOrg} is successfully removed.",
       "message": "Organization {TheOrg} is successfully removed.",
       "translation": "L'organisation {TheOrg} a été retirée.",
@@ -11718,6 +11816,92 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "Entrée non valide pour {JoinnegFlags_}. Seuls -1, 0 et les entiers positifs sont autorisés.",
+      "placeholders": [
+        {
+          "id": "JoinnegFlags_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(negFlags, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "message": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "La valeur de signal de présence minInterval ({Min}) doit être inférieure ou égale à la valeur de signal de présence maxInterval ({Max}).",
+      "placeholders": [
+        {
+          "id": "Min",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "min"
+        },
+        {
+          "id": "Max",
+          "string": "%[2]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "max"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "message": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "Une chaîne vide est spécifiée avec -t, toutes les balises seront supprimées.",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "Entrée non valide pour l'indicateur -t ou --tag : {Tag}. Le format valide est '-t mytag=myvalue' ou '--tag mytag=myvalue'.",
+      "placeholders": [
+        {
+          "id": "Tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "message": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "L'agbot '{AgOrg}/{Ag1}' spécifié par -a est introuvable dans Exchange",
+      "placeholders": [
+        {
+          "id": "AgOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agOrg"
+        },
+        {
+          "id": "Ag1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ag1"
         }
       ],
       "fuzzy": true
@@ -12169,7 +12353,7 @@
     {
       "id": "Are you sure you want to remove pattern {Org}/{Pattern} from the Horizon Exchange?",
       "message": "Are you sure you want to remove pattern {Org}/{Pattern} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir retirer le pattern {Org}/{Pattern} d'Horizon Exchange ?",
+      "translation": "Voulez-vous vraiment retirer le pattern {Org}/{Pattern} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "Org",
@@ -12565,7 +12749,7 @@
     {
       "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
       "message": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir retirer le service {Svcorg}/{Service} d'Horizon Exchange ?",
+      "translation": "Voulez-vous vraiment retirer le service {Svcorg}/{Service} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "Svcorg",
@@ -12681,7 +12865,7 @@
     {
       "id": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
       "message": "Are you sure you want to remove service policy for {Svcorg}/{Service} from the Horizon Exchange?",
-      "translation": "Etes-vous sûr de vouloir retirer la règle de noeud pour {Svcorg}/{Service} d'Horizon Exchange ?",
+      "translation": "Voulez-vous vraiment retirer la règle de noeud pour {Svcorg}/{Service} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "Svcorg",
@@ -12875,7 +13059,7 @@
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
       "message": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
-      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc). Etes-vous sûr de vouloir retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?",
+      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc). Voulez-vous vraiment retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "Org",
@@ -13979,7 +14163,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
-      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn policy update' pour mettre à jour la règle du noeud.",
+      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn policy update' pour mettre à jour la règle du noeud. ",
       "fuzzy": true
     },
     {
@@ -14977,6 +15161,62 @@
       "fuzzy": true
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "message": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "La version {VersionRange} du service {Org}/{Url} dont le type de noeud ne correspond pas est ignorée : le type de service '{ServiceType}' ne correspond pas au type de noeud '{NodeType}' dans le noeud Exchange {NId}.",
+      "placeholders": [
+        {
+          "id": "VersionRange",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "versionRange"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "Url",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "url"
+        },
+        {
+          "id": "ServiceType",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "serviceType"
+        },
+        {
+          "id": "NodeType",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "n.GetNodeType()"
+        },
+        {
+          "id": "NId",
+          "string": "%[6]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 6,
+          "expr": "nId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "message": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "{Org}, {Url}, {Arch}, {VersionRange} trouvés",
@@ -15012,6 +15252,22 @@
           "underlyingType": "string",
           "argNum": 4,
           "expr": "versionRange"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "message": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "Impossible de vérifier si le déploiement nécessite des privilèges : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -15108,6 +15364,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "message": "failed to marshal the example node policy file: {Err}",
+      "translation": "Impossible de sérialiser l'exemple de fichier de règles de noeud : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "message": "problem writing the example node policy file: {Err}",
+      "translation": "Problème lors de l'écriture de l'exemple de fichier de règles de noeud : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "Un ou plusieurs services contiennent des privilèges dans la chaîne de déploiement. Assurez-vous que le fichier de règles de noeuds autorise les privilèges. Un exemple de fichier de règles de noeud a été créé : {NodePolicySampleFile}",
+      "placeholders": [
+        {
+          "id": "NodePolicySampleFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodePolicySampleFile"
         }
       ],
       "fuzzy": true
@@ -15919,64 +16223,96 @@
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "message": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog n'a pas pu être ouvert ou n'existe pas : {Err}",
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} n'a pas pu être ouvert ou n'existe pas : {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "message": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog n'a pas pu obtenir les statistiques : {Err}",
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} n'a pas pu obtenir les statistiques : {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "message": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Erreur de lecture depuis /var/log/syslog : {Err}",
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Erreur de lecture depuis {SysLogPath} : {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "message": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Impossible d'obtenir l'état de /var/log/syslog : {Err}",
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossible d'obtenir l'état de {SysLogPath} : {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -17773,13 +18109,13 @@
     {
       "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
       "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "L'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud est complètement réinitialisé.",
+      "translation": "L'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud a été complètement réinitialisé.",
       "fuzzy": true
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
       "message": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "{Err}\nL'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud est complètement réinitialisé.",
+      "translation": "{Err}\nL'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud a été complètement réinitialisé.",
       "placeholders": [
         {
           "id": "Err",

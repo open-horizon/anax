@@ -355,8 +355,8 @@
       "translation": "在 Horizon Exchange 中建立組織資源。"
     },
     {
-      "id": "Create this organization.",
-      "translation": "建立這個組織。"
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "建立這個組織，並將它指派給一個 agbot。"
     },
     {
       "id": "Label for new organization.",
@@ -365,6 +365,10 @@
     {
       "id": "Description for new organization.",
       "translation": "新組織的說明。"
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "新組織的標籤。格式為 mytag1=myvalue1。此旗標可以重複使用以指定多個標籤。"
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -379,8 +383,16 @@
       "translation": "增加代理程式活動訊號間隔的秒數。"
     },
     {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "容許此組織具有的節點數目上限。預設值是 0，這表示無限制。"
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "將組織新增至此 agbot，以便它將負責在此組織中部署服務。agbot 使用此組織中的型樣及部署原則，將服務部署至此組織中的節點。如果省略，則在 Exchange 中找到的第一個 agbot 將變得負責此組織。格式為 'agbot_org/agbot_id'。"
+    },
+    {
       "id": "Update the organization resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中更新組織資源。"
+      "translation": "更新 Horizon Exchange 中的組織資源。"
     },
     {
       "id": "Update this organization.",
@@ -388,23 +400,31 @@
     },
     {
       "id": "New label for organization.",
-      "translation": "新建組織的標籤。"
+      "translation": "新的組織標籤。"
     },
     {
       "id": "New description for organization.",
-      "translation": "新建組織的說明。"
+      "translation": "新的組織說明。"
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "新建代理程式活動訊號與 Exchange 之間的秒數下限。"
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "新的組織標籤。格式為 mytag1=myvalue1。此旗標可以重複使用以指定多個標籤。使用 '-t \"\"' 一次，以移除所有標籤。"
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "新建代理程式活動訊號與 Exchange 之間的秒數上限。"
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "代理程式活動訊號與 Exchange 之間的新秒數下限。 預設負整數 -1 表示不對此屬性進行任何變更。"
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "新建增加代理程式活動訊號間隔的秒數值。"
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "代理程式活動訊號與 Exchange 之間的新秒數上限。 預設負整數 -1 表示不對此屬性進行任何變更。"
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "增加代理程式活動訊號間隔的新秒數值。 預設負整數 -1 表示不對此屬性進行任何變更。"
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "容許此組織具有的節點新數目上限。預設負整數 -1 表示無變更。"
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -1128,7 +1148,7 @@
     },
     {
       "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
-      "translation": "用來設定或置換將部署至此節點之服務所需的使用者輸入變數的 JSON 檔案。請參閱 {Sampledir}/user_input.json。指定 -f- 以從 stdin 中讀取。"
+      "translation": "用來設定或置換將部署至此節點之服務所需的使用者輸入變數的 JSON 檔案。 請參閱 {Sampledir}/user_input.json。 指定 -f- 以從 stdin 中讀取。"
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.",
@@ -3031,10 +3051,6 @@
       "translation": "建立 {HORIZONGITIGNOREFILE} 以進行原始碼管理時發生錯誤。 {Err}"
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "無法解除配置 {UserInputFilePath} 檔案，錯誤為：{Err}"
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "已將使用者輸入屬性 {GlobalSet} 轉換為 API 屬性：{Attr}"
     },
@@ -3055,8 +3071,8 @@
       "translation": "{USERINPUTFILE} 發生錯誤：{Err}"
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}：索引 {Ix} 處的服務陣列元素為 {MicroWork}：{Err}"
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}：索引 {Ix} 處的服務陣列元素為 {AbstractUserInput} {Err}"
     },
     {
       "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
@@ -3123,6 +3139,10 @@
       "translation": "無法將 {FileName} 的 JSON 物件寫入檔案 {FilePath}，錯誤為：{Err}"
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "無法將使用者輸入的 JSON 物件寫入至檔案 {FilePath}，錯誤為：{Err}"
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "必須設定環境變數 {DEVTOOLHZNORG} 或在 --user-pw 旗標上將使用者指定為 'org/user'"
     },
@@ -3177,6 +3197,14 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "translation": "'{ProjectType} {Cmd}' 無法建立儲存器工作者：{Cerr}"
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "translation": "無法移除 UDS Socket 檔案：{Err}"
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "無法移除 FSS 鑑別認證資料夾，錯誤為：{Err}"
     },
     {
       "id": "unable to list containers, {Err}",
@@ -3596,7 +3624,7 @@
     },
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
-      "translation": "警告：這個指令已淘汰。 將繼續支援它，直到下一個主要版本為止。 請使用 'hzn exchange node addpolicy'，以更新節點原則。"
+      "translation": "警告：這個指令已淘汰。 發行下一個主要版本之前，系統會繼續支援此指令。請使用 'hzn exchange node addpolicy'，以更新節點原則。"
     },
     {
       "id": "Node policy not found for node {NodeOrg}/{Node}",
@@ -3707,24 +3735,32 @@
       "translation": "{Negatives}、{N}"
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "{Negatives} 的輸入無效。 僅容許正整數。"
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "{Negatives} 的輸入無效。 不容許負整數。"
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "--heartbeatmin 的值必須小於 --heartbeatmax 的值。"
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "--heartbeatmin 的值必須小於或等於 --heartbeatmax 的值。"
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "--max-nodes 的輸入無效。不容許負整數。"
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "組織 {TheOrg} 已順利新增至 Exchange。"
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "找不到組織 {TheOrg}。"
+      "id": "No agbot found in the Exchange.",
+      "translation": "在 Exchange 中找不到 agbot。"
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin、--heartbeatmax 及 --heartbeatadjust 必須全部為非零，才能進行更新。"
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "Agbot {Agbot} 負責在組織 {TheOrg} 中部署服務"
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "--max-nodes 的輸入無效。僅容許 -1、0 及正整數。"
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3735,8 +3771,32 @@
       "translation": "警告：這樣做還會刪除此組織擁有的所有 Exchange 資源（節點、服務、型樣等）。 確定要從 Horizon Exchange 中移除使用者 {TheOrg} 嗎？"
     },
     {
+      "id": "org {TheOrg} not found.",
+      "translation": "找不到組織 {TheOrg}。"
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "translation": "已順利移除組織 {TheOrg}。"
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "{JoinnegFlags_} 的輸入無效。僅容許 -1、0 及正整數。"
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "活動訊號 minInterval ({Min}) 的值必須小於或等於活動訊號 maxInterval ({Max}) 的值。"
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "使用 -t 指定空字串，將移除所有標籤。"
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "-t 或 --tag 標籤的輸入無效：{Tag}。有效的格式為 '-t mytag=myvalue' 或 '--tag mytag=myvalue'。"
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "在 Exchange 中找不到 -a 指定的 Agbot '{AgOrg}/{Ag1}'"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -4256,7 +4316,7 @@
     },
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
-      "translation": "警告：這個指令已淘汰。 將繼續支援它，直到下一個主要版本為止。 請使用 'hzn policy update'，以更新節點原則。"
+      "translation": "警告：這個指令已淘汰。 發行下一個主要版本之前，系統會繼續支援此指令。 請使用 'hzn policy update'，以更新節點原則。"
     },
     {
       "id": "Horizon node policy updated.",
@@ -4276,7 +4336,7 @@
     },
     {
       "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
-      "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。{Err}"
+      "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。 {Err}"
     },
     {
       "id": "Incorrect node policy format in file {JsonFilePath}: {Err}",
@@ -4412,7 +4472,7 @@
     },
     {
       "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
-      "translation": "附註：未指定輸入檔。僅當沒有任何服務需要設定變數時，此選項才有效。"
+      "translation": "附註：未指定輸入檔。 僅當沒有任何服務需要設定變數時，此選項才有效。"
     },
     {
       "id": "However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.",
@@ -4531,8 +4591,16 @@
       "translation": "在相符的 Exchange 中找不到服務：組織={Org}，specRef={Url}，版本範圍={VersionRanges}，架構={Arch}"
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "正在忽略服務 {Org}/{Url} 的版本 {VersionRange}，節點類型不符：服務類型 '{ServiceType}' 不符合 Exchange 節點 {NId} 的節點類型 '{NodeType}'。"
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "找到：{Org}、{Url}、{Arch}、{VersionRange}"
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "無法檢查部署是否需要特許：{Err}"
     },
     {
       "id": "did not find pattern '{PatKey}' as expected",
@@ -4553,6 +4621,18 @@
     {
       "id": "Wrote {InputFile}",
       "translation": "已寫入 {InputFile}"
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "translation": "無法配置範例節點原則檔案：{Err}"
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "translation": "寫入範例節點原則檔案時發生問題：{Err}"
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "一個以上服務的部署字串中包含特許。請確保您的節點原則檔案容許特許。已建立範例節點原則檔案：{NodePolicySampleFile}"
     },
     {
       "id": "Status of the services you are watching:",
@@ -4747,20 +4827,20 @@
       "translation": "等待指令時發生錯誤：{Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog 無法開啟或不存在：{Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 無法開啟或不存在：{Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog 無法取得統計資料：{Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 無法取得統計資料：{Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "從 /var/log/syslog 中讀取時發生錯誤：{Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "從 {SysLogPath} 中讀取時發生錯誤：{Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "無法指定 /var/log/syslog：{Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "無法陳述 {SysLogPath}：{Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
@@ -5240,11 +5320,11 @@
     },
     {
       "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "已順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。"
+      "translation": "未順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。"
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "{Err}\n已順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。"
+      "translation": "{Err}\n未順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。"
     },
     {
       "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
@@ -5444,11 +5524,11 @@
     },
     {
       "id": "Error getting new user input format. {Err1}",
-      "translation": "取得新的使用者輸入格式時發生錯誤。{Err1}"
+      "translation": "取得新的使用者輸入格式時發生錯誤。 {Err1}"
     },
     {
       "id": "Failed to create json object for user input. {Err1}",
-      "translation": "無法建立使用者輸入的 json 物件。{Err1}"
+      "translation": "無法建立使用者輸入的 json 物件。 {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",

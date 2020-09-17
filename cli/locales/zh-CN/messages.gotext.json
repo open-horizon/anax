@@ -1397,9 +1397,9 @@
       "fuzzy": true
     },
     {
-      "id": "Create this organization.",
-      "message": "Create this organization.",
-      "translation": "创建此组织。",
+      "id": "Create this organization and assign it to an agbot.",
+      "message": "Create this organization and assign it to an agbot.",
+      "translation": "创建此组织并将其分配给 agbot。",
       "fuzzy": true
     },
     {
@@ -1415,6 +1415,12 @@
       "fuzzy": true
     },
     {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "新组织的标记。格式为 mytag1=myvalue1。此标志可以重复以指定多个标记。",
+      "fuzzy": true
+    },
+    {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
       "message": "The minimum number of seconds between agent heartbeats to the Exchange.",
       "translation": "传送到 Exchange 的代理程序脉动信号之间的最小秒数。",
@@ -1423,13 +1429,25 @@
     {
       "id": "The maximum number of seconds between agent heartbeats to the Exchange. During periods of inactivity, the agent will increase the interval between heartbeats by increments of --heartbeatadjust.",
       "message": "The maximum number of seconds between agent heartbeats to the Exchange. During periods of inactivity, the agent will increase the interval between heartbeats by increments of --heartbeatadjust.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间的最大秒数。 在不活动期间，代理程序将随 --heartbeatadjust 增量来增加脉动信号之间的时间间隔。",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间的最大秒数。 在不活动期间，代理程序将按 --heartbeatadjust 增量来增加脉动信号之间的时间间隔。",
       "fuzzy": true
     },
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "message": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "增加代理程序脉动信号时间间隔的秒数。",
+      "fuzzy": true
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "允许此组织拥有的最大节点数。缺省值为 0，这表示无限制。",
+      "fuzzy": true
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "message": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "向此 agbot 添加组织，从而使其负责在此组织中部署服务。Agbot 将使用此组织中的模式和部署策略向此组织中的节点部署服务。如果省略，那么在 Exchange 中找到的第一个 agbot 将变为负责此组织。格式为“agbot_org/agbot_id”。",
       "fuzzy": true
     },
     {
@@ -1457,21 +1475,33 @@
       "fuzzy": true
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "message": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最小秒数。",
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "组织的新标记。格式为 mytag1=myvalue1。此标志可以重复以指定多个标记。使用“-t \"\"”一次以移除所有标记。",
       "fuzzy": true
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "message": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最大秒数。",
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最小秒数。 缺省负整数 -1 意味着此属性无更改。",
       "fuzzy": true
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "message": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "增加代理程序脉动信号时间间隔的秒数的新值。",
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "传送到 Exchange 的代理程序脉动信号之间新的最大秒数。 缺省负整数 -1 意味着此属性无更改。",
+      "fuzzy": true
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "增加代理程序脉动信号时间间隔的秒数的新值。 缺省负整数 -1 意味着此属性无更改。",
+      "fuzzy": true
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "允许此组织拥有的新的最大节点数。缺省负整数 -1 意味着无更改。",
       "fuzzy": true
     },
     {
@@ -1765,7 +1795,7 @@
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn exchange node addpolicy' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn exchange node addpolicy' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
-      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn exchange node addpolicy”来更新节点策略。 此命令用于更新节点策略特性或约束，但不能更新两者。",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn exchange node addpolicy”来更新节点策略。 此命令用于更新节点策略属性或约束，但不能同时更新两者。",
       "fuzzy": true
     },
     {
@@ -1777,7 +1807,7 @@
     {
       "id": "The path of a JSON file containing the new constraints or properties (not both) for the node policy in the Horizon Exchange. Specify -f- to read from stdin.",
       "message": "The path of a JSON file containing the new constraints or properties (not both) for the node policy in the Horizon Exchange. Specify -f- to read from stdin.",
-      "translation": "包含 Horizon Exchange 中节点策略的新约束或特性（非两者）的 JSON 文件的路径。 指定 -f- 可从 stdin 读取。",
+      "translation": "包含 Horizon Exchange 中节点策略的新约束或属性（非两者都包含）的 JSON 文件的路径。 指定 -f- 可从 stdin 读取。",
       "fuzzy": true
     },
     {
@@ -2585,7 +2615,7 @@
     {
       "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
       "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
-      "translation": "用于设置或覆盖将部署到此节点的服务所需的用户输入变量的 JSON 文件。请参阅 {Sampledir}/user_input.json。指定 -f- 可从 stdin 读取。",
+      "translation": "用于设置或覆盖将部署到此节点的服务所需的用户输入变量的 JSON 文件。 请参阅 {Sampledir}/user_input.json。 指定 -f- 可从 stdin 读取。",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -2613,7 +2643,7 @@
     {
       "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
       "message": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "translation": "指定一个 JSON 文件，用来设置或覆盖此节点的节点策略，该策略将用于基于策略的协议协商。",
+      "translation": "用于设置或覆盖此节点的节点策略的 JSON 文件，用于基于策略的协议协商。",
       "fuzzy": true
     },
     {
@@ -2787,7 +2817,7 @@
     {
       "id": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
       "message": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged.",
-      "translation": "创建或替换节点的策略。 此命令无法修改或删除节点的内置特性，openhorizon.allowPrivileged 除外。",
+      "translation": "创建或替换节点的策略。 此命令无法修改或删除节点的内置属性，openhorizon.allowPrivileged 除外。",
       "fuzzy": true
     },
     {
@@ -2799,7 +2829,7 @@
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn policy update' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
       "message": "(DEPRECATED) This command is deprecated. Please use 'hzn policy update' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
-      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn policy update”来更新节点策略。 此命令用于更新节点策略特性或约束，但不能更新两者。",
+      "translation": "（不推荐）不推荐使用此命令。 请使用“hzn policy update”来更新节点策略。 此命令用于更新节点策略属性或约束，但不能同时更新两者。",
       "fuzzy": true
     },
     {
@@ -8555,30 +8585,6 @@
       "fuzzy": true
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "message": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "无法对 {UserInputFilePath} 文件进行反序列化，错误：{Err}",
-      "placeholders": [
-        {
-          "id": "UserInputFilePath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "userInputFilePath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "message": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "已将用户输入属性 {GlobalSet} 转换为 API 属性 {Attr}",
@@ -8699,9 +8705,9 @@
       "fuzzy": true
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}：下标为 {Ix} 的服务数组元素是 {MicroWork} {Err}",
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}：下标为 {Ix} 的服务数组元素是 {AbstractUserInput} {Err}",
       "placeholders": [
         {
           "id": "OriginalUserInputFilePath",
@@ -8720,10 +8726,10 @@
           "expr": "ix"
         },
         {
-          "id": "MicroWork",
+          "id": "AbstractUserInput",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/common.MicroWork",
-          "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
+          "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9095,6 +9101,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "message": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "无法将用户输入的 JSON 对象写入 {FilePath} 文件，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "message": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "必须设置环境变量 {DEVTOOLHZNORG} 或者在 --user-pw 标志上将用户指定为 'org/user'",
@@ -9410,6 +9440,38 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 3,
           "expr": "cerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "message": "Failed to remove the UDS socket file: {Err}",
+      "translation": "未能移除 UDS 套接字文件：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "未能移除 FSS 认证凭证文件夹，错误：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -11283,7 +11345,7 @@
     {
       "id": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
       "message": "Failed to find valid attribute to update in input {Attribute}. Attributes are constraints and properties.",
-      "translation": "在输入 {Attribute} 中找不到要更新的有效属性。 属性是约束和特性。",
+      "translation": "在输入 {Attribute} 中找不到要更新的有效特性。 特性是约束和属性。",
       "placeholders": [
         {
           "id": "Attribute",
@@ -11615,9 +11677,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "message": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "{Negatives} 的输入无效。 只允许正整数。",
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "{Negatives} 的输入无效。 不允许负整数。",
       "placeholders": [
         {
           "id": "Negatives",
@@ -11631,9 +11693,15 @@
       "fuzzy": true
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "message": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "--heartbeatmin 的值必须小于 --heartbeatmax 的值。",
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "message": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "--heartbeatmin 的值必须小于或等于 --heartbeatmax 的值。",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "--max-nodes 的输入无效。不允许负整数。",
       "fuzzy": true
     },
     {
@@ -11653,25 +11721,39 @@
       "fuzzy": true
     },
     {
-      "id": "org {TheOrg} not found.",
-      "message": "org {TheOrg} not found.",
-      "translation": "找不到组织 {TheOrg}。",
+      "id": "No agbot found in the Exchange.",
+      "message": "No agbot found in the Exchange.",
+      "translation": "在 Exchange 中找不到任何 agbot。",
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "message": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "Agbot {Agbot} 负责在组织 {TheOrg} 中部署服务",
       "placeholders": [
         {
-          "id": "TheOrg",
-          "string": "%[1]s",
+          "id": "Agbot",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
+          "expr": "agbot"
+        },
+        {
+          "id": "TheOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
           "expr": "theOrg"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "message": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin、--heartbeatmax 和 --heartbeatadjust 必须全部非零才能更新。",
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "--max-nodes 的输入无效。只允许 -1、0 和正整数。",
       "fuzzy": true
     },
     {
@@ -11707,6 +11789,22 @@
       "fuzzy": true
     },
     {
+      "id": "org {TheOrg} not found.",
+      "message": "org {TheOrg} not found.",
+      "translation": "找不到组织 {TheOrg}。",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "message": "Organization {TheOrg} is successfully removed.",
       "translation": "组织 {TheOrg} 已成功移除。",
@@ -11718,6 +11816,92 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "{JoinnegFlags_} 的输入无效。只允许 -1、0 和正整数。",
+      "placeholders": [
+        {
+          "id": "JoinnegFlags_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(negFlags, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "message": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "脉动信号 minInterval ({Min}) 的值必须小于或等于脉动信号 maxInterval ({Max}) 的值。",
+      "placeholders": [
+        {
+          "id": "Min",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "min"
+        },
+        {
+          "id": "Max",
+          "string": "%[2]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "max"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "message": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "使用 -t 指定空字符串，将移除所有标记。",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "-t 或 --tag 标志的输入无效：{Tag}。有效格式为“-t mytag=myvalue”或“--tag mytag=myvalue”。",
+      "placeholders": [
+        {
+          "id": "Tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "message": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "无法在 Exchange 中找到 -a 所指定的 Agbot“{AgOrg}/{Ag1}”",
+      "placeholders": [
+        {
+          "id": "AgOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agOrg"
+        },
+        {
+          "id": "Ag1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ag1"
         }
       ],
       "fuzzy": true
@@ -14009,7 +14193,7 @@
     {
       "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
       "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
-      "translation": "无法从文件 {FilePath} 创建 UserInputFile 对象。{Err}",
+      "translation": "无法从文件 {FilePath} 创建 UserInputFile 对象。 {Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -14547,7 +14731,7 @@
     {
       "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
       "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
-      "translation": "注：未指定输入文件。这仅在任何服务都不需要设置变量时才有效。",
+      "translation": "注：未指定输入文件。 这仅在任何服务都不需要设置变量时才有效。",
       "fuzzy": true
     },
     {
@@ -14977,6 +15161,62 @@
       "fuzzy": true
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "message": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "忽略服务 {Org}/{Url} 的版本 {VersionRange} 与节点类型的不一致：服务类型“{ServiceType}”与 Exchange 节点 {NId} 的节点类型“{NodeType}”不一致。",
+      "placeholders": [
+        {
+          "id": "VersionRange",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "versionRange"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "Url",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "url"
+        },
+        {
+          "id": "ServiceType",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "serviceType"
+        },
+        {
+          "id": "NodeType",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "n.GetNodeType()"
+        },
+        {
+          "id": "NId",
+          "string": "%[6]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 6,
+          "expr": "nId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "message": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "找到：{Org}，{Url}，{Arch}，{VersionRange}",
@@ -15012,6 +15252,22 @@
           "underlyingType": "string",
           "argNum": 4,
           "expr": "versionRange"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "message": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "未能检查部署是否需要特权：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -15108,6 +15364,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "message": "failed to marshal the example node policy file: {Err}",
+      "translation": "对示例节点策略文件进行序列化失败：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "message": "problem writing the example node policy file: {Err}",
+      "translation": "写入示例节点策略文件时遇到问题：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "一个或多个服务在部署字符串中包含 privileged。确保节点策略文件允许 privileged。已创建样本节点策略文件：{NodePolicySampleFile}",
+      "placeholders": [
+        {
+          "id": "NodePolicySampleFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodePolicySampleFile"
         }
       ],
       "fuzzy": true
@@ -15919,64 +16223,96 @@
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "message": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog 无法打开或不存在：{Err}",
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 无法打开或不存在：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "message": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog 无法获取统计信息：{Err}",
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 无法获取统计信息：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "message": "Error reading from /var/log/syslog: {Err}",
-      "translation": "读取 /var/log/syslog 出错：{Err}",
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "读取 {SysLogPath} 时出错：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "message": "Unable to state /var/log/syslog: {Err}",
-      "translation": "无法声明 /var/log/syslog：{Err}",
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "无法声明 {SysLogPath}：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -18433,7 +18769,7 @@
     {
       "id": "Error getting new user input format. {Err1}",
       "message": "Error getting new user input format. {Err1}",
-      "translation": "获取新用户输入格式时出错。{Err1}",
+      "translation": "获取新用户输入格式时出错。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -18449,7 +18785,7 @@
     {
       "id": "Failed to create json object for user input. {Err1}",
       "message": "Failed to create json object for user input. {Err1}",
-      "translation": "未能为用户输入创建 JSON 对象。{Err1}",
+      "translation": "未能为用户输入创建 JSON 对象。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",

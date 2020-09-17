@@ -355,8 +355,8 @@
       "translation": "Crear el recurso de organización en Horizon Exchange."
     },
     {
-      "id": "Create this organization.",
-      "translation": "Crear esta organización."
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "Crear esta organización y asignarla a un agbot."
     },
     {
       "id": "Label for new organization.",
@@ -365,6 +365,10 @@
     {
       "id": "Description for new organization.",
       "translation": "Descripción para nueva organización."
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "Etiqueta para nueva organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas."
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -377,6 +381,14 @@
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "Número de segundos a incrementar el intervalo de pulsaciones del agente."
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "Número máximo de nodos que se le permite tener a esta organización. El valor predeterminado es 0, que significa que no hay límite."
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "Añada la organización a este agbot para que sea responsable de desplegar servicios en esta organización. El agbot desplegará servicios en los nodos de esta organización, utilizando los patrones y las políticas de despliegue de esta organización. Si se omite, el primer agbot que se encuentre en Exchange se convertirá en el responsable de esta organización. El formato es 'org_agbot/id_agbot'."
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
@@ -395,16 +407,24 @@
       "translation": "Nueva descripción para organización."
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "Nuevo número mínimo de segundos entre las pulsaciones de agente en Exchange."
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "Nueva etiqueta para organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas. Utilice '-t \"\"' una vez para eliminar todas las etiquetas."
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "Nuevo número máximo de segundos entre pulsaciones de agente en Exchange."
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nuevo número mínimo de segundos entre las pulsaciones de agente en Exchange. El entero negativo predeterminado -1 significa que no hay cambios en este atributo."
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "Nuevo valor para el número de segundos a incrementar el intervalo de pulsaciones del agente."
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nuevo número máximo de segundos entre pulsaciones de agente en Exchange. El entero negativo predeterminado -1 significa que no hay cambios en este atributo."
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "Nuevo valor para el número de segundos a incrementar el intervalo de pulsaciones del agente. El entero negativo predeterminado -1 significa que no hay cambios en este atributo."
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "Nuevo número máximo de nodos que se le permite tener a esta organización. El entero negativo predeterminado -1 significa que no hay cambios."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -472,7 +492,7 @@
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
-      "translation": "Eliminar un recurso de usuario de Horizon Exchange. Aviso, estro provocará que se supriman todos los recursos de Exchange que sean propiedad de este usuario (nodos, servicios, patrones, etc)."
+      "translation": "Eliminar un recurso de usuario de Horizon Exchange. Aviso, también se suprimirán todos los recursos de Exchange que sean propiedad de este usuario (nodos, servicios, patrones, etc)."
     },
     {
       "id": "The user to remove.",
@@ -1152,7 +1172,7 @@
     },
     {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Esperar a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s."
+      "translation": "Espere a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s."
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -1536,7 +1556,7 @@
     },
     {
       "id": "Unregister and reset this Horizon edge node so that it is ready to be registered again. Warning: this will stop all the Horizon services running on this edge node, and restart the Horizon agent.",
-      "translation": "Anular el registro de este nodo periférico de Horizon y restablecerlo para que esté listo para volver a registrarlo. Aviso: esto detendrá todos los servicios de Horizon que se estén ejecutando en este nodo periférico y reiniciará el agente de Horizon."
+      "translation": "Anular el registro de este nodo periférico de Horizon y restablecerlo para que esté listo para volver a registrarlo. Aviso: se detendrán todos los servicios de Horizon que se estén ejecutando en este nodo periférico y reiniciará el agente de Horizon."
     },
     {
       "id": "Also remove this node resource from the Horizon exchange (because you no longer want to use this node with Horizon).",
@@ -1724,7 +1744,7 @@
     },
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "Gestionar organizaciones servidoras de agbot en memoria caché, patrones y políticas de despliegue."
+      "translation": "Gestionar organizaciones, patrones y políticas de despliegue que dan servicio aagbot y que están en la memoria caché."
     },
     {
       "id": "List served pattern orgs and deployment policy orgs.",
@@ -1732,15 +1752,15 @@
     },
     {
       "id": "Display served pattern orgs and deployment policy orgs.",
-      "translation": "Visualizar organizaciones de patrones servidos y organizaciones de política de despliegue."
+      "translation": "Visualizar organizaciones de patrones y organizaciones de política de despliegue servidos."
     },
     {
       "id": "List patterns cached in the agbot.",
-      "translation": "Listar patrones en la memoria caché del agbot."
+      "translation": "Listar patrones que están en la memoria caché del agbot."
     },
     {
       "id": "Display served patterns cached in the agbot.",
-      "translation": "Visualizar patrones en la memoria caché del agbot."
+      "translation": "Visualizar patrones servidos que están la memoria caché del agbot."
     },
     {
       "id": "Display patterns under this org.",
@@ -1756,11 +1776,11 @@
     },
     {
       "id": "List served deployment policies cached in the agbot.",
-      "translation": "Listar políticas de despliegue servidas en la memoria caché del agbot."
+      "translation": "Listar políticas de despliegue servidas que están en la memoria caché del agbot."
     },
     {
       "id": "Display served deployment policies cached in the agbot.",
-      "translation": "Visualizar políticas de despliegue servidas en la memoria caché del agbot."
+      "translation": "Visualizar políticas de despliegue servidas que están en la memoria caché del agbot."
     },
     {
       "id": "Display policies under this org.",
@@ -2000,15 +2020,15 @@
     },
     {
       "id": "Automatically create a node policy that will result in the specified example edge service (for example 'helloworld') being deployed to the edge device associated with this voucher. It is mutually exclusive with --policy and -p.",
-      "translation": "Crear automáticamente una política de nodo que hará que se despliegue el servicio periférico de ejemplo especificado (por ejemplo 'helloworld') en el dispositivo periférico asociado con este cupón. Se excluye mutuamente con --policy y -p."
+      "translation": "Crear automáticamente una política de nodo que hará que se despliegue el servicio periférico de ejemplo especificado (por ejemplo 'helloworld') en el dispositivo periférico asociado a este cupón. Se excluye mutuamente con --policy y -p."
     },
     {
       "id": "The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.",
-      "translation": "El archivo de política de nodo a utilizar para el dispositivo periférico asociado con este cupón. Se excluye mutuamente con -e y -p."
+      "translation": "El archivo de política de nodo a utilizar para el dispositivo periférico asociado a este cupón. Se excluye mutuamente con -e y -p."
     },
     {
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
-      "translation": "El nombre de patrón de despliegue a utilizar para el dispositivo periférico asociado con este cupón. Si el patrón es de una organización distinta que el nodo, utilice el formato 'otra_org/patrón'. Se excluye mutuamente con -e y --policy."
+      "translation": "El nombre de patrón de despliegue a utilizar para el dispositivo periférico asociado a este cupón. Si el patrón es de una organización distinta que el nodo, utilice el formato 'otra_org/patrón'. Se excluye mutuamente con -e y --policy."
     },
     {
       "id": "List the imported SDO ownership vouchers.",
@@ -2104,11 +2124,11 @@
     },
     {
       "id": "{Org} does not exist in the deployment policy management cache.",
-      "translation": "{Org} no existe en la memoria caché de gestión de la política de despliegue."
+      "translation": "{Org} no existe en la memoria caché de gestión de políticas de despliegue."
     },
     {
       "id": "{Org}/{Name} does not exist in the deployment policy management cache.",
-      "translation": "{Org}/{Name} no existe en la memoria caché de gestión de la política de despliegue."
+      "translation": "{Org}/{Name} no existe en la memoria caché de gestión de políticas de despliegue."
     },
     {
       "id": "failed to marshal 'policy list' output: {Err}",
@@ -3031,10 +3051,6 @@
       "translation": "Se ha producido un error al crear {HORIZONGITIGNOREFILE} para la gestión de código fuente. {Err}"
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "No se ha podido desordenar el archivo {UserInputFilePath}, error: {Err}"
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "Se ha convertido el atributo de userinput: {GlobalSet} en el atributo de API: {Attr}"
     },
@@ -3055,8 +3071,8 @@
       "translation": "{USERINPUTFILE} tiene un error: {Err}"
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: el elemento de matriz de servicios en el índice {Ix} es {MicroWork} {Err}"
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}: el elemento de matriz de servicios en el índice {Ix} es {AbstractUserInput} {Err}"
     },
     {
       "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
@@ -3123,6 +3139,10 @@
       "translation": "No se ha podido escribir el objeto json para {FileName} en el archivo {FilePath}, error: {Err}"
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "No se puede escribir el objeto json para la entrada de usuario en el archivo {FilePath}, error: {Err}"
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "Se debe establecer la variable de entorno {DEVTOOLHZNORG} o especificar el usuario como 'org/user' en el distintivo --user-pw"
     },
@@ -3177,6 +3197,14 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "translation": "'{ProjectType} {Cmd}' no ha podido crear el Trabajador de contenedor, {Cerr}"
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "translation": "No se ha podido eliminar el archivo de socket UDS: {Err}"
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "No se ha podido eliminar la carpeta de credenciales de autenticación FSS, error: {Err}"
     },
     {
       "id": "unable to list containers, {Err}",
@@ -3707,24 +3735,32 @@
       "translation": "{Negatives}, {N}"
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "Entrada no válida para {Negatives}. Sólo se permiten enteros positivos."
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "Entrada no válida para {Negatives}. No se permite un entero negativo."
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "El valor de --heartbeatmin debe ser menor que el valor de --heartbeatmax."
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "El valor de --heartbeatmin debe ser inferior o igual al valor de --heartbeatmax."
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "Entrada no válida para --max-nodes. No se permite un entero negativo."
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "La organización {TheOrg} se ha añadido correctamente a Exchange."
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "la organización {TheOrg} no se ha encontrado."
+      "id": "No agbot found in the Exchange.",
+      "translation": "No se ha encontrado ningún agbot en Exchange."
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin, --heartbeatmax y --heartbeatadjust deben ser todos distintos de cero para actualizarse."
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "El agbot {Agbot} es responsable de desplegar servicios en la organización {TheOrg}"
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "Entrada no válida para --max-nodes. Sólo se permiten -1, 0 y enteros positivos."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3732,11 +3768,35 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "translation": "Aviso: esto también suprimirá todos los recursos de Exchange que son propiedad de esta organización (nodos, servicios, patrones, etc). ¿Está seguro de que desea eliminar el usuario {TheOrg} de Horizon Exchange?"
+      "translation": "Aviso: también se suprimirán todos los recursos de Exchange que son propiedad de esta organización (nodos, servicios, patrones, etc). ¿Está seguro de que desea eliminar el usuario {TheOrg} de Horizon Exchange?"
+    },
+    {
+      "id": "org {TheOrg} not found.",
+      "translation": "la organización {TheOrg} no se ha encontrado."
     },
     {
       "id": "Organization {TheOrg} is successfully removed.",
       "translation": "La organización {TheOrg} se ha eliminado satisfactoriamente."
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "Entrada no válida para {JoinnegFlags_}. Sólo se permiten -1, 0 y enteros positivos."
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "El valor de la pulsación minInterval ({Min}) debe ser inferior o igual al valor de la pulsación maxInterval ({Max})."
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "Se ha especificado una serie vacía con -t, se eliminarán todas las etiquetas."
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "Entrada no válida para el distintivo -t o --tag: {Tag}. El formato válido es '-t mietiqueta=mivalor' o '--tag mietiqueta=mivalor'."
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "El agbot '{AgOrg}/{Ag1}' especificado por -a no se puede encontrar en Exchange"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -3816,7 +3876,7 @@
     },
     {
       "id": "Deployment_overrides string in service {I__1}, serviceVersion number {J__1} was not signed with the private key associated with this public key {KeyFilePath}.",
-      "translation": "La serie deployment_overrides del servicio {I__1}, número de serviceVersion {J__1} no se ha firmado con la clave privada asociada con esta clave pública {KeyFilePath}."
+      "translation": "La serie deployment_overrides del servicio {I__1}, número de serviceVersion {J__1} no se ha firmado con la clave privada asociada a esta clave pública {KeyFilePath}."
     },
     {
       "id": "All signatures verified",
@@ -3912,7 +3972,7 @@
     },
     {
       "id": "Deployment string was not signed with the private key associated with this public key {KeyFilePath}.",
-      "translation": "La serie de despliegue no se ha firmado con la clave privada asociada con esta clave pública {KeyFilePath}."
+      "translation": "La serie de despliegue no se ha firmado con la clave privada asociada a esta clave pública {KeyFilePath}."
     },
     {
       "id": "error verifying cluster deployment string with {KeyFilePath}: {Err}",
@@ -3920,7 +3980,7 @@
     },
     {
       "id": "Cluster deployment string was not signed with the private key associated with this public key {KeyFilePath}.",
-      "translation": "La serie de despliegue de clúster no se ha firmado con la clave privada asociada con esta clave pública {KeyFilePath}."
+      "translation": "La serie de despliegue de clúster no se ha firmado con la clave privada asociada a esta clave pública {KeyFilePath}."
     },
     {
       "id": "Are you sure you want to remove service {Svcorg}/{Service} from the Horizon Exchange?",
@@ -4012,7 +4072,7 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
-      "translation": "Aviso: esto también suprimirá todos los recursos de Exchange que son propiedad de este usuario (nodos, servicios, patrones, etc). ¿Está seguro de que desea eliminar el usuario {Org}/{User} de Horizon Exchange?"
+      "translation": "Aviso: también se suprimirán todos los recursos de Exchange que son propiedad de este usuario (nodos, servicios, patrones, etc). ¿Está seguro de que desea eliminar el usuario {Org}/{User} de Horizon Exchange?"
     },
     {
       "id": "failed to marshal 'key list' output: {Err}",
@@ -4531,8 +4591,16 @@
       "translation": "no se han encontrado servicios coincidentes en Exchange: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "Ignorando la versión {VersionRange} del servicio {Org}/{Url} con la no coincidencia de tipo de nodo: el tipo de servicio '{ServiceType}' no coincide con el tipo de nodo '{NodeType}' del nodo de Exchange {NId}."
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "Se ha encontrado: {Org}, {Url}, {Arch}, {VersionRange}"
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "No se ha podido comprobar si el despliegue necesita privilegios: {Err}"
     },
     {
       "id": "did not find pattern '{PatKey}' as expected",
@@ -4553,6 +4621,18 @@
     {
       "id": "Wrote {InputFile}",
       "translation": "Se ha escrito {InputFile}"
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "translation": "No se ha podido ordenar el archivo de política de nodo de ejemplo: {Err}"
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "translation": "Problema al escribir el archivo de política de nodo de ejemplo: {Err}"
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "Uno o varios de los servicios contienen privilegios en la serie de despliegue. Asegúrese de que el archivo de política de nodo permite privilegios. Se ha creado un archivo de política de nodo de ejemplo: {NodePolicySampleFile}"
     },
     {
       "id": "Status of the services you are watching:",
@@ -4747,20 +4827,20 @@
       "translation": "Se ha producido un error al esperar el mandato: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog no se ha podido abrir o no existe: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} no se ha podido abrir o no existe: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog no ha podido obtener estadísticas: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} no ha podido obtener estadísticas: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Se ha producido un error al leer de /var/log/syslog: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Error al leer en {SysLogPath}: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "No se ha podido establecer /var/log/syslog: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "No se puede indicar {SysLogPath}: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
@@ -5304,7 +5384,7 @@
     },
     {
       "id": "Waiting for agent service to restart and checking the node configuration state...",
-      "translation": "Esperando a que el servicio de agente se reinicie y comprobando el estado de configuración de nodo..."
+      "translation": "Esperando a que el servicio de agente se reinicie y comprobando el estado de configuración del nodo..."
     },
     {
       "id": "Node configuration state: {State}",

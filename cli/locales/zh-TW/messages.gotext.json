@@ -1397,9 +1397,9 @@
       "fuzzy": true
     },
     {
-      "id": "Create this organization.",
-      "message": "Create this organization.",
-      "translation": "建立這個組織。",
+      "id": "Create this organization and assign it to an agbot.",
+      "message": "Create this organization and assign it to an agbot.",
+      "translation": "建立這個組織，並將它指派給一個 agbot。",
       "fuzzy": true
     },
     {
@@ -1412,6 +1412,12 @@
       "id": "Description for new organization.",
       "message": "Description for new organization.",
       "translation": "新組織的說明。",
+      "fuzzy": true
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "新組織的標籤。格式為 mytag1=myvalue1。此旗標可以重複使用以指定多個標籤。",
       "fuzzy": true
     },
     {
@@ -1433,9 +1439,21 @@
       "fuzzy": true
     },
     {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "容許此組織具有的節點數目上限。預設值是 0，這表示無限制。",
+      "fuzzy": true
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "message": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "將組織新增至此 agbot，以便它將負責在此組織中部署服務。agbot 使用此組織中的型樣及部署原則，將服務部署至此組織中的節點。如果省略，則在 Exchange 中找到的第一個 agbot 將變得負責此組織。格式為 'agbot_org/agbot_id'。",
+      "fuzzy": true
+    },
+    {
       "id": "Update the organization resource in the Horizon Exchange.",
       "message": "Update the organization resource in the Horizon Exchange.",
-      "translation": "在 Horizon Exchange 中更新組織資源。",
+      "translation": "更新 Horizon Exchange 中的組織資源。",
       "fuzzy": true
     },
     {
@@ -1447,31 +1465,43 @@
     {
       "id": "New label for organization.",
       "message": "New label for organization.",
-      "translation": "新建組織的標籤。",
+      "translation": "新的組織標籤。",
       "fuzzy": true
     },
     {
       "id": "New description for organization.",
       "message": "New description for organization.",
-      "translation": "新建組織的說明。",
+      "translation": "新的組織說明。",
       "fuzzy": true
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "message": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "新建代理程式活動訊號與 Exchange 之間的秒數下限。",
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "新的組織標籤。格式為 mytag1=myvalue1。此旗標可以重複使用以指定多個標籤。使用 '-t \"\"' 一次，以移除所有標籤。",
       "fuzzy": true
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "message": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "新建代理程式活動訊號與 Exchange 之間的秒數上限。",
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "代理程式活動訊號與 Exchange 之間的新秒數下限。 預設負整數 -1 表示不對此屬性進行任何變更。",
       "fuzzy": true
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "message": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "新建增加代理程式活動訊號間隔的秒數值。",
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "代理程式活動訊號與 Exchange 之間的新秒數上限。 預設負整數 -1 表示不對此屬性進行任何變更。",
+      "fuzzy": true
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "增加代理程式活動訊號間隔的新秒數值。 預設負整數 -1 表示不對此屬性進行任何變更。",
+      "fuzzy": true
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "容許此組織具有的節點新數目上限。預設負整數 -1 表示無變更。",
       "fuzzy": true
     },
     {
@@ -2585,7 +2615,7 @@
     {
       "id": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
       "message": "A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See {Sampledir}/user_input.json. Specify -f- to read from stdin.",
-      "translation": "用來設定或置換將部署至此節點之服務所需的使用者輸入變數的 JSON 檔案。請參閱 {Sampledir}/user_input.json。指定 -f- 以從 stdin 中讀取。",
+      "translation": "用來設定或置換將部署至此節點之服務所需的使用者輸入變數的 JSON 檔案。 請參閱 {Sampledir}/user_input.json。 指定 -f- 以從 stdin 中讀取。",
       "placeholders": [
         {
           "id": "Sampledir",
@@ -8555,30 +8585,6 @@
       "fuzzy": true
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "message": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "無法解除配置 {UserInputFilePath} 檔案，錯誤為：{Err}",
-      "placeholders": [
-        {
-          "id": "UserInputFilePath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "userInputFilePath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "message": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "已將使用者輸入屬性 {GlobalSet} 轉換為 API 屬性：{Attr}",
@@ -8699,9 +8705,9 @@
       "fuzzy": true
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}：索引 {Ix} 處的服務陣列元素為 {MicroWork}：{Err}",
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "message": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}：索引 {Ix} 處的服務陣列元素為 {AbstractUserInput} {Err}",
       "placeholders": [
         {
           "id": "OriginalUserInputFilePath",
@@ -8720,10 +8726,10 @@
           "expr": "ix"
         },
         {
-          "id": "MicroWork",
+          "id": "AbstractUserInput",
           "string": "%[3]v",
-          "type": "github.com/open-horizon/anax/common.MicroWork",
-          "underlyingType": "struct{Org string \"json:\\\"org\\\"\"; Url string \"json:\\\"url\\\"\"; VersionRange string \"json:\\\"versionRange,omitempty\\\"\"; Variables map[string]interface{} \"json:\\\"variables\\\"\"}",
+          "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9095,6 +9101,30 @@
       "fuzzy": true
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "message": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "無法將使用者輸入的 JSON 物件寫入至檔案 {FilePath}，錯誤為：{Err}",
+      "placeholders": [
+        {
+          "id": "FilePath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "filePath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "message": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "必須設定環境變數 {DEVTOOLHZNORG} 或在 --user-pw 旗標上將使用者指定為 'org/user'",
@@ -9410,6 +9440,38 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 3,
           "expr": "cerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "message": "Failed to remove the UDS socket file: {Err}",
+      "translation": "無法移除 UDS Socket 檔案：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "無法移除 FSS 鑑別認證資料夾，錯誤為：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -11141,7 +11203,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
-      "translation": "警告：這個指令已淘汰。 將繼續支援它，直到下一個主要版本為止。 請使用 'hzn exchange node addpolicy'，以更新節點原則。",
+      "translation": "警告：這個指令已淘汰。 發行下一個主要版本之前，系統會繼續支援此指令。請使用 'hzn exchange node addpolicy'，以更新節點原則。",
       "fuzzy": true
     },
     {
@@ -11615,9 +11677,9 @@
       "fuzzy": true
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "message": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "{Negatives} 的輸入無效。 僅容許正整數。",
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "{Negatives} 的輸入無效。 不容許負整數。",
       "placeholders": [
         {
           "id": "Negatives",
@@ -11631,9 +11693,15 @@
       "fuzzy": true
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "message": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "--heartbeatmin 的值必須小於 --heartbeatmax 的值。",
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "message": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "--heartbeatmin 的值必須小於或等於 --heartbeatmax 的值。",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "--max-nodes 的輸入無效。不容許負整數。",
       "fuzzy": true
     },
     {
@@ -11653,25 +11721,39 @@
       "fuzzy": true
     },
     {
-      "id": "org {TheOrg} not found.",
-      "message": "org {TheOrg} not found.",
-      "translation": "找不到組織 {TheOrg}。",
+      "id": "No agbot found in the Exchange.",
+      "message": "No agbot found in the Exchange.",
+      "translation": "在 Exchange 中找不到 agbot。",
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "message": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "Agbot {Agbot} 負責在組織 {TheOrg} 中部署服務",
       "placeholders": [
         {
-          "id": "TheOrg",
-          "string": "%[1]s",
+          "id": "Agbot",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
+          "expr": "agbot"
+        },
+        {
+          "id": "TheOrg",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
           "expr": "theOrg"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "message": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin、--heartbeatmax 及 --heartbeatadjust 必須全部為非零，才能進行更新。",
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "--max-nodes 的輸入無效。僅容許 -1、0 及正整數。",
       "fuzzy": true
     },
     {
@@ -11707,6 +11789,22 @@
       "fuzzy": true
     },
     {
+      "id": "org {TheOrg} not found.",
+      "message": "org {TheOrg} not found.",
+      "translation": "找不到組織 {TheOrg}。",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "message": "Organization {TheOrg} is successfully removed.",
       "translation": "已順利移除組織 {TheOrg}。",
@@ -11718,6 +11816,92 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "{JoinnegFlags_} 的輸入無效。僅容許 -1、0 及正整數。",
+      "placeholders": [
+        {
+          "id": "JoinnegFlags_",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "strings.Join(negFlags, \",\")"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "message": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "活動訊號 minInterval ({Min}) 的值必須小於或等於活動訊號 maxInterval ({Max}) 的值。",
+      "placeholders": [
+        {
+          "id": "Min",
+          "string": "%[1]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 1,
+          "expr": "min"
+        },
+        {
+          "id": "Max",
+          "string": "%[2]v",
+          "type": "int",
+          "underlyingType": "int",
+          "argNum": 2,
+          "expr": "max"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "message": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "使用 -t 指定空字串，將移除所有標籤。",
+      "fuzzy": true
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "-t 或 --tag 標籤的輸入無效：{Tag}。有效的格式為 '-t mytag=myvalue' 或 '--tag mytag=myvalue'。",
+      "placeholders": [
+        {
+          "id": "Tag",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "tag"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "message": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "在 Exchange 中找不到 -a 指定的 Agbot '{AgOrg}/{Ag1}'",
+      "placeholders": [
+        {
+          "id": "AgOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agOrg"
+        },
+        {
+          "id": "Ag1",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ag1"
         }
       ],
       "fuzzy": true
@@ -13979,7 +14163,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
-      "translation": "警告：這個指令已淘汰。 將繼續支援它，直到下一個主要版本為止。 請使用 'hzn policy update'，以更新節點原則。",
+      "translation": "警告：這個指令已淘汰。 發行下一個主要版本之前，系統會繼續支援此指令。 請使用 'hzn policy update'，以更新節點原則。",
       "fuzzy": true
     },
     {
@@ -14009,7 +14193,7 @@
     {
       "id": "Unable to create UserInputFile object from file {FilePath}. {Err}",
       "message": "Unable to create UserInputFile object from file {FilePath}. {Err}",
-      "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。{Err}",
+      "translation": "無法從檔案 {FilePath} 建立 UserInputFile 物件。 {Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -14547,7 +14731,7 @@
     {
       "id": "Note: no input file was specified. This is only valid if none of the services need variables set.",
       "message": "Note: no input file was specified. This is only valid if none of the services need variables set.",
-      "translation": "附註：未指定輸入檔。僅當沒有任何服務需要設定變數時，此選項才有效。",
+      "translation": "附註：未指定輸入檔。 僅當沒有任何服務需要設定變數時，此選項才有效。",
       "fuzzy": true
     },
     {
@@ -14977,6 +15161,62 @@
       "fuzzy": true
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "message": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "正在忽略服務 {Org}/{Url} 的版本 {VersionRange}，節點類型不符：服務類型 '{ServiceType}' 不符合 Exchange 節點 {NId} 的節點類型 '{NodeType}'。",
+      "placeholders": [
+        {
+          "id": "VersionRange",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "versionRange"
+        },
+        {
+          "id": "Org",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "org"
+        },
+        {
+          "id": "Url",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "url"
+        },
+        {
+          "id": "ServiceType",
+          "string": "%[4]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 4,
+          "expr": "serviceType"
+        },
+        {
+          "id": "NodeType",
+          "string": "%[5]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 5,
+          "expr": "n.GetNodeType()"
+        },
+        {
+          "id": "NId",
+          "string": "%[6]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 6,
+          "expr": "nId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "message": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "找到：{Org}、{Url}、{Arch}、{VersionRange}",
@@ -15012,6 +15252,22 @@
           "underlyingType": "string",
           "argNum": 4,
           "expr": "versionRange"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "message": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "無法檢查部署是否需要特許：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -15108,6 +15364,54 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "inputFile"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "message": "failed to marshal the example node policy file: {Err}",
+      "translation": "無法配置範例節點原則檔案：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "message": "problem writing the example node policy file: {Err}",
+      "translation": "寫入範例節點原則檔案時發生問題：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "一個以上服務的部署字串中包含特許。請確保您的節點原則檔案容許特許。已建立範例節點原則檔案：{NodePolicySampleFile}",
+      "placeholders": [
+        {
+          "id": "NodePolicySampleFile",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodePolicySampleFile"
         }
       ],
       "fuzzy": true
@@ -15919,64 +16223,96 @@
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "message": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "/var/log/syslog 無法開啟或不存在：{Err}",
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 無法開啟或不存在：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "message": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog 無法取得統計資料：{Err}",
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 無法取得統計資料：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "message": "Error reading from /var/log/syslog: {Err}",
-      "translation": "從 /var/log/syslog 中讀取時發生錯誤：{Err}",
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "從 {SysLogPath} 中讀取時發生錯誤：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "message": "Unable to state /var/log/syslog: {Err}",
-      "translation": "無法指定 /var/log/syslog：{Err}",
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "無法陳述 {SysLogPath}：{Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SysLogPath",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -17773,13 +18109,13 @@
     {
       "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
       "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "已順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。",
+      "translation": "未順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。",
       "fuzzy": true
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
       "message": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "{Err}\n已順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。",
+      "translation": "{Err}\n未順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。",
       "placeholders": [
         {
           "id": "Err",
@@ -18433,7 +18769,7 @@
     {
       "id": "Error getting new user input format. {Err1}",
       "message": "Error getting new user input format. {Err1}",
-      "translation": "取得新的使用者輸入格式時發生錯誤。{Err1}",
+      "translation": "取得新的使用者輸入格式時發生錯誤。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -18449,7 +18785,7 @@
     {
       "id": "Failed to create json object for user input. {Err1}",
       "message": "Failed to create json object for user input. {Err1}",
-      "translation": "無法建立使用者輸入的 json 物件。{Err1}",
+      "translation": "無法建立使用者輸入的 json 物件。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",

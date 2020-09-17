@@ -355,8 +355,8 @@
       "translation": "Erstellt die Organisationsressource in Horizon Exchange."
     },
     {
-      "id": "Create this organization.",
-      "translation": "Diese Organisation erstellen"
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "Diese Organisation erstellen und einem Agbot zuordnen."
     },
     {
       "id": "Label for new organization.",
@@ -365,6 +365,10 @@
     {
       "id": "Description for new organization.",
       "translation": "Beschreibung der neuen Organisation."
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "Tag für die neue Organisation. Das Format lautet 'mein_tag1=mein_wert1'. Dieses Flag kann mehrmals angegeben werden, um mehrere Tags anzugeben. "
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -377,6 +381,14 @@
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "Die Anzahl der Sekunden, um die das Heartbeatintervall des Agenten erhöht wird."
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "Die maximale Anzahl an Knoten, über die diese Organisation verfügen kann. Der Standardwert ist 0, was bedeutet, dass keine Begrenzung besteht. "
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "Fügt die Organisation zu diesem Agbot hinzu, sodass der Agbot für das Bereitstellen von Services in der Organisation verantwortlich ist. Der Agbot stellt Services auf Knoten in der Organisation bereit, und verwendet dafür die Muster und Richtlinien der Organisation. Wird diese Angabe übergangen, wird der erste im Exchange gefundene Agbot für diese Organisation verantwortlich. Das Format lautet 'agbot_org/agbot_id'. "
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
@@ -395,16 +407,24 @@
       "translation": "Neue Beschreibung für die Organisation."
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "Neue minimale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange."
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "Neuer Tag für die Organisation. Das Format lautet 'mein_tag1=mein_wert1'. Dieses Flag kann mehrmals angegeben werden, um mehrere Tags anzugeben. Verwenden Sie '-t \"\"' einmalig, um alle Tags zu entfernen. "
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "Neue maximale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. "
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Neue minimale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird. "
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "Neuer Wert für die Anzahl der Sekunden, um die das Heartbeatintervall des Agenten erhöht wird."
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Neue maximale Anzahl Sekunden zwischen Agenten-Heartbeats an den Exchange. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird. "
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "Neuer Wert für die Anzahl der Sekunden, um die das Heartbeatintervall des Agenten erhöht wird. Der Standardwert -1 bedeutet, dass das Attribut nicht geändert wird. "
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "Die neue maximale Anzahl an Knoten, über die diese Organisation verfügen kann. Der Standardwert -1 bedeutet, dass keine Änderung vorgenommen wird. "
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -3031,10 +3051,6 @@
       "translation": "Fehler beim Erstellen von {HORIZONGITIGNOREFILE} für Quellcodeverwaltung. {Err}"
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "Unmarshalling der Datei {UserInputFilePath} nicht möglich; Fehler: {Err}"
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "Umgewandeltes Attribut für Benutzereingabe: {GlobalSet} in API-Attribut: {Attr}"
     },
@@ -3055,8 +3071,8 @@
       "translation": "Für {USERINPUTFILE} ist ein Fehler aufgetreten: {Err}"
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: Array-Element für Services bei Index {Ix} ist {MicroWork}: {Err}"
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}: Array-Element für Services bei Index {Ix} ist {AbstractUserInput}: {Err}"
     },
     {
       "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
@@ -3123,6 +3139,10 @@
       "translation": "Schreiben eines JSON-Objekts für {FileName} in Datei {FilePath} nicht möglich; Fehler: {Err}"
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "Schreiben eines JSON-Objekts für die Benutzereingabe in Datei {FilePath} nicht möglich; Fehler: {Err}"
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "Umgebungsvariable {DEVTOOLHZNORG} muss festgelegt werden oder der Benutzer muss als 'org/user' mithilfe des Flags --user-pw angegeben werden."
     },
@@ -3177,6 +3197,14 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "translation": "Container Worker-Erstellung unter Verwendung von '{ProjectType} {Cmd}' nicht möglich: {Cerr}"
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "translation": "Die UDS-Socket-Datei kann nicht entfernt werden:{Err}"
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "Der Ordner für FSS-Authentifizierungsnachweise kann nicht entfernt werden. Fehler: {Err}"
     },
     {
       "id": "unable to list containers, {Err}",
@@ -3707,24 +3735,32 @@
       "translation": "{Negatives}, {N}"
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "Ungültige Eingabe für {Negatives}. Nur positive ganze Zahlen sind zulässig."
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "Ungültige Eingabe für {Negatives}. Negative Zahlen sind nicht zulässig. "
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "Der Wert für '--heartbeatmin' muss kleiner als der Wert für '--heartbeatmax' sein."
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "Der Wert für '--heartbeatmin' muss kleiner-gleich dem Wert für '--heartbeatmax' sein."
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "Ungültige Eingabe für '--max-nodes'. Negative Zahlen sind nicht zulässig. "
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "Die Organisation {TheOrg} wurde erfolgreich zum Exchange hinzugefügt."
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "Organisation '{TheOrg}' nicht gefunden."
+      "id": "No agbot found in the Exchange.",
+      "translation": "Keine Agbots im Exchange gefunden."
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "Die Werte für '--heartbeatmin', '--heartbeatmax' und '--heartbeatadjust' müssen ungleich null sein, um die Aktualisierung durchzuführen."
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "Der Agbot {Agbot} ist für das Bereitstellen von Services in der Organisation {TheOrg} verantwortlich"
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "Ungültige Eingabe für '--max-nodes'. Nur -1, 0 und positive ganze Zahlen sind zulässig. "
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3735,8 +3771,32 @@
       "translation": "Warnung: Hierdurch werden auch alle Exchange-Ressourcen gelöscht, deren Eigner diese Organisation ist (Knoten, Services, Muster, etc). Soll die Organisation {TheOrg} aus Horizon Exchange entfernt werden?"
     },
     {
+      "id": "org {TheOrg} not found.",
+      "translation": "Organisation '{TheOrg}' nicht gefunden."
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "translation": "Die Organisation {TheOrg} wurde erfolgreich entfernt."
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "Ungültige Eingabe für {JoinnegFlags_}. Nur -1, 0 und positive ganze Zahlen sind zulässig. "
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "Der Wert für 'heartbeat minInterval ({Min})' muss kleiner-gleich dem Wert für 'heartbeat maxInterval ({Max})' sein."
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "Mit dem Flag '-t' wird eine leere Zeichenfolge angegeben. Alle Tags werden entfernt. "
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "Ungültige Eingabe für das Flag -t oder --tag: {Tag}. Das gültige Format lautet '-t mein_tag=mein_wert' oder '--tag mein_tag=mein_wert'. "
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "Der mit dem Flag -a angegebene Agbot '{AgOrg}/{Ag1}' kann im Exchange nicht gefunden werden."
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -4531,8 +4591,16 @@
       "translation": "Keine Services in abgeglichener Exchange-Version gefunden: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "Version {VersionRange} des Service {Org}/{Url} wird wegen einer Abweichung des Knotentyps ignoriert: Der Servicetyp '{ServiceType}' stimmt nicht mit dem Knotentyp '{NodeType}' des Exchange-Knotens {NId} überein."
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "Gefunden: {Org}, {Url}, {Arch}, {VersionRange}"
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "Es konnte nicht geprüft werden, ob für die Bereitstellung privilegierte Informationen erforderlich sind: {Err}"
     },
     {
       "id": "did not find pattern '{PatKey}' as expected",
@@ -4553,6 +4621,18 @@
     {
       "id": "Wrote {InputFile}",
       "translation": "Datei {InputFile} geschrieben"
+    },
+    {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "translation": "Marshalling für die Beispielknotenrichtliniendatei fehlgeschlagen: {Err}"
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "translation": "Fehler beim Schreiben der Beispielknotenrichtliniendatei: {Err}"
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "Mindestens ein Service enthält privilegierte Informationen in der Bereitstellungszeichenfolge. Stellen Sie sicher, dass privilegierte Informationen in der Knotenrichtliniendatei  zulässig sind. Eine Beispielknotenrichtliniendatei wurde erstellt: {NodePolicySampleFile}"
     },
     {
       "id": "Status of the services you are watching:",
@@ -4747,20 +4827,20 @@
       "translation": "Fehler beim Warten auf den Befehl. {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "'/var/log/syslog' konnte nicht geöffnet werden oder ist nicht vorhanden, {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "'{SysLogPath}' konnte nicht geöffnet werden oder ist nicht vorhanden, {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "'/var/log/syslog' konnte keine Statistiken abrufen. {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "'{SysLogPath}' konnte keine Statistiken abrufen. {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Fehler beim Lesen aus '/var/log/syslog'. {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Fehler beim Lesen aus '{SysLogPath}'. {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "'/var/log/syslog' konnte nicht angegeben werden. {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "'{SysLogPath}' konnte nicht angegeben werden. {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",

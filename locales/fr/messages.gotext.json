@@ -1658,7 +1658,7 @@
         "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}"
       ],
       "message": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Echec de la pulsation du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}",
+      "translation": "Echec du signal de présence du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -1690,7 +1690,7 @@
         "Node heartbeat restored for node {Arg_1}/{Arg_2}."
       ],
       "message": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "Restauration de la pulsation du noeud {Arg_1}/{Arg_2}.",
+      "translation": "Restauration du signal de présence du noeud {Arg_1}/{Arg_2}.",
       "placeholders": [
         {
           "id": "Arg_1",

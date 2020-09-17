@@ -340,7 +340,7 @@
     },
     {
       "id": "Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)",
-      "translation": "Exibir o recurso da organização a partir do Horizon Exchange. (normalmente só é possível exibir sua própria organização. se a organização não existir, você obterá um erro de credenciais inválidas.)"
+      "translation": "Exibir o recurso da organização a partir do Horizon Exchange. (Normalmente só é possível exibir sua própria organização. Se a organização não existir, você obterá um erro de credenciais inválidas.)"
     },
     {
       "id": "List this one organization.",
@@ -355,8 +355,8 @@
       "translation": "Criar o recurso da organização no Horizon Exchange."
     },
     {
-      "id": "Create this organization.",
-      "translation": "Criar esta organização."
+      "id": "Create this organization and assign it to an agbot.",
+      "translation": "Crie esta organização e designe-a para um robô de contrato."
     },
     {
       "id": "Label for new organization.",
@@ -365,6 +365,10 @@
     {
       "id": "Description for new organization.",
       "translation": "Descrição da nova organização."
+    },
+    {
+      "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
+      "translation": "Tag da nova organização. O formato é mytag1=myvalue1. Esta sinalização pode ser repetida para especificar várias tags."
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -377,6 +381,14 @@
     {
       "id": "The number of seconds to increment the agent's heartbeat interval.",
       "translation": "O número de segundos para incrementar o intervalo de pulsação do agente."
+    },
+    {
+      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+      "translation": "O número máximo de nós que esta organização pode ter. O padrão é 0, o que significa que não há um limite."
+    },
+    {
+      "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
+      "translation": "Inclua a organização nesse robô de contrato para que ele fique responsável pela implementação de serviços nesta organização. O robô de contrato fará a implementação de serviços usando as políticas de implementação e os padrões da organização. Em caso de omissão, o primeiro robô de contrato encontrado no Exchange será responsável pela organização. O formato é 'agbot_org/agbot_id'."
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
@@ -395,16 +407,24 @@
       "translation": "Nova descrição para a organização."
     },
     {
-      "id": "New minimum number of seconds the between agent heartbeats to the Exchange.",
-      "translation": "Novo número mínimo de segundos entre as pulsações do agente para o Exchange."
+      "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
+      "translation": "Nova tag para a organização. O formato é mytag1=myvalue1. Esta sinalização pode ser repetida para especificar várias tags.Use '-t \"\"' uma vez para remover todas as tags."
     },
     {
-      "id": "New maximum number of seconds between agent heartbeats to the Exchange.",
-      "translation": "Novo número máximo de segundos entre as pulsações do agente para o Exchange."
+      "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Novo número mínimo de segundos entre as pulsações do agente para o Exchange. O número inteiro negativo padrão -1 significa que não há mudança neste atributo."
     },
     {
-      "id": "New value for the number of seconds to increment the agent's heartbeat interval.",
-      "translation": "Novo valor para o número de segundos para incrementar o intervalo de pulsação do agente."
+      "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
+      "translation": "Novo número máximo de segundos entre as pulsações do agente para o Exchange. O número inteiro negativo padrão -1 significa que não há mudança neste atributo."
+    },
+    {
+      "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
+      "translation": "Novo valor para o número de segundos para incrementar o intervalo de pulsação do agente. O número inteiro negativo padrão -1 significa que não há mudança neste atributo."
+    },
+    {
+      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+      "translation": "O novo número máximo de nós que esta organização pode ter. O número inteiro negativo padrão -1 significa que não há mudança."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -1104,7 +1124,7 @@
     },
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format.",
-      "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho dever ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'."
+      "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho devem ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'."
     },
     {
       "id": "The architecture to write the template file for. (Horizon ignores services in patterns whose architecture is different from the target system.) The architecture must be what is returned by 'hzn node list' on the target system.",
@@ -1136,7 +1156,7 @@
     },
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho dever ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'. É mutuamente exclusivo com os argumentos <nodeorg> e <pattern>."
+      "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho devem ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'. É mutuamente exclusivo com os argumentos <nodeorg> e <pattern>."
     },
     {
       "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
@@ -1148,7 +1168,7 @@
     },
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.",
-      "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho dever ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'. Mutuamente exclusivo com -o e -p."
+      "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho devem ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'. Mutuamente exclusivo com -o e -p."
     },
     {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
@@ -3031,10 +3051,6 @@
       "translation": "Erro ao criar {HORIZONGITIGNOREFILE} para o gerenciamento de código de origem. {Err}"
     },
     {
-      "id": "unable to demarshal {UserInputFilePath} file, error: {Err}",
-      "translation": "Não é possível desserializar o arquivo {UserInputFilePath}, erro: {Err}"
-    },
-    {
       "id": "Converted userinput attribute: {GlobalSet} to API attribute: {Attr}",
       "translation": "Atributo de entrada do usuário: {GlobalSet} convertido para o atributo de API: {Attr}"
     },
@@ -3055,8 +3071,8 @@
       "translation": "{USERINPUTFILE} possui um erro: {Err}"
     },
     {
-      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {MicroWork} {Err}",
-      "translation": "{OriginalUserInputFilePath}: o elemento da matriz de serviços no índice {Ix} é {MicroWork} {Err}"
+      "id": "{OriginalUserInputFilePath}: services array element at index {Ix} is {AbstractUserInput} {Err}",
+      "translation": "{OriginalUserInputFilePath}: o elemento da matriz de serviços no índice {Ix} é {AbstractUserInput} {Err}"
     },
     {
       "id": "{OriginalUserInputFilePath}: services array does not contain an element for {URL}. Error: {Err}",
@@ -3123,6 +3139,10 @@
       "translation": "Não é possível gravar o objeto JSON para {FileName} no arquivo {FilePath}, erro: {Err}"
     },
     {
+      "id": "unable to write json object for userinput to file {FilePath}, error: {Err}",
+      "translation": "Não é possível gravar o objeto JSON para a entrada de usuário no arquivo {FilePath}, erro: {Err}"
+    },
+    {
       "id": "Must set environment variable {DEVTOOLHZNORG} or specify the user as 'org/user' on the --user-pw flag",
       "translation": "Deve-se configurar a variável de ambiente {DEVTOOLHZNORG} ou especificar o usuário como 'org/user' na sinalização --user-pw"
     },
@@ -3177,6 +3197,14 @@
     {
       "id": "'{ProjectType} {Cmd}' unable to create Container Worker, {Cerr}",
       "translation": "'{ProjectType} {Cmd}' é incapaz de criar o Trabalhador do contêiner, {Cerr}"
+    },
+    {
+      "id": "Failed to remove the UDS socket file: {Err}",
+      "translation": "Falha ao remover o arquivo de soquete UDS: {Err}"
+    },
+    {
+      "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
+      "translation": "Falha ao remover a pasta de credenciais de Autenticação FSS: {Err}"
     },
     {
       "id": "unable to list containers, {Err}",
@@ -3707,24 +3735,32 @@
       "translation": "{Negatives}, {N}"
     },
     {
-      "id": "Invalid input for {Negatives}. Only positive integers are allowed.",
-      "translation": "Entrada inválida para {Negatives}. Somente números inteiros positivos são permitidos."
+      "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
+      "translation": "Entrada inválida para {Negatives}. Não são permitidos números inteiros negativos."
     },
     {
-      "id": "The value for --heartbeatmin must be less than the value for --heartbeatmax.",
-      "translation": "O valor para --heartbeatmin deve ser menor que o valor para --heartbeatmax."
+      "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
+      "translation": "O valor de --heartbeatmin deve ser menor ou igual ao valor de --heartbeatmax."
+    },
+    {
+      "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
+      "translation": "Entrada inválida para --max-nodes. Não são permitidos números inteiros negativos."
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
       "translation": "A organização {TheOrg} foi incluída com sucesso ao Exchange."
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "organização {TheOrg} não localizada."
+      "id": "No agbot found in the Exchange.",
+      "translation": "Nenhum robô de contrato encontrado no Exchange."
     },
     {
-      "id": "--heartbeatmin, --heartbeatmax, and --heartbeatadjust must all be non-zero in order to update.",
-      "translation": "--heartbeatmin, --heartbeatmax e --heartbeatadjust devem ser todos diferentes de zero para atualizar."
+      "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
+      "translation": "O robô de contrato {Agbot} é responsável pela implementação de serviços na organização {TheOrg}"
+    },
+    {
+      "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
+      "translation": "Entrada inválida para --max-nodes. Somente -1, 0 e números inteiros positivos são permitidos."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3735,8 +3771,32 @@
       "translation": "Aviso: isso também irá excluir todos os recursos do Exchange pertencentes a esta organização (nós, serviços, padrões, etc.). Tem certeza de que deseja remover o usuário {TheOrg} do Horizon Exchange?"
     },
     {
+      "id": "org {TheOrg} not found.",
+      "translation": "organização {TheOrg} não localizada."
+    },
+    {
       "id": "Organization {TheOrg} is successfully removed.",
       "translation": "A organização {TheOrg} foi removida com sucesso."
+    },
+    {
+      "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
+      "translation": "Entrada inválida para {JoinnegFlags_}. Somente -1, 0 e números inteiros positivos são permitidos."
+    },
+    {
+      "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
+      "translation": "O valor para o minInterval ({Min}) de pulsação deve ser menor ou igual ao valor do maxInterval ({Max}) de pulsação."
+    },
+    {
+      "id": "Empty string is specified with -t, all tags will be removed.",
+      "translation": "Sequência de caracteres vazia especificada com -t, todas as tags serão removidas."
+    },
+    {
+      "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
+      "translation": "Entrada inválida para a sinalização -t ou --tag: {Tag}. O formato válido é '-t mytag=myvalue' ou '--tag mytag=myvalue'."
+    },
+    {
+      "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
+      "translation": "O robô de contrato '{AgOrg}/{Ag1}' especificado por -a não pode ser encontrado no Exchange"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -4531,8 +4591,16 @@
       "translation": "não foram localizados serviços do Exchange correspondentes a: org={Org}, specRef={Url}, version range={VersionRanges}, arch={Arch}"
     },
     {
+      "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
+      "translation": "Ignorando a versão {VersionRange} do serviço {Org}/{Url} que contém incompatibilidade de tipo de nó: o tipo de serviço '{ServiceType}' não corresponde ao tipo de nó '{NodeType}' do nó do Exchange {NId}."
+    },
+    {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
       "translation": "Localizados: {Org}, {Url}, {Arch}, {VersionRange}"
+    },
+    {
+      "id": "Failed to check if deployment requires privileged: {Err}",
+      "translation": "Falha ao verificar se a implementação requer privilégios: {Err}"
     },
     {
       "id": "did not find pattern '{PatKey}' as expected",
@@ -4555,6 +4623,18 @@
       "translation": "Gravado {InputFile}"
     },
     {
+      "id": "failed to marshal the example node policy file: {Err}",
+      "translation": "Falha ao serializar o arquivo de políticas de nós de exemplo: {Err}"
+    },
+    {
+      "id": "problem writing the example node policy file: {Err}",
+      "translation": "Problema ao gravar o arquivo de políticas de nó de exemplo: {Err}"
+    },
+    {
+      "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
+      "translation": "Um ou mais serviços contêm privilégios na sequência de caracteres de implementação. Certifique-se de que o arquivo de políticas de nó permite privilégios. Foi criado um arquivo de políticas de nó de amostra: {NodePolicySampleFile}"
+    },
+    {
       "id": "Status of the services you are watching:",
       "translation": "Status dos serviços que você está observando:"
     },
@@ -4568,7 +4648,7 @@
     },
     {
       "id": "Waiting for up to {WaitTimeout} seconds for following services to start:",
-      "translation": "Aguardando {WaitTimeout} segundos para o início dos serviços a seguir:"
+      "translation": "Aguardando até no máximo {WaitTimeout} segundos para o início dos serviços a seguir:"
     },
     {
       "id": "{Org}/{Name}",
@@ -4588,7 +4668,7 @@
     },
     {
       "id": "The following services might need more time to start executing, continuing analysis:",
-      "translation": "Os serviços a seguir podem precisar de mais tempo para iniciar a execução, continuando a análise:"
+      "translation": "Os serviços a seguir podem precisar de mais tempo para iniciar ou continuar a execução da análise:"
     },
     {
       "id": "The following services are not deployed to the node, continuing analysis:",
@@ -4747,20 +4827,20 @@
       "translation": "Erro ao aguardar o comando: {Err}"
     },
     {
-      "id": "/var/log/syslog could not be opened or does not exist: {Err}",
-      "translation": "Não foi possível abrir /var/log/syslog ou ele não existe: {Err}"
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} não pôde ser aberto ou não existe: {Err}"
     },
     {
-      "id": "/var/log/syslog could not get stats: {Err}",
-      "translation": "/var/log/syslog não pôde obter o stats: {Err}"
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} não pôde obter estatísticas: {Err}"
     },
     {
-      "id": "Error reading from /var/log/syslog: {Err}",
-      "translation": "Erro ao ler em /var/log/syslog: {Err}"
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Erro ao fazer a leitura em {SysLogPath}: {Err}"
     },
     {
-      "id": "Unable to state /var/log/syslog: {Err}",
-      "translation": "Não foi possível declarar /var/log/syslog: {Err}"
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Não é possível declarar {SysLogPath}: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
@@ -5240,11 +5320,11 @@
     },
     {
       "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "O nó não foi cancelado com sucesso, use 'hzn unregister -D' para garantir que o nó seja completamente reconfigurado."
+      "translation": "O registro do nó não foi cancelado com sucesso. Use 'hzn unregister -D' para garantir que o nó seja completamente reconfigurado."
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "{Err}\nO nó não foi cancelado com sucesso, use 'hzn unregister -D' para garantir que o nó seja completamente reconfigurado."
+      "translation": "{Err}\nO registro do nó não foi cancelado com sucesso. Use 'hzn unregister -D' para garantir que o nó seja completamente reconfigurado."
     },
     {
       "id": "Horizon node unregistered. You may now run 'hzn register ...' again, if desired.",
