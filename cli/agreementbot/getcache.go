@@ -26,7 +26,7 @@ func GetServedOrgs() {
 	if err != nil {
 		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn node list' output: %v", err))
 	}
-	msgPrinter.Printf("%s\n", jsonBytes)
+	fmt.Printf("%s\n", jsonBytes)
 
 }
 
@@ -69,7 +69,7 @@ func GetPatterns(org string, name string, long bool) {
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 			}
-			msgPrinter.Printf("%s\n", jsonBytes)
+			fmt.Printf("%s\n", jsonBytes)
 
 		} else if name == "" {
 			// Get the agbot servedorgs info
@@ -84,7 +84,7 @@ func GetPatterns(org string, name string, long bool) {
 				if err != nil {
 					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 				}
-				msgPrinter.Printf("%s\n", jsonBytes)
+				fmt.Printf("%s\n", jsonBytes)
 			}
 		}
 
@@ -101,7 +101,7 @@ func GetPatterns(org string, name string, long bool) {
 				if err != nil {
 					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 				}
-				msgPrinter.Printf("%s\n", jsonBytes)
+				fmt.Printf("%s\n", jsonBytes)
 			}
 		} else {
 
@@ -115,7 +115,7 @@ func GetPatterns(org string, name string, long bool) {
 				if err != nil {
 					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 				}
-				msgPrinter.Printf("%s\n", jsonBytes)
+				fmt.Printf("%s\n", jsonBytes)
 			}
 		}
 	} else {
@@ -128,7 +128,7 @@ func GetPatterns(org string, name string, long bool) {
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 		}
-		msgPrinter.Printf("%s\n", jsonBytes)
+		fmt.Printf("%s\n", jsonBytes)
 	}
 
 }
@@ -172,7 +172,7 @@ func GetPolicies(org string, name string, long bool) {
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 			}
-			msgPrinter.Printf("%s\n", jsonBytes)
+			fmt.Printf("%s\n", jsonBytes)
 
 		} else if name == "" {
 			// Get the agbot servedorgs info
@@ -187,7 +187,7 @@ func GetPolicies(org string, name string, long bool) {
 				if err != nil {
 					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 				}
-				msgPrinter.Printf("%s\n", jsonBytes)
+				fmt.Printf("%s\n", jsonBytes)
 			}
 		}
 
@@ -204,7 +204,7 @@ func GetPolicies(org string, name string, long bool) {
 				if err != nil {
 					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 				}
-				msgPrinter.Printf("%s\n", jsonBytes)
+				fmt.Printf("%s\n", jsonBytes)
 			}
 		} else {
 			polInfo := []string{} //the structure we will output
@@ -217,7 +217,7 @@ func GetPolicies(org string, name string, long bool) {
 				if err != nil {
 					cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 				}
-				msgPrinter.Printf("%s\n", jsonBytes)
+				fmt.Printf("%s\n", jsonBytes)
 			}
 		}
 	} else {
@@ -230,6 +230,6 @@ func GetPolicies(org string, name string, long bool) {
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal output: %v", err))
 		}
-		msgPrinter.Printf("%s\n", jsonBytes)
+		fmt.Printf("%s\n", jsonBytes)
 	}
 }

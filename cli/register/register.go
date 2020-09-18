@@ -425,7 +425,7 @@ func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
 		if err != nil {
 			c <- err.Error()
 		} else if httpCode != 200 && httpCode != 201 && body != "" {
-			c <- msgPrinter.Sprintf("%v", body)
+			c <- fmt.Sprintf("%v", body)
 		}
 		c <- fmt.Sprintf("%d", httpCode)
 	}()
