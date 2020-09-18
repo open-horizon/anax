@@ -19,7 +19,9 @@ NODE_POLICY="node_policy.json"
 
 PATTERN="IBM/pattern-ibm.helloworld"
 
-AGENT_INSTALL_TIMEOUT=15
+AGENT_INSTALL_TIMEOUT=45
+
+SKIP_ENV_TEST=FALSE
 
 # Common functions shared by test cases
 prepareConfig(){
@@ -82,8 +84,8 @@ cleanupDependencies(){
 uninstallAgent() {
     # remove the cli if it's installed
     if command -v hzn >/dev/null 2>&1 ; then
-        hzn unregister -rf
-        sudo apt-get purge --auto-remove bluehorizon horizon horizon-cli -y
+        hzn unregister -rfD
+        sudo apt-get purge --auto-remove horizon horizon-cli -y
     fi
 
     # cleanup for config and node policies
@@ -105,15 +107,15 @@ getEdgePackages() {
         apt install -y curl
 	fi
     HORIZON_VERSION=$1;
-    if [ -z $HORIZON_VERSION ]; then
-        export CUR_VERSION=$(curl -s https://raw.githubusercontent.com/open-horizon/horizon-deb-packager/master/VERSION);
-        HORIZON_VERSION=$CUR_VERSION;
-        if [ -z "$CUR_VERSION" ]; then
-            echo "Missing version from the github, exiting...";
-            return 1;
-        fi;
-    fi;
-    URL=http://169.45.88.181;
+    #if [ -z $HORIZON_VERSION ]; then
+    #    export CUR_VERSION=$(curl -s https://raw.githubusercontent.com/open-horizon/horizon-deb-packager/master/VERSION);
+    #    HORIZON_VERSION=$CUR_VERSION;
+    #    if [ -z "$CUR_VERSION" ]; then
+    #        echo "Missing version from the github, exiting...";
+    #        return 1;
+    #    fi;
+    #fi;
+    URL=https://na.artifactory.swg-devops.com/artifactory/hyc-edge-team-nightly-debian-local;
     if [ -z $2 ]; then
         PACKAGE_ROOT_DIR=".";
     else
@@ -125,37 +127,31 @@ getEdgePackages() {
     echo "Downloading version ${HORIZON_VERSION} packages to ${PACKAGE_ROOT_DIR}..."
     for ARCH in armhf;
     do
-        FULL_DIR=$PACKAGE_ROOT_DIR/$PLATFORM/$OS/$DISTRO/$ARCH;
+        FULL_DIR=$PACKAGE_ROOT_DIR;
         mkdir -p $FULL_DIR;
         ( cd $FULL_DIR;
-        curl -O $URL/$PLATFORM/$OS/pool/main/h/horizon/bluehorizon_${HORIZON_VERSION}~ppa~${OS}.${DISTRO}_all.deb );
+        curl -sSLO -u "$ARTIFACTORY_EMAIL:$ARTIFACTORY_APIKEY" $URL/pool/horizon-cli_${HORIZON_VERSION}_${ARCH}.deb );
         ( cd $FULL_DIR;
-        curl -O $URL/$PLATFORM/$OS/pool/main/h/horizon/horizon-cli_${HORIZON_VERSION}~ppa~${OS}.${DISTRO}_${ARCH}.deb );
-        ( cd $FULL_DIR;
-        curl -O $URL/$PLATFORM/$OS/pool/main/h/horizon/horizon_${HORIZON_VERSION}~ppa~${OS}.${DISTRO}_${ARCH}.deb );
+        curl -sSLO -u "$ARTIFACTORY_EMAIL:$ARTIFACTORY_APIKEY" $URL/pool/horizon_${HORIZON_VERSION}_${ARCH}.deb );
     done;
     OS=ubuntu;
     for DISTRO in bionic xenial;
     do
         for ARCH in amd64 arm64 armhf ppc64el;
         do
-            FULL_DIR=$PACKAGE_ROOT_DIR/$PLATFORM/$OS/$DISTRO/$ARCH;
+            FULL_DIR=$PACKAGE_ROOT_DIR;
             mkdir -p $FULL_DIR;
             ( cd $FULL_DIR;
-            curl -O $URL/$PLATFORM/$OS/pool/main/h/horizon/bluehorizon_${HORIZON_VERSION}~ppa~${OS}.${DISTRO}_all.deb );
+            curl -sSLO -u "$ARTIFACTORY_EMAIL:$ARTIFACTORY_APIKEY" $URL/pool/horizon-cli_${HORIZON_VERSION}_${ARCH}.deb );
             ( cd $FULL_DIR;
-            curl -O $URL/$PLATFORM/$OS/pool/main/h/horizon/horizon-cli_${HORIZON_VERSION}~ppa~${OS}.${DISTRO}_${ARCH}.deb );
-            ( cd $FULL_DIR;
-            curl -O $URL/$PLATFORM/$OS/pool/main/h/horizon/horizon_${HORIZON_VERSION}~ppa~${OS}.${DISTRO}_${ARCH}.deb );
+            curl -sSLO -u "$ARTIFACTORY_EMAIL:$ARTIFACTORY_APIKEY" $URL/pool/horizon_${HORIZON_VERSION}_${ARCH}.deb );
         done;
     done;
     PLATFORM=macos;
-    FULL_DIR=$PACKAGE_ROOT_DIR/$PLATFORM;
+    FULL_DIR=$PACKAGE_ROOT_DIR;
     mkdir -p $FULL_DIR;
     ( cd $FULL_DIR;
-    curl -O $URL/$PLATFORM/testing/certs/horizon-cli.crt );
-    ( cd $FULL_DIR;
-    curl -O $URL/$PLATFORM/testing/horizon-cli-${HORIZON_VERSION}.pkg )
+    curl -sSLO -u "$ARTIFACTORY_EMAIL:$ARTIFACTORY_APIKEY" $URL/pool/horizon-cli_${HORIZON_VERSION}_${ARCH}.deb );
 }
 
 preparePackages() {
@@ -246,6 +242,12 @@ function checkExist(){
 	        exit 1
 		fi
     ;;
+    o) if ! [[ -f "$2" ]] ; then
+			echo "${3} file ${2} doesn't exist"
+		    echo "Secondary config/switch files were not found, environment switch test disabled."
+            return 1
+		fi
+	;;
 	*) echo "not supported"
         exit 1
 	;;
@@ -259,8 +261,14 @@ checkConfig(){
     checkExist f "config/${CERT_DEFAULT}" "Primary configuration"
     checkExist f "config/${NODE_POLICY}" "Node policy"
     checkExist d "config/switch" "Secondary configuration"
-    checkExist f "config/switch/${CONFIG_DEFAULT}" "Secondary configuration"
-    checkExist f "config/switch/${CERT_DEFAULT}" "Secondary configuration"
+    checkExist o "config/switch/${CONFIG_DEFAULT}" "Secondary configuration"
+    checkExist o "config/switch/${CERT_DEFAULT}" "Secondary configuration"
+}
+
+checkSecondaryConfig() {
+    if ! checkExist o "config/switch/${CONFIG_DEFAULT}" "Secondary configuration" || ! checkExist o "config/switch/${CERT_DEFAULT}" "Secondary configuration" ; then
+    return 1
+    fi
 }
 
 startCount(){

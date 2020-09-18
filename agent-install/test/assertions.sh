@@ -15,7 +15,7 @@ MESSAGE_DOCKER_NOT_FOUND="docker not found"
 MESSAGE_JQ_NOT_FOUND="jq not found"
 MESSAGE_CURL_NOT_FOUND="curl not found"
 
-WORKLOAD_EXECUTION_TIMEOUT=90
+WORKLOAD_EXECUTION_TIMEOUT=60
 
 isCLIInstalled() {
     if command -v hzn >/dev/null 2>&1; then
