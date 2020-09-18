@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1048,7 +1049,14 @@ func createRequestBody(body interface{}, apiMsg string) (io.Reader, int, int) {
 }
 
 // invoke rest api call with retry
-func InvokeRestApi(httpClient *http.Client, method string, url string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
+func InvokeRestApi(httpClient *http.Client, method string, urlPath string, credentials string, body interface{}, service string, apiMsg string) *http.Response {
+
+	// encode the url so that it can accept unicode
+	urlObj, errUrl := url.Parse(urlPath)
+	if errUrl != nil {
+		Fatal(CLI_INPUT_ERROR, fmt.Sprintf("Malformed URL: %v. %v", urlPath, errUrl))
+	}
+	urlObj.RawQuery = urlObj.Query().Encode()
 
 	if err := TrustIcpCert(httpClient); err != nil {
 		Fatal(FILE_IO_ERROR, err.Error())
@@ -1098,7 +1106,7 @@ func InvokeRestApi(httpClient *http.Client, method string, url string, credentia
 		}
 
 		// Create the request and run it
-		req, err := http.NewRequest(method, url, requestBody)
+		req, err := http.NewRequest(method, urlObj.String(), requestBody)
 		if err != nil {
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 		}
