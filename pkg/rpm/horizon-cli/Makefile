@@ -34,6 +34,11 @@ else
 	@true
 endif
 
+NO_DEBUG_PKGS := $(shell ../../../tools/no-debug-pkg)
+ifeq (${NO_DEBUG_PKGS},true)
+	RPM_OPTS =--define="%debug_package %{nil}"
+endif
+
 # Remember to up VERSION above. If building the rpm on mac, first: brew install rpm
 # Note: during rpmbuild on mac, you may get this benign msg: error: Couldn't exec /usr/local/Cellar/rpm/4.14.1_1/lib/rpm/elfdeps: No such file or directory
 rpmbuild: require-version
@@ -63,7 +68,7 @@ rpmbuild: require-version
 	tar -czf $(RPMROOT)/SOURCES/$(RPMNAME)-$(VERSION).tar.gz .
 	rm -rf $(RPMROOT)/BUILD/horizon-cli-*
 	rm -f $(RPMROOT)/SRPMS/$(RPMNAME)*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)*rpm.gz
-	rpmbuild --target $(rpm_arch)-linux -ba $(RPMNAME).spec
+	rpmbuild --target $(rpm_arch)-linux $(RPM_OPTS) -ba $(RPMNAME).spec
 	gzip --keep $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$(VERSION)-$(BUILD_NUMBER).$(rpm_arch).rpm
 	rm -f $(RPMNAME)-$(VERSION)   # remove the sym link
 

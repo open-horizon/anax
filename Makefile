@@ -166,7 +166,6 @@ endif
 NO_DEBUG_PKGS := $(shell tools/no-debug-pkg)
 ifeq (${NO_DEBUG_PKGS},true)
 	GO_BUILD_OPTS =-ldflags="-linkmode=external"
-	export RPM_OPTS =--define="%debug_package %{nil}"
 endif
 
 
