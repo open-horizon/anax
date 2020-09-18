@@ -145,7 +145,7 @@ func GetResourceFromCache(resourceKey string, resourceType string, expirationS u
 
 // UpdateCache will replace or create the provided resource in the given resource type cache
 func UpdateCache(resourceKey string, resourceType string, updatedResource interface{}) {
-	glog.V(5).Infof("Update exchange cache %s/%s", resourceType, resourceKey)
+	glog.V(5).Infof("Update exchange cache %s/%s with %v", resourceType, resourceKey, updatedResource)
 
 	if ExchangeResourceCache == nil {
 		newExchangeResourceCache := NewResourceCache()

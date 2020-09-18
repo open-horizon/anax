@@ -342,7 +342,7 @@ func updateServiceDefCache(newSvcDefs map[string]ServiceDefinition, cachedSvcDef
 	if cachedSvcDefs == nil {
 		cachedSvcDefs = newSvcDefs
 	}
-	UpdateCache(ServiceCacheMapKey(svcOrg, svcId, svcArch), SVC_DEF_TYPE_CACHE, cachedSvcDefs)
+	UpdateCache(ServiceCacheMapKey(svcOrg, cutil.FormExchangeIdWithSpecRef(svcId), svcArch), SVC_DEF_TYPE_CACHE, cachedSvcDefs)
 }
 
 // Retrieve service definition metadata from the exchange, by specific version or for all versions.

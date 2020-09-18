@@ -1148,7 +1148,9 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	resp = ""
 	targetURL := exchangeUrl + "admin/version"
 
-	if exchVers := GetExchangeVersionFromCache(exchangeUrl); exchVers != "" {
+	// remove trailing slash from the url for a consistent cache key
+	cacheKey := strings.TrimSuffix(exchangeUrl, "/")
+	if exchVers := GetExchangeVersionFromCache(cacheKey); strings.TrimSpace(exchVers) != "" {
 		return exchVers, nil
 	}
 
@@ -1177,7 +1179,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 				v = v[:len(v)-1]
 			}
 
-			UpdateCache(exchangeUrl, EXCH_VERS_TYPE_CACHE, v)
+			UpdateCache(cacheKey, EXCH_VERS_TYPE_CACHE, v)
 
 			return v, nil
 		}
