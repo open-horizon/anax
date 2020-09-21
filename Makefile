@@ -25,6 +25,9 @@ ifdef BUILD_NUMBER
 BUILD_NUMBER := -$(BUILD_NUMBER:-%=%)
 endif
 
+# This sets the version in the go code dynamically at build time. See https://www.digitalocean.com/community/tutorials/using-ldflags-to-set-version-information-for-go-applications
+GO_BUILD_LDFLAGS := -X 'github.com/open-horizon/anax/version.HORIZON_VERSION=$(VERSION)$(BUILD_NUMBER)'
+
 EXECUTABLE := anax
 export CLI_EXECUTABLE := cli/hzn
 export CLI_CONFIG_FILE := cli/hzn.json
@@ -40,7 +43,7 @@ IMAGE_REPO ?= openhorizon
 IMAGE_OVERRIDE ?= ""
 
 ANAX_CONTAINER_DIR := anax-in-container
-ANAX_IMAGE_VERSION ?= localbuild
+ANAX_IMAGE_VERSION ?= $(VERSION)
 ANAX_IMAGE_BASE = $(IMAGE_REPO)/$(arch)_anax
 ANAX_IMAGE = $(ANAX_IMAGE_BASE):$(ANAX_IMAGE_VERSION)
 ANAX_IMAGE_STG = $(ANAX_IMAGE_BASE):testing$(BRANCH_NAME)
@@ -165,7 +168,11 @@ endif
 
 NO_DEBUG_PKGS := $(shell tools/no-debug-pkg)
 ifeq (${NO_DEBUG_PKGS},true)
-	GO_BUILD_OPTS =-ldflags="-linkmode=external"
+	GO_BUILD_LDFLAGS := $(GO_BUILD_LDFLAGS) -linkmode=external
+endif
+
+ifdef GO_BUILD_LDFLAGS
+	GO_BUILD_LDFLAGS := -ldflags="$(GO_BUILD_LDFLAGS)"
 endif
 
 
@@ -181,7 +188,7 @@ $(EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(EXECUTABLE);
+	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(EXECUTABLE);
 	exch_min_ver=$(shell grep "MINIMUM_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
 	    echo "The required minimum exchange version is $$exch_min_ver";
 	exch_pref_ver=$(shell grep "PREFERRED_EXCHANGE_VERSION =" $(PKGPATH)/version/version.go | awk -F '"' '{print $$2}') && \
@@ -191,7 +198,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CLI_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
+	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(CLI_EXECUTABLE) $(CLI_EXECUTABLE).go && \
 	    envsubst < cli/cliconfig/hzn.json.tmpl > $(CLI_CONFIG_FILE)
 	if [[ $(arch) == $(shell tools/arch-tag) && $(opsys) == $(shell uname -s) ]]; then \
 	  	mkdir -p $(CLI_MAN_DIR) && $(CLI_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
@@ -203,7 +210,7 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 		echo "Producing $(CLI_TEMP_EXECUTABLE) under $(arch_local) for generating hzn man pages"; \
 		cd $(PKGPATH) && \
 	  	  export GOPATH=$(TMPGOPATH); \
-	    	$(COMPILE_ARGS_LOCAL) go build $(GO_BUILD_OPTS) -o $(CLI_TEMP_EXECUTABLE) $(CLI_EXECUTABLE).go; \
+	    	$(COMPILE_ARGS_LOCAL) go build $(GO_BUILD_LDFLAGS) -o $(CLI_TEMP_EXECUTABLE) $(CLI_EXECUTABLE).go; \
 	  		mkdir -p $(CLI_MAN_DIR) && $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1 && \
 			for loc in $(SUPPORTED_LOCALES) ; do \
 				HZN_LANG=$$loc $(CLI_TEMP_EXECUTABLE) --help-man > $(CLI_MAN_DIR)/hzn.1.$$loc; \
@@ -215,13 +222,13 @@ $(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
+	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
 
 $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
 	cd $(PKGPATH) && \
 	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_OPTS) -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
+	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(ESS_EXECUTABLE) ess/cmd/edge-sync-service/main.go;
 
 # Build the deb pkgs and put them in pkg/deb/debs/
 debpkgs:
@@ -249,7 +256,7 @@ gen-mac-key:
 install-mac-key:
 	$(MAKE) -C pkg/mac install-mac-key
 
-#todo: instead of these 2 targets, should we just put version/version.go in .gitignore so it never gets committed to git?
+# DEPRECATED: this Makefile now sets the version dynamically at build time. See GO_BUILD_LDFLAGS
 # Inserts the version into version.go in prep for the macpkg build
 temp-mod-version:
 	mv version/version.go version/version.go.bak   # preserve the time stamp
@@ -257,6 +264,7 @@ temp-mod-version:
 	sed -i.bak2 's/local build/$(MAC_PKG_VERSION)/' version/version.go
 	rm -f version/version.go.bak2	# this backup is necessary to make the above sed work on both linux and mac
 
+# DEPRECATED: this Makefile now sets the version dynamically at build time. See GO_BUILD_LDFLAGS
 # Undoes the above, so the source is unchanged
 temp-mod-version-undo:
 	mv version/version.go.bak version/version.go

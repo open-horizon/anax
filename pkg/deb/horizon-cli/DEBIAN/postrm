@@ -2,5 +2,6 @@
 
 rm -f /usr/bin/hzn
 rm -f /usr/bin/horizon-container
+rm -f /usr/bin/edgeNodeFiles.sh
 
 exit 0
