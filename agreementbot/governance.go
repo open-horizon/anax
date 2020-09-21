@@ -183,7 +183,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
 					now := uint64(time.Now().Unix())
 					if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
-						w.nodeSearch.AddRetry(ag.PolicyName, ag.DeviceId)
+						w.nodeSearch.AddRetry(ag.PolicyName, ag.AgreementCreationTime-w.BaseWorker.Manager.Config.GetAgbotRetryLookBackWindow())
 						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
 					}
 				}

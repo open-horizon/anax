@@ -72,5 +72,6 @@ type AgbotDatabase interface {
 	ObtainSearchSession(policyName string) (string, uint64, error)
 	UpdateSearchSessionChangedSince(currentChangedSince uint64, newChangedSince uint64, policyName string) (bool, error)
 	ResetAllChangedSince(newChangedSince uint64) error
+	ResetPolicyChangedSince(policy string, newChangedSince uint64) error
 	DumpSearchSessions() error
 }

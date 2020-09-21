@@ -91,6 +91,11 @@ func (db *AgbotBoltDB) ResetAllChangedSince(newChangedSince uint64) error {
 	return nil
 }
 
+// No need to implement this in low scale bolt DB use cases.
+func (db *AgbotBoltDB) ResetPolicyChangedSince(policy string, newChangedSince uint64) error {
+	return nil
+}
+
 func (db *AgbotBoltDB) DumpSearchSessions() error {
 	ss, err := db.findSearchSession()
 	if err != nil {
