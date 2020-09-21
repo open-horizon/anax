@@ -1171,8 +1171,8 @@
       "translation": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p."
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s."
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes."
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -2097,10 +2097,6 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "translation": "failed to marshal 'hzn node list' output: {Err}"
-    },
-    {
-      "id": "{JsonBytes}",
-      "translation": "{JsonBytes}"
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
@@ -3731,10 +3727,6 @@
       "translation": "failed to marshal 'exchange org list' output: {Err}"
     },
     {
-      "id": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}"
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "Invalid input for {Negatives}. Negative integer is not allowed."
     },
@@ -4487,12 +4479,16 @@
       "translation": "Error setting node state to configured: {Err}"
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "Horizon node is registered. Workload services should begin executing shortly."
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start."
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view."
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Horizon node is registered. Workload services should begin executing shortly."
     },
     {
       "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -4513,10 +4509,6 @@
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "Registration failed. Node successfully returned to unregistered state."
-    },
-    {
-      "id": "{Body}",
-      "translation": "{Body}"
     },
     {
       "id": "Call to anax to create node timed out.",
