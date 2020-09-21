@@ -26,6 +26,12 @@ func (db *AgbotBoltDB) Initialize(cfg *config.HorizonConfig) error {
 		db.db = agdb
 
 	}
+
+	// Initialize the one and only search session object
+	if err := db.InitSearchSession(); err != nil {
+		return errors.New(fmt.Sprintf("unable to init search session object in database %v, error: %v", dbname, err))
+	}
+
 	return nil
 
 }

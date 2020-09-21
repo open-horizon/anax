@@ -8,7 +8,6 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
@@ -20,6 +19,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/imagefetch"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
 	"github.com/satori/go.uuid"
 	"io/ioutil"
@@ -38,6 +38,7 @@ const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID"
 const DEVTOOL_HZN_PATTERN = "HZN_PATTERN"
 
 const DEVTOOL_HZN_FSS_IMAGE_TAG = "HZN_DEV_FSS_IMAGE_TAG"
+const DEVTOOL_HZN_FSS_IMAGE_REPO = "HZN_DEV_FSS_IMAGE_REPO"
 const DEVTOOL_HZN_FSS_CSS_PORT = "HZN_DEV_FSS_CSS_PORT"
 const DEVTOOL_HZN_FSS_WORKING_DIR = "HZN_DEV_FSS_WORKING_DIR"
 const DEFAULT_DEVTOOL_HZN_FSS_WORKING_DIR = "/tmp/hzndev/"
@@ -128,6 +129,18 @@ func CreateFile(directory string, fileName string, obj interface{}) error {
 	} else {
 		return nil
 	}
+}
+
+// This function takes the common UserInput object marshals it into JSON and writes it to a file in the project.
+func CreateUserInputFile(directory string, ui *common.UserInputFile) error {
+	// Convert the object to JSON and write it.
+	filePath := path.Join(directory, USERINPUT_FILE)
+	if bytes, err := ui.GetOutputJsonBytes(false); err != nil {
+		return err
+	} else if err := ioutil.WriteFile(filePath, bytes, 0664); err != nil {
+		return errors.New(i18n.GetMessagePrinter().Sprintf("unable to write json object for userinput to file %v, error: %v", filePath, err))
+	}
+	return nil
 }
 
 // Common verification before executing a sub command.
@@ -296,7 +309,7 @@ func makeByValueAttributes(attrs []persistence.Attribute) []persistence.Attribut
 // workload container.
 func createEnvVarMap(agreementId string,
 	workloadPW string,
-	global []register.GlobalSet,
+	global []common.GlobalSet,
 	msURL string,
 	configVar map[string]interface{},
 	defaultVar []exchange.UserInput,
@@ -335,7 +348,7 @@ func createEnvVarMap(agreementId string,
 
 	// The set of global attributes in the project's userinput file might not all be applicable to all services, so we will
 	// create a shortened list of global attribute that only apply to this service.
-	shortGlobals := make([]register.GlobalSet, 0, 10)
+	shortGlobals := make([]common.GlobalSet, 0, 10)
 	for _, inputGlobal := range global {
 		if len(inputGlobal.ServiceSpecs) == 0 || (inputGlobal.ServiceSpecs[0].Url == msURL && inputGlobal.ServiceSpecs[0].Org == org) {
 			shortGlobals = append(shortGlobals, inputGlobal)
@@ -403,11 +416,16 @@ func createContainerWorker() (*container.ContainerWorker, error) {
 		Collaborators: config.Collaborators{},
 	}
 
+	// Create the folder for SSL certificates (under authentication path)
+	if err := os.MkdirAll(config.GetESSSSLClientCertPath(), 0755); err != nil {
+		return nil, err
+	}
+
 	return container.CreateCLIContainerWorker(config)
 }
 
 // This function is used to setup context to execute a service container.
-func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *register.InputFile, *container.ContainerWorker) {
+func CommonExecutionSetup(homeDirectory string, userInputFile string, projectType string, cmd string) (string, *common.UserInputFile, *container.ContainerWorker) {
 
 	// Get the setup info and context for running the command.
 	dir, err := setup(homeDirectory, true, false, "")
@@ -428,6 +446,25 @@ func CommonExecutionSetup(homeDirectory string, userInputFile string, projectTyp
 	}
 
 	return dir, userInputs, cw
+}
+
+// This function is used to clear all service's files & folders (such as UDS socket and auth folder) that will not be needed anymore
+func ExecutionTearDown(cw *container.ContainerWorker) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Remove the UDS socket file
+	err := os.RemoveAll(cw.Config.GetFileSyncServiceAPIListen())
+	if err != nil {
+		msgPrinter.Printf("Failed to remove the UDS socket file: %v", err)
+		msgPrinter.Println()
+	}
+
+	// Clear the File Sync Service API authentication credential folder
+	if err := os.RemoveAll(cw.GetAuthenticationManager().AuthPath); err != nil {
+		msgPrinter.Printf("Failed to remove FSS Authentication credential folder, error: %v", err)
+		msgPrinter.Println()
+	}
 }
 
 func findContainers(serviceName string, cw *container.ContainerWorker) ([]docker.APIContainers, error) {
@@ -468,7 +505,7 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.Cont
 	return containerNetworks, nil
 }
 
-func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []register.GlobalSet, configUserInputs []register.MicroWork, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// Collect all the service networks that have to be connected to the caller's container.
 	ms_networks := map[string]docker.ContainerNetwork{}
@@ -499,8 +536,8 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 
 func startDependent(dir string,
 	serviceDef *common.ServiceFile,
-	globals []register.GlobalSet, // API attributes
-	configUserInputs []register.MicroWork, // indicates configured variables
+	globals []common.GlobalSet, // API attributes
+	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
 
 	// get message printer
@@ -562,9 +599,9 @@ func startDependent(dir string,
 func StartContainers(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	version string,
-	globals []register.GlobalSet, // API attributes
+	globals []common.GlobalSet, // API attributes
 	defUserInputs []exchange.UserInput, // indicates variable defaults
-	configUserInputs []register.MicroWork, // indicates configured variables
+	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	org string,
 	dc *common.DeploymentConfig,
 	cw *container.ContainerWorker,
@@ -703,7 +740,7 @@ func stopContainers(dc *common.DeploymentConfig, cw *container.ContainerWorker, 
 }
 
 // Get the images into the local docker server for services
-func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *register.InputFile) error {
+func getContainerImages(containerConfig *events.ContainerConfig, currentUIs *common.UserInputFile) error {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

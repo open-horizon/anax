@@ -9,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/metering"
@@ -136,7 +137,8 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 	}
 
 	// Grab the exchange ID of the message receiver
-	glog.V(3).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))))
+	glog.V(3).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, cutil.TruncateDisplayString(string(pay), 300))))
+	glog.V(5).Infof(BCPHlogstring(w.Name(), fmt.Sprintf("sending exchange message to: %v, message %v", messageTarget.ReceiverExchangeId, string(pay))))
 
 	// Get my own keys
 	myPubKey, myPrivKey, keyErr := exchange.GetKeys(w.config.AgreementBot.MessageKeyPath)

@@ -9,6 +9,8 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	cliexchange "github.com/open-horizon/anax/cli/exchange"
 	"github.com/open-horizon/anax/cli/unregister"
+	"github.com/open-horizon/anax/common"
+	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
@@ -26,51 +28,24 @@ import (
 	"time"
 )
 
-// These structs are used to parse the registration input file. These are also used by the hzn dev code.
-type GlobalSet struct {
-	Type         string                   `json:"type"`
-	ServiceSpecs persistence.ServiceSpecs `json:"service_specs,omitempty"`
-	Variables    map[string]interface{}   `json:"variables"`
-}
+// read the user input file that contains the global attributes and service userinput settings.
+// it supports both old and new format.
+func ReadUserInputFile(filePath string) *common.UserInputFile {
 
-func (g GlobalSet) String() string {
-	return fmt.Sprintf("Global Array element, type: %v, service_specs: %v, variables: %v", g.Type, g.ServiceSpecs, g.Variables)
-}
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
-// Use for services. This is used by other cli sub-cmds too.
-type MicroWork struct {
-	Org          string                 `json:"org"`
-	Url          string                 `json:"url"`
-	VersionRange string                 `json:"versionRange,omitempty"` //optional
-	Variables    map[string]interface{} `json:"variables"`
-}
-
-func (m MicroWork) String() string {
-	return fmt.Sprintf("Org: %v, URL: %v, VersionRange: %v, Variables: %v", m.Org, m.Url, m.VersionRange, m.Variables)
-}
-
-type InputFile struct {
-	Global   []GlobalSet `json:"global,omitempty"`
-	Services []MicroWork `json:"services,omitempty"`
-}
-
-func ReadInputFile(filePath string, inputFileStruct *InputFile) {
+	// read the file
 	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
-	err := json.Unmarshal(newBytes, inputFileStruct)
-	if err != nil {
-		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to unmarshal json input file %s: %v", filePath, err))
+
+	// create UserInputFile object
+	if uif, err := common.NewUserInputFileFromJsonBytes(newBytes); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Unable to create UserInputFile object from file %s. %v", filePath, err))
+	} else {
+		return uif
 	}
-}
 
-func ReadInputFileWithPolicyInputFormat(filePath string, inputFileList *[]policy.UserInput) error {
-	newBytes := cliconfig.ReadJsonFileWithLocalConfig(filePath)
-	err := json.Unmarshal(newBytes, inputFileList)
-	return err
-}
-
-type ExchangeNodes struct {
-	LastIndex int                        `json:"lastIndex"`
-	Nodes     map[string]exchange.Device `json:"nodes"`
+	return nil
 }
 
 // read and verify a node policy file
@@ -100,18 +75,12 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	org, pattern, waitService, waitOrg = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg)
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
-	// Read input file 1st, so we don't get half way thru registration before finding the problem
-	inputFileStruct := InputFile{}
-	policyInputFileList := []policy.UserInput{}
-	usePolicyInputFormat := true
+	var userInputFileObj *common.UserInputFile
 	if inputFile != "" {
 		msgPrinter.Printf("Reading input file %s...", inputFile)
 		msgPrinter.Println()
-		err := ReadInputFileWithPolicyInputFormat(inputFile, &policyInputFileList)
-		if err != nil {
-			usePolicyInputFormat = false
-			ReadInputFile(inputFile, &inputFileStruct)
-		}
+		userInputFileObj = ReadUserInputFile(inputFile)
+		cliutils.Verbose(msgPrinter.Sprintf("Retrieved user input object from file %v: %v", inputFile, userInputFileObj))
 	}
 
 	// read and verify the node policy if it specified
@@ -220,9 +189,9 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	}
 
 	// See if the node exists in the exchange, and create if it doesn't
-	var nodes ExchangeNodes
+	var devicesResp exchange.GetDevicesResponse
 	exchangePattern := ""
-	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &nodes)
+	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &devicesResp)
 
 	if httpCode != 200 {
 		if userPw == "" {
@@ -231,7 +200,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 
 		cliutils.SetWhetherUsingApiKey(userPw)
 		userOrg, userAuth := cliutils.TrimOrg(org, userPw)
-		httpCode1 := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), nil, &nodes)
+		httpCode1 := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), nil, &devicesResp)
 		if httpCode1 != 200 {
 			// node does not exist, create it
 			msgPrinter.Printf("Node %s/%s does not exist in the Exchange with the specified token, creating/updating it...", org, nodeId)
@@ -243,7 +212,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			msgPrinter.Println()
 			patchNodeReq := cliexchange.NodeExchangePatchToken{Token: nodeToken}
 			cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(userOrg, userAuth), []int{201}, patchNodeReq, nil)
-			for nId, n := range nodes.Nodes {
+			for nId, n := range devicesResp.Devices {
 				exchangePattern = n.Pattern
 
 				// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
@@ -256,7 +225,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	} else {
 		msgPrinter.Printf("Node %s/%s exists in the Exchange", org, nodeId)
 		msgPrinter.Println()
-		for nId, n := range nodes.Nodes {
+		for nId, n := range devicesResp.Devices {
 			exchangePattern = n.Pattern
 
 			// check if the node type matches. The node type from the exchange will never be empty, the exchange returns 'device' if empty.
@@ -331,19 +300,14 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 		RegistrationFailure()
 	}
 
-	// Process the input file and call /attribute, /service/config to set the specified variables
-	if inputFile != "" {
-		if !usePolicyInputFormat {
-			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
-
+	// Process the input file and call /attribute to set the specified variables
+	if userInputFileObj != nil {
+		if !userInputFileObj.IsGlobalsEmpty() {
 			// Set the global variables as attributes with no url (or in the case of HTTPSBasicAuthAttributes, with url equal to image svr)
-			// Technically the AgreementProtocolAttributes can be set, but it has no effect on anax if a pattern is being used.
+			msgPrinter.Printf("Setting global variables...")
+			msgPrinter.Println()
 			attr := api.NewAttribute("", "Global variables", false, false, map[string]interface{}{}) // we reuse this for each GlobalSet
-			if len(inputFileStruct.Global) > 0 {
-				msgPrinter.Printf("Setting global variables...")
-				msgPrinter.Println()
-			}
-			for _, g := range inputFileStruct.Global {
+			for _, g := range userInputFileObj.GetGlobal() {
 				attr.Type = &g.Type
 				attr.ServiceSpecs = &g.ServiceSpecs
 				attr.Mappings = &g.Variables
@@ -362,44 +326,24 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 					RegistrationFailure()
 				}
 			}
+		}
 
-			// Set the service variables
-			attr = api.NewAttribute("UserInputAttributes", "service", false, false, map[string]interface{}{}) // we reuse this for each service
-			emptyStr := ""
-			service := api.Service{Name: &emptyStr} // we reuse this too
-			if len(inputFileStruct.Services) > 0 {
-				msgPrinter.Printf("Setting service variables...")
-				msgPrinter.Println()
-			}
-			for _, m := range inputFileStruct.Services {
-				service.Org = &m.Org
-				service.Url = &m.Url
-				service.VersionRange = &m.VersionRange
-				attr.Mappings = &m.Variables
-				attrSlice := []api.Attribute{*attr}
-				service.Attributes = &attrSlice
-				err, _ := SetServiceConfig(timeout, inputFile, service)
-				if err != nil {
-					msgPrinter.Printf("Error encountered while setting service variables: %v", err)
-					msgPrinter.Println()
-					RegistrationFailure()
-				}
-			}
-		} else {
-			cliutils.Verbose(msgPrinter.Sprintf("usePolicyInputFormat: %t", usePolicyInputFormat))
+		// Set the service variables using new format
+		newUserInputs, _ := userInputFileObj.GetNewFormat(true)
+		if newUserInputs != nil && len(newUserInputs) > 0 {
 			// use policy.UserInput struct
-			//httpCode, respBody := cliutils.HorizonPutPost(http.MethodPost, "node/userinput", []int{200, 201}, policyInputFileList)
-			err := SetUserInput(timeout, "node/userinput", policyInputFileList)
+			err := SetUserInput(timeout, "node/userinput", newUserInputs)
 			if err != nil {
 				msgPrinter.Printf("Error setting user input variables: %v", err)
 				msgPrinter.Println()
 				RegistrationFailure()
 			}
 		}
+	}
 
-	} else {
+	if inputFile == "" {
 		// Technically an input file is not required, but it is not the common case, so warn them
-		msgPrinter.Printf("Warning: no input file was specified. This is only valid if none of the services need variables set (including GPS coordinates).")
+		msgPrinter.Printf("Note: no input file was specified. This is only valid if none of the services need variables set.")
 		msgPrinter.Println()
 		msgPrinter.Printf("However, if there is 'userInput' specified in the node already in the Exchange, the userInput will be used.")
 		msgPrinter.Println()
@@ -417,12 +361,18 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 
 	// Now drop into the long wait for a service to get started on the node.
 	if waitService != "" {
-		msgPrinter.Printf("Horizon node is registered. Workload services should begin executing shortly.")
-		msgPrinter.Println()
+		if nodeType == persistence.DEVICE_TYPE_CLUSTER {
+			msgPrinter.Printf("NOTE: The -s flag is currently not supported for nodeType: %s. Node registration will complete without waiting for the service to start.", nodeType)
+			msgPrinter.Println()
+			msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
+			msgPrinter.Println()
+		} else {
+			msgPrinter.Printf("Horizon node is registered. Workload services should begin executing shortly.")
+			msgPrinter.Println()
 
-		// Wait for the service to be started.
-		WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
-
+			// Wait for the service to be started.
+			WaitForService(waitOrg, waitService, waitTimeout, pattern, pat, nodeType, anaxArch, org, nodeIdTok)
+		}
 	} else {
 		msgPrinter.Printf("Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.")
 		msgPrinter.Println()
@@ -475,7 +425,7 @@ func CreateNode(nodeDevice api.HorizonDevice, timeout int) error {
 		if err != nil {
 			c <- err.Error()
 		} else if httpCode != 200 && httpCode != 201 && body != "" {
-			c <- msgPrinter.Sprintf("%v", body)
+			c <- fmt.Sprintf("%v", body)
 		}
 		c <- fmt.Sprintf("%d", httpCode)
 	}()
@@ -750,12 +700,32 @@ type SvcMapValue struct {
 	VersionRanges  []string // all the version ranges we find for this service as we descend thru the required services
 	HighestVersion string   // filled in when we have to find the highest service to get its required services. Is valid at the end if len(VersionRanges)==1
 	UserInputs     []exchange.UserInput
+	Privileged     bool
 }
 
 // AddAllRequiredSvcs
 func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequiredSvcs map[string]*SvcMapValue) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// Get the service from the exchange so we can get its required services
+	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
+
+	nodeOrg, nodeIdTok := cliutils.TrimOrg(org, nodeCreds)
+	nodeId, _ := cliutils.SplitIdToken(nodeIdTok)
+
+	var nodes exchange.GetDevicesResponse
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+nodeId, nodeCreds, []int{200}, &nodes)
+
+	// Make sure that the node type and the service type match
+	serviceType := highestSvc.GetServiceType()
+	for nId, n := range nodes.Devices {
+		if serviceType != exchange.SERVICE_TYPE_BOTH && n.GetNodeType() != serviceType {
+			msgPrinter.Printf("Ignoring version %s of service %s/%s with node type mismatch: the service type '%v' does not match the node type '%v' of the Exchange node %v.", versionRange, org, url, serviceType, n.GetNodeType(), nId)
+			msgPrinter.Println()
+			return
+		}
+	}
 
 	// Add this service to the service map
 	cliutils.Verbose(msgPrinter.Sprintf("found: %s, %s, %s, %s", org, url, arch, versionRange))
@@ -771,16 +741,20 @@ func AddAllRequiredSvcs(nodeCreds, org, url, arch, versionRange string, allRequi
 		allRequiredSvcs[svcKey] = &SvcMapValue{Org: org, URL: url, Arch: arch} // this must be a ptr to the struct or go won't let us modify it in the map
 	}
 	allRequiredSvcs[svcKey].VersionRanges = append(allRequiredSvcs[svcKey].VersionRanges, versionRange) // add this version to this service in our map
-
-	// Get the service from the exchange so we can get its required services
-	highestSvc := GetHighestService(nodeCreds, org, url, arch, []string{versionRange})
-	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version // in case we don't encounter this service again, we already know the highest version for getting the user input from
+	allRequiredSvcs[svcKey].HighestVersion = highestSvc.Version                                         // in case we don't encounter this service again, we already know the highest version for getting the user input from
 	allRequiredSvcs[svcKey].UserInputs = highestSvc.UserInputs
+
+	// check if the service contains privileged
+	if priv, err := compcheck.DeploymentRequiresPrivilege(highestSvc.Deployment, msgPrinter); err != nil {
+		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to check if deployment requires privileged: %v", err))
+	} else if priv {
+		allRequiredSvcs[svcKey].Privileged = true
+	}
 
 	// Loop thru this service's required services, adding them to our map
 	for _, s := range highestSvc.RequiredServices {
 		// This will add this svc to our map and keep descending down the required services
-		AddAllRequiredSvcs(nodeCreds, s.Org, s.URL, s.Arch, s.Version, allRequiredSvcs)
+		AddAllRequiredSvcs(nodeCreds, s.Org, s.URL, s.Arch, s.VersionRange, allRequiredSvcs)
 	}
 }
 
@@ -822,7 +796,9 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 	// Loop thru each service, find the highest version of that service, and then record the user input for it
 	// Note: if the pattern references multiple versions of the same service (directly or indirectly), we create input for the highest version of the service.
-	templateFile := InputFile{Global: []GlobalSet{}}
+	svcInputs := make([]policy.UserInput, 0, len(allRequiredSvcs))
+
+	containsPrivilegedSvc := false
 	for _, s := range allRequiredSvcs {
 		var userInput []exchange.UserInput
 		if s.HighestVersion != "" && len(s.VersionRanges) <= 1 {
@@ -835,16 +811,20 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 
 		// Get the user input from this service
 		if len(userInput) > 0 {
-			svcInput := MicroWork{Org: s.Org, Url: s.URL, VersionRange: "[0.0.0,INFINITY)", Variables: make(map[string]interface{})}
-			for _, u := range userInput {
-				svcInput.Variables[u.Name] = u.DefaultValue
+			svcInput := policy.UserInput{ServiceOrgid: s.Org, ServiceUrl: s.URL, ServiceVersionRange: "[0.0.0,INFINITY)", Inputs: make([]policy.Input, len(userInput))}
+			for i, u := range userInput {
+				svcInput.Inputs[i] = policy.Input{Name: u.Name, Value: u.DefaultValue, Type: u.Type}
 			}
-			templateFile.Services = append(templateFile.Services, svcInput)
+			svcInputs = append(svcInputs, svcInput)
+		}
+
+		if s.Privileged {
+			containsPrivilegedSvc = true
 		}
 	}
 
-	// Output the template file
-	jsonBytes, err := json.MarshalIndent(templateFile, "", cliutils.JSON_INDENT)
+	// Output the file
+	jsonBytes, err := json.MarshalIndent(svcInputs, "", cliutils.JSON_INDENT)
 	if err != nil {
 		cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the user input template file: %v", err))
 	}
@@ -852,8 +832,33 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 	if err := ioutil.WriteFile(inputFile, jsonBytes, 0644); err != nil {
 		cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the user input template file: %v", err))
 	}
+
 	msgPrinter.Printf("Wrote %s", inputFile)
 	msgPrinter.Println()
+
+	// Create example node policy file if at least one service contains privileged in the deployment string
+	if containsPrivilegedSvc {
+		allowPrivilegedPolicyExample := externalpolicy.ExternalPolicy{
+			Properties: externalpolicy.PropertyList{
+				externalpolicy.Property{
+					Name:  "openhorizon.allowPrivileged",
+					Value: true,
+				},
+			},
+		}
+		nodePolicySampleFile := inputFile + "_np.json"
+		// Output the file
+		jsonBytes, err := json.MarshalIndent(allowPrivilegedPolicyExample, "", cliutils.JSON_INDENT)
+		if err != nil {
+			cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to marshal the example node policy file: %v", err))
+		}
+		if err := ioutil.WriteFile(nodePolicySampleFile, jsonBytes, 0644); err != nil {
+			cliutils.Fatal(cliutils.FILE_IO_ERROR, msgPrinter.Sprintf("problem writing the example node policy file: %v", err))
+		} else {
+			msgPrinter.Printf("One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: %s", nodePolicySampleFile)
+			msgPrinter.Println()
+		}
+	}
 }
 
 // this function parses the error returned by the registration process to see if the error

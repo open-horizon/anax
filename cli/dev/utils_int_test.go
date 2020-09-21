@@ -4,12 +4,12 @@ package dev
 
 import (
 	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/cli/register"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
 	"os"
 	"path"
@@ -45,7 +45,7 @@ func Test_nested_dependencies(t *testing.T) {
 		t.Errorf("unable to get service dependencies, %v", derr)
 	}
 
-	networks, perr := ProcessStartDependencies(horizonDir, deps, []register.GlobalSet{}, []register.MicroWork{}, cw)
+	networks, perr := ProcessStartDependencies(horizonDir, deps, []common.GlobalSet{}, []policy.AbstractUserInput{}, cw)
 	if perr != nil {
 		t.Errorf("unable to process dependencies, %v", perr)
 	}
@@ -151,11 +151,11 @@ func createSkeletalServiceDef(serviceName string) *common.ServiceFile {
 func createSkeletalUserInputs(directory string) error {
 
 	// Create a skeletal user input config object with fillins/place-holders for configuration.
-	res := new(register.InputFile)
-	res.Global = []register.GlobalSet{}
+	res := new(common.UserInputFile)
+	res.Global = []common.GlobalSet{}
 
 	// Create a skeletal array with one element for variable configuration.
-	res.Services = []register.MicroWork{}
+	res.Services = []policy.AbstractUserInput{}
 
 	// Convert the object to JSON and write it into the project.
 	return CreateFile(directory, USERINPUT_FILE, res)

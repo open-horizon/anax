@@ -120,20 +120,9 @@ func (w *ChangesWorker) Initialize() bool {
 	// will be non-zero. This logic is placed here (and not the constructor) because we dont want to emit messages
 	// to the message bus from inside the worker constructor.
 	if w.changeID == 0 && w.GetExchangeToken() != "" {
-
-		// Call the exchange to retrieve the current max change id. Use a custom exchange context that blocks (retries forever)
-		// until we can get the max change ID.
-		ec := exchange.NewCustomExchangeContext(w.EC.Id, w.EC.Token, w.EC.URL, w.EC.CSSURL, w.Config.Collaborators.HTTPClientFactory)
-		if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(ec)(); err != nil {
-			glog.Errorf(chglog(fmt.Sprintf("Error retrieving max change ID, error: %v", err)))
-		} else {
-			w.changeID = maxChangeID.MaxChangeID
-			if err := persistence.SaveExchangeChangeState(w.db, w.changeID); err != nil {
-				glog.Errorf(chglog(fmt.Sprintf("error saving persistent exchange change state, error %v", err)))
-			}
+		if err := w.getChangeId(); err != nil {
+			glog.Errorf(chglog(fmt.Sprintf("Failed to get the max change id. %v", err)))
 		}
-		supportedResourceTypes := w.createSupportedResourceTypes(true)
-		w.emitChangeMessages(supportedResourceTypes)
 	}
 
 	// Retrieve the node's heartbeat intervals if we can.
@@ -250,8 +239,13 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// If there is no last known change id, then we havent initialized yet,so do nothing.
 	maxRecords := 1000
 	if w.changeID == 0 {
-		glog.Warningf(chglog(fmt.Sprintf("No starting change ID")))
-		return
+		if err := w.getChangeId(); err != nil {
+			glog.Errorf(chglog(fmt.Sprintf("Failed to get the max change id. %v", err)))
+			return
+		} else if w.changeID == 0 {
+			glog.Warningf(chglog(fmt.Sprintf("No starting change ID")))
+			return
+		}
 	}
 
 	glog.V(3).Infof(chglog(fmt.Sprintf("looking for changes starting from ID %v", w.changeID)))
@@ -491,22 +485,34 @@ func (w *ChangesWorker) handleDeviceRegistration(cmd *DeviceRegisteredCommand) {
 	w.getHeartbeatIntervals()
 	w.updatePollingInterval(UPDATE_TYPE_RESET)
 
-	// Call the exchange to retrieve the current max change id. Use a custom exchange context that blocks (retries forever)
-	// until we can get the max change ID.
-	ec := exchange.NewCustomExchangeContext(w.EC.Id, w.EC.Token, w.EC.URL, w.EC.CSSURL, w.Config.Collaborators.HTTPClientFactory)
-	if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(ec)(); err != nil {
-		glog.Errorf(chglog(fmt.Sprintf("Error retrieving max change ID, error: %v", err)))
-	} else {
-		w.changeID = maxChangeID.MaxChangeID
-		if err := persistence.SaveExchangeChangeState(w.db, w.changeID); err != nil {
-			glog.Errorf(chglog(fmt.Sprintf("error saving persistent exchange change state, error %v", err)))
+	if err := w.getChangeId(); err != nil {
+		glog.Errorf(chglog(fmt.Sprintf("Failed to get the max change id. %v", err)))
+	}
+}
+
+// Get the current change ID from the exchange, which gives this worker a place to start. Once there
+// is a change ID available, ensure the agent has the latest info from the exchange.
+func (w *ChangesWorker) getChangeId() error {
+	if w.GetExchangeToken() != "" {
+
+		// Call the exchange to retrieve the current max change id. Use a custom exchange context that blocks (retries forever)
+		// until we can get the max change ID.
+		ec := exchange.NewCustomExchangeContext(w.EC.Id, w.EC.Token, w.EC.URL, w.EC.CSSURL, w.Config.Collaborators.HTTPClientFactory)
+		if maxChangeID, err := exchange.GetHTTPExchangeMaxChangeIDHandler(ec)(); err != nil {
+			return fmt.Errorf("Error retrieving max change ID, error: %v", err)
+		} else {
+			w.changeID = maxChangeID.MaxChangeID
+			if err := persistence.SaveExchangeChangeState(w.db, w.changeID); err != nil {
+				return fmt.Errorf("Error saving persistent exchange change state, error %v", err)
+			}
 		}
+
+		// Safety measure to ensure that the agent has the latest info from the exchange.
+		supportedResourceTypes := w.createSupportedResourceTypes(true)
+		w.emitChangeMessages(supportedResourceTypes)
 	}
 
-	// Safety measure to ensure that the agent has the latest info from the exchange.
-	supportedResourceTypes := w.createSupportedResourceTypes(true)
-	w.emitChangeMessages(supportedResourceTypes)
-
+	return nil
 }
 
 // This function retrieves the node's and node org's heartbeat configuration, if there is any,

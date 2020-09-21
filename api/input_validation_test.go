@@ -180,5 +180,26 @@ func Test_CheckMapIsIllegal1(t *testing.T) {
 	if errorMsg == "" {
 		t.Errorf("expected error message")
 	}
+}
+
+func Test_CheckInputString_unicode(t *testing.T) {
+
+	// inputs from different languages
+	inputs := []string{"für", "Não", "organización", "désérialisé", "ユーザー組", "사용자", "启动服务", "資料庫"}
+	aField := "input1"
+
+	for _, theInput := range inputs {
+		var myError error
+		handler := GetPassThroughErrorHandler(&myError)
+		errorOccurred := checkInputString(handler, aField, &theInput)
+
+		if errorOccurred {
+			t.Errorf("found problem with input, but it is ok: %v", theInput)
+		}
+
+		if myError != nil && len(myError.Error()) != 0 {
+			t.Errorf("error should be empty, is %v", myError.Error())
+		}
+	}
 
 }

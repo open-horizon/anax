@@ -444,3 +444,21 @@ func GetHTTPAgbotServedPattern(ec ExchangeContext) AgbotServedPatternHandler {
 		return GetAgbotPatterns(ec)
 	}
 }
+
+// A handler for searching for nodes by deployment policy.
+type AgbotPolicyNodeSearchHandler func(req *SearchExchBusinessPolRequest, policyOrg string, policyName string) (*SearchExchBusinessPolResponse, error)
+
+func GetHTTPAgbotPolicyNodeSearchHandler(ec ExchangeContext) AgbotPolicyNodeSearchHandler {
+	return func(req *SearchExchBusinessPolRequest, policyOrg string, policyName string) (*SearchExchBusinessPolResponse, error) {
+		return GetPolicyNodes(ec, policyOrg, policyName, req)
+	}
+}
+
+// A handler for searching for nodes by pattern.
+type AgbotPatternNodeSearchHandler func(req *SearchExchangePatternRequest, policyOrg string, patternId string) (*[]SearchResultDevice, error)
+
+func GetHTTPAgbotPatternNodeSearchHandler(ec ExchangeContext) AgbotPatternNodeSearchHandler {
+	return func(req *SearchExchangePatternRequest, policyOrg string, patternId string) (*[]SearchResultDevice, error) {
+		return GetPatternNodes(ec, policyOrg, patternId, req)
+	}
+}

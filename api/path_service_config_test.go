@@ -59,7 +59,7 @@ func Test_CreateService0(t *testing.T) {
 	var myError error
 	errorhandler := GetPassThroughErrorHandler(&myError)
 	sHandler := getVariableServiceHandler(exchange.UserInput{})
-	errHandled, newService, msg := CreateService(service, errorhandler, patternHandler, getDummyServiceResolver(), sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), nil, db, getBasicConfig(), false)
+	errHandled, newService, msg := CreateService(service, errorhandler, patternHandler, getDummyServiceDefResolver(), sHandler, getDummyDeviceHandler(), getDummyPatchDeviceHandler(), nil, db, getBasicConfig(), false)
 	if errHandled {
 		t.Errorf("unexpected error (%T) %v", myError, myError)
 	} else if newService == nil {

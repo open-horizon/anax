@@ -98,6 +98,14 @@ func isSameList(list1 []string, list2 []string) bool {
 	return true
 }
 
+func (p PropertyList) ShortString() string {
+	psa := []string{}
+	for _, prop := range p {
+		psa = append(psa, fmt.Sprintf("%v: %v", prop.Name, prop.Value))
+	}
+	return fmt.Sprintf("%v", strings.Join(psa, ", "))
+}
+
 func (p PropertyList) IsSame(compare PropertyList) bool {
 	for _, prop := range p {
 		found := false

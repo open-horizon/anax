@@ -8,7 +8,11 @@ import (
 )
 
 func getFSSImageName() string {
-	return fmt.Sprintf("openhorizon/%v_edge-sync-service", cutil.ArchString())
+	repo := os.Getenv(dev.DEVTOOL_HZN_FSS_IMAGE_REPO)
+	if repo == "" {
+		repo = "openhorizon"
+	}
+	return fmt.Sprintf("%v/%v_edge-sync-service", repo, cutil.ArchString())
 }
 
 func getFSSImageTagName() string {

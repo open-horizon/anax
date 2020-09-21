@@ -32,20 +32,21 @@ function quit(){
 
 # Logging
 VERB_SILENT=0
-VERB_CRITICAL=1
-VERB_ERROR=2
-VERB_WARNING=3
-VERB_INFO=4
+#VERB_CRITICAL=1   we always show fatal errors
+VERB_ERROR=1
+VERB_WARNING=2
+VERB_INFO=3
+VERB_VERBOSE=4
 VERB_DEBUG=5
 
-VERBOSITY=3 # Default logging verbosity
+AGENT_VERBOSITY=3 # Default logging verbosity
 
-function log_notify() {
-    log $VERB_SILENT "$1"
-}
-
-function log_critical() {
-    log $VERB_CRITICAL "CRITICAL: $1"
+function log_fatal() {
+    : ${1:?} ${2:?}
+    local exitCode=$1
+    local msg="$2"
+    echo $(now) "ERROR: $msg" >&2   # we always show fatal error msgs
+    exit $exitCode
 }
 
 function log_error() {
@@ -60,6 +61,10 @@ function log_info() {
     log $VERB_INFO "INFO: $1"
 }
 
+function log_verbose() {
+    log $VERB_VERBOSE "VERBOSE: $1"
+}
+
 function log_debug() {
     log $VERB_DEBUG "DEBUG: $1"
 }
@@ -69,28 +74,29 @@ function now() {
 }
 
 function log() {
-    if [ $VERBOSITY -ge $1 ]; then
-        echo `now` "$2" | fold -w80 -s
+    if [ $AGENT_VERBOSITY -ge $1 ]; then
+        echo `now` "$2"
     fi
 }
 
 function help() {
     cat << EndOfMessage
-$(basename "$0") <options> -- uninstall agent from edge cluster
-where:
-    \$HZN_EXCHANGE_USER_AUTH must be defined in environment
+$(basename "$0") <options>
 
-    -v          - show version
-    -l          - logging verbosity level (0-5, 5 is verbose)
-    -u          - management hub user authorization credentials
-    -d          - delete node from the management hub
-    -m		- agent namespace to uninstall
-    -f		- force delete cluster resources
-    -t		- cluster resource delete timeout (specified timeout should > 0)
+Uninstall the Horizon agent from an edge cluster.
+
+Options/Flags:
+    -v    show version
+    -l    Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (equivalent to AGENT_VERBOSITY)
+    -u    management hub user authorization credentials (or can set HZN_EXCHANGE_USER_AUTH environment variable)
+    -d    delete node from the management hub
+    -m    agent namespace to uninstall
+    -f    force delete cluster resources
+    -t    cluster resource delete timeout (specified timeout should > 0)
 
 Example: ./$(basename "$0") -u <hzn-exchange-user-auth> -d
-Note: Namespace may be stuck in "Terminating" during deleting. It is a known issue on Kubernetes. Please refer to Kubernetes website to delete namespace manually.
 
+Note: Namespace may be stuck in "Terminating" during deleting. It is a known issue on Kubernetes. Please refer to Kubernetes website to delete namespace manually.
 EndOfMessage
 }
 
@@ -103,7 +109,7 @@ function show_config() {
     echo "Agent namespace to uninstall: ${AGENT_NAMESPACE}"
     echo "Force delete cluster resources: ${USE_DELETE_FORCE}"
     echo "Cluster resource delete timeout: ${DELETE_TIMEOUT}"
-    echo "Verbosity is ${VERBOSITY}"
+    echo "Verbosity is ${AGENT_VERBOSITY}"
 
     log_debug "show_config() end"
 }
@@ -123,7 +129,7 @@ function validate_args(){
     elif command -v k3s kubectl; then
             KUBECTL="k3s kubectl"
     else
-	    log_notify "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
+	    log_info "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
     fi
 
     # check jq is available
@@ -131,18 +137,18 @@ function validate_args(){
     if command -v jq >/dev/null 2>&1; then
 	log_info "jq found"
     else
-        log_notify "jq not found, please install it. Exiting..."
+        log_info "jq not found, please install it. Exiting..."
         exit 1
     fi
 
     if [[ -z "$HZN_EXCHANGE_USER_AUTH" ]]; then
     	echo "\$HZN_EXCHANGE_USER_AUTH: ${HZN_EXCHANGE_USER_AUTH}"
-	log_notify "\$HZN_EXCHANGE_USER_AUTH is not set. Exiting..."
+	log_info "\$HZN_EXCHANGE_USER_AUTH is not set. Exiting..."
 	exit 1
     fi
 
     if [[ -z "$AGENT_NAMESPACE" ]]; then
-        log_notify "AGENT_NAMESPACE is not specified. Please use -m to set. Exiting..."
+        log_info "AGENT_NAMESPACE is not specified. Please use -m to set. Exiting..."
 	exit 1
     fi
 
@@ -192,7 +198,7 @@ function get_agent_pod_id() {
     	if [ -n "${POD_ID}" ]; then
         	log_info "get pod: ${POD_ID}"
     	else
-        	log_notify "Failed to get pod id, exiting..."
+        	log_info "Failed to get pod id, exiting..."
         	exit 1
     	fi
     fi
@@ -386,7 +392,7 @@ while getopts "u:hvl:dm:ft:" opt; do
 		;;
 		v) version
 		;;
-		l) validate_number_int "$OPTARG"; VERBOSITY="$OPTARG"
+		l) validate_number_int "$OPTARG"; AGENT_VERBOSITY="$OPTARG"
 		;;
 		d) DELETE_EX_NODE=true
 		;;

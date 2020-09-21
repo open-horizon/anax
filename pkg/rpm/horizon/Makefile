@@ -58,6 +58,11 @@ else
 	@true
 endif
 
+NO_DEBUG_PKGS := $(shell ../../../tools/no-debug-pkg)
+ifeq (${NO_DEBUG_PKGS},true)
+	RPM_OPTS =--define="%debug_package %{nil}"
+endif
+
 # Remember to up VERSION above. If building the rpm on mac, first: brew install rpm
 # Note: during rpmbuild on mac, you may get this benign msg: error: Couldn't exec /usr/local/Cellar/rpm/4.14.1_1/lib/rpm/elfdeps: No such file or directory
 rpmbuild: require-version rpmbuild-opts

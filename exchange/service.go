@@ -342,7 +342,7 @@ func updateServiceDefCache(newSvcDefs map[string]ServiceDefinition, cachedSvcDef
 	if cachedSvcDefs == nil {
 		cachedSvcDefs = newSvcDefs
 	}
-	UpdateCache(ServiceCacheMapKey(svcOrg, svcId, svcArch), SVC_DEF_TYPE_CACHE, cachedSvcDefs)
+	UpdateCache(ServiceCacheMapKey(svcOrg, cutil.FormExchangeIdWithSpecRef(svcId), svcArch), SVC_DEF_TYPE_CACHE, cachedSvcDefs)
 }
 
 // Retrieve service definition metadata from the exchange, by specific version or for all versions.
@@ -742,6 +742,11 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting docker auths for service %v.", service_id)))
 
+	cachedAuths := GetServiceDockAuthFromCache(service_id)
+	if cachedAuths != nil {
+		return *cachedAuths, nil
+	}
+
 	// get all the docker auths for the service
 	var resp_DockAuths interface{}
 	resp_DockAuths = ""
@@ -777,6 +782,7 @@ func GetServiceDockerAuthsWithId(ec ExchangeContext, service_id string) ([]Image
 		}
 	}
 
+	UpdateCache(service_id, SVC_DOCKAUTH_TYPE_CACHE, docker_auths)
 	glog.V(5).Infof(rpclogString(fmt.Sprintf("returning service docker auths %v for service %v.", docker_auths, service_id)))
 	return docker_auths, nil
 }

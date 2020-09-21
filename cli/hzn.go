@@ -116,19 +116,24 @@ Environment Variables:
 	exOrgListOrg := exOrgListCmd.Arg("org", msgPrinter.Sprintf("List this one organization.")).String()
 	exOrgListLong := exOrgListCmd.Flag("long", msgPrinter.Sprintf("Display detailed info of orgs")).Short('l').Bool()
 	exOrgCreateCmd := exOrgCmd.Command("create", msgPrinter.Sprintf("Create the organization resource in the Horizon Exchange."))
-	exOrgCreateOrg := exOrgCreateCmd.Arg("org", msgPrinter.Sprintf("Create this organization.")).Required().String()
+	exOrgCreateOrg := exOrgCreateCmd.Arg("org", msgPrinter.Sprintf("Create this organization and assign it to an agbot.")).Required().String()
 	exOrgCreateLabel := exOrgCreateCmd.Flag("label", msgPrinter.Sprintf("Label for new organization.")).Short('l').String()
 	exOrgCreateDesc := exOrgCreateCmd.Flag("description", msgPrinter.Sprintf("Description for new organization.")).Short('d').Required().String()
+	exOrgCreateTags := exOrgCreateCmd.Flag("tag", msgPrinter.Sprintf("Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.")).Short('t').Strings()
 	exOrgCreateHBMin := exOrgCreateCmd.Flag("heartbeatmin", msgPrinter.Sprintf("The minimum number of seconds between agent heartbeats to the Exchange.")).Int()
 	exOrgCreateHBMax := exOrgCreateCmd.Flag("heartbeatmax", msgPrinter.Sprintf("The maximum number of seconds between agent heartbeats to the Exchange. During periods of inactivity, the agent will increase the interval between heartbeats by increments of --heartbeatadjust.")).Int()
 	exOrgCreateHBAdjust := exOrgCreateCmd.Flag("heartbeatadjust", msgPrinter.Sprintf("The number of seconds to increment the agent's heartbeat interval.")).Int()
+	exOrgCreateMaxNodes := exOrgCreateCmd.Flag("max-nodes", msgPrinter.Sprintf("The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.")).Int()
+	exOrgCreateAddToAgbot := exOrgCreateCmd.Flag("agbot", msgPrinter.Sprintf("Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.")).Short('a').String()
 	exOrgUpdateCmd := exOrgCmd.Command("update", msgPrinter.Sprintf("Update the organization resource in the Horizon Exchange."))
 	exOrgUpdateOrg := exOrgUpdateCmd.Arg("org", msgPrinter.Sprintf("Update this organization.")).Required().String()
 	exOrgUpdateLabel := exOrgUpdateCmd.Flag("label", msgPrinter.Sprintf("New label for organization.")).Short('l').String()
 	exOrgUpdateDesc := exOrgUpdateCmd.Flag("description", msgPrinter.Sprintf("New description for organization.")).Short('d').String()
-	exOrgUpdateHBMin := exOrgUpdateCmd.Flag("heartbeatmin", msgPrinter.Sprintf("New minimum number of seconds the between agent heartbeats to the Exchange.")).Int()
-	exOrgUpdateHBMax := exOrgUpdateCmd.Flag("heartbeatmax", msgPrinter.Sprintf("New maximum number of seconds between agent heartbeats to the Exchange.")).Int()
-	exOrgUpdateHBAdjust := exOrgUpdateCmd.Flag("heartbeatadjust", msgPrinter.Sprintf("New value for the number of seconds to increment the agent's heartbeat interval.")).Int()
+	exOrgUpdateTags := exOrgUpdateCmd.Flag("tag", msgPrinter.Sprintf("New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.")).Short('t').Strings()
+	exOrgUpdateHBMin := exOrgUpdateCmd.Flag("heartbeatmin", msgPrinter.Sprintf("New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.")).Default("-1").Int()
+	exOrgUpdateHBMax := exOrgUpdateCmd.Flag("heartbeatmax", msgPrinter.Sprintf("New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.")).Default("-1").Int()
+	exOrgUpdateHBAdjust := exOrgUpdateCmd.Flag("heartbeatadjust", msgPrinter.Sprintf("New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.")).Default("-1").Int()
+	exOrgUpdateMaxNodes := exOrgUpdateCmd.Flag("max-nodes", msgPrinter.Sprintf("The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.")).Default("-1").Int()
 	exOrgDelCmd := exOrgCmd.Command("remove", msgPrinter.Sprintf("Remove an organization resource from the Horizon Exchange."))
 	exOrgDelOrg := exOrgDelCmd.Arg("org", msgPrinter.Sprintf("Remove this organization.")).Required().String()
 	exOrgDelForce := exOrgDelCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
@@ -351,14 +356,14 @@ Environment Variables:
 	nodeIdTok := registerCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon exchange node ID and token. The node ID must be unique within the organization. If not specified, HZN_EXCHANGE_NODE_AUTH will be used as a default. If both -n and HZN_EXCHANGE_NODE_AUTH are not specified, the node ID will be created by Horizon from the machine serial number or fully qualified hostname. If the token is not specified, Horizon will create a random token. If node resource in the Exchange identified by the ID and token does not yet exist, you must also specify the -u flag so it can be created.")).Short('n').PlaceHolder("ID:TOK").String()
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
-	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides variables needed by the node and services that are part of this pattern. See %v/node_reg_input.json and %v/more-examples.json. Specify -f- to read from stdin.", sample_dir, sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
+	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See %v/user_input.json. Specify -f- to read from stdin.", sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
 
 	nodeOrgFlag := registerCmd.Flag("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('o').String()
 	patternFlag := registerCmd.Flag("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('p').String()
 	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.")).String()
 	org := registerCmd.Arg("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.")).String()
 	pattern := registerCmd.Arg("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.")).String()
-	waitServiceFlag := registerCmd.Flag("service", msgPrinter.Sprintf("Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.")).Short('s').String()
+	waitServiceFlag := registerCmd.Flag("service", msgPrinter.Sprintf("Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.")).Short('s').String()
 	waitServiceOrgFlag := registerCmd.Flag("serviceorg", msgPrinter.Sprintf("The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.")).String()
 	waitTimeoutFlag := registerCmd.Flag("timeout", msgPrinter.Sprintf("The number of seconds for the --service to start. The default is 60 seconds, beginning when registration is successful. Ignored if --service is not specified.")).Short('t').Default("60").Int()
 
@@ -808,9 +813,9 @@ Environment Variables:
 	case exOrgListCmd.FullCommand():
 		exchange.OrgList(*exOrg, *exUserPw, *exOrgListOrg, *exOrgListLong)
 	case exOrgCreateCmd.FullCommand():
-		exchange.OrgCreate(*exOrg, *exUserPw, *exOrgCreateOrg, *exOrgCreateLabel, *exOrgCreateDesc, *exOrgCreateHBMin, *exOrgCreateHBMax, *exOrgCreateHBAdjust)
+		exchange.OrgCreate(*exOrg, *exUserPw, *exOrgCreateOrg, *exOrgCreateLabel, *exOrgCreateDesc, *exOrgCreateTags, *exOrgCreateHBMin, *exOrgCreateHBMax, *exOrgCreateHBAdjust, *exOrgCreateMaxNodes, *exOrgCreateAddToAgbot)
 	case exOrgUpdateCmd.FullCommand():
-		exchange.OrgUpdate(*exOrg, *exUserPw, *exOrgUpdateOrg, *exOrgUpdateLabel, *exOrgUpdateDesc, *exOrgUpdateHBMin, *exOrgUpdateHBMax, *exOrgUpdateHBAdjust)
+		exchange.OrgUpdate(*exOrg, *exUserPw, *exOrgUpdateOrg, *exOrgUpdateLabel, *exOrgUpdateDesc, *exOrgUpdateTags, *exOrgUpdateHBMin, *exOrgUpdateHBMax, *exOrgUpdateHBAdjust, *exOrgUpdateMaxNodes)
 	case exOrgDelCmd.FullCommand():
 		exchange.OrgDel(*exOrg, *exUserPw, *exOrgDelOrg, *exOrgDelForce)
 

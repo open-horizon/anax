@@ -3,6 +3,7 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/cutil"
 )
 
 type KubeDeploymentConfig struct {
@@ -11,7 +12,7 @@ type KubeDeploymentConfig struct {
 
 func (k *KubeDeploymentConfig) ToString() string {
 	if k != nil {
-		return fmt.Sprintf("OperatorYamlArchive: %v", k.OperatorYamlArchive)
+		return fmt.Sprintf("OperatorYamlArchive: %v", cutil.TruncateDisplayString(k.OperatorYamlArchive, 20))
 	}
 	return ""
 }

@@ -3,6 +3,10 @@ dist: bionic
 services:
   - docker
 
+env:
+- tests='NOLOOP=1'
+- tests='NOLOOP=1 TEST_PATTERNS=sall'
+
 branches:
   only:
   - master
@@ -16,9 +20,8 @@ before_install:
 - sudo curl -fsSL get.docker.com | sh
 
 before_script:
-  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then echo "$BMX_REG_TOKEN" | docker login -u "$BMX_REG_USER" --password-stdin registry.ng.bluemix.net; fi'
-  - make -C test
-  - docker ps
+- make -C test
+- docker ps
 
 script:
-  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall APPSTORE=1"; else make test -C test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sall" && make stop -C test && make test -C test TEST_VARS="NOLOOP=1"; fi'
+  - 'if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then make test -C test TEST_VARS="${tests}"; fi'

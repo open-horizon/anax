@@ -25,6 +25,8 @@ var ExchangeResourceCache *ResourceCache
 // These are the resource type keys
 const SVC_DEF_TYPE_CACHE = "SVC_DEF_CACHE"
 const SVC_POL_TYPE_CACHE = "SVC_POL_CACHE"
+const SVC_KEY_TYPE_CACHE = "SVC_KEY_CACHE"
+const SVC_DOCKAUTH_TYPE_CACHE = "SVC_DOCKAUTH_CACHE"
 const NODE_DEF_TYPE_CACHE = "NODE_DEF_CACHE"
 const NODE_POL_TYPE_CACHE = "NODE_POLICY_CACHE"
 const EXCH_VERS_TYPE_CACHE = "EXCH_VERS_CACHE"
@@ -80,6 +82,26 @@ func GetServicePolicyFromCache(svcOrg string, svcId string, svcArch string, svcV
 	return nil
 }
 
+// GetServiceDockAuthFromCache returns the service docker auths from the exchange cache if it is present, or nil if it is not
+func GetServiceDockAuthFromCache(sId string) *[]ImageDockerAuth {
+	svcAuth := GetResourceFromCache(sId, SVC_DOCKAUTH_TYPE_CACHE, 0)
+
+	if typedSvcAuth, ok := svcAuth.([]ImageDockerAuth); ok {
+		return &typedSvcAuth
+	}
+	return nil
+}
+
+// GetServiceKeysFromCache returns the service keys from the exchange cache if it is present, or nil if it is not
+func GetServiceKeysFromCache(svcOrg string, svcId string, svcArch string, svcVersion string) *map[string]string {
+	svcKeys := GetResourceFromCache(ServicePolicyCacheMapKey(svcOrg, svcId, svcArch, svcVersion), SVC_KEY_TYPE_CACHE, 0)
+
+	if typedSvcKeys, ok := svcKeys.(map[string]string); ok {
+		return &typedSvcKeys
+	}
+	return nil
+}
+
 // GetExchangeVersionFromCache returns the version of the exchange from the exchange cache if it is present or an emty string otherwise
 func GetExchangeVersionFromCache(exchangeURL string) string {
 	exchVers := GetResourceFromCache(exchangeURL, EXCH_VERS_TYPE_CACHE, CACHE_TIMEOUT_S)
@@ -123,7 +145,7 @@ func GetResourceFromCache(resourceKey string, resourceType string, expirationS u
 
 // UpdateCache will replace or create the provided resource in the given resource type cache
 func UpdateCache(resourceKey string, resourceType string, updatedResource interface{}) {
-	glog.V(5).Infof("Update exchange cache %s/%s", resourceType, resourceKey)
+	glog.V(5).Infof("Update exchange cache %s/%s with %v", resourceType, resourceKey, updatedResource)
 
 	if ExchangeResourceCache == nil {
 		newExchangeResourceCache := NewResourceCache()
@@ -195,6 +217,26 @@ func DeleteCacheResource(resourceType string, resourceKey string) interface{} {
 		resourceCache.Delete(resourceKey)
 	}
 	return retResource
+}
+
+// DeleteOrgCachedResources will delete all cached resources from the given org
+func DeleteOrgCachedResources(org string) {
+	glog.V(5).Infof("Delete all resources from org %v", org)
+	if ExchangeResourceCache == nil || ExchangeResourceCache.allResources == nil {
+		return
+	}
+
+	ExchangeResourceCache.Lock.Lock()
+	defer ExchangeResourceCache.Lock.Unlock()
+
+	for _, cache := range ExchangeResourceCache.allResources {
+		orgResourceKeys := cache.GetKeys()
+		for _, orgResourceKey := range orgResourceKeys {
+			if strings.Index(orgResourceKey, fmt.Sprintf("%s/", org)) == 0 {
+				cache.Delete(orgResourceKey)
+			}
+		}
+	}
 }
 
 // DeleteCacheNodeWriteThru will delete the given node and return the typed node resource
@@ -276,16 +318,31 @@ func UpdateCacheNodePatchWriteThru(nodeOrg string, nodeId string, cachedDevice *
 // DeleteCacheResourceFromChange takes an ExchangeChange and attempts to delete the now out-of-date exchange cache resource if it is present
 func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) {
 	if change.IsService() {
-		resourceIdPieces := strings.Split(change.ID, "_")
-		DeleteCacheResource(SVC_DEF_TYPE_CACHE, fmt.Sprintf(ServiceCacheMapKey(change.OrgID, resourceIdPieces[0], resourceIdPieces[len(resourceIdPieces)-1])))
+		id, arch, vers := svcInformationFromSvcId(change.ID)
+		DeleteCacheResource(SVC_DEF_TYPE_CACHE, ServiceCacheMapKey(change.OrgID, id, arch))
+		DeleteCacheResource(SVC_KEY_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, id, arch, vers))
+		DeleteCacheResource(SVC_DOCKAUTH_TYPE_CACHE, change.ID)
 	} else if change.IsNode(nodeId) || change.IsNodeAgreement(nodeId) || change.IsNodeServiceConfigState(nodeId) {
 		DeleteCacheResource(NODE_DEF_TYPE_CACHE, NodeCacheMapKey(change.OrgID, change.ID))
 	} else if change.IsNodePolicy(nodeId) {
 		DeleteCacheResource(NODE_POL_TYPE_CACHE, NodeCacheMapKey(change.OrgID, change.ID))
 	} else if change.IsServicePolicy() {
-		resourceIdPieces := strings.Split(change.ID, "_")
-		DeleteCacheResource(SVC_POL_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, resourceIdPieces[0], resourceIdPieces[len(resourceIdPieces)-1], resourceIdPieces[len(resourceIdPieces)-2]))
+		id, arch, vers := svcInformationFromSvcId(change.ID)
+		DeleteCacheResource(SVC_POL_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, id, arch, vers))
+	} else if change.IsOrg() && (change.Operation == CHANGE_OPERATION_CREATED || change.Operation == CHANGE_OPERATION_DELETED) {
+		DeleteOrgCachedResources(change.OrgID)
 	}
+}
+
+func svcInformationFromSvcId(svcId string) (svcUrl string, svcArch string, svcVersion string) {
+	svcIdPieces := strings.Split(svcId, "_")
+	if len(svcIdPieces) < 3 {
+		glog.Errorf("Error: could not find service url, arch, and version in service id %s", svcId)
+	}
+	svcUrl = svcIdPieces[0]
+	svcArch = svcIdPieces[len(svcIdPieces)-1]
+	svcVersion = svcIdPieces[len(svcIdPieces)-2]
+	return
 }
 
 // ServiceCacheMapKey returns a string to use for the cache map key for a service with the given org, id, and arch

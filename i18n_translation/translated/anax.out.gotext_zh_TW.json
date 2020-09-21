@@ -3,140 +3,348 @@
   "language": "zh-TW",
   "messages": [
     {
-      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
-      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
+      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
+      "translation": "無法讀取服務 {Arg_2} 的原則檔案 {Arg_1}，錯誤為：{Arg_3}"
     },
     {
-      "id": "The constraint expression contains unmatched parentheses.",
-      "translation": "限制表示式包含不相符的括弧。"
+      "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "開始使用 Exchange 為服務 {Arg_1}/{Arg_2} 通告原則。"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
-      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
+      "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
+      "translation": "無法使用 Exchange 為服務 {Arg_1}/{Arg_2} 通告原則，錯誤為：{Arg_3}"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
-      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
+      "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
+      "translation": "完成使用 Exchange 為服務 {Arg_1}/{Arg_2} 通告原則。"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
-      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
+      "id": "unable to read node policy from the local database. {Arg_1}",
+      "translation": "無法從本端資料庫讀取節點原則。 {Arg_1}"
     },
     {
-      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
-      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
+      "id": "Unable to read node object from the local database. {Arg_1}",
+      "translation": "無法從本端資料庫讀取節點物件。 {Arg_1}"
     },
     {
-      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
-      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+      "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
+      "translation": "無法將本端節點原則與 Exchange 副本同步。 錯誤為：{Arg_1}"
     },
     {
-      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
-      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
+      "id": "Node policy updated with the Exchange copy: {Arg_1}",
+      "translation": "已使用 Exchange 副本更新節點原則：{Arg_1}"
     },
     {
-      "id": "Error starting containers: {Arg_1}",
-      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
+      "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
+      "translation": "無法將本端節點使用者輸入與 Exchange 副本同步。 錯誤為：{Arg_1}"
     },
     {
-      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
-      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+      "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
+      "translation": "已使用 Exchange 副本更新節點使用者輸入。 變更後的使用者輸入為：{Arg_1}"
     },
     {
-      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
-      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
+      "translation": "節點無法驗證與消費者的合約 {Arg_1}。 將取消該合約"
     },
     {
-      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
-      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。 錯誤為：{Arg_2}"
+      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
+      "translation": "節點已離線。 除非還原連線，否則將會修剪對定期離線錯誤訊息的記載"
     },
     {
-      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
-      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。 {Arg_2}"
+      "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
+      "translation": "無法將節點與 Exchange 副本同步。 錯誤為：{Arg_1}"
     },
     {
-      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
-      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。 {Arg_2}"
+      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
+      "translation": "無法從 Exchange 擷取節點資源 {Arg_1} 的服務配置狀態，錯誤為：{Arg_2}"
     },
     {
-      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
-      "translation": "anax 正在終止。 無法存取配置 {Arg_1} 中指定的服務儲存目錄。 {Arg_2}"
+      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
+      "translation": "無法從本端資料庫擷取儲存的節點交換型樣。 {Arg_1}"
     },
     {
-      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax 正在終止。 無法實例化 iptables 用戶端。 {Arg_1}"
+      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
+      "translation": "無法將新的節點交換型樣 {Arg_1} 儲存至本端資料庫。 錯誤為：{Arg_2}"
     },
     {
-      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax 正在終止。 無法實例化 Docker 用戶端。 {Arg_1}"
+      "id": "anax terminating, unable to sync up containers.",
+      "translation": "anax 正在終止，無法同步化儲存器。"
     },
     {
-      "id": "no service name",
-      "translation": "無服務名稱"
+      "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
+      "translation": "anax 正在終止，無法完成合約同步化。 {Arg_1}"
     },
     {
-      "id": "no docker image for service {ServiceName}",
-      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
+      "id": "No input found.",
+      "translation": "找不到輸入。"
     },
     {
-      "id": "failed to marshal body for {D}: {Err}",
-      "translation": "無法配置 {D} 的主體：{Err}"
+      "id": "Unauthorized. No exchange user id is supplied.",
+      "translation": "未獲授權。 未提供任何 Exchange 使用者 ID。"
     },
     {
-      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
+      "id": "Failed to authenticate the user with the Exchange. {Err}",
+      "translation": "無法向 Exchange 鑑別使用者。 {Err}"
     },
     {
-      "id": "user input {Name} has no default value and is not set",
-      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
+      "id": "Input body couldn't be deserialized to JSON object. {Err}",
+      "translation": "輸入主體無法解除序列化為 JSON 物件。 {Err}"
     },
     {
-      "id": "'requiredServices' is not supported for cluster type service.",
-      "translation": "叢集類型服務不支援 'requiredServices'。"
+      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。 {Err}"
     },
     {
-      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
-      "translation": "無法將服務 {ReqSvc} 的版本 {Ver} 轉換為版本範圍表示式。"
+      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。 {Err}"
     },
     {
-      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
-      "translation": "從 Exchange 擷取 {ReqSvc} 的服務時發生錯誤。 {Err}"
+      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
+      "translation": "輸入主體無法解除序列化為 CompCheck 物件。 {Err}"
     },
     {
-      "id": "The required service {SId} has the wrong service type: {SType}.",
-      "translation": "必要服務 {SId} 具有錯誤的服務類型：{SType}。"
+      "id": "No exchange user id is supplied.",
+      "translation": "未提供任何 Exchange 使用者 ID。"
     },
     {
-      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
-      "translation": "必要服務 {SId} 的相依服務 {Id} 具有錯誤的服務類型：{SType1}。"
+      "id": "No exchange user organization id is supplied.",
+      "translation": "未提供任何 Exchange 使用者組織 ID。"
     },
     {
-      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "相容性錯誤：綱目版本不同，消費者原則：{Version}，生產者原則 {Version_1}"
+      "id": "No exchange user password or api key is supplied.",
+      "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
     },
     {
-      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
-      "translation": "相容性錯誤：節點內容 {Properties} 不滿足限制需求 {Constraints}。 基礎錯誤：{Err}"
+      "id": "Wrong organization id, user id or password.",
+      "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
     },
     {
-      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
-      "translation": "相容性錯誤：節點內容不滿足限制需求。 {Err}"
+      "id": "Internal server error",
+      "translation": "內部伺服器錯誤"
     },
     {
-      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
-      "translation": "相容性錯誤：內容 {Properties} 不滿足節點限制 {Constraints}。 基礎錯誤：{Err}"
+      "id": "Error parsing the selections {Form}. {Err}",
+      "translation": "剖析 selections {Form} 時發生錯誤。 {Err}"
     },
     {
-      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
-      "translation": "相容性錯誤：內容未滿足節點限制。 {Err}"
+      "id": "Error getting {Resource} for output, error {Err}",
+      "translation": "取得輸出的 {Resource} 時發生錯誤，錯誤為：{Err}"
     },
     {
-      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
-      "translation": "相容性錯誤：{AgreementProtocols} 與 {AgreementProtocols_1} 之間沒有共用的合約通訊協定。 基礎錯誤：{Err}"
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
     },
     {
-      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
-      "translation": "相容性錯誤：資料驗證必須相容，生產者具有 {DataVerify} 而消費者具有 {DataVerify_1}。"
+      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入主體無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點更新的輸入時發生錯誤。 輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點原則的輸入時發生錯誤。 輸入主體無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
+      "translation": "剖析節點使用者輸入的輸入時發生錯誤。 輸入主體無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
+      "translation": "在節點 {Arg_1} 的節點配置/登錄中發生錯誤。 {Arg_2}"
+    },
+    {
+      "id": "Error in updating node {Arg_1}. {Arg_2}",
+      "translation": "更新節點 {Arg_1} 時發生錯誤。 {Arg_2}"
+    },
+    {
+      "id": "Error in node unregistration. {Arg_1}",
+      "translation": "在節點取消登錄中發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Error verifiying exchange version. error: {Arg_1}",
+      "translation": "驗證 Exchange 版本時發生錯誤。 錯誤為：{Arg_1}"
+    },
+    {
+      "id": "Error in creating or replacing node policy. {Arg_1}",
+      "translation": "建立或取代節點原則時發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Error in patching node policy. {Arg_1}",
+      "translation": "修補節點原則時發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node policy. {Arg_1}",
+      "translation": "刪除節點原則時發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Error in updating node user input. {Arg_1}",
+      "translation": "更新節點使用者輸入時發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Error in patching node user input. {Arg_1}",
+      "translation": "修補節點使用者輸入時發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Error in deleting node userinput. {Arg_1}",
+      "translation": "刪除節點使用者輸入時發生錯誤。 {Arg_1}"
+    },
+    {
+      "id": "Start node configuration/registration for node {Arg_1}.",
+      "translation": "啟動節點 {Arg_1} 的節點配置/登錄。"
+    },
+    {
+      "id": "Start updating node {Arg_1}.",
+      "translation": "開始更新節點 {Arg_1}。"
+    },
+    {
+      "id": "Complete node update for {Arg_1}.",
+      "translation": "完成 {Arg_1} 的節點更新。"
+    },
+    {
+      "id": "Start node unregistration.",
+      "translation": "啟動節點取消登錄。"
+    },
+    {
+      "id": "Node unregistration complete for node {Arg_1}.",
+      "translation": "完成節點 {Arg_1} 的節點取消登錄。"
+    },
+    {
+      "id": "Error unregistering the node. The node is not found from the database.",
+      "translation": "取消登錄節點時發生錯誤。 在資料庫中找不到該節點。"
+    },
+    {
+      "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
+      "translation": "取消登錄節點時發生錯誤。 節點必須處於「已配置」或「正在配置」狀態才能進行取消配置。"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
+      "translation": "節點取消登錄的輸入錯誤。 {Arg_1} 值對於 removeNode 而言不正確"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
+      "translation": "節點取消登錄的輸入錯誤。 {Arg_1} 值對於 deepClean 而言不正確"
+    },
+    {
+      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
+      "translation": "節點取消登錄的輸入錯誤。 {Arg_1} 值對於 block 而言不正確"
+    },
+    {
+      "id": "Unable to read node object from database, error {Arg_1}",
+      "translation": "無法從資料庫中讀取節點物件，錯誤為：{Arg_1}"
+    },
+    {
+      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
+      "translation": "在資料庫中儲存新的節點配置狀態 (unconfiguring) 時發生錯誤：{Arg_1}"
+    },
+    {
+      "id": "Error in node configuration. The node is not found from the database.",
+      "translation": "節點配置中發生錯誤。 在資料庫中找不到該節點。"
+    },
+    {
+      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
+      "translation": "節點配置中發生錯誤。 節點必須處於「已配置」或「正在配置」狀態才能將狀態變更為 {Arg_1}。"
+    },
+    {
+      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
+      "translation": "不支援將節點狀態從 '{Arg_1}' 轉移為 '{Arg_2}'。"
+    },
+    {
+      "id": "Failed get user input from local db. {Arg_1}",
+      "translation": "無法從本端資料庫取得使用者輸入。 {Arg_1}"
+    },
+    {
+      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
+      "translation": "在本端使用者輸入中找不到服務 {Arg_1}/{Arg_2} 的喜好設定，錯誤為：{Arg_3}"
+    },
+    {
+      "id": "Error saving new node config state to database: {Arg_1}",
+      "translation": "將新的節點配置狀態儲存至資料庫時發生錯誤：{Arg_1}"
+    },
+    {
+      "id": "Complete node configuration/registration for node {Arg_1}.",
+      "translation": "完成節點 {Arg_1} 的節點配置/登錄。"
+    },
+    {
+      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
+      "translation": "在 {Arg_1} 的服務配置中發生錯誤。 {Arg_2}"
+    },
+    {
+      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
+      "translation": "取得型樣 {Arg_1} 的服務參照時發生錯誤。 {Arg_2}"
+    },
+    {
+      "id": "Ignoring service. {Arg_1}",
+      "translation": "忽略服務。 {Arg_1}"
+    },
+    {
+      "id": "New node policy: {Arg_1}",
+      "translation": "新建節點原則：{Arg_1}"
+    },
+    {
+      "id": "Deleted node policy",
+      "translation": "已刪除節點原則"
+    },
+    {
+      "id": "New node user input: {Arg_1}",
+      "translation": "新建節點使用者輸入：{Arg_1}"
+    },
+    {
+      "id": "No node user input to detele",
+      "translation": "沒有要刪除的節點使用者輸入"
+    },
+    {
+      "id": "Deleted all node user input",
+      "translation": "刪除所有節點使用者輸入"
+    },
+    {
+      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
+      "translation": "開始使用使用者輸入進行 {Arg_1}/{Arg_2} 的服務配置。"
+    },
+    {
+      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "開始進行 {Arg_1}/{Arg_2} 的服務自動配置。"
+    },
+    {
+      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
+      "translation": "完成 {Arg_1}/{Arg_2} 的服務配置。"
+    },
+    {
+      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
+      "translation": "完成 {Arg_1}/{Arg_2} 的服務自動配置。"
+    },
+    {
+      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
+      "translation": "變數 {Arg_1} 在 {Arg_2}/{Arg_3} 的服務配置中遺漏。 如果部署原則不包含遺漏變數的設定，則它可能會造成合約不成立。"
+    },
+    {
+      "id": "Error configuring service {Arg_1}. {Arg_2}",
+      "translation": "配置服務 {Arg_1} 時發生錯誤。 {Arg_2}"
+    },
+    {
+      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
+      "translation": "變更服務配置狀態 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "開始將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
+    },
+    {
+      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
+      "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
+    },
+    {
+      "id": "Error converting the selections into Selectors: {Err}",
+      "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
     },
     {
       "id": "Name, or Org is empty string.",
@@ -153,6 +361,14 @@
     {
       "id": "The property {PROPSVCPRIVILEGED} must have a boolean value (true or false).",
       "translation": "內容 {PROPSVCPRIVILEGED} 必須具有布林值（true 或 false）。"
+    },
+    {
+      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號失敗。 錯誤為：{Arg_3}"
+    },
+    {
+      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
+      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號已還原。"
     },
     {
       "id": "[verbose] {M}",
@@ -379,6 +595,14 @@
       "translation": "無法配置 {ApiMsg} 的 Exchange 主體：{Err}"
     },
     {
+      "id": "Failed to get file info: {Err}",
+      "translation": "無法取得檔案資訊：{Err}"
+    },
+    {
+      "id": "Uploading: {Float32totalSent__float32bodyLen__100} {}",
+      "translation": "正在上傳：{Float32totalSent__float32bodyLen__100} {}"
+    },
+    {
       "id": "unable to open object file {Name}: {Err}",
       "translation": "無法開啟物件檔 {Name}：{Err}"
     },
@@ -511,396 +735,56 @@
       "translation": "警告：無法剖析映像檔路徑 '{Image}'。 不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
     },
     {
-      "id": "Unable to read policy file {Arg_1} for service {Arg_2}, error: {Arg_3}",
-      "translation": "無法讀取服務 {Arg_2} 的原則檔案 {Arg_1}，錯誤為：{Arg_3}"
+      "id": "no service name",
+      "translation": "無服務名稱"
     },
     {
-      "id": "Start policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "開始使用 Exchange 為服務 {Arg_1}/{Arg_2} 通告原則。"
+      "id": "no docker image for service {ServiceName}",
+      "translation": "服務 {ServiceName} 沒有 Docker 映像檔"
     },
     {
-      "id": "Unable to advertise policies with Exchange for service {Arg_1}/{Arg_2}, error: {Arg_3}",
-      "translation": "無法使用 Exchange 為服務 {Arg_1}/{Arg_2} 通告原則，錯誤為：{Arg_3}"
+      "id": "failed to marshal body for {D}: {Err}",
+      "translation": "無法配置 {D} 的主體：{Err}"
     },
     {
-      "id": "Complete policy advertising with the Exchange for service {Arg_1}/{Arg_2}.",
-      "translation": "完成使用 Exchange 為服務 {Arg_1}/{Arg_2} 通告原則。"
+      "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
+      "translation": "無法解除配置部署欄位 {StringjsonBytes} 的 JSON：{Err}"
     },
     {
-      "id": "unable to read node policy from the local database. {Arg_1}",
-      "translation": "無法從本端資料庫讀取節點原則。 {Arg_1}"
+      "id": "user input {Name} has no default value and is not set",
+      "translation": "使用者輸入 {Name} 沒有預設值且未設定"
     },
     {
-      "id": "Unable to read node object from the local database. {Arg_1}",
-      "translation": "無法從本端資料庫讀取節點物件。 {Arg_1}"
+      "id": "'requiredServices' is not supported for cluster type service.",
+      "translation": "叢集類型服務不支援 'requiredServices'。"
     },
     {
-      "id": "Unable to sync the local node policy with the Exchange copy. Error: {Arg_1}",
-      "translation": "無法將本端節點原則與 Exchange 副本同步。 錯誤為：{Arg_1}"
+      "id": "Failed to convert version {Ver} for service {ReqSvc} to version range expression.",
+      "translation": "無法將服務 {ReqSvc} 的版本 {Ver} 轉換為版本範圍表示式。"
     },
     {
-      "id": "Node policy updated with the Exchange copy: {Arg_1}",
-      "translation": "已使用 Exchange 副本更新節點原則：{Arg_1}"
+      "id": "Error retrieving service from the Exchange for {ReqSvc}. {Err}",
+      "translation": "從 Exchange 擷取 {ReqSvc} 的服務時發生錯誤。 {Err}"
     },
     {
-      "id": "Unable to sync the local node user input with the Exchange copy. Error: {Arg_1}",
-      "translation": "無法將本端節點使用者輸入與 Exchange 副本同步。 錯誤為：{Arg_1}"
+      "id": "The required service {SId} has the wrong service type: {SType}.",
+      "translation": "必要服務 {SId} 具有錯誤的服務類型：{SType}。"
     },
     {
-      "id": "Node user input updated with the Exchange copy. The changed user inputs are: {Arg_1}",
-      "translation": "已使用 Exchange 副本更新節點使用者輸入。 變更後的使用者輸入為：{Arg_1}"
+      "id": "The dependent service {Id} for the required service {SId} has the wrong service type: {SType1}.",
+      "translation": "必要服務 {SId} 的相依服務 {Id} 具有錯誤的服務類型：{SType1}。"
     },
     {
-      "id": "Node could not verify the agreement {Arg_1} with the consumer. Will cancel it",
-      "translation": "節點無法驗證與消費者的合約 {Arg_1}。 將取消該合約"
+      "id": "failed to unmarshal json input {JsonBytes}: {Err}",
+      "translation": "無法解除配置 json 輸入 {JsonBytes}：{Err}"
     },
     {
-      "id": "Node is offline. Logging of periodic offline error messages will be curtailed until connection is restored",
-      "translation": "節點已離線。 除非還原連線，否則將會修剪對定期離線錯誤訊息的記載"
+      "id": "Error getting new user input format. {Err1}",
+      "translation": "取得新的使用者輸入格式時發生錯誤。{Err1}"
     },
     {
-      "id": "Unable to sync the node with the Exchange copy. Error: {Arg_1}",
-      "translation": "無法將節點與 Exchange 副本同步。 錯誤為：{Arg_1}"
-    },
-    {
-      "id": "Unable to retrieve the service configuration state for node resource {Arg_1} from the Exchange, error {Arg_2}",
-      "translation": "無法從 Exchange 擷取節點資源 {Arg_1} 的服務配置狀態，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Unable to retrieve the saved node exchange pattern from the local database. {Arg_1}",
-      "translation": "無法從本端資料庫擷取儲存的節點交換型樣。 {Arg_1}"
-    },
-    {
-      "id": "Unable to save the new node exchange pattern {Arg_1} to the local database. Error: {Arg_2}",
-      "translation": "無法將新的節點交換型樣 {Arg_1} 儲存至本端資料庫。 錯誤為：{Arg_2}"
-    },
-    {
-      "id": "anax terminating, unable to sync up containers.",
-      "translation": "anax 正在終止，無法同步化儲存器。"
-    },
-    {
-      "id": "anax terminating, unable to complete agreement sync up. {Arg_1}",
-      "translation": "anax 正在終止，無法完成合約同步化。 {Arg_1}"
-    },
-    {
-      "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號失敗。 錯誤為：{Arg_3}"
-    },
-    {
-      "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
-      "translation": "節點 {Arg_1}/{Arg_2} 的節點活動訊號已還原。"
-    },
-    {
-      "id": "No input found.",
-      "translation": "找不到輸入。"
-    },
-    {
-      "id": "Unauthorized. No exchange user id is supplied.",
-      "translation": "未獲授權。 未提供任何 Exchange 使用者 ID。"
-    },
-    {
-      "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "無法向 Exchange 鑑別使用者。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to JSON object. {Err}",
-      "translation": "輸入主體無法解除序列化為 JSON 物件。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to PolicyCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 PolicyCheck 物件。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to UserInputCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 UserInputCheck 物件。 {Err}"
-    },
-    {
-      "id": "Input body couldn't be deserialized to CompCheck object. {Err}",
-      "translation": "輸入主體無法解除序列化為 CompCheck 物件。 {Err}"
-    },
-    {
-      "id": "No exchange user id is supplied.",
-      "translation": "未提供任何 Exchange 使用者 ID。"
-    },
-    {
-      "id": "No exchange user organization id is supplied.",
-      "translation": "未提供任何 Exchange 使用者組織 ID。"
-    },
-    {
-      "id": "No exchange user password or api key is supplied.",
-      "translation": "未提供任何 Exchange 使用者密碼或 API 金鑰。"
-    },
-    {
-      "id": "Wrong organization id, user id or password.",
-      "translation": "錯誤的組織 ID、使用者 ID 或密碼。"
-    },
-    {
-      "id": "Internal server error",
-      "translation": "內部伺服器錯誤"
-    },
-    {
-      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
-      "translation": "無法建立目錄來存放自行簽署的 MMS API 憑證，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
-      "translation": "無法為 MMS API 憑證序號產生亂數，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to generate private key for MMS API certificate, error {Err}",
-      "translation": "無法為 MMS API 憑證產生私密金鑰，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to create MMS API certificate, error {Err}",
-      "translation": "無法建立 MMS API 憑證，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "無法將 MMS API 憑證寫入檔案 {ServerCertificate}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
-      "translation": "無法將 MMS API 憑證編碼至檔案 {ServerCertificate}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
-      "translation": "無法關閉 MMS API 憑證檔 {ServerCertificate}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "無法將 MMS API 憑證私密金鑰寫入檔案 {ServerKey}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
-      "translation": "無法將 MMS API 憑證私密金鑰編碼至檔案 {ServerKey}，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
-      "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
-    },
-    {
-      "id": "Error parsing the selections {Form}. {Err}",
-      "translation": "剖析 selections {Form} 時發生錯誤。 {Err}"
-    },
-    {
-      "id": "Error getting {Resource} for output, error {Err}",
-      "translation": "取得輸出的 {Resource} 時發生錯誤，錯誤為：{Err}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node configuration/registration. Input body couldn't be deserialized to configstate object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點配置/登錄的輸入時發生錯誤。 輸入主體無法解除序列化為配置狀態物件：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node update. Input body couldn't be deserialized to node object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點更新的輸入時發生錯誤。 輸入主體無法解除序列化為節點物件：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy. Input body could not be deserialized as a policy object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則的輸入時發生錯誤。 輸入主體無法解除序列化為原則物件：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body could not be deserialized into a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體無法解除序列化為限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node policy patch. Input body did not contain a Constraint Expression or Property List: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點原則修補程式的輸入時發生錯誤。 輸入主體不包含限制項表示式或內容清單：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error parsing input for node user input. Input body could not be deserialized as a UserInput object: {Arg_1}, error: {Arg_2}",
-      "translation": "剖析節點使用者輸入的輸入時發生錯誤。 輸入主體無法解除序列化為使用者輸入物件：{Arg_1}，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Error in node configuration/registration for node {Arg_1}. {Arg_2}",
-      "translation": "在節點 {Arg_1} 的節點配置/登錄中發生錯誤。 {Arg_2}"
-    },
-    {
-      "id": "Error in updating node {Arg_1}. {Arg_2}",
-      "translation": "更新節點 {Arg_1} 時發生錯誤。 {Arg_2}"
-    },
-    {
-      "id": "Error in node unregistration. {Arg_1}",
-      "translation": "在節點取消登錄中發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Error verifiying exchange version. error: {Arg_1}",
-      "translation": "驗證 Exchange 版本時發生錯誤。 錯誤為：{Arg_1}"
-    },
-    {
-      "id": "Error in creating or replacing node policy. {Arg_1}",
-      "translation": "建立或取代節點原則時發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node policy. {Arg_1}",
-      "translation": "修補節點原則時發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node policy. {Arg_1}",
-      "translation": "刪除節點原則時發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Error in updating node user input. {Arg_1}",
-      "translation": "更新節點使用者輸入時發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Error in patching node user input. {Arg_1}",
-      "translation": "修補節點使用者輸入時發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Error in deleting node userinput. {Arg_1}",
-      "translation": "刪除節點使用者輸入時發生錯誤。 {Arg_1}"
-    },
-    {
-      "id": "Start node configuration/registration for node {Arg_1}.",
-      "translation": "啟動節點 {Arg_1} 的節點配置/登錄。"
-    },
-    {
-      "id": "Start updating node {Arg_1}.",
-      "translation": "開始更新節點 {Arg_1}。"
-    },
-    {
-      "id": "Complete node update for {Arg_1}.",
-      "translation": "完成 {Arg_1} 的節點更新。"
-    },
-    {
-      "id": "Start node unregistration.",
-      "translation": "啟動節點取消登錄。"
-    },
-    {
-      "id": "Node unregistration complete for node {Arg_1}.",
-      "translation": "完成節點 {Arg_1} 的節點取消登錄。"
-    },
-    {
-      "id": "Error unregistering the node. The node is not found from the database.",
-      "translation": "取消登錄節點時發生錯誤。在資料庫中找不到該節點。"
-    },
-    {
-      "id": "Error unregistering the node. The node must be in 'configured' or 'configuring' state in order to unconfigure it.",
-      "translation": "取消登錄節點時發生錯誤。節點必須處於「已配置」或「正在配置」狀態才能進行取消配置。"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for removeNode",
-      "translation": "節點取消登錄的輸入錯誤。 {Arg_1} 值對於 removeNode 而言不正確"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for deepClean",
-      "translation": "節點取消登錄的輸入錯誤。 {Arg_1} 值對於 deepClean 而言不正確"
-    },
-    {
-      "id": "Input error for node unregistration. {Arg_1} is an incorrect value for block",
-      "translation": "節點取消登錄的輸入錯誤。 {Arg_1} 值對於 block 而言不正確"
-    },
-    {
-      "id": "Unable to read node object from database, error {Arg_1}",
-      "translation": "無法從資料庫中讀取節點物件，錯誤為：{Arg_1}"
-    },
-    {
-      "id": "Error saving new node config state (unconfiguring) in the database: {Arg_1}",
-      "translation": "在資料庫中儲存新的節點配置狀態 (unconfiguring) 時發生錯誤：{Arg_1}"
-    },
-    {
-      "id": "Error in node configuration. The node is not found from the database.",
-      "translation": "節點配置中發生錯誤。 在資料庫中找不到該節點。"
-    },
-    {
-      "id": "Error in node configuration. The node must be in 'configured' or 'configuring' state in order to change the state to {Arg_1}.",
-      "translation": "節點配置中發生錯誤。 節點必須處於「已配置」或「正在配置」狀態才能將狀態變更為 {Arg_1}。"
-    },
-    {
-      "id": "Node state transition from '{Arg_1}' to '{Arg_2}' is not supported.",
-      "translation": "不支援將節點狀態從 '{Arg_1}' 轉移為 '{Arg_2}'。"
-    },
-    {
-      "id": "Failed get user input from local db. {Arg_1}",
-      "translation": "無法從本端資料庫取得使用者輸入。 {Arg_1}"
-    },
-    {
-      "id": "Failed to find preferences for service {Arg_1}/{Arg_2} from the local user input, error: {Arg_3}",
-      "translation": "在本端使用者輸入中找不到服務 {Arg_1}/{Arg_2} 的喜好設定，錯誤為：{Arg_3}"
-    },
-    {
-      "id": "Error saving new node config state to database: {Arg_1}",
-      "translation": "將新的節點配置狀態儲存至資料庫時發生錯誤：{Arg_1}"
-    },
-    {
-      "id": "Complete node configuration/registration for node {Arg_1}.",
-      "translation": "完成節點 {Arg_1} 的節點配置/登錄。"
-    },
-    {
-      "id": "Error in service configuration for {Arg_1}. {Arg_2}",
-      "translation": "在 {Arg_1} 的服務配置中發生錯誤。 {Arg_2}"
-    },
-    {
-      "id": "Error getting service references for pattern {Arg_1}. {Arg_2}",
-      "translation": "取得型樣 {Arg_1} 的服務參照時發生錯誤。 {Arg_2}"
-    },
-    {
-      "id": "Ignoring service. {Arg_1}",
-      "translation": "忽略服務。 {Arg_1}"
-    },
-    {
-      "id": "New node policy: {Arg_1}",
-      "translation": "新建節點原則：{Arg_1}"
-    },
-    {
-      "id": "Deleted node policy",
-      "translation": "已刪除節點原則"
-    },
-    {
-      "id": "New node user input: {Arg_1}",
-      "translation": "新建節點使用者輸入：{Arg_1}"
-    },
-    {
-      "id": "No node user input to detele",
-      "translation": "沒有要刪除的節點使用者輸入"
-    },
-    {
-      "id": "Deleted all node user input",
-      "translation": "刪除所有節點使用者輸入"
-    },
-    {
-      "id": "Start service configuration with user input for {Arg_1}/{Arg_2}.",
-      "translation": "開始使用使用者輸入進行 {Arg_1}/{Arg_2} 的服務配置。"
-    },
-    {
-      "id": "Start service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "開始進行 {Arg_1}/{Arg_2} 的服務自動配置。"
-    },
-    {
-      "id": "Complete service configuration for {Arg_1}/{Arg_2}.",
-      "translation": "完成 {Arg_1}/{Arg_2} 的服務配置。"
-    },
-    {
-      "id": "Complete service auto configuration for {Arg_1}/{Arg_2}.",
-      "translation": "完成 {Arg_1}/{Arg_2} 的服務自動配置。"
-    },
-    {
-      "id": "Variable {Arg_1} is missing in the service configuration for {Arg_2}/{Arg_3}. It may prevent an agreement if the deployment policy does not contain the setting for the missing variable.",
-      "translation": "變數 {Arg_1} 在 {Arg_2}/{Arg_3} 的服務配置中遺漏。 如果部署原則不包含遺漏變數的設定，則它可能會造成合約不成立。"
-    },
-    {
-      "id": "Error configuring service {Arg_1}. {Arg_2}",
-      "translation": "配置服務 {Arg_1} 時發生錯誤。 {Arg_2}"
-    },
-    {
-      "id": "Error changing service configstate {Arg_1}, error {Arg_2}",
-      "translation": "變更服務配置狀態 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
-    },
-    {
-      "id": "Start changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "開始將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
-    },
-    {
-      "id": "Complete changing service configuration state to {Arg_1} for {Arg_2} for the node.",
-      "translation": "完成將節點的 {Arg_2} 的服務配置狀態變更為 {Arg_1}。"
-    },
-    {
-      "id": "Error converting the selections into Selectors: {Err}",
-      "translation": "將 selections 轉換為 Selectors 時發生錯誤：{Err}"
+      "id": "Failed to create json object for user input. {Err1}",
+      "translation": "無法建立使用者輸入的 json 物件。{Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -1339,24 +1223,64 @@
       "translation": "未使用使用者輸入中指定的服務 {ServiceOrgid}/{ServiceUrl} 版本 {ServiceVersionRange} 架構 {ServiceArch} 的變數 {Name}。 請確定名稱正確。"
     },
     {
-      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
-      "translation": "合約 {Arg_1} 已存在，將忽略提案：{Arg_2}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for a workload",
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的功能"
     },
     {
-      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
-      "translation": "解除配置合約 {Arg_1} 的 TsAndCs 時收到錯誤：{Arg_2}"
+      "id": "Deployment config {Arg_1} contains unsupported capability for infrastructure container.",
+      "translation": "部署配置 {Arg_1} 包含基礎架構儲存器不支援的功能。"
     },
     {
-      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
-      "translation": "節點從 agbot {Arg_4} 中收到使用服務 {Arg_2}/{Arg_3} 之合約 {Arg_1} 的提案訊息。"
+      "id": "Deployment config {Arg_1} contains unsupported bind for a workload, {Arg_2}",
+      "translation": "部署配置 {Arg_1} 包含工作量不支援的連結：{Arg_2}"
     },
     {
-      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
-      "translation": "節點拒絕了服務 {Arg_1}/{Arg_2} 的提案。"
+      "id": "Deployment config {Arg_1} contains unsupported bind for {Arg_2}, {Arg_3}",
+      "translation": "部署配置 {Arg_1} 包含 {Arg_2} 不支援的連結：{Arg_3}"
     },
     {
-      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "處理服務 {Arg_1}/{Arg_2} 的提案時發生錯誤。 錯誤為：{Arg_3}"
+      "id": "Error Unmarshalling deployment string {Arg_1}, error: {Arg_2}",
+      "translation": "解除配置部署字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Error Unmarshalling deployment override string {Arg_1} for agreement {Arg_2}, error: {Arg_3}",
+      "translation": "解除配置合約 {Arg_2} 的部署置換字串 {Arg_1} 時發生錯誤，錯誤為：{Arg_3}"
+    },
+    {
+      "id": "Error starting containers: {Arg_1}",
+      "translation": "啟動儲存器時發生錯誤：{Arg_1}"
+    },
+    {
+      "id": "Error starting containers for agreement {Arg_1}: {Arg_2}",
+      "translation": "啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+    },
+    {
+      "id": "Error restarting containers for agreements {Arg_1}: {Arg_2}",
+      "translation": "重新啟動合約 {Arg_1} 的儲存器時發生錯誤：{Arg_2}"
+    },
+    {
+      "id": "Error cleaning up old containers before starting up new containers for {Arg_1}. Error: {Arg_2}",
+      "translation": "在啟動 {Arg_1} 的新儲存器之前清除舊儲存器時發生錯誤。 錯誤為：{Arg_2}"
+    },
+    {
+      "id": "Failed to get a list of parent containers for service retry for {Arg_1}. {Arg_2}",
+      "translation": "無法取得母項儲存器清單以針對 {Arg_1} 重試服務。 {Arg_2}"
+    },
+    {
+      "id": "Failed to restoring the network connection with the parents for service {Arg_1}. {Arg_2}",
+      "translation": "無法還原連接服務 {Arg_1} 之型樣的網路連線。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Unable to access service storage direcotry specified in config: {Arg_1}. {Arg_2}",
+      "translation": "anax 正在終止。 無法存取配置 {Arg_1} 中指定的服務儲存目錄。 {Arg_2}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
+      "translation": "anax 正在終止。 無法實例化 iptables 用戶端。 {Arg_1}"
+    },
+    {
+      "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
+      "translation": "anax 正在終止。 無法實例化 Docker 用戶端。 {Arg_1}"
     },
     {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1391,28 +1315,12 @@
       "translation": "內容 {Name} 的值類型 {ActualType} 無效"
     },
     {
-      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
-      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
+      "id": "The constraint expression: {Dconstraints} is type {Dconstraints_1}, but is expected to be an array of strings",
+      "translation": "限制項表示式 {Dconstraints} 類型為 {Dconstraints_1}，但預期為字串陣列"
     },
     {
-      "id": "Version_Expression: {Verstring} is not a valid version string.",
-      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
-      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
-    },
-    {
-      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
-      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
-    },
-    {
-      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
-      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
-    },
-    {
-      "id": "Input version string {V1} or {V2} is not a valid single version string.",
-      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
+      "id": "The constraint expression contains unmatched parentheses.",
+      "translation": "限制表示式包含不相符的括弧。"
     },
     {
       "id": "Error retrieving agreement {Arg_1} from database, error {Arg_2}",
@@ -1729,6 +1637,118 @@
     {
       "id": "New pattern {Arg_1} is verified. Will cancel agreements and re-register the node with the new pattern.",
       "translation": "新型樣 {Arg_1} 已經過驗證。 將取消合約並重新登錄具有新型樣的節點。"
+    },
+    {
+      "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
+      "translation": "相容性錯誤：綱目版本不同，消費者原則：{Version}，生產者原則 {Version_1}"
+    },
+    {
+      "id": "Compatibility Error: Node properties {Properties} do not satisfy constraint requirements {Constraints}. Underlying error: {Err}",
+      "translation": "相容性錯誤：節點內容 {Properties} 不滿足限制需求 {Constraints}。 基礎錯誤：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Node properties do not satisfy constraint requirements. {Err}",
+      "translation": "相容性錯誤：節點內容不滿足限制需求。 {Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties {Properties} do not satisfy Node constraint  {Constraints}. Underlying error: {Err}",
+      "translation": "相容性錯誤：內容 {Properties} 不滿足節點限制 {Constraints}。 基礎錯誤：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Properties do not satisfy node constraint. {Err}",
+      "translation": "相容性錯誤：內容未滿足節點限制。 {Err}"
+    },
+    {
+      "id": "Compatibility Error: No common Agreement Protocols between {AgreementProtocols} and {AgreementProtocols_1}. Underlying error: {Err}",
+      "translation": "相容性錯誤：{AgreementProtocols} 與 {AgreementProtocols_1} 之間沒有共用的合約通訊協定。 基礎錯誤：{Err}"
+    },
+    {
+      "id": "Compatibility Error: Data verification must be compatible, producer has {DataVerify} and consumer has {DataVerify_1}.",
+      "translation": "相容性錯誤：資料驗證必須相容，生產者具有 {DataVerify} 而消費者具有 {DataVerify_1}。"
+    },
+    {
+      "id": "Agreement {Arg_1} already exists, ignoring proposal: {Arg_2}",
+      "translation": "合約 {Arg_1} 已存在，將忽略提案：{Arg_2}"
+    },
+    {
+      "id": "received error demarshalling TsAndCs for agrement {Arg_1}, {Arg_2}",
+      "translation": "解除配置合約 {Arg_1} 的 TsAndCs 時收到錯誤：{Arg_2}"
+    },
+    {
+      "id": "Node received Proposal message using agreement {Arg_1} for service {Arg_2}/{Arg_3} from the agbot {Arg_4}.",
+      "translation": "節點從 agbot {Arg_4} 中收到使用服務 {Arg_2}/{Arg_3} 之合約 {Arg_1} 的提案訊息。"
+    },
+    {
+      "id": "Node rejected the proposal for service {Arg_1}/{Arg_2}.",
+      "translation": "節點拒絕了服務 {Arg_1}/{Arg_2} 的提案。"
+    },
+    {
+      "id": "Error handling proposal for service {Arg_1}/{Arg_2}. Error: {Arg_3}",
+      "translation": "處理服務 {Arg_1}/{Arg_2} 的提案時發生錯誤。 錯誤為：{Arg_3}"
+    },
+    {
+      "id": "unable to make directory for self signed MMS API certificate, error {Err}",
+      "translation": "無法建立目錄來存放自行簽署的 MMS API 憑證，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to generate random number for MMS API certificate serial number, error {Err}",
+      "translation": "無法為 MMS API 憑證序號產生亂數，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to generate private key for MMS API certificate, error {Err}",
+      "translation": "無法為 MMS API 憑證產生私密金鑰，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to create MMS API certificate, error {Err}",
+      "translation": "無法建立 MMS API 憑證，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "無法將 MMS API 憑證寫入檔案 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate to file {ServerCertificate}, error {Err}",
+      "translation": "無法將 MMS API 憑證編碼至檔案 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate file {ServerCertificate}, error {Err}",
+      "translation": "無法關閉 MMS API 憑證檔 {ServerCertificate}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to write MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "無法將 MMS API 憑證私密金鑰寫入檔案 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to encode MMS API certificate private key to file {ServerKey}, error {Err}",
+      "translation": "無法將 MMS API 憑證私密金鑰編碼至檔案 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
+      "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "Version_Expression: Whitespace is not permitted in {Expr}.",
+      "translation": "Version_Expression：{Expr} 中不允許出現空格。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} is not a valid version string.",
+      "translation": "Version_Expression：{Verstring} 不是有效的版本字串。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not begin with an inclusion or exclusion directive.",
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引開頭。"
+    },
+    {
+      "id": "Version_Expression: {Verstring} does not end with an inclusion or exclusion directive.",
+      "translation": "Version_Expression：{Verstring} 不是以包含或排除指引結尾。。"
+    },
+    {
+      "id": "Version_Expression: Incorrect number of versions in expression: {Expr}.",
+      "translation": "Version_Expression：表示式 {Expr} 中的版本號碼不正確。"
+    },
+    {
+      "id": "Input version string {V1} or {V2} is not a valid single version string.",
+      "translation": "輸入版本字串 {V1} 或 {V2} 不是有效的單一版本字串。"
     }
   ]
 }

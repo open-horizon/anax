@@ -129,7 +129,7 @@ func NodeUserInputInitalSetup(db *bolt.DB,
 				pdr := exchange.PatchDeviceRequest{}
 				pdr.UserInput = &convertedUI
 
-				glog.V(3).Infof("Saving the converted user input to the exchange: %v.", pdr)
+				glog.V(3).Infof("Saving the converted user input to the exchange: %v.", pdr.ShortString())
 				if err := patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &pdr); err != nil {
 					return err
 				}
@@ -375,7 +375,7 @@ func SaveNodeUserInput(pDevice *persistence.ExchangeDevice, db *bolt.DB,
 	pdr := exchange.PatchDeviceRequest{}
 	pdr.UserInput = &userInputs
 
-	glog.V(3).Infof("Updating exchange with new user input: %v.", pdr)
+	glog.V(3).Infof("Updating exchange with new user input: %v.", pdr.ShortString())
 	if err := patchDevice(fmt.Sprintf("%v/%v", pDevice.Org, pDevice.Id), pDevice.Token, &pdr); err != nil {
 		return err
 	}

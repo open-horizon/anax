@@ -16,6 +16,7 @@ import (
 	"github.com/open-horizon/edge-sync-service/common"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -67,7 +68,7 @@ func (m Microservice) String() string {
 }
 
 func (m Microservice) ShortString() string {
-	return fmt.Sprintf("URL: %v, NumAgreements: %v, Properties: %v, ConfigState: %v", m.Url, m.NumAgreements, m.Properties, m.ConfigState)
+	return fmt.Sprintf("URL: %v, NumAgreements: %v, ConfigState: %v", m.Url, m.NumAgreements, m.ConfigState)
 }
 
 // structs and types for working with microservice based exchange searches
@@ -145,7 +146,7 @@ func (d Device) String() string {
 }
 
 func (d Device) ShortString() string {
-	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v, RegisteredServices URLs:", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
+	str := fmt.Sprintf("Name: %v, Owner: %v, NodeType: %v, Pattern %v, LastHeartbeat: %v, MsgEndPoint: %v, Arch: %v, HeartbeatIntv: %v", d.Name, d.Owner, d.NodeType, d.Pattern, d.LastHeartbeat, d.MsgEndPoint, d.Arch, d.HeartbeatIntv)
 	for _, ms := range d.RegisteredServices {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
@@ -200,7 +201,8 @@ func GetExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId str
 			if dev, there := devs[deviceId]; !there {
 				return nil, errors.New(fmt.Sprintf("device %v not in GET response %v as expected", deviceId, devs))
 			} else {
-				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev)))
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("retrieved device %v from exchange %v", deviceId, dev.ShortString())))
+				glog.V(5).Infof(rpclogString(fmt.Sprintf("device details for %v: %v", deviceId, dev)))
 				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_DEF_TYPE_CACHE, dev)
 				return &dev, nil
 			}
@@ -271,7 +273,7 @@ func PatchExchangeDevice(httpClientFactory *config.HTTPClientFactory, deviceId s
 				continue
 			}
 		} else {
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr)))
+			glog.V(3).Infof(rpclogString(fmt.Sprintf("patch device %v to exchange %v", deviceId, pdr.ShortString())))
 			if cachedNode != nil {
 				UpdateCacheNodePatchWriteThru(GetOrg(deviceId), GetId(deviceId), cachedNode, pdr)
 			}
@@ -420,6 +422,35 @@ func (p PatchDeviceRequest) String() string {
 		arch = *p.Arch
 	}
 	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", p.UserInput, p.RegisteredServices, pattern, arch)
+}
+
+func (p PatchDeviceRequest) ShortString() string {
+	var registeredServices []string
+	if p.RegisteredServices != nil {
+		registeredServices = []string{}
+		for _, ms := range *p.RegisteredServices {
+			registeredServices = append(registeredServices, ms.ShortString())
+		}
+	}
+
+	var userInput []string
+	if p.UserInput != nil {
+		userInput = []string{}
+		for _, ui := range *p.UserInput {
+			userInput = append(userInput, ui.ShortString())
+		}
+	}
+
+	pattern := "nil"
+	if p.Pattern != nil {
+		pattern = *p.Pattern
+	}
+	arch := "nil"
+	if p.Arch != nil {
+		arch = *p.Arch
+	}
+
+	return fmt.Sprintf("UserInput: %v, RegisteredServices: %v, Pattern: %v, Arch: %v", userInput, registeredServices, pattern, arch)
 }
 
 type PostMessage struct {
@@ -624,11 +655,25 @@ func ConvertPropertyToExchangeFormat(prop *externalpolicy.Property) (*MSProp, er
 }
 
 // Functions and types for working with organizations in the exchange
+type OrgLimits struct {
+	MaxNodes int `json:"maxNodes"`
+}
+
+func (o OrgLimits) String() string {
+	return fmt.Sprintf("MaxNodes: %v", o.MaxNodes)
+}
+
 type Organization struct {
 	Label         string              `json:"label,omitempty"`
 	Description   string              `json:"description,omitempty"`
+	Tags          map[string]string   `json:"tags,omitempty"`
 	HeartbeatIntv *HeartbeatIntervals `json:"heartbeatIntervals,omitempty"`
+	Limits        *OrgLimits          `json:"limits,omitempty"`
 	LastUpdated   string              `json:"lastUpdated,omitempty"`
+}
+
+func (o Organization) String() string {
+	return fmt.Sprintf("Label: %v, Description: %v, Tags %v, HeartbeatIntv %v, Limits %v", o.Label, o.Description, o.Tags, o.HeartbeatIntv, o.Limits)
 }
 
 type GetOrganizationResponse struct {
@@ -868,33 +913,41 @@ func DeleteSurfaceErrors(ec ExchangeContext, deviceId string) error {
 
 // This function is used to invoke an exchange API
 // For GET, the given resp parameter will be untouched when http returns code 404.
-func InvokeExchange(httpClient *http.Client, method string, url string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
+func InvokeExchange(httpClient *http.Client, method string, urlPath string, user string, pw string, params interface{}, resp *interface{}) (error, error) {
 
 	if len(method) == 0 {
 		return errors.New(fmt.Sprintf("Error invoking exchange, method name must be specified")), nil
-	} else if len(url) == 0 {
+	} else if len(urlPath) == 0 {
 		return errors.New(fmt.Sprintf("Error invoking exchange, no URL to invoke")), nil
 	} else if resp == nil {
 		return errors.New(fmt.Sprintf("Error invoking exchange, response object must be specified")), nil
 	}
 
+	// encode the url so that it can accept unicode
+	urlObj, err := url.Parse(urlPath)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error invoking exchange, malformed URL: %v. %v", urlPath, err)), nil
+	}
+	urlObj.RawQuery = urlObj.Query().Encode()
+
 	if reflect.ValueOf(params).Kind() == reflect.Ptr {
 		paramValue := reflect.Indirect(reflect.ValueOf(params))
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, url, paramValue)))
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, paramValue)))
 	} else {
-		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, url, params)))
+		glog.V(5).Infof(rpclogString(fmt.Sprintf("Invoking exchange %v at %v with %v", method, urlPath, params)))
 	}
 
 	requestBody := bytes.NewBuffer(nil)
 	if params != nil {
 		if jsonBytes, err := json.Marshal(params); err != nil {
-			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed marshalling to json, error: %v", method, url, params, err)), nil
+			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed marshalling to json, error: %v", method, urlPath, params, err)), nil
 		} else {
 			requestBody = bytes.NewBuffer(jsonBytes)
 		}
 	}
-	if req, err := http.NewRequest(method, url, requestBody); err != nil {
-		return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed creating HTTP request, error: %v", method, url, requestBody, err)), nil
+
+	if req, err := http.NewRequest(method, urlObj.String(), requestBody); err != nil {
+		return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed creating HTTP request, error: %v", method, urlPath, requestBody, err)), nil
 	} else {
 		req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
 		req.Header.Add("Accept", "application/json")
@@ -912,9 +965,9 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			if httpResp != nil {
 				status = httpResp.Status
 			}
-			return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v, HTTP Status: %v", method, url, requestBody, err, status))
+			return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v, HTTP Status: %v", method, urlPath, requestBody, err, status))
 		} else if err != nil {
-			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err)), nil
+			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, urlPath, requestBody, err)), nil
 		} else {
 			defer httpResp.Body.Close()
 
@@ -922,31 +975,31 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 			var readErr error
 			if httpResp.Body != nil {
 				if outBytes, readErr = ioutil.ReadAll(httpResp.Body); readErr != nil {
-					return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, url, httpResp.Status, readErr)), nil
+					return errors.New(fmt.Sprintf("Invocation of %v at %v failed reading response message, HTTP Status %v, error: %v", method, urlPath, httpResp.Status, readErr)), nil
 				}
 			}
 
 			// Handle special case of server error
 			if httpResp.StatusCode == http.StatusInternalServerError && strings.Contains(string(outBytes), "timed out") {
-				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, url, requestBody, err))
+				return nil, errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, urlPath, requestBody, err))
 			}
 
 			if method == "GET" && httpResp.StatusCode != http.StatusOK {
 				if httpResp.StatusCode == http.StatusNotFound {
-					glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, url, string(outBytes))))
+					glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, string(outBytes))))
 					return nil, nil
 				} else {
-					return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+					return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, urlPath, httpResp.StatusCode, string(outBytes))), nil
 				}
-			} else if (method == "PUT" || method == "POST" || method == "PATCH") && (httpResp.StatusCode != http.StatusCreated && httpResp.StatusCode != http.StatusNoContent) {
-				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+			} else if (method == "PUT" || method == "POST" || method == "PATCH") && ((httpResp.StatusCode != http.StatusCreated && httpResp.StatusCode != http.StatusNoContent && httpResp.StatusCode != http.StatusConflict) || (httpResp.StatusCode == http.StatusConflict && !strings.Contains(urlPath, "business/policies/"))) {
+				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, urlPath, httpResp.StatusCode, string(outBytes))), nil
 			} else if method == "DELETE" && httpResp.StatusCode != http.StatusNoContent {
-				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, url, httpResp.StatusCode, string(outBytes))), nil
+				return errors.New(fmt.Sprintf("Invocation of %v at %v failed invoking HTTP request, status: %v, response: %v", method, urlPath, httpResp.StatusCode, string(outBytes))), nil
 			} else if (method == "DELETE") || ((method == "PUT" || method == "POST" || method == "PATCH") && httpResp.StatusCode == http.StatusNoContent) {
 				return nil, nil
 			} else {
 				out := string(outBytes)
-				glog.V(6).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, url, out)))
+				glog.V(6).Infof(rpclogString(fmt.Sprintf("Response to %v at %v is %v", method, urlPath, out)))
 
 				// no need to Unmarshal the string output
 				switch (*resp).(type) {
@@ -956,10 +1009,10 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 				}
 
 				if err := json.Unmarshal(outBytes, resp); err != nil {
-					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, url, err)), nil
+					return errors.New(fmt.Sprintf("Unable to demarshal response %v from invocation of %v at %v, error: %v", out, method, urlPath, err)), nil
 				} else {
 					if httpResp.StatusCode == http.StatusNotFound {
-						glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, url, *resp)))
+						glog.V(5).Infof(rpclogString(fmt.Sprintf("Got %v. Response to %v at %v is %v", httpResp.StatusCode, method, urlPath, *resp)))
 					}
 					switch (*resp).(type) {
 					case *PutDeviceResponse:
@@ -968,7 +1021,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 					case *PostDeviceResponse:
 						pdresp := (*resp).(*PostDeviceResponse)
 						if pdresp.Code != "ok" {
-							return errors.New(fmt.Sprintf("Invocation of %v at %v with %v returned error message: %v", method, url, params, pdresp.Msg)), nil
+							return errors.New(fmt.Sprintf("Invocation of %v at %v with %v returned error message: %v", method, urlPath, params, pdresp.Msg)), nil
 						} else {
 							return nil, nil
 						}
@@ -1046,7 +1099,7 @@ func InvokeExchange(httpClient *http.Client, method string, url string, user str
 						return nil, nil
 
 					default:
-						return errors.New(fmt.Sprintf("Unknown type of response object %v (%T) passed to invocation of %v at %v with %v", *resp, *resp, method, url, requestBody)), nil
+						return errors.New(fmt.Sprintf("Unknown type of response object %v (%T) passed to invocation of %v at %v with %v", *resp, *resp, method, urlPath, requestBody)), nil
 					}
 				}
 			}
@@ -1077,9 +1130,7 @@ func IsTransportError(pResp *http.Response, err error) bool {
 			return true
 		} else if pResp.StatusCode == http.StatusServiceUnavailable {
 			//503: service unavailable
-			if _, ok := pResp.Header["Retry-After"]; ok {
-				return true
-			}
+			return true
 		}
 	}
 	return false
@@ -1097,7 +1148,9 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 	resp = ""
 	targetURL := exchangeUrl + "admin/version"
 
-	if exchVers := GetExchangeVersionFromCache(exchangeUrl); exchVers != "" {
+	// remove trailing slash from the url for a consistent cache key
+	cacheKey := strings.TrimSuffix(exchangeUrl, "/")
+	if exchVers := GetExchangeVersionFromCache(cacheKey); strings.TrimSpace(exchVers) != "" {
 		return exchVers, nil
 	}
 
@@ -1126,7 +1179,7 @@ func GetExchangeVersion(httpClientFactory *config.HTTPClientFactory, exchangeUrl
 				v = v[:len(v)-1]
 			}
 
-			UpdateCache(exchangeUrl, EXCH_VERS_TYPE_CACHE, v)
+			UpdateCache(cacheKey, EXCH_VERS_TYPE_CACHE, v)
 
 			return v, nil
 		}
@@ -1142,6 +1195,8 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 	// get object id and key target url
 	var oIndex string
 	var targetURL string
+
+	var cacheMapKey string
 
 	switch oType {
 	case PATTERN:
@@ -1167,6 +1222,13 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		} else if ms_resp == nil {
 			return nil, errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", oURL, oOrg, oVersion, oArch)))
 		}
+
+		cachedKeys := GetServiceKeysFromCache(oOrg, oURL, oArch, oVersion)
+		if cachedKeys != nil {
+			return *cachedKeys, nil
+		}
+		cacheMapKey = ServicePolicyCacheMapKey(oOrg, oURL, oArch, oVersion)
+
 		oIndex = ms_id
 		targetURL = fmt.Sprintf("%vorgs/%v/services/%v/keys", ec.GetExchangeURL(), oOrg, GetId(oIndex))
 
@@ -1174,7 +1236,7 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 		return nil, errors.New(rpclogString(fmt.Sprintf("GetObjectSigningKeys received wrong type parameter: %v. It should be one of %v, or %v.", oType, PATTERN, SERVICE)))
 	}
 
-	// get all the singining key names for the object
+	// get all the signing key names for the object
 	var resp_KeyNames interface{}
 	resp_KeyNames = ""
 
@@ -1244,6 +1306,10 @@ func GetObjectSigningKeys(ec ExchangeContext, oType string, oURL string, oOrg st
 				break
 			}
 		}
+	}
+
+	if oType == SERVICE {
+		UpdateCache(cacheMapKey, SVC_KEY_TYPE_CACHE, ret)
 	}
 
 	return ret, nil

@@ -49,6 +49,15 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 			return errors.New(fmt.Sprintf("unable to insert singleton version row, error: %v", err))
 		}
 
+		// Create the search session table if necessary, and initialize the stored procedure functions.
+		if _, err := db.db.Exec(SEARCH_SESSIONS_CREATE_MAIN_TABLE); err != nil {
+			return errors.New(fmt.Sprintf("unable to create search session table, error: %v", err))
+		} else if _, err := db.db.Exec(SEARCH_SESSIONS_UPDATE_SESSION); err != nil {
+			return errors.New(fmt.Sprintf("unable to create search session update function, error: %v", err))
+		} else if _, err := db.db.Exec(SEARCH_SESSIONS_RESET_CHANGED_SINCE); err != nil {
+			return errors.New(fmt.Sprintf("unable to create search session reset function, error: %v", err))
+		}
+
 		// Create the partition tables and create the postgresql procedure that manages the table.
 		if _, err := db.db.Exec(PARTITION_CREATE_MAIN_TABLE); err != nil {
 			return errors.New(fmt.Sprintf("unable to create partition table, error: %v", err))

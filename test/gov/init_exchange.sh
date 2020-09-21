@@ -142,6 +142,11 @@ echo "Creating Customer2 organization..."
 CR8C2ORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer2","description":"The Customer2 org"}' "${EXCH_URL}/orgs/Customer2" | jq -r '.msg')
 echo "$CR8C2ORG"
 
+# Register a hub admin user in the exchange
+echo "Creating a hub admin user in the exchange"
+CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"hubadminpw","email":"me%40gmail.com","hubAdmin":true}' "${EXCH_URL}/orgs/root/users/hubadmin" | jq -r '.msg')
+echo "$CR8EADM"
+
 # Register an e2edev@somecomp.com admin user in the exchange
 echo "Creating an admin user for e2edev@somecomp.com organization..."
 CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"e2edevadminpw","email":"me%40gmail.com","admin":true}' "${EXCH_URL}/orgs/e2edev@somecomp.com/users/e2edevadmin" | jq -r '.msg')
@@ -202,6 +207,52 @@ echo "Registering Anax device1 in customer org..."
 REGANAX1C=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
 echo "$REGANAX1C"
 
+# Register agreement bot in the exchange
+if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
+then
+  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+    AGBOT_AUTH="IBM/agbot1:agbot1pw"
+  else
+    AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
+  fi
+  ORG="IBM"
+
+  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+    echo "Registering Agbot instance1..."
+    REGAGBOT1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}" | jq -r '.msg')
+    echo "$REGAGBOT1"
+  fi
+
+  # register all patterns and business policies for e2edev@somecomp.com org to agbot1
+  REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
+  echo "$REGAGBOTE2EDEV"
+
+  REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
+  echo "$REGAGBOTE2EDEV"
+
+  # register all patterns and business policies for userdev org to agbot1
+  REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
+  echo "$REGAGBOTUSERDEV"
+
+  REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
+  echo "$REGAGBOTUSERDEV"
+
+
+  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+    echo "Registering Agbot instance2..."
+    REGAGBOT2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag54321" | jq -r '.msg')
+    echo "$REGAGBOT2"
+  fi
+
+  # register msghub patterns to agbot1
+  if [ "${TEST_MSGHUB}" = "1" ]; then
+    REGAGBOTCPU2MSGHUB=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_cpu2msghub" | jq -r '.msg')
+    echo "$REGAGBOTCPU2MSGHUB"
+  fi
+
+  sleep 30
+fi
+
 # Clean up CSS
 if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   ./clean_css.sh
@@ -236,7 +287,7 @@ else
   echo "Register services SUCCESSFUL"
 fi
 
-# Register agreement bot in the exchange
+# add just one specific pattern for agbot served patterns, just for testing.
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
@@ -245,44 +296,7 @@ then
     AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
   fi
   ORG="IBM"
-
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-    echo "Registering Agbot instance1..."
-    echo -e "PATTERN setting is $PATTERN"
-    REGAGBOT1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}" | jq -r '.msg')
-    echo "$REGAGBOT1"
-  fi
-
   # keep one just for testing this api
   REGAGBOTSNS=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"sns"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
   echo "$REGAGBOTSNS"
-
-  # register all patterns and business policies for e2edev@somecomp.com org to agbot1
-  REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
-  echo "$REGAGBOTE2EDEV"
-
-  REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"e2edev@somecomp.com","businessPol":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
-  echo "$REGAGBOTE2EDEV"
-
-  # register all patterns and business policies for userdev org to agbot1
-  REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
-  echo "$REGAGBOTUSERDEV"
-
-  REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
-  echo "$REGAGBOTUSERDEV"
-
-  # REGAGBOTSHELM=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"shelm"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_shelm" | jq -r '.msg')
-  # echo "$REGAGBOTSUH"
-
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-    echo "Registering Agbot instance2..."
-    REGAGBOT2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag54321" | jq -r '.msg')
-    echo "$REGAGBOT2"
-  fi
-
-  # register msghub patterns to agbot1
-  if [ "${TEST_MSGHUB}" = "1" ]; then
-    REGAGBOTCPU2MSGHUB=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_cpu2msghub" | jq -r '.msg')
-    echo "$REGAGBOTCPU2MSGHUB"
-  fi
 fi

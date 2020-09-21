@@ -224,14 +224,22 @@ func GetPatterns(httpClientFactory *config.HTTPClientFactory, org string, patter
 				continue
 			}
 		} else {
-			pats := resp.(*GetPatternResponse).Patterns
-
-			// log the pat with signatures truncated
-			pats_sa := make([]string, len(pats))
-			for _, pat := range pats {
-				pats_sa = append(pats_sa, pat.ShortString())
+			var pats map[string]Pattern
+			if resp != nil {
+				pats = resp.(*GetPatternResponse).Patterns
 			}
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found patterns for %v, %v", org, pats_sa)))
+
+			if pattern != "" {
+				pat0 := ""
+				for _, pat := range pats {
+					// log the pat with signatures truncated
+					pat0 = pat.ShortString()
+					break
+				}
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found pattern for %v, %v", org, pat0)))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v patterns for %v.", len(pats), org)))
+			}
 
 			return pats, nil
 		}
@@ -294,7 +302,7 @@ func ConvertToPolicies(patternId string, p *Pattern) ([]*policy.Policy, error) {
 
 		ConvertCommon(p, patternId, service.DataVerify, service.NodeH, pol)
 
-		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into %v", service.ShortString(), pol)))
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("converted %v into policy %v", service.ShortString(), policyName)))
 		policies = append(policies, pol)
 
 	}
@@ -376,12 +384,11 @@ type SearchExchangePatternRequest struct {
 	ServiceURL   string   `json:"serviceUrl,omitempty"`
 	NodeOrgIds   []string `json:"nodeOrgids,omitempty"`
 	SecondsStale int      `json:"secondsStale"`
-	StartIndex   int      `json:"startIndex"`
 	NumEntries   int      `json:"numEntries"`
 }
 
 func (a SearchExchangePatternRequest) String() string {
-	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, StartIndex: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.StartIndex, a.NumEntries)
+	return fmt.Sprintf("ServiceURL: %v, SecondsStale: %v, NumEntries: %v", a.ServiceURL, a.SecondsStale, a.NumEntries)
 }
 
 type SearchExchangePatternResponse struct {
@@ -397,9 +404,32 @@ func (r SearchExchangePatternResponse) String() string {
 func CreateSearchPatternRequest() *SearchExchangePatternRequest {
 
 	ser := &SearchExchangePatternRequest{
-		StartIndex: 0,
-		NumEntries: 100,
+		NumEntries: 0,
 	}
 
 	return ser
+}
+
+func GetPatternNodes(ec ExchangeContext, policyOrg string, patternId string, req *SearchExchangePatternRequest) (*[]SearchResultDevice, error) {
+	// Invoke the exchange
+	var resp interface{}
+	resp = new(SearchExchangePatternResponse)
+	targetURL := ec.GetExchangeURL() + "orgs/" + policyOrg + "/patterns/" + GetId(patternId) + "/search"
+	for {
+		if err, tpErr := InvokeExchange(ec.GetHTTPFactory().NewHTTPClient(nil), "POST", targetURL, ec.GetExchangeId(), ec.GetExchangeToken(), *req, &resp); err != nil {
+			if !strings.Contains(err.Error(), "status: 404") {
+				return nil, err
+			} else {
+				empty := make([]SearchResultDevice, 0, 0)
+				return &empty, nil
+			}
+		} else if tpErr != nil {
+			glog.Warningf(tpErr.Error())
+			time.Sleep(10 * time.Second)
+			continue
+		} else {
+			dev := resp.(*SearchExchangePatternResponse).Devices
+			return &dev, nil
+		}
+	}
 }

@@ -738,8 +738,6 @@ func Test_pattern_manager_setpatterns5(t *testing.T) {
 			files_delete1 := np.OrgPatterns[myorg1][pattern1].PolicyFileNames
 			if err := np.UpdatePatternPolicies(myorg1, make(map[string]exchange.Pattern), policyPath); err != nil {
 				t.Errorf("Error: error updating pattern policies, %v", err)
-			} else if np.hasOrg(myorg1) {
-				t.Errorf("Error: org %v should have deleted but not.", myorg1)
 			} else if err := getPatternEntryFiles(files_delete1); err == nil {
 				t.Errorf("Should return error but got nil for checking policy files %v", files_delete1)
 			} else if !np.hasOrg(myorg2) {

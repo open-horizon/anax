@@ -233,10 +233,16 @@ func (sf *ServiceFile) ConvertToDeploymentDescription(agreementService bool) (*D
 }
 
 // Verify that non default user inputs are set in the input map.
-func (sf *ServiceFile) RequiredVariablesAreSet(setVars map[string]interface{}) error {
+func (sf *ServiceFile) RequiredVariablesAreSet(setVarNames []string) error {
 	for _, ui := range sf.UserInputs {
 		if ui.DefaultValue == "" && ui.Name != "" {
-			if _, ok := setVars[ui.Name]; !ok {
+			found := false
+			for _, v := range setVarNames {
+				if v == ui.Name {
+					found = true
+				}
+			}
+			if !found {
 				return errors.New(i18n.GetMessagePrinter().Sprintf("user input %v has no default value and is not set", ui.Name))
 			}
 		}

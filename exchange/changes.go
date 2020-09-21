@@ -52,6 +52,12 @@ const RESOURCE_AGBOT_SERVICE_POLICY = "servicepolicies"  // A service policy cha
 const RESOURCE_AGBOT_AGREEMENTS = "agbotagreements"      // A change was made to one of the agreements on the agbot
 const RESOURCE_ORG = "org"                               // A change was made to the org
 
+// constants for operation values
+const CHANGE_OPERATION_CREATED = "created"
+const CHANGE_OPERATION_CREATED_MODIFIED = "created/modified"
+const CHANGE_OPERATION_MODIFIED = "modified"
+const CHANGE_OPERATION_DELETED = "deleted"
+
 // functions for interrogating change types
 func (e ExchangeChange) IsMessage(node string) bool {
 	changeNode := fmt.Sprintf("%v/%v", e.OrgID, e.ID)
