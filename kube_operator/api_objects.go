@@ -43,8 +43,8 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 				} else {
 					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: namespace object must have a name in its metadata section.")))
 				}
-				if namespace != typedNS.ObjectMeta.Name {
-					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedNS.ObjectMeta.Name)))
+				if namespace != "" && namespace != typedNS.ObjectMeta.Name {
+					return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator : %s and %s", namespace, typedNS.ObjectMeta.Name)))
 				}
 				namespace = typedNS.ObjectMeta.Name
 			} else {
@@ -79,7 +79,7 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 				if typedDeployment.ObjectMeta.Namespace != "" {
 					if namespace == "" {
 						namespace = typedDeployment.ObjectMeta.Namespace
-					} else if namespace != typedDeployment.ObjectMeta.Namespace {
+					} else if namespace != "" && namespace != typedDeployment.ObjectMeta.Namespace {
 						return objMap, namespace, fmt.Errorf(kwlog(fmt.Sprintf("Error: multiple namespaces specified in operator: %s and %s", namespace, typedDeployment.ObjectMeta.Namespace)))
 					}
 				}
@@ -410,21 +410,6 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 }
 
 func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
-	// Delete the custom resource definitions from the cluster
-	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.CustomResourceDefinitionObject.ObjectMeta.Name)))
-
-	// CRDs need a different client
-	apiClient, err := NewCRDV1beta1Client()
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
-		return
-	}
-	crds := apiClient.CustomResourceDefinitions()
-	err = crds.Delete(cr.Name(), &metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
-	}
-
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes dynamic client for uninstalling the custom resource: %v", err)))
@@ -456,7 +441,43 @@ func (cr CustomResourceV1Beta1) Uninstall(c KubeClient, namespace string) {
 	err = crClient.Namespace(namespace).Delete(newCrName, &metav1.DeleteOptions{})
 	if err != nil {
 		glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
+	} else {
+		err = cr.waitForCRUninstall(c, namespace, 0, newCrName)
+		if err != nil {
+			glog.Errorf(fmt.Sprintf("%v", err))
+		}
 	}
+
+	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.CustomResourceDefinitionObject.ObjectMeta.Name)))
+	// CRDs need a different client
+	apiClient, err := NewCRDV1beta1Client()
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
+		return
+	}
+	crds := apiClient.CustomResourceDefinitions()
+	err = crds.Delete(cr.Name(), &metav1.DeleteOptions{})
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
+	}
+}
+
+func (cr CustomResourceV1Beta1) waitForCRUninstall(c KubeClient, namespace string, timeoutS int, crName string) error {
+	status, err := cr.Status(c, namespace)
+	if timeoutS < 1 {
+		timeoutS = 200
+	}
+	for timeoutS > 0 {
+		if err != nil && status == nil {
+			glog.Infof(kwlog(fmt.Sprintf("Custom resource %s removed successfully", crName)))
+			return nil
+		}
+		glog.Infof(kwlog(fmt.Sprintf("Custom Resource %s is not yet down. Pausing for 10 before checking again. Custom resource status is: %v", crName, status)))
+		time.Sleep(10 * time.Second)
+		status, err = cr.Status(c, namespace)
+		timeoutS = timeoutS - 10
+	}
+	return fmt.Errorf(kwlog(fmt.Sprintf("Error: timeout occured waiting for custom resource %s to be removed. Continuing with uninstall", crName)))
 }
 
 // Status returns the status of the operator's service pod. This is a user-defined object
@@ -586,18 +607,6 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 	// Delete the custom resource definitions from the cluster
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource definition %v", cr.Name())))
 
-	// CRDs need a different client
-	apiClient, err := NewCRDV1Client()
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
-		return
-	}
-	crds := apiClient.CustomResourceDefinitions()
-	err = crds.Delete(cr.Name(), &metav1.DeleteOptions{})
-	if err != nil {
-		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
-	}
-
 	dynClient, err := NewDynamicKubeClient()
 	if err != nil {
 		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes dynamic client for uninstalling the custom resource: %v", err)))
@@ -624,11 +633,46 @@ func (cr CustomResourceV1) Uninstall(c KubeClient, namespace string) {
 	} else {
 		glog.Errorf(kwlog(fmt.Sprintf("unable to find operator custom resource name for %v", cr.CustomResourceObject)))
 	}
+
 	glog.V(3).Infof(kwlog(fmt.Sprintf("deleting operator custom resource %v", newCrName)))
 	err = crClient.Namespace(namespace).Delete(newCrName, &metav1.DeleteOptions{})
 	if err != nil {
 		glog.Warningf(kwlog(fmt.Sprintf("unable to delete operator custom resource %s. Error: %v", newCrName, err)))
+	} else {
+		err = cr.waitForCRUninstall(c, namespace, 0, newCrName)
+		if err != nil {
+			glog.Errorf(fmt.Sprintf("%v", err))
+		}
 	}
+	// CRDs need a different client
+	apiClient, err := NewCRDV1Client()
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("Error: unable to get a kubernetes CustomResourceDefinition client for uninstall: %v", err)))
+		return
+	}
+	crds := apiClient.CustomResourceDefinitions()
+	err = crds.Delete(cr.Name(), &metav1.DeleteOptions{})
+	if err != nil {
+		glog.Errorf(kwlog(fmt.Sprintf("unable to delete operator custom resource definition %s. Error: %v", cr.Name(), err)))
+	}
+}
+
+func (cr CustomResourceV1) waitForCRUninstall(c KubeClient, namespace string, timeoutS int, crName string) error {
+	status, err := cr.Status(c, namespace)
+	if timeoutS < 1 {
+		timeoutS = 200
+	}
+	for timeoutS > 0 {
+		if err != nil && status == nil {
+			glog.Infof(kwlog(fmt.Sprintf("Custom resource %s removed successfully", crName)))
+			return nil
+		}
+		glog.Infof(kwlog(fmt.Sprintf("Custom Resource %s is not yet down. Pausing for 10 before checking again. Custom resource status is: %v", crName, status)))
+		time.Sleep(10 * time.Second)
+		status, err = cr.Status(c, namespace)
+		timeoutS = timeoutS - 10
+	}
+	return fmt.Errorf(kwlog(fmt.Sprintf("Error: timeout occured waiting for custom resource %s to be removed. Continuing with uninstall", crName)))
 }
 
 // Status returns the status of the operator's service pod. This is a user-defined object
