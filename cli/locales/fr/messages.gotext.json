@@ -1441,7 +1441,7 @@
     {
       "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
       "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur par défaut est 0, ce  qui signifie qu'il n'y a pas de limite.",
+      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur par défaut est 0, ce qui signifie qu'il n'y a pas de limite.",
       "fuzzy": true
     },
     {
@@ -1495,7 +1495,7 @@
     {
       "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
       "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des sinaux de présence de l'agent. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
+      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des signaux de présence de l'agent. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
       "fuzzy": true
     },
     {
