@@ -135,6 +135,10 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 	}
 
 	var httpCode int
+	var resp struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+	}
 	if nodeExists {
 		msgPrinter.Printf("Node %v exists. Only the node token will be updated.", nodeId)
 		msgPrinter.Println()
@@ -150,7 +154,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 			nodeType = persistence.DEVICE_TYPE_DEVICE
 		}
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, NodeType: nodeType, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch}
-		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq, nil)
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq, &resp)
 	}
 
 	if httpCode == 401 {
@@ -180,6 +184,9 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 		} else {
 			msgPrinter.Printf("Node %v created.", nodeId)
 			msgPrinter.Println()
+			if resp.Msg != "" {
+				msgPrinter.Println(resp.Msg)
+			}
 		}
 	}
 }
