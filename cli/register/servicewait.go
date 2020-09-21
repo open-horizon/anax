@@ -17,7 +17,7 @@ import (
 type serviceSpec struct {
 	name      string
 	org       string
-	status    int
+	status    WaitingStatus
 	serviceUp int
 }
 
@@ -42,8 +42,27 @@ func CheckService(name string, org string, arch string, version string, nodeType
 	return false
 }
 
+type WaitingStatus int
+
+const (
+	Failed WaitingStatus = iota - 1
+	NoAgreements
+	AgreementFormed
+	AgreementAccepted
+	ServiceCreated
+	ExecutionStarted
+	Success
+)
+
 func DisplayServiceStatus(servSpecArr []serviceSpec, displayStarOrg bool) {
-	statusArr := []string{"Failed", "Waiting", "Success"}
+	statusDetails := []string{
+		"Failed",
+		"Waiting: no agreements formed yet",
+		"Waiting: agreement is formed",
+		"Waiting: agreement is accepted",
+		"Waiting: service is created",
+		"Waiting: execution is started",
+		"Success"}
 
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -51,7 +70,7 @@ func DisplayServiceStatus(servSpecArr []serviceSpec, displayStarOrg bool) {
 	msgPrinter.Println()
 	for _, ss := range servSpecArr {
 		if ss.org != "*" || displayStarOrg {
-			msgPrinter.Printf("\t%v \t%v/%v", statusArr[ss.status+1], ss.org, ss.name)
+			msgPrinter.Printf("\t%v/%v \t%v", ss.org, ss.name, statusDetails[ss.status+1])
 			msgPrinter.Println()
 		}
 	}
@@ -69,11 +88,11 @@ func ServiceAllSucess(servSpecArr []serviceSpec) (bool, bool) {
 
 	// for each service that we are monitoring, check if all succeeds
 	for _, ss := range servSpecArr {
-		if ss.status == 0 {
+		if ss.status != Success {
 			allSuccess = false
 			needWait = true
 
-		} else if ss.status < 0 {
+		} else if ss.status == Failed {
 			allSuccess = false
 		}
 	}
@@ -135,19 +154,37 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		// it means the servie container is started. The container could still fail quickly after it is started.
 		instances := services.Instances["active"]
 
-		// for each service that we are monitoring, check if they are up
+		// Get active agreements to check status of services
+		ags := agreement.GetAgreements(false)
+
+		serviceStatusUpdated := false
+
+		// for each service that we are monitoring, check related agreements and if the services are up
 		for i, ss := range servSpecArr {
-			if ss.status == 0 {
+			serviceStatus := NoAgreements
+			for _, ag := range ags {
+				if ag.RunningWorkload.URL == ss.name && (ag.RunningWorkload.Org == ss.org || ss.org == "*") {
+					if ag.AgreementAcceptedTime == 0 {
+						serviceStatus = AgreementFormed
+					} else {
+						serviceStatus = AgreementAccepted
+					}
+				}
+			}
+			if ss.status >= AgreementAccepted {
 				for _, serviceInstance := range instances {
 					if serviceInstance.SpecRef == ss.name && (serviceInstance.Org == ss.org || ss.org == "*") {
+						serviceStatus = ServiceCreated
+
 						if ss.org == "*" {
 							servSpecArr[i].org = serviceInstance.Org
 						}
-						if serviceInstance.ExecutionStartTime != 0 {
 
-							// The target service is started. If stays up then declare victory and return.
+						if serviceInstance.ExecutionStartTime != 0 {
+							serviceStatus = ExecutionStarted
+							// If the service stays up then declare victory and return.
 							if ss.serviceUp >= ServiceUpThreshold {
-								servSpecArr[i].status = 1
+								serviceStatus = Success
 							}
 
 							// The service could fail quickly if we happened to catch it just as it was starting, so make sure
@@ -158,11 +195,15 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 						} else if ss.serviceUp > 0 {
 							// The service has been up for at least 1 iteration, so it's absence means that it failed.
 							servSpecArr[i].serviceUp = 0
-							servSpecArr[i].status = -1
+							serviceStatus = Failed
 							break
 						}
 					}
 				}
+			}
+			if ss.status != serviceStatus {
+				serviceStatusUpdated = true
+				servSpecArr[i].status = serviceStatus
 			}
 		}
 
@@ -176,7 +217,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 			return
 		}
 
-		if updateCounter <= 0 {
+		if updateCounter <= 0 || serviceStatusUpdated {
 			DisplayServiceStatus(servSpecArr, true)
 			updateCounter = UpdateThreshold
 		}
@@ -206,7 +247,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 					if serviceInstance.ExecutionStartTime == 0 && serviceInstance.ExecutionFailureCode != 0 {
 						failedArr = append(failedArr, ss)
 						failedDescArr = append(failedDescArr, serviceInstance.ExecutionFailureDesc)
-						servSpecArr[i].status = -1
+						servSpecArr[i].status = Failed
 					} else {
 						delayedArr = append(delayedArr, ss)
 					}
@@ -283,7 +324,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		for _, ss := range servSpecArr {
 			logArr := []string{}
 
-			if ss.status == 1 {
+			if ss.status == Success {
 				continue
 			}
 			// Scan the log for events related to the service we're waiting for.
