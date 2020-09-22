@@ -108,6 +108,11 @@ END $$ LANGUAGE plpgsql;
 `
 const SEARCH_SESSIONS_RESET_CHANGEDSINCE_BY_FUNCTION = `SELECT * FROM reset_changedSince($1,$2);`
 
+const SEARCH_SESSIONS_RESET_CHANGED_SINCE_FOR_POLICY = `UPDATE search_sessions
+	SET restartChangedSince = $1, updatingAgbot = $3, updated = current_timestamp
+	WHERE policyName = $2 AND (restartChangedSince = 0 OR restartChangedSince > $1);
+`
+
 // Functions related to the search session table.
 
 // Get the current search session from the DB. If the current session is ended, then a new session token will
@@ -147,6 +152,14 @@ func (db *AgbotPostgresqlDB) UpdateSearchSessionChangedSince(currentChangedSince
 func (db *AgbotPostgresqlDB) ResetAllChangedSince(newChangedSince uint64) error {
 	if _, err := db.db.Exec(SEARCH_SESSIONS_RESET_CHANGEDSINCE_BY_FUNCTION, newChangedSince, db.identity); err != nil {
 		return errors.New(fmt.Sprintf("error resetting changed since in all search sessions, error: %v", err))
+	}
+	return nil
+}
+
+// Update search session for a specific policy with a new changed Since to account for possible lost search results.
+func (db *AgbotPostgresqlDB) ResetPolicyChangedSince(policy string, newChangedSince uint64) error {
+	if _, err := db.db.Exec(SEARCH_SESSIONS_RESET_CHANGED_SINCE_FOR_POLICY, newChangedSince, policy, db.identity); err != nil {
+		return errors.New(fmt.Sprintf("error resetting changed since in %v search sessions, error: %v", policy, err))
 	}
 	return nil
 }

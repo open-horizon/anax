@@ -83,3 +83,6 @@ const AgbotFullRescan_DEFAULT = 600
 
 // The maximum number of changes to retrieve at once from the exchange
 const AgbotMaxChanges_DEFAULT = 1000
+
+// Retry lookback window
+const AgbotRetryLookBackWindow_DEFAULT = 3600

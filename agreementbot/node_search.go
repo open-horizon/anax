@@ -32,9 +32,9 @@ type NodeSearch struct {
 	searchThread         chan bool
 	rescanLock           sync.Mutex // The lock that protects the rescanNeeded flag. The rescanNeeded flag can be checked/changed on different threads.
 	rescanNeeded         bool       // A broad indicator that something policy or pattern related changed, and therefore the agbot needs to rescan all nodes.
-	retryAgreements      *RetryAgreements
-	batchSize            uint64 // The max number of nodes that this object will process in a deployment policy search result.
-	activeDeviceTimeoutS int    // The amount of time a device can go without heartbeating and still be considered active for the purposes of search.
+	batchSize            uint64     // The max number of nodes that this object will process in a deployment policy search result.
+	activeDeviceTimeoutS int        // The amount of time a device can go without heartbeating and still be considered active for the purposes of search.
+	retryLookBack        uint64     // The amount of time to look backward for node changes when node retries are happening.
 }
 
 func NewNodeSearch() *NodeSearch {
@@ -45,7 +45,6 @@ func NewNodeSearch() *NodeSearch {
 		lastSearchTime:      0,
 		searchThread:        make(chan bool, 10),
 		rescanNeeded:        false,
-		retryAgreements:     NewRetryAgreements(),
 	}
 	return ns
 }
@@ -62,6 +61,7 @@ func (n *NodeSearch) Init(db persistence.AgbotDatabase, pm *policy.PolicyManager
 	n.fullRescanIntervalS = cfg.GetAgbotFullRescan()
 	n.batchSize = cfg.GetAgbotAgreementBatchSize()
 	n.activeDeviceTimeoutS = cfg.AgreementBot.ActiveDeviceTimeoutS
+	n.retryLookBack = cfg.GetAgbotRetryLookBackWindow()
 
 	// Set the time of the worker restart to 1 minute ago. This time is used to indicate that the node searches need to go backward in time
 	// because this agbot just restarted, and therefore could have lost search results that were in memory but the database was
@@ -120,17 +120,17 @@ func (n *NodeSearch) Scan() {
 	}
 
 	// Now check to see if a new scan is needed. This function will periodically scan all nodes, to ensure that missed change events are eventually acted on.
-	// If there is no rescan needed and no policy/node retries are needed, but it's been a while since the last full scan, then do a full scan anyway.
+	// If there is no rescan needed but it's been a while since the last full scan, then do a full scan anyway.
 	// A full rescan uses its own changedSince time so that the full rescans overlap each other.
-	if n.lastSearchComplete && !n.retryAgreements.NeedRetry() && !n.IsRescanNeeded() && (n.fullRescanIntervalS != 0 && (uint64(time.Now().Unix())-n.lastSearchTime) >= n.fullRescanIntervalS) {
+	if n.lastSearchComplete && !n.IsRescanNeeded() && (n.fullRescanIntervalS != 0 && (uint64(time.Now().Unix())-n.lastSearchTime) >= n.fullRescanIntervalS) {
 		n.lastSearchTime = uint64(time.Now().Unix())
 		glog.V(3).Infof(AWlogString("Polling Exchange (full rescan)"))
 		n.lastSearchComplete = false
 		go n.findAndMakeAgreements()
 	}
 
-	// If changes in the system have occurred such that a rescan is needed, or retry scans are needed, start a scan now.
-	if n.lastSearchComplete && (n.retryAgreements.NeedRetry() || n.IsRescanNeeded()) && ((uint64(time.Now().Unix()) - n.lastSearchTime) >= uint64(n.nextScanIntervalS)) {
+	// If changes in the system have occurred such that a rescan is needed, start a scan now.
+	if n.lastSearchComplete && n.IsRescanNeeded() && ((uint64(time.Now().Unix()) - n.lastSearchTime) >= uint64(n.nextScanIntervalS)) {
 		n.lastSearchTime = uint64(time.Now().Unix())
 		glog.V(3).Infof(AWlogString("Polling Exchange"))
 		n.lastSearchComplete = false
@@ -148,20 +148,9 @@ func (n *NodeSearch) findAndMakeAgreements() {
 		glog.Errorf(AWlogString(fmt.Sprintf("unable to dump search session records, error: %v", err)))
 	}
 
-	// Do a destructive get on the list of policies and nodes to retry. From this point onward,
-	// any newly discovered agreement failures will start queueing up again.
-	retryMap := n.retryAgreements.GetAll()
-	if len(retryMap) == 0 {
-		glog.V(5).Infof(AWlogString("agreement retry is empty"))
-	} else {
-		glog.V(3).Infof(AWlogString(fmt.Sprintf("Handling retries for %v agreements.", len(retryMap))))
-	}
-
 	// Errors encountered during the search will cause the next set of searches to be performed with the same changedSince
 	// time and the same search session.
 	searchError := false
-
-	timeBeforeSearches := uint64(time.Now().Unix()) - 1
 
 	// Get a list of all the orgs this agbot is serving.
 	allOrgs := n.pm.GetAllPolicyOrgs()
@@ -170,38 +159,16 @@ func (n *NodeSearch) findAndMakeAgreements() {
 		policies := n.pm.GetAllAvailablePolicies(org)
 		for _, consumerPolicy := range policies {
 
-			// First, handle the nodes and policies that need to be retried for an agreement.
-			if _, ok := retryMap[consumerPolicy.Header.Name]; ok {
-
-				if consumerPolicy.PatternId != "" {
-					if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0, nil); err != nil {
-						// Requeue retry requests since there was an error.
-						searchError = true
-						break
-					}
-
-				} else if pBE := businessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
-					_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
-					// This is a special search that returns nodes as if the searched policy just changed. This will return nodes that arent running the
-					// policy's service and most of the nodes that are.
-					if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, timeBeforeSearches, nodeFilter(retryMap[consumerPolicy.Header.Name])); err != nil {
-						// Requeue retry requests since there was an error.
-						searchError = true
-						break
-					}
-				}
-			}
-
-			// Second, search for nodes based on the current changedSince timestamp to pick up any newly changed nodes.
+			// Search for nodes based on the current changedSince timestamp to pick up any newly changed nodes.
 			if consumerPolicy.PatternId != "" {
-				if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0, nil); err != nil {
+				if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0); err != nil {
 					// Dont move the changed since time forward since there was an error.
 					searchError = true
 					break
 				}
 			} else if pBE := businessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
 				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
-				if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated, nil); err != nil {
+				if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated); err != nil {
 					// Dont move the changed since time forward since there was an error.
 					searchError = true
 					break
@@ -217,12 +184,6 @@ func (n *NodeSearch) findAndMakeAgreements() {
 	// Done scanning all nodes across all policies, and no errors were encountered.
 	if searchError {
 		n.SetRescanNeeded()
-		// If there was a search error, requeue all the retries that were queued at the start of this scan.
-		for polId, nodeMap := range retryMap {
-			for nodeId, _ := range nodeMap {
-				n.retryAgreements.AddRetry(polId, nodeId)
-			}
-		}
 	}
 
 	// Dump search tables to the log.
@@ -234,21 +195,10 @@ func (n *NodeSearch) findAndMakeAgreements() {
 
 }
 
-// Returns true if the input nodeId should be filtered out.
-type SearchFilter func(nodeId string) bool
-
-func nodeFilter(nodeMap map[string]bool) SearchFilter {
-	return func(nodeId string) bool {
-		// Return true if the input nodeId should be filtered out. The nodeMap contains the nodes that are supposed to be retried.
-		_, ok := nodeMap[nodeId]
-		return !ok
-	}
-}
-
 // Search the exchange and make agreements with any device that is eligible based on the policies we have and
 // agreement protocols that we support. If the search did not process all the possible node matches, return true
 // to indicate that there are more nodes to be processed.
-func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64, filter SearchFilter) error {
+func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64) error {
 
 	if devices, err := n.searchExchange(consumerPolicy, org, polName, polLastUpdateTime); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("received error searching for %v, error: %v", consumerPolicy, err)))
@@ -277,10 +227,6 @@ func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy,
 		}
 
 		for _, dev := range *devices {
-
-			if filter != nil && filter(dev.Id) {
-				continue
-			}
 
 			glog.V(3).Infof(AWlogString(fmt.Sprintf("picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)))
 			glog.V(5).Infof(AWlogString(fmt.Sprintf("picked up %v", dev)))
@@ -349,7 +295,7 @@ func (n *NodeSearch) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice
 				if ag.AgreementFinalizedTime != 0 {
 					glog.V(5).Infof(AWlogString(fmt.Sprintf("sending agreement verify for %v", ag.CurrentAgreementId)))
 					n.ph.Get(ag.AgreementProtocol).VerifyAgreement(&ag, n.ph.Get(ag.AgreementProtocol))
-					n.retryAgreements.AddRetry(consumerPolicy.Header.Name, dev.Id)
+					n.AddRetry(consumerPolicy.Header.Name, ag.AgreementFinalizedTime-n.retryLookBack)
 				}
 				return true
 			}
@@ -494,6 +440,9 @@ func (n *NodeSearch) searchExchange(pol *policy.Policy, polOrg string, polName s
 	}
 }
 
-func (n *NodeSearch) AddRetry(policyName string, deviceId string) {
-	n.retryAgreements.AddRetry(policyName, deviceId)
+func (n *NodeSearch) AddRetry(policyName string, changedSince uint64) {
+	n.SetRescanNeeded()
+	if err := n.db.ResetPolicyChangedSince(policyName, changedSince); err != nil {
+		glog.Errorf(AWlogString(fmt.Sprintf("unable to update %v search session changed since, error: %v", policyName, err)))
+	}
 }
