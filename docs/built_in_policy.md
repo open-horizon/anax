@@ -1,6 +1,7 @@
 # Policy Properties
 
 There are built-in property names that can be used in the policies.
+See [Properties and Constraints](./properties_and_constraints.md) for an explanation of properties and constraints in general.
 For the node properties, the agent will introspect the node for the values of those properties.
 The user defined policies (deployment policy, model policy, service policy) need to add constraints on these properties if needed.
 
