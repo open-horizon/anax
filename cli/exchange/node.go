@@ -147,7 +147,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 			msgPrinter.Println()
 		}
 		patchNodeReq := NodeExchangePatchToken{Token: nodeToken}
-		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, patchNodeReq, nil)
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, patchNodeReq, &resp)
 	} else {
 		// create the node with given node type
 		if nodeType == "" {
@@ -174,19 +174,21 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 			}
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("can not update existing node %s because it is owned by another user (%s)", nodeId, ourNode.Owner))
 		} else if httpCode == 404 {
-			// Node doesn't exist. MaxNodes reached
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("can not create node %s because maxNodes limit has been reached", nodeId))
+			// Node doesn't exist. MaxNodes reached or 403 means real access denied, display the message from the exchange
+			if resp.Msg != "" {
+				fmt.Println(resp.Msg)
+			}
 		}
 	} else if httpCode == 201 {
 		if nodeExists {
 			msgPrinter.Printf("Node %v updated.", nodeId)
 			msgPrinter.Println()
 		} else {
+			if resp.Msg != "" {
+				fmt.Println(resp.Msg)
+			}
 			msgPrinter.Printf("Node %v created.", nodeId)
 			msgPrinter.Println()
-			if resp.Msg != "" {
-				msgPrinter.Println(resp.Msg)
-			}
 		}
 	}
 }
