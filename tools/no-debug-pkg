@@ -12,6 +12,9 @@ elif [ -f /etc/lsb-release ];then
 	DISTRO=$DISTRIB_ID;VER=$DISTRIB_RELEASE;
 fi
 
+# get rid of version's fraction (major releases make sense)
+VER=${VER%%.*}
+
 if [[ "$DISTRO" == fedora && $VER -ge 27 ]];then
 	echo true;
 elif [[ $DISTRO =~ ^(centos|rhel)$ && $VER -ge 7 ]];then
