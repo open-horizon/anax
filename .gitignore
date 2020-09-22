@@ -31,3 +31,5 @@ go.sum
 /anax-in-container/hzn
 /anax-in-container/anax
 /anax-in-container/LICENSE.txt
+/agent-install/test/config/agent-install.cfg                                                                                                                               /agent-install/test/config/agent-install.crt                                                                                                                               /agent-install/test/config/switch/agent-install.cfg                                                                                                                        /agent-install/test/config/switch/agent-install.crt
+/agent-install/test/config/switch/agent-install-test-results.log
