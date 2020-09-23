@@ -1417,7 +1417,7 @@
     {
       "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
       "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "新規組織のタグ。形式は mytag1=myvalue1 です。このフラグを繰り返すことにより、複数のタグを指定できます。",
+      "translation": "新規組織のタグ。 形式は mytag1=myvalue1 です。 このフラグを繰り返すことにより、複数のタグを指定できます。",
       "fuzzy": true
     },
     {
@@ -1441,7 +1441,7 @@
     {
       "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
       "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "この組織が持つことができるノードの最大数。デフォルトは 0 で、制限なしを意味します。",
+      "translation": "この組織が持つことができるノードの最大数。 デフォルトは 0 で、制限なしを意味します。",
       "fuzzy": true
     },
     {
@@ -1477,31 +1477,31 @@
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
       "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "組織の新しいタグ。形式は mytag1=myvalue1 です。このフラグを繰り返すことにより、複数のタグを指定できます。「-t \"\"」を使用すると、すべてのタグが削除されます。",
+      "translation": "組織の新しいタグ。 形式は mytag1=myvalue1 です。 このフラグを繰り返すことにより、複数のタグを指定できます。 「-t \"\"」を使用すると、すべてのタグが削除されます。",
       "fuzzy": true
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
       "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Exchange へのエージェント・ハートビート間の新しい最小秒数。デフォルトは負の整数 -1 で、この属性に変更がないことを意味します。",
+      "translation": "Exchange へのエージェント・ハートビート間の新しい最小秒数。 デフォルトは負の整数 -1 で、この属性に変更がないことを意味します。",
       "fuzzy": true
     },
     {
       "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
       "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Exchange へのエージェント・ハートビート間の新しい最大秒数。デフォルトは負の整数 -1 で、この属性に変更がないことを意味します。",
+      "translation": "Exchange へのエージェント・ハートビート間の新しい最大秒数。 デフォルトは負の整数 -1 で、この属性に変更がないことを意味します。",
       "fuzzy": true
     },
     {
       "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
       "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-      "translation": "エージェントのハートビート間隔を増やす秒数の新しい値。デフォルトは負の整数 -1 で、この属性に変更がないことを意味します。",
+      "translation": "エージェントのハートビート間隔を増やす秒数の新しい値。 デフォルトは負の整数 -1 で、この属性に変更がないことを意味します。",
       "fuzzy": true
     },
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
       "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "この組織が持つことができる新しい、ノードの最大数。デフォルトは負の整数 -1 で、変更がないことを意味します。",
+      "translation": "この組織が持つことができる新しい、ノードの最大数。 デフォルトは負の整数 -1 で、変更がないことを意味します。",
       "fuzzy": true
     },
     {
@@ -2659,9 +2659,9 @@
       "fuzzy": true
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "指定されたサービスの実行がこのノード上で開始されるまで待機します。 パターンへの登録時に、パターン内のすべてのサービスを監視するには「*」を使用します。 ポリシーへの登録時には、「*」は -s に対して有効な値ではありません。",
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "指定されたサービスの実行がこのノード上で開始されるまで待機します。 パターンへの登録時に、パターン内のすべてのサービスを監視するには「*」を使用します。 ポリシーへの登録時には、「*」は -s に対して有効な値ではありません。このフラグは、エッジ・クラスター・ノードではサポートされていません。",
       "fuzzy": true
     },
     {
@@ -4192,22 +4192,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{JsonBytes}",
-      "message": "{JsonBytes}",
-      "translation": "{JsonBytes}",
-      "placeholders": [
-        {
-          "id": "JsonBytes",
-          "string": "%[1]s",
-          "type": "[]byte",
-          "underlyingType": "[]byte",
-          "argNum": 1,
-          "expr": "jsonBytes"
         }
       ],
       "fuzzy": true
@@ -11653,30 +11637,6 @@
       "fuzzy": true
     },
     {
-      "id": "{Negatives}, {N}",
-      "message": "{Negatives}, {N}",
-      "translation": "{Negatives}、{N}",
-      "placeholders": [
-        {
-          "id": "Negatives",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "negatives"
-        },
-        {
-          "id": "N",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "n"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "{Negatives} の無効な入力です。 負の整数は使用できません。",
@@ -11701,7 +11661,7 @@
     {
       "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
       "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
-      "translation": "--max-nodes の無効な入力です。負の整数は使用できません。",
+      "translation": "--max-nodes の無効な入力です。 負の整数は使用できません。",
       "fuzzy": true
     },
     {
@@ -11753,7 +11713,7 @@
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "--max-nodes の無効な入力です。使用できるのは、-1、0、および正整数のみです。",
+      "translation": "--max-nodes の無効な入力です。 使用できるのは、-1、0、および正整数のみです。",
       "fuzzy": true
     },
     {
@@ -11823,7 +11783,7 @@
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "{JoinnegFlags_} の無効な入力です。使用できるのは、-1、0、および正整数のみです。",
+      "translation": "{JoinnegFlags_} の無効な入力です。 使用できるのは、-1、0、および正整数のみです。",
       "placeholders": [
         {
           "id": "JoinnegFlags_",
@@ -11869,7 +11829,7 @@
     {
       "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
       "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
-      "translation": "-t フラグまたは --tag フラグの無効な入力です。{Tag}。有効な形式は、「-t mytag=myvalue」または「--tag mytag=myvalue」です。",
+      "translation": "-t フラグまたは --tag フラグの無効な入力: {Tag}。有効な形式は、「-t mytag=myvalue」または「--tag mytag=myvalue」です。",
       "placeholders": [
         {
           "id": "Tag",
@@ -14763,15 +14723,31 @@
       "fuzzy": true
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "message": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "Horizon ノードが登録されました。 間もなくワークロード・サービスの実行が始まります。",
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "注: -s フラグは、ノード・タイプ: {NodeType} では現在サポートされていません。ノードの登録は、サービスの開始を待たずに完了します。",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "message": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "Horizon ノードが登録されました。 間もなくワークロード契約の交渉が始まります。 表示するには、「hzn agreement list」を実行してください。",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "message": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Horizon ノードが登録されました。 間もなくワークロード・サービスの実行が始まります。",
       "fuzzy": true
     },
     {
@@ -14812,22 +14788,6 @@
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "message": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "登録に失敗しました。 ノードが正常に登録抹消状態に戻りました。",
-      "fuzzy": true
-    },
-    {
-      "id": "{Body}",
-      "message": "{Body}",
-      "translation": "{Body}",
-      "placeholders": [
-        {
-          "id": "Body",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "body"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -15403,7 +15363,7 @@
     {
       "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
       "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
-      "translation": "1 つ以上のサービスで、デプロイメント・ストリングに特権が含まれています。ノード・ポリシー・ファイルで特権が許可されていることを確認してください。サンプルのノード・ポリシー・ファイルが作成されました。{NodePolicySampleFile}",
+      "translation": "1 つ以上のサービスで、デプロイメント・ストリングに特権が含まれています。 ノード・ポリシー・ファイルで特権が許可されていることを確認してください。 サンプルのノード・ポリシー・ファイルが作成されました。{NodePolicySampleFile}",
       "placeholders": [
         {
           "id": "NodePolicySampleFile",

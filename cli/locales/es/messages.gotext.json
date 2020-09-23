@@ -1405,19 +1405,19 @@
     {
       "id": "Label for new organization.",
       "message": "Label for new organization.",
-      "translation": "Etiqueta para nueva organización.",
+      "translation": "Etiqueta para la nueva organización.",
       "fuzzy": true
     },
     {
       "id": "Description for new organization.",
       "message": "Description for new organization.",
-      "translation": "Descripción para nueva organización.",
+      "translation": "Descripción para la nueva organización.",
       "fuzzy": true
     },
     {
       "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
       "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "Etiqueta para nueva organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas.",
+      "translation": "Etiqueta para la nueva organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas.",
       "fuzzy": true
     },
     {
@@ -1465,19 +1465,19 @@
     {
       "id": "New label for organization.",
       "message": "New label for organization.",
-      "translation": "Nueva etiqueta para organización.",
+      "translation": "Nueva etiqueta para la organización.",
       "fuzzy": true
     },
     {
       "id": "New description for organization.",
       "message": "New description for organization.",
-      "translation": "Nueva descripción para organización.",
+      "translation": "Nueva descripción para la organización.",
       "fuzzy": true
     },
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
       "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "Nueva etiqueta para organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas. Utilice '-t \"\"' una vez para eliminar todas las etiquetas.",
+      "translation": "Nueva etiqueta para la organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas. Utilice '-t \"\"' una vez para eliminar todas las etiquetas.",
       "fuzzy": true
     },
     {
@@ -2659,9 +2659,9 @@
       "fuzzy": true
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Espere a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s.",
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Espere a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s. Este distintivo no está soportado en nodos de clúster periférico.",
       "fuzzy": true
     },
     {
@@ -3577,7 +3577,7 @@
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
       "message": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "Gestionar organizaciones, patrones y políticas de despliegue que dan servicio aagbot y que están en la memoria caché.",
+      "translation": "Gestionar organizaciones, patrones y políticas de despliegue que dan servicio a agbot y que están en la memoria caché.",
       "fuzzy": true
     },
     {
@@ -4192,22 +4192,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{JsonBytes}",
-      "message": "{JsonBytes}",
-      "translation": "{JsonBytes}",
-      "placeholders": [
-        {
-          "id": "JsonBytes",
-          "string": "%[1]s",
-          "type": "[]byte",
-          "underlyingType": "[]byte",
-          "argNum": 1,
-          "expr": "jsonBytes"
         }
       ],
       "fuzzy": true
@@ -11653,30 +11637,6 @@
       "fuzzy": true
     },
     {
-      "id": "{Negatives}, {N}",
-      "message": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}",
-      "placeholders": [
-        {
-          "id": "Negatives",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "negatives"
-        },
-        {
-          "id": "N",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "n"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "Entrada no válida para {Negatives}. No se permite un entero negativo.",
@@ -11753,7 +11713,7 @@
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "Entrada no válida para --max-nodes. Sólo se permiten -1, 0 y enteros positivos.",
+      "translation": "Entrada no válida para --max-nodes. Sólo se permite -1, 0 y enteros positivos.",
       "fuzzy": true
     },
     {
@@ -11823,7 +11783,7 @@
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "Entrada no válida para {JoinnegFlags_}. Sólo se permiten -1, 0 y enteros positivos.",
+      "translation": "Entrada no válida para {JoinnegFlags_}. Sólo se permite -1, 0 y enteros positivos.",
       "placeholders": [
         {
           "id": "JoinnegFlags_",
@@ -14763,15 +14723,31 @@
       "fuzzy": true
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "message": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "El nodo de Horizon está registrado. Los servicios de carga de trabajo deberían empezar a ejecutares en breve.",
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "NOTE: El distintivo -s no está soportado actualmente para el tipo de nodo nodeType: {NodeType}. El registro del nodo se completará sin esperar a que se inicie el servicio.",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "message": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "El nodo de Horizon está registrado. La negociación de acuerdo de carga de trabajo debería empezar en breve. Ejecute 'hzn agreement list' para ver.",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "message": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "El nodo de Horizon está registrado. Los servicios de carga de trabajo deberían empezar a ejecutares en breve.",
       "fuzzy": true
     },
     {
@@ -14812,22 +14788,6 @@
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "message": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "El registro ha fallado. El nodo ha vuelto correctamente a un estado no registrado.",
-      "fuzzy": true
-    },
-    {
-      "id": "{Body}",
-      "message": "{Body}",
-      "translation": "{Body}",
-      "placeholders": [
-        {
-          "id": "Body",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "body"
-        }
-      ],
       "fuzzy": true
     },
     {

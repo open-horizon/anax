@@ -2659,9 +2659,9 @@
       "fuzzy": true
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Attendre que l'exécution du service nommé débute sur ce noeud. Lors de l'enregistrement avec un pattern, utilisez '*' pour surveiller tous les services dans le pattern. Lors de l'enregistrement avec une règle, '*' n'est pas une valeur valide pour -s.",
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Attendre que l'exécution du service nommé débute sur ce noeud. Lors de l'enregistrement avec un pattern, utilisez '*' pour surveiller tous les services dans le pattern. Lors de l'enregistrement avec une règle, '*' n'est pas une valeur valide pour -s. Cet indicateur n'est pas pris en charge pour les noeuds de cluster de périphérie.",
       "fuzzy": true
     },
     {
@@ -4192,22 +4192,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{JsonBytes}",
-      "message": "{JsonBytes}",
-      "translation": "{JsonBytes}",
-      "placeholders": [
-        {
-          "id": "JsonBytes",
-          "string": "%[1]s",
-          "type": "[]byte",
-          "underlyingType": "[]byte",
-          "argNum": 1,
-          "expr": "jsonBytes"
         }
       ],
       "fuzzy": true
@@ -11203,7 +11187,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
-      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn exchange node addpolicy' pour mettre à jour la règle du noeud. ",
+      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn exchange node addpolicy' pour mettre à jour la règle du noeud.",
       "fuzzy": true
     },
     {
@@ -11648,30 +11632,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{Negatives}, {N}",
-      "message": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}",
-      "placeholders": [
-        {
-          "id": "Negatives",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "negatives"
-        },
-        {
-          "id": "N",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "n"
         }
       ],
       "fuzzy": true
@@ -14163,7 +14123,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn policy update' to update the node policy.",
-      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn policy update' pour mettre à jour la règle du noeud. ",
+      "translation": "Avertissement : Cette commande est obsolète. Elle continuera d'être prise en charge jusqu'à la prochaine édition majeure. Utilisez 'hzn policy update' pour mettre à jour la règle du noeud.",
       "fuzzy": true
     },
     {
@@ -14763,15 +14723,31 @@
       "fuzzy": true
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "message": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "Le noeud Horizon est enregistré. L'exécution de services de charge de travail doit débuter sous peu.",
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "REMARQUE : L'indicateur -s n'est actuellement pas pris en charge pour le type de noeud {NodeType}. L'enregistrement de noeud se terminera sans attente du démarrage du service. ",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "message": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "Le noeud Horizon est enregistré. La négociation d'un accord sur la charge de travail devrait commencer bientôt. Exécutez 'hzn agreement list' pour l'afficher.",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "message": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Le noeud Horizon est enregistré. L'exécution de services de charge de travail doit débuter sous peu.",
       "fuzzy": true
     },
     {
@@ -14812,22 +14788,6 @@
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "message": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "Echec de l'enregistrement. Le noeud a repris son état non enregistré.",
-      "fuzzy": true
-    },
-    {
-      "id": "{Body}",
-      "message": "{Body}",
-      "translation": "{Body}",
-      "placeholders": [
-        {
-          "id": "Body",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "body"
-        }
-      ],
       "fuzzy": true
     },
     {

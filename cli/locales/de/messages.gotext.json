@@ -2659,9 +2659,9 @@
       "fuzzy": true
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Warten, bis die Ausführung des benannten Service auf diesem Knoten gestartet wird. Verwenden Sie bei der Registrierung mit einem Muster die Angabe '*' , um alle Services im Muster zu beobachten. Bei der Registrierung mit einer Richtlinie ist '*' kein gültiger Wert für '-s'.",
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Warten, bis die Ausführung des benannten Service auf diesem Knoten gestartet wird. Verwenden Sie bei der Registrierung mit einem Muster die Angabe '*' , um alle Services im Muster zu beobachten. Bei der Registrierung mit einer Richtlinie ist '*' kein gültiger Wert für '-s'. Dieses Flag wird für Edge-Clusterknoten nicht unterstützt. ",
       "fuzzy": true
     },
     {
@@ -4192,22 +4192,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{JsonBytes}",
-      "message": "{JsonBytes}",
-      "translation": "{JsonBytes}",
-      "placeholders": [
-        {
-          "id": "JsonBytes",
-          "string": "%[1]s",
-          "type": "[]byte",
-          "underlyingType": "[]byte",
-          "argNum": 1,
-          "expr": "jsonBytes"
         }
       ],
       "fuzzy": true
@@ -11653,30 +11637,6 @@
       "fuzzy": true
     },
     {
-      "id": "{Negatives}, {N}",
-      "message": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}",
-      "placeholders": [
-        {
-          "id": "Negatives",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "negatives"
-        },
-        {
-          "id": "N",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "n"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "Ungültige Eingabe für {Negatives}. Negative Zahlen sind nicht zulässig. ",
@@ -14763,15 +14723,31 @@
       "fuzzy": true
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "message": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "Der Horizon-Knoten wurde registriert. Die Ausführung der Workload-Services beginnt in Kürze. ",
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "HINWEIS: Das Flag '-s' wird momentan für den Knotentyp '{NodeType}' nicht unterstützt. Die Knotenregistrierung wird ausgeführt, ohne dass auf den Start des Service gewartet wird. ",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "message": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "Der Horizon-Knoten wurde registriert. Die Aushandlung der Workloadvereinbarung beginnt in Kürze. Führen Sie 'hzn agreement list' aus, um die Vereinbarung anzuzeigen. ",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "message": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Der Horizon-Knoten wurde registriert. Die Ausführung der Workload-Services beginnt in Kürze. ",
       "fuzzy": true
     },
     {
@@ -14812,22 +14788,6 @@
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "message": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "Die Registrierung ist fehlgeschlagen. Der Knoten wurde erfolgreich in den nicht registrierten Status zurückgesetzt.",
-      "fuzzy": true
-    },
-    {
-      "id": "{Body}",
-      "message": "{Body}",
-      "translation": "{Body}",
-      "placeholders": [
-        {
-          "id": "Body",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "body"
-        }
-      ],
       "fuzzy": true
     },
     {

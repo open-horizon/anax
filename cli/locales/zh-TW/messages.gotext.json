@@ -1417,7 +1417,7 @@
     {
       "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
       "message": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "新組織的標籤。格式為 mytag1=myvalue1。此旗標可以重複使用以指定多個標籤。",
+      "translation": "新組織的標籤。 格式為 mytag1=myvalue1。 此旗標可以重複使用以指定多個標籤。",
       "fuzzy": true
     },
     {
@@ -1441,7 +1441,7 @@
     {
       "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
       "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "容許此組織具有的節點數目上限。預設值是 0，這表示無限制。",
+      "translation": "容許此組織具有的節點數目上限。 預設值是 0，這表示無限制。",
       "fuzzy": true
     },
     {
@@ -1477,7 +1477,7 @@
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
       "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "新的組織標籤。格式為 mytag1=myvalue1。此旗標可以重複使用以指定多個標籤。使用 '-t \"\"' 一次，以移除所有標籤。",
+      "translation": "新的組織標籤。 格式為 mytag1=myvalue1。 此旗標可以重複使用以指定多個標籤。 使用 '-t \"\"' 一次，以移除所有標籤。",
       "fuzzy": true
     },
     {
@@ -1501,7 +1501,7 @@
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
       "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "容許此組織具有的節點新數目上限。預設負整數 -1 表示無變更。",
+      "translation": "容許此組織具有的節點新數目上限。 預設負整數 -1 表示無變更。",
       "fuzzy": true
     },
     {
@@ -2659,9 +2659,9 @@
       "fuzzy": true
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "等待指名的服務在此節點上開始執行。 使用型樣登錄時，使用 '*' 以監看型樣中的所有服務。 使用原則登錄時，'*' 針對 -s 不是有效的值。",
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "message": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "等待指名的服務在此節點上開始執行。 使用型樣登錄時，使用 '*' 以監看型樣中的所有服務。 使用原則登錄時，'*' 針對 -s 不是有效的值。 邊緣叢集節點不支援此旗標。",
       "fuzzy": true
     },
     {
@@ -4192,22 +4192,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{JsonBytes}",
-      "message": "{JsonBytes}",
-      "translation": "{JsonBytes}",
-      "placeholders": [
-        {
-          "id": "JsonBytes",
-          "string": "%[1]s",
-          "type": "[]byte",
-          "underlyingType": "[]byte",
-          "argNum": 1,
-          "expr": "jsonBytes"
         }
       ],
       "fuzzy": true
@@ -11203,7 +11187,7 @@
     {
       "id": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
       "message": "Warning: This command is deprecated. It will continue to be supported until the next major release. Please use 'hzn exchange node addpolicy' to update the node policy.",
-      "translation": "警告：這個指令已淘汰。 發行下一個主要版本之前，系統會繼續支援此指令。請使用 'hzn exchange node addpolicy'，以更新節點原則。",
+      "translation": "警告：這個指令已淘汰。 發行下一個主要版本之前，系統會繼續支援此指令。 請使用 'hzn exchange node addpolicy'，以更新節點原則。",
       "fuzzy": true
     },
     {
@@ -11653,30 +11637,6 @@
       "fuzzy": true
     },
     {
-      "id": "{Negatives}, {N}",
-      "message": "{Negatives}, {N}",
-      "translation": "{Negatives}、{N}",
-      "placeholders": [
-        {
-          "id": "Negatives",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "negatives"
-        },
-        {
-          "id": "N",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "n"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "message": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "{Negatives} 的輸入無效。 不容許負整數。",
@@ -11701,7 +11661,7 @@
     {
       "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
       "message": "Invalid input for --max-nodes. Negative integer is not allowed.",
-      "translation": "--max-nodes 的輸入無效。不容許負整數。",
+      "translation": "--max-nodes 的輸入無效。 不容許負整數。",
       "fuzzy": true
     },
     {
@@ -11753,7 +11713,7 @@
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "--max-nodes 的輸入無效。僅容許 -1、0 及正整數。",
+      "translation": "--max-nodes 的輸入無效。 僅容許 -1、0 及正整數。",
       "fuzzy": true
     },
     {
@@ -11823,7 +11783,7 @@
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "{JoinnegFlags_} 的輸入無效。僅容許 -1、0 及正整數。",
+      "translation": "{JoinnegFlags_} 的輸入無效。 僅容許 -1、0 及正整數。",
       "placeholders": [
         {
           "id": "JoinnegFlags_",
@@ -11869,7 +11829,7 @@
     {
       "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
       "message": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
-      "translation": "-t 或 --tag 標籤的輸入無效：{Tag}。有效的格式為 '-t mytag=myvalue' 或 '--tag mytag=myvalue'。",
+      "translation": "-t 或 --tag 標籤的輸入無效：{Tag}。 有效的格式為 '-t mytag=myvalue' 或 '--tag mytag=myvalue'。",
       "placeholders": [
         {
           "id": "Tag",
@@ -14763,15 +14723,31 @@
       "fuzzy": true
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "message": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "已登錄 Horizon 節點。 工作量服務應該很快會開始執行。",
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "附註：nodeType：{NodeType} 目前不支援 -s 旗標。節點登錄將完成，而不會等待服務啟動。",
+      "placeholders": [
+        {
+          "id": "NodeType",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeType"
+        }
+      ],
       "fuzzy": true
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "message": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "已登錄 Horizon 節點。 應該很快會開始協議工作量合約。 執行 'hzn agreement list' 進行檢視。",
+      "fuzzy": true
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "message": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "已登錄 Horizon 節點。 工作量服務應該很快會開始執行。",
       "fuzzy": true
     },
     {
@@ -14812,22 +14788,6 @@
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "message": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "登錄失敗。 節點已順利回到未登錄狀態。",
-      "fuzzy": true
-    },
-    {
-      "id": "{Body}",
-      "message": "{Body}",
-      "translation": "{Body}",
-      "placeholders": [
-        {
-          "id": "Body",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "body"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -15403,7 +15363,7 @@
     {
       "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
       "message": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
-      "translation": "一個以上服務的部署字串中包含特許。請確保您的節點原則檔案容許特許。已建立範例節點原則檔案：{NodePolicySampleFile}",
+      "translation": "一個以上服務的部署字串中包含特許。 請確保您的節點原則檔案容許特許。 已建立範例節點原則檔案：{NodePolicySampleFile}",
       "placeholders": [
         {
           "id": "NodePolicySampleFile",
