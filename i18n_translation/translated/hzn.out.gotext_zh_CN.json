@@ -368,7 +368,7 @@
     },
     {
       "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "新组织的标记。格式为 mytag1=myvalue1。此标志可以重复以指定多个标记。"
+      "translation": "新组织的标记。 格式为 mytag1=myvalue1。 此标志可以重复以指定多个标记。"
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -384,11 +384,11 @@
     },
     {
       "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "允许此组织拥有的最大节点数。缺省值为 0，这表示无限制。"
+      "translation": "允许此组织拥有的最大节点数。 缺省值为 0，这表示无限制。"
     },
     {
       "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
-      "translation": "向此 agbot 添加组织，从而使其负责在此组织中部署服务。Agbot 将使用此组织中的模式和部署策略向此组织中的节点部署服务。如果省略，那么在 Exchange 中找到的第一个 agbot 将变为负责此组织。格式为“agbot_org/agbot_id”。"
+      "translation": "向此 agbot 添加组织，从而使其负责在此组织中部署服务。agbot 将使用此组织中的模式和部署策略向此组织中的节点部署服务。如果省略，那么在 Exchange 中找到的第一个 agbot 将负责此组织。格式为“agbot_org/agbot_id”。"
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
@@ -408,7 +408,7 @@
     },
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "组织的新标记。格式为 mytag1=myvalue1。此标志可以重复以指定多个标记。使用“-t \"\"”一次以移除所有标记。"
+      "translation": "组织的新标记。 格式为 mytag1=myvalue1。 此标志可以重复以指定多个标记。 使用“-t \"\"”一次以移除所有标记。"
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
@@ -424,7 +424,7 @@
     },
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "允许此组织拥有的新的最大节点数。缺省负整数 -1 意味着无更改。"
+      "translation": "允许此组织拥有的新的最大节点数。 缺省负整数 -1 意味着无更改。"
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -1160,7 +1160,7 @@
     },
     {
       "id": "A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.",
-      "translation": "用于设置或覆盖此节点的节点策略的 JSON 文件，用于基于策略的协议协商。"
+      "translation": "用于设置或覆盖此节点的节点策略的 JSON 文件，将用于基于策略的协议协商。"
     },
     {
       "id": "The Horizon exchange organization ID that the node should be registered in. Mutually exclusive with -o and -p.",
@@ -1171,8 +1171,8 @@
       "translation": "用于描述应该将哪些工作负载部署到此节点的 Horizon Exchange 模式。 如果该模式来自不同于该节点的另一组织，请使用 'other_org/pattern' 格式。 与 -o 和 -p 互斥。"
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "等待指定的服务在此节点上开始执行。 使用模式注册时，使用“*”来监视此模式中的所有服务。 使用策略注册时，“*”不是 -s 的有效值。"
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "等待指定的服务在此节点上开始执行。 使用模式注册时，使用“*”来监视此模式中的所有服务。 使用策略注册时，“*”不是 -s 的有效值。 边缘集群节点不支持此标志。"
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -2097,10 +2097,6 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "translation": "对“hzn node list”输出进行序列化失败：{Err}"
-    },
-    {
-      "id": "{JsonBytes}",
-      "translation": "{JsonBytes}"
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
@@ -3731,10 +3727,6 @@
       "translation": "对“exchange org list”输出进行序列化失败：{Err}"
     },
     {
-      "id": "{Negatives}, {N}",
-      "translation": "{Negatives}，{N}"
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "{Negatives} 的输入无效。 不允许负整数。"
     },
@@ -3744,7 +3736,7 @@
     },
     {
       "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
-      "translation": "--max-nodes 的输入无效。不允许负整数。"
+      "translation": "--max-nodes 的输入无效。 不允许负整数。"
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
@@ -3760,7 +3752,7 @@
     },
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "--max-nodes 的输入无效。只允许 -1、0 和正整数。"
+      "translation": "--max-nodes 的输入无效。 只允许 -1、0 和正整数。"
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3780,7 +3772,7 @@
     },
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "{JoinnegFlags_} 的输入无效。只允许 -1、0 和正整数。"
+      "translation": "{JoinnegFlags_} 的输入无效。 只允许 -1、0 和正整数。"
     },
     {
       "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
@@ -3792,7 +3784,7 @@
     },
     {
       "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
-      "translation": "-t 或 --tag 标志的输入无效：{Tag}。有效格式为“-t mytag=myvalue”或“--tag mytag=myvalue”。"
+      "translation": "-t 或 --tag 标志的输入无效：{Tag}。 有效格式为“-t mytag=myvalue”或“--tag mytag=myvalue”。"
     },
     {
       "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
@@ -4487,12 +4479,16 @@
       "translation": "将节点状态设置为“已配置”时发生错误：{Err}"
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "Horizon 节点已注册。 工作负载服务应该很快开始执行。"
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "注：nodeType {NodeType} 目前不支持 -s 标志。节点注册将完成，而不等待服务启动。"
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "Horizon 节点已注册。 工作负载协议协商应该会很快开始。 运行 'hzn agreement list' 来查看。"
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Horizon 节点已注册。 工作负载服务应该很快开始执行。"
     },
     {
       "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -4513,10 +4509,6 @@
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "注册失败。 节点已成功恢复至未注册状态。"
-    },
-    {
-      "id": "{Body}",
-      "translation": "{Body}"
     },
     {
       "id": "Call to anax to create node timed out.",
@@ -4632,7 +4624,7 @@
     },
     {
       "id": "One or more of services contain privileged in the deployment string. Make sure your node policy file allows privileged. A sample node policy file has been created: {NodePolicySampleFile}",
-      "translation": "一个或多个服务在部署字符串中包含 privileged。确保节点策略文件允许 privileged。已创建样本节点策略文件：{NodePolicySampleFile}"
+      "translation": "一个或多个服务在部署字符串中包含 privileged。 确保节点策略文件允许 privileged。 已创建样本节点策略文件：{NodePolicySampleFile}"
     },
     {
       "id": "Status of the services you are watching:",

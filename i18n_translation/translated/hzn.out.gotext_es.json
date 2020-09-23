@@ -360,15 +360,15 @@
     },
     {
       "id": "Label for new organization.",
-      "translation": "Etiqueta para nueva organización."
+      "translation": "Etiqueta para la nueva organización."
     },
     {
       "id": "Description for new organization.",
-      "translation": "Descripción para nueva organización."
+      "translation": "Descripción para la nueva organización."
     },
     {
       "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "Etiqueta para nueva organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas."
+      "translation": "Etiqueta para la nueva organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas."
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -400,15 +400,15 @@
     },
     {
       "id": "New label for organization.",
-      "translation": "Nueva etiqueta para organización."
+      "translation": "Nueva etiqueta para la organización."
     },
     {
       "id": "New description for organization.",
-      "translation": "Nueva descripción para organización."
+      "translation": "Nueva descripción para la organización."
     },
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "Nueva etiqueta para organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas. Utilice '-t \"\"' una vez para eliminar todas las etiquetas."
+      "translation": "Nueva etiqueta para la organización. El formato es mietiqueta1=mivalor1. Este distintivo se puede repetir para especificar varias etiquetas. Utilice '-t \"\"' una vez para eliminar todas las etiquetas."
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
@@ -1171,8 +1171,8 @@
       "translation": "El patrón de Horizon Exchange que describe las cargas de trabajo que se deben desplegar en este nodo. Si el patrón es de una organización distinta que el nodo, utilice el formato 'otra_org/patrón'. Mutuamente excluyente con -o y -p."
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Espere a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s."
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Espere a que el servicio mencionado se empiece a ejecutar en este nodo. Al registrarse con un patrón, utilice '*' para vigilar todos los servicios del patrón. Al registrarse con una política, '*' no es un valor válido para -s. Este distintivo no está soportado en nodos de clúster periférico."
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -1744,7 +1744,7 @@
     },
     {
       "id": "Manage cached agbot-serving organizations, patterns, and deployment policies.",
-      "translation": "Gestionar organizaciones, patrones y políticas de despliegue que dan servicio aagbot y que están en la memoria caché."
+      "translation": "Gestionar organizaciones, patrones y políticas de despliegue que dan servicio a agbot y que están en la memoria caché."
     },
     {
       "id": "List served pattern orgs and deployment policy orgs.",
@@ -2097,10 +2097,6 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "translation": "No se ha podido ordenar la salida de 'hzn node list': {Err}"
-    },
-    {
-      "id": "{JsonBytes}",
-      "translation": "{JsonBytes}"
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
@@ -3731,10 +3727,6 @@
       "translation": "no se ha podido organizar la salida de 'exchange org list': {Err}"
     },
     {
-      "id": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}"
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "Entrada no válida para {Negatives}. No se permite un entero negativo."
     },
@@ -3760,7 +3752,7 @@
     },
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "Entrada no válida para --max-nodes. Sólo se permiten -1, 0 y enteros positivos."
+      "translation": "Entrada no válida para --max-nodes. Sólo se permite -1, 0 y enteros positivos."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3780,7 +3772,7 @@
     },
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "Entrada no válida para {JoinnegFlags_}. Sólo se permiten -1, 0 y enteros positivos."
+      "translation": "Entrada no válida para {JoinnegFlags_}. Sólo se permite -1, 0 y enteros positivos."
     },
     {
       "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
@@ -4487,12 +4479,16 @@
       "translation": "Error al establecer estado de nodo en configurado: {Err}"
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "El nodo de Horizon está registrado. Los servicios de carga de trabajo deberían empezar a ejecutares en breve."
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "NOTE: El distintivo -s no está soportado actualmente para el tipo de nodo nodeType: {NodeType}. El registro del nodo se completará sin esperar a que se inicie el servicio."
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "El nodo de Horizon está registrado. La negociación de acuerdo de carga de trabajo debería empezar en breve. Ejecute 'hzn agreement list' para ver."
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "El nodo de Horizon está registrado. Los servicios de carga de trabajo deberían empezar a ejecutares en breve."
     },
     {
       "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -4513,10 +4509,6 @@
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "El registro ha fallado. El nodo ha vuelto correctamente a un estado no registrado."
-    },
-    {
-      "id": "{Body}",
-      "translation": "{Body}"
     },
     {
       "id": "Call to anax to create node timed out.",

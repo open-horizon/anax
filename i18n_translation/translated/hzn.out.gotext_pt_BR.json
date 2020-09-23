@@ -408,7 +408,7 @@
     },
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "Nova tag para a organização. O formato é mytag1=myvalue1. Esta sinalização pode ser repetida para especificar várias tags.Use '-t \"\"' uma vez para remover todas as tags."
+      "translation": "Nova tag para a organização. O formato é mytag1=myvalue1. Esta sinalização pode ser repetida para especificar várias tags. Use '-t \"\"' uma vez para remover todas as tags."
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
@@ -1171,8 +1171,8 @@
       "translation": "O padrão do Horizon Exchange que descreve quais cargas de trabalho devem ser implementadas nesse nó. Se o padrão for de uma organização diferente do nó, use o formato 'other_org/pattern'. Mutuamente exclusivo com -o e -p."
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Aguarde até que o serviço nomeado comece a ser executado neste nó. Ao registrar-se com um padrão, use '*' para observar todos os serviços do padrão. Ao registrar-se com uma política, '*' não é um valor válido para -s."
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Aguarde até que o serviço nomeado comece a ser executado neste nó. Ao registrar-se com um padrão, use '*' para observar todos os serviços do padrão. Ao registrar-se com uma política, '*' não é um valor válido para -s. Esta sinalização não é suportada para nós de cluster de borda."
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -2097,10 +2097,6 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "translation": "Falha ao serializar a saída 'hzn node list': {Err}"
-    },
-    {
-      "id": "{JsonBytes}",
-      "translation": "{JsonBytes}"
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
@@ -3731,10 +3727,6 @@
       "translation": "falha ao serializar a saída de 'exchange org list': {Err}"
     },
     {
-      "id": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}"
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
       "translation": "Entrada inválida para {Negatives}. Não são permitidos números inteiros negativos."
     },
@@ -4487,12 +4479,16 @@
       "translation": "Erro ao configurar o estado do nó para configurado: {Err}"
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "O nó do Horizon foi registrado. Os serviços de carga de trabalho devem começar a ser executados em breve."
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "NOTA: A sinalização -s atualmente não é suportada para nodeType: {NodeType}. O registro do nó se completará sem esperar que o serviço inicie."
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "O nó do Horizon foi registrado. A negociação do contrato de carga de trabalho deve iniciar em breve. Execute 'hzn agreement list' para visualizar."
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "O nó do Horizon foi registrado. Os serviços de carga de trabalho devem começar a ser executados em breve."
     },
     {
       "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -4513,10 +4509,6 @@
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "Registro falhou. O nó retornou com sucesso para o estado não registrado."
-    },
-    {
-      "id": "{Body}",
-      "translation": "{Body}"
     },
     {
       "id": "Call to anax to create node timed out.",
