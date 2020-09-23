@@ -2,257 +2,193 @@
 
 # This script gathers the necessary information and files to install the Horizon agent and register an edge node
 
-# default agent image tag if it is not specified by script user
-AGENT_IMAGE_TAG="4.1.0"
-IMAGE_TAR_FILE="amd64_anax_k8s_ubi.tar"
-PACKAGE_NAME="horizon-edge-packages-4.1.0"
-AGENT_NAMESPACE="openhorizon-agent"
+# Global constants
+SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ALL'
 
-function scriptUsage () {
-	cat << EOF
+# Environment variables and their defaults
+AGENT_IMAGE_TAG=${AGENT_IMAGE_TAG:-4.2.0}
+AGENT_IMAGE_TAR_FILE=${AGENT_IMAGE_TAR_FILE:-amd64_anax_k8s.tar.gz}
+PACKAGE_NAME=${PACKAGE_NAME:-horizon-edge-packages-4.2.0}
+AGENT_NAMESPACE=${AGENT_NAMESPACE:-openhorizon-agent}
+# EDGE_CLUSTER_STORAGE_CLASS   # this can also be specified, that default is the empty string
 
-Usage: ./edgeNodeFiles.sh <edge-node-type> [-k] [-f <directory>] [-t] [-p <package_name>] [-d <distribution>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-o <hzn-org-id>] [-m <agent-namespace>]
+function scriptUsage() {
+    cat << EOF
+
+Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>]
 
 Parameters:
   Required:
-    <edge-node-type>    The type of edge node planned for agent install and registration. Valid values: 32-bit-ARM, 64-bit-ARM, x86_64-Linux, macOS, x86_64-Cluster
+    <edge-node-type>    The type of edge node planned for agent install and registration. Valid values: $SUPPORTED_NODE_TYPES
 
   Optional:
-    -k          Include this flag to create a new $CLUSTER_USER-Edge-Node-API-Key, even if one already exists.
+    -o <hzn-org-id>     The exchange org id that should be used for all edge nodes. If there will be multiple exchange orgs, do not set this.
+    -c    Put the gathered files into the Cloud Sync Service (MMS). On the edge nodes agent-install.sh can pull the files from there.
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
-    -p <package_name>   The base name of the horizon deb package tar file. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<PLATFORM>/<OS>/<DISTRO>/<ARCH>
-    -d <distribution>	By default 'bionic' and 'buster' packages are used on linux. Use this flag to use 'xenial' or 'stretch' packages. Flag is ignored with macOS and x86_64-Cluster.
-    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies for node type x86_64-Cluster.
-    -i <agent-image-tag>   Docker tag (version) of agent image to deploy to edge cluster. Only applies for node type x86_64-Cluster.
-    -o <hzn-org-id>     The exchange org id that should be used on the edge node. Currently on used for node type x86_64-Cluster.
-    -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies for node type x86_64-Cluster.
+    -p <package_name>   The base name of the horizon content tar file. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
+    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node type x86_64-Cluster.
+    -i <agent-image-tag>   Docker tag (version) of agent image to deploy to edge cluster. Only applies to node type x86_64-Cluster.
+    -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node type x86_64-Cluster.
 
 Required Environment Variables:
-    CLUSTER_URL	- for example: https://<cluster_CA_domain>:<port-number>
-    CLUSTER_USER - Your cluster admin user
-    CLUSTER_PW - Your cluster admin password
+    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>
+    CLUSTER_USER: Your cluster admin user
+    CLUSTER_PW: Your cluster admin password
+
+Optional Environment Variables:
+    AGENT_IMAGE_TAG: Docker tag (version) of agent image to deploy to edge cluster
+    PACKAGE_NAME: The base name of the horizon content tar file. Default: $PACKAGE_NAME
+    AGENT_NAMESPACE: The edge cluster namespace that the agent will be installed into. Default: $AGENT_NAMESPACE
 EOF
-	exit 1
+    exit $1
 }
+
+# Echo message and exit
+function fatal() {
+    : ${1:?} ${2:?}
+    local exitCode=$1
+    # the rest of the args are the message
+    echo "ERROR:" ${@:2}
+    exit $exitCode
+}
+
+# Check the exit code passed in and exit if non-zero
+function chk() {
+    local exitCode=$1
+    local task=$2
+    if [[ $exitCode == 0 ]]; then return; fi
+    fatal $exitCode "exit code $exitCode from: $task"
+}
+
+# Parse cmd line args
 if [[ "$#" = "0" ]]; then
-	scriptUsage
+    scriptUsage 1
 fi
 
-echo "Checking script parameters..."
 while (( "$#" )); do
-  	case "$1" in
-    	-d) # distribution specified
-      		if ! ([[ "$2" == "xenial" ]] \
-					|| [[ "$2" == "bionic" ]] \
-					|| [[ "$2" == "stretch" ]] \
-					|| [[ "$2" == "buster" ]]); then
-      			echo "ERROR: Unknown linux distribution type."
-      			exit 1
-      		fi
-      		DISTRO=$2
-      		shift 2
-      		;;
-    	-t) # create tar file
-      		PACKAGE_FILES=$1
-      		shift
-     		;;
-     	-k) # create api key
-      		CREATE_API_KEY=$1
-      		shift
-     		;;
-	#-r) # use edge cluster registry
-		#USING_EDGE_CLUSTER_REGISTRY=$1
-		#shift
-		#;;
-	-s) # storage class to use by persistent volume claim in edge cluster
-		CLUSTER_STORAGE_CLASS=$2
-		shift 2
-		;;
-	-i) # tag of agent image to deploy to edge cluster
-		AGENT_IMAGE_TAG=$2
-		shift 2
-		;;
-	-o) # value of HZN_ORG_ID
-		ORG_ID=$2
-		shift 2
-		;;
-	#-n) # value of NODE_ID
-		#HZN_NODE_ID=$2
-		#shift 2
-		#;;
-	-m) # edge cluster namespace to install agent to
-		AGENT_NAMESPACE=$2
-		shift 2
-		;;
-     	-f) # directory to move gathered files to
-		DIR=$2
-      		shift 2
-      		;;
-     	-p) # installation media name string
-		PACKAGE_NAME=$2
-      		shift 2
-      		;;
-	-*) #invalid flag
-		echo "ERROR: Unknow flag $1"
-		scriptUsage
-		exit 1
-		;;
-    	*) # based on "Usage" this should be node type
-		if ! ([[ "$1" == "32-bit-ARM" ]] || [[ "$1" == "64-bit-ARM" ]] || [[ "$1" == "x86_64-Linux" ]] || [[ "$1" == "macOS" ]] || [[ "$1" == "x86_64-Cluster" ]]); then
-			echo "ERROR: Unknown node type."
-			exit 1
-		fi
-      		EDGE_NODE_TYPE=$1
-      		shift
-      		;;
-  	esac
+    case "$1" in
+        -o) # value of HZN_ORG_ID. Intentionally not using HZN_ORG_ID so they don't accidentally set it from their environment
+            ORG_ID=$2
+            shift 2
+            ;;
+        -c) PUT_FILES_IN_CSS='true'
+            shift
+            ;;
+        -f) # directory to move gathered files to
+            DIR=$2
+            shift 2
+            ;;
+        -t) # create tar file
+            CREATE_TAR_FILE='true'
+            shift
+            ;;
+        -p) # installation media name string
+            PACKAGE_NAME=$2
+            shift 2
+            ;;
+        -s) # storage class to use by persistent volume claim in edge cluster
+            EDGE_CLUSTER_STORAGE_CLASS=$2
+            shift 2
+            ;;
+        -i) # tag of agent image to deploy to edge cluster
+            AGENT_IMAGE_TAG=$2
+            shift 2
+            ;;
+        -m) # edge cluster namespace to install agent to
+            AGENT_NAMESPACE=$2
+            shift 2
+            ;;
+        -h) scriptUsage 0
+            shift
+            ;;
+        -*) #invalid flag
+            echo "ERROR: Unknow flag $1"
+            scriptUsage 1
+            ;;
+        *) # based on "Usage" this should be node type
+            EDGE_NODE_TYPE=$1
+            shift
+            ;;
+      esac
 done
-if [ -z $EDGE_NODE_TYPE ]; then
-	scriptUsage
+if [[ -z $EDGE_NODE_TYPE ]]; then
+    scriptUsage 1
 fi
-echo " - valid parameters"
-echo ""
 
 
-function checkEnvVars () {
-	echo "Checking system requirements..."
-	cloudctl --help > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
-		echo "ERROR: cloudctl is not installed."
-        	exit 1
-    	fi
-    	echo " - cloudctl installed"
+function checkPrereqsAndInput () {
+    echo "Checking system requirements..."
+    if ! command -v cloudctl >/dev/null 2>&1; then
+        fatal 2 "cloudctl is not installed."
+    fi
+    echo " - cloudctl installed"
+    if ! command -v kubectl >/dev/null 2>&1; then
+        fatal 2 "kubectl is not installed."
+    fi
+    echo " - kubectl installed"
+    if ! command -v oc >/dev/null 2>&1; then
+        fatal 2 "oc is not installed."
+    fi
+    echo " - oc installed"
 
-    	kubectl --help > /dev/null 2>&1
-	if [ $? -ne 0 ]; then
-		echo "ERROR: kubectl is not installed."
-        	exit 1
-   	fi
-    	echo " - kubectl installed"
+    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        if ! command -v docker >/dev/null 2>&1; then
+            fatal 2 "docker is not installed."
+        fi
+        echo " - docker installed"
+    fi
+    echo ""
 
-	if [[ "$EDGE_NODE_TYPE" == "x86_64-Cluster" ]]; then
-    		oc --help > /dev/null 2>&1
-		if [ $? -ne 0 ]; then
-			echo "ERROR: oc is not installed."
-        		exit 1
-    		fi
-    		echo " - oc installed"
+    echo "Checking command arguments ..."
+    if [[ $SUPPORTED_NODE_TYPES != *$EDGE_NODE_TYPE* ]]; then
+        fatal 1 "Unknown edge node type. Valid values: $SUPPORTED_NODE_TYPES"
+    fi
+    echo ' - Command arguments valid'
+    echo ""
 
-		docker --help > /dev/null 2>&1
-		if [ $? -ne 0 ]; then
-			echo "ERROR: docker is not installed."
-			exit 1
-		fi
-	fi
-    	echo ""
-
-	echo "Checking environment variables..."
-
-	if [ -z $CLUSTER_URL ]; then
-		echo "ERROR: CLUSTER_URL environment variable is not set. Can not run 'cloudctl login ...'"
-		echo " - CLUSTER_URL=https://<cluster_CA_domain>:<port-number>"
-		exit 1
-
-	elif [ -z $CLUSTER_USER ]; then
-		echo "ERROR: CLUSTER_USER environment variable is not set. Can not run 'cloudctl login ...'"
-		echo " - CLUSTER_USER=<your-cluster-admin-user>"
-		exit 1
-
-	elif [ -z $CLUSTER_PW ]; then
-		echo "ERROR: CLUSTER_PW environment variable is not set. Can not run 'cloudctl login ...'"
-		echo " - CLUSTER_PW=<your-cluster-admin-password>"
-		exit 1
-	fi
-	echo " - CLUSTER_URL set"
-	echo " - CLUSTER_USER set"
-	echo " - CLUSTER_PW set"
-
-	echo ""
-}
-
-function checkParams() {
-	: #echo "Checking input paramters ..."
-	#if [ -z $HZN_NODE_ID ]; then
-	#	echo "ERROR: NODE_ID is not set. Please specify -n <your edge cluster name>"
-	#	exit 1
-	#fi
-	#echo "Using NODE_ID: $HZN_NODE_ID"
-	#echo ""
+    echo "Checking environment variables..."
+    if [[ -z $CLUSTER_URL ]]; then
+        fatal 1 "CLUSTER_URL environment variable is not set. Can not run 'cloudctl login ...'"
+    elif [[ -z $CLUSTER_USER ]]; then
+        fatal 1 "CLUSTER_USER environment variable is not set. Can not run 'cloudctl login ...'"
+    elif [[ -z $CLUSTER_PW ]]; then
+        fatal 1 "ERROR: CLUSTER_PW environment variable is not set. Can not run 'cloudctl login ...'"
+    fi
+    echo " - CLUSTER_URL: $CLUSTER_URL"
+    echo " - CLUSTER_USER: $CLUSTER_USER"
+    echo " - CLUSTER_PW set"
+    echo ""
 }
 
 function cloudLogin () {
-	echo "Connecting to cluster and configure kubectl..."
-	echo "cloudctl login -a $CLUSTER_URL -u $CLUSTER_USER -p ******** -n kube-public --skip-ssl-validation"
-
-	cloudctl login -a $CLUSTER_URL -u $CLUSTER_USER -p $CLUSTER_PW -n kube-public --skip-ssl-validation
-	if [ $? -ne 0 ]; then
-		echo "ERROR: 'cloudctl login' failed. Check if CLUSTER_URL, CLUSTER_USER, and CLUSTER_PW environment variables are set correctly."
-        exit 2
+    echo "Logging into the cluster..."
+    echo "cloudctl login -a $CLUSTER_URL -u $CLUSTER_USER -p ******** -n ibm-edge --skip-ssl-validation"
+    cloudctl login -a $CLUSTER_URL -u $CLUSTER_USER -p $CLUSTER_PW -n ibm-edge --skip-ssl-validation
+    if [[ $? -ne 0 ]]; then
+        fatal 2 "ERROR: 'cloudctl login' failed. Check if CLUSTER_URL, CLUSTER_USER, and CLUSTER_PW environment variables are set correctly."
     fi
     echo ""
 }
 
-# Query the IBM Cloud Pak cluster name
-function getClusterName () {
-	echo "Getting cluster name..."
-	echo "kubectl get configmap -n kube-public ibmcloud-cluster-info -o jsonpath=\"{.data.cluster_name}\""
-
-	CLUSTER_NAME=$(kubectl get configmap -n kube-public ibmcloud-cluster-info -o jsonpath="{.data.cluster_name}")
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to get cluster name."
-        exit 2
-    fi
-
-	echo " - Cluster name: $CLUSTER_NAME"
-	echo ""
+# Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
+function cleanUpPreviousFiles() {
+    echo "Removing any generated files from previous run..."
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "$AGENT_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml horizon*
+    chk $? "removing previous files in $PWD"
+    echo
 }
 
-# Check if an IBM Cloud Pak platform API key exists
-function checkAPIKey () {
-	echo "Checking if \"$CLUSTER_USER-Edge-Node-API-Key\" already exists..."
-	echo "cloudctl iam api-keys | cut -d' ' -f4 | grep \"$CLUSTER_USER-Edge-Node-API-Key\""
-
-	KEY=$(cloudctl iam api-keys | cut -d' ' -f4 | grep "$CLUSTER_USER-Edge-Node-API-Key")
-	if [ -z $KEY ]; then
-		echo "\"$CLUSTER_USER-Edge-Node-API-Key\" does not exist. A new one will be created."
-        CREATE_NEW_KEY=true
-    else
-    	echo "\"$CLUSTER_USER-Edge-Node-API-Key\" already exists. Skipping key creation."
-    	CREATE_NEW_KEY=false
-    fi
-    echo ""
-}
-
-# Create a IBM Cloud Pak platform API key
-function createAPIKey () {
-	echo "Creating IBM Cloud Pak platform API key..."
-	echo "cloudctl iam api-key-create \"$CLUSTER_USER-Edge-Node-API-Key\" -d \"$CLUSTER_USER-Edge-Node-API-Key\" -f key.txt"
-
-	cloudctl iam api-key-create "$CLUSTER_USER-Edge-Node-API-Key" -d "$CLUSTER_USER-Edge-Node-API-Key" -f key.txt
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to create API Key."
-        exit 2
-    fi
-
-    API_KEY=$(cat key.txt | jq -r '.apikey')
-    echo " - $CLUSTER_USER-Edge-Node-API-Key: $API_KEY"
-    echo ""
-}
-
+# Not currently used!!!! Instead of getting the image from the OCP registry, we are get the image tar file from the mgmt hub installation content in getAgentImageTarFile()
 function getImageFromOcpRegistry() {
     # get OCP_USER, OCP_TOKEN and OCP_DOCKER_HOST
     oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}' > /dev/null 2>&1
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo "Default route for the OpenShift image registry is not found, creating it ..."
         oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
-        if [ $? -ne 0 ]; then
-            echo "ERROR: failed to create the default route for the OpenShift image registry, exiting..."
-            exit 2
-        else
-            echo "Default route for the OpenShift image registry created"
-			echo ""
-        fi
+        chk $? 'creating the default route for the OpenShift image registry'
+        echo "Default route for the OpenShift image registry created"
+        echo ""
     fi
 
     OCP_DOCKER_HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
@@ -266,356 +202,406 @@ function getImageFromOcpRegistry() {
 
     # get the OpenShift certificate
     echo "Getting OpenShift certificate..."
-    echo | openssl s_client -connect $OCP_DOCKER_HOST:443 -showcerts | sed -n "/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p" > ocp.crt
-    if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to get the OpenShift certificate"
-2        exit 2
-    fi
-    echo "Get ocp.crt"
+    echo | openssl s_client -connect $OCP_DOCKER_HOST:443 -showcerts | sed -n "/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p" > /tmp/edgeNodeFiles-ocp.crt
+    chk $? 'getting the OpenShift certificate'
     echo ""
 
     # Getting image from ocp ....
     if [[ "$OSTYPE" == "linux"* ]]; then
-        echo "Detected OS is Linux, adding ocp.crt to docker and restarting docker service..."
+        echo "Detected OS is Linux, adding /tmp/edgeNodeFiles-ocp.crt to docker and restarting docker service..."
         mkdir -p /etc/docker/certs.d/$OCP_DOCKER_HOST
-        cp ocp.crt /etc/docker/certs.d/$OCP_DOCKER_HOST
+        cp /tmp/edgeNodeFiles-ocp.crt /etc/docker/certs.d/$OCP_DOCKER_HOST
         systemctl restart docker.service
         echo "Docker restarted"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "Detected OS is Mac OS, adding ocp.crt to docker and restarting docker service..."
         mkdir -p ~/.docker/certs.d/$OCP_DOCKER_HOST
-        cp ocp.crt ~/.docker/certs.d/$OCP_DOCKER_HOST
-        osascript -e 'quit app "Docker"'
-		sleep 1
-        open -a Docker
-		# The open cmd above does not wait for docker to fully start, so we have to poll
-        printf "Waiting for docker to restart"
-		sleep 2   # sometimes the very first docker ps succeeds even tho docker is not ready yet
-        while ! docker ps > /dev/null 2>&1; do
-            printf '.'
-            sleep 2
-		done
-        echo -e "\nDocker restarted"
+        cp /tmp/edgeNodeFiles-ocp.crt ~/.docker/certs.d/$OCP_DOCKER_HOST
+        if [[ -z DOCKER_DONT_RESTART ]]; then   # undocumented env var for continual retesting
+            echo "Detected OS is Mac OS, adding /tmp/edgeNodeFiles-ocp.crt to docker and restarting docker service..."
+            osascript -e 'quit app "Docker"'
+            sleep 1
+            open -a Docker
+            # The open cmd above does not wait for docker to fully start, so we have to poll
+            printf "Waiting for docker to restart"
+            sleep 2   # sometimes the very first docker ps succeeds even tho docker is not ready yet
+            while ! docker ps > /dev/null 2>&1; do
+                printf '.'
+                sleep 2
+            done
+            echo -e "\nDocker restarted"
+        fi
     else
-        echo "ERROR: Detected OS is $OSTYPE. This script is only supported on Linux or Mac OS, exiting..."
-        echo ""
-        exit 1
+        fatal 2 "Detected OS is $OSTYPE. This script is only supported on Linux or Mac OS."
     fi
 
     # login to OCP registry
     echo "Logging in to OpenShift image registry..."
     echo "$OCP_TOKEN" | docker login -u $OCP_USER --password-stdin $OCP_DOCKER_HOST
-    if [ $? -ne 0 ]; then
-	echo "ERROR: Failed to login to OpenShift image registry"
-        exit 2
-    fi
+    chk $? 'logging in to OpenShift image registry'
 
     # Getting image from ocp ....
-	OCP_IMAGE=$OCP_DOCKER_HOST/ibmcom/amd64_anax_k8s:$AGENT_IMAGE_TAG
-	echo "Pulling image $OCP_IMAGE from OpenShift image registry..."
-	docker pull $OCP_IMAGE
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to pull image from OCP image registry"
-        exit 2
-    fi
+    OCP_IMAGE=$OCP_DOCKER_HOST/ibmcom/amd64_anax_k8s:$AGENT_IMAGE_TAG
+    echo "Pulling image $OCP_IMAGE from OpenShift image registry..."
+    docker pull $OCP_IMAGE
+    chk $? 'pulling image from OCP image registry'
 
     # save image to tar file
-    echo "Saving agent image to $IMAGE_TAR_FILE..."
-    docker save $OCP_IMAGE > $IMAGE_TAR_FILE
-    if [ $? -ne 0 ]; then
-	echo "ERROR: Failed to save agent image to $IMAGE_TAR_FILE"
-        exit 2
+    echo "Saving agent image to ${AGENT_IMAGE_TAR_FILE%.gz}..."
+    docker save $OCP_IMAGE > ${AGENT_IMAGE_TAR_FILE%.gz}
+    chk $? "saving agent image to ${AGENT_IMAGE_TAR_FILE%.gz}"
+    echo ""
+
+    # compress image
+    echo "Compressing ${AGENT_IMAGE_TAR_FILE%.gz} ..."
+    gzip "${AGENT_IMAGE_TAR_FILE%.gz}"
+    chk $? "compressing ${AGENT_IMAGE_TAR_FILE%.gz}"
+    echo "$AGENT_IMAGE_TAR_FILE created"
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putOneFileInCss "$AGENT_IMAGE_TAR_FILE"
     fi
-    echo "Agent image saved to $IMAGE_TAR_FILE"
     echo ""
 }
 
-function zipAgentImage() {
-    echo "Zipping $IMAGE_TAR_FILE..."
+# Get the edge cluster agent image tar file from the mgmt hub installation content
+function getAgentImageTarFile() {
+    local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
+    echo "Extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
+    tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
+    chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
 
-    IMAGE_ZIP_FILE="$IMAGE_TAR_FILE.gz"
-    tar -czvf $IMAGE_ZIP_FILE $(ls $IMAGE_TAR_FILE)
-    if [ $? -ne 0 ]; then
-        echo "ERROR: failed to zip $IMAGE_TAR_FILE"
-        exit 2
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putOneFileInCss "$AGENT_IMAGE_TAR_FILE"
+    fi
+    echo
+}
+
+# Put 1 file into CSS in the IBM org as a public object.
+function putOneFileInCss() {
+    local filename=$1
+
+    # First get exchange root creds, if necessary
+    if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
+        echo "Getting exchange root credentials to use to publish to CSS..."
+        export HZN_EXCHANGE_USER_AUTH="root/root:$(kubectl -n ibm-edge get secret ibm-edge-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        chk $? 'getting exchange root creds'
     fi
 
-    rm $IMAGE_TAR_FILE
-    echo "$IMAGE_ZIP_FILE created"
-    echo ""
+    # Note: when https://github.com/open-horizon/anax/issues/2077 is fixed, we can send the metadata into hzn via stdin
+    cat << EOF > ${filename}-meta.json
+{
+  "objectID": "$filename",
+  "objectType": "agent_files",
+  "destinationOrgID": "IBM",
+  "public": true
+}
+EOF
+    echo "Publishing $filename in CSS as a public object in the IBM org..."
+    hzn mms -o IBM object publish -m "${filename}-meta.json" -f $filename
+    local rc=$?
+    rm -f "${filename}-meta.json"   # clean up metadata file
+    chk $rc "publishing $filename in CSS as a public object. Ensure HZN_EXCHANGE_USER_AUTH is set to credentials that can publish to the IBM org."
 }
 
 # With the information from the previous functions, create agent-install.cfg
 function createAgentInstallConfig () {
-	echo "Creating agent-install.cfg file..."
-	HUB_CERT_PATH="agent-install.crt"
+    echo "Creating agent-install.cfg file..."
+    HUB_CERT_PATH="agent-install.crt"
 
-if [[ "$EDGE_NODE_TYPE" == "x86_64-Cluster" ]]; then
-    cat << EndOfContent > agent-install.cfg
+    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset
+        cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1/
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
-HZN_ORG_ID=$ORG_ID
-HZN_MGMT_HUB_CERT_PATH=$HUB_CERT_PATH
 AGENT_NAMESPACE=$AGENT_NAMESPACE
-AGENT_IMAGE_TAG=$AGENT_IMAGE_TAG
 EndOfContent
 
-    # Only include this setting if it is not empty
-    if [[ -n $CLUSTER_STORAGE_CLASS ]]; then
-        echo "EDGE_CLUSTER_STORAGE_CLASS=$CLUSTER_STORAGE_CLASS" >> agent-install.cfg
-    fi
+        # Only include these if they are not empty
+        if [[ -n $EDGE_CLUSTER_STORAGE_CLASS ]]; then
+            echo "EDGE_CLUSTER_STORAGE_CLASS=$EDGE_CLUSTER_STORAGE_CLASS" >> agent-install.cfg
+        fi
+        if [[ -n $ORG_ID ]]; then
+            echo "HZN_ORG_ID=$ORG_ID" >> agent-install.cfg
+        fi
 
-else
-    cat << EndOfContent > agent-install.cfg
+    else   # device
+        cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1/
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
-HZN_ORG_ID=$CLUSTER_NAME
 EndOfContent
 
-fi
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to create agent-install.cfg file."
-        exit 2
+        if [[ -n $ORG_ID ]]; then
+            echo "HZN_ORG_ID=$ORG_ID" >> agent-install.cfg
+        fi
     fi
+    chk $? 'creating agent-install.cfg file'
 
-    echo "agent-install.cfg file created: "
-	cat agent-install.cfg
-	echo ""
+    echo "agent-install.cfg file created with content: "
+    cat agent-install.cfg
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putOneFileInCss agent-install.cfg
+    fi
+    echo ""
 }
 
-# Get the IBM Cloud Pak self-signed certificate
+# Get the management hub self-signed certificate
 function getClusterCert () {
-	echo "Getting the IBM Cloud Pak self-signed certificate agent-install.crt..."
-	echo "kubectl -n kube-public get secret ibmcloud-cluster-ca-cert -o jsonpath=\"{.data['ca\.crt']}\" | base64 --decode > agent-install.crt"
+    echo "Getting the management hub self-signed certificate agent-install.crt..."
+    oc get secret -n ibm-edge management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+    # this was the way to test for an older cluster and get the cert on it
+    #if ! kubectl get namespace ibm-edge >/dev/null 2>&1; then
+    #kubectl -n kube-public get secret ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+    chk $? 'getting the management hub self-signed certificate'
 
-	kubectl -n kube-public get secret ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to get the IBM Cloud Pak self-signed certificate"
-        exit 2
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putOneFileInCss agent-install.crt
     fi
     echo ""
 }
 
-# Locate the IBM Edge Application Manager node installation content
-function gatherHorizonFiles () {
-	echo "Locating the IBM Edge Application Manager node installation content for $EDGE_NODE_TYPE node..."
-	echo "tar --strip-components n -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/horizon-edge-packages/..."
-	echo "Dist is $DISTRO"
+# Create 1 horizon pkg tar file, put it into CSS, and then remove the tar file
+function putHorizonPkgsInCss() {
+    local opsys=$1 pkgtype=$2 arch=$3
 
-    # Determine edge node type, and distribution if applicable
-    if [[ "$EDGE_NODE_TYPE" == "32-bit-ARM" ]]; then
-			if [[ "$DISTRO" == "stretch" ]]; then
-				tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/raspbian/stretch/armhf
-			else
-				tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/raspbian/buster/armhf
-			fi
-		if [ $? -ne 0 ]; then
-			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
-        	exit 2
-    	fi
+    # Determine the pkgs to put in CSS, and the tar file name
+    # Note: at this point there are potentionally other horizonn pkgs too, so we have to be specific about the files that should be included in this tar file
+    local pkgWildcard tarFile
+    if [[ $pkgtype == 'deb' ]]; then
+        pkgWildcard="horizon*_$arch.$pkgtype"
+        tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
+    elif [[ $pkgtype == 'rpm' ]]; then
+        pkgWildcard="horizon*.$arch.$pkgtype"
+        tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
+    elif [[ $opsys == 'macos' ]]; then
+        pkgWildcard="horizon-cli.crt horizon-cli-*.$pkgtype"
+        tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
+    fi
 
-	elif [[ "$EDGE_NODE_TYPE" == "64-bit-ARM" ]]; then
-		if [[ "$DISTRO" == "xenial" ]]; then
-			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/xenial/arm64
-		else
-			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/bionic/arm64
-		fi
-		if [ $? -ne 0 ]; then
-			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
-        	exit 2
-    	fi
+    # Create the pkg tar file
+    tar -zcf "$tarFile" $pkgWildcard   # it is important to NOT quote $pkgWildcard so the wildcard gets expanded
+    chk $? "creating $tarFile"
 
-	elif [[ "$EDGE_NODE_TYPE" == "x86_64-Linux" ]]; then
-		if [[ "$DISTRO" == "xenial" ]]; then
-			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/xenial/amd64
-		else
-			tar --strip-components 5 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/linux/ubuntu/bionic/amd64
-		fi
-		if [ $? -ne 0 ]; then
-			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
-        	exit 2
-    	fi
+    # Put the tar file in CSS in the IBM org as a public object
+    putOneFileInCss ${tarFile}
 
-	elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
-		tar --strip-components 2 -zxvf $PACKAGE_NAME.tar.gz $PACKAGE_NAME/macos
-		if [ $? -ne 0 ]; then
-			echo "ERROR: Failed to locate the IBM Edge Application Manager node installation content"
-        	exit 2
-    	fi
-
-	else
-		echo "ERROR: Unknown node type."
-		exit 1
-	fi
-	echo ""
+    # Remove the tar file (it was only needed to put into CSS)
+    rm -f "$tarFile"
+    chk $? "removing $tarFile"
 }
 
-# Download the latest version of the agent-install.sh script and make it executable
-function pullAgentInstallScript () {
-	echo "Pulling agent-install.sh script..."
+# Get 1 type of horizon packages
+function getHorizonPackageFiles() {
+    local opsys=$1 pkgtype=$2 arch=$3
+    local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
+    echo "Extracting $pkgBaseName/$opsys/$pkgtype/$arch/* from $PACKAGE_NAME.tar.gz ..."
+    tar --strip-components 4 -zxf $PACKAGE_NAME.tar.gz $pkgBaseName/$opsys/$pkgtype/$arch
+    chk $? "extracting $pkgBaseName/$opsys/$pkgtype/$arch/* from $PACKAGE_NAME.tar.gz"
 
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/agent-install.sh)
-	if [[ $httpCode -ne 200 ]]; then
-		echo "ERROR: Failed to pull agent-install.sh script from the anax repo, HTTP code: $httpCode"
-       	exit 2
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putHorizonPkgsInCss $opsys $pkgtype $arch
     fi
-	chmod +x ./agent-install.sh
+}
+
+# Get all of the the horizon packages that they specified
+function gatherHorizonPackageFiles() {
+    local opsys pkgtype arch
+    if [[ $EDGE_NODE_TYPE == 'ARM32-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles 'linux' 'deb' 'armhf'
+    fi
+    if [[ $EDGE_NODE_TYPE == 'ARM64-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles 'linux' 'deb' 'arm64'
+    fi
+    if [[ $EDGE_NODE_TYPE == 'AMD64-Deb' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles 'linux' 'deb' 'amd64'
+    fi
+    if [[ $EDGE_NODE_TYPE == 'x86_64-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles 'linux' 'rpm' 'x86_64'
+    fi
+    if [[ $EDGE_NODE_TYPE == 'x86_64-macOS' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles 'macos' 'pkg' 'x86_64'
+    fi
+    # there are no packages to extract for edge-cluster, because that uses the agent docker image
+
     echo ""
 }
 
-# Download the latest version of the agent-uninstall.sh script and make it executable
-function pullAgentUninsallScript () {
-	echo "Pulling agent-uninstall.sh script..."
-        
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/agent-uninstall.sh)
-        if [[ $httpCode -ne 200 ]]; then
-                echo "ERROR: Failed to pull agent-uninstall.sh script from the anax repo, HTTP code: $httpCode"
-        exit 2
+# Get agent-install.sh from where it was install by horizon-cli
+function getAgentInstallScript () {
+    local installDir   # where the file has been installed by horizon-cli
+    if [[ $OSTYPE == darwin* ]]; then
+        installDir='/usr/local/bin'
+    else   # linux (deb or rpm)
+        installDir='/usr/horizon/bin'
     fi
-        chmod +x ./agent-uninstall.sh
-    echo ""
+    local installFile="$installDir/agent-install.sh"
+    if [[ ! -f $installFile ]]; then
+        fatal 2 "$installFile does not exist"
+    fi
+    echo "Getting $installFile ..."
+    cp "$installFile" .   # should already be executable
+    chk $? "Getting $installFile"
 }
 
-function pullClusterDeployTemplages () {
-	echo "Pulling cluster deploy templates: deployment-template.yml, persistentClaim-template.yml..."
-
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/k8s/deployment-template.yml)
-	if [[ $httpCode -ne 200 ]]; then
-		echo "ERROR: Failed to pull deployment-template.yml script from the anax repo, HTTP code: $httpCode"
-       	exit 2
+# Get agent-uninstall.sh from where it was install by horizon-cli
+function getAgentUninstallScript () {
+    local installDir   # where the file has been installed by horizon-cli
+    if [[ $OSTYPE == darwin* ]]; then
+        installDir='/usr/local/bin'
+    else   # linux (deb or rpm)
+        installDir='/usr/horizon/bin'
     fi
-
-	httpCode=$(curl -w "%{http_code}" --progress-bar -LO https://raw.githubusercontent.com/open-horizon/anax/master/agent-install/k8s/persistentClaim-template.yml)
-	if [[ $httpCode -ne 200 ]]; then
-		echo "ERROR: Failed to pull persistentClaim-template.yml script from the anax repo, HTTP code: $httpCode"
-       	exit 2
+    local installFile="$installDir/agent-uninstall.sh"
+    if [[ ! -f $installFile ]]; then
+        fatal 2 "$installFile does not exist"
     fi
-	echo ""
+    echo "Getting $installFile ..."
+    cp "$installFile" .   # should already be executable
+    chk $? "Getting $installFile"
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putOneFileInCss agent-uninstall.sh
+    fi
+}
+
+function getClusterDeployTemplates () {
+    local installDir   # where the files have been installed by horizon-cli
+    if [[ $OSTYPE == darwin* ]]; then
+        installDir='/usr/local/share/horizon/cluster'
+    else   # linux (deb or rpm)
+        installDir='/usr/horizon/cluster'
+    fi
+    for f in deployment-template.yml persistentClaim-template.yml; do
+        local installFile="$installDir/$f"
+        if [[ ! -f $installFile ]]; then
+            fatal 2 "$installFile does not exist"
+        fi
+        echo "Getting $installFile ..."
+        cp "$installFile" .
+
+        if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+            putOneFileInCss $f
+        fi
+    done
 }
 
 # Create a tar file of the gathered files for batch install
 function createTarFile () {
-	echo "Creating agentInstallFiles-$EDGE_NODE_TYPE.tar.gz file containing gathered files..."
+    echo "Creating agentInstallFiles-$EDGE_NODE_TYPE.tar.gz file containing gathered files..."
 
-	if [[ "$EDGE_NODE_TYPE" == "x86_64-Cluster" ]]; then
-		FILES_TO_COMPRESS="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $IMAGE_ZIP_FILE deployment-template.yml persistentClaim-template.yml"
-	elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
-		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt horizon-cli*"
-	else
-		FILES_TO_COMPRESS="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* horizon_*"
-	fi
-	echo "tar -czvf agentInstallFiles-$EDGE_NODE_TYPE.tar.gz $(ls $FILES_TO_COMPRESS)"
-
-	tar -czvf agentInstallFiles-$EDGE_NODE_TYPE.tar.gz $(ls $FILES_TO_COMPRESS)
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to create agentInstallFiles-$EDGE_NODE_TYPE.tar.gz file."
-       	exit 2
+    local files_to_compress
+    if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml horizon*"
+    elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" ]]; then
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml"
+    elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
+        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli*"
+    else   # linux device
+        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon*"
     fi
-	echo ""
-}
 
-# Move gathered files to specified -f directory
-function moveFiles () {
-	echo "Moving files to $DIR..."
-	if ! [[ -d "$DIR" ]]; then
-    	echo "$DIR does not exist, creating it..."
-    	mkdir $DIR
-	fi
-
-	mv $(ls $FILES_TO_COMPRESS) $DIR
-	if [ -f key.txt ]; then
-    	mv key.txt $DIR
-	fi
-
-	if [ $? -ne 0 ]; then
-		echo "ERROR: Failed to move files to $DIR."
-       	exit 2
-    fi
+    echo "tar'ing into agentInstallFiles-$EDGE_NODE_TYPE.tar.gz: $(ls $files_to_compress)"
+    tar -czf agentInstallFiles-$EDGE_NODE_TYPE.tar.gz $(ls $files_to_compress)
+    chk $? "creating agentInstallFiles-$EDGE_NODE_TYPE.tar.gz file."
     echo ""
 }
 
-# If an API Key was created, print it out
-function printApiKey () {
-	echo ""
-	echo "************************** Your created API Key ******************************"
-	echo ""
-	echo "     $CLUSTER_USER-Edge-Node-API-Key: $API_KEY"
-	echo ""
-	echo "********************* Save this value for future use *************************"
-	echo ""
+# When they specify EDGE_NODE_TYPE=ALL we have to do the superset of all of the steps
+all_main() {
+    checkPrereqsAndInput
+
+    cloudLogin
+
+    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+
+    cleanUpPreviousFiles
+
+    getAgentImageTarFile
+
+    createAgentInstallConfig
+
+    getClusterCert
+
+    gatherHorizonPackageFiles
+
+    getAgentInstallScript
+    getAgentUninstallScript
+    getClusterDeployTemplates
+    echo
+
+    # Note: if they specified they wanted files in CSS, we did that as the files were created
+
+    if [[ $CREATE_TAR_FILE == 'true' ]]; then
+        createTarFile
+    fi
+
+    if [[ -n $DIR ]]; then popd; fi
 }
+
 cluster_main() {
-	checkEnvVars
+    checkPrereqsAndInput
 
-	checkParams
+    cloudLogin
 
-	cloudLogin
+    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
 
-	getImageFromOcpRegistry
+    cleanUpPreviousFiles
 
-	zipAgentImage
+    getAgentImageTarFile
 
-	createAgentInstallConfig
+    createAgentInstallConfig
 
-	getClusterCert
+    getClusterCert
 
-	pullAgentInstallScript
+    getAgentInstallScript
+    getAgentUninstallScript
+    getClusterDeployTemplates
+    echo
 
-	pullAgentUninsallScript
+    # Note: if they specified they wanted files in CSS, we did that as the files were created
 
-	pullClusterDeployTemplages
+    if [[ $CREATE_TAR_FILE == 'true' ]]; then
+        createTarFile
+    fi
 
-	if [[ "$PACKAGE_FILES" == "-t" ]]; then
-		createTarFile
-	fi
-
-	if ! [ -z $DIR ]; then
-		moveFiles
-	fi
+    if [[ -n $DIR ]]; then popd; fi
 }
 
 device_main() {
-	checkEnvVars
+    checkPrereqsAndInput
 
-	cloudLogin
+    cloudLogin
 
-	getClusterName
+    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
 
-	checkAPIKey
+    cleanUpPreviousFiles
 
-	if [[ "$CREATE_API_KEY" == "-k" ]] || [[ "$CREATE_NEW_KEY" == "true" ]]; then
-		createAPIKey
-	fi
+    createAgentInstallConfig
 
-	createAgentInstallConfig
+    getClusterCert
 
-	getClusterCert
+    gatherHorizonPackageFiles
 
-	gatherHorizonFiles
+    getAgentInstallScript
+    echo
 
-	pullAgentInstallScript
+    # Note: if they specified they wanted files in CSS, we did that as the files were created
 
-	if [[ "$PACKAGE_FILES" == "-t" ]]; then
-		createTarFile
-	fi
+    if [[ $CREATE_TAR_FILE == 'true' ]]; then
+        createTarFile
+    fi
 
-	if ! [ -z $DIR ]; then
-		moveFiles
-	fi
-
-	if [[ "$CREATE_API_KEY" == "-k" ]] || [[ "$CREATE_NEW_KEY" == "true" ]]; then
-		printApiKey
-	fi
-
+    if [[ -n $DIR ]]; then popd; fi
 }
 
 main() {
-
-	if [[ "$EDGE_NODE_TYPE" == "x86_64-Cluster" ]]; then
-		cluster_main
-	else
-		device_main
-	fi
+    if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
+        all_main
+    elif [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' ]]; then
+        cluster_main
+    else
+        device_main
+    fi
+    echo "edgeNodeFiles.sh completed successfully."
 }
 
 main

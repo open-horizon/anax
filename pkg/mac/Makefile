@@ -64,7 +64,7 @@ macpkg: $(MAC_PKG)
 $(MAC_PKG): require-version
 	@echo "Producing Mac pkg horizon-cli"
 	$(MAKE) -C ../.. cli/hzn
-	mkdir -p build horizon-cli/bin horizon-cli/share/horizon horizon-cli/share/man/man1 horizon-cli/etc/horizon
+	mkdir -p build horizon-cli/bin horizon-cli/share/horizon/cluster horizon-cli/share/man/man1 horizon-cli/etc/horizon
 	@# If you add files copied, check if they need to be added to postinstall too
 	cp ../../$(CLI_EXECUTABLE) horizon-cli/bin
 	cp -Rapv ../../cli/samples horizon-cli/share/horizon
@@ -72,6 +72,8 @@ $(MAC_PKG): require-version
 	cp ../../agent-install/agent-install.sh horizon-cli/bin
 	cp ../../agent-install/agent-uninstall.sh horizon-cli/bin
 	cp ../../agent-install/edgeNodeFiles.sh horizon-cli/bin
+	cp ../../agent-install/k8s/deployment-template.yml horizon-cli/share/horizon/cluster
+	cp ../../agent-install/k8s/persistentClaim-template.yml horizon-cli/share/horizon/cluster
 	cp scripts/horizon-cli-uninstall.sh horizon-cli/bin
 	cp ../../$(LICENSE_FILE) horizon-cli/share/horizon
 	cp ../../$(CLI_MAN_DIR)/hzn.1 horizon-cli/share/man/man1

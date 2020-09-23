@@ -28,7 +28,9 @@ HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
 PERMANENT_CERT_PATH='/etc/horizon/agent-install.crt'
 ANAX_DEFAULT_PORT=8510
+AGENT_CERT_FILE_DEFAULT='agent-install.crt'
 AGENT_CFG_FILE_DEFAULT='agent-install.cfg'
+CSS_OBJ_PATH_DEFAULT='/api/v1/objects/IBM/agent_files'
 
 # edge cluster agent deployment
 SERVICE_ACCOUNT_NAME="agent-service-account"
@@ -41,6 +43,7 @@ GET_RESOURCE_MAX_TRY=5
 POD_ID=""
 HZN_ENV_FILE="/tmp/agent-install-horizon-env"   #lily: let's use /etc/default/horizon instead
 DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-image-registry.svc:5000"
+DEFAULT_AGENT_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
 
 
 # Script usage info
@@ -55,12 +58,13 @@ Required Input Variables (via flag, environment, or config file):
     HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
 
 Options/Flags:
-    -c    Path to a certificate file. Default: ./agent-install.crt . (equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
+    -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT . (equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
     -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present (equivalent to AGENT_CFG_FILE)
-    -i    Installation packages location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/latest/download) it will download the appropriate package tar file from there. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository. (equivalent to PKG_PATH). If the argument begins with 'css:' (e.g. css:/api/v1/objects/IBM/agent_files), it will download the appropriate package tar file from the MMS.
+    -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (equivalent to INPUT_FILE_PATH)
     -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (equivalent to AGENT_INSTALL_ZIP)
     -j    File location for the public key for an APT repository specified with '-i' (equivalent to PKG_APT_KEY)
     -t    Branch to use in the APT repo specified with -i. Default is 'updates' (equivalent to APT_REPO_BRANCH)
+    -O    The exchange organization id (equivalent to HZN_ORG_ID)
     -u    Exchange user authorization credentials (equivalent to HZN_EXCHANGE_USER_AUTH)
     -a    Exchange node authorization credentials (equivalent to HZN_EXCHANGE_NODE_AUTH)
     -d    The id to register this node with (equivalent to NODE_ID or HZN_DEVICE_ID)
@@ -89,6 +93,7 @@ Additional Edge Cluster Variables (in environment or config file):
     AGENT_NAMESPACE: The namespace the agent should run in. Default: openhorizon-agent
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
     AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum secods to wait for the agent deployment rollout status to be successful. Default: 75
+    AGENT_IMAGE_TAR_FILE: the file name of the agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
 EndOfMessage
     exit $exit_code
 }
@@ -101,19 +106,21 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:T:t:D:a:U:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:" opt; do
     case $opt in
     c)  ARG_AGENT_CERT_FILE="$OPTARG"
         ;;
     k)  ARG_AGENT_CFG_FILE="$OPTARG"
         ;;
-    i)  ARG_PKG_PATH="$OPTARG"
+    i)  ARG_INPUT_FILE_PATH="$OPTARG"
         ;;
     z)  ARG_AGENT_INSTALL_ZIP="$OPTARG"
         ;;
     j)  ARG_PKG_APT_KEY="$OPTARG"
         ;;
     t)  ARG_APT_REPO_BRANCH="$OPTARG"
+        ;;
+    O)  ARG_HZN_ORG_ID="$OPTARG"
         ;;
     u)  ARG_HZN_EXCHANGE_USER_AUTH="$OPTARG"
         ;;
@@ -199,104 +206,6 @@ function log() {
     fi
 }
 
-# Read the configuration file and put each value in CFG_<envvarname>, so each later can be applied with the correct precedence
-function read_config_file() {
-    log_debug "read_config_file() begin"
-    local cfg_file=$1
-
-    if [[ -z "$cfg_file" ]]; then
-        log_info "Configuration file not specified. All required input variables must be set via command arguments or the environment."
-    elif [[ ! -f "$cfg_file" ]]; then
-        log_fatal 1 "Configuration file $cfg_file not found."
-    else
-        log_verbose "Using configuration file: $cfg_file"
-        # Read/parse the config file. Note: omitting IFS= because we want leading and trailing whitespace trimmed. Also -n $line handles the case where there is not a newline at the end of the last line.
-        while read -r line || [[ -n "$line" ]]; do
-            if [[ -z $line || ${line:0:1} == '#' ]]; then continue; fi   # ignore empty or commented lines
-            #echo "'$line'"
-            local var_name="CFG_${line%%=*}"   # the variable name is the line with everything after the 1st = removed
-            IFS= read -r "$var_name" <<<"${line#*=}"   # set the variable to the line with everything before the 1st = removed
-        done < "$cfg_file"
-    fi
-
-    log_debug "read_config_file() end"
-}
-
-# Download the packages tar file from the anax git repo releases section
-# Side-effect: changes PKG_PATH to '.' after downloading the pkgs to there
-function download_pkgs_from_anax_release() {
-    log_debug "download_pkgs_from_anax_release() begin"
-    # This function is called if PKG_PATH starts with at least https://github.com/open-horizon/anax/releases/
-    local tar_file_name
-    if [[ $PKG_PATH != *.tar.gz ]]; then
-        # They didn't include the specific pkg, so add it in based on our OS distro
-        if is_macos; then
-            tar_file_name="horizon-agent-macos-$ARCH.tar.gz"
-        else   # linux
-            tar_file_name="horizon-agent-$(get_pkg_type)-$ARCH.tar.gz"
-        fi
-        PKG_PATH="${PKG_PATH%/}/$tar_file_name"
-    else   # the file name is the last part of PKG_PATH
-        tar_file_name=${PKG_PATH##*/}
-    fi
-
-    # Download and unpack the package tar file
-    log_info "Downloading and unpacking package tar file $PKG_PATH ..."
-    httpCode=$(curl -sSLO -w "%{http_code}" $PKG_PATH)
-    chkHttp $? $httpCode 200 "downloading $PKG_PATH" $tar_file_name
-    log_verbose "Download of $PKG_PATH successful, now unpacking it..."
-    tar -zxf $tar_file_name
-
-    # For the rest of the script, the packages are in the current dir
-    PKG_PATH='.'
-
-    log_debug "download_pkgs_from_anax_release() end"
-}
-
-# Download the packages tar file from CSS
-# Side-effect: changes PKG_PATH to '.' after downloading the pkgs to there
-function download_pkgs_from_css() {
-    log_debug "download_pkgs_from_css() begin"
-    # This function is called if PKG_PATH starts with css: . We have to add in HZN_FSS_CSSURL to the URL we download from.
-    local tar_file_name
-    if [[ $PKG_PATH == *.tar.gz || $PKG_PATH == *.tar.gz/ ]]; then
-        # They just left off /data
-        PKG_PATH="${PKG_PATH%/}/data"
-    elif [[ $PKG_PATH != *.tar.gz/data ]]; then
-        # They didn't include the specific pkg, so add it in based on our OS distro
-        if is_macos; then
-            tar_file_name="horizon-agent-macos-$ARCH.tar.gz"
-        else   # linux
-            tar_file_name="horizon-agent-$(get_pkg_type)-$ARCH.tar.gz"
-        fi
-        PKG_PATH="${PKG_PATH%/}/$tar_file_name/data"
-    else   # the last part of PKG_PATH is: <tar_file_name>/data
-        local tmp_path=${PKG_PATH%/data}   # strip /data from end
-        tar_file_name=${tmp_path##*/}   # keep only what is after the last /
-    fi
-    PKG_PATH=${PKG_PATH/#css:/${HZN_FSS_CSSURL%/}}   # replace css: with the value of HZN_FSS_CSSURL
-
-    # Download and unpack the package tar file
-    log_info "Downloading and unpacking package tar file $PKG_PATH ..."
-    local exch_creds cert_flag
-    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
-    else exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"   # input checking requires either user creds or node creds
-    fi
-    if [[ -n $AGENT_CERT_FILE ]]; then
-        cert_flag="--cacert $AGENT_CERT_FILE"
-    fi
-
-    httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" $cert_flag -o "$tar_file_name" $PKG_PATH)
-    chkHttp $? $httpCode 200 "downloading $PKG_PATH" $tar_file_name
-    log_verbose "Download of $PKG_PATH successful, now unpacking it..."
-    tar -zxf $tar_file_name
-
-    # For the rest of the script, the packages are in the current dir
-    PKG_PATH='.'
-
-    log_debug "download_pkgs_from_css() end"
-}
-
 # Get the value that has been specified by the user for this variable. Precedence: 1) cli flag, 2) env variable, 3) config file, 4) default.
 # The side-effect of this function is that it will set the global variable named var_name.
 # This function should be called after processing all of the cli args into ARG_<envvarname> and the cfg file values into CFG_<envvarname>
@@ -331,13 +240,147 @@ function get_variable() {
         log_fatal 1 "A value for $var_name must be specified"
     fi
 
-    if [[ $var_name == *"AUTH"* ]] || [[ $var_name == *"TOKEN"* ]]; then
+    if [[ ( $var_name == *"AUTH"* || $var_name == *"TOKEN"* ) && -n ${!var_name} ]]; then
         varValue='******'
     else
         varValue="${!var_name}"
     fi
     log_info "${var_name}: $varValue (from $from)"
     log_debug "get_variable() end"
+}
+
+# If INPUT_FILE_PATH is a short-hand value, turn it into the long-hand value. There are several variants of INPUT_FILE_PATH. See the -i flag in the usage.
+# Side-effect: INPUT_FILE_PATH
+function adjust_input_file_path() {
+    log_debug "adjust_input_file_path() begin"
+    local save_input_file_path=$INPUT_FILE_PATH
+    INPUT_FILE_PATH="${INPUT_FILE_PATH%/}"   # remove trailing / if there
+    if [[ $INPUT_FILE_PATH == 'css:' ]]; then
+        INPUT_FILE_PATH="$INPUT_FILE_PATH$CSS_OBJ_PATH_DEFAULT"
+    elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases/* ]]; then
+        if [[ $INPUT_FILE_PATH == 'https://github.com/open-horizon/anax/releases' ]]; then
+            INPUT_FILE_PATH="$INPUT_FILE_PATH/latest/download"
+        fi
+    elif [[ $INPUT_FILE_PATH == http* ]]; then
+        log_info "Using INPUT_FILE_PATH value $INPUT_FILE_PATH as an APT repository"
+        PKG_APT_REPO="$INPUT_FILE_PATH"
+        INPUT_FILE_PATH='.'   # not sure this is necessary
+    elif [[ ! -d $INPUT_FILE_PATH ]]; then
+        log_fatal 1 "INPUT_FILE_PATH directory '$INPUT_FILE_PATH' does not exist"
+    fi
+    #else we treat it as a local dir that contains the pkgs
+
+    if [[ -z $PKG_APT_REPO ]]; then
+        if [[ $INPUT_FILE_PATH != $save_input_file_path ]];then
+            log_info "INPUT_FILE_PATH adjusted to: $INPUT_FILE_PATH"
+        fi
+    fi
+    log_debug "adjust_input_file_path() end"
+}
+
+# Download a file from the specified CSS path
+function download_css_file() {
+    log_debug "download_css_file() begin"
+    local css_path=$1   # should be like: css:/api/v1/objects/IBM/agent_files/<file>
+    local remote_path="${css_path/#css:/${HZN_FSS_CSSURL%/}}/data"   # replace css: with the value of HZN_FSS_CSSURL and add /data on the end
+    local local_file="${css_path##*/}"   # get base name
+
+    # Set creds flag
+    local exch_creds cert_flag
+    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
+    else exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"; fi   # input checking already required either user creds or node creds
+
+    # Set cert flag. This is a special case, because sometimes the cert we need is coming from CSS. In that case be creative to try to get it.
+    if [[ -n $AGENT_CERT_FILE && $AGENT_CERT_FILE != $AGENT_CERT_FILE_DEFAULT ]]; then
+        log_fatal 1 "Can not specify both -c (AGENT_CERT_FILE) and -i (INPUT_FILE_PATH)"
+    fi
+    local remote_cert_path="${remote_path%/*/data}/$AGENT_CERT_FILE_DEFAULT/data"
+    if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+        # Either we have already downloaded it, or they gave it to us separately
+        cert_flag="--cacert $AGENT_CERT_FILE"
+    elif [[ -f $PERMANENT_CERT_PATH ]]; then
+        # Cert from a previous install, see if that works
+        log_info "Attempting to download file $remote_cert_path using $PERMANENT_CERT_PATH ..."
+        httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" --cacert "$PERMANENT_CERT_PATH" -o "$AGENT_CERT_FILE" $remote_cert_path 2>/dev/null || true)
+        if [[ $? -eq 0 && $httpCode -eq 200 ]]; then
+            cert_flag="--cacert $AGENT_CERT_FILE"   # we got it
+        fi
+    fi
+    if [[ -z $cert_flag ]]; then
+        # Still didn't find a valid cert. Get the cert from CSS by disabling cert checking
+        rm -f "$AGENT_CERT_FILE"   # this probably has the error msg from the previous curl in it
+        log_info "Downloading file $remote_cert_path using --insecure ..."
+        #echo "DEBUG: curl -sSL -w \"%{http_code}\" -u \"$exch_creds\" --insecure -o \"$AGENT_CERT_FILE\" $remote_cert_path || true"   # log_debug isn't set up yet
+        httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" --insecure -o "$AGENT_CERT_FILE" $remote_cert_path || true)
+        if [[ $? -ne 0 || $httpCode -ne 200 ]]; then
+            local err_msg=$(cat $AGENT_CERT_FILE 2>/dev/null)
+            rm -f "$AGENT_CERT_FILE"   # this probably has the error msg from the previous curl in it
+            log_fatal 3 "could not download $remote_cert_path: $err_msg"
+        fi
+        cert_flag="--cacert $AGENT_CERT_FILE"   # we got it
+        #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
+    fi
+
+    # Get the file they asked for
+    if [[ $local_file != $AGENT_CERT_FILE ]]; then   # if they asked for the cert, we already got that
+        log_info "Downloading file $remote_path ..."
+        httpCode=$(curl -sSL -w "%{http_code}" -u "$exch_creds" $cert_flag -o "$local_file" $remote_path)
+        chkHttp $? $httpCode 200 "downloading $remote_path" $local_file
+    fi
+    log_debug "download_css_file() end"
+}
+
+function download_anax_release_file() {
+    log_debug "download_anax_release_file() begin"
+    local anax_release_path=$1   # should be like: https://github.com/open-horizon/anax/releases/latest/download/<file>
+    local local_file="${anax_release_path##*/}"   # get base name
+    log_info "Downloading file $anax_release_path ..."
+    httpCode=$(curl -sSLO -w "%{http_code}" $anax_release_path)
+    chkHttp $? $httpCode 200 "downloading $anax_release_path" $local_file
+    log_debug "download_anax_release_file() end"
+}
+
+# If necessary, download the cfg file from a remote location.
+function download_config_file() {
+    log_debug "download_config_file() begin"
+    local input_file_path=$1   # normally the value of INPUT_FILE_PATH
+    if [[ $input_file_path == css:* ]]; then
+        download_css_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
+    elif [[ $input_file_path == https://github.com/open-horizon/anax/releases* ]]; then
+        download_anax_release_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
+    fi
+    log_debug "download_config_file() end"
+}
+
+# Read the configuration file and put each value in CFG_<envvarname>, so each later can be applied with the correct precedence
+function read_config_file() {
+    log_debug "read_config_file() begin"
+    local cfg_file=$1
+
+    # Get/locate cfg file
+    if using_remote_input_files 'cfg'; then
+        if [[ -n $cfg_file && $cfg_file != $AGENT_CFG_FILE_DEFAULT ]]; then
+            log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
+        fi
+        download_config_file "$INPUT_FILE_PATH"
+        cfg_file=$AGENT_CFG_FILE_DEFAULT   # this is where download_config_file() will put it
+    elif [[ -z "$cfg_file" ]]; then
+        log_info "Configuration file not specified. All required input variables must be set via command arguments or the environment."
+        return
+    elif [[ ! -f "$cfg_file" ]]; then
+        log_fatal 1 "Configuration file $cfg_file not found."
+    fi
+
+    # Read/parse the config file. Note: omitting IFS= because we want leading and trailing whitespace trimmed. Also -n $line handles the case where there is not a newline at the end of the last line.
+    log_verbose "Using configuration file: $cfg_file"
+    while read -r line || [[ -n "$line" ]]; do
+        if [[ -z $line || ${line:0:1} == '#' ]]; then continue; fi   # ignore empty or commented lines
+        #echo "'$line'"
+        local var_name="CFG_${line%%=*}"   # the variable name is the line with everything after the 1st = removed
+        IFS= read -r "$var_name" <<<"${line#*=}"   # set the variable to the line with everything before the 1st = removed
+    done < "$cfg_file"
+
+    log_debug "read_config_file() end"
 }
 
 # Get all of the input values from cmd line args, env vars, config file, or defaults.
@@ -349,7 +392,7 @@ function get_all_variables() {
     get_variable AGENT_INSTALL_ZIP
     if [[ -n $AGENT_INSTALL_ZIP ]]; then
         if [[ -f "$AGENT_INSTALL_ZIP" ]]; then
-            rm -f "$AGENT_CFG_FILE_DEFAULT" agent-install.crt horizon*   # clean up files from a previous run
+            rm -f "$AGENT_CFG_FILE_DEFAULT" "$AGENT_CERT_FILE_DEFAULT" horizon*   # clean up files from a previous run
             log_info "Unpacking $AGENT_INSTALL_ZIP ..."
             tar -zxf $AGENT_INSTALL_ZIP
         else
@@ -357,13 +400,21 @@ function get_all_variables() {
         fi
     fi
 
-    # Next get config file values (cmd line was already parsed), so get_variable can apply the precedence order
-    get_variable AGENT_CFG_FILE
+    # Next get config file values (cmd line has already been parsed), so get_variable can apply the whole precedence order
+    get_variable INPUT_FILE_PATH '.'
+    adjust_input_file_path
+    get_variable HZN_ORG_ID '' 'true'
+    get_variable AGENT_CFG_FILE   # no default, because they are allowed to not use a cfg file at all
     if [[ -z $AGENT_CFG_FILE && -f $AGENT_CFG_FILE_DEFAULT ]]; then
         # Only apply this default if the file is actually there
         AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT
     fi
-    read_config_file "$AGENT_CFG_FILE"
+    get_variable HZN_MGMT_HUB_CERT_PATH
+    get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"
+    read_config_file "$AGENT_CFG_FILE"   # this will download the cert and cfg if necessary
+    if [[ -z $AGENT_CFG_FILE && -f $AGENT_CFG_FILE_DEFAULT ]]; then
+        AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT   # this might not have existed before we read/downloded it
+    fi
 
     # Now that we have the values from cmd line and config file, we can get all of the variables
     get_variable AGENT_VERBOSITY 3
@@ -374,13 +425,10 @@ function get_all_variables() {
     get_variable AGENT_SKIP_REGISTRATION 'false'
     get_variable HZN_EXCHANGE_URL '' 'true'
     get_variable HZN_FSS_CSSURL '' 'true'
-    get_variable HZN_ORG_ID '' 'true'
     get_variable HZN_EXCHANGE_NODE_AUTH   #future: maybe these 3 should be combined
     get_variable NODE_ID
     get_variable HZN_DEVICE_ID
     get_variable HZN_EXCHANGE_USER_AUTH
-    get_variable HZN_MGMT_HUB_CERT_PATH
-    get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-agent-install.crt}"
     get_variable HZN_EXCHANGE_PATTERN
     get_variable HZN_NODE_POLICY
     get_variable AGENT_WAIT_FOR_SERVICE
@@ -393,7 +441,6 @@ function get_all_variables() {
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
     if is_device; then
-        get_variable PKG_PATH '.'
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
         get_variable APT_REPO_BRANCH 'updates'
@@ -409,6 +456,7 @@ function get_all_variables() {
             get_variable EDGE_CLUSTER_REGISTRY_USERNAME
             get_variable EDGE_CLUSTER_REGISTRY_TOKEN
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
+            get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
         fi
     else
         log_fatal 1 "Invalid AGENT_DEPLOY_TYPE value: $AGENT_DEPLOY_TYPE"
@@ -427,7 +475,7 @@ function get_all_variables() {
     elif [[ -n $NODE_ID ]]; then node_id=$NODE_ID
     elif [[ -n $HZN_DEVICE_ID ]]; then node_id=$HZN_DEVICE_ID
     else   # not specified, default it
-        #todo: we should let 'hzn register' default the node id, but i think there are other parts of this script that depend on it being set
+        #future: we should let 'hzn register' default the node id, but i think there are other parts of this script that depend on it being set
         # Try to get it from a previous installation
         node_id=$(grep HZN_DEVICE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
         if [[ -n $node_id ]]; then
@@ -446,39 +494,7 @@ function get_all_variables() {
         HZN_EXCHANGE_NODE_AUTH="${node_id}:"   # detault it, hzn register will fill in the token
     fi
 
-    if is_device; then
-        PKG_PATH="${PKG_PATH%/}"   # remove trailing / if there
-        # There are several variants of PKG_PATH. See the -i flag in the usage.
-        if [[ $PKG_PATH == css:* ]]; then
-            # Download the packages tar file from CSS
-            download_pkgs_from_css
-        elif [[ $PKG_PATH == https://github.com/open-horizon/anax/releases/* ]]; then
-            # Download the packages tar file from the anax git repo releases section
-            download_pkgs_from_anax_release
-        elif [[ $PKG_PATH == http* ]]; then
-            log_info "Using PKG_PATH value $PKG_PATH as an APT repository"
-            PKG_APT_REPO="$PKG_PATH"
-            PKG_PATH='.'
-        elif [[ ! -d $PKG_PATH ]]; then
-            log_fatal 1 "PKG_PATH directory '$PKG_PATH' does not exist"
-        fi
-        #else we treat it as a local dir that contains the pkgs
-
-        if [[ -z $PKG_APT_REPO ]]; then
-            # Ensure we have the pkgs we need
-            if is_macos; then
-                if ! ls $PKG_PATH/horizon-cli-*.pkg 1>/dev/null 2>&1 || [[ ! -f $PKG_PATH/$MAC_PACKAGE_CERT ]]; then
-                    log_fatal 2 "Horizon macos packages not found in: $PKG_PATH"
-                fi
-            elif is_debian_variant && ! ls $PKG_PATH/horizon*_${ARCH}.deb 1>/dev/null 2>&1; then
-                log_fatal 2 "Horizon deb packages not found in: $PKG_PATH"
-            elif is_redhat_variant && ! ls $PKG_PATH/horizon*.${ARCH}.rpm 1>/dev/null 2>&1; then
-                log_fatal 2 "Horizon rpm packages not found in: $PKG_PATH"
-            fi
-            PACKAGES="$PKG_PATH"
-        fi
-
-    else   # edge cluster
+    if is_cluster; then
         # check kubectl is available
         KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
         if command -v "$KUBECTL" >/dev/null 2>&1; then
@@ -521,6 +537,10 @@ function check_variables() {
             log_fatal 1 "IMAGE_ON_EDGE_CLUSTER_REGISTRY should be this format: <registry-host>/<registry-repo>/<image-name>"
         fi
     fi
+
+    if [[ -n $AGENT_IMAGE_TAR_FILE && $AGENT_IMAGE_TAR_FILE != *.tar.gz ]]; then
+        log_fatal 1 "AGENT_IMAGE_TAR_FILE must be in tar.gz format"
+    fi
     log_debug "check_variables() begin"
 }
 
@@ -539,7 +559,7 @@ function chk() {
 }
 
 # Check both the exit code and http code passed in and exit if not good
-chkHttp() {
+function chkHttp() {
     local exitCode=$1
     local httpCode=$2
     local goodHttpCodes=$3   # space or comma separate list of acceptable http codes
@@ -655,6 +675,90 @@ function version_gt() {
     test "$(printf '%s\n' "$1" "$2" | sort -V | tail -n 1)" == "$version1"
 }
 
+# Return 0 (true) if we are getting this input file from a remote location
+function using_remote_input_files() {
+    local whichFile=${1:-pkg}   # (optional) Can be: pkg, crt, cfg, yml, uninstall
+    if [[ $whichFile =~ ^(crt|cfg)$ ]]; then
+        # These files are specific to the instance of the cluster, so only available in CSS
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            return 0
+        fi
+    else   # the other files (pkg, yml, uninstall) are available from either
+        if [[ $INPUT_FILE_PATH == css:* || $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Get the packages from where INPUT_FILE_PATH indicates
+# Side-effect: sets PACKAGES
+function get_pkgs() {
+    log_debug "get_pkgs() begin"
+    local input_file_path=$INPUT_FILE_PATH
+    if [[ -n $PKG_APT_REPO ]]; then return; fi   # using an APT repo, so we don't deal with local pkgs
+
+    # Download the pkgs, if necessary
+    local local_input_file_path='.'   # the place we put the pkgs on this host
+    if [[ $INPUT_FILE_PATH == css:* ]]; then
+        download_pkgs_from_css
+    elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+        download_pkgs_from_anax_release
+    else
+        local_input_file_path=$INPUT_FILE_PATH   # assume INPUT_FILE_PATH is a local directory and we already have the pkgs there
+    fi
+
+    # Ensure we have the pkgs we need
+    if is_macos; then
+        if ! ls $local_input_file_path/horizon-cli-*.pkg 1>/dev/null 2>&1 || [[ ! -f $local_input_file_path/$MAC_PACKAGE_CERT ]]; then
+            log_fatal 2 "Horizon macos packages not found in: $local_input_file_path"
+        fi
+    elif is_debian_variant && ! ls $local_input_file_path/horizon*_${ARCH}.deb 1>/dev/null 2>&1; then
+        log_fatal 2 "Horizon deb packages not found in: $local_input_file_path"
+    elif is_redhat_variant && ! ls $local_input_file_path/horizon*.${ARCH}.rpm 1>/dev/null 2>&1; then
+        log_fatal 2 "Horizon rpm packages not found in: $local_input_file_path"
+    fi
+    PACKAGES="$local_input_file_path"
+
+    log_debug "get_pkgs() end"
+}
+
+# Download the packages tar file from the anax git repo releases section
+function download_pkgs_from_anax_release() {
+    log_debug "download_pkgs_from_anax_release() begin"
+    # This function is called if INPUT_FILE_PATH starts with at least https://github.com/open-horizon/anax/releases/
+    # Note: adjust_input_file_path() has already been called, which applies some default (if necessary) to INPUT_FILE_PATH
+    local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-$ARCH.tar.gz"
+    local remote_path="${INPUT_FILE_PATH%/}/$tar_file_name"
+
+    # Download and unpack the package tar file
+    log_info "Downloading and unpacking package tar file $remote_path ..."
+    httpCode=$(curl -sSLO -w "%{http_code}" $remote_path)
+    chkHttp $? $httpCode 200 "downloading $remote_path" $tar_file_name
+    log_verbose "Download of $remote_path successful, now unpacking it..."
+    tar -zxf $tar_file_name
+    rm $tar_file_name   # do not need to leave this around
+
+    log_debug "download_pkgs_from_anax_release() end"
+}
+
+# Download the packages tar file from CSS
+# Side-effect: changes INPUT_FILE_PATH to '.' after downloading the pkgs to there
+function download_pkgs_from_css() {
+    log_debug "download_pkgs_from_css() begin"
+    # This function is called if INPUT_FILE_PATH starts with css: . We have to add in HZN_FSS_CSSURL to the URL we download from.
+    # Note: adjust_input_file_path() has already been called, which applies some default (if necessary) to INPUT_FILE_PATH
+    local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-$ARCH.tar.gz"
+
+    # Download and unpack the package tar file
+    download_css_file "$INPUT_FILE_PATH/$tar_file_name"
+    log_verbose "Download of $INPUT_FILE_PATH successful, now unpacking it..."
+    tar -zxf $tar_file_name
+    rm $tar_file_name   # do not need to leave this around
+
+    log_debug "download_pkgs_from_css() end"
+}
+
 # Move the given cert file to a permanent place the cfg file can refer to it. Returns the permanent path.
 # Use for both linux and mac
 function store_cert_file_permanently() {
@@ -686,6 +790,7 @@ function is_horizon_defaults_correct() {
     local anax_port=$5   # optional
 
     local horizon_defaults_value
+    # FYI, these variables are currently supported in /etc/default/horizon: HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_DEVICE_ID, HZN_MGMT_HUB_CERT_PATH, HZN_AGENT_PORT, HZN_VAR_BASE, HZN_NO_DYNAMIC_POLL, HZN_MGMT_HUB_CERT_PATH, HZN_ICP_CA_CERT_PATH (deprecated), CMTN_SERVICEOVERRIDE
 
     # Note: the '|| true' is so not finding the strings won't cause set -e to exit the script
     horizon_defaults_value=$(grep -E '^HZN_EXCHANGE_URL=' /etc/default/horizon || true)
@@ -713,7 +818,7 @@ function is_horizon_defaults_correct() {
     fi
 
     log_debug "is_horizon_defaults_correct() end"
-    return 0   #todo: also check org id? We don't put it in there, but if they already have it in there, and it is different from HZN_ORG_ID, that might be a problem?
+    return 0
 }
 
 # If a variable already exists in /etc/default/horizon, update its value. Otherwise add it to the file.
@@ -801,8 +906,8 @@ function install_macos() {
     fi
     confirmCmds socat docker jq
 
+    get_pkgs
     mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
-
     install_mac_horizon-cli
     create_or_update_horizon_defaults
     start_agent_container
@@ -886,18 +991,20 @@ function install_debian() {
     log_debug "install_debian() begin"
 
     check_and_set_anax_port   # sets ANAX_PORT
-
+    check_existing_exch_node_is_correct_type "device"
     debian_device_install_prereqs
 
+    get_pkgs
+    #todo: change horizon pkg to only create /etc/default/horizon if it doesn't exist so we can create/update that file before installing/updating horizon pkgs (because anax will sometimes panic with a bad version of the file)
     install_debian_device_horizon_pkgs
-
-    check_existing_exch_node_is_correct_type "device"
+    #wait_until_agent_ready   #todo: can't do this right now, because anax may panic when /etc/default/horizon isn't right
 
     create_or_update_horizon_defaults "$ANAX_PORT"
-
-    log_verbose "Restarting the horizon agent service..."
-    systemctl restart horizon.service   # because we updated /etc/default/horizon
-    wait_until_agent_ready
+    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' ]]; then
+        log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
+        systemctl restart horizon.service   # because we updated /etc/default/horizon (restart will succeed even if the service was already stopped)
+        wait_until_agent_ready
+    fi
 
     registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
 
@@ -948,18 +1055,19 @@ function install_redhat() {
     log_debug "install_redhat() begin"
 
     check_and_set_anax_port   # sets ANAX_PORT
-
+    check_existing_exch_node_is_correct_type "device"
     redhat_device_install_prereqs
 
+    get_pkgs
     install_redhat_device_horizon_pkgs
-
-    check_existing_exch_node_is_correct_type "device"
+    #wait_until_agent_ready   #todo: can't do this right now, because anax may panic when /etc/default/horizon isn't right
 
     create_or_update_horizon_defaults "$ANAX_PORT"
-
-    log_verbose "Restarting the horizon agent service..."
-    systemctl restart horizon.service   # because we updated /etc/default/horizon
-    wait_until_agent_ready
+    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' ]]; then
+        log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
+        systemctl restart horizon.service   # because we updated /etc/default/horizon (restart will succeed even if the service was already stopped)
+        wait_until_agent_ready
+    fi
 
     registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
 
@@ -972,7 +1080,7 @@ function install_mac_horizon-cli() {
     log_debug "install_mac_horizon-cli() begin"
 
     # Get horizon-cli version
-    PKG_NAME=$(find . -name "horizon-cli*\.pkg" | sort -V | tail -n 1 | cut -d "/" -f 2)
+    PKG_NAME=$(ls -1 horizon-cli*.pkg | sort -V | tail -n 1)
     # PKG_NAME is something like horizon-cli-2.27.0-89.pkg
     local pkg_version=${PKG_NAME#horizon-cli-}   # this removes the 1st part
     pkg_version=${pkg_version%.pkg}   # remove the ending part
@@ -983,7 +1091,6 @@ function install_mac_horizon-cli() {
         if [[ -z "$BUILD_NUMBER" ]]; then
             export HC_DOCKER_TAG="$PACKAGE_VERSION"
         else
-            #todo: this assumes the pkg version and docker tag use the same build number, which right now isn't true. Talk to ben about this.
             export HC_DOCKER_TAG="${PACKAGE_VERSION}-${BUILD_NUMBER}"
         fi
     fi
@@ -991,10 +1098,10 @@ function install_mac_horizon-cli() {
     log_verbose "Checking installed hzn version..."
     if isCmdInstalled hzn; then
         # hzn is installed, need to check the version
-        local installed_version
-        installed_version=$(hzn version | grep "^Horizon CLI" | sed 's/^.*: //' | cut -d'-' -f1)
+        local installed_version=$(hzn version | grep "^Horizon CLI")
+        installed_version=${installed_version##* }   # remove all of the space-separated words, except the last one
         log_verbose "Installed hzn version: ${installed_version}"
-        re='^[0-9]+([.][0-9]+)+([.][0-9]+)'
+        re='^[0-9]+([.][0-9]+)+([.][0-9]+)'   # will match both 1.2.3 and 1.2.3-4
         if [[ ! $installed_version =~ $re ]] || version_gt "$PACKAGE_VERSION" "$installed_version"; then
             log_verbose "Either can not get the installed hzn version, or the given pkg version is newer"
             log_info "Installing $PACKAGES/$PKG_NAME ..."
@@ -1004,6 +1111,8 @@ function install_mac_horizon-cli() {
             if [[ "$AGENT_OVERWRITE" == true ]]; then
                 log_info "Installing older packages ${PACKAGE_VERSION}..."
                 sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
+            else
+                log_info "The installed horizon-cli package is already up to date ($installed_version)"
             fi
         fi
     else
@@ -1064,6 +1173,7 @@ function start_agent_container() {
     fi
 
     # Note: install_mac_horizon-cli() sets HC_DOCKER_TAG appropriately
+    #todo: in css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
 
     if ! isDockerContainerRunning horizon1; then
         if [[ -z $(docker ps -aq --filter name=horizon1) ]]; then
@@ -1300,13 +1410,13 @@ function detect_distro() {
 }
 
 function is_debian_variant() {
-    : ${DISTRO:?}   # verify this function is not called before DISTRO is set
+    #: ${DISTRO:?}   # verify this function is not called before DISTRO is set
     if [[ $DISTRO =~ $DEBIAN_VARIANTS_REGEX ]]; then return 0
     else return 1; fi
 }
 
 function is_redhat_variant() {
-    : ${DISTRO:?}   # verify this function is not called before DISTRO is set
+    #: ${DISTRO:?}   # verify this function is not called before DISTRO is set
     if [[ $DISTRO =~ $REDHAT_VARIANTS_REGEX ]]; then return 0
     else return 1; fi
 }
@@ -1414,9 +1524,9 @@ function find_node_ip_address() {
 # If node exist in management hub, verify it is correct type (device or cluster)
 function check_existing_exch_node_is_correct_type() {
     log_debug "check_existing_exch_node_is_correct_type() begin"
-
     local expected_type=$1
 
+    log_info "Verifying that node $NODE_ID in the exchange is type $expected_type (if it exists)..."
     local exch_creds cert_flag
     if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
     else exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"   # input checking requires either user creds or node creds
@@ -1441,31 +1551,53 @@ function check_existing_exch_node_is_correct_type() {
 
 # Cluster only: to extract agent image tar.gz and load to docker
 # Side-effect: sets globals: AGENT_IMAGE, AGENT_IMAGE_VERSION_IN_TAR, IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
-function getImageInfo() {
-    log_debug "getImageInfo() begin"
+function loadAgentImage() {
+    log_debug "loadAgentImage() begin"
 
-    log_info "Unpacking amd64_anax_k8s_ubi.tar.gz ..."
-    tar xzf amd64_anax_k8s_ubi.tar.gz
-    chk $? 'uncompressing amd64_anax_k8s_ubi.tar.gz'
+    # Get the agent tar file, if necessary
+    if using_remote_input_files 'pkg'; then
+        if [[ -n $AGENT_IMAGE_TAR_FILE && $AGENT_IMAGE_TAR_FILE != $DEFAULT_AGENT_IMAGE_TAR_FILE ]]; then
+            log_fatal 1 "Can not specify both AGENT_IMAGE_TAR_FILE and -i (INPUT_FILE_PATH)"
+        fi
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
+        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+            #download_anax_release_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
+            # Get the docker image from docker hub in this case
+            #todo: not sure how to make the user interface cleaner for this case, and to get the version we should pull
+            local image_path='openhorizon/amd64_anax_k8s:latest'
+            log_info "Pulling $image_path from docker hub..."
+            docker pull "$image_path"
+            chk $? "pulling $image_path"
+            AGENT_IMAGE=$image_path
+            AGENT_IMAGE_VERSION_IN_TAR=${AGENT_IMAGE##*:}
+            IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
+            return
+        fi
+    fi
 
-    # Loaded image: {repo}/{image_name}:{version_number}
-    local loaded_image_message=$(docker load --input amd64_anax_k8s_ubi.tar)
-    chk $? 'docker loading amd64_anax_k8s_ubi.tar'
+    log_info "Unpacking $AGENT_IMAGE_TAR_FILE ..."
+    gunzip $AGENT_IMAGE_TAR_FILE   # this also removes the .gz from the file name
+    chk $? "uncompressing $AGENT_IMAGE_TAR_FILE"
 
-    # {repo}/{image_name}:{version_number}
+    local loaded_image_message=$(docker load --input ${AGENT_IMAGE_TAR_FILE%.gz})
+    chk $? "docker loading ${AGENT_IMAGE_TAR_FILE%.gz}"
+    # loaded_image_message=Loaded image: {repo}/{image_name}:{version_number}
+
     AGENT_IMAGE=$(echo $loaded_image_message | awk -F': ' '{print $2}')
+    # AGENT_IMAGE={repo}/{image_name}:{version_number}
 
     if [[ -z $AGENT_IMAGE ]]; then
         log_fatal 3 "Could not get agent image name"
     fi
-    log_verbose "Got agent image: $AGENT_IMAGE"
+    log_verbose "Loaded agent image: $AGENT_IMAGE"
 
-    # {version_number}
-    AGENT_IMAGE_VERSION_IN_TAR=$(echo $AGENT_IMAGE | awk -F':' '{print $2}')
+    AGENT_IMAGE_VERSION_IN_TAR=${AGENT_IMAGE##*:}
+    # AGENT_IMAGE_VERSION_IN_TAR={version_number}
     # use the same tag for the image in the edge cluster registry as the tag they used for the image in the inputted tar file
     IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
 
-    log_debug "getImageInfo() end"
+    log_debug "loadAgentImage() end"
 }
 
 # Cluster only: to push agent image to image registry that edge cluster can access
@@ -1602,6 +1734,16 @@ function cleanup_cluster_config_files() {
 function prepare_k8s_development_file() {
     log_debug "prepare_k8s_development_file() begin"
 
+    # Get the template file, if necessary
+    #todo: get yml files and agent-uninstall.sh from horizon-cli in container or from tar file from css/anax release
+    if using_remote_input_files 'yml'; then
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            download_css_file "$INPUT_FILE_PATH/deployment-template.yml"
+        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+            download_anax_release_file "$INPUT_FILE_PATH/deployment-template.yml"
+        fi
+    fi
+
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
     chk $? 'creating deployment.yml'
 
@@ -1634,6 +1776,15 @@ function prepare_k8s_development_file() {
 # Cluster only: to create persistenClaim.yml based on template
 function prepare_k8s_pvc_file() {
     log_debug "prepare_k8s_pvc_file() begin"
+
+    # Get the template file, if necessary
+    if using_remote_input_files 'yml'; then
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            download_css_file "$INPUT_FILE_PATH/persistentClaim-template.yml"
+        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+            download_anax_release_file "$INPUT_FILE_PATH/persistentClaim-template.yml"
+        fi
+    fi
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim-template.yml >persistentClaim.yml
     chk $? 'creating persistentClaim.yml'
@@ -1920,7 +2071,7 @@ function install_update_cluster() {
 
     check_existing_exch_node_is_correct_type "cluster"
 
-    getImageInfo
+    loadAgentImage
 
     # push agent image to cluster's registry
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
