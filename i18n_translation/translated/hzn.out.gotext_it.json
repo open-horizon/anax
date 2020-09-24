@@ -356,7 +356,7 @@
     },
     {
       "id": "Create this organization and assign it to an agbot.",
-      "translation": "Crea questa organizzazione e la assegna ad un agbot. "
+      "translation": "Crea questa organizzazione e la assegna ad un agbot."
     },
     {
       "id": "Label for new organization.",
@@ -368,7 +368,7 @@
     },
     {
       "id": "Tag for new organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags.",
-      "translation": "Tag per la nuova organizzazione. Il formato è mytag1=myvalue1. Questo indicatore può essere ripetuto per specificare più tag. "
+      "translation": "Tag per la nuova organizzazione. Il formato è mytag1=myvalue1. Questo indicatore può essere ripetuto per specificare più tag."
     },
     {
       "id": "The minimum number of seconds between agent heartbeats to the Exchange.",
@@ -384,19 +384,19 @@
     },
     {
       "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "Il numero massimo di nodi consentiti per questa organizzazione. Il valore predefinito è 0, che indica nessun limite. "
+      "translation": "Il numero massimo di nodi consentiti per questa organizzazione. Il valore predefinito è 0, che indica nessun limite."
     },
     {
       "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
-      "translation": "Aggiungere l'organizzazione a questo agbot, in modo che sia responsabile della distribuzione dei servizi in questa organizzazione. L'agbot distribuirà i servizi sui nodi in questa organizzazione, utilizzando i modelli e le politiche di distribuzione nell'organizzazione. Se omesso, il primo agbot trovato in Exchange diventerà responsabile per questa organizzazione. Il formato è 'agbot_org/agbot_id'. "
+      "translation": "Aggiungere l'organizzazione a questo agbot, in modo che sia responsabile della distribuzione dei servizi in questa organizzazione. L'agbot distribuirà i servizi sui nodi in questa organizzazione, utilizzando i modelli e le politiche di distribuzione nell'organizzazione. Se omesso, il primo agbot trovato in Exchange diventerà responsabile per questa organizzazione. Il formato è 'agbot_org/agbot_id'."
     },
     {
       "id": "Update the organization resource in the Horizon Exchange.",
-      "translation": "Aggiornare la risorsa dell'organizzazione in Horizon Exchange."
+      "translation": "Aggiorna la risorsa dell'organizzazione in Horizon Exchange."
     },
     {
       "id": "Update this organization.",
-      "translation": "Aggiornare questa organizzazione."
+      "translation": "Aggiorna questa organizzazione."
     },
     {
       "id": "New label for organization.",
@@ -408,23 +408,23 @@
     },
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "Nuovo tag per l'organizzazione. Il formato è mytag1=myvalue1. Questo indicatore può essere ripetuto per specificare più tag. Utilizzare '-t \"\"' una volta per rimuovere tutti i tag. "
+      "translation": "Nuovo tag per l'organizzazione. Il formato è mytag1=myvalue1. Questo indicatore può essere ripetuto per specificare più tag. Utilizzare '-t \"\"' una volta per rimuovere tutti i tag."
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nuovo numero minimo di secondi tra gli heartbeat dell'agent verso Exchange. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo. "
+      "translation": "Nuovo numero minimo di secondi tra gli heartbeat dell'agent verso Exchange. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo."
     },
     {
       "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nuovo numero massimo di secondi tra gli heartbeat dell'agent verso Exchange. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo. "
+      "translation": "Nuovo numero massimo di secondi tra gli heartbeat dell'agent verso Exchange. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo."
     },
     {
       "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nuovo valore per il numero di secondi per l'incremento dell'intervallo di heartbeat dell'agent. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo. "
+      "translation": "Nuovo valore per il numero di secondi per l'incremento dell'intervallo di heartbeat dell'agent. Il numero intero negativo predefinito -1 indica nessuna modifica a questo attributo."
     },
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "Il nuovo numero massimo di nodi consentiti per questa organizzazione. Il numero intero negativo predefinito -1 indica nessuna modifica. "
+      "translation": "Il nuovo numero massimo di nodi consentiti per questa organizzazione. Il numero intero negativo predefinito -1 indica nessuna modifica."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -1171,8 +1171,8 @@
       "translation": "Il modello Horizon Exchange che descrive i workload che devono essere distribuiti a questo nodo. Se il modello è da un'organizzazione diversa rispetto al nodo, utilizzare il formato 'altra_org/modello'. Si esclude reciprocamente con -o e -p."
     },
     {
-      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s.",
-      "translation": "Attendere che il servizio indicato inizi l'esecuzione su questo nodo. Durante la registrazione con un modello, utilizzare '*' per monitorare tutti i servizi nel modello. Quando si registra una politica, '*' non è un valore valido per -s."
+      "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
+      "translation": "Attendere che il servizio indicato inizi l'esecuzione su questo nodo. Durante la registrazione con un modello, utilizzare '*' per monitorare tutti i servizi nel modello. Quando si registra una politica, '*' non è un valore valido per -s. Questo indicatore non è supportato per i nodi cluster edge."
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -2097,10 +2097,6 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "translation": "impossibile eseguire il marshalling dell'output di 'hzn node list': {Err}"
-    },
-    {
-      "id": "{JsonBytes}",
-      "translation": "{JsonBytes}"
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
@@ -3731,12 +3727,8 @@
       "translation": "impossibile eseguire il marshalling dell'output di 'exchange org list': {Err}"
     },
     {
-      "id": "{Negatives}, {N}",
-      "translation": "{Negatives}, {N}"
-    },
-    {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
-      "translation": "Fornito input non valido per {Negatives}. I numeri interi negativi non sono consentiti. "
+      "translation": "Fornito input non valido per {Negatives}. I numeri interi negativi non sono consentiti."
     },
     {
       "id": "The value for --heartbeatmin must be less than or equal to the value for --heartbeatmax.",
@@ -3744,7 +3736,7 @@
     },
     {
       "id": "Invalid input for --max-nodes. Negative integer is not allowed.",
-      "translation": "Input non valido per --max-nodes. I numeri interi negativi non sono consentiti. "
+      "translation": "Input non valido per --max-nodes. I numeri interi negativi non sono consentiti."
     },
     {
       "id": "Organization {TheOrg} is successfully added to the Exchange.",
@@ -3752,7 +3744,7 @@
     },
     {
       "id": "No agbot found in the Exchange.",
-      "translation": "Nessun agbot trovato in Exchange. "
+      "translation": "Nessun agbot trovato in Exchange."
     },
     {
       "id": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}",
@@ -3760,7 +3752,7 @@
     },
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "Input non valido per --max-nodes. Sono consentiti solo i valori -1, 0 ed i numeri interi positivi. "
+      "translation": "Input non valido per --max-nodes. Sono consentiti solo i valori -1, 0 ed i numeri interi positivi."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3780,7 +3772,7 @@
     },
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "Input non valido per {JoinnegFlags_}. Sono consentiti solo i valori -1, 0 ed i numeri interi positivi. "
+      "translation": "Input non valido per {JoinnegFlags_}. Sono consentiti solo i valori -1, 0 ed i numeri interi positivi."
     },
     {
       "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
@@ -3788,15 +3780,15 @@
     },
     {
       "id": "Empty string is specified with -t, all tags will be removed.",
-      "translation": "È specificata una stringa vuota con -t, tutti i tag verranno rimossi. "
+      "translation": "È specificata una stringa vuota con -t, tutti i tag verranno rimossi."
     },
     {
       "id": "Invalid input for -t or --tag flag: {Tag}. The valid format is '-t mytag=myvalue' or '--tag mytag=myvalue'.",
-      "translation": "Input non valido per l'indicatore -t o --tag: {Tag}. Il formato valido è '-t mytag=myvalue' o '--tag mytag=myvalue'. "
+      "translation": "Input non valido per l'indicatore -t o --tag: {Tag}. Il formato valido è '-t mytag=myvalue' o '--tag mytag=myvalue'."
     },
     {
       "id": "Agbot '{AgOrg}/{Ag1}' specified by -a cannot be not found in the Exchange",
-      "translation": "Impossibile trovare l'agbot '{AgOrg}/{Ag1}' specificato da -a in Exchange "
+      "translation": "Impossibile trovare l'agbot '{AgOrg}/{Ag1}' specificato da -a in Exchange"
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
@@ -4487,12 +4479,16 @@
       "translation": "Errore di impostazione dello stato del nodo da configurare: {Err}"
     },
     {
-      "id": "Horizon node is registered. Workload services should begin executing shortly.",
-      "translation": "Il nodo Horizon è stato registrato. I servizi di workload inizieranno l'esecuzione a breve."
+      "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
+      "translation": "NOTA: l'indicatore -s al momento non è supportato per il tipo di nodo: {NodeType}. La registrazione del nodo verrà completata senza attendere l'avvio del servizio."
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
       "translation": "Il nodo Horizon è stato registrato. La negoziazione dell'accordo di workload inizierà a breve. Eseguire il comando 'hzn agreement list' per visualizzare."
+    },
+    {
+      "id": "Horizon node is registered. Workload services should begin executing shortly.",
+      "translation": "Il nodo Horizon è stato registrato. I servizi di workload inizieranno l'esecuzione a breve."
     },
     {
       "id": "Critical error encountered in registration. Attempting to undo registration steps to leave node in the unregistered state.",
@@ -4513,10 +4509,6 @@
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "translation": "Registrazione non riuscita. Il nodo è correttamente tornato allo stato non registrato."
-    },
-    {
-      "id": "{Body}",
-      "translation": "{Body}"
     },
     {
       "id": "Call to anax to create node timed out.",
@@ -4592,7 +4584,7 @@
     },
     {
       "id": "Ignoring version {VersionRange} of service {Org}/{Url} with node type mismatch: the service type '{ServiceType}' does not match the node type '{NodeType}' of the Exchange node {NId}.",
-      "translation": "La versione {VersionRange} del servizio {Org}/{Url} con mancata corrispondenza del tipo di nodo viene ignorata: il tipo di servizio '{ServiceType}' non corrisponde al tipo di nodo '{NodeType}' del nodo Exchange {NId}. "
+      "translation": "La versione {VersionRange} del servizio {Org}/{Url} con mancata corrispondenza del tipo di nodo viene ignorata: il tipo di servizio '{ServiceType}' non corrisponde al tipo di nodo '{NodeType}' del nodo Exchange {NId}."
     },
     {
       "id": "found: {Org}, {Url}, {Arch}, {VersionRange}",
