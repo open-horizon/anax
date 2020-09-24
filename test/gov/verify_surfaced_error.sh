@@ -20,7 +20,7 @@ done
 echo -e "All surfaced errors resolved, test can proceed."
 
 # cpu service - needed by the hzn dev tests and the location top level service as a 3rd level dependency.
-VERS="1.2.3"
+VERS="1.2.2"
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 {
   "label":"CPU service",
