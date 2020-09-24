@@ -136,6 +136,7 @@ Environment Variables:
 	exOrgUpdateMaxNodes := exOrgUpdateCmd.Flag("max-nodes", msgPrinter.Sprintf("The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.")).Default("-1").Int()
 	exOrgDelCmd := exOrgCmd.Command("remove", msgPrinter.Sprintf("Remove an organization resource from the Horizon Exchange."))
 	exOrgDelOrg := exOrgDelCmd.Arg("org", msgPrinter.Sprintf("Remove this organization.")).Required().String()
+	exOrgDelFromAgbot := exOrgDelCmd.Flag("agbot", msgPrinter.Sprintf("The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.")).Short('a').String()
 	exOrgDelForce := exOrgDelCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 
 	exUserCmd := exchangeCmd.Command("user", msgPrinter.Sprintf("List and manage users in the Horizon Exchange."))
@@ -817,7 +818,7 @@ Environment Variables:
 	case exOrgUpdateCmd.FullCommand():
 		exchange.OrgUpdate(*exOrg, *exUserPw, *exOrgUpdateOrg, *exOrgUpdateLabel, *exOrgUpdateDesc, *exOrgUpdateTags, *exOrgUpdateHBMin, *exOrgUpdateHBMax, *exOrgUpdateHBAdjust, *exOrgUpdateMaxNodes)
 	case exOrgDelCmd.FullCommand():
-		exchange.OrgDel(*exOrg, *exUserPw, *exOrgDelOrg, *exOrgDelForce)
+		exchange.OrgDel(*exOrg, *exUserPw, *exOrgDelOrg, *exOrgDelFromAgbot, *exOrgDelForce)
 
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw, *exUserListUser, *exUserListAll, *exUserListNamesOnly)
