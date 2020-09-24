@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [[ ! -f /etc/default/horizon ]]; then
+    # Only create an empty/template file if they do not already have a real one
+    mkdir -p /etc/default
+    echo -e "HZN_EXCHANGE_URL=\nHZN_FSS_CSSURL=\nHZN_MGMT_HUB_CERT_PATH=\nHZN_DEVICE_ID=\nHZN_AGENT_PORT=8510" > /etc/default/horizon
+    # Note: postrm deletes this file in the purge case
+fi
+
 systemctl daemon-reload
 systemctl enable horizon.service
 if systemctl --quiet is-active horizon.service; then
