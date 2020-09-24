@@ -86,3 +86,6 @@ const AgbotMaxChanges_DEFAULT = 1000
 
 // Retry lookback window
 const AgbotRetryLookBackWindow_DEFAULT = 3600
+
+// Policy search order
+const AgbotPolicySearchOrder_DEFAULT = true

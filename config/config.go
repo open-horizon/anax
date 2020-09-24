@@ -113,6 +113,7 @@ type AGConfig struct {
 	FullRescanS                  uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
 	MaxExchangeChanges           int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
 	RetryLookBackWindow          uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
+	PolicySearchOrder            bool             // When true, search policies from most recently changed to least recently changed.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -161,6 +162,10 @@ func (c *HorizonConfig) GetAgbotFullRescan() uint64 {
 
 func (c *HorizonConfig) GetAgbotRetryLookBackWindow() uint64 {
 	return c.AgreementBot.RetryLookBackWindow
+}
+
+func (c *HorizonConfig) GetAgbotPolicyOrder() bool {
+	return c.AgreementBot.PolicySearchOrder
 }
 
 func getDefaultBase() string {
@@ -234,6 +239,7 @@ func Read(file string) (*HorizonConfig, error) {
 				FullRescanS:         AgbotFullRescan_DEFAULT,
 				MaxExchangeChanges:  AgbotMaxChanges_DEFAULT,
 				RetryLookBackWindow: AgbotRetryLookBackWindow_DEFAULT,
+				PolicySearchOrder:   AgbotPolicySearchOrder_DEFAULT,
 			},
 		}
 
