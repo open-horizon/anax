@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openhorizon-agent-pvc
+  namespace: __AgentNameSpace__
+spec:
+  storageClassName: __StorageClass__
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: __AgentNameSpace__
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      serviceAccountName: agent-service-account
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      volumes:
+      - name: agent-etc-vol
+        configMap:
+          name: openhorizon-agent-config
+      - name: agent-cert-volume
+        secret:
+          secretName: openhorizon-agent-secrets
+      - name: agent-pvc-storage
+        persistentVolumeClaim:
+          claimName: openhorizon-agent-pvc
+      containers:
+      - name: anax
+        image: __ImagePath__
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /etc/default/horizon
+          subPath: horizon
+          name: agent-etc-vol
+        - mountPath: /etc/default/cert
+          name: agent-cert-volume
+        - mountPath: /var/horizon
+          name: agent-pvc-storage
+          subPath: horizon
+        - mountPath: /etc/horizon/policy.d
+          name: agent-pvc-storage
+          subPath: policy
+        ports:
+        - containerPort: 8510
+        securityContext:
+          allowPrivilegeEscalation: true
+        env:
+        - name: HZN_ORG_ID
+          value: __OrgId__

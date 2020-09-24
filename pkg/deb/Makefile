@@ -3,10 +3,10 @@ SHELL ?= /bin/bash -e
 # can be overridden by the caller
 export arch ?= $(shell ../../tools/arch-tag)
 
-# When calling this Makefile you must pass in at least VERSION for the artifact build targets
+# Normally these variable values come from the top-level Makefile when it calls this Makefile
 export VERSION
 export BUILD_NUMBER
-# only set DISTRO if the artifact needs to be built differently for this distro. Value can be like "ubuntu" or "ubuntu.bionic". Will be added to BUILD_NUMBER
+# only set DISTRO if the artifact needs to be built differently for this distro (not currently the case). Value can be like "ubuntu" or "ubuntu.bionic". Will be added to BUILD_NUMBER
 export DISTRO
 
 BUILD_NUMBER := $(BUILD_NUMBER)$(DISTRO)

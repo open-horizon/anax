@@ -5,11 +5,13 @@
 # The deb packages that are built
 /debs/
 
-# These are the files that are copied from other parts of the repo during the deb build
+# These are the files that are copied by the makefile from other parts of the repo during the deb build
+# The horizon deb package
 /horizon/usr/horizon/bin/anax
 /horizon/usr/horizon/samples/
 /horizon/usr/horizon/LICENSE.txt
 
+# The horizon-cli deb package
 /horizon-cli/usr/horizon/bin/hzn
 /horizon-cli/usr/horizon/bin/horizon-container
 /horizon-cli/usr/horizon/bin/agent-install.sh

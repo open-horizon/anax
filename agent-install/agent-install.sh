@@ -59,7 +59,7 @@ Required Input Variables (via flag, environment, or config file):
 
 Options/Flags:
     -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT . (equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present (equivalent to AGENT_CFG_FILE)
+    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. All other variables can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID and AGENT_CERT_FILE if -i css: is specified). (equivalent to AGENT_CFG_FILE)
     -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (equivalent to INPUT_FILE_PATH)
     -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (equivalent to AGENT_INSTALL_ZIP)
     -j    File location for the public key for an APT repository specified with '-i' (equivalent to PKG_APT_KEY)
@@ -346,39 +346,44 @@ function download_config_file() {
     local input_file_path=$1   # normally the value of INPUT_FILE_PATH
     if [[ $input_file_path == css:* ]]; then
         download_css_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
-    elif [[ $input_file_path == https://github.com/open-horizon/anax/releases* ]]; then
-        download_anax_release_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
+    # the cfg is specific to the instance of the cluster, so not available from anax/release
+    #elif [[ $input_file_path == https://github.com/open-horizon/anax/releases* ]]; then
+    #    download_anax_release_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
     fi
     log_debug "download_config_file() end"
 }
 
 # Read the configuration file and put each value in CFG_<envvarname>, so each later can be applied with the correct precedence
+# Side-effect: sets or adjusts AGENT_CFG_FILE
 function read_config_file() {
     log_debug "read_config_file() begin"
-    local cfg_file=$1
 
     # Get/locate cfg file
     if using_remote_input_files 'cfg'; then
-        if [[ -n $cfg_file && $cfg_file != $AGENT_CFG_FILE_DEFAULT ]]; then
+        if [[ -n $AGENT_CFG_FILE && $AGENT_CFG_FILE != $AGENT_CFG_FILE_DEFAULT ]]; then
             log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
         fi
         download_config_file "$INPUT_FILE_PATH"
-        cfg_file=$AGENT_CFG_FILE_DEFAULT   # this is where download_config_file() will put it
-    elif [[ -z "$cfg_file" ]]; then
-        log_info "Configuration file not specified. All required input variables must be set via command arguments or the environment."
-        return
-    elif [[ ! -f "$cfg_file" ]]; then
-        log_fatal 1 "Configuration file $cfg_file not found."
+        AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT   # this is where download_config_file() will put it
+    elif [[ -z $AGENT_CFG_FILE ]]; then
+        if [[ -f $AGENT_CFG_FILE_DEFAULT ]]; then
+            AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT   # Only apply this default if the file is actually there
+        else
+            log_info "Configuration file not specified. All required input variables must be set via command arguments or the environment."
+            return
+        fi
+    elif [[ ! -f "$AGENT_CFG_FILE" ]]; then
+        log_fatal 1 "Configuration file $AGENT_CFG_FILE not found."
     fi
 
     # Read/parse the config file. Note: omitting IFS= because we want leading and trailing whitespace trimmed. Also -n $line handles the case where there is not a newline at the end of the last line.
-    log_verbose "Using configuration file: $cfg_file"
+    log_verbose "Using configuration file: $AGENT_CFG_FILE"
     while read -r line || [[ -n "$line" ]]; do
         if [[ -z $line || ${line:0:1} == '#' ]]; then continue; fi   # ignore empty or commented lines
         #echo "'$line'"
         local var_name="CFG_${line%%=*}"   # the variable name is the line with everything after the 1st = removed
         IFS= read -r "$var_name" <<<"${line#*=}"   # set the variable to the line with everything before the 1st = removed
-    done < "$cfg_file"
+    done < "$AGENT_CFG_FILE"
 
     log_debug "read_config_file() end"
 }
@@ -395,6 +400,7 @@ function get_all_variables() {
             rm -f "$AGENT_CFG_FILE_DEFAULT" "$AGENT_CERT_FILE_DEFAULT" horizon*   # clean up files from a previous run
             log_info "Unpacking $AGENT_INSTALL_ZIP ..."
             tar -zxf $AGENT_INSTALL_ZIP
+            # now that all of the individual input files are in the local dir, continue like normal
         else
             log_fatal 1 "File $AGENT_INSTALL_ZIP does not exist"
         fi
@@ -403,17 +409,17 @@ function get_all_variables() {
     # Next get config file values (cmd line has already been parsed), so get_variable can apply the whole precedence order
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
-    get_variable HZN_ORG_ID '' 'true'
     get_variable AGENT_CFG_FILE   # no default, because they are allowed to not use a cfg file at all
-    if [[ -z $AGENT_CFG_FILE && -f $AGENT_CFG_FILE_DEFAULT ]]; then
-        # Only apply this default if the file is actually there
-        AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT
+    if ! using_remote_input_files 'cfg'; then
+        # Read this as soon as possible, so things like HZN_ORG_ID can be specified in the cfg file
+        read_config_file   # this will download the cert and cfg if necessary
     fi
+    get_variable HZN_ORG_ID '' 'true'
     get_variable HZN_MGMT_HUB_CERT_PATH
     get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"
-    read_config_file "$AGENT_CFG_FILE"   # this will download the cert and cfg if necessary
-    if [[ -z $AGENT_CFG_FILE && -f $AGENT_CFG_FILE_DEFAULT ]]; then
-        AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT   # this might not have existed before we read/downloded it
+    if using_remote_input_files 'cfg'; then
+        # Now we have enough of the other input variables to do this
+        read_config_file   # this will download the cert and cfg if necessary
     fi
 
     # Now that we have the values from cmd line and config file, we can get all of the variables
@@ -661,7 +667,7 @@ function confirmCmds() {
 
 function ensureWeAreRoot() {
     if [[ $(whoami) != 'root' ]]; then
-        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -i' and then run ${0##*/}"
+        log_fatal 2 "must be root to run ${0##*/}. Run 'sudo -iE' and then run ${0##*/}"
     fi
     # or could check: [[ $(id -u) -ne 0 ]]
 }
@@ -854,12 +860,12 @@ function create_or_update_horizon_defaults() {
 
     if [[ ! -f /etc/default/horizon ]]; then
         log_info "Creating /etc/default/horizon ..."
-        echo -e "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}" > /etc/default/horizon
+        sudo sh -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}' > /etc/default/horizon"
         if [[ -n $abs_certificate ]]; then
-            echo "HZN_MGMT_HUB_CERT_PATH=$abs_certificate" >> /etc/default/horizon
+            sudo sh -c "echo 'HZN_MGMT_HUB_CERT_PATH=$abs_certificate' >> /etc/default/horizon"
         fi
         if [[ -n $anax_port ]]; then
-            echo "HZN_AGENT_PORT=$anax_port" >> /etc/default/horizon
+            sudo sh -c "echo 'HZN_AGENT_PORT=$anax_port' >> /etc/default/horizon"
         fi
         HORIZON_DEFAULTS_CHANGED='true'
     elif is_horizon_defaults_correct "$HZN_EXCHANGE_URL" "$HZN_FSS_CSSURL" "$NODE_ID" "$abs_certificate" "$anax_port"; then
@@ -960,9 +966,37 @@ function debian_device_install_prereqs() {
     log_debug "debian_device_install_prereqs() end"
 }
 
+# Returns 0 (true) if the deb pkgs to be installed are newer than the pkgs already installed
+function is_newer_deb_pkgs() {
+    # Make the decision based on the horizon deb pkg, because that's the one we really care about (whether we have to restart the daemon), plus the horizon deb requires the horizon-cli deb be the same version.
+
+    # Get version of installed horizon deb pkg
+    if [[ $(dpkg-query -s horizon 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
+        log_verbose "The horizon deb pkg is not installed (at least not completely)"
+        return 0   # anything is newer than not installed
+    fi
+    local installed_deb_version=$(dpkg-query -s horizon | grep -E '^Version:' | awk '{print $2}')
+
+    # Get version of the deb pkg they gave us to install
+    local latest_deb_file=$(ls -1 $PACKAGES/horizon_*_${ARCH}.deb | sort -V | tail -n 1)
+    if [[ -z $latest_deb_file ]]; then
+        log_warning "No horizon deb packages found in $PACKAGES"
+        return 1
+    fi
+    # latest_deb_file is something like horizon_2.27.0-110_amd64.deb
+    local deb_file_version=${latest_deb_file##*/horizon_}   # remove the 1st part
+    deb_file_version=${deb_file_version%_*.deb}   # remove the ending part
+
+    log_info "Installed horizon deb package version: $installed_deb_version, Provided horizon deb file version: $deb_file_version"
+    if version_gt $deb_file_version $installed_deb_version; then return 0
+    else return 1; fi
+}
+
 # Install the deb pkgs on a device
+# Side-effect: sets AGENT_WAS_RESTARTED to 'true' or 'false'
 function install_debian_device_horizon_pkgs() {
     log_debug "install_debian_device_horizon_pkgs() begin"
+    AGENT_WAS_RESTARTED='false'   # only set to true when we are sure
     if [[ -n "$PKG_APT_REPO" ]]; then
         log_info "Installing horizon via the APT repository $PKG_APT_REPO ..."
         if [[ -n "$PKG_APT_KEY" ]]; then
@@ -977,11 +1011,15 @@ function install_debian_device_horizon_pkgs() {
         if [[ ${PACKAGES:0:1} != '/' ]]; then
             PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
         fi
-        log_info "Installing the horizon packages in $PACKAGES ..."
-        # No need to check what is already installed, because this will install the pkgs if they are newer.
-        # Note: i don't think this supports installing an older version of the pkgs than what is currently installed. Let's just document that they have to uninstall the deb pkgs first if that's what they want to do.
-        #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
-        runCmdQuietly apt-get install -yqf ${PACKAGES}/horizon*_${ARCH}.deb
+        if is_newer_deb_pkgs; then
+            log_info "Installing the horizon packages in $PACKAGES ..."
+            # Note: we don't support downgraded the deb pkgs
+            #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
+            runCmdQuietly apt-get install -yqf ${PACKAGES}/horizon*_${ARCH}.deb
+            AGENT_WAS_RESTARTED='true'
+        else
+            log_info "Not installing any horizon packages, because the system is already up to date."
+        fi
     fi
     log_debug "install_debian_device_horizon_pkgs() end"
 }
@@ -994,13 +1032,19 @@ function install_debian() {
     check_existing_exch_node_is_correct_type "device"
     debian_device_install_prereqs
 
-    get_pkgs
-    #todo: change horizon pkg to only create /etc/default/horizon if it doesn't exist so we can create/update that file before installing/updating horizon pkgs (because anax will sometimes panic with a bad version of the file)
-    install_debian_device_horizon_pkgs
-    #wait_until_agent_ready   #todo: can't do this right now, because anax may panic when /etc/default/horizon isn't right
-
     create_or_update_horizon_defaults "$ANAX_PORT"
-    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' ]]; then
+
+    get_pkgs
+    # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
+    install_debian_device_horizon_pkgs
+    if grep -qE '^HZN_EXCHANGE_URL=$' /etc/default/horizon || ! systemctl is-active --quiet horizon; then
+        #todo: special case to temporarily handle the transition to horizon 2.27.0-111 (which resets /etc/default/horizon to an empty template)
+        create_or_update_horizon_defaults "$ANAX_PORT"   # put it back to what we want. This will set HORIZON_DEFAULTS_CHANGED=true
+        AGENT_WAS_RESTARTED='false'
+    else
+        wait_until_agent_ready
+    fi
+    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
         log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
         systemctl restart horizon.service   # because we updated /etc/default/horizon (restart will succeed even if the service was already stopped)
         wait_until_agent_ready
@@ -1143,6 +1187,7 @@ function wait_for() {
     while ! eval $cmd; do
         local current_agent_check=$(date +%s)
         if ((current_agent_check - start_agent_check > timeoutSecs)); then
+            echo
             return 1
         fi
         printf '.'
