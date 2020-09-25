@@ -140,7 +140,7 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, tags 
 
 	// check existance and also get current attribute values for comparizon later
 	var orgs exchange.GetOrganizationResponse
-	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{200}, &orgs)
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &orgs)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("org '%s' not found.", theOrg))
 	}
@@ -185,9 +185,18 @@ func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, tags 
 	msgPrinter.Println()
 }
 
-func OrgDel(org, userPwCreds, theOrg string, force bool) {
+func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// Search exchange for org, throw error if not found.
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, nil)
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("org '%s' not found.", theOrg))
+	}
+
+	// check if the agbot specified by -a exist or not
+	CheckAgbot(org, userPwCreds, agbot)
 
 	// "Are you sure?" prompt
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
@@ -195,14 +204,55 @@ func OrgDel(org, userPwCreds, theOrg string, force bool) {
 		cliutils.ConfirmRemove(msgPrinter.Sprintf("Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user %v from the Horizon Exchange?", theOrg))
 	}
 
-	// Search exchange for org and delete it, throw error if not found.
-	httpCode := cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{204, 404})
-	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("org %s not found.", theOrg))
-	} else {
-		msgPrinter.Printf("Organization %v is successfully removed.", theOrg)
-		msgPrinter.Println()
+	if agbot == "" {
+		// if -a is not specified, it go get the first agbot it can find
+		ag := GetDefaultAgbot(org, userPwCreds)
+		if ag == "" {
+			msgPrinter.Printf("No agbot found in the Exchange.")
+			msgPrinter.Println()
+		} else {
+			agbot = ag
+			cliutils.Verbose(msgPrinter.Sprintf("Using agbot %v", agbot))
+		}
 	}
+
+	if agbot != "" {
+		var agbotOrg string
+		agbotOrg, agbot = cliutils.TrimOrg(org, agbot)
+
+		// Load and remove all agbot served patterns associated with this org
+		var patternsResp ExchangeAgbotPatterns
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/patterns", cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, &patternsResp)
+
+		for patternId, p := range patternsResp.Patterns {
+			// Convert pattern's value into JSON and unmarshal it
+			var servedPattern ServedPattern
+			patternJson := cliutils.MarshalIndent(p, "Cannot convert pattern to JSON")
+			cliutils.Unmarshal([]byte(patternJson), &servedPattern, msgPrinter.Sprintf("Cannot unmarshal served pattern"))
+
+			if servedPattern.PatternOrg == theOrg || servedPattern.NodeOrg == theOrg {
+				cliutils.Verbose(msgPrinter.Sprintf("Removing pattern %s from agbot %s", patternId, agbot))
+				cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/patterns/"+patternId, cliutils.OrgAndCreds(org, userPwCreds), []int{204})
+			}
+		}
+
+		// Load and remove all agbot served business policies associated with this org
+		polResp := new(exchange.GetAgbotsBusinessPolsResponse)
+		cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols", cliutils.OrgAndCreds(org, userPwCreds), []int{200, 404}, polResp)
+
+		for polId, p := range polResp.BusinessPols {
+			if p.BusinessPolOrg == theOrg { // the nodeOrg and polOrg are the same
+				cliutils.Verbose(msgPrinter.Sprintf("Removing policy %s from agbot %s", polId, agbot))
+				cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+agbotOrg+"/agbots/"+agbot+"/businesspols/"+polId, cliutils.OrgAndCreds(org, userPwCreds), []int{204})
+			}
+		}
+	}
+
+	// Search exchange for org and delete it.
+	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{204})
+
+	msgPrinter.Printf("Organization %v is successfully removed.", theOrg)
+	msgPrinter.Println()
 
 }
 
