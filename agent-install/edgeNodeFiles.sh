@@ -26,7 +26,7 @@ Parameters:
     -c    Put the gathered files into the Cloud Sync Service (MMS). On the edge nodes agent-install.sh can pull the files from there.
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
-    -p <package_name>   The base name of the horizon content tar file. Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
+    -p <package_name>   The base name of the horizon content tar file (can include a path). Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
     -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node type x86_64-Cluster.
     -i <agent-image-tag>   Docker tag (version) of agent image to deploy to edge cluster. Only applies to node type x86_64-Cluster.
     -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node type x86_64-Cluster.
@@ -38,7 +38,7 @@ Required Environment Variables:
 
 Optional Environment Variables:
     AGENT_IMAGE_TAG: Docker tag (version) of agent image to deploy to edge cluster
-    PACKAGE_NAME: The base name of the horizon content tar file. Default: $PACKAGE_NAME
+    PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
     AGENT_NAMESPACE: The edge cluster namespace that the agent will be installed into. Default: $AGENT_NAMESPACE
 EOF
     exit $1

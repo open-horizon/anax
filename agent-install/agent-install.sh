@@ -1040,13 +1040,14 @@ function install_debian() {
     if grep -qE '^HZN_EXCHANGE_URL=$' /etc/default/horizon || ! systemctl is-active --quiet horizon; then
         #todo: special case to temporarily handle the transition to horizon 2.27.0-111 (which resets /etc/default/horizon to an empty template)
         create_or_update_horizon_defaults "$ANAX_PORT"   # put it back to what we want. This will set HORIZON_DEFAULTS_CHANGED=true
+        HORIZON_DEFAULTS_CHANGED='true'   # just in case
         AGENT_WAS_RESTARTED='false'
     else
         wait_until_agent_ready
     fi
     if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
         log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
-        systemctl restart horizon.service   # because we updated /etc/default/horizon (restart will succeed even if the service was already stopped)
+        systemctl restart horizon.service   # (restart will succeed even if the service was already stopped)
         wait_until_agent_ready
     fi
 
@@ -1074,9 +1075,39 @@ function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() end"
 }
 
+# Returns 0 (true) if the rpm pkgs to be installed are newer than the pkgs already installed
+function is_newer_rpm_pkgs() {
+    # Make the decision based on the horizon rpm pkg, because that's the one we really care about (whether we have to restart the daemon), plus the horizon rpm requires the horizon-cli rpm be the same version.
+
+    # Get version of installed horizon rpm pkg
+    if ! rpm -q horizon >/dev/null 2>&1; then
+        log_verbose "The horizon rpm pkg is not installed"
+        return 0   # anything is newer than not installed
+    fi
+    local installed_rpm_version=$(rpm -q horizon 2>/dev/null)  # will return like: horizon-2.27.0-110.x86_64
+    installed_rpm_version=${installed_rpm_version#horizon-}   # remove the beginning
+    installed_rpm_version=${installed_rpm_version%.*}   # remove the ending
+
+    # Get version of the rpm pkg they gave us to install
+    local latest_rpm_file=$(ls -1 $PACKAGES/horizon-*.${ARCH}.rpm | grep -v 'horizon-cli' | sort -V | tail -n 1)
+    if [[ -z $latest_rpm_file ]]; then
+        log_warning "No horizon rpm packages found in $PACKAGES"
+        return 1
+    fi
+    # latest_rpm_file is something like horizon-2.27.0-110.x86_64.rpm
+    local rpm_file_version=${latest_rpm_file##*/horizon-}   # remove the beginning
+    rpm_file_version=${rpm_file_version%.*.rpm}   # remove the ending
+
+    log_info "Installed horizon rpm package version: $installed_rpm_version, Provided horizon rpm file version: $rpm_file_version"
+    if version_gt $rpm_file_version $installed_rpm_version; then return 0
+    else return 1; fi
+}
+
 # Install the rpm pkgs on a redhat variant device
+# Side-effect: sets AGENT_WAS_RESTARTED to 'true' or 'false'
 function install_redhat_device_horizon_pkgs() {
     log_debug "install_redhat_device_horizon_pkgs() begin"
+    AGENT_WAS_RESTARTED='false'   # only set to true when we are sure
     if [[ -n "$PKG_APT_REPO" ]]; then
         log_fatal 1 "Installing horizon RPMs via repository $PKG_APT_REPO is not supported at this time"
         #future: support this
@@ -1085,11 +1116,15 @@ function install_redhat_device_horizon_pkgs() {
         if [[ ${PACKAGES:0:1} != '/' ]]; then
             PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
         fi
-        log_info "Installing the horizon packages in $PACKAGES ..."
-        # No need to check what is already installed, because this will install the pkgs if they are newer.
-        # Note: i don't think this supports installing an older version of the pkgs than what is currently installed. Let's just document that they have to uninstall the deb pkgs first if that's what they want to do.
-        #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
-        dnf install -yq ${PACKAGES}/horizon*.${ARCH}.rpm
+        if is_newer_rpm_pkgs; then
+            log_info "Installing the horizon packages in $PACKAGES ..."
+            # Note: we don't support downgraded the deb pkgs
+            #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
+            dnf install -yq ${PACKAGES}/horizon*.${ARCH}.rpm
+            AGENT_WAS_RESTARTED='true'
+        else
+            log_info "Not installing any horizon packages, because the system is already up to date."
+        fi
     fi
     log_debug "install_redhat_device_horizon_pkgs() end"
 }
@@ -1102,14 +1137,22 @@ function install_redhat() {
     check_existing_exch_node_is_correct_type "device"
     redhat_device_install_prereqs
 
-    get_pkgs
-    install_redhat_device_horizon_pkgs
-    #wait_until_agent_ready   #todo: can't do this right now, because anax may panic when /etc/default/horizon isn't right
-
     create_or_update_horizon_defaults "$ANAX_PORT"
+
+    get_pkgs
+    # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
+    install_redhat_device_horizon_pkgs
+    if [[ ! -f /etc/default/horizon ]] || ! systemctl is-active --quiet horizon; then
+        #todo: special case to temporarily handle the transition to horizon 2.27.0-111 (which moves /etc/default/horizon to /etc/default/horizon.rpmsave)
+        create_or_update_horizon_defaults "$ANAX_PORT"   # put it back to what we want. This will set HORIZON_DEFAULTS_CHANGED=true
+        HORIZON_DEFAULTS_CHANGED='true'   # just in case
+        AGENT_WAS_RESTARTED='false'
+    else
+        wait_until_agent_ready
+    fi
     if [[ $HORIZON_DEFAULTS_CHANGED == 'true' ]]; then
         log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
-        systemctl restart horizon.service   # because we updated /etc/default/horizon (restart will succeed even if the service was already stopped)
+        systemctl restart horizon.service   # (restart will succeed even if the service was already stopped)
         wait_until_agent_ready
     fi
 
@@ -1580,7 +1623,7 @@ function check_existing_exch_node_is_correct_type() {
     if [[ -n $AGENT_CERT_FILE ]]; then
         cert_flag="--cacert $AGENT_CERT_FILE"
     fi
-    local exch_output=$(curl -fsS $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds") || true
+    local exch_output=$(curl -fsS $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds" 2>/dev/null) || true
 
     if [[ -n "$exch_output" ]]; then
         local exch_node_type=$(echo $exch_output | jq -re '.nodes | .[].nodeType')
