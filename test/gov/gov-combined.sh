@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Grab exports to use in additional agents
+set > /tmp/exports_list
+
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 function set_exports {
@@ -57,6 +60,7 @@ function run_delete_loops {
       if [ "$NOLOOP" == "1" ]; then
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
+        if [ ${MUL_AGENTS} -ne 0 ]; then export VERIFY_MUL=1; fi
         echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
           ./del_loop.sh
@@ -67,11 +71,13 @@ function run_delete_loops {
           if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
           ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
           if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
+          if [ ${MUL_AGENTS} -ne 0 ]; then export VERIFY_MUL=1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
       else
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh &
+        if [ ${MUL_AGENTS} -ne 0 ]; then export VERIFY_MUL=1; fi
       fi
     else
       echo -e "Verifying policy based workload deployment"
@@ -328,6 +334,12 @@ elif [ "$TESTFAIL" != "1" ]; then
     # start pattern test
     set_exports $pat
 
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "multiple agents..."
+      ./multiple_agents.sh
+      export VERIFY_MUL=0;
+    fi
+
     ./start_node.sh
     if [ $? -ne 0 ]
     then
@@ -342,6 +354,19 @@ elif [ "$TESTFAIL" != "1" ]; then
       echo "Delete loop failure."
       TESTFAIL="1"
       break
+    fi
+
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "delete multiple agents..."
+      curl -sSLX DELETE http://localhost:8512/node 2>/dev/null
+      curl -sSLX DELETE http://localhost:8513/node 2>/dev/null
+      curl -sSLX DELETE http://localhost:8514/node 2>/dev/null
+      curl -sSLX DELETE http://localhost:8515/node 2>/dev/null
+      echo "Removing agent containers"
+      docker stop -t 120 "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
+      docker rm -f "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
+      docker volume rm "horizon6_var" "horizon6_etc" "horizon7_var" "horizon7_etc" "horizon8_var" "horizon8_etc" "horizon9_var" "horizon9_etc" 2>/dev/null || true
+      sleep 10
     fi
 
     if [ "$NORETRY" != "1" ]; then
