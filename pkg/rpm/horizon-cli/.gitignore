@@ -4,5 +4,6 @@
 /fs/usr/horizon/bin/agent-install.sh
 /fs/usr/horizon/bin/agent-uninstall.sh
 /fs/usr/horizon/bin/edgeNodeFiles.sh
+/fs/usr/horizon/cluster
 /fs/etc/bash_completion.d/
 /fs/usr/share/man/
