@@ -50,7 +50,7 @@ rpmbuild: require-version
 	cp ../../../agent-install/agent-install.sh fs/usr/horizon/bin
 	cp ../../../agent-install/agent-uninstall.sh fs/usr/horizon/bin
 	cp ../../../agent-install/edgeNodeFiles.sh fs/usr/horizon/bin
-	cp ../../../agent-install/k8s/deployment-template.yml fa/usr/horizon/cluster
+	cp ../../../agent-install/k8s/deployment-template.yml fs/usr/horizon/cluster
 	cp ../../../agent-install/k8s/persistentClaim-template.yml fs/usr/horizon/cluster
 	cp ../../../cli/bash_completion/hzn_bash_autocomplete.sh fs/etc/bash_completion.d
 	mkdir -p fs/usr/share/man/man1
