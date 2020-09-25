@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := 2.44.0
+DOCKER_EXCH_TAG := 2.49.0
 PKG_URL_BASE := http://169.45.88.181/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
@@ -86,8 +86,11 @@ DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSSDB_CNAME := css-db
+MUL_AGENTS ?= 0
 
 run-agbot: agbot-docker-prereqs test-network
+	touch /tmp/horizon
+	touch /tmp/css.crt
 	@echo "Handling $(DOCKER_AGBOT_CNAME)"
 	docker/docker_run.bash "$(DOCKER_AGBOT_CNAME)" \
 		docker run -d \
@@ -103,6 +106,7 @@ run-agbot: agbot-docker-prereqs test-network
 		--add-host "$(DOCKER_AGBOT_ADD_HOST)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
+		-v /var/tmp/horizon/:/var/tmp/horizon/:rw \
 		-v ~/.docker:/home/agbotuser/.docker \
 		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
 		-v /var/wiotp-edge/persist/:/var/wiotp-edge/persist/ \
@@ -110,12 +114,16 @@ run-agbot: agbot-docker-prereqs test-network
 		-v /tmp/hzndev/:/tmp/hzndev/ \
 		-v $(AGBOT_TEMPFS)/certs:/certs \
 		-v /var/log/:/var/log/ \
+		-v $(ANAX_SOURCE)/anax-in-container:/tmp/anax-in-container \
+		-v /tmp/horizon:/tmp/horizon:rw \
+		-v /tmp/css.crt:/tmp/css.crt:rw \
 		-e "HZN_DISABLE_IPTABLES_MANIPULATION=true" \
 		-e "EXCH_APP_HOST=$(DOCKER_EXCH)" \
 		-e "HZN_SSL_SKIP_VERIFY=1" \
 		-e "CSS_URL=$(CSS_URL)" \
 		-e "API_KEY=$(API_KEY)" \
 		-e "CERT_LOC=$(CERT_LOC)" \
+		-e "MUL_AGENTS=$(MUL_AGENTS)" \
 		-e "EXCH_ROOTPW=$(EXCH_ROOTPW)" \
 		-e "AGBOT_NAME=$(AGBOT_NAME)" \
 		-e "AGBOT_SAPI_URL=$(AGBOT_SAPI_URL)" \
@@ -123,6 +131,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "DOCKER_REG_CNAME=$(DOCKER_REG_CNAME)" \
 		-e "DOCKER_REG_USER=$(DOCKER_REG_USER)" \
 		-e "DOCKER_REG_PW=$(DOCKER_REG_PW)" \
+		-e "DOCKER_EXCH_TAG=$(DOCKER_EXCH_TAG)" \
 		-e "HZN_AGBOT_API=http://localhost:8082" \
 		-e "HZN_EXCHANGE_URL=$(DOCKER_EXCH)" \
 		-e "HZN_DEV_HOST_IP=$(E2EDEV_HOST_IP)" \
@@ -169,7 +178,7 @@ run-exchange: run-exchange-db test-network $(EXCH_TEMPFS)/exchange-api.tmpl
 	@echo "Handling $(DOCKER_EXCH_CNAME)"
 	docker/docker_run.bash "$(DOCKER_EXCH_CNAME)" \
 		docker run -d \
-		-p 127.0.0.1:8090:8080 \
+		-p 0.0.0.0:8090:8080 \
 		--name "$(DOCKER_EXCH_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v $(EXCH_TEMPFS)/exchange-api.tmpl:/etc/horizon/exchange/exchange-api.tmpl:ro \
@@ -198,8 +207,16 @@ clean:
 	gov/stop_kube.sh
 	@echo "Shutdown anax cleanly"
 	-@curl -sSLX DELETE http://localhost:8510/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8512/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8513/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8514/node 2>/dev/null || true
+	-@curl -sSLX DELETE http://localhost:8515/node 2>/dev/null || true
 	@echo "Removing agbot container"
 	-@docker rm -f "$(DOCKER_AGBOT_CNAME)" 2>/dev/null || true
+	@echo "Removing agent containers"
+	-@docker stop -t 120 "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
+	-@docker rm -f "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
+	-@docker volume rm "horizon6_var" "horizon6_etc" "horizon7_var" "horizon7_etc" "horizon8_var" "horizon8_etc" "horizon9_var" "horizon9_etc" 2>/dev/null || true
 	@echo "Dropping and re-initializing the exchange DB"
 	@$(eval DROP_DB_TOKEN := $(shell curl -sLX GET -u "root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/dropdb/token" | jq -r '.token')) 2>/dev/null || true
 	-@curl -sLX POST -u "root/root:$(DROP_DB_TOKEN)" "http://localhost:8080/v1/admin/dropdb" | jq -r '.msg' 2>/dev/null || true
@@ -263,7 +280,7 @@ agbot-prereq-build-anax: $(ANAX_SOURCE)/anax
 		cd $(ANAX_SOURCE) && make anax-k8s-image; \
 	fi
 
-agbot-prereq-download-anax: 
+agbot-prereq-download-anax:
 	gov/setup_agbot.sh
 
 agbot-docker-prereqs: get-anax
