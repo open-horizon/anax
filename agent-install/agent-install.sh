@@ -1166,19 +1166,19 @@ function install_redhat() {
 function install_mac_horizon-cli() {
     log_debug "install_mac_horizon-cli() begin"
 
-    # Get horizon-cli version
-    PKG_NAME=$(ls -1 horizon-cli*.pkg | sort -V | tail -n 1)
-    # PKG_NAME is something like horizon-cli-2.27.0-89.pkg
-    local pkg_version=${PKG_NAME#horizon-cli-}   # this removes the 1st part
-    pkg_version=${pkg_version%.pkg}   # remove the ending part
-    PACKAGE_VERSION=${pkg_version%-*}
-    BUILD_NUMBER=${pkg_version##*-}
-    log_verbose "The package version: ${PACKAGE_VERSION}, the build number: $BUILD_NUMBER"
+    # Get horizon-cli pkg file they gave us to install
+    local pkg_file_name=$(ls -1 horizon-cli*.pkg | sort -V | tail -n 1)
+    # pkg_file_name is something like horizon-cli-2.27.0-89.pkg
+    local pkg_file_version=${pkg_file_name#horizon-cli-}   # this removes the 1st part
+    pkg_file_version=${pkg_file_version%.pkg}   # remove the ending part
+    local pkg_file_version_only=${pkg_file_version%-*}
+    local pkg_file_bld_num=${pkg_file_version##*-}
+    log_verbose "The package version to be installed: ${pkg_file_version_only}, the build number: $pkg_file_bld_num"
     if [[ -z "$HC_DOCKER_TAG" ]]; then
-        if [[ -z "$BUILD_NUMBER" ]]; then
-            export HC_DOCKER_TAG="$PACKAGE_VERSION"
+        if [[ -z "$pkg_file_bld_num" ]]; then
+            export HC_DOCKER_TAG="$pkg_file_version_only"
         else
-            export HC_DOCKER_TAG="${PACKAGE_VERSION}-${BUILD_NUMBER}"
+            export HC_DOCKER_TAG="${pkg_file_version_only}-${pkg_file_bld_num}"
         fi
     fi
 
@@ -1187,25 +1187,25 @@ function install_mac_horizon-cli() {
         # hzn is installed, need to check the version
         local installed_version=$(hzn version | grep "^Horizon CLI")
         installed_version=${installed_version##* }   # remove all of the space-separated words, except the last one
-        log_verbose "Installed hzn version: ${installed_version}"
+        log_info "Installed horizon-cli pkg version: $installed_version, Provided horizon pkg file version: $pkg_file_version"
         re='^[0-9]+([.][0-9]+)+([.][0-9]+)'   # will match both 1.2.3 and 1.2.3-4
-        if [[ ! $installed_version =~ $re ]] || version_gt "$PACKAGE_VERSION" "$installed_version"; then
-            log_verbose "Either can not get the installed hzn version, or the given pkg version is newer"
-            log_info "Installing $PACKAGES/$PKG_NAME ..."
-            sudo installer -pkg $PACKAGES/$PKG_NAME -target /
+        if [[ ! $installed_version =~ $re ]] || version_gt "$pkg_file_version" "$installed_version"; then
+            log_verbose "Either can not get the installed hzn version, or the given pkg file version is newer"
+            log_info "Installing $PACKAGES/$pkg_file_name ..."
+            sudo installer -pkg $PACKAGES/$pkg_file_name -target /
         else
-            log_verbose "The given pkg version os older than or equal to the installed hzn"
+            log_verbose "The given pkg file version is older than or equal to the installed hzn"
             if [[ "$AGENT_OVERWRITE" == true ]]; then
-                log_info "Installing older packages ${PACKAGE_VERSION}..."
-                sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
+                log_info "Installing older horizon-cli package ${pkg_file_version}..."
+                sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
             else
                 log_info "The installed horizon-cli package is already up to date ($installed_version)"
             fi
         fi
     else
         # hzn not installed
-        log_info "Installing $PACKAGES/$PKG_NAME ..."
-        sudo installer -pkg ${PACKAGES}/$PKG_NAME -target /
+        log_info "Installing $PACKAGES/$pkg_file_name ..."
+        sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
     fi
 
     # Check if /usr/local/bin is in their path (that's where all the horizon cmds are installed)
