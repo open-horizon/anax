@@ -168,16 +168,21 @@ func (n *NodeSearch) findAndMakeAgreements() {
 
 			// Search for nodes based on the current changedSince timestamp to pick up any newly changed nodes.
 			if consumerPolicy.PatternId != "" {
-				if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0); err != nil {
+				if _, err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, "", 0); err != nil {
 					// Dont move the changed since time forward since there was an error.
 					searchError = true
 					break
 				}
 			} else if pBE := businessPolManager.GetBusinessPolicyEntry(org, &consumerPolicy); pBE != nil {
 				_, polName := cutil.SplitOrgSpecUrl(consumerPolicy.Header.Name)
-				if err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated); err != nil {
+				if lastPage, err := n.searchNodesAndMakeAgreements(&consumerPolicy, org, polName, pBE.Updated); err != nil {
 					// Dont move the changed since time forward since there was an error.
 					searchError = true
+					break
+				} else if !lastPage {
+					// The search returned a large number of results that need to be processed. Let the system work on them
+					// and then we'll come back and try again.
+					n.SetRescanNeeded()
 					break
 				}
 			}
@@ -221,15 +226,22 @@ func (n *NodeSearch) getOrderedPolicies(org string) []policy.Policy {
 }
 
 // Search the exchange and make agreements with any device that is eligible based on the policies we have and
-// agreement protocols that we support. If the search did not process all the possible node matches, return true
+// agreement protocols that we support. If the search did not process all the possible node matches, return false
 // to indicate that there are more nodes to be processed.
-func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64) error {
+func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy, org string, polName string, polLastUpdateTime uint64) (bool, error) {
+
+	endOfResults := true
 
 	if devices, err := n.searchExchange(consumerPolicy, org, polName, polLastUpdateTime); err != nil {
 		glog.Errorf(AWlogString(fmt.Sprintf("received error searching for %v, error: %v", consumerPolicy, err)))
-		return err
+		return endOfResults, err
 
 	} else {
+
+		// Remember whether or not this search returned all the possible nodes.
+		if uint64(len(*devices)) == n.batchSize {
+			endOfResults = false
+		}
 
 		// Get all the agreements for this policy that are still active.
 		pendingAgreementFilter := func() persistence.AFilter {
@@ -304,7 +316,8 @@ func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy,
 		}
 
 	}
-	return nil
+
+	return endOfResults, nil
 
 }
 
