@@ -14,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"golang.org/x/crypto/sha3"
 	"reflect"
+	"sort"
 	"sync"
 	"time"
 )
@@ -327,6 +328,55 @@ func (pm *BusinessPolicyManager) GetAllBusinessPolicyEntriesForOrg(org string) m
 		return pm.OrgPolicies[org]
 	}
 	return nil
+}
+
+func (pm *BusinessPolicyManager) GetAllPoliciesOrderedForOrg(org string, newestFirst bool) []policy.Policy {
+	pm.polMapLock.Lock()
+	defer pm.polMapLock.Unlock()
+
+	res := make([]policy.Policy, 0, 20)
+
+	if pm.hasOrg(org) {
+
+		// First, get a list of BPEs so we can sort them.
+		tempList := make([]*BusinessPolicyEntry, 0, 20)
+		for _, bpe := range pm.OrgPolicies[org] {
+			tempList = append(tempList, bpe)
+		}
+
+		// Second, sort the BPE list based on the requested order.
+		if newestFirst {
+			sort.Slice(tempList, func(i, j int) bool {
+				return tempList[i].Updated > tempList[j].Updated
+			})
+		} else {
+			sort.Sort(BPEsByLastUpdatedTimeAscending(tempList))
+		}
+
+		// Last, extract the policy objects and return them.
+		for _, bpe := range tempList {
+			res = append(res, *bpe.Policy.DeepCopy())
+		}
+
+	}
+
+	return res
+}
+
+// Helper functions for sorting business policy entries
+type BPEsByLastUpdatedTimeAscending []*BusinessPolicyEntry
+
+func (s BPEsByLastUpdatedTimeAscending) Len() int {
+	return len(s)
+}
+
+func (s BPEsByLastUpdatedTimeAscending) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+// The greater than check produces an ordering from highest to lowest.
+func (s BPEsByLastUpdatedTimeAscending) Less(i, j int) bool {
+	return s[i].Updated < s[j].Updated
 }
 
 func (pm *BusinessPolicyManager) GetBusinessPolicyEntry(org string, pol *policy.Policy) *BusinessPolicyEntry {

@@ -35,6 +35,7 @@ type NodeSearch struct {
 	batchSize            uint64     // The max number of nodes that this object will process in a deployment policy search result.
 	activeDeviceTimeoutS int        // The amount of time a device can go without heartbeating and still be considered active for the purposes of search.
 	retryLookBack        uint64     // The amount of time to look backward for node changes when node retries are happening.
+	policyOrder          bool       // When true, order policies most recently changed to least recently changed.
 }
 
 func NewNodeSearch() *NodeSearch {
@@ -62,6 +63,7 @@ func (n *NodeSearch) Init(db persistence.AgbotDatabase, pm *policy.PolicyManager
 	n.batchSize = cfg.GetAgbotAgreementBatchSize()
 	n.activeDeviceTimeoutS = cfg.AgreementBot.ActiveDeviceTimeoutS
 	n.retryLookBack = cfg.GetAgbotRetryLookBackWindow()
+	n.policyOrder = cfg.GetAgbotPolicyOrder()
 
 	// Set the time of the worker restart to 1 minute ago. This time is used to indicate that the node searches need to go backward in time
 	// because this agbot just restarted, and therefore could have lost search results that were in memory but the database was
@@ -155,9 +157,14 @@ func (n *NodeSearch) findAndMakeAgreements() {
 	// Get a list of all the orgs this agbot is serving.
 	allOrgs := n.pm.GetAllPolicyOrgs()
 	for _, org := range allOrgs {
-		// Get a copy of all policies in the policy manager so that we can safely iterate the list.
-		policies := n.pm.GetAllAvailablePolicies(org)
-		for _, consumerPolicy := range policies {
+
+		// The policies in the policy manager are generated from patterns and deployment policies. Order the policies
+		// by importance, with the most recently changed deployment policies first and the patterns at the end. This ordering
+		// will help to ensure that the agbots are processing policies in the same order, thereby enabling pagination to
+		// have its desired effect.
+		availablePolicies := n.getOrderedPolicies(org)
+
+		for _, consumerPolicy := range availablePolicies {
 
 			// Search for nodes based on the current changedSince timestamp to pick up any newly changed nodes.
 			if consumerPolicy.PatternId != "" {
@@ -193,6 +200,24 @@ func (n *NodeSearch) findAndMakeAgreements() {
 
 	n.searchThread <- true
 
+}
+
+// Order the input policies for processing based on most recently changed processed first.
+// The returned list of policies contains a mix of pattern based generated policy and deployment policy converted
+// to this internal format.
+func (n *NodeSearch) getOrderedPolicies(org string) []policy.Policy {
+
+	// First, get the deployment policies ordered as configured.
+	res := businessPolManager.GetAllPoliciesOrderedForOrg(org, n.policyOrder)
+
+	// Second, append the pattern based policies to the end of the list.
+	for _, oldPol := range n.pm.GetAllAvailablePolicies(org) {
+		if oldPol.PatternId != "" {
+			res = append(res, oldPol)
+		}
+	}
+
+	return res
 }
 
 // Search the exchange and make agreements with any device that is eligible based on the policies we have and
