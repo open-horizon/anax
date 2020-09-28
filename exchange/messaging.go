@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sync"
 )
 
 // This module is used to construct a message that can be sent over an insecure transport
@@ -385,7 +386,11 @@ func HasKeys() bool {
 var privFileName = "privateMessagingKey.pem"
 var pubFileName = "publicMessagingKey.pem"
 
+var KeyLock sync.Mutex
+
 func GetKeys(keyPath string) (*rsa.PublicKey, *rsa.PrivateKey, error) {
+	KeyLock.Lock()
+	defer KeyLock.Unlock()
 
 	if gPublicKey != nil {
 		return gPublicKey, gPrivateKey, nil
