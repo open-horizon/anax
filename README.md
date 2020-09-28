@@ -13,8 +13,8 @@ Related Projects:
 
 ## Documentation
 
-* [Anax APIs](doc/api.md)
-* [Managed Workloads](doc/managed_workloads.md)
+* [Anax APIs](docs/api.md)
+* [Managed Workloads](docs/managed_workloads.md)
 
 ## Development
 
