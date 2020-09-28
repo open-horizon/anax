@@ -43,16 +43,16 @@ endif
 # Note: during rpmbuild on mac, you may get this benign msg: error: Couldn't exec /usr/local/Cellar/rpm/4.14.1_1/lib/rpm/elfdeps: No such file or directory
 rpmbuild: require-version
 	opsys=Linux arch=$(arch) $(MAKE) -C ../../.. cli/hzn
-	mkdir -p fs/usr/horizon/{bin,cluster} fs/etc/bash_completion.d fs/usr/share/man/man1
+	mkdir -p fs/usr/horizon/bin fs/usr/horizon/cluster fs/etc/bash_completion.d fs/usr/share/man/man1
 	@# If you add files copied, add them to .gitignore too
-	cp ../../../cli/hzn fs/usr/horizon/bin
-	cp ../../../anax-in-container/horizon-container fs/usr/horizon/bin
-	cp ../../../agent-install/agent-install.sh fs/usr/horizon/bin
-	cp ../../../agent-install/agent-uninstall.sh fs/usr/horizon/bin
-	cp ../../../agent-install/edgeNodeFiles.sh fs/usr/horizon/bin
-	cp ../../../agent-install/k8s/deployment-template.yml fs/usr/horizon/cluster
-	cp ../../../agent-install/k8s/persistentClaim-template.yml fs/usr/horizon/cluster
-	cp ../../../cli/bash_completion/hzn_bash_autocomplete.sh fs/etc/bash_completion.d
+	cp ../../../cli/hzn fs/usr/horizon/bin/
+	cp ../../../anax-in-container/horizon-container fs/usr/horizon/bin/
+	cp ../../../agent-install/agent-install.sh fs/usr/horizon/bin/
+	cp ../../../agent-install/agent-uninstall.sh fs/usr/horizon/bin/
+	cp ../../../agent-install/edgeNodeFiles.sh fs/usr/horizon/bin/
+	cp ../../../agent-install/k8s/deployment-template.yml fs/usr/horizon/cluster/
+	cp ../../../agent-install/k8s/persistentClaim-template.yml fs/usr/horizon/cluster/
+	cp ../../../cli/bash_completion/hzn_bash_autocomplete.sh fs/etc/bash_completion.d/
 	mkdir -p fs/usr/share/man/man1
 	gzip --stdout ../../../cli/man1/hzn.1 > fs/usr/share/man/man1/hzn.1.gz
 	for m in ../../../cli/man1/hzn.1.*; do \
