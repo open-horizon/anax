@@ -187,8 +187,8 @@ func NewBaseWorker(name string, cfg *config.HorizonConfig, ec *BaseExchangeConte
 	// In order for agbot worker threads to be able to send events, the command queue on the agbot worker
 	// has to be large enough to handle messages queued to the command handler from every worker for each
 	// node in the batch.
-	if cfg.GetAgbotAgreementBatchSize() != 0 {
-		commandQueueSize = int(cfg.GetAgbotAgreementBatchSize() * 5)
+	if cfg.GetAgbotAgreementQueueSize() != 0 {
+		commandQueueSize = int(cfg.GetAgbotAgreementQueueSize() * 5)
 	}
 
 	return BaseWorker{

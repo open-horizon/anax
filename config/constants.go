@@ -75,8 +75,11 @@ const AgbotMessageKeyCheck_DEFAULT = 60
 // The Default anax API port number
 const AnaxAPIPortDefault = "8510"
 
-// The default agreement batch size. This is essentially the maximum queue depth for a given agbot protocol worker pool.
+// The default agreement batch size. This is essentially the maximum number of results that will be returned in a search call.
 const AgbotAgreementBatchSize_DEFAULT = 300
+
+// The default max agreement bot work queue size. This is essentially the maximum queue depth for a given agbot protocol worker pool.
+const AgbotAgreementQueueSize_DEFAULT = 300
 
 // The default full rescan interval
 const AgbotFullRescan_DEFAULT = 600

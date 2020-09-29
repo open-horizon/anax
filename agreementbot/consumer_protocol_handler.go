@@ -588,7 +588,7 @@ func (c *BaseConsumerProtocolHandler) CanSendMeterRecord(ag *persistence.Agreeme
 }
 
 func (b *BaseConsumerProtocolHandler) SendEventMessage(event events.Message) {
-	if len(b.messages) < int(b.config.GetAgbotAgreementBatchSize()) {
+	if len(b.messages) < int(b.config.GetAgbotAgreementQueueSize()) {
 		b.messages <- event
 	}
 }
