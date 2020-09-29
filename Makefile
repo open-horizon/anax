@@ -270,7 +270,9 @@ temp-mod-version-undo:
 	mv version/version.go.bak version/version.go
 
 # Build the mac pkg and put it in pkg/mac/build/
-macpkg:
+macpkg: $(MAC_PKG)
+
+$(MAC_PKG):
 	$(MAKE) -C pkg/mac macpkg
 
 # Upload the pkg to the staging dir of our apt repo svr

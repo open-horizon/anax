@@ -19,7 +19,7 @@ VERB_DEBUG=5
 SUPPORTED_OS=("macos" "linux")
 SUPPORTED_LINUX_DISTRO=("ubuntu" "raspbian" "debian" "rhel" "centos")
 DEBIAN_VARIANTS_REGEX='^(ubuntu|raspbian|debian)$'
-SUPPORTED_DEBIAN_VERSION=("bionic" "buster" "xenial" "stretch")   # all debian variants
+SUPPORTED_DEBIAN_VERSION=("focal" "bionic" "buster" "xenial" "stretch")   # all debian variants
 SUPPORTED_DEBIAN_ARCH=("amd64" "arm64" "armhf")
 REDHAT_VARIANTS_REGEX='^(rhel|centos)$'
 SUPPORTED_REDHAT_VERSION=("8.1" "8.2")   # for fedora versions see https://fedoraproject.org/wiki/Releases
@@ -31,6 +31,8 @@ ANAX_DEFAULT_PORT=8510
 AGENT_CERT_FILE_DEFAULT='agent-install.crt'
 AGENT_CFG_FILE_DEFAULT='agent-install.cfg'
 CSS_OBJ_PATH_DEFAULT='/api/v1/objects/IBM/agent_files'
+SEMVER_REGEX='^[0-9]+\.[0-9]+(\.[0-9]+)+'   # matches a version like 1.2.3 (must be at least 3 fields). Also allows a bld num on the end like: 1.2.3-RC1
+DEFAULT_AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
 
 # edge cluster agent deployment
 SERVICE_ACCOUNT_NAME="agent-service-account"
@@ -41,9 +43,10 @@ CONFIGMAP_NAME="openhorizon-agent-config"
 PVC_NAME="openhorizon-agent-pvc"
 GET_RESOURCE_MAX_TRY=5
 POD_ID=""
-HZN_ENV_FILE="/tmp/agent-install-horizon-env"   #lily: let's use /etc/default/horizon instead
+HZN_ENV_FILE="/tmp/agent-install-horizon-env"
 DEFAULT_OCP_INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY="image-registry.openshift-image-registry.svc:5000"
-DEFAULT_AGENT_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
+DEFAULT_AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
+EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 
 
 # Script usage info
@@ -83,6 +86,7 @@ Options/Flags:
 
 Additional Edge Device Variables (in environment or config file):
     NODE_ID_MAPPING_FILE: File to map hostname or IP to node id, for bulk install.  Default: node-id-mapping.csv
+    AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
 
 Additional Edge Cluster Variables (in environment or config file):
@@ -93,7 +97,7 @@ Additional Edge Cluster Variables (in environment or config file):
     AGENT_NAMESPACE: The namespace the agent should run in. Default: openhorizon-agent
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
     AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS: Maximum secods to wait for the agent deployment rollout status to be successful. Default: 75
-    AGENT_IMAGE_TAR_FILE: the file name of the agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
+    AGENT_K8S_IMAGE_TAR_FILE: the file name of the edge cluster agent docker image in tar.gz format. Default: $DEFAULT_AGENT_K8S_IMAGE_TAR_FILE
 EndOfMessage
     exit $exit_code
 }
@@ -257,9 +261,17 @@ function adjust_input_file_path() {
     INPUT_FILE_PATH="${INPUT_FILE_PATH%/}"   # remove trailing / if there
     if [[ $INPUT_FILE_PATH == 'css:' ]]; then
         INPUT_FILE_PATH="$INPUT_FILE_PATH$CSS_OBJ_PATH_DEFAULT"
-    elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases/* ]]; then
+    elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
         if [[ $INPUT_FILE_PATH == 'https://github.com/open-horizon/anax/releases' ]]; then
-            INPUT_FILE_PATH="$INPUT_FILE_PATH/latest/download"
+            INPUT_FILE_PATH="$INPUT_FILE_PATH/latest/download"   # default to the latest release
+        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases/tag/* ]]; then
+            # They probably right-clicked a release and gave us like: https://github.com/open-horizon/anax/releases/tag/v2.27.0-110
+            local rel_ver=${INPUT_FILE_PATH#https://github.com/open-horizon/anax/releases/tag/}
+            if [[ -n $rel_ver ]]; then
+                INPUT_FILE_PATH="https://github.com/open-horizon/anax/releases/download/$rel_ver"
+            else
+                INPUT_FILE_PATH="https://github.com/open-horizon/anax/releases/latest/download"   # default to the latest release
+            fi
         fi
     elif [[ $INPUT_FILE_PATH == http* ]]; then
         log_info "Using INPUT_FILE_PATH value $INPUT_FILE_PATH as an APT repository"
@@ -276,6 +288,22 @@ function adjust_input_file_path() {
         fi
     fi
     log_debug "adjust_input_file_path() end"
+}
+
+# Returns version number extracted from the anax/releases path, or empty string if can't find it
+# Note: this should be called after adjust_input_file_path()
+function get_anax_release_version() {
+    local input_file_path=$1:?}
+    if [[ $input_file_path == https://github.com/open-horizon/anax/releases/latest/download* ]]; then
+        echo 'latest'
+    elif [[ $input_file_path == https://github.com/open-horizon/anax/releases/download/* ]]; then
+        local rel_ver=${input_file_path#https://github.com/open-horizon/anax/releases/download/}
+        rel_ver=${rel_ver#v}   # our convention is to add a 'v' at the beginning of releases, so remove it
+        if [[ $rel_ver =~ $SEMVER_REGEX ]]; then
+            echo "$rel_ver"
+        fi
+    fi
+    #else return empty string, meaning we couldn't find it (so they should probably just use latest)
 }
 
 # Download a file from the specified CSS path
@@ -450,6 +478,7 @@ function get_all_variables() {
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
         get_variable APT_REPO_BRANCH 'updates'
+        get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
     elif is_cluster; then
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE 'openhorizon-agent'
@@ -462,7 +491,7 @@ function get_all_variables() {
             get_variable EDGE_CLUSTER_REGISTRY_USERNAME
             get_variable EDGE_CLUSTER_REGISTRY_TOKEN
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
-            get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
+            get_variable AGENT_K8S_IMAGE_TAR_FILE "$DEFAULT_AGENT_K8S_IMAGE_TAR_FILE"
         fi
     else
         log_fatal 1 "Invalid AGENT_DEPLOY_TYPE value: $AGENT_DEPLOY_TYPE"
@@ -546,6 +575,10 @@ function check_variables() {
 
     if [[ -n $AGENT_IMAGE_TAR_FILE && $AGENT_IMAGE_TAR_FILE != *.tar.gz ]]; then
         log_fatal 1 "AGENT_IMAGE_TAR_FILE must be in tar.gz format"
+    fi
+
+    if [[ -n $AGENT_K8S_IMAGE_TAR_FILE && $AGENT_K8S_IMAGE_TAR_FILE != *.tar.gz ]]; then
+        log_fatal 1 "AGENT_K8S_IMAGE_TAR_FILE must be in tar.gz format"
     fi
     log_debug "check_variables() begin"
 }
@@ -732,7 +765,7 @@ function get_pkgs() {
 # Download the packages tar file from the anax git repo releases section
 function download_pkgs_from_anax_release() {
     log_debug "download_pkgs_from_anax_release() begin"
-    # This function is called if INPUT_FILE_PATH starts with at least https://github.com/open-horizon/anax/releases/
+    # This function is called if INPUT_FILE_PATH starts with at least https://github.com/open-horizon/anax/releases
     # Note: adjust_input_file_path() has already been called, which applies some default (if necessary) to INPUT_FILE_PATH
     local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-$ARCH.tar.gz"
     local remote_path="${INPUT_FILE_PATH%/}/$tar_file_name"
@@ -786,39 +819,55 @@ function store_cert_file_permanently() {
     echo "$abs_certificate"
 }
 
-# Returns true (0) if /etc/default/horizon already has these values
+# For both device and cluster: Returns true (0) if /etc/default/horizon already has these values
 function is_horizon_defaults_correct() {
     log_debug "is_horizon_defaults_correct() begin"
-    local exchange_url=$1
-    local css_url=$2
-    local device_id=$3
-    local cert_file=$4   # optional
-    local anax_port=$5   # optional
+    local anax_port=$1   # optional
+    local cert_file defaults_file
+
+    if is_device; then
+        defaults_file='/etc/default/horizon'
+        if [[ ${AGENT_CERT_FILE:0:1} == '/' ]]; then
+            cert_file=$AGENT_CERT_FILE
+        else
+            cert_file=$PERMANENT_CERT_PATH
+        fi
+    else   # cluster
+        cert_file="/etc/default/cert/$(basename $AGENT_CERT_FILE)"   # this is the name we will give it later when we create the defaults file
+
+        # Have to get the previous defaults from the configmap
+        defaults_file="$HZN_ENV_FILE.previous"
+        #echo "$KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} -o jsonpath={.data.horizon} 2>/dev/null > $defaults_file"
+        $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} -o jsonpath={.data.horizon} 2>/dev/null > "$defaults_file"
+        if [[ $? -ne 0 ]]; then
+            return 1   # we couldn't get the configmap, so the current defaults are not correct
+        fi
+    fi
 
     local horizon_defaults_value
-    # FYI, these variables are currently supported in /etc/default/horizon: HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_DEVICE_ID, HZN_MGMT_HUB_CERT_PATH, HZN_AGENT_PORT, HZN_VAR_BASE, HZN_NO_DYNAMIC_POLL, HZN_MGMT_HUB_CERT_PATH, HZN_ICP_CA_CERT_PATH (deprecated), CMTN_SERVICEOVERRIDE
+    # FYI, these variables are currently supported in the defaults file: HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_DEVICE_ID, HZN_MGMT_HUB_CERT_PATH, HZN_AGENT_PORT, HZN_VAR_BASE, HZN_NO_DYNAMIC_POLL, HZN_MGMT_HUB_CERT_PATH, HZN_ICP_CA_CERT_PATH (deprecated), CMTN_SERVICEOVERRIDE
 
     # Note: the '|| true' is so not finding the strings won't cause set -e to exit the script
-    horizon_defaults_value=$(grep -E '^HZN_EXCHANGE_URL=' /etc/default/horizon || true)
+    horizon_defaults_value=$(grep -E '^HZN_EXCHANGE_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $exchange_url ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $HZN_EXCHANGE_URL ]]; then return 1; fi
 
-    horizon_defaults_value=$(grep -E '^HZN_FSS_CSSURL=' /etc/default/horizon || true)
+    horizon_defaults_value=$(grep -E '^HZN_FSS_CSSURL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $css_url ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $HZN_FSS_CSSURL ]]; then return 1; fi
 
-    horizon_defaults_value=$(grep -E '^HZN_DEVICE_ID=' /etc/default/horizon || true)
+    horizon_defaults_value=$(grep -E '^HZN_DEVICE_ID=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
-    if [[ $horizon_defaults_value != $device_id ]]; then return 1; fi
+    if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
 
     if [[ -n $cert_file ]]; then
-        horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' /etc/default/horizon || true)
+        horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
         if [[ $horizon_defaults_value != $cert_file ]]; then return 1; fi
     fi
 
     if [[ -n $anax_port ]]; then
-        horizon_defaults_value=$(grep -E '^HZN_AGENT_PORT=' /etc/default/horizon || true)
+        horizon_defaults_value=$(grep -E '^HZN_AGENT_PORT=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
         if [[ $horizon_defaults_value != $anax_port ]]; then return 1; fi
     fi
@@ -868,7 +917,7 @@ function create_or_update_horizon_defaults() {
             sudo sh -c "echo 'HZN_AGENT_PORT=$anax_port' >> /etc/default/horizon"
         fi
         HORIZON_DEFAULTS_CHANGED='true'
-    elif is_horizon_defaults_correct "$HZN_EXCHANGE_URL" "$HZN_FSS_CSSURL" "$NODE_ID" "$abs_certificate" "$anax_port"; then
+    elif is_horizon_defaults_correct "$anax_port"; then
         log_info "/etc/default/horizon already has the correct values. Not modifying it."
         HORIZON_DEFAULTS_CHANGED='false'
     else
@@ -912,13 +961,18 @@ function install_macos() {
     fi
     confirmCmds socat docker jq
 
+    check_existing_exch_node_is_correct_type "device"
+
+    if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
+        unregister
+    fi
+
+    create_or_update_horizon_defaults
+
     get_pkgs
     mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
     install_mac_horizon-cli
-    create_or_update_horizon_defaults
-    start_agent_container
-
-    check_existing_exch_node_is_correct_type "device"
+    start_device_agent_container   # even if it already running, it restarts it
 
     registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
 
@@ -1006,16 +1060,18 @@ function install_debian_device_horizon_pkgs() {
         log_verbose "Adding $PKG_APT_REPO to /etc/apt/sources.list and installing horizon ..."
         add-apt-repository "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
         runCmdQuietly apt-get install -yqf horizon
+        wait_until_agent_ready
     else
-        # Install the horizon pkgs in the PACKAGES dir
-        if [[ ${PACKAGES:0:1} != '/' ]]; then
-            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
-        fi
         if is_newer_deb_pkgs; then
+            # Install the horizon pkgs in the PACKAGES dir
+            if [[ ${PACKAGES:0:1} != '/' ]]; then
+                PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
+            fi
             log_info "Installing the horizon packages in $PACKAGES ..."
             # Note: we don't support downgraded the deb pkgs
             #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
             runCmdQuietly apt-get install -yqf ${PACKAGES}/horizon*_${ARCH}.deb
+            wait_until_agent_ready
             AGENT_WAS_RESTARTED='true'
         else
             log_info "Not installing any horizon packages, because the system is already up to date."
@@ -1024,31 +1080,34 @@ function install_debian_device_horizon_pkgs() {
     log_debug "install_debian_device_horizon_pkgs() end"
 }
 
+# Restart the device agent and wait for it to be ready
+function restart_device_agent() {
+    log_debug "restart_device_agent() begin"
+    log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
+    systemctl restart horizon.service   # (restart will succeed even if the service was already stopped)
+    wait_until_agent_ready
+    log_debug "restart_device_agent() end"
+}
+
 # Install the agent and register it on a debian variant
 function install_debian() {
     log_debug "install_debian() begin"
 
+    debian_device_install_prereqs
     check_and_set_anax_port   # sets ANAX_PORT
     check_existing_exch_node_is_correct_type "device"
-    debian_device_install_prereqs
+
+    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+        unregister
+    fi
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_debian_device_horizon_pkgs
-    if grep -qE '^HZN_EXCHANGE_URL=$' /etc/default/horizon || ! systemctl is-active --quiet horizon; then
-        #todo: special case to temporarily handle the transition to horizon 2.27.0-111 (which resets /etc/default/horizon to an empty template)
-        create_or_update_horizon_defaults "$ANAX_PORT"   # put it back to what we want. This will set HORIZON_DEFAULTS_CHANGED=true
-        HORIZON_DEFAULTS_CHANGED='true'   # just in case
-        AGENT_WAS_RESTARTED='false'
-    else
-        wait_until_agent_ready
-    fi
     if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
-        log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
-        systemctl restart horizon.service   # (restart will succeed even if the service was already stopped)
-        wait_until_agent_ready
+        restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
     fi
 
     registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
@@ -1112,11 +1171,11 @@ function install_redhat_device_horizon_pkgs() {
         log_fatal 1 "Installing horizon RPMs via repository $PKG_APT_REPO is not supported at this time"
         #future: support this
     else
-        # Install the horizon pkgs in the PACKAGES dir
-        if [[ ${PACKAGES:0:1} != '/' ]]; then
-            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
-        fi
         if is_newer_rpm_pkgs; then
+            # Install the horizon pkgs in the PACKAGES dir
+            if [[ ${PACKAGES:0:1} != '/' ]]; then
+                PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
+            fi
             log_info "Installing the horizon packages in $PACKAGES ..."
             # Note: we don't support downgraded the deb pkgs
             #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
@@ -1133,27 +1192,21 @@ function install_redhat_device_horizon_pkgs() {
 function install_redhat() {
     log_debug "install_redhat() begin"
 
+    redhat_device_install_prereqs
     check_and_set_anax_port   # sets ANAX_PORT
     check_existing_exch_node_is_correct_type "device"
-    redhat_device_install_prereqs
+
+    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+        unregister
+    fi
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_redhat_device_horizon_pkgs
-    if [[ ! -f /etc/default/horizon ]] || ! systemctl is-active --quiet horizon; then
-        #todo: special case to temporarily handle the transition to horizon 2.27.0-111 (which moves /etc/default/horizon to /etc/default/horizon.rpmsave)
-        create_or_update_horizon_defaults "$ANAX_PORT"   # put it back to what we want. This will set HORIZON_DEFAULTS_CHANGED=true
-        HORIZON_DEFAULTS_CHANGED='true'   # just in case
-        AGENT_WAS_RESTARTED='false'
-    else
-        wait_until_agent_ready
-    fi
-    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' ]]; then
-        log_info "Restarting the horizon agent service because /etc/default/horizon was modified..."
-        systemctl restart horizon.service   # (restart will succeed even if the service was already stopped)
-        wait_until_agent_ready
+    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+        restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
     fi
 
     registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
@@ -1188,8 +1241,7 @@ function install_mac_horizon-cli() {
         local installed_version=$(hzn version | grep "^Horizon CLI")
         installed_version=${installed_version##* }   # remove all of the space-separated words, except the last one
         log_info "Installed horizon-cli pkg version: $installed_version, Provided horizon pkg file version: $pkg_file_version"
-        re='^[0-9]+([.][0-9]+)+([.][0-9]+)'   # will match both 1.2.3 and 1.2.3-4
-        if [[ ! $installed_version =~ $re ]] || version_gt "$pkg_file_version" "$installed_version"; then
+        if [[ ! $installed_version =~ $SEMVER_REGEX ]] || version_gt "$pkg_file_version" "$installed_version"; then
             log_verbose "Either can not get the installed hzn version, or the given pkg file version is newer"
             log_info "Installing $PACKAGES/$pkg_file_name ..."
             sudo installer -pkg $PACKAGES/$pkg_file_name -target /
@@ -1251,17 +1303,65 @@ function wait_until_agent_ready() {
     log_debug "wait_until_agent_ready() begin"
 }
 
+# Load a docker system and return the full image path (including tag)
+# Note: does not remove the origin tar.gz file.
+function load_docker_image() {
+    local tar_file_name=${1:?}
+    # Note: only fatal msgs allowed in this function, because it returns a string value
+    if [[ ! -f $tar_file_name ]]; then
+        log_fatal 2 "Agent docker image tar file $tar_file_name does not exist"
+    fi
+    if [[ -h $tar_file_name ]]; then
+        log_fatal 2 "Can not unpack $tar_file_name because gunzip does not support symbolic links"
+    fi
+    gunzip -k $tar_file_name   # keep the original file
+    chk $? "uncompressing $tar_file_name"
+    local loaded_image_message=$(docker load --input ${tar_file_name%.gz})
+    chk $? "docker loading ${tar_file_name%.gz}"
+    rm ${tar_file_name%.gz}   # clean up this temporary file
+    # loaded_image_message is like: Loaded image: {repo}/{image_name}:{version_number}
+    local image_full_path=$(echo $loaded_image_message | awk -F': ' '{print $2}')
+    if [[ -z $image_full_path ]]; then
+        log_fatal 3 "Could not get agent image path from loaded $tar_file_name"
+    fi
+    echo "$image_full_path"
+}
+
 # Get the latest agent-in-container started on mac
-#Future: support agent-in-container on linux too
-function start_agent_container() {
-    log_debug "start_agent_container() begin"
+#future: support agent-in-container on linux too
+function start_device_agent_container() {
+    log_debug "start_device_agent_container() begin"
 
     if ! isCmdInstalled horizon-container; then
         log_fatal 5 "The horizon-container command not found, horizon-cli is not installed or its installation is broken"
     fi
 
     # Note: install_mac_horizon-cli() sets HC_DOCKER_TAG appropriately
-    #todo: in css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
+    # In the css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
+    if [[ $INPUT_FILE_PATH == css:* ]]; then
+        if [[ -f $AGENT_IMAGE_TAR_FILE ]]; then   #todo:todo: remove this temp work around
+            log_warning "!!!!!!!!! temporarily using $AGENT_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
+        else
+            download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
+        fi
+        log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
+        local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
+        #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
+        export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
+        export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
+        export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
+    elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+        : # we've already set HC_DOCKER_TAG from the horizon-cli version. From there horizon-container naturally does the right thing (pulls it from docker hub)
+    elif [[ -f $AGENT_IMAGE_TAR_FILE ]]; then
+        # They gave us the agent docker image tar file in the input path
+        log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
+        local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
+        #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
+        export HC_DONT_PULL=1   # horizon-container should get it straight from the tar file we got from CSS, not try to go to docker hub to get it
+        export HC_DOCKER_IMAGE=${agent_image_full_path%:*}   # remove the tag
+        export HC_DOCKER_TAG=${agent_image_full_path##*:}   # remove everything but the tag
+    fi
+    #else let horizon-container do its default thing (run openhorizon/amd64_anax:latest)
 
     if ! isDockerContainerRunning horizon1; then
         if [[ -z $(docker ps -aq --filter name=horizon1) ]]; then
@@ -1270,7 +1370,7 @@ function start_agent_container() {
             horizon-container start
         else
             # horizon container is stopped but the container exists
-            log_info "The horizon agent container was in a stopped start via docker, restarting it..."
+            log_info "The horizon agent container was in a stopped state via docker, restarting it..."
             docker start horizon1
             horizon-container update   # ensure it is running the latest version
         fi
@@ -1281,7 +1381,7 @@ function start_agent_container() {
 
     wait_until_agent_ready
 
-    log_debug "start_agent_container() end"
+    log_debug "start_device_agent_container() end"
 }
 
 # Stops horizon service container on mac
@@ -1312,6 +1412,69 @@ function agent_exec() {
     fi
 }
 
+# Returns 0 (true) if the node is currently registered
+function is_agent_registered() {
+    local only_configured=$1   # optional: set to 'true' if configuring or unconfiguring should not be considered registered
+    # Verify we have hzn available to us
+    if ! agent_exec 'hzn -h >/dev/null 2>&1'; then return 1; fi
+
+    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
+    local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
+    if [[ $only_configured == 'true' && $node_state == 'configured' ]]; then return 0
+    elif [[ $only_configured != 'true' && $node_state =~ ^(configured|configuring|unconfiguring)$ ]]; then return 0
+    else return 1; fi
+}
+
+# Returns 0 (true) if the current registration settings are already the same as what the user asked for
+# Note: the caller of this function is taking into account is_horizon_defaults_correct()
+function is_registration_correct() {
+    log_debug "is_registration_correct() begin"
+    if [[ $AGENT_SKIP_REGISTRATION == 'true' ]]; then return 0; fi   # the user doesn't care, so they are correct
+    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
+    local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
+    local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
+    local reg_pattern=$(jq -r .pattern 2>/dev/null <<< $hzn_node_list || true)
+    if [[ -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # pattern case
+    elif [[ -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # policy case (registration() will apply any new policy)
+    else return 1; fi
+    log_debug "is_registration_correct() end"
+}
+
+# Unregister the node, handling problems as necessary
+function unregister() {
+    log_debug "unregister() begin"
+    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
+    local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
+    local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
+
+    # If they didn't specify a node id, try to use the one from the previous registration
+    if [[ -z "$NODE_ID" ]]; then
+        NODE_ID="$reg_node_id"
+        log_info "Using NODE_ID from previous registration: $NODE_ID"
+    fi
+
+    local rmExchNodeFlag
+    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then rmExchNodeFlag='-r'; fi   # remove exchange node in case anything needs to be different, but can't recreate the exchange resource w/o HZN_EXCHANGE_USER_AUTH
+
+    if [[ "$node_state" == "configured" ]]; then
+        log_info "Unregistering the agent because the current registration settings are not what you want..."
+        agent_exec "hzn unregister -f $rmExchNodeFlag"
+        local rc=$?
+        if [[ $rc -ne 0 ]]; then
+            log_info "Unregister failed with exit code $rc. Now trying to unregister with deep clean..."
+            agent_exec "hzn unregister -fD $rmExchNodeFlag"   # registration is stuck, do a deep clean
+            chk $? 'unregistering with deep clean'
+        fi
+    else
+        # configuring, unconfiguring, or some unanticipated state
+        log_info "The agent state is $node_state, unregistering it with deep clean..."
+        agent_exec "hzn unregister -fD $rmExchNodeFlag"   # registration is stuck, do a deep clean
+        chk $? 'unregistering with deep clean'
+    fi
+
+    log_debug "unregister() end"
+}
+
 # For Device and Cluster: register node depending on if registration's requested and if previous registration state matches
 function registration() {
     log_debug "registration() begin"
@@ -1321,54 +1484,14 @@ function registration() {
 
     if [[ $skip_reg == 'true' ]]; then return; fi
 
-    # verify we have hzn available to us
-    if ! agent_exec 'hzn -h >/dev/null 2>&1'; then
-        log_fatal 3 "The hzn command is not in the path"
-    fi
-
     local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
 
-    # If they didn't specify a node id, try to use the one from a previous registration
-    if [[ -z "$NODE_ID" ]]; then
-        NODE_ID="$reg_node_id"
-        log_info "Registering node with existing id: $NODE_ID"
-    fi
-
     # Get current node registration state and determine if we need to unregister first
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
-    local keepRegistration='false'   # will be set to true if the current registration is what they want
-    local rmExchNodeFlag regPatternFlag regPolicyFlag
-    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then rmExchNodeFlag='-r'; fi   # can't recreate the exchange resource w/o HZN_EXCHANGE_USER_AUTH
-
-    if [[ "$node_state" == "configured" ]]; then
-        # Node is registered, determine if it is the same settings we want
-        local reg_pattern=$(jq -r .pattern 2>/dev/null <<< $hzn_node_list || true)
-        if [[ -n $pattern ]]; then
-            if [[ $reg_pattern == $pattern && $reg_node_id == $NODE_ID && $HORIZON_DEFAULTS_CHANGED == 'false' ]]; then
-                keepRegistration='true'
-            fi
-        else   # they want it registered with policy
-            if [[ -z $reg_pattern && $reg_node_id == $NODE_ID && $HORIZON_DEFAULTS_CHANGED == 'false' ]]; then
-                # It is currently registered w/policy and we can switch the node policy w/o unregistering
-                keepRegistration='true'
-            fi
-        fi
-
-        if [[ $keepRegistration == 'false' ]]; then
-            log_info "Unregistering the agent because the current registration settings are not what you want..."
-            agent_exec "hzn unregister -f $rmExchNodeFlag"
-        fi
-    elif [[ "$node_state" == "unconfigured" ]]; then
-        :   # nothing to do
-    else
-        # configuring, unconfiguring, or some unanticipated state
-        log_info "The agent state is $node_state, unregistering it with deep clean..."
-        agent_exec "hzn unregister -fD $rmExchNodeFlag"   # registration is stuck, do a deep clean
-    fi
 
     # Register the edge node
-    if [[ $keepRegistration == 'true' ]]; then
+    if [[ $node_state == 'configured' ]]; then
         if [[ -n $policy ]]; then
             # We only need to update the node policy (we can keep the node registered).
             log_info "The current registration settings are correct, keeping them, except updating the node policy..."
@@ -1410,7 +1533,7 @@ function registration() {
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag --policy=-"
             echo "$reg_cmd"
             cat $policy | agent_exec "$reg_cmd"
-        else  # register w/o policy
+        else  # register w/o policy or with pattern
             reg_cmd="hzn register -m '${node_name}' -o '$HZN_ORG_ID' $user_auth -n '$HZN_EXCHANGE_NODE_AUTH' $wait_service_flag $wait_org_flag $timeout_flag $pattern_flag"
             echo "$reg_cmd"
             agent_exec  "$reg_cmd"
@@ -1456,9 +1579,9 @@ function add_autocomplete() {
 # Returns operating system.
 function get_os() {
     # OSTYPE is set automatically by the shell
-    if [[ "$OSTYPE" == "linux"* ]]; then
+    if [[ $OSTYPE == linux* ]]; then
         echo 'linux'
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
+    elif [[ $OSTYPE == darwin* ]]; then
         echo 'macos'
     else
         echo 'unknown'
@@ -1639,21 +1762,27 @@ function check_existing_exch_node_is_correct_type() {
 
 # Cluster only: to extract agent image tar.gz and load to docker
 # Side-effect: sets globals: AGENT_IMAGE, AGENT_IMAGE_VERSION_IN_TAR, IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY
-function loadAgentImage() {
-    log_debug "loadAgentImage() begin"
+function loadClusterAgentImage() {
+    log_debug "loadClusterAgentImage() begin"
 
     # Get the agent tar file, if necessary
     if using_remote_input_files 'pkg'; then
-        if [[ -n $AGENT_IMAGE_TAR_FILE && $AGENT_IMAGE_TAR_FILE != $DEFAULT_AGENT_IMAGE_TAR_FILE ]]; then
-            log_fatal 1 "Can not specify both AGENT_IMAGE_TAR_FILE and -i (INPUT_FILE_PATH)"
+        if [[ -n $AGENT_K8S_IMAGE_TAR_FILE && $AGENT_K8S_IMAGE_TAR_FILE != $DEFAULT_AGENT_K8S_IMAGE_TAR_FILE ]]; then
+            log_fatal 1 "Can not specify both AGENT_K8S_IMAGE_TAR_FILE and -i (INPUT_FILE_PATH)"
         fi
         if [[ $INPUT_FILE_PATH == css:* ]]; then
-            download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
+            if [[ -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then   #todo:todo: remove this temp work around
+                log_warning "!!!!!!!!! temporarily using $AGENT_K8S_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
+            else
+                download_css_file "$INPUT_FILE_PATH/$AGENT_K8S_IMAGE_TAR_FILE"
+            fi
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-            #download_anax_release_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
             # Get the docker image from docker hub in this case
-            #todo: not sure how to make the user interface cleaner for this case, and to get the version we should pull
-            local image_path='openhorizon/amd64_anax_k8s:latest'
+            local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible
+            if [[ -z $image_tag ]]; then
+                image_tag='latest'
+            fi
+            local image_path="openhorizon/amd64_anax_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
             docker pull "$image_path"
             chk $? "pulling $image_path"
@@ -1664,28 +1793,16 @@ function loadAgentImage() {
         fi
     fi
 
-    log_info "Unpacking $AGENT_IMAGE_TAR_FILE ..."
-    gunzip $AGENT_IMAGE_TAR_FILE   # this also removes the .gz from the file name
-    chk $? "uncompressing $AGENT_IMAGE_TAR_FILE"
-
-    local loaded_image_message=$(docker load --input ${AGENT_IMAGE_TAR_FILE%.gz})
-    chk $? "docker loading ${AGENT_IMAGE_TAR_FILE%.gz}"
-    # loaded_image_message=Loaded image: {repo}/{image_name}:{version_number}
-
-    AGENT_IMAGE=$(echo $loaded_image_message | awk -F': ' '{print $2}')
-    # AGENT_IMAGE={repo}/{image_name}:{version_number}
-
-    if [[ -z $AGENT_IMAGE ]]; then
-        log_fatal 3 "Could not get agent image name"
-    fi
-    log_verbose "Loaded agent image: $AGENT_IMAGE"
+    log_info "Unpacking and docker loading $AGENT_K8S_IMAGE_TAR_FILE ..."
+    AGENT_IMAGE=$(load_docker_image $AGENT_K8S_IMAGE_TAR_FILE)
+    # AGENT_IMAGE is like: {repo}/{image_name}:{version_number}
+    #rm ${AGENT_K8S_IMAGE_TAR_FILE}   # do not remove the file they gave us
 
     AGENT_IMAGE_VERSION_IN_TAR=${AGENT_IMAGE##*:}
-    # AGENT_IMAGE_VERSION_IN_TAR={version_number}
     # use the same tag for the image in the edge cluster registry as the tag they used for the image in the inputted tar file
     IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
 
-    log_debug "loadAgentImage() end"
+    log_debug "loadClusterAgentImage() end"
 }
 
 # Cluster only: to push agent image to image registry that edge cluster can access
@@ -1735,14 +1852,15 @@ function check_agent_deployment_exist() {
             local agent_image_version_in_use=$(echo $agent_image_name_with_tag | awk -F':' '{print $2}')
 
             log_debug "Current agent image version is: $agent_image_version_in_use, agent image version in tar file is: $AGENT_IMAGE_VERSION_IN_TAR"
-            if [[ "$AGENT_IMAGE_VERSION_IN_TAR" == "$agent_image_version_in_use" ]]; then
-                AGENT_DEPLOYMENT_UPDATE="false"
-            else
+            #todo: i don't think this check is correct
+            #if [[ "$AGENT_IMAGE_VERSION_IN_TAR" == "$agent_image_version_in_use" ]]; then
+            #    AGENT_DEPLOYMENT_UPDATE="false"
+            #else
                 AGENT_DEPLOYMENT_UPDATE="true"
 
                 POD_ID=$($KUBECTL get pod -l app=agent --field-selector status.phase=Running -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
                 log_verbose "Previous agent pod is ${POD_ID}, will continue with agent updating in edge cluster"
-            fi
+            #fi
         fi
     fi
 
@@ -1753,41 +1871,62 @@ function check_agent_deployment_exist() {
 function get_node_id_from_deployment() {
     log_debug "get_node_id_from_deployment() begin"
 
-    EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
-    NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list")
-    NODE_ID=$(echo "$NODE_INFO" | jq -r .id)
+    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
+    local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
+    #EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
+    #NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list")
+    #NODE_ID=$(echo "$NODE_INFO" | jq -r .id)
+    log_verbose "Got node id $reg_node_id from agent pod ${POD_ID}"
+    if [[ -n $reg_node_id ]]; then
+        NODE_ID=$reg_node_id
+    fi
 
-    log_verbose "Get node id $NODE_ID from agent pod ${POD_ID}"
+    # Now verify NODE_ID is set before we continue
+    if [[ -z $NODE_ID ]]; then
+        log_fatal 1 "The NODE_ID value is empty"
+    fi
 
     log_debug "get_node_id_from_deployment() end"
 
 }
 
-# Cluster only: check NODE_ID
-function validate_node_id_for_agent_install() {
-    log_debug "validate_node_id_for_agent_install() begin"
-    if [[ "$NODE_ID" == "" ]]; then
-        log_fatal 1 "The NODE_ID value is empty"
+# Cluster only: get or verify deployment-template.yml, persistentClaim-template.yml, and agent-uninstall.sh
+function get_edge_cluster_files() {
+    log_debug "get_edge_cluster_files() begin"
+    if using_remote_input_files 'yml'; then
+        log_verbose "Getting template.yml files and agent-uninstall.sh from $INPUT_FILE_PATH ..."
+        if [[ $INPUT_FILE_PATH == css:* ]]; then
+            download_css_file "$INPUT_FILE_PATH/$EDGE_CLUSTER_TAR_FILE_NAME"
+        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
+            download_anax_release_file "$INPUT_FILE_PATH/$EDGE_CLUSTER_TAR_FILE_NAME"
+        fi
+        tar -zxf "$EDGE_CLUSTER_TAR_FILE_NAME"
+        chk $? "unpacking $EDGE_CLUSTER_TAR_FILE_NAME"
+        rm "$EDGE_CLUSTER_TAR_FILE_NAME"
     fi
-    log_debug "validate_node_id_for_agent_install end"
 
+    for f in deployment-template.yml persistentClaim-template.yml agent-uninstall.sh; do
+        if [[ ! -f $f ]]; then
+            log_fatal 1 "file $f not found"
+        fi
+    done
+
+    log_debug "get_edge_cluster_files() end"
 }
 
 # Cluster only: to generate 3 files: /tmp/agent-install-horizon-env, deployment.yml and persistentClaim.yml
 function generate_installation_files() {
     log_debug "generate_installation_files() begin"
 
-    log_verbose "Preparing horizon environment file."
-    create_horizon_env
-    log_verbose "Horizon environment file is done."
+    get_edge_cluster_files
 
     log_verbose "Preparing kubernete persistentVolumeClaim file"
     prepare_k8s_pvc_file
     log_verbose "kubernete persistentVolumeClaim file are done."
 
-    log_verbose "Preparing kubernete development files"
-    prepare_k8s_development_file
-    log_verbose "kubernete development files are done."
+    log_verbose "Preparing kubernete deployment files"
+    prepare_k8s_deployment_file
+    log_verbose "kubernete deployment files are done."
 
     log_debug "generate_installation_files() end"
 }
@@ -1808,29 +1947,11 @@ function create_horizon_env() {
     log_debug "create_horizon_env() end"
 }
 
-# Cluster only: to delete /tmp/agent-install-hzn-env file
-function cleanup_cluster_config_files() {
-    log_debug "cleanup_cluster_config_files() begin"
-    rm $HZN_ENV_FILE
-    if [[ $? -ne 0 ]]; then
-        log_info "Failed to remove $HZN_ENV_FILE, please remove it mannually"
-    fi
-    log_debug "cleanup_cluster_config_files() end"
-}
-
 # Cluster only: to create deployment.yml based on template
-function prepare_k8s_development_file() {
-    log_debug "prepare_k8s_development_file() begin"
+function prepare_k8s_deployment_file() {
+    log_debug "prepare_k8s_deployment_file() begin"
 
-    # Get the template file, if necessary
-    #todo: get yml files and agent-uninstall.sh from horizon-cli in container or from tar file from css/anax release
-    if using_remote_input_files 'yml'; then
-        if [[ $INPUT_FILE_PATH == css:* ]]; then
-            download_css_file "$INPUT_FILE_PATH/deployment-template.yml"
-        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-            download_anax_release_file "$INPUT_FILE_PATH/deployment-template.yml"
-        fi
-    fi
+    # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s#__OrgId__#\"${HZN_ORG_ID}\"#g" deployment-template.yml >deployment.yml
     chk $? 'creating deployment.yml'
@@ -1858,21 +1979,14 @@ function prepare_k8s_development_file() {
         #sed -i -e "s#__ImagePath__#${AGENT_IMAGE}#g" deployment.yml
     fi
 
-    log_debug "prepare_k8s_development_file() end"
+    log_debug "prepare_k8s_deployment_file() end"
 }
 
 # Cluster only: to create persistenClaim.yml based on template
 function prepare_k8s_pvc_file() {
     log_debug "prepare_k8s_pvc_file() begin"
 
-    # Get the template file, if necessary
-    if using_remote_input_files 'yml'; then
-        if [[ $INPUT_FILE_PATH == css:* ]]; then
-            download_css_file "$INPUT_FILE_PATH/persistentClaim-template.yml"
-        elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
-            download_anax_release_file "$INPUT_FILE_PATH/persistentClaim-template.yml"
-        fi
-    fi
+    # Note: get_edge_cluster_files() already downloaded deployment-template.yml, if necessary
 
     sed -e "s#__AgentNameSpace__#${AGENT_NAMESPACE}#g" -e "s/__StorageClass__/\"${EDGE_CLUSTER_STORAGE_CLASS}\"/g" persistentClaim-template.yml >persistentClaim.yml
     chk $? 'creating persistentClaim.yml'
@@ -1996,9 +2110,12 @@ function create_configmap() {
     
     if ! $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "create configmap from ${HZN_ENV_FILE}..."
+        create_horizon_env
         $KUBECTL create configmap ${CONFIGMAP_NAME} --from-file=horizon=${HZN_ENV_FILE} -n ${AGENT_NAMESPACE}
         chk $? "creating configmap ${CONFIGMAP_NAME} from ${HZN_ENV_FILE}"
         log_info "configmap ${CONFIGMAP_NAME} created."
+        rm $HZN_ENV_FILE
+        chk $? "removing $HZN_ENV_FILE"
     else
         log_info "configmap ${CONFIGMAP_NAME} exists, skip creating configmap"
     fi
@@ -2159,7 +2276,7 @@ function install_update_cluster() {
 
     check_existing_exch_node_is_correct_type "cluster"
 
-    loadAgentImage
+    loadClusterAgentImage   # create the cluster agent docker image locally
 
     # push agent image to cluster's registry
     if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -2175,7 +2292,6 @@ function install_update_cluster() {
         install_cluster
     fi
 
-    cleanup_cluster_config_files
     log_debug "install_update_cluster() end"
 }
 
@@ -2210,9 +2326,11 @@ function install_cluster() {
 function update_cluster() {
     log_debug "update_cluster() begin"
 
-    get_node_id_from_deployment
+    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+        unregister
+    fi
 
-    validate_node_id_for_agent_install
+    get_node_id_from_deployment
 
     generate_installation_files
 

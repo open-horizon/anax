@@ -4,10 +4,11 @@
 
 # Global constants
 SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ALL'
+EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
+AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
+AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
 
 # Environment variables and their defaults
-AGENT_IMAGE_TAG=${AGENT_IMAGE_TAG:-4.2.0}
-AGENT_IMAGE_TAR_FILE=${AGENT_IMAGE_TAR_FILE:-amd64_anax_k8s.tar.gz}
 PACKAGE_NAME=${PACKAGE_NAME:-horizon-edge-packages-4.2.0}
 AGENT_NAMESPACE=${AGENT_NAMESPACE:-openhorizon-agent}
 # EDGE_CLUSTER_STORAGE_CLASS   # this can also be specified, that default is the empty string
@@ -28,7 +29,6 @@ Parameters:
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
     -p <package_name>   The base name of the horizon content tar file (can include a path). Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
     -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node type x86_64-Cluster.
-    -i <agent-image-tag>   Docker tag (version) of agent image to deploy to edge cluster. Only applies to node type x86_64-Cluster.
     -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node type x86_64-Cluster.
 
 Required Environment Variables:
@@ -37,7 +37,6 @@ Required Environment Variables:
     CLUSTER_PW: Your cluster admin password
 
 Optional Environment Variables:
-    AGENT_IMAGE_TAG: Docker tag (version) of agent image to deploy to edge cluster
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
     AGENT_NAMESPACE: The edge cluster namespace that the agent will be installed into. Default: $AGENT_NAMESPACE
 EOF
@@ -91,10 +90,6 @@ while (( "$#" )); do
             EDGE_CLUSTER_STORAGE_CLASS=$2
             shift 2
             ;;
-        -i) # tag of agent image to deploy to edge cluster
-            AGENT_IMAGE_TAG=$2
-            shift 2
-            ;;
         -m) # edge cluster namespace to install agent to
             AGENT_NAMESPACE=$2
             shift 2
@@ -123,10 +118,6 @@ function checkPrereqsAndInput () {
         fatal 2 "cloudctl is not installed."
     fi
     echo " - cloudctl installed"
-    if ! command -v kubectl >/dev/null 2>&1; then
-        fatal 2 "kubectl is not installed."
-    fi
-    echo " - kubectl installed"
     if ! command -v oc >/dev/null 2>&1; then
         fatal 2 "oc is not installed."
     fi
@@ -174,116 +165,32 @@ function cloudLogin () {
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
-    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "$AGENT_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml horizon*
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "$AGENT_IMAGE_TAR_FILE" "$AGENT_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml horizon*
     chk $? "removing previous files in $PWD"
     echo
-}
-
-# Not currently used!!!! Instead of getting the image from the OCP registry, we are get the image tar file from the mgmt hub installation content in getAgentImageTarFile()
-function getImageFromOcpRegistry() {
-    # get OCP_USER, OCP_TOKEN and OCP_DOCKER_HOST
-    oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}' > /dev/null 2>&1
-    if [[ $? -ne 0 ]]; then
-        echo "Default route for the OpenShift image registry is not found, creating it ..."
-        oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"defaultRoute":true}}' --type=merge
-        chk $? 'creating the default route for the OpenShift image registry'
-        echo "Default route for the OpenShift image registry created"
-        echo ""
-    fi
-
-    OCP_DOCKER_HOST=$(oc get route default-route -n openshift-image-registry --template='{{ .spec.host }}')
-    OCP_USER=$(oc whoami)
-    OCP_TOKEN=$(oc whoami -t)
-
-    echo "OCP_DOCKER_HOST=$OCP_DOCKER_HOST"
-    echo "OCP_USER=$OCP_USER"
-    echo "OCP_TOKEN=$OCP_TOKEN"
-    echo ""
-
-    # get the OpenShift certificate
-    echo "Getting OpenShift certificate..."
-    echo | openssl s_client -connect $OCP_DOCKER_HOST:443 -showcerts | sed -n "/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p" > /tmp/edgeNodeFiles-ocp.crt
-    chk $? 'getting the OpenShift certificate'
-    echo ""
-
-    # Getting image from ocp ....
-    if [[ "$OSTYPE" == "linux"* ]]; then
-        echo "Detected OS is Linux, adding /tmp/edgeNodeFiles-ocp.crt to docker and restarting docker service..."
-        mkdir -p /etc/docker/certs.d/$OCP_DOCKER_HOST
-        cp /tmp/edgeNodeFiles-ocp.crt /etc/docker/certs.d/$OCP_DOCKER_HOST
-        systemctl restart docker.service
-        echo "Docker restarted"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        mkdir -p ~/.docker/certs.d/$OCP_DOCKER_HOST
-        cp /tmp/edgeNodeFiles-ocp.crt ~/.docker/certs.d/$OCP_DOCKER_HOST
-        if [[ -z DOCKER_DONT_RESTART ]]; then   # undocumented env var for continual retesting
-            echo "Detected OS is Mac OS, adding /tmp/edgeNodeFiles-ocp.crt to docker and restarting docker service..."
-            osascript -e 'quit app "Docker"'
-            sleep 1
-            open -a Docker
-            # The open cmd above does not wait for docker to fully start, so we have to poll
-            printf "Waiting for docker to restart"
-            sleep 2   # sometimes the very first docker ps succeeds even tho docker is not ready yet
-            while ! docker ps > /dev/null 2>&1; do
-                printf '.'
-                sleep 2
-            done
-            echo -e "\nDocker restarted"
-        fi
-    else
-        fatal 2 "Detected OS is $OSTYPE. This script is only supported on Linux or Mac OS."
-    fi
-
-    # login to OCP registry
-    echo "Logging in to OpenShift image registry..."
-    echo "$OCP_TOKEN" | docker login -u $OCP_USER --password-stdin $OCP_DOCKER_HOST
-    chk $? 'logging in to OpenShift image registry'
-
-    # Getting image from ocp ....
-    OCP_IMAGE=$OCP_DOCKER_HOST/ibmcom/amd64_anax_k8s:$AGENT_IMAGE_TAG
-    echo "Pulling image $OCP_IMAGE from OpenShift image registry..."
-    docker pull $OCP_IMAGE
-    chk $? 'pulling image from OCP image registry'
-
-    # save image to tar file
-    echo "Saving agent image to ${AGENT_IMAGE_TAR_FILE%.gz}..."
-    docker save $OCP_IMAGE > ${AGENT_IMAGE_TAR_FILE%.gz}
-    chk $? "saving agent image to ${AGENT_IMAGE_TAR_FILE%.gz}"
-    echo ""
-
-    # compress image
-    echo "Compressing ${AGENT_IMAGE_TAR_FILE%.gz} ..."
-    gzip "${AGENT_IMAGE_TAR_FILE%.gz}"
-    chk $? "compressing ${AGENT_IMAGE_TAR_FILE%.gz}"
-    echo "$AGENT_IMAGE_TAR_FILE created"
-
-    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss "$AGENT_IMAGE_TAR_FILE"
-    fi
-    echo ""
 }
 
 # Get the edge cluster agent image tar file from the mgmt hub installation content
 function getAgentImageTarFile() {
     local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
-    echo "Extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
-    tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
-    chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+    echo "Extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
+    tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE"
+    chk $? "extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss "$AGENT_IMAGE_TAR_FILE"
+        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE"
     fi
     echo
 }
 
 # Put 1 file into CSS in the IBM org as a public object.
 function putOneFileInCss() {
-    local filename=$1
+    local filename=${1:?} version=$2
 
     # First get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
-        export HZN_EXCHANGE_USER_AUTH="root/root:$(kubectl -n ibm-edge get secret ibm-edge-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc -n ibm-edge get secret ibm-edge-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -293,6 +200,7 @@ function putOneFileInCss() {
   "objectID": "$filename",
   "objectType": "agent_files",
   "destinationOrgID": "IBM",
+  "version": "$version",
   "public": true
 }
 EOF
@@ -348,9 +256,6 @@ EndOfContent
 function getClusterCert () {
     echo "Getting the management hub self-signed certificate agent-install.crt..."
     oc get secret -n ibm-edge management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
-    # this was the way to test for an older cluster and get the cert on it
-    #if ! kubectl get namespace ibm-edge >/dev/null 2>&1; then
-    #kubectl -n kube-public get secret ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
     chk $? 'getting the management hub self-signed certificate'
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
@@ -365,24 +270,33 @@ function putHorizonPkgsInCss() {
 
     # Determine the pkgs to put in CSS, and the tar file name
     # Note: at this point there are potentionally other horizonn pkgs too, so we have to be specific about the files that should be included in this tar file
-    local pkgWildcard tarFile
+    local pkgWildcard tarFile pkgVersion
     if [[ $pkgtype == 'deb' ]]; then
         pkgWildcard="horizon*_$arch.$pkgtype"
         tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
+        pkgVersion=$(ls horizon_*_$arch.$pkgtype)
+        pkgVersion=${pkgVersion#horizon_}
+        pkgVersion=${pkgVersion%%_$arch.$pkgtype}
     elif [[ $pkgtype == 'rpm' ]]; then
         pkgWildcard="horizon*.$arch.$pkgtype"
         tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
+        pkgVersion=$(ls horizon-*.$arch.$pkgtype | grep -v 'horizon-cli')
+        pkgVersion=${pkgVersion#horizon-}
+        pkgVersion=${pkgVersion%%.$arch.$pkgtype}
     elif [[ $opsys == 'macos' ]]; then
         pkgWildcard="horizon-cli.crt horizon-cli-*.$pkgtype"
         tarFile="horizon-agent-${opsys}-${pkgtype}-$arch.tar.gz"
-    fi
+        pkgVersion=$(ls horizon-cli-*.$pkgtype)
+        pkgVersion=${pkgVersion#horizon-cli-}
+        pkgVersion=${pkgVersion%%.$pkgtype}
+fi
 
     # Create the pkg tar file
     tar -zcf "$tarFile" $pkgWildcard   # it is important to NOT quote $pkgWildcard so the wildcard gets expanded
     chk $? "creating $tarFile"
 
     # Put the tar file in CSS in the IBM org as a public object
-    putOneFileInCss ${tarFile}
+    putOneFileInCss $tarFile $pkgVersion
 
     # Remove the tar file (it was only needed to put into CSS)
     rm -f "$tarFile"
@@ -399,6 +313,14 @@ function getHorizonPackageFiles() {
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
         putHorizonPkgsInCss $opsys $pkgtype $arch
+    fi
+
+    if [[ $opsys == 'macos' ]]; then   #future: do this for all amd64/x86_64
+        tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
+        chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+        if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+            putOneFileInCss "$AGENT_IMAGE_TAR_FILE"
+        fi
     fi
 }
 
@@ -457,12 +379,9 @@ function getAgentUninstallScript () {
     echo "Getting $installFile ..."
     cp "$installFile" .   # should already be executable
     chk $? "Getting $installFile"
-
-    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss agent-uninstall.sh
-    fi
 }
 
+# Get deployment-template.yml and persistentClaim-template.yml from where it was install by horizon-cli
 function getClusterDeployTemplates () {
     local installDir   # where the files have been installed by horizon-cli
     if [[ $OSTYPE == darwin* ]]; then
@@ -477,11 +396,22 @@ function getClusterDeployTemplates () {
         fi
         echo "Getting $installFile ..."
         cp "$installFile" .
-
-        if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-            putOneFileInCss $f
-        fi
     done
+}
+
+# Get agent-uninstall.sh, deployment-template.yml, and persistentClaim-template.yml and create tar file
+function getEdgeClusterFiles() {
+    getAgentInstallScript
+    getAgentUninstallScript
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        echo "Creating tar file of edge cluster files..."
+        tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml
+        chk $? 'Creating tar file of edge cluster files'
+        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME
+        rm $EDGE_CLUSTER_TAR_FILE_NAME
+        chk $? "removing $EDGE_CLUSTER_TAR_FILE_NAME"
+    fi
 }
 
 # Create a tar file of the gathered files for batch install
@@ -490,11 +420,11 @@ function createTarFile () {
 
     local files_to_compress
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml horizon*"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE $AGENT_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml horizon*"
     elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" ]]; then
-        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml"
+        files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml"
     elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
-        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli*"
+        files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* $AGENT_IMAGE_TAR_FILE"
     else   # linux device
         files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon*"
     fi
@@ -524,8 +454,7 @@ all_main() {
     gatherHorizonPackageFiles
 
     getAgentInstallScript
-    getAgentUninstallScript
-    getClusterDeployTemplates
+    getEdgeClusterFiles
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created
@@ -553,8 +482,7 @@ cluster_main() {
     getClusterCert
 
     getAgentInstallScript
-    getAgentUninstallScript
-    getClusterDeployTemplates
+    getEdgeClusterFiles
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created
