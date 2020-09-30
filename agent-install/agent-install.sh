@@ -775,6 +775,7 @@ function download_pkgs_from_anax_release() {
     httpCode=$(curl -sSLO -w "%{http_code}" $remote_path)
     chkHttp $? $httpCode 200 "downloading $remote_path" $tar_file_name
     log_verbose "Download of $remote_path successful, now unpacking it..."
+    rm -f horizon*.$(get_pkg_type)   # remove older pkgs so there is no confusion about what is being installed
     tar -zxf $tar_file_name
     rm $tar_file_name   # do not need to leave this around
 
@@ -792,6 +793,7 @@ function download_pkgs_from_css() {
     # Download and unpack the package tar file
     download_css_file "$INPUT_FILE_PATH/$tar_file_name"
     log_verbose "Download of $INPUT_FILE_PATH successful, now unpacking it..."
+    rm -f horizon*.$(get_pkg_type)   # remove older pkgs so there is no confusion about what is being installed
     tar -zxf $tar_file_name
     rm $tar_file_name   # do not need to leave this around
 
