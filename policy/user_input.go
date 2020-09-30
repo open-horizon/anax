@@ -16,14 +16,12 @@ type AbstractUserInput interface {
 	GetInputLength() int
 	GetInputNames() []string
 	GetInputValue(string) (interface{}, error)
-	GetInputType(string) (string, error)
 	GetInputMap() map[string]interface{}
 }
 
 type Input struct {
 	Name  string      `json:"name"`
 	Value interface{} `json:"value"`
-	Type  string      `json:"type,omitempty"`
 }
 
 func (s Input) String() string {
@@ -39,9 +37,6 @@ func (s Input) ShortString() string {
 // compare two Input's
 func (s Input) IsSame(input Input) bool {
 	if s.Name != input.Name {
-		return false
-	}
-	if s.Type != "" && input.Type != "" && s.Type != input.Type {
 		return false
 	}
 	if !reflect.DeepEqual(s.Value, input.Value) {
@@ -129,16 +124,6 @@ func (s UserInput) GetInputValue(name string) (interface{}, error) {
 	return nil, fmt.Errorf("Variable %v is not in the user input.", name)
 }
 
-func (s UserInput) GetInputType(name string) (string, error) {
-	if s.Inputs != nil {
-		for _, ui := range s.Inputs {
-			if ui.Name == name {
-				return ui.Type, nil
-			}
-		}
-	}
-	return "", fmt.Errorf("Variable %v is not in the user input.", name)
-}
 
 func (s UserInput) GetInputMap() map[string]interface{} {
 	inputs := make(map[string]interface{})

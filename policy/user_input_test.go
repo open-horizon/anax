@@ -328,7 +328,7 @@ func Test_UserInputArrayIsSame(t *testing.T) {
 		ServiceUrl:          "cpu",
 		ServiceArch:         "amd64",
 		ServiceVersionRange: "",
-		Inputs:              []Input{Input{Name: "var1", Value: "val11"}, Input{Name: "var2", Type: "list of strings", Value: []string{"a", "b", "c"}}, Input{Name: "var3", Value: false}},
+		Inputs:              []Input{Input{Name: "var1", Value: "val11"}, Input{Name: "var2", Value: []string{"a", "b", "c"}}, Input{Name: "var3", Value: false}},
 	}
 
 	userInput1 := []UserInput{svcUserInput1, svcUserInput2}
@@ -386,7 +386,7 @@ func Test_UserInputArrayIsSame(t *testing.T) {
 		ServiceUrl:          "cpu",
 		ServiceArch:         "amd64",
 		ServiceVersionRange: "",
-		Inputs:              []Input{Input{Name: "var1", Value: "val11"}, Input{Name: "var2", Type: "list of strings", Value: []string{"a", "b", "c"}}, Input{Name: "var3", Value: false}},
+		Inputs:              []Input{Input{Name: "var1", Value: "val11"}, Input{Name: "var2", Value: []string{"a", "b", "c"}}, Input{Name: "var3", Value: false}},
 	}
 	userInput1 = []UserInput{svcUserInput1, svcUserInput2}
 	userInput2 = []UserInput{svcUserInput1, svcUserInput3}

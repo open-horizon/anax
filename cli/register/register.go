@@ -813,7 +813,7 @@ func CreateInputFile(nodeOrg, pattern, arch, nodeIdTok, inputFile string) {
 		if len(userInput) > 0 {
 			svcInput := policy.UserInput{ServiceOrgid: s.Org, ServiceUrl: s.URL, ServiceVersionRange: "[0.0.0,INFINITY)", Inputs: make([]policy.Input, len(userInput))}
 			for i, u := range userInput {
-				svcInput.Inputs[i] = policy.Input{Name: u.Name, Value: u.DefaultValue, Type: u.Type}
+				svcInput.Inputs[i] = policy.Input{Name: u.Name, Value: u.DefaultValue}
 			}
 			svcInputs = append(svcInputs, svcInput)
 		}
