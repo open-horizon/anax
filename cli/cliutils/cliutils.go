@@ -86,6 +86,8 @@ type UserExchangeReq struct {
 	Email    string `json:"email"`
 }
 
+var dockerDriversWithTagSupport = []string{"syslog", "journald", "gelf", "fluentd", "awslogs", "splunk"}
+
 func Verbose(msg string, args ...interface{}) {
 	if Opts.Verbose == nil {
 		// This happens before the command arguments are parsed. It saves the verbose message to a cache
@@ -1756,6 +1758,15 @@ func GetNewDockerImageName(image string, dontTouchImage bool, pullImage bool) st
 		}
 	}
 	return image
+}
+
+func LoggingDriverSupportsTagging(driverName string) bool {
+	for i := range dockerDriversWithTagSupport {
+		if dockerDriversWithTagSupport[i] == driverName {
+			return true
+		}
+	}
+	return false
 }
 
 // progressReader is an io.Reader wrapper with progress reporting function
