@@ -234,7 +234,6 @@ func (self UserInputFile) GetNewFormat(force bool) ([]policy.UserInput, error) {
 			for _, name := range ui.GetInputNames() {
 				inpt := policy.Input{Name: name}
 				inpt.Value, _ = ui.GetInputValue(name)
-				inpt.Type, _ = ui.GetInputType(name)
 				new_ui.Inputs = append(new_ui.Inputs, inpt)
 			}
 			new_format = append(new_format, new_ui)
@@ -312,16 +311,6 @@ func (s MicroWork) GetInputValue(name string) (interface{}, error) {
 	return nil, fmt.Errorf("Variable %v is not in the user input.", name)
 }
 
-func (s MicroWork) GetInputType(name string) (string, error) {
-	if s.Variables != nil {
-		for key, _ := range s.Variables {
-			if key == name {
-				return "", nil
-			}
-		}
-	}
-	return "", fmt.Errorf("Variable %v is not in the user input.", name)
-}
 
 func (s MicroWork) GetInputMap() map[string]interface{} {
 	return s.Variables

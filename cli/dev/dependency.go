@@ -632,7 +632,6 @@ func UpdateServiceDefandUserInputFile(homeDirectory string, sDef common.Abstract
 				foundNonDefault = true
 				inputs = append(inputs, policy.Input{
 					Name:  ui.Name,
-					Type:  ui.Type,
 					Value: "",
 				})
 			}
