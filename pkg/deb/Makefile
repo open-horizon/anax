@@ -46,7 +46,7 @@ horizon-deb: require-version
 # Remember to up VERSION above. If building the deb on mac, first: brew install dpkg
 horizon-cli-deb: require-version
 	opsys=Linux arch=$(arch) $(MAKE) -C ../.. cli/hzn
-	mkdir -p horizon-cli/usr/horizon/{bin,cluster} horizon-cli/etc/bash_completion.d horizon-cli/usr/share/man/man1
+	mkdir -p horizon-cli/usr/horizon/bin horizon-cli/usr/horizon/bin/cluster horizon-cli/etc/bash_completion.d horizon-cli/usr/share/man/man1
 	@# If you add files copied, add them to .gitignore too
 	cp ../../cli/hzn horizon-cli/usr/horizon/bin
 	cp ../../anax-in-container/horizon-container horizon-cli/usr/horizon/bin
