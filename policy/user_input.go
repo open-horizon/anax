@@ -124,7 +124,6 @@ func (s UserInput) GetInputValue(name string) (interface{}, error) {
 	return nil, fmt.Errorf("Variable %v is not in the user input.", name)
 }
 
-
 func (s UserInput) GetInputMap() map[string]interface{} {
 	inputs := make(map[string]interface{})
 	if s.Inputs != nil {

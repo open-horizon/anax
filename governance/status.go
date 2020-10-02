@@ -217,7 +217,9 @@ func (w *GovernanceWorker) getMicroserviceStatus(containers []docker.APIContaine
 					}
 				}
 			}
-			status = append(status, msdef_status)
+			if len(msdef_status.Containers) > 0 {
+				status = append(status, msdef_status)
+			}
 		}
 	}
 
