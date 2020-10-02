@@ -116,7 +116,6 @@ export LICENSE_FILE = LICENSE.txt
 # supported locales
 export SUPPORTED_LOCALES ?= de  es  fr  it  ja  ko  pt_BR  zh_CN  zh_TW
 
-
 export TMPGOPATH ?= $(TMPDIR)$(EXECUTABLE)-gopath
 export PKGPATH := $(TMPGOPATH)/src/github.com/open-horizon/$(EXECUTABLE)
 export PATH := $(TMPGOPATH)/bin:$(PATH)
@@ -303,13 +302,13 @@ macpkginfo:
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
-	if [[ $(arch) == "amd64" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" ]]; then \
 	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
 	  cp $(CLI_EXECUTABLE) $(ANAX_CONTAINER_DIR); \
 	  cp -f $(LICENSE_FILE) $(ANAX_CONTAINER_DIR); \
-	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_LABELS) -t $(ANAX_IMAGE) -f Dockerfile.ubi . && \
+	  cd $(ANAX_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_IMAGE_LABELS) -t $(ANAX_IMAGE) -f Dockerfile.ubi.$(arch) . && \
 	  docker tag $(ANAX_IMAGE) $(ANAX_IMAGE_STG); \
 	else echo "Building the anax docker image is not supported on $(arch)"; fi
 
@@ -569,7 +568,7 @@ install:
 		cp $(CLI_HORIZON_CONTAINER) $(DESTDIR)/bin
 	# mkdir -p $(DESTDIR)/web && \
 	#	cp $(DEFAULT_UI) $(DESTDIR)/web
-	cp -Rapv cli/samples $(DESTDIR)
+	cp -Rapv cli/samples $(DESTDIR)/
 	mkdir -p $(CDIR) && \
 	find $(CDIR)/ \( -name "Makefile" -or -iname ".git*" \) -exec rm {} \;
 
