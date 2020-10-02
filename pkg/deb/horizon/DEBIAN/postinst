@@ -12,8 +12,10 @@ systemctl enable horizon.service
 if systemctl --quiet is-active horizon.service; then
 	systemctl stop horizon.service   # in case this was an update
 fi
-systemctl start horizon.service
 
-mkdir -p /var/{horizon/,run/horizon/}
+mkdir -p /var/horizon
+mkdir -p /var/run/horizon
+
+systemctl start horizon.service
 
 exit 0
