@@ -393,7 +393,13 @@ func NodeListPolicy(org string, credToUse string, node string) {
 	// list policy
 	var policy exchange.ExchangePolicy
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node)+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &policy)
-	output := cliutils.MarshalIndent(policy.GetExternalPolicy(), "exchange node listpolicy")
+
+	// display
+	output, err := cliutils.DisplayAsJson(policy)
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal node policy output: %v", err))
+	}
+
 	fmt.Println(output)
 }
 
