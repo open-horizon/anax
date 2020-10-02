@@ -311,7 +311,6 @@ func (s MicroWork) GetInputValue(name string) (interface{}, error) {
 	return nil, fmt.Errorf("Variable %v is not in the user input.", name)
 }
 
-
 func (s MicroWork) GetInputMap() map[string]interface{} {
 	return s.Variables
 }
