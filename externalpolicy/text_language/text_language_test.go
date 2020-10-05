@@ -305,4 +305,20 @@ func Test_GetNextExpression_Succeed(t *testing.T) {
 		}
 	}
 
+	ce = "cpu < 4 && intValue >= 3 || inininintValue == \"ininint\" && inVersion in [0.0.0,1.4.3]"
+	rem = ce
+	for {
+		_, rem, err = textConstraintLanguagePlugin.GetNextExpression(rem)
+		if err != nil {
+			t.Errorf("Error parsing constraint expression %v with GetNextExpression: %v", ce, err)
+		}
+		if rem == "" {
+			break
+		}
+		_, rem, err = textConstraintLanguagePlugin.GetNextOperator(rem)
+		if err != nil {
+			t.Errorf("Error parsing constraint expression %v with GetNextOperator: %v", ce, err)
+		}
+	}
+
 }
