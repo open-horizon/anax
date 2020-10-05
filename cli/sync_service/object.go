@@ -195,9 +195,12 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 			}
 			output = cliutils.MarshalIndent(mmsObjects, "mms object list")
 		} else {
-			output = cliutils.MarshalIndent(objectsMeta, "mms object list")
+			var err1 error
+			output, err1 = cliutils.DisplayAsJson(objectsMeta)
+			if err1 != nil {
+				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn mms object list' output: %v", err1))
+			}
 		}
-
 	}
 
 	msgPrinter.Printf("Listing objects in org %v:", org)
