@@ -82,6 +82,10 @@ func UserInputCompatible(org string, userPw string, nodeId string, nodeArch stri
 		uiCheckInput.NodeUserInput = node_ui
 	}
 
+	if nodeType == "" && uiCheckInput.NodeId != "" {
+		cliutils.Verbose(msgPrinter.Sprintf("No node type has been provided: node type of '%v' node will be used", uiCheckInput.NodeId))
+	}
+
 	// put the given service defs into the uiCheckInput
 	if serviceDefs != nil || len(serviceDefs) != 0 {
 		uiCheckInput.Service = serviceDefs
