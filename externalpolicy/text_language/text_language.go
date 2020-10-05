@@ -100,8 +100,9 @@ func (p *TextConstraintLanguagePlugin) GetNextExpression(expression string) (str
 		return "", expression, err
 	}
 	nextRune := nextToken.Type
+
 	// Start of property expression. This case will consume the entire expression.
-	if nextRune == def["Str"] {
+	if nextRune == def["Str"] || nextRune == def["InStr"] {
 		name := nextToken.Value
 		var opType rune
 		var valType rune
@@ -134,7 +135,7 @@ func (p *TextConstraintLanguagePlugin) GetNextExpression(expression string) (str
 			nextRune = nextToken.Type
 		}
 
-		if nextRune != def["Str"] && nextRune != def["QuoteStr"] && nextRune != def["ListStr"] && nextRune != def["Vers"] && nextRune != def["VersRange"] && nextRune != def["Num"] {
+		if nextRune != def["Str"] && nextRune != def["InStr"] && nextRune != def["QuoteStr"] && nextRune != def["ListStr"] && nextRune != def["Vers"] && nextRune != def["VersRange"] && nextRune != def["Num"] {
 			return "", expression, fmt.Errorf("Invalid property value. %v%v%v", name, op, nextToken.Value)
 		}
 		if val == "" {
@@ -235,6 +236,8 @@ func getLexer() lexer.Definition {
 	  vers = {digit} "." {digit} "." {digit} .
 	  digit = "0"…"9" .
 	  alpha = "a"…"z" | "A"…"Z" .
+
+	  InStr = "in" {"in"} (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .
 
 	  AndOp = whitespace {whitespace} ("AND" | "&&") whitespace {whitespace} .
 	  OrOp = whitespace {whitespace} ("OR" | "||") whitespace {whitespace} .
