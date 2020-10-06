@@ -98,7 +98,7 @@ func List(all bool, detail bool, selections []string, tailing bool) {
 				long_output[i].Source = v.Source
 			}
 
-			jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
+			jsonBytes, err := cliutils.DisplayAsJson(long_output)
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
 			}
@@ -111,7 +111,7 @@ func List(all bool, detail bool, selections []string, tailing bool) {
 				t := time.Unix(int64(v.Timestamp), 0)
 				short_output[i] = fmt.Sprintf("%v:   %v", t.Format("2006-01-02 15:04:05"), v.Message)
 			}
-			jsonBytes, err := json.MarshalIndent(short_output, "", cliutils.JSON_INDENT)
+			jsonBytes, err := cliutils.DisplayAsJson(short_output)
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
 			}
@@ -171,7 +171,7 @@ func ListSurfaced(long bool) {
 			long_output[i].SourceType = fullV.SourceType
 			long_output[i].Source = fullV.Source
 		}
-		jsonBytes, err := json.MarshalIndent(long_output, "", cliutils.JSON_INDENT)
+		jsonBytes, err := cliutils.DisplayAsJson(long_output)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog surface' output: %v", err))
 		}
@@ -180,7 +180,7 @@ func ListSurfaced(long bool) {
 		if len(apiOutput) == 0 {
 			apiOutput = []persistence.SurfaceError{}
 		}
-		jsonBytes, err := json.MarshalIndent(apiOutput, "", cliutils.JSON_INDENT)
+		jsonBytes, err := cliutils.DisplayAsJson(apiOutput)
 		if err != nil {
 			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog surface' output: %v", err))
 		}
