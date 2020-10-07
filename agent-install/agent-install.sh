@@ -1341,11 +1341,11 @@ function start_device_agent_container() {
     # Note: install_mac_horizon-cli() sets HC_DOCKER_TAG appropriately
     # In the css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
     if [[ $INPUT_FILE_PATH == css:* ]]; then
-        if [[ -f $AGENT_IMAGE_TAR_FILE ]]; then   #todo:todo: remove this temp work around
-            log_warning "!!!!!!!!! temporarily using $AGENT_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
-        else
+        #if [[ -f $AGENT_IMAGE_TAR_FILE ]]; then   # this was a temp work around
+        #    log_warning "!!!!!!!!! temporarily using $AGENT_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
+        #else
             download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
-        fi
+        #fi
         log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
         local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
         #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
@@ -1773,11 +1773,11 @@ function loadClusterAgentImage() {
             log_fatal 1 "Can not specify both AGENT_K8S_IMAGE_TAR_FILE and -i (INPUT_FILE_PATH)"
         fi
         if [[ $INPUT_FILE_PATH == css:* ]]; then
-            if [[ -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then   #todo:todo: remove this temp work around
-                log_warning "!!!!!!!!! temporarily using $AGENT_K8S_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
-            else
+            #if [[ -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then   # this was a temp work around
+            #    log_warning "!!!!!!!!! temporarily using $AGENT_K8S_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
+            #else
                 download_css_file "$INPUT_FILE_PATH/$AGENT_K8S_IMAGE_TAR_FILE"
-            fi
+            #fi
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
             # Get the docker image from docker hub in this case
             local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible

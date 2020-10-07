@@ -178,7 +178,11 @@ function getAgentImageTarFile() {
     chk $? "extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE"
+        echo "Extracting version from $AGENT_K8S_IMAGE_TAR_FILE ..."
+        local version=$(tar -zxOf "$AGENT_K8S_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
+        version=${version##*:}   # strip the path and image name from the front
+        echo "Version/tag of $AGENT_K8S_IMAGE_TAR_FILE is: $version"
+        putOneFileInCss "$AGENT_K8S_IMAGE_TAR_FILE" $version
     fi
     echo
 }
@@ -218,7 +222,7 @@ function createAgentInstallConfig () {
 
     if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset
         cat << EndOfContent > agent-install.cfg
-HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1/
+HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 AGENT_NAMESPACE=$AGENT_NAMESPACE
 EndOfContent
@@ -233,7 +237,7 @@ EndOfContent
 
     else   # device
         cat << EndOfContent > agent-install.cfg
-HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1/
+HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
 EndOfContent
 
@@ -319,7 +323,11 @@ function getHorizonPackageFiles() {
         tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
         chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
         if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
-            putOneFileInCss "$AGENT_IMAGE_TAR_FILE"
+            echo "Extracting version from $AGENT_IMAGE_TAR_FILE ..."
+            local version=$(tar -zxOf "$AGENT_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
+            version=${version##*:}   # strip the path and image name from the front
+            echo "Version/tag of $AGENT_IMAGE_TAR_FILE is: $version"
+            putOneFileInCss "$AGENT_IMAGE_TAR_FILE" $version
         fi
     fi
 }
@@ -403,12 +411,15 @@ function getClusterDeployTemplates () {
 function getEdgeClusterFiles() {
     getAgentInstallScript
     getAgentUninstallScript
+    getClusterDeployTemplates
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
         echo "Creating tar file of edge cluster files..."
         tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml
         chk $? 'Creating tar file of edge cluster files'
-        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME
+        local hzn_version=$(hzn version | grep "^Horizon CLI")
+        hzn_version=${hzn_version##* }   # remove all of the space-separated words, except the last one
+        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME $hzn_version
         rm $EDGE_CLUSTER_TAR_FILE_NAME
         chk $? "removing $EDGE_CLUSTER_TAR_FILE_NAME"
     fi
@@ -453,7 +464,6 @@ all_main() {
 
     gatherHorizonPackageFiles
 
-    getAgentInstallScript
     getEdgeClusterFiles
     echo
 
@@ -481,7 +491,6 @@ cluster_main() {
 
     getClusterCert
 
-    getAgentInstallScript
     getEdgeClusterFiles
     echo
 
