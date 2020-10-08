@@ -133,7 +133,7 @@ func GetNodePolicy(ec ExchangeContext, deviceId string) (*ExchangePolicy, error)
 			if nodePolicy.GetLastUpdated() == "" {
 				return nil, nil
 			} else {
-				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_POL_TYPE_CACHE, nodePolicy)
+				UpdateCache(NodeCacheMapKey(GetOrg(deviceId), GetId(deviceId)), NODE_POL_TYPE_CACHE, *nodePolicy)
 				return nodePolicy, nil
 			}
 		}
