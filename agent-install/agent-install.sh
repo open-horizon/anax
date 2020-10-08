@@ -824,6 +824,7 @@ function store_cert_file_permanently() {
 # For both device and cluster: Returns true (0) if /etc/default/horizon already has these values
 function is_horizon_defaults_correct() {
     log_debug "is_horizon_defaults_correct() begin"
+    IS_HORIZON_DEFAULTS_CORRECT='false'
     local anax_port=$1   # optional
     local cert_file defaults_file
 
@@ -854,6 +855,7 @@ function is_horizon_defaults_correct() {
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if [[ $horizon_defaults_value != $HZN_EXCHANGE_URL ]]; then return 1; fi
 
+
     horizon_defaults_value=$(grep -E '^HZN_FSS_CSSURL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if [[ $horizon_defaults_value != $HZN_FSS_CSSURL ]]; then return 1; fi
@@ -863,6 +865,7 @@ function is_horizon_defaults_correct() {
     if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
 
     if [[ -n $cert_file ]]; then
+        # TODO: we need to compare the content of the value in cert with previous version and this version
         horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
         horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
         if [[ $horizon_defaults_value != $cert_file ]]; then return 1; fi
@@ -874,6 +877,7 @@ function is_horizon_defaults_correct() {
         if [[ $horizon_defaults_value != $anax_port ]]; then return 1; fi
     fi
 
+    IS_HORIZON_DEFAULTS_CORRECT='true'
     log_debug "is_horizon_defaults_correct() end"
     return 0
 }
@@ -1831,10 +1835,12 @@ function pushImageToEdgeClusterRegistry() {
     log_debug "pushImageToEdgeClusterRegistry() end"
 }
 
-# Cluster only: check if agent deployment exists and compare agent image version to determine whether to agent install or agent update
-# Side-effect: sets AGENT_DEPLOYMENT_UPDATE, POD_ID
+# Cluster only: check if agent deployment exists to determine whether to do agent install or agent update
+# Side-effect: sets AGENT_DEPLOYMENT_UPDATE, POD_ID, IS_AGENT_IMAGE_VERSION_SAME, IS_HORIZON_ORG_ID_SAME
 function check_agent_deployment_exist() {
     log_debug "check_agent_deployment_exist() begin"
+    IS_AGENT_IMAGE_VERSION_SAME="false"
+    IS_HORIZON_ORG_ID_SAME="false"
 
     if ! $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
         # agent deployment doesn't exist in ${AGENT_NAMESPACE}, fresh install
@@ -1854,42 +1860,27 @@ function check_agent_deployment_exist() {
             local agent_image_version_in_use=$(echo $agent_image_name_with_tag | awk -F':' '{print $2}')
 
             log_debug "Current agent image version is: $agent_image_version_in_use, agent image version in tar file is: $AGENT_IMAGE_VERSION_IN_TAR"
-            #todo: i don't think this check is correct
-            #if [[ "$AGENT_IMAGE_VERSION_IN_TAR" == "$agent_image_version_in_use" ]]; then
-            #    AGENT_DEPLOYMENT_UPDATE="false"
-            #else
-                AGENT_DEPLOYMENT_UPDATE="true"
+            AGENT_DEPLOYMENT_UPDATE="true"
+            if [[ "$AGENT_IMAGE_VERSION_IN_TAR" == "$agent_image_version_in_use" ]]; then
+                IS_AGENT_IMAGE_VERSION_SAME="true"
+            fi
 
-                POD_ID=$($KUBECTL get pod -l app=agent --field-selector status.phase=Running -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
-                log_verbose "Previous agent pod is ${POD_ID}, will continue with agent updating in edge cluster"
-            #fi
+            # check HZN_ORG_ID set in deployment
+            local horizon_org_id_env_name_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env[0].name}')
+            local horizon_org_id_env_value_in_use=$($KUBECTL get deployment agent -n ${AGENT_NAMESPACE} -o jsonpath='{.spec.template.spec.containers[0].env[0].value}')
+            log_debug "Current HZN_ORG_ID in agent deployment is: env_name: $horizon_org_id_env_name_in_use, env_value: $horizon_org_id_env_value_in_use"
+            log_debug "HZN_ORG_ID passed to this script is: env_name: HZN_ORG_ID, env_value: $HZN_ORG_ID"
+
+            if [[ "$horizon_org_id_env_name_in_use" == "HZN_ORG_ID" ]] && [[ "$horizon_org_id_env_value_in_use" == "$HZN_ORG_ID" ]]; then
+                IS_HORIZON_ORG_ID_SAME="true"
+            fi
+
+            POD_ID=$($KUBECTL get pod -l app=agent --field-selector status.phase=Running -n ${AGENT_NAMESPACE} 2>/dev/null | grep "agent-" | cut -d " " -f1 2>/dev/null)
+            log_verbose "Previous agent pod is ${POD_ID}, will continue with agent updating in edge cluster"
         fi
     fi
 
     log_debug "check_agent_deployment_exist() end"
-}
-
-# Cluster only: get NODE_ID from the running agent pod
-function get_node_id_from_deployment() {
-    log_debug "get_node_id_from_deployment() begin"
-
-    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
-    local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
-    #EXPORT_EX_USER_AUTH_CMD="export HZN_EXCHANGE_USER_AUTH=${HZN_EXCHANGE_USER_AUTH}"
-    #NODE_INFO=$($KUBECTL exec -it ${POD_ID} -n ${AGENT_NAMESPACE} -- bash -c "${EXPORT_EX_USER_AUTH_CMD}; hzn node list")
-    #NODE_ID=$(echo "$NODE_INFO" | jq -r .id)
-    log_verbose "Got node id $reg_node_id from agent pod ${POD_ID}"
-    if [[ -n $reg_node_id ]]; then
-        NODE_ID=$reg_node_id
-    fi
-
-    # Now verify NODE_ID is set before we continue
-    if [[ -z $NODE_ID ]]; then
-        log_fatal 1 "The NODE_ID value is empty"
-    fi
-
-    log_debug "get_node_id_from_deployment() end"
-
 }
 
 # Cluster only: get or verify deployment-template.yml, persistentClaim-template.yml, and agent-uninstall.sh
@@ -1916,7 +1907,7 @@ function get_edge_cluster_files() {
     log_debug "get_edge_cluster_files() end"
 }
 
-# Cluster only: to generate 3 files: /tmp/agent-install-horizon-env, deployment.yml and persistentClaim.yml
+# Cluster only: to generate 2 files: deployment.yml and persistentClaim.yml
 function generate_installation_files() {
     log_debug "generate_installation_files() begin"
 
@@ -1926,9 +1917,13 @@ function generate_installation_files() {
     prepare_k8s_pvc_file
     log_verbose "kubernete persistentVolumeClaim file are done."
 
-    log_verbose "Preparing kubernete deployment files"
-    prepare_k8s_deployment_file
-    log_verbose "kubernete deployment files are done."
+    if [[ "$IS_AGENT_IMAGE_VERSION_SAME" == "true" ]] && [[ "$IS_HORIZON_ORG_ID_SAME" == "true" ]]; then
+        log_verbose "agent image version and value of HZN_ORG_ID are same with existing deployment, skip updating deployment.yml"
+    else
+        log_verbose "Preparing kubernete deployment files"
+        prepare_k8s_deployment_file
+        log_verbose "kubernete deployment files are done."
+    fi
 
     log_debug "generate_installation_files() end"
 }
@@ -2129,15 +2124,20 @@ function create_configmap() {
 function update_configmap() {
     log_debug "update_configmap() begin"
     
-    if $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
-        # configmap exists, delete it
-        log_verbose "Find configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old configmap..."
-        $KUBECTL delete configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
-        chk $? 'deleting the old configmap for agent update on cluster'
-        log_verbose "Old configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
-    fi
+    if [[ "$IS_HORIZON_DEFAULTS_CORRECT" == "true" ]]; then
+        log_verbose "Values in configmap are same, will skip updating configmap"
+    else
+        if $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+            # configmap exists, delete it
+	    log_verbose "Find configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old configmap..."
+            $KUBECTL delete configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+            chk $? 'deleting the old configmap for agent update on cluster'
+            log_verbose "Old configmap ${CONFIGMAP_NAME} in ${AGENT_NAMESPACE} namespace is deleted"
+        fi
 
-    create_configmap
+        create_configmap
+
+    fi
 
     log_debug "update_configmap() end"
 }
@@ -2196,45 +2196,48 @@ function create_deployment() {
 function update_deployment() {
     log_debug "update_deployment() begin"
 
-    if $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
-        # deployment exists, delete it
-        log_verbose "Found deployment ${DEPLOYMENT_NAME} in ${AGENT_NAMESPACE} namespace, deleting it..."
-        $KUBECTL delete deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
-        chk $? 'deleting the old deployment for agent update on cluster'
+    if [[ "$IS_AGENT_IMAGE_VERSION_SAME" == "true" ]] && [[ "$IS_HORIZON_ORG_ID_SAME" == "true" ]]; then
+        log_info "Agent image version and HZN_ORG_ID are the same. Keeping the existing agent deployment."
+    else
+	if $KUBECTL get deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
+            # deployment exists, delete it
+            log_verbose "Found deployment ${DEPLOYMENT_NAME} in ${AGENT_NAMESPACE} namespace, deleting it..."
+            $KUBECTL delete deployment ${DEPLOYMENT_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1
+            chk $? 'deleting the old deployment for agent update on cluster'
 
-        # wait for the pod to terminate
-        # the 1st arg to wait_for() means keep waiting until the exit code of kubectl is exactly 1
-        if wait_for '! ( $KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID >/dev/null 2>&1 || [[ $? -ge 2 ]] )' 'Horizon agent terminated' $AGENT_WAIT_MAX_SECONDS; then
-            log_verbose "Horizon agent pod terminated successfully"
-        else
-            AGENT_POD_STATUS=$($KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID 2>/dev/null | grep -E '^agent-' | cut -d " " -f3)
-            if [[ $AGENT_POD_STATUS == "Terminating" ]]; then
-                if [[ $AGENT_SKIP_PROMPT == 'false' ]]; then
-                    echo "Agent pod ${POD_ID} is still in Terminating, force delete pod?[y/N]:"
-                    read RESPONSE
-                    if [[ "$RESPONSE" == 'y' ]]; then
-                        log_verbose "Force deleting agent pod ${POD_ID}..."
+            # wait for the pod to terminate
+            # the 1st arg to wait_for() means keep waiting until the exit code of kubectl is exactly 1
+            if wait_for '! ( $KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID >/dev/null 2>&1 || [[ $? -ge 2 ]] )' 'Horizon agent terminated' $AGENT_WAIT_MAX_SECONDS; then
+                log_verbose "Horizon agent pod terminated successfully"
+            else
+                AGENT_POD_STATUS=$($KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID 2>/dev/null | grep -E '^agent-' | cut -d " " -f3)
+                if [[ $AGENT_POD_STATUS == "Terminating" ]]; then
+                    if [[ $AGENT_SKIP_PROMPT == 'false' ]]; then
+                        echo "Agent pod ${POD_ID} is still in Terminating, force delete pod?[y/N]:"
+                        read RESPONSE
+                        if [[ "$RESPONSE" == 'y' ]]; then
+                            log_verbose "Force deleting agent pod ${POD_ID}..."
+                            $KUBECTL delete pod ${POD_ID} --force=true --grace-period=0 -n ${AGENT_NAMESPACE}
+                            chk $? 'deleting the Terminating pod for agent update on cluster'
+                            pkill -f anax.service
+                        else
+                            log_verbose "Will not force delete agent pod"
+                            #lily: should we exit here? What will happen if we continue?
+                        fi
+                    else
+                        log_verbose "Agent pod ${POD_ID} is still in Terminating, force deleting..."
                         $KUBECTL delete pod ${POD_ID} --force=true --grace-period=0 -n ${AGENT_NAMESPACE}
                         chk $? 'deleting the Terminating pod for agent update on cluster'
                         pkill -f anax.service
-                    else
-                        log_verbose "Will not force delete agent pod"
-                        #lily: should we exit here? What will happen if we continue?
                     fi
                 else
-                    log_verbose "Agent pod ${POD_ID} is still in Terminating, force deleting..."
-                    $KUBECTL delete pod ${POD_ID} --force=true --grace-period=0 -n ${AGENT_NAMESPACE}
-                    chk $? 'deleting the Terminating pod for agent update on cluster'
-                    pkill -f anax.service
+                    log_fatal 3 "Unexpected status of agent pod $POD_ID: $AGENT_POD_STATUS"
                 fi
-            else
-                log_fatal 3 "Unexpected status of agent pod $POD_ID: $AGENT_POD_STATUS"
             fi
         fi
+
+        create_deployment
     fi
-
-    create_deployment
-
     log_debug "update_deployment() end"
 }
 
@@ -2328,11 +2331,15 @@ function install_cluster() {
 function update_cluster() {
     log_debug "update_cluster() begin"
 
-    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-        unregister
-    fi
+    set +e
+    is_horizon_defaults_correct "$ANAX_PORT"
+    set -e
 
-    get_node_id_from_deployment
+    if is_agent_registered ; then
+        if [[ "$IS_HORIZON_DEFAULTS_CORRECT" != "true" ]] || ! is_registration_correct ; then
+	    unregister
+        fi
+    fi
 
     generate_installation_files
 
