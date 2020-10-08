@@ -1797,10 +1797,13 @@ function loadClusterAgentImage() {
             IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY="$IMAGE_ON_EDGE_CLUSTER_REGISTRY:$AGENT_IMAGE_VERSION_IN_TAR"
             return
         fi
+    elif [[ ! -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then
+        log_fatal 2 "Edge cluster agent image tar file $AGENT_K8S_IMAGE_TAR_FILE does not exist"
     fi
 
     log_info "Unpacking and docker loading $AGENT_K8S_IMAGE_TAR_FILE ..."
     AGENT_IMAGE=$(load_docker_image $AGENT_K8S_IMAGE_TAR_FILE)
+    chk $? "docker loading $AGENT_K8S_IMAGE_TAR_FILE"
     # AGENT_IMAGE is like: {repo}/{image_name}:{version_number}
     #rm ${AGENT_K8S_IMAGE_TAR_FILE}   # do not remove the file they gave us
 
