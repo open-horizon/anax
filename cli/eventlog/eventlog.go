@@ -102,8 +102,8 @@ func List(all bool, detail bool, selections []string, tailing bool) {
 			if err != nil {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
 			}
-			if len(jsonBytes) > 2 {
-				fmt.Printf("%s", jsonBytes[2:len(jsonBytes)-1])
+			if len(jsonBytes) > 3 {
+				fmt.Printf("%s", jsonBytes[2:len(jsonBytes)-2])
 			}
 		} else {
 			short_output := make([]string, len(apiOutput))
@@ -116,8 +116,8 @@ func List(all bool, detail bool, selections []string, tailing bool) {
 				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, i18n.GetMessagePrinter().Sprintf("failed to marshal 'hzn eventlog list' output: %v", err))
 			}
 
-			if len(jsonBytes) > 2 {
-				fmt.Printf("%s", jsonBytes[2:len(jsonBytes)-1])
+			if len(jsonBytes) > 3 {
+				fmt.Printf("%s", jsonBytes[2:len(jsonBytes)-2])
 			}
 		}
 
