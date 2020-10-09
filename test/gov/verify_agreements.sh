@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# include node status verification function
+source ./check_node_status.sh
+
 PREFIX="Verifying agreements:"
 
 echo -e "${PREFIX} starting"
@@ -293,6 +296,13 @@ agreementsReached agreement_execution_start_time
 
 # Check to make sure service are running correctly.
 verifyServices
+
+# Verify exchange node status
+checkNodeStatus true
+if [ $? != 0 ]; then
+    echo "Node status verification failed"
+    exit 1
+fi
 
 # Do data verification
 if [ "${PATTERN}" == "sall" ]; then

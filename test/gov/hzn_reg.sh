@@ -159,9 +159,11 @@ function unreg_node {
 
 
 # make sure agreements are up and running
+# $1 - org ID for node check
+# $2 - auth for node check
 function verify_agreements {
-  HZN_REG_TEST=1 ./verify_agreements.sh
-  if [ $? -ne 0 ]; then 
+  ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh
+  if [ $? -ne 0 ]; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
   fi
@@ -208,7 +210,7 @@ fi
 echo -e "${PREFIX} Testing 'hzn register' with policy."
 cmd="hzn register -u $USERDEV_ADMIN_AUTH -n an12345:abcdefghijk -o userdev -f /tmp/reg_userinput.json --policy /tmp/node_policy.json"
 reg_node "$cmd"
-verify_agreements
+verify_agreements "userdev" "userdevadmin:userdevadminpw"
 
 ## test register while the node is registered
 echo -e "${PREFIX} Testing 'hzn register' while the node is registered."
@@ -231,14 +233,14 @@ hzn exchange -u e2edevadmin:e2edevadminpw -o e2edev@somecomp.com node remove an1
 echo -e "${PREFIX} Testing 'hzn register' with pattern sns."
 cmd="hzn register -u e2edevadmin:e2edevadminpw -n an12345:abcdefg -f /tmp/reg_userinput.json -o e2edev@somecomp.com -p e2edev@somecomp.com/sns"
 reg_node "$cmd"
-verify_agreements
+verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
 ## register pattern sns using positional argument, node already exists
 unreg_node
 echo -e "${PREFIX} Testing 'hzn register' with pattern sns using positional argument."
 cmd="hzn register -n e2edev@somecomp.com/an12345:abcdefg -f /tmp/reg_userinput.json e2edev@somecomp.com sns"
 reg_node "$cmd"
-verify_agreements
+verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
 ## test registering node with both sns pattern and policy
 unreg_node
@@ -253,7 +255,7 @@ if [ $ret != '"e2edev@somecomp.com/sns"' ]; then
   exit 1
 fi
 
-verify_agreements
+verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
 ## register pattern sall using flags, take HZN_ORG_ID. Use sall as the last test to restore the status before this script.
 unreg_node
@@ -262,7 +264,7 @@ echo -e "${PREFIX} Testing 'hzn register' with pattern sall with HZN_ORG_ID"
 cmd="hzn register -n an12345:abcdefg -f /tmp/reg_userinput_all.json -p sall"
 reg_node "$cmd"
 
-./verify_agreements.sh
+ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh
 if [ $? -ne 0 ]; then 
   echo -e "${PREFIX} Failed to verify agreement."
   exit 1
