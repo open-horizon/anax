@@ -3,6 +3,7 @@ module github.com/open-horizon/anax
 go 1.14
 
 require (
+	4d63.com/gochecknoglobals v0.0.0-20200924065721-6443f1912fff // indirect
 	4d63.com/gochecknoinits v0.0.0-20200108094044-eb73b47b9fc4 // indirect
 	github.com/adams-sarah/prettytest v0.0.0-20150503061827-2880862ae7f5 // indirect
 	github.com/adams-sarah/test2doc v0.0.0-20180225015401-dfbef56b3eab
@@ -61,4 +62,3 @@ require (
 	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect
 	mvdan.cc/lint v0.0.0-20170908181259-adc824a0674b // indirect
 )
-

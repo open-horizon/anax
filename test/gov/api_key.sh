@@ -18,7 +18,10 @@ MAIN_AUTH="iamapikey:${API_KEY}"
 
 HZN_EXCHANGE_NODE_AUTH="testNode:testToken"
 NODE_NAME="testNode"
-ORG_ID=${AGBOT_NAME//"-agbot"/}
+
+if [ "${ORG_ID}" = "" ]; then
+  ORG_ID=${AGBOT_NAME//"-agbot"/}
+fi
 
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
