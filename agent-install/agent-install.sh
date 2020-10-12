@@ -290,6 +290,14 @@ function adjust_input_file_path() {
     log_debug "adjust_input_file_path() end"
 }
 
+# Return what we should use as AGENT_CFG_FILE default if it is not specified: AGENT_CFG_FILE_DEFAULT if it exists, else blank
+function get_cfg_file_default() {
+    if [[ -f $AGENT_CFG_FILE_DEFAULT ]]; then
+        echo "$AGENT_CFG_FILE_DEFAULT"
+    fi
+    # else return empty string
+}
+
 # Returns version number extracted from the anax/releases path, or empty string if can't find it
 # Note: this should be called after adjust_input_file_path()
 function get_anax_release_version() {
@@ -315,8 +323,19 @@ function download_css_file() {
 
     # Set creds flag
     local exch_creds cert_flag
-    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
-    else exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"; fi   # input checking already required either user creds or node creds
+    if [[ -z $HZN_FSS_CSSURL ]]; then
+        log_fatal 1 "HZN_FSS_CSSURL must be specified"
+    fi
+    if [[ -z $HZN_ORG_ID ]]; then
+        log_fatal 1 "HZN_ORG_ID must be specified"
+    fi
+    if [[ -n $HZN_EXCHANGE_USER_AUTH ]]; then
+        exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_USER_AUTH"
+    elif [[ -n $HZN_EXCHANGE_NODE_AUTH ]]; then
+        exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"
+    else
+        log_fatal 1 "Either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH must be specified"
+    fi
 
     # Set cert flag. This is a special case, because sometimes the cert we need is coming from CSS. In that case be creative to try to get it.
     if [[ -n $AGENT_CERT_FILE && $AGENT_CERT_FILE != $AGENT_CERT_FILE_DEFAULT ]]; then
@@ -387,7 +406,9 @@ function read_config_file() {
     log_debug "read_config_file() begin"
 
     # Get/locate cfg file
-    if using_remote_input_files 'cfg'; then
+    if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]]; then
+        :   # just fall thru this if-else to read the config file
+    elif using_remote_input_files 'cfg'; then
         if [[ -n $AGENT_CFG_FILE && $AGENT_CFG_FILE != $AGENT_CFG_FILE_DEFAULT ]]; then
             log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
         fi
@@ -437,32 +458,33 @@ function get_all_variables() {
     # Next get config file values (cmd line has already been parsed), so get_variable can apply the whole precedence order
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
-    get_variable AGENT_CFG_FILE   # no default, because they are allowed to not use a cfg file at all
-    if ! using_remote_input_files 'cfg'; then
+    get_variable AGENT_CFG_FILE "$(get_cfg_file_default)"
+    if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]] || ! using_remote_input_files 'cfg'; then
         # Read this as soon as possible, so things like HZN_ORG_ID can be specified in the cfg file
-        read_config_file   # this will download the cert and cfg if necessary
+        read_config_file
     fi
-    get_variable HZN_ORG_ID '' 'true'
-    get_variable HZN_MGMT_HUB_CERT_PATH
-    get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"
-    if using_remote_input_files 'cfg'; then
-        # Now we have enough of the other input variables to do this
-        read_config_file   # this will download the cert and cfg if necessary
-    fi
-
-    # Now that we have the values from cmd line and config file, we can get all of the variables
     get_variable AGENT_VERBOSITY 3
     # need to check this value right now, because we use it immediately
     if [[ $AGENT_VERBOSITY -lt 0 || $AGENT_VERBOSITY -gt $VERB_DEBUG ]]; then
         log_fatal 1 "AGENT_VERBOSITY must be in the range 0 - $VERB_DEBUG"
     fi
+    # these are needed to read the cfg file from CSS
+    get_variable HZN_ORG_ID '' 'true'
+    get_variable HZN_MGMT_HUB_CERT_PATH
+    get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"
+    get_variable HZN_FSS_CSSURL '' 'true'
+    get_variable HZN_EXCHANGE_USER_AUTH
+    get_variable HZN_EXCHANGE_NODE_AUTH
+    if using_remote_input_files 'cfg'; then
+        # Now we have enough of the other input variables to do this
+        read_config_file   # this will download the cert and cfg
+    fi
+
+    # Now that we have the values from cmd line and config file, we can get all of the variables
     get_variable AGENT_SKIP_REGISTRATION 'false'
     get_variable HZN_EXCHANGE_URL '' 'true'
-    get_variable HZN_FSS_CSSURL '' 'true'
-    get_variable HZN_EXCHANGE_NODE_AUTH   #future: maybe these 3 should be combined
-    get_variable NODE_ID
+    get_variable NODE_ID   #future: maybe NODE_ID, HZN_DEVICE_ID, and HZN_EXCHANGE_NODE_AUTH should be combined
     get_variable HZN_DEVICE_ID
-    get_variable HZN_EXCHANGE_USER_AUTH
     get_variable HZN_EXCHANGE_PATTERN
     get_variable HZN_NODE_POLICY
     get_variable AGENT_WAIT_FOR_SERVICE
@@ -1345,11 +1367,7 @@ function start_device_agent_container() {
     # Note: install_mac_horizon-cli() sets HC_DOCKER_TAG appropriately
     # In the css case, get amd64_anax.tar.gz from css, docker load it, and set HC_DOCKER_IMAGE and HC_DONT_PULL
     if [[ $INPUT_FILE_PATH == css:* ]]; then
-        #if [[ -f $AGENT_IMAGE_TAR_FILE ]]; then   # this was a temp work around
-        #    log_warning "!!!!!!!!! temporarily using $AGENT_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
-        #else
-            download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
-        #fi
+        download_css_file "$INPUT_FILE_PATH/$AGENT_IMAGE_TAR_FILE"
         log_info "Unpacking and docker loading $AGENT_IMAGE_TAR_FILE ..."
         local agent_image_full_path=$(load_docker_image $AGENT_IMAGE_TAR_FILE)
         #rm ${AGENT_IMAGE_TAR_FILE}   # do not remove the file they gave us
@@ -1777,11 +1795,7 @@ function loadClusterAgentImage() {
             log_fatal 1 "Can not specify both AGENT_K8S_IMAGE_TAR_FILE and -i (INPUT_FILE_PATH)"
         fi
         if [[ $INPUT_FILE_PATH == css:* ]]; then
-            #if [[ -f $AGENT_K8S_IMAGE_TAR_FILE ]]; then   # this was a temp work around
-            #    log_warning "!!!!!!!!! temporarily using $AGENT_K8S_IMAGE_TAR_FILE instead of pulling it from CSS (because that is broken)"
-            #else
-                download_css_file "$INPUT_FILE_PATH/$AGENT_K8S_IMAGE_TAR_FILE"
-            #fi
+            download_css_file "$INPUT_FILE_PATH/$AGENT_K8S_IMAGE_TAR_FILE"
         elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
             # Get the docker image from docker hub in this case
             local image_tag=$(get_anax_release_version $INPUT_FILE_PATH)   # use the version from INPUT_FILE_PATH, if possible
