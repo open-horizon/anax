@@ -238,7 +238,15 @@ func GetExchangeChangeID(ec ExchangeContext) (*ExchangeChangeIDResponse, error) 
 // Retrieve the latest changes from the exchange.
 func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int, orgList []string) (*ExchangeChanges, error) {
 
-	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v in orgs %v", maxRecords, changeId, orgList)))
+	number_orgs := 0
+	if orgList != nil {
+		number_orgs = len(orgList)
+	}
+	if number_orgs > 10 {
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v in %v orgs.", maxRecords, changeId, number_orgs)))
+	} else {
+		glog.V(3).Infof(rpclogString(fmt.Sprintf("getting %v changes since change ID %v in orgs %v", maxRecords, changeId, orgList)))
+	}
 
 	var resp interface{}
 	resp = new(ExchangeChanges)
@@ -272,7 +280,11 @@ func GetExchangeChanges(ec ExchangeContext, changeId uint64, maxRecords int, org
 		} else {
 			changes := resp.(*ExchangeChanges)
 
-			glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v in orgs %v", len(changes.Changes), changeId, changes.MostRecentChangeID, orgList)))
+			if number_orgs > 10 {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v in %v orgs", len(changes.Changes), changeId, changes.MostRecentChangeID, number_orgs)))
+			} else {
+				glog.V(3).Infof(rpclogString(fmt.Sprintf("found %v changes since ID %v with latest change ID %v in orgs %v", len(changes.Changes), changeId, changes.MostRecentChangeID, orgList)))
+			}
 			glog.V(5).Infof(rpclogString(fmt.Sprintf("Raw changes response: %v", changes)))
 			return changes, nil
 		}
