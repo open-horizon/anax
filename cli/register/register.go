@@ -72,7 +72,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// check the input
-	org, pattern, waitService, waitOrg = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg)
+	org, pattern, waitService, waitOrg = verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg, nodeIdTok)
 
 	cliutils.SetWhetherUsingApiKey(nodeIdTok) // if we have to use userPw later in NodeCreate(), it will set this appropriately for userPw
 	var userInputFileObj *common.UserInputFile
@@ -589,7 +589,7 @@ func SetConfigState(timeout int, inputFile string) error {
 	}
 }
 
-func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFlag string, waitService string, waitOrg string) (string, string, string, string) {
+func verifyRegisterParamters(org, pattern, nodeOrgFromFlag, patternFromFlag, waitService, waitOrg, nodeIdTok string) (string, string, string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -626,6 +626,28 @@ func verifyRegisterParamters(org, pattern, nodeOrgFromFlag string, patternFromFl
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("When registering with a node policy, '*' is not a valid value for -s."))
 		} else if waitOrg != "*" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted."))
+		}
+	}
+
+	var nodeId string
+	if nodeId, _ = cliutils.SplitIdToken(nodeIdTok); nodeId == "" {
+		// get node info from anax
+		horDevice := api.HorizonDevice{}
+		cliutils.HorizonGet("node", []int{200}, &horDevice, false)
+		if horDevice.Id == nil {
+			cliutils.Fatal(cliutils.ANAX_NOT_CONFIGURED_YET, msgPrinter.Sprintf("Failed to get proper response from the Horizon agent"))
+		}
+		nodeId = *horDevice.Id
+	}
+
+	if nodeId != "" {
+		illegalInput, err := api.InputIsIllegal(nodeId)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not validate node ID '%s': %v", nodeId, err))
+		} else if illegalInput != "" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed"))
+		} else if strings.Contains(nodeId, " ") {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid node ID: Whitespace is not permitted"))
 		}
 	}
 
