@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -80,6 +81,19 @@ func (a *API) node(w http.ResponseWriter, r *http.Request) {
 		}
 
 		a.EC = worker.NewExchangeContext(fmt.Sprintf("%v/%v", *device.Org, *device.Id), *device.Token, a.Config.Edge.ExchangeURL, a.Config.GetCSSURL(), a.Config.Collaborators.HTTPClientFactory)
+
+		// sync the node policy and userinput with the exchange
+		if err := exchangesync.NodeInitalSetup(a.db, exchange.GetHTTPDeviceHandler(a)); err != nil {
+			create_device_error_handler(fmt.Errorf("Failed to initially set up local copy of the exchange node. %v", err))
+		}
+		if _, err := exchangesync.NodePolicyInitalSetup(a.db, a.Config, exchange.GetHTTPNodePolicyHandler(a), exchange.GetHTTPPutNodePolicyHandler(a)); err != nil {
+			create_device_error_handler(fmt.Errorf("Failed to initially set up node policy. %v", err))
+			return
+		}
+		if err := exchangesync.NodeUserInputInitalSetup(a.db, exchange.GetHTTPPatchDeviceHandler(a)); err != nil {
+			create_device_error_handler(fmt.Errorf("Failed to initially set up node user input. %v", err))
+			return
+		}
 
 		a.Messages() <- events.NewEdgeRegisteredExchangeMessage(events.NEW_DEVICE_REG, *device.Id, *device.Token, *device.Org, *device.Pattern, *device.NodeType)
 

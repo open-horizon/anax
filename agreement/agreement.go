@@ -283,6 +283,15 @@ func (w *AgreementWorker) Initialize() bool {
 			w.producerPH[protocolName] = pph
 		}
 
+		if err := w.syncNode(); err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Terminating, unable to sync up node. %v", err)))
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_FATAL,
+				persistence.NewMessageMeta(EL_AG_TERM_UNABLE_SYNC_AGS, err.Error()),
+				persistence.EC_ERROR_AGREEMENT_SYNC_ON_INIT,
+				w.GetExchangeId(), exchange.GetOrg(w.GetExchangeId()), w.devicePattern, "")
+			panic(logString(fmt.Sprintf("Terminating, unable to complete node sync up. %v", err)))
+		}
+
 		// Sync up between what's in our database versus what's in the exchange, and make sure that the policy manager's
 		// agreement counts are correct. This function will cancel any agreements whose state might have changed
 		// while the device was down. We will also check to make sure that policies havent changed. If they have, then
@@ -308,6 +317,31 @@ func (w *AgreementWorker) Initialize() bool {
 
 	return true
 
+}
+
+func (w *AgreementWorker) syncNode() error {
+
+	glog.V(3).Infof(logString("beginning sync up node."))
+
+	// get the exchange node and save it locally
+	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w)); err != nil {
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v. If the exchange url is changed, please run 'hzn unregister -D' command to clean up the local node before starting horizon service.", err)))
+	}
+
+	// setup the user input. exchange is the master.
+	// However, if the exchange does not have user input, convert the old UserInputAttributes into UserInput format
+	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up node user input. %v", err)))
+	}
+
+	// setup the node policy. If neither node nor exchange has node policy, setup the default.
+	// Otherwise, use the one from the exchange.
+	if _, err := exchangesync.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
+		return errors.New(logString(fmt.Sprintf("Failed to initially set up node policy. %v", err)))
+	}
+
+	glog.V(3).Infof(logString("node sync up completed normally."))
+	return nil
 }
 
 // Enter the command processing loop. Initialization is complete so wait for commands to
@@ -498,7 +532,6 @@ func (w *AgreementWorker) handleDeviceRegistered(cmd *DeviceRegisteredCommand) {
 	if err := w.syncOnInit(); err != nil {
 		glog.Errorf(logString(fmt.Sprintf("error during sync up of agreements, error: %v", err)))
 	}
-
 }
 
 // This function is only called when anax device side initializes. The agbot has it's own initialization checking.
@@ -510,21 +543,8 @@ func (w *AgreementWorker) syncOnInit() error {
 
 	glog.V(3).Infof(logString("beginning sync up."))
 
-	// get the exchange node and save it locally
-	if err := exchangesync.NodeInitalSetup(w.db, exchange.GetHTTPDeviceHandler(w)); err != nil {
-		return errors.New(logString(fmt.Sprintf("Failed to initially set up local copy of the exchange node. %v. If the exchange url is changed, please run 'hzn unregister -D' command to clean up the local node before starting horizon service.", err)))
-	}
-
-	// setup the user input. exchange is the master.
-	// However, if the exchange does not have user input, convert the old UserInputAttributes into UserInput format
-	if err := exchangesync.NodeUserInputInitalSetup(w.db, exchange.GetHTTPPatchDeviceHandler(w)); err != nil {
-		return errors.New(logString(fmt.Sprintf("Failed to initially set up node user input. %v", err)))
-	}
-
-	// setup the node policy. If neither node nor exchange has node policy, setup the default.
-	// Otherwise, use the one from the exchange.
-	if nodePolicy, err := exchangesync.NodePolicyInitalSetup(w.db, w.Config, exchange.GetHTTPNodePolicyHandler(w), exchange.GetHTTPPutNodePolicyHandler(w)); err != nil {
-		return errors.New(logString(fmt.Sprintf("Failed to initially set up node policy. %v", err)))
+	if nodePolicy, err := persistence.FindNodePolicy(w.db); err != nil {
+		return errors.New(logString(fmt.Sprintf("unable to read node policy from the local database. %v", err)))
 	} else if nodePolicy != nil {
 		// add the node policy to the policy manager
 		newPolicy, err := policy.GenPolicyFromExternalPolicy(nodePolicy, policy.MakeExternalPolicyHeaderName(w.GetExchangeId()))

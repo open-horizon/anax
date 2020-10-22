@@ -194,6 +194,7 @@ func nodeAllowPrivilegedService(db *bolt.DB) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+
 	nodePriv := false
 	if nodePol != nil && nodePol.Properties != nil && nodePol.Properties.HasProperty(externalpolicy.PROP_NODE_PRIVILEGED) {
 		privProv, err := nodePol.Properties.GetProperty(externalpolicy.PROP_NODE_PRIVILEGED)
