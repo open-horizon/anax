@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -63,20 +64,23 @@ func DoIt(forceUnregister, removeNodeUnregister bool, deepClean bool, timeout in
 
 		// call horizon DELETE /node api, default timeout is to wait forever.
 		unregErr := DeleteHorizonNode(removeNodeUnregister, deepClean, timeout)
-		if unregErr != nil {
-			fmt.Println(unregErr.Error())
-		}
 
 		// deep clean if anax failed to do it
 		if unregErr != nil {
 			if deepClean {
+				// Don't show anax's node state errors, as we can do external deepClean
+				if !strings.Contains(unregErr.Error(), "INVALID_NODE_STATE") {
+					msgPrinter.Printf("Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: %v", unregErr.Error())
+					msgPrinter.Println()
+				}
+
 				if err := DeepClean(); err != nil {
 					fmt.Println(err.Error())
 				} else {
 					unregErr = nil
 				}
 			} else {
-				msgPrinter.Printf("The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.")
+				msgPrinter.Printf("The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: %v", unregErr.Error())
 				msgPrinter.Println()
 			}
 		}
