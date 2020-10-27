@@ -165,7 +165,7 @@ function cloudLogin () {
 # Remove files from previous run, so we know there won't be (for example) multiple versions of the horizon pkgs in the dir
 function cleanUpPreviousFiles() {
     echo "Removing any generated files from previous run..."
-    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "$AGENT_IMAGE_TAR_FILE" "$AGENT_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml horizon*
+    rm -f agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt "$AGENT_IMAGE_TAR_FILE" "$AGENT_K8S_IMAGE_TAR_FILE" deployment-template.yml persistentClaim-template.yml horizon*.{deb,rpm,pkg,crt}
     chk $? "removing previous files in $PWD"
     echo
 }
