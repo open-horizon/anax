@@ -511,7 +511,12 @@ func isGoodCode(actualHttpCode int, goodHttpCodes []int) bool {
 func printHorizonRestError(apiMethod string, err error) {
 	msg := ""
 	if os.Getenv("HORIZON_URL") == "" {
-		msg = i18n.GetMessagePrinter().Sprintf("Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, err)
+		statusCommand := "systemctl status horizon"
+		statusURL := "curl http://localhost:8081/status"
+		if runtime.GOOS == "darwin" {
+			statusCommand = "docker ps | grep horizon"
+		}
+		msg = i18n.GetMessagePrinter().Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMethod, statusCommand, statusURL, err)
 	} else {
 		msg = i18n.GetMessagePrinter().Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMethod, err)
 	}
@@ -551,7 +556,12 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	if err != nil {
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
-				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, err))
+				statusCommand := "systemctl status horizon"
+				statusURL := "curl http://localhost:8081/status"
+				if runtime.GOOS == "darwin" {
+					statusCommand = "docker ps | grep horizon"
+				}
+				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
 			} else {
 				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err))
 			}
@@ -628,7 +638,12 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 	if err != nil {
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
-				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, err))
+				statusCommand := "systemctl status horizon"
+				statusURL := "curl http://localhost:8081/status"
+				if runtime.GOOS == "darwin" {
+					statusCommand = "docker ps | grep horizon"
+				}
+				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Run '%s' to check if the Horizon agent is running. Or run '%s' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: %v", apiMsg, statusCommand, statusURL, err))
 			} else {
 				retError = fmt.Errorf(msgPrinter.Sprintf("Can't connect to the Horizon REST API to run %s. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: %v", apiMsg, err))
 			}
