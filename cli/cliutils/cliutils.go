@@ -538,6 +538,7 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	if err != nil {
 		Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 	}
+	req.Close = true
 	req.Header.Add("Accept", "application/json")
 
 	// add the language request to the http header
@@ -624,6 +625,8 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 		}
 	}
+	req.Close = true
+
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		if quiet {
@@ -702,6 +705,7 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	} else if err != nil {
 		return 0, "", err
 	}
+	req.Close = true
 	req.Header.Add("Accept", "application/json")
 	if bodyIsBytes {
 		req.Header.Add("Content-Length", strconv.Itoa(len(jsonBytes)))
@@ -1111,6 +1115,7 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 			Fatal(HTTP_ERROR, msgPrinter.Sprintf("%s new request failed: %v", apiMsg, err))
 		}
 
+		req.Close = true
 		req.Header.Add("Accept", "application/json")
 
 		// for PUT/PATCH/POST
