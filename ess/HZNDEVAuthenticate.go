@@ -37,7 +37,11 @@ func (auth *HZNDEVAuthenticate) Authenticate(request *http.Request) (int, string
 	if len(parts) == 3 {
 		return security.AuthEdgeNode, parts[0], parts[1] + "/" + parts[2]
 	} else if len(parts) == 2 {
-		return security.AuthAdmin, parts[0], parts[1]
+		if common.Configuration.NodeType == common.ESS {
+			return security.AuthAdmin, common.Configuration.OrgID, parts[1]
+		} else {
+			return security.AuthAdmin, parts[0], parts[1]
+		}
 	} else if parts := strings.Split(appKey, "@"); len(parts) == 2 {
 		// legacy compensation, can be removed during beta
 		return security.AuthAdmin, parts[1], parts[0]
