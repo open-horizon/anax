@@ -61,7 +61,7 @@ make test TEST_VARS="NOLOOP=1 PATTERN=sloc"
 Light Test:
 
 ```
-make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1"
+make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOUPGRADE=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1"
 ```
 
 Here is a full description of all the variables you can use to setup the test the way you want it:
@@ -73,6 +73,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NORETRY=1 - turns off the service retry test.
 - NOSVC_CONFIGSTATE=1 - turns off the service config state test.
 - NOSURFERR=1 - turns off the node surface error test.
+- NOUPGRADE=1 - turns off the service upgrading/downgrading tests.
 - NOPATTERNCHANGE=1 - turns off the node pattern change test.
 - NOCOMPCHECK=1 - turns off the policy compatibility test.
 - NOSDO=1 - turns off the SDO test.

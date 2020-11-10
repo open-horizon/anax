@@ -410,6 +410,13 @@ if [ "$NOSURFERR" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == 
   fi
 fi
 
+if [ "$NOUPGRADE" != "1" ] && [ "$TESTFAIL" != "1" ] && [ "${EXCH_APP_HOST}" == "http://exchange-api:8080/v1" ]; then
+  if [ "$TEST_PATTERNS" == "sall" ]; then
+    ./service_upgrading_downgrading_test.sh
+    if [ $? -ne 0 ]; then echo "Service upgrading/downgrading test failure."; exit 1; fi
+  fi
+fi
+
 if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
     echo "Sleeping 15 seconds..."
