@@ -250,8 +250,8 @@ func getLexer() lexer.Definition {
 		Vers = {whitespace}  vers .
 	  Num = {whitespace} ["-"] digit {digit} ["." {digit}] .
 	  whitespace = "\n" | "\r" | "\t" | " " .
-	  OpenParen = "(" .
-	  CloseParen = ")" .
+	  OpenParen = {whitespace} "(" {whitespace} .
+	  CloseParen = {whitespace} ")" .
 
 
 	  Str =  {whitespace} (alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | ".") {alphanumeric | "_" | "-" | "/" | "!" | "?" | "+" | "~" | "'" | "."} .

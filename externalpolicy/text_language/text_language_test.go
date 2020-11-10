@@ -254,6 +254,24 @@ func Test_Validate_Succeed7(t *testing.T) {
 	}
 }
 
+func Test_Validate_Succeed8(t *testing.T) {
+
+	// no or one or many whitespaces around the open and close parentheses.
+	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
+	constraintStrings := []string{"(version> 1 OR version <1 OR version >=0) AND  ( version<= 0 OR (  USDA ==true OR USDA= false  ) )", " (version =1.1.1 AND xyz !=123) "}
+	ce := constraintStrings
+
+	var validated bool
+	var err error
+
+	validated, _, err = textConstraintLanguagePlugin.Validate(interface{}(ce))
+	if validated == false {
+		t.Errorf("Validation failed but should not, err: %v", err)
+	} else if err != nil {
+		t.Errorf("Validation succeeded but also returned an error: %v", err)
+	}
+}
+
 func Test_GetNextExpression_Succeed(t *testing.T) {
 	textConstraintLanguagePlugin := NewTextConstraintLanguagePlugin()
 	ce := "version == 1.1.1 OR USDA == true AND book == \"one fish two fish\" && author == \"Suess\""
