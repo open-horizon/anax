@@ -92,7 +92,7 @@ func ObjectList(org string, userPw string, objType string, objId string, destPol
 	}
 
 	if objType == "" && objId != "" {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify objectType if set objectId"))
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify --type with --id"))
 	}
 
 	if destType == "" && destId != "" {

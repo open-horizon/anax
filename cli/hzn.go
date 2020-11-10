@@ -589,8 +589,10 @@ Environment Variables:
 	mmsStatusCmd := mmsCmd.Command("status", msgPrinter.Sprintf("Display the status of the Horizon Model Management Service."))
 	mmsObjectCmd := mmsCmd.Command("object", msgPrinter.Sprintf("List and manage objects in the Horizon Model Management Service."))
 	mmsObjectListCmd := mmsObjectCmd.Command("list", msgPrinter.Sprintf("List objects in the Horizon Model Management Service."))
-	mmsObjectListType := mmsObjectListCmd.Flag("objectType", msgPrinter.Sprintf("The type of the object to list.")).Short('t').String()
-	mmsObjectListId := mmsObjectListCmd.Flag("objectId", msgPrinter.Sprintf("The id of the object to list. This flag is optional. Omit this flag to list all objects of a given object type.")).Short('i').String()
+	mmsObjectListType := mmsObjectListCmd.Flag("type", msgPrinter.Sprintf("The type of the object to list.")).Short('t').String()
+	mmsObjectListObjType := mmsObjectListCmd.Flag("objectType", "").Hidden().String()
+	mmsObjectListId := mmsObjectListCmd.Flag("id", msgPrinter.Sprintf("The id of the object to list. This flag is optional. Omit this flag to list all objects of a given object type.")).Short('i').String()
+	mmsObjectListObjId := mmsObjectListCmd.Flag("objectId", "").Hidden().String()
 	mmsObjectListDestinationPolicy := mmsObjectListCmd.Flag("policy", msgPrinter.Sprintf("Specify true to show only objects using policy. Specify false to show only objects not using policy. If this flag is omitted, both kinds of objects are shown.")).Short('p').String()
 	mmsObjectListDPService := mmsObjectListCmd.Flag("service", msgPrinter.Sprintf("List mms objects using policy that are targetted for the given service. Service specified in the format service-org/service-name.")).Short('s').String()
 	mmsObjectListDPProperty := mmsObjectListCmd.Flag("property", msgPrinter.Sprintf("List mms objects using policy that reference the given property name.")).String()
@@ -764,6 +766,13 @@ Environment Variables:
 	if strings.HasPrefix(fullCmd, "mms") {
 		mmsOrg = cliutils.RequiredWithDefaultEnvVar(mmsOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		mmsUserPw = cliutils.RequiredWithDefaultEnvVar(mmsUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+
+		if *mmsObjectListId == "" {
+			mmsObjectListId = mmsObjectListObjId
+		}
+		if *mmsObjectListType == "" {
+			mmsObjectListType = mmsObjectListObjType
+		}
 	}
 
 	// For the voucher import command family, make sure that org and exchange credentials are specified in some way.
