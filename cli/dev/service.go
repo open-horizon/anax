@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
+	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
 	"os"
+	"runtime"
 )
 
 // These constants define the hzn dev subcommands supported by this module.
@@ -16,6 +18,7 @@ const SERVICE_CREATION_COMMAND = "new"
 const SERVICE_START_COMMAND = "start"
 const SERVICE_STOP_COMMAND = "stop"
 const SERVICE_VERIFY_COMMAND = "verify"
+const SERVICE_LOG_COMMAND = "log"
 
 const SERVICE_NEW_DEFAULT_VERSION = "0.0.1"
 
@@ -234,4 +237,65 @@ func ServiceValidate(homeDirectory string, userInputFile string, configFiles []s
 	msgPrinter.Println()
 
 	return absFiles
+}
+
+func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Perform the common execution setup.
+	dir, _, cw := CommonExecutionSetup(homeDirectory, "", SERVICE_COMMAND, SERVICE_LOG_COMMAND)
+
+	// Get the service definition for this project.
+	serviceDef, wderr := GetServiceDefinition(dir, SERVICE_DEFINITION_FILE)
+	if wderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, wderr)
+	}
+
+	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
+	// if it is managed by an agreement.
+	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	if cerr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, cerr)
+	}
+
+	if serviceName == "" {
+		if len(dc.Services) > 1 {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one service has been found for deployment. Please specify the service name by -s flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND))
+		}
+
+		// Apply service name
+		for name, _ := range dc.Services {
+			serviceName = name
+		}
+	}
+
+	// Locate the dev container(s) and show logs
+	containers, err := findContainers(serviceName, cw)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' Unable to list containers: %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND), err)
+	}
+	cliutils.Verbose(msgPrinter.Sprintf("Found containers %v", containers))
+
+	for _, c := range containers {
+		if _, isDevService := c.Labels[container.LABEL_PREFIX+".dev_service"]; isDevService {
+			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
+
+			msgPrinter.Printf("Displaying log messages for dev service %v with instance id prefix %v.", serviceName, msId)
+			msgPrinter.Println()
+			if tailing {
+				msgPrinter.Printf("Use ctrl-C to terminate this command.")
+				msgPrinter.Println()
+			}
+
+			if runtime.GOOS == "darwin" {
+				cliutils.LogMac(msId, tailing)
+			} else {
+				cliutils.LogLinux(msId, tailing)
+			}
+			return
+		}
+	}
+
+	cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' Cannot find any running container for dev service %s", SERVICE_COMMAND, SERVICE_LOG_COMMAND, serviceName))
 }

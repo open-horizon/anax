@@ -528,6 +528,9 @@ Environment Variables:
 	devServiceValidateCmd := devServiceCmd.Command("verify", msgPrinter.Sprintf("Validate the project for completeness and schema compliance."))
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", msgPrinter.Sprintf("File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.")).Short('f').String()
 	devServiceValidateCmdUserPw := devServiceValidateCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the Exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+	devServiceLogCmd := devServiceCmd.Command("log", msgPrinter.Sprintf("Show the container/system logs for a service."))
+	devServiceLogCmdServiceName := devServiceLogCmd.Flag("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.")).Short('s').String()
+	devServiceLogCmdTail := devServiceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 
 	devDependencyCmd := devCmd.Command("dependency", msgPrinter.Sprintf("For working with project dependencies."))
 	devDependencyCmdSpecRef := devDependencyCmd.Flag("specRef", msgPrinter.Sprintf("The URL of the service dependency in the Exchange. Mutually exclusive with -p and --url.")).Short('s').String()
@@ -1013,6 +1016,8 @@ Environment Variables:
 		dev.ServiceStopTest(*devHomeDirectory)
 	case devServiceValidateCmd.FullCommand():
 		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "", *devServiceValidateCmdUserPw)
+	case devServiceLogCmd.FullCommand():
+		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdServiceName, *devServiceLogCmdTail)
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():
