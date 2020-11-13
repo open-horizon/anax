@@ -1166,6 +1166,8 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		Services: make(map[string]persistence.ServiceConfig, 0),
 	}
 
+	// New network will be created if there is at least one service without 'network:host' mode
+	newNetworkNeeded := false
 	for serviceName, servicePair := range servicePairs {
 		if image, err := b.client.InspectImage(servicePair.serviceConfig.Config.Image); err != nil {
 			return nil, fail(nil, serviceName, fmt.Errorf("Failed to locally inspect image: %v. Please build and tag image locally or pull the image from your docker repository before running this command. Original error: %v", servicePair.serviceConfig.Config.Image, err))
@@ -1178,6 +1180,10 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			shared[serviceName] = servicePair
 		} else {
 			private[serviceName] = servicePair
+
+			if servicePair.serviceConfig.HostConfig.NetworkMode != "host" {
+				newNetworkNeeded = true
+			}
 		}
 
 		ret.Services[serviceName] = *servicePair.serviceConfig
@@ -1268,25 +1274,27 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	// from here on out, need to clean up bridge(s) if there is a problem
 
-	// If the network we want already exists, just use it.
 	var agBridge *docker.Network
-	if networks, err := b.client.ListNetworks(); err != nil {
-		glog.V(3).Infof("Unable to list networks: %v", err)
-		return nil, err
-	} else {
-		for _, net := range networks {
-			if isAnaxNetwork(&net, agreementId) {
-				glog.V(5).Infof("Found network %v already present", net.Name)
-				agBridge = &net
-				break
+	if newNetworkNeeded {
+		// If the network we want already exists, just use it.
+		if networks, err := b.client.ListNetworks(); err != nil {
+			glog.V(3).Infof("Unable to list networks: %v", err)
+			return nil, err
+		} else {
+			for _, net := range networks {
+				if isAnaxNetwork(&net, agreementId) {
+					glog.V(5).Infof("Found network %v already present", net.Name)
+					agBridge = &net
+					break
+				}
 			}
-		}
-		if agBridge == nil {
-			newBridge, err := mkBridge(b.client, agreementId, deployment.Infrastructure, false)
-			if err != nil {
-				return nil, err
+			if agBridge == nil {
+				newBridge, err := mkBridge(b.client, agreementId, deployment.Infrastructure, false)
+				if err != nil {
+					return nil, err
+				}
+				agBridge = newBridge
 			}
-			agBridge = newBridge
 		}
 	}
 
