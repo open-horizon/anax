@@ -25,6 +25,8 @@ function verify {
 # $7 - userinput variable type
 # $8 - userinput variable value
 # $9 - deployment config service name
+# $10 - MaxMemory config
+# $11 - NanoCpus config
 function createProject {
     echo -e "Building $2 service container."
     cd $1
@@ -60,6 +62,16 @@ function createProject {
     sed -e 's|"type": ""|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"label": ""|"label": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"defaultValue": ""|"defaultValue": "'$8'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+
+    if [ "${10}" != "" ]; then
+      jq_filter=.deployment.services.amd64_$9.max_memory_mb=${10}
+      jq $jq_filter ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    fi
+
+    if [ "${11}" != "" ]; then
+      jq_filter=.deployment.services.amd64_$9.max_cpus=${11}
+      jq $jq_filter ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    fi
 
     echo -e "Verifying the $2 project."
     verifyProject=$(hzn dev service verify -v 2>&1)
@@ -104,6 +116,28 @@ function undeploy {
     echo -e "$1 service undeployed."
 }
 
+# Check configured MaxMemory and NanoCpus for the service. The input is:
+# $1 - service
+# $2 - expected MaxMemory
+# $3 - expected NanoCpus
+function checkMemoryAndCpus {
+    echo -e "Checking custom MaxMemory and NanoCpus for $1."
+    service_id=$(docker ps -qf "name=$1")
+    svc_memory=$(docker inspect $service_id | jq -r '.[0].HostConfig.Memory')
+    svc_nano_cpus=$(docker inspect $service_id | jq -r '.[0].HostConfig.NanoCpus')
+
+    if [ "$svc_memory" -ne $2 ]; then
+      echo -e "${PREFIX} MaxMemory verification for $1 service failed."
+      stopServices
+      exit 1
+    fi
+    if [ "$svc_nano_cpus" -ne $3 ]; then
+      echo -e "${PREFIX} MaxCPUs verification for $1 service failed."
+      stopServices
+      exit 1
+    fi
+}
+
 # ============= Main =================================================
 #
 echo -e "Begin hzn dev service testing."
@@ -129,7 +163,7 @@ if [ $? -ne 0 ]; then exit $?; fi
 createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
 if [ $? -ne 0 ]; then exit $?; fi
 
-createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello"
+createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5"
 if [ $? -ne 0 ]; then exit $?; fi
 
 # ============= Connect dependencies =================================
@@ -185,6 +219,9 @@ if [ "${restarting}" != "" ]; then
     stopServices
     exit 1
 fi
+
+# make sure max memory and max CPUs for usehello service are configured correctly (512 MB & 0.5 CPUs)
+checkMemoryAndCpus amd64_usehello 536870912 500000000
 
 stopServices
 

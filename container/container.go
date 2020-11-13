@@ -312,6 +312,14 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			},
 		}
 
+		// Set CPU and memory limits if they are defined in the service config
+		if service.MaxMemoryMb != 0 {
+			serviceConfig.HostConfig.Memory = service.MaxMemoryMb * 1024 * 1024
+		}
+		if service.MaxCPUs != 0 {
+			serviceConfig.HostConfig.NanoCPUs = int64(service.MaxCPUs * 1000000000)
+		}
+
 		// Mark each container as infrastructure if the deployment description indicates infrastructure
 		if deployment.Infrastructure {
 			serviceConfig.Config.Labels[LABEL_PREFIX+".infrastructure"] = ""
