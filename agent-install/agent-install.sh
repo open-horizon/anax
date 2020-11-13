@@ -22,7 +22,8 @@ DEBIAN_VARIANTS_REGEX='^(ubuntu|raspbian|debian)$'
 SUPPORTED_DEBIAN_VERSION=("focal" "bionic" "buster" "xenial" "stretch")   # all debian variants
 SUPPORTED_DEBIAN_ARCH=("amd64" "arm64" "armhf")
 REDHAT_VARIANTS_REGEX='^(rhel|centos)$'
-SUPPORTED_REDHAT_VERSION=("8.1" "8.2")   # for fedora versions see https://fedoraproject.org/wiki/Releases
+#RHEL 8.3 is not supported but is enabled only for testing and tech preview purposes
+SUPPORTED_REDHAT_VERSION=("8.1" "8.2" "8.3")   # for fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=("x86_64" "aarch64")
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
