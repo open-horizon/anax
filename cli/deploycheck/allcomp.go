@@ -95,6 +95,10 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 		compCheckInput.NodeUserInput = node_ui
 	}
 
+	if nodeType == "" && compCheckInput.NodeId != "" {
+		cliutils.Verbose(msgPrinter.Sprintf("No node type has been provided: node type of '%v' node will be used", compCheckInput.NodeId))
+	}
+
 	// read the service policy from file for the policy case
 	if servicePolFile != "" {
 		var sp externalpolicy.ExternalPolicy

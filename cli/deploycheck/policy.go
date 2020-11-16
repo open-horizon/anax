@@ -60,6 +60,10 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 		policyCheckInput.NodePolicy = &np
 	}
 
+	if nodeType == "" && policyCheckInput.NodeId != "" {
+		cliutils.Verbose(msgPrinter.Sprintf("No node type has been provided: node type of '%v' node will be used", policyCheckInput.NodeId))
+	}
+
 	// get business policy
 	bp := getBusinessPolicy(userOrg, credToUse, businessPolId, businessPolFile)
 	policyCheckInput.BusinessPolicy = bp
