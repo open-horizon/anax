@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"github.com/open-horizon/anax/cli/sdo"
+	"github.com/open-horizon/anax/version"
 	"os"
 	"strings"
 
@@ -732,6 +733,12 @@ Environment Variables:
 			// get HZN_EXCHANGE_USER_AUTH as default if exUserPw is empty
 			exUserPw = cliutils.RequiredWithDefaultEnvVar(exUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 		}
+
+		if exVersion := exchange.LoadExchangeVersion(false, *exOrg, credToUse, *exUserPw); exVersion != "" {
+			if err := version.VerifyExchangeVersion1(exVersion, false); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+			}
+		}
 	}
 
 	if strings.HasPrefix(fullCmd, "register") {
@@ -740,6 +747,15 @@ Environment Variables:
 
 		// use HZN_EXCHANGE_NODE_AUTH for -n and trim the org
 		nodeIdTok = cliutils.WithDefaultEnvVar(nodeIdTok, "HZN_EXCHANGE_NODE_AUTH")
+
+		// use HZN_ORG_ID or org provided by -o for version check
+		verCheckOrg := cliutils.WithDefaultEnvVar(org, "HZN_ORG_ID")
+
+		if exVersion := exchange.LoadExchangeVersion(false, *verCheckOrg, *userPw, *nodeIdTok); exVersion != "" {
+			if err := version.VerifyExchangeVersion1(exVersion, false); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+			}
+		}
 	}
 
 	if strings.HasPrefix(fullCmd, "deploycheck") {
@@ -762,6 +778,12 @@ Environment Variables:
 		}
 		if *allCompBPolFile == "" {
 			allCompBPolFile = allCompDepPolFile
+		}
+
+		if exVersion := exchange.LoadExchangeVersion(false, *deploycheckOrg, *deploycheckUserPw); exVersion != "" {
+			if err := version.VerifyExchangeVersion1(exVersion, false); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
+			}
 		}
 	}
 
