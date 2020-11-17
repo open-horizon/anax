@@ -751,7 +751,7 @@ func serviceStart(client *docker.Client,
 	}
 	if serviceConfig.HostConfig.NetworkMode != "host" {
 		for _, cfg := range sharedEndpoints {
-			glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
+			glog.V(5).Infof("Connecting network: %v to container id: %v as endpoint: %v", cfg.NetworkID, container.ID, cfg.Aliases)
 			err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
 				Container:      container.ID,
 				EndpointConfig: cfg,
@@ -1106,7 +1106,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			}
 
 			woutAliases := &docker.EndpointConfig{
-				Aliases:   nil,
+				Aliases:   cfg.Aliases,
 				Links:     nil,
 				NetworkID: cfg.NetworkID,
 			}
@@ -1200,12 +1200,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	ms_sharedendpoints := make(map[string]*docker.EndpointConfig)
 	if ms_networks != nil {
 		for msnw_name, ms_nw := range ms_networks {
-			ms_ep := docker.EndpointConfig{
-				Aliases:   nil,
-				Links:     nil,
-				NetworkID: ms_nw.NetworkID,
-			}
-			ms_sharedendpoints[msnw_name] = &ms_ep
+			ms_ep := new(docker.EndpointConfig)
+			ms_ep.Aliases = deployment.ServiceNames()
+			ms_ep.NetworkID = ms_nw.NetworkID
+
+			ms_sharedendpoints[msnw_name] = ms_ep
 		}
 	}
 
