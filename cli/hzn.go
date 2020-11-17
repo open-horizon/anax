@@ -671,7 +671,12 @@ Environment Variables:
 
 	credToUse := ""
 	if strings.HasPrefix(fullCmd, "exchange") {
-		exOrg = cliutils.RequiredWithDefaultEnvVar(exOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		exOrg = cliutils.WithDefaultEnvVar(exOrg, "HZN_ORG_ID")
+
+		// Allow undefined org for 'exchange org' commands
+		if *exOrg == "" && !strings.HasPrefix(fullCmd, "exchange org") {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		}
 
 		// some hzn exchange commands can take either -u user:pw or -n nodeid:token as credentials.
 		switch subCmd := strings.TrimPrefix(fullCmd, "exchange "); subCmd {
