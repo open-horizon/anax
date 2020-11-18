@@ -206,7 +206,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 				agIds = ms_instance.AssociatedAgreements
 			}
 
-			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
+			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, dependencyPath, isRetry)
 			w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 			return ms_instance, nil // assume there is only one workload for a microservice

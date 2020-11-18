@@ -192,21 +192,21 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			}
 		case *events.ContainerLaunchContext:
 			lc := msg.LaunchContext.(*events.ContainerLaunchContext)
-
+			serviceInfo := lc.GetServicePathElement()
 			if msg.Event().Id == events.IMAGE_FETCHED {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_INFO,
-					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, serviceInfo.Org, serviceInfo.URL),
 					persistence.EC_IMAGE_LOADED,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 			} else {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, serviceInfo.Org, serviceInfo.URL),
 					persistence.EC_ERROR_IMAGE_LOADE,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
 				w.Commands <- cmd
 			}

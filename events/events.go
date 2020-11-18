@@ -230,17 +230,17 @@ type ContainerLaunchContext struct {
 	Blockchain           BlockchainConfig
 	Name                 string // used as the docker network name and part of container name. For microservice it is the ms instance key
 	AgreementIds         []string
-	Microservices        []MicroserviceSpec                     // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
-	ServicePathElement   persistence.ServiceInstancePathElement // The service that we're trying to start.
+	Microservices        []MicroserviceSpec                       // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
+	ServicePath          []persistence.ServiceInstancePathElement // The full path to service that we're trying to start.
 	IsRetry              bool
 }
 
 func (c ContainerLaunchContext) String() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementIds, c.Microservices, c.ServicePathElement, c.IsRetry)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementIds, c.Microservices, c.ServicePath, c.IsRetry)
 }
 
 func (c ContainerLaunchContext) ShortString() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure.ShortString(), c.EnvironmentAdditions, c.Name, c.AgreementIds, c.Microservices, c.ServicePathElement, c.IsRetry)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure.ShortString(), c.EnvironmentAdditions, c.Name, c.AgreementIds, c.Microservices, c.ServicePath, c.IsRetry)
 }
 
 func (c ContainerLaunchContext) ContainerConfig() ContainerConfig {
@@ -255,17 +255,25 @@ func (c ContainerLaunchContext) GetMicroservices() []MicroserviceSpec {
 	return c.Microservices
 }
 
+// GetServicePathElement returns the last element of service's path that represents the leaf of the service path
+// The empty path element will be returned if the service path is empty
 func (c ContainerLaunchContext) GetServicePathElement() *persistence.ServiceInstancePathElement {
-	return &c.ServicePathElement
+	if len(c.ServicePath) == 0 {
+		return persistence.NewServiceInstancePathElement("", "", "")
+	}
+	return &c.ServicePath[len(c.ServicePath)-1]
 }
 
-func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agIds []string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement, isRetry bool) *ContainerLaunchContext {
-
-	spe_temp := spe
-	if spe_temp == nil {
-		spe_temp = persistence.NewServiceInstancePathElement("", "", "")
+// GetDirectParentElement returns the penultimate element of service's path
+// that represents the direct parent of the leaf service
+func (c ContainerLaunchContext) GetDirectParentElement() *persistence.ServiceInstancePathElement {
+	if len(c.ServicePath) < 1 {
+		return nil
 	}
+	return &c.ServicePath[len(c.ServicePath)-2]
+}
 
+func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agIds []string, mss []MicroserviceSpec, fullPath []persistence.ServiceInstancePathElement, isRetry bool) *ContainerLaunchContext {
 	return &ContainerLaunchContext{
 		Configure:            *config,
 		EnvironmentAdditions: envAdds,
@@ -273,7 +281,7 @@ func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]stri
 		Name:                 name,
 		AgreementIds:         agIds,
 		Microservices:        mss,
-		ServicePathElement:   *spe_temp,
+		ServicePath:          fullPath,
 		IsRetry:              isRetry,
 	}
 }
