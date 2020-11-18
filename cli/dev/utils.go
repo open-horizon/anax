@@ -484,20 +484,38 @@ func findContainers(serviceName string, cw *container.ContainerWorker) ([]docker
 	return containers, nil
 }
 
-func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
-	containerNetworks := map[string]docker.ContainerNetwork{}
+func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.ContainerWorker, parentServiceName string) (map[string]string, error) {
+	isTopLevelService := parentServiceName == ""
+	containerNetworks := make(map[string]string)
 	for serviceName, _ := range depConfig.Services {
 		containers, err := findContainers(serviceName, cw)
 		if err != nil {
 			return nil, errors.New(i18n.GetMessagePrinter().Sprintf("unable to list existing containers: %v", err))
 		}
-		// Return the main network for this service. It will always be the network name
-		// that matches the agreement_id label.
+		// For top level service - return the main network for this service (with name of agreement_id label)
+		// For dependent services - create separate network for this particular parent service
 		for _, msc := range containers {
-			if nw_name, ok := msc.Labels[container.LABEL_PREFIX+".agreement_id"]; ok {
-				if nw, ok := msc.Networks.Networks[nw_name]; ok {
-					containerNetworks[nw_name] = nw
-					cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Found main network for service %v, %v", nw_name, nw))
+			if agreementId, ok := msc.Labels[container.LABEL_PREFIX+".agreement_id"]; ok {
+				if isTopLevelService {
+					if nw, ok := msc.Networks.Networks[agreementId]; ok {
+						containerNetworks[agreementId] = nw.NetworkID
+						cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Found main network for service %v, %v", agreementId, nw))
+					}
+				} else {
+					nwForParentConn := agreementId + "-" + parentServiceName
+					if nw, ok := msc.Networks.Networks[nwForParentConn]; ok {
+						containerNetworks[nwForParentConn] = nw.NetworkID
+						cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Found network for dependency %v of service %v, %v", agreementId, parentServiceName, nw))
+					}
+
+					if len(containerNetworks) < 1 {
+						// Service is running but it doesn't have network for this parent, create it
+						if newNetwork, err := createNetworkForParentConnection(nwForParentConn, msc.ID, serviceName, cw); err != nil {
+							return nil, err
+						} else {
+							containerNetworks[nwForParentConn] = newNetwork.ID
+						}
+					}
 				}
 			}
 		}
@@ -505,14 +523,40 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, cw *container.Cont
 	return containerNetworks, nil
 }
 
-func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+// create subnetwork for connecting the service with parent services
+func createNetworkForParentConnection(nwName, containerId, serviceName string, cw *container.ContainerWorker) (*docker.Network, error) {
+	createdNetwork, err := CreateNetwork(cw.GetClient(), nwName)
+	if err != nil {
+		return nil, err
+	}
+
+	//TODO glog.V(5).Infof()
+	cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Connecting container %v to network %v.", containerId, nwName))
+	epc := docker.EndpointConfig{
+		Aliases:   []string{serviceName},
+		Links:     nil,
+		NetworkID: createdNetwork.ID,
+	}
+	err = cw.GetClient().ConnectNetwork(createdNetwork.ID, docker.NetworkConnectionOptions{
+		Container:      containerId,
+		EndpointConfig: &epc,
+		Force:          true,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect container %v to network %v. %v", containerId, nwName, err)
+	}
+
+	return createdNetwork, nil
+}
+
+func ProcessStartDependencies(dir string, parentSvc string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker) (map[string]string, error) {
 
 	// Collect all the service networks that have to be connected to the caller's container.
-	ms_networks := map[string]docker.ContainerNetwork{}
+	ms_networks := make(map[string]string)
 
 	for _, depDef := range deps {
 
-		msn, startErr := startDependent(dir, depDef, globals, configUserInputs, cw)
+		msn, startErr := startDependent(dir, parentSvc, depDef, globals, configUserInputs, cw)
 
 		// If there were errors, cleanup any services that are already started.
 		if startErr != nil {
@@ -534,17 +578,13 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 	return ms_networks, nil
 }
 
-func startDependent(dir string,
-	serviceDef *common.ServiceFile,
-	globals []common.GlobalSet, // API attributes
-	configUserInputs []policy.AbstractUserInput, // indicates configured variables
-	cw *container.ContainerWorker) (map[string]docker.ContainerNetwork, error) {
+func startDependent(dir string, parentSvc string, serviceDef *common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker) (map[string]string, error) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// The docker networks of any dependencies that the input service has.
-	msNetworks := map[string]docker.ContainerNetwork{}
+	msNetworks := make(map[string]string)
 
 	// Work our way down the dependency tree. If the service we want to start has dependencies, recursively process them
 	// until we get to a leaf node. Leaf node services are started first, parents are started last.
@@ -553,7 +593,7 @@ func startDependent(dir string,
 		if deps, err := GetServiceDependencies(dir, serviceDef.RequiredServices); err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to retrieve dependency metadata: %v", err))
 			// Start this service's dependencies
-		} else if msn, err := ProcessStartDependencies(dir, deps, globals, configUserInputs, cw); err != nil {
+		} else if msn, err := ProcessStartDependencies(dir, serviceDef.Org+"/"+serviceDef.URL, deps, globals, configUserInputs, cw); err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to start dependencies: %v", err))
 		} else {
 			msNetworks = msn
@@ -576,12 +616,11 @@ func startDependent(dir string,
 		// the networks associated with the containers.
 		if serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
 
-			if containerNetworks, err := getContainerNetworks(depConfig, cw); err != nil {
+			if containerNetworks, err := getContainerNetworks(depConfig, cw, parentSvc); err != nil {
 				return nil, err
 			} else if len(containerNetworks) > 0 {
 				return containerNetworks, nil
 			}
-
 		}
 
 		// Start the service containers. Make an instance id the same way the runtime makes them.
@@ -592,23 +631,23 @@ func startDependent(dir string,
 
 		sId := cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, id.String())
 
-		return StartContainers(deployment, serviceDef.URL, serviceDef.Version, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId)
+		return StartContainers(deployment, serviceDef.URL, globals, serviceDef.UserInputs, configUserInputs, serviceDef.Org, depConfig, cw, msNetworks, true, false, sId, parentSvc)
 	}
 }
 
 func StartContainers(deployment *containermessage.DeploymentDescription,
 	specRef string,
-	version string,
 	globals []common.GlobalSet, // API attributes
 	defUserInputs []exchange.UserInput, // indicates variable defaults
 	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	org string,
 	dc *common.DeploymentConfig,
 	cw *container.ContainerWorker,
-	msNetworks map[string]docker.ContainerNetwork,
+	msNetworks map[string]string,
 	service bool,
 	agreementBased bool,
-	id string) (map[string]docker.ContainerNetwork, error) {
+	id string,
+	parentSvc string) (map[string]string, error) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -644,7 +683,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	msgPrinter.Println()
 
 	// Start the dependent service container.
-	_, startErr := cw.ResourcesCreate(id, "", nil, deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org), "")
+	_, startErr := cw.ResourcesCreate(id, "", deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org), "", parentSvc)
 	if startErr != nil {
 		return nil, errors.New(msgPrinter.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}
@@ -653,7 +692,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	msgPrinter.Println()
 
 	// Locate the service network(s) and return them so that a workload/parent-service can be hooked in.
-	return getContainerNetworks(dc, cw)
+	return getContainerNetworks(dc, cw, parentSvc)
 }
 
 func ProcessStopDependencies(dir string, deps []*common.ServiceFile, cw *container.ContainerWorker) error {
@@ -919,4 +958,61 @@ func CreateFileWithConent(directory string, filename string, content string, sub
 	} else {
 		return nil
 	}
+}
+
+func CreateNetwork(client *docker.Client, name string) (*docker.Network, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Labels on the docker network indicate attributes about the network.
+	labels := make(map[string]string)
+	labels[container.LABEL_PREFIX+".network"] = ""
+
+	bridgeOpts := docker.CreateNetworkOptions{
+		Name:           name,
+		EnableIPv6:     false,
+		Internal:       false,
+		Driver:         "bridge",
+		CheckDuplicate: true,
+		IPAM: &docker.IPAMOptions{
+			Driver: "default",
+			Config: []docker.IPAMConfig{},
+		},
+		Options: map[string]interface{}{
+			"com.docker.network.bridge.enable_icc":           "true",
+			"com.docker.network.bridge.enable_ip_masquerade": "true",
+			"com.docker.network.bridge.default_bridge":       "false",
+		},
+		Labels: labels,
+	}
+
+	bridge, err := client.CreateNetwork(bridgeOpts)
+	if err != nil {
+		return nil, err
+	}
+	cliutils.Verbose(msgPrinter.Sprintf("Created network %v", name))
+	return bridge, nil
+}
+
+func RemoveNetwork(client *docker.Client, name string) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Remove named network
+	networks, err := client.ListNetworks()
+	if err != nil {
+		return errors.New(msgPrinter.Sprintf("unable to list docker networks, error %v", err))
+	}
+
+	for _, net := range networks {
+		if net.Name == name {
+			if err := client.RemoveNetwork(net.ID); err != nil {
+				return errors.New(msgPrinter.Sprintf("unable to remove docker network %v, error %v", name, err))
+			} else {
+				return nil
+			}
+		}
+	}
+
+	return nil
 }

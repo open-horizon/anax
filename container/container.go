@@ -649,6 +649,9 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 
 func mkBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
 
+	//TODO remove
+	fmt.Printf("MAKING BRIDGE %v \n", name)
+
 	// Labels on the docker network indicate attributes about the network.
 	labels := make(map[string]string)
 	labels[LABEL_PREFIX+".network"] = ""
@@ -751,7 +754,7 @@ func serviceStart(client *docker.Client,
 	}
 	if serviceConfig.HostConfig.NetworkMode != "host" {
 		for _, cfg := range sharedEndpoints {
-			glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
+			glog.V(5).Infof("Connecting network: %v to container id: %v as endpoint: %v", cfg.NetworkID, container.ID, cfg.Aliases)
 			err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
 				Container:      container.ID,
 				EndpointConfig: cfg,
@@ -1068,7 +1071,7 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 }
 
 // This function creates the containers, volumes, networks for the given agreement or service.
-func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork, serviceURL string, sVer string) (persistence.DeploymentConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]string, serviceURL string, sVer string, parentSvc string) (persistence.DeploymentConfig, error) {
 
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
@@ -1106,7 +1109,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			}
 
 			woutAliases := &docker.EndpointConfig{
-				Aliases:   nil,
+				Aliases:   cfg.Aliases,
 				Links:     nil,
 				NetworkID: cfg.NetworkID,
 			}
@@ -1200,12 +1203,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	ms_sharedendpoints := make(map[string]*docker.EndpointConfig)
 	if ms_networks != nil {
 		for msnw_name, ms_nw := range ms_networks {
-			ms_ep := docker.EndpointConfig{
-				Aliases:   nil,
-				Links:     nil,
-				NetworkID: ms_nw.NetworkID,
-			}
-			ms_sharedendpoints[msnw_name] = &ms_ep
+			ms_ep := new(docker.EndpointConfig)
+			ms_ep.Aliases = deployment.ServiceNames()
+			ms_ep.NetworkID = ms_nw
+
+			ms_sharedendpoints[msnw_name] = ms_ep
 		}
 	}
 
@@ -1289,7 +1291,12 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 				}
 			}
 			if agBridge == nil {
-				newBridge, err := mkBridge(b.client, agreementId, deployment.Infrastructure, false)
+				nwName := agreementId
+				// Create network for connecting with particular parent service
+				if parentSvc != "" {
+					nwName += "-" + parentSvc
+				}
+				newBridge, err := mkBridge(b.client, nwName, deployment.Infrastructure, false)
 				if err != nil {
 					return nil, err
 				}
@@ -1369,13 +1376,13 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			// on which the dependent service is providing the service. This will be the network that has the same name as
 			// the agreement_id label on the service container.
 			glog.V(5).Infof("Service containers for this workload are: %v", ms_containers)
-			ms_children_networks := make(map[string]docker.ContainerNetwork)
+			ms_children_networks := make(map[string]string)
 			if ms_containers != nil && len(ms_containers) > 0 {
 				for _, msc := range ms_containers {
 					if nw_name, ok := msc.Labels[LABEL_PREFIX+".agreement_id"]; ok {
 						if nw, ok := msc.Networks.Networks[nw_name]; ok {
 							glog.V(5).Infof("Adding network %v", nw.NetworkID)
-							ms_children_networks[nw_name] = nw
+							ms_children_networks[nw_name] = nw.NetworkID
 						}
 					}
 				}
@@ -1437,7 +1444,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			sVer := ags[0].RunningWorkload.Version
 
 			// Create the docker configuration and launch the containers.
-			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, ""); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
 					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err.Error()),
 					persistence.EC_ERROR_START_CONTAINER,
@@ -1480,7 +1487,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		}
 
 		// Locate dependency containers (if there are any) so that this new container will be added to their docker network.
-		ms_children_networks := make(map[string]docker.ContainerNetwork)
+		ms_children_networks := make(map[string]string)
 
 		if len(lc.Microservices) != 0 {
 			if ms_containers, err := b.findDependencyContainersForService(lc.GetServicePathElement(), lc.AgreementIds, lc.Microservices); err != nil {
@@ -1502,7 +1509,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 						if nw_name, ok := msc.Labels[LABEL_PREFIX+".agreement_id"]; ok {
 							if nw, ok := msc.Networks.Networks[nw_name]; ok {
 								glog.V(5).Infof("Adding network %v", nw.NetworkID)
-								ms_children_networks[nw_name] = nw
+								ms_children_networks[nw_name] = nw.NetworkID
 							}
 						}
 					}
@@ -1604,7 +1611,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		sVer := lc.ServicePathElement.Version
 
 		// Get the container started
-		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, ""); err != nil {
 			log_str := EL_CONT_START_CONTAINER_ERROR_FOR_AG
 			if lc.IsRetry {
 				log_str = EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG
@@ -2074,7 +2081,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	// gather agreement networks to free
 	for _, net := range networks {
 		for _, agreementId := range agreements {
-			if net.Name == agreementId {
+			if strings.HasPrefix(net.Name, agreementId) {
 				// disconnect the network from the containers if they are still connected to it.
 				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
 					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
