@@ -218,11 +218,11 @@ do
 		echo -e "${PREFIX} making sure the agreements are formed..."
 		getNetspeedLocationAgreements
 		if [ "$E2EDEV_NETSPEED_AG_ID" == "" ]; then
-  			echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/netspeed."
+			echo -e "${PREFIX} cannot find agreement for e2edev@somecomp.com/netspeed."
   			continue
 		fi
 		if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
-  			echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/location."
+			echo -e "${PREFIX} cannot find agreement for e2edev@somecomp.com/location."
   			continue
 		fi
 	fi

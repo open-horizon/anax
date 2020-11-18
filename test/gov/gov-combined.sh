@@ -386,18 +386,20 @@ elif [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  ./agbot_apitest.sh
-  if [ $? -ne 0 ]
-  then
-    echo "Policy compatibility test using Agbot API failure."
-    exit 1
-  fi
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+    ./agbot_apitest.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Policy compatibility test using Agbot API failure."
+      exit 1
+    fi
 
-  ./hzn_compcheck.sh
-  if [ $? -ne 0 ]
-  then
-    echo "Policy compatibility test using hzn command failure."
-    exit 1
+    ./hzn_compcheck.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Policy compatibility test using hzn command failure."
+      exit 1
+    fi
   fi
 
 fi
@@ -431,7 +433,7 @@ if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 
     ./hzn_reg.sh
     if [ $? -ne 0 ]; then
-      echo "Failed registering and unregitering tests with hzn commands."
+      echo "Failed registering and unregistering tests with hzn commands."
       exit 1
     fi
   fi

@@ -43,6 +43,12 @@ function verify_cpu_container {
 
 echo -e "${PREFIX} starting"
 if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
+
+    expected_retry_duration=2400
+    if [ "$PATTERN" = "sloc" ]; then
+        expected_retry_duration=3600
+    fi
+
     # get the docker id for the cpu container
     get_cpu_container_id
     if [ $? -ne 0 ] && [ -z "$CPU_CONTAINER_ID" ]; then
@@ -76,9 +82,9 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         exit 2
     fi
 
-    # cpu is a dependent service, it's down time could cause either service retry or the cacellation of 
-    # all the asociated agreements depending on the timing.  In the first case, the insance_id stays the same and 
-    # retry paramters will get set.
+    # cpu is a dependent service, it's down time could cause either service retry or the cancellation of
+    # all the associated agreements depending on the timing.  In the first case, the instance_id stays the same and
+    # retry parameters will get set.
     instance_id_before=$(echo "$cpu_inst_before" | jq '.instance_id')
     instance_id_after=$(echo "$cpu_inst_after" | jq '.instance_id')
     if [ "$instance_id_before" == "$instance_id_after" ]; then
@@ -89,12 +95,12 @@ if [ "$PATTERN" = "sloc" ] ||[ "$PATTERN" = "sall" ]; then
         max_retry_duration=$(echo "$cpu_inst_after" | jq '.max_retry_duration')
         current_retry_count=$(echo "$cpu_inst_after" | jq '.current_retry_count')
         retry_start_time=$(echo "$cpu_inst_after" | jq '.retry_start_time')
-        if [ "$max_retries" != "2" ] || [ "$max_retry_duration" != "2400" ] || [ "$current_retry_count" != "2" ] || [ "$retry_start_time" == "0" ]; then
-             echo -e "${PREFIX} retry paramters are not right: max_retries=$max_retries, max_retry_duration=$max_retry_duration, current_retry_count=$current_retry_count, retry_start_time=$retry_start_time"
+        if [ "$max_retries" != "2" ] || [ "$max_retry_duration" != "$expected_retry_duration" ] || [ "$current_retry_count" != "2" ] || [ "$retry_start_time" == "0" ]; then
+             echo -e "${PREFIX} retry parameters are not right: max_retries=$max_retries, max_retry_duration=$max_retry_duration, current_retry_count=$current_retry_count, retry_start_time=$retry_start_time"
             exit 2
         fi
     else
-        echo -e "${PREFIX} retry did not happed, but cpu service down time triggered a new agreement. This is okay."
+        echo -e "${PREFIX} retry did not happen, but cpu service down time triggered a new agreement. This is okay."
     fi
 
     echo -e "${PREFIX} done "

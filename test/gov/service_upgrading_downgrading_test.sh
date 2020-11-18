@@ -153,7 +153,7 @@ hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while re
 sleep 10
 
 # Ensure service is upgrading/downgrading
-echo "Waiting for cpu service to be upgraded and downgraded because od an error..."
+echo "Waiting for cpu service to be upgraded and downgraded because of an error..."
 WaitForService $CPU_URL $CPU_ORG $CPU_VERS_NEW
 if [ $? -ne 0 ]; then exit $?; fi
 

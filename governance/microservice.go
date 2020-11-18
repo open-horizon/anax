@@ -56,7 +56,7 @@ func (w *GovernanceWorker) governMicroserviceVersions() {
 	}
 }
 
-// It creates microservice instance and loads the containers for the given microservice def
+// It creates microservice instance and loads the containers for the given microservice def.
 // If the msinst_key is not empty, the function is called to restart a failed dependent service.
 func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, dependencyPath []persistence.ServiceInstancePathElement, msinst_key string) (*persistence.MicroserviceInstance, error) {
 	glog.V(5).Infof(logString(fmt.Sprintf("Starting service instance for %v", ms_key)))
@@ -206,7 +206,7 @@ func (w *GovernanceWorker) StartMicroservice(ms_key string, agreementId string, 
 				agIds = ms_instance.AssociatedAgreements
 			}
 
-			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, persistence.NewServiceInstancePathElement(msdef.SpecRef, msdef.Org, msdef.Version), isRetry)
+			lc := events.NewContainerLaunchContext(cc, &envAdds, events.BlockchainConfig{}, ms_instance.GetKey(), agIds, ms_specs, dependencyPath, isRetry)
 			w.Messages() <- events.NewLoadContainerMessage(events.LOAD_CONTAINER, lc)
 
 			return ms_instance, nil // assume there is only one workload for a microservice
@@ -513,6 +513,7 @@ func (w *GovernanceWorker) startMicroserviceInstForAgreement(msdef *persistence.
 		needs_new_ms = true
 	} else {
 		msi = &ms_insts[0]
+		glog.V(3).Infof(logString(fmt.Sprintf("For agreement %v, microservice %v/%v %v %v is already started as dependency %v, was requested as dependency %v.", agreementId, msi.Org, msi.SpecRef, msi.Version, msi.InstanceId, msi.ParentPath, dependencyPath)))
 	}
 
 	if needs_new_ms {
@@ -604,18 +605,25 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 								} else if _, err := persistence.ArchiveMicroserviceInstance(w.db, msi.GetKey()); err != nil {
 									glog.Errorf(logString(fmt.Sprintf("Error archiving service instance %v. %v", msi.GetKey(), err)))
 								}
-								//remove the agreement from the microservice instance
-							} else if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("error removing agreement id %v from the service db: %v", agreementId, err)))
-							} else if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.IdEAFilter(agreementId)}); err != nil {
-								glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
-							} else if len(ags) != 1 {
-								glog.Errorf(logString(fmt.Sprintf("Should have one agreement from the db but found %v.", len(ags))))
-							} else if ags[0].RunningWorkload.URL != "" {
-								// remove the related partent path from the service instance
-								tpe := persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.Version)
-								if _, err := persistence.UpdateMSInstanceRemoveDependencyPath2(w.db, msi.GetKey(), tpe); err != nil {
-									glog.Errorf(logString(fmt.Sprintf("error removing parent path from the db for service instance %v fro agreement %v: %v", msi.GetKey(), agreementId, err)))
+							} else {
+								if _, err := persistence.UpdateMSInstanceAssociatedAgreements(w.db, msi.GetKey(), false, agreementId); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("error removing agreement id %v from the service db: %v", agreementId, err)))
+								} else if ags, err := persistence.FindEstablishedAgreementsAllProtocols(w.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.IdEAFilter(agreementId)}); err != nil {
+									glog.Errorf(logString(fmt.Sprintf("unable to retrieve agreement %v from database, error %v", agreementId, err)))
+								} else if len(ags) != 1 {
+									glog.Errorf(logString(fmt.Sprintf("Should have one agreement from the db but found %v.", len(ags))))
+								} else if ags[0].RunningWorkload.URL != "" {
+									// remove the related parent path from the service instance
+									tpe := persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.Version)
+									if _, err := persistence.UpdateMSInstanceRemoveDependencyPath2(w.db, msi.GetKey(), tpe); err != nil {
+										glog.Errorf(logString(fmt.Sprintf("error removing parent path from the db for service instance %v fro agreement %v: %v", msi.GetKey(), agreementId, err)))
+									}
+								}
+								// Singleton services that are dependencies will have extra networks, which might not be needed any more since
+								// at least one of the parents is going away when the current agreement terminates.
+								if msd.Sharable == exchange.MS_SHARING_MODE_SINGLE || msd.Sharable == exchange.MS_SHARING_MODE_SINGLETON {
+									glog.V(5).Infof(logString(fmt.Sprintf("Remove extra networks for %v all context msi: %v", msi.GetKey(), msi)))
+									w.Messages() <- events.NewMicroserviceCancellationMessage(events.CANCEL_MICROSERVICE_NETWORK, msi.GetKey())
 								}
 							}
 
@@ -640,7 +648,7 @@ func (w *GovernanceWorker) handleMicroserviceInstForAgEnded(agreementId string, 
 // other wise retry count will be reset.
 // If there are mutiple agreements associated with the depenent service, the retry count is the average of all the
 // non-zero retry counts. The default retry count is 1 if all the areements have 0 retry counts.
-func (w *GovernanceWorker) getMiceroserviceRetryCount(msi *persistence.MicroserviceInstance) (uint, uint, error) {
+func (w *GovernanceWorker) getMicroserviceRetryCount(msi *persistence.MicroserviceInstance) (uint, uint, error) {
 	retry_count := w.Config.Edge.DefaultServiceRetryCount
 	retry_duration := uint(w.Config.Edge.DefaultServiceRetryDuration)
 
@@ -704,11 +712,11 @@ func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.Micr
 		}
 	}
 
-	// new ewtry cycle. getting the retry count again because
+	// new retry cycle. getting the retry count again because
 	// there may be new agreements associated with this service instance after last retry cycle
 	if msi.RetryStartTime == 0 || timeNow-msi.RetryStartTime > uint64(msi.MaxRetryDuration) {
 		need_retry = true
-		retries, retry_duration, err := w.getMiceroserviceRetryCount(msi)
+		retries, retry_duration, err := w.getMicroserviceRetryCount(msi)
 		if err != nil {
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_GOV_ERR_GET_SVC_RETRY_CNT, msdef.SpecRef, msdef.Version, err.Error()),

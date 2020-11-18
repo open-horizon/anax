@@ -38,6 +38,13 @@ func (dc DeploymentConfig) HasAnyServices() bool {
 	return true
 }
 
+func (dc DeploymentConfig) AnyServiceName() string {
+	for n, _ := range dc.Services {
+		return n
+	}
+	return ""
+}
+
 // A validation method. Is there enough info in the deployment config to start a container? If not, the
 // missing info is returned in the error message. Note that when there is a complete absence of deployment
 // config metadata, that's ok too for services.

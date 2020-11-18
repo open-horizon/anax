@@ -656,6 +656,9 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 		case events.CANCEL_MICROSERVICE:
 			containerCmd := w.NewShutdownMicroserviceCommand(msg.MsInstKey)
 			w.Commands <- containerCmd
+		case events.CANCEL_MICROSERVICE_NETWORK:
+			containerCmd := w.NewCancelMicroserviceNetworkCommand(msg.MsInstKey)
+			w.Commands <- containerCmd
 		}
 
 	case *events.NodeShutdownCompleteMessage:
@@ -672,7 +675,7 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func mkBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
+func MakeBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
 
 	// Labels on the docker network indicate attributes about the network.
 	labels := make(map[string]string)
@@ -776,7 +779,7 @@ func serviceStart(client *docker.Client,
 	}
 	if serviceConfig.HostConfig.NetworkMode != "host" {
 		for _, cfg := range sharedEndpoints {
-			glog.V(5).Infof("Connecting network: %v to container id: %v", cfg.NetworkID, container.ID)
+			glog.V(5).Infof("Connecting network: %v to container id: %v as endpoint: %v", cfg.NetworkID, container.ID, cfg.Aliases)
 			err := client.ConnectNetwork(cfg.NetworkID, docker.NetworkConnectionOptions{
 				Container:      container.ID,
 				EndpointConfig: cfg,
@@ -1093,18 +1096,18 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 }
 
 // This function creates the containers, volumes, networks for the given agreement or service.
-func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork, serviceURL string, sVer string) (persistence.DeploymentConfig, error) {
+func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]string, serviceURL string, sVer string) (persistence.DeploymentConfig, error) {
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
 		if container != nil {
 			glog.Errorf("Error processing container setup: %v", container)
 		}
 
-		glog.V(3).Infof("Failed to set up %v. Attempting to remove other resources in agreement (%v) before returning control to caller. Error: %v", name, agreementId, err)
+		glog.Errorf("Failed to set up %v. Attempting to remove other resources in agreement (%v) before returning control to caller. Error: %v", name, agreementId, err)
 
 		rErr := b.ResourcesRemove([]string{agreementId})
 		if rErr != nil {
-			glog.V(3).Infof("Following error setting up patterned deployment, failed to clean up other resources for agreement: %v. Error: %v", agreementId, rErr)
+			glog.Errorf("Following error setting up patterned deployment, failed to clean up other resources for agreement: %v. Error: %v", agreementId, rErr)
 		}
 
 		return err
@@ -1129,13 +1132,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 				glog.V(5).Infof("Endpoint for bridge %v is already defined in endpointsConfig. This is ok, overwriting", name)
 			}
 
-			woutAliases := &docker.EndpointConfig{
-				Aliases:   nil,
+			endpoints[name] = &docker.EndpointConfig{
+				Aliases:   cfg.Aliases,
 				Links:     nil,
 				NetworkID: cfg.NetworkID,
 			}
-
-			endpoints[name] = woutAliases
 		}
 
 		return endpoints
@@ -1225,12 +1226,11 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	ms_sharedendpoints := make(map[string]*docker.EndpointConfig)
 	if ms_networks != nil {
 		for msnw_name, ms_nw := range ms_networks {
-			ms_ep := docker.EndpointConfig{
-				Aliases:   nil,
-				Links:     nil,
-				NetworkID: ms_nw.NetworkID,
-			}
-			ms_sharedendpoints[msnw_name] = &ms_ep
+			ms_ep := new(docker.EndpointConfig)
+			ms_ep.Aliases = deployment.ServiceNames()
+			ms_ep.NetworkID = ms_nw
+
+			ms_sharedendpoints[msnw_name] = ms_ep
 		}
 	}
 
@@ -1251,6 +1251,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	sharedEndpoints := make(map[string]*docker.EndpointConfig, 0)
 	for serviceName, servicePair := range shared {
+
 		shareLabel := "singleton"
 
 		servicePair.serviceConfig.Config.Labels[LABEL_PREFIX+".service_pattern.shared"] = shareLabel
@@ -1272,7 +1273,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 
 		if existingNetwork == nil {
-			existingNetwork, err = mkBridge(b.client, bridgeName, deployment.Infrastructure, true)
+			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true)
 			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", containerName, existingNetwork)
 			if err != nil {
 				return nil, fail(nil, containerName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
@@ -1303,7 +1304,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	if newNetworkNeeded {
 		// If the network we want already exists, just use it.
 		if networks, err := b.client.ListNetworks(); err != nil {
-			glog.V(3).Infof("Unable to list networks: %v", err)
+			glog.Errorf("Unable to list networks: %v", err)
 			return nil, err
 		} else {
 			for _, net := range networks {
@@ -1314,7 +1315,8 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 				}
 			}
 			if agBridge == nil {
-				newBridge, err := mkBridge(b.client, agreementId, deployment.Infrastructure, false)
+				glog.V(5).Infof("Making network %v", agreementId)
+				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false)
 				if err != nil {
 					return nil, err
 				}
@@ -1377,9 +1379,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		} else if len(ags) != 1 {
 			glog.Infof("Ignoring the configure event for agreement %v, the agreement is archived.", agreementId)
 		} else if ags[0].AgreementTerminatedTime != 0 {
-			glog.Infof("Receved configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
+			glog.Infof("Received configure command for agreement %v. Ignoring it because this agreement has been terminated.", agreementId)
 		} else if ags[0].AgreementExecutionStartTime != 0 {
-			glog.Infof("Receved configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
+			glog.Infof("Received configure command for agreement %v. Ignoring it because the containers for this agreement has been configured.", agreementId)
 		} else if ms_containers, err := b.findDependencyContainersForService(persistence.NewServiceInstancePathElement(ags[0].RunningWorkload.URL, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.Version), []string{agreementId}, cmd.AgreementLaunchContext.Microservices); err != nil {
 			glog.Errorf("Error checking service containers: %v", err)
 
@@ -1388,23 +1390,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			return true
 		} else {
 
-			// Now that we have a list of service containers that are part of this agreement, we need to get a list of service
-			// network ids to be added to all the workload containers. The service containers can be in more than 1 network so
-			// we have to carefully choose the networks that the workload container should connect to. Only choose the network
-			// on which the dependent service is providing the service. This will be the network that has the same name as
-			// the agreement_id label on the service container.
-			glog.V(5).Infof("Service containers for this workload are: %v", ms_containers)
-			ms_children_networks := make(map[string]docker.ContainerNetwork)
-			if ms_containers != nil && len(ms_containers) > 0 {
-				for _, msc := range ms_containers {
-					if nw_name, ok := msc.Labels[LABEL_PREFIX+".agreement_id"]; ok {
-						if nw, ok := msc.Networks.Networks[nw_name]; ok {
-							glog.V(5).Infof("Adding network %v", nw.NetworkID)
-							ms_children_networks[nw_name] = nw
-						}
-					}
-				}
-			}
+			// Now that we have a list of containers on which this workload is dependent, we need to get a list of service
+			// network ids to be added to all the workload containers.
+			ms_children_networks := b.GatherAndCreateDependencyNetworks(ms_containers, agreementId)
 
 			// We support capabilities in the deployment string that not all container deployments should be able
 			// to exploit, e.g. file system mapping from host to container. This check ensures that workloads dont try
@@ -1462,7 +1450,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			sVer := ags[0].RunningWorkload.Version
 
 			// Create the docker configuration and launch the containers.
-			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, &cmd.AgreementLaunchContext.Configure, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
+			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
 					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err.Error()),
 					persistence.EC_ERROR_START_CONTAINER,
@@ -1485,6 +1473,9 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		lc := cmd.ContainerLaunchContext
 
+		// get the service info
+		serviceInfo := lc.GetServicePathElement()
+
 		// Verify that the agreements related to this container are still active.
 		// Create a new filter for agreements.
 		notTerminatedFilter := func() persistence.EAFilter {
@@ -1504,38 +1495,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			}
 		}
 
-		// Locate dependency containers (if there are any) so that this new container will be added to their docker network.
-		ms_children_networks := make(map[string]docker.ContainerNetwork)
-
-		if len(lc.Microservices) != 0 {
-			if ms_containers, err := b.findDependencyContainersForService(lc.GetServicePathElement(), lc.AgreementIds, lc.Microservices); err != nil {
-				glog.Errorf("Error checking service containers: %v", err)
-
-				// Requeue the command
-				b.AddDeferredCommand(cmd)
-				return true
-			} else {
-				// Get a list of service network ids to be added to this container.
-				// Now that we have a list of service containers that are direct children of this service, we need to get a list of service
-				// network ids to be added to all the service containers. The service containers can be in more than 1 network so
-				// we have to carefully choose the networks that the current container should connect to. Only choose the network
-				// on which the dependent service is providing the service. This will be the network that has the same name as
-				// the agreement_id label on the service container.
-				glog.V(5).Infof("Service containers for this service are: %v", ms_containers)
-				if ms_containers != nil && len(ms_containers) > 0 {
-					for _, msc := range ms_containers {
-						if nw_name, ok := msc.Labels[LABEL_PREFIX+".agreement_id"]; ok {
-							if nw, ok := msc.Networks.Networks[nw_name]; ok {
-								glog.V(5).Infof("Adding network %v", nw.NetworkID)
-								ms_children_networks[nw_name] = nw
-							}
-						}
-					}
-				}
-			}
-		}
-
-		// for the dependent service retry case, remove the old containers before proceeds
+		// For the dependent service retry case, remove the old containers and networks before creating anything new.
 		if lc.IsRetry {
 			err := b.ResourcesRemove([]string{lc.Name})
 			if err != nil {
@@ -1545,9 +1505,24 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 					lc.Name, lc.Name, "", "", "", []string{})
 				glog.Errorf("Error cleaning up old containers before starting up new containers for %v. Error: %v", lc.Name, err)
 			}
+		}
 
-			// locate containers for direct parents so that the network connections to this service can be restored
+		// Locate dependency containers (if there are any) so that this new container will be added to their docker network.
+		var ms_children_networks map[string]string
 
+		if len(lc.Microservices) != 0 {
+			if ms_containers, err := b.findDependencyContainersForService(lc.GetServicePathElement(), lc.AgreementIds, lc.Microservices); err != nil {
+				glog.Errorf("Error checking service containers: %v", err)
+
+				// Requeue the command
+				b.AddDeferredCommand(cmd)
+				return true
+			} else {
+
+				// Now that we have a list of containers on which this service is dependent, we need to get a list of network ids
+				// for the dependencies so that all of this service's containers can be added to the dependency networks.
+				ms_children_networks = b.GatherAndCreateDependencyNetworks(ms_containers, lc.Name)
+			}
 		}
 
 		// We support capabilities in the deployment string that not all container deployments should be able
@@ -1558,7 +1533,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_CONT_ERROR_UNMARSHAL_DEPLOY, lc.Configure.Deployment, err.Error()),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-				"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
+				"", serviceInfo.URL, serviceInfo.Org, serviceInfo.Version, "", lc.AgreementIds)
 			glog.Errorf("Error Unmarshalling deployment string %v, error: %v", lc.Configure.Deployment, err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
@@ -1566,7 +1541,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_CONT, lc.Configure.Deployment),
 				persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-				"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
+				"", serviceInfo.URL, serviceInfo.Org, serviceInfo.Version, "", lc.AgreementIds)
 			glog.Errorf("Deployment config %v contains unsupported capability for infrastructure container.", lc.Configure.Deployment)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 			return true
@@ -1582,7 +1557,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 					eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 						persistence.NewMessageMeta(EL_CONT_DEPLOYCONF_UNSUPPORT_BIND_FOR, lc.Configure.Deployment, serviceName, err.Error()),
 						persistence.EC_ERROR_IN_DEPLOYMENT_CONFIG,
-						"", lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
+						"", serviceInfo.URL, serviceInfo.Org, serviceInfo.Version, "", lc.AgreementIds)
 					glog.Errorf("Deployment config for service %v contains unsupported bind, %v", serviceName, err)
 					b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 					return true
@@ -1625,11 +1600,11 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		// Each service has an identity that is based on its service defintion URL and Org. This identity is what we can use to
 		// authenticate a service to an API that is hosted by Anax.
-		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(lc.ServicePathElement.URL), lc.ServicePathElement.Org)
-		sVer := lc.ServicePathElement.Version
+		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(serviceInfo.URL), serviceInfo.Org)
+		sVer := serviceInfo.Version
 
 		// Get the container started
-		if deployment, err := b.ResourcesCreate(lc.Name, "", &lc.Configure, deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer); err != nil {
 			log_str := EL_CONT_START_CONTAINER_ERROR_FOR_AG
 			if lc.IsRetry {
 				log_str = EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG
@@ -1637,29 +1612,29 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 				persistence.NewMessageMeta(log_str, fmt.Sprintf("%v", lc.AgreementIds), err.Error()),
 				persistence.EC_ERROR_START_CONTAINER, "",
-				lc.ServicePathElement.URL, lc.ServicePathElement.Org, lc.ServicePathElement.Version, "", lc.AgreementIds)
+				serviceInfo.URL, serviceInfo.Org, serviceInfo.Version, "", lc.AgreementIds)
 			glog.Errorf("Error starting containers: %v", err)
 			b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *cmd.ContainerLaunchContext, "", "")
 
 		} else {
 
-			// for retrying, restore the network connection with the parents
+			// Restarting a failed dependency service. Restore the network connection with the parents of this service.
 			if lc.IsRetry {
 				glog.V(5).Infof("Retrying process restoring the network connection with the parents for service %v.", lc.Name)
 				if ms_parents_containers, err := b.findParentContainersForService(lc.Name); err != nil {
 					eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
 						persistence.NewMessageMeta(EL_CONT_FAIL_GET_PAENT_CONT_FOR_SVC, lc.Name, err.Error()),
 						persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
-						lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+						serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 					glog.Errorf("Failed to get a list of parent containers for service retry for %v. %v", lc.Name, err)
-				} else {
-					if err := b.connectContainers(lc.Name, ms_parents_containers); err != nil {
-						eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
-							persistence.NewMessageMeta(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT, lc.Name, err.Error()),
-							persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
-							lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
-						glog.Errorf("Failed to restoring the network connection with the parents for service %v. %v", lc.Name, err)
-					}
+
+				} else if err := b.restoreDependencyServiceNetworks(lc.Name, &ms_parents_containers); err != nil {
+					eventlog.LogServiceEvent2(b.db, persistence.SEVERITY_ERROR,
+						persistence.NewMessageMeta(EL_CONT_FAIL_RESTORE_NW_WITH_PARENT, lc.Name, err.Error()),
+						persistence.EC_DEPENDENT_SERVICE_RETRY_FAILED, "",
+						serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
+					glog.Errorf("Failed to restore the network connection with the parents for service %v. %v", lc.Name, err)
+
 				}
 			}
 
@@ -1780,7 +1755,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 				// ask governer to record it into the db
 				cc := events.NewContainerConfig("", "", "", "", "", "", nil)
-				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, persistence.NewServiceInstancePathElement("", "", ""), false)
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, []persistence.ServiceInstancePathElement{}, false)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
 		}
@@ -1799,6 +1774,79 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 		// send the event to let others know that the microservice clean up has been processed
 		b.Messages() <- events.NewMicroserviceContainersDestroyedMessage(events.CONTAINER_DESTROYED, cmd.MsInstKey)
+
+	case *CancelMicroserviceNetworkCommand:
+		cmd := command.(*CancelMicroserviceNetworkCommand)
+
+		if cmd.MsInstKey != "" {
+			glog.Infof("ContainerWorker received cancel network command for service %v. Cancelling extra networks.", cmd.MsInstKey)
+		}
+
+		// Get a list of all the networks that currently exist.
+		networks, err := b.client.ListNetworks()
+		if err != nil {
+			glog.Errorf("Unable to list networks: %v", err)
+			return true
+		}
+
+		// Look for networks related to the microservice that is no longer being used, so that we can figure out if they need to be terminated.
+		for _, net := range networks {
+			glog.V(3).Infof("ContainerWorker working on network %v", net.Name)
+			if _, anaxNet := net.Labels[LABEL_PREFIX+".network"]; !anaxNet {
+				continue
+			} else if strings.HasPrefix(net.Name, cmd.MsInstKey) {
+				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
+					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
+				} else {
+					glog.V(5).Infof("ContainerWorker network %v has %v containers: %v", netInfo.Name, len(netInfo.Containers), netInfo.Containers)
+
+					// Verify that this network contains only the containers from the dependency service. All container names will be in this form:
+					// <dependency-microservice-instance-key>_<service-name-from-deployment-config>
+					// The event being handled here contains the microservice instance key for a dependency service that is not needed by at least one
+					// of it's parents. Therefore, if there are any containers connected to this network that don't have the microservice instance key
+					// prefix then this network is still in use for a parent service that has not yet terminated, so the network cannot be removed.
+					// This situation only occurs for singleton dependency services, where one of the parent agreements is terminating but at least
+					// one parent is not terminating.
+
+					networkStillInUse := false
+					for _, container := range netInfo.Containers {
+						if !strings.HasPrefix(container.Name, cmd.MsInstKey) {
+							networkStillInUse = true
+							glog.V(5).Infof("ContainerWorker network %v is still in use by: %v", netInfo.Name, container.Name)
+							break
+						}
+					}
+
+					if networkStillInUse {
+						continue
+					}
+
+					// Disconnect every container from the network before removing the network.
+					for conID, container := range netInfo.Containers {
+						glog.V(5).Infof("Disconnecting network %v from container %v.", netInfo.Name, container.Name)
+						err := b.client.DisconnectNetwork(netInfo.ID, docker.NetworkConnectionOptions{
+							Container:      conID,
+							EndpointConfig: nil,
+							Force:          true,
+						})
+						if err != nil {
+							glog.Errorf("Failure disconnecting network: %v from container %v. Error: %v", netInfo.Name, container.Name, err)
+						} else {
+							glog.V(3).Infof("Succeeded disconnecting network: %v from container %v", netInfo.Name, container.Name)
+						}
+					}
+
+					// Remove the network because it's not needed any more.
+					err := b.client.RemoveNetwork(net.ID)
+					if err != nil {
+						glog.Errorf("Unable to remove network %v for %v, error %v", net.Name, cmd.MsInstKey, err)
+					} else {
+						glog.V(3).Infof("ContainerWorker removed network %v for %v", net.Name, cmd.MsInstKey)
+					}
+
+				}
+			}
+		}
 
 	case *NodeUnconfigCommand:
 		if err := b.GetAuthenticationManager().RemoveAll(); err != nil {
@@ -1976,6 +2024,210 @@ func (b *ContainerWorker) syncupResources() {
 	b.Messages() <- events.NewDeviceContainersSyncedMessage(events.DEVICE_CONTAINERS_SYNCED, outcome)
 }
 
+// Given a list of containers on which a parent service is dependent, we need to get a list of dependency service network ids
+// so that they can be added to all of this (parent) service's containers. The dependency containers can be in more than 1 network so
+// we have to carefully choose the networks that the parent container should connect to. Only choose the network
+// on which the dependent service is providing the service. This will be the network that has a prefix with the same name as
+// the agreement_id label on the service container. For dependency service's that have more than 1 parent, also make sure that
+// any missing networks are created and connected to the dependency service's containers. Dependency containers dont know their specific
+// parent containers because parents are started after the dependencies.
+func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers []docker.APIContainers, parentName string) map[string]string {
+
+	glog.V(5).Infof("Dependency containers for %v are: %v", parentName, dependencyContainers)
+	ms_children_networks := make(map[string]string)
+
+	if dependencyContainers == nil || len(dependencyContainers) == 0 {
+		return ms_children_networks
+	}
+
+	var dependencyBaseNetworkName string
+	var nw docker.ContainerNetwork
+	var ok bool
+
+	for _, msc := range dependencyContainers {
+
+		dependencyBaseNetworkName, ok = msc.Labels[LABEL_PREFIX+".agreement_id"]
+		if !ok {
+			continue
+		}
+
+		// Search for the network to which the parent service container should be connected. Parent containers are connected
+		// to a dependency specific network, used solely by the parent and a dependency. Therefore, the name of the
+		// dependency's network includes both the parent and the dependency.
+		nwForParentSvc := dependencyBaseNetworkName + "_" + parentName
+
+		// If this dependency has a network that is specific to this parent, then save the network ID so that the parent service will
+		// be connected to the dependency's network when the parent containers are started.
+		nw, ok = msc.Networks.Networks[nwForParentSvc]
+		if ok {
+			ms_children_networks[nwForParentSvc] = nw.NetworkID
+			glog.V(3).Infof("Found network %v for dependency %v of service %v, network: %v", nwForParentSvc, dependencyBaseNetworkName, parentName, nw)
+			continue
+		}
+
+		glog.V(3).Infof("Dependency service's parent specific network (%s) has not been found for the service, creating and connecting it.", nwForParentSvc)
+
+		// Create workload specific network for this dependency and connect it to the dependency. The workload container will be
+		// connected to this network when the workload containers are created.
+
+		var parentSpecificNetwork *docker.Network
+		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name":{nwForParentSvc:true}}); err != nil {
+			glog.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
+			continue
+		} else if len(nws) == 0 {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+				glog.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
+				continue
+			} else {
+				parentSpecificNetwork = newNetwork
+			}
+		} else {
+			parentSpecificNetwork = &nws[0]
+		}
+
+		childSvcName := ""
+		childSvcName, ok = msc.Labels[LABEL_PREFIX+".service_name"]
+		if !ok {
+			glog.Errorf("Could not find service name of dependency's container %v", msc.Names)
+			continue
+		}
+
+		if err := b.ConnectContainerToNetwork(parentSpecificNetwork, msc.ID, childSvcName); err != nil {
+			glog.Errorf("Could not connect dependency service %v to the new network, error %v", msc.Names, err)
+		} else {
+			glog.V(3).Infof("Created dependent service's network %v and connected container %v to the network.", nwForParentSvc, msc.ID)
+			ms_children_networks[nwForParentSvc] = parentSpecificNetwork.ID
+
+			// When a dependency is created, a network is created for it. The network name matches the dependency's microservice instance name,
+			// which is the same as the agreement_id label on each of the dependency's containers. If this original network still exists, then 
+			// disconnect the container from it so that the original network can be deleted.
+			originalBaseNetwork, ok := msc.Networks.Networks[dependencyBaseNetworkName]
+			if !ok {
+				continue
+			}
+
+			glog.V(5).Infof("Disconnecting network %v from container %v.", dependencyBaseNetworkName, msc.Names)
+			err := b.client.DisconnectNetwork(originalBaseNetwork.NetworkID, docker.NetworkConnectionOptions{
+				Container:      msc.ID,
+				EndpointConfig: nil,
+				Force:          true,
+			})
+			if err != nil {
+				glog.Errorf("Failure disconnecting network: %v from container %v. Error: %v", dependencyBaseNetworkName, msc.Names, err)
+			} else {
+				glog.V(3).Infof("Succeeded disconnecting network: %v from container %v", dependencyBaseNetworkName, msc.Names)
+			}
+
+			// Check the dependency's original base network. If it has no containers connected to it any more, remove it.
+			if netInfo, err := b.client.NetworkInfo(originalBaseNetwork.NetworkID); err != nil {
+				glog.Errorf("Failure getting network info for %v. Error: %v", dependencyBaseNetworkName, err)
+			} else if len(netInfo.Containers) == 0 {
+
+				// Remove the network because it's not needed any more.
+				if err := b.client.RemoveNetwork(netInfo.ID); err != nil {
+					glog.Errorf("Unable to remove network %v, error %v", netInfo.Name, err)
+				} else {
+					glog.V(3).Infof("ContainerWorker removed network %v", netInfo.Name)
+				}
+
+			}
+
+		}
+	}
+
+	return ms_children_networks
+}
+
+// When a service fails and is restarted, the networks that connect it to its parents and dependencies have to be recreated, and
+// all the containers have to be re-connected.
+func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, parentContainers *[]docker.APIContainers) error {
+
+	// Get the list of containers in the service's default network, so that we can move them to parent specific networks.
+	var originalNetwork *docker.Network
+	var serviceContainers []docker.APIContainers
+	filter := docker.NetworkFilterOpts{"name":{networkName:true}}
+	if nws, err := b.client.FilteredListNetworks(filter); err != nil {
+		return fmt.Errorf("failure getting original network %v, error %v", networkName, err)
+	} else if len(nws) == 0 {
+		return fmt.Errorf("original network not found")
+	} else if len(nws) != 1 {
+		return fmt.Errorf("expected 1 network, received: %v", nws)
+	} else if netInfo, err := b.client.NetworkInfo(nws[0].ID); err != nil {
+		return fmt.Errorf("failure getting network info for %v, error %v", networkName, err)
+	} else {
+		originalNetwork = netInfo
+
+		var err error
+		serviceContainers, err = b.client.ListContainers(docker.ListContainersOptions{Filters:map[string][]string{"network":[]string{networkName}}})
+		if err != nil {
+			return fmt.Errorf("unable to get list of containers in network %v, error %v", networkName, err)
+		}
+	}
+
+	// For each parent container, make sure there is a network for it and the restarted dependency, and connect them both to it.
+	for _, parentContainer := range *parentContainers {
+
+		// Grab the agreement id label and make a network for this container and it's parent.
+		parentName, ok := parentContainer.Labels[LABEL_PREFIX+".agreement_id"]
+		if !ok {
+			return fmt.Errorf("could not find agreement_id on parent container %v", parentContainer.Names)
+		}
+
+		// Parent containers are connected to a dependency specific network, used solely by the parent and a dependency. Therefore,
+		// the name of the dependency's network includes both the parent and the dependency.
+		nwForParentSvc := networkName + "_" + parentName
+
+		// Create parent specific network for this service and connect it to the dependency.
+		var parentSpecificNetwork *docker.Network
+		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name":{nwForParentSvc:true}}); err != nil {
+			return fmt.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
+		} else if len(nws) == 0 {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+				return fmt.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
+			} else {
+				parentSpecificNetwork = newNetwork
+			}
+		} else {
+			parentSpecificNetwork = &nws[0]
+		}
+
+		// Create parent specific network for this dependency and connect it to the dependency and the parent.
+		if parentSvcName, ok := parentContainer.Labels[LABEL_PREFIX+".service_name"]; !ok {
+			return fmt.Errorf("Could not find service name of dependency's container %v", parentContainer.Names)
+		} else if err := b.ConnectContainerToNetwork(parentSpecificNetwork, parentContainer.ID, parentSvcName); err != nil {
+			return fmt.Errorf("Could not connect parent service %v to the new network, error %v", parentContainer.Names, err)
+		} else if err := b.connectContainers(parentSpecificNetwork, serviceContainers); err != nil {
+			return fmt.Errorf("Could not connect dependency service %v containers to the new network, error %v", networkName, err)
+		} else {
+			glog.V(3).Infof("ContainerWorker Created restarted service's network %v and connected parent container %v and dependency containers %v to new network %v.", nwForParentSvc, parentContainer.ID, serviceContainers, parentSpecificNetwork.Name)
+		}
+	}
+
+	// The parent containers are re-connected to the restarted dependency, now we can remove the dependency's default network.
+	for _, container := range serviceContainers {
+		glog.V(5).Infof("ContainerWorker Disconnecting network (%v) %v from container (%v) %v.", originalNetwork.ID, networkName, container.ID, container.Names)
+		err := b.client.DisconnectNetwork(originalNetwork.ID, docker.NetworkConnectionOptions{
+			Container:      container.ID,
+			EndpointConfig: nil,
+			Force:          true,
+		})
+		if err != nil {
+			return fmt.Errorf("failure disconnecting network: (%v) %v from container (%v) %v, error %v", originalNetwork.ID, networkName, container.ID, container.Names, err)
+		} else {
+			glog.V(3).Infof("ContainerWorker Succeeded disconnecting network: %v from container %v", networkName, container.Names)
+		}
+	}
+
+	// Remove the network because it's not needed any more.
+	if err := b.client.RemoveNetwork(originalNetwork.ID); err != nil {
+		return fmt.Errorf("unable to remove network %v, error %v", networkName, err)
+	}
+
+	glog.V(3).Infof("ContainerWorker removed network %v, no longer needed.", networkName)
+
+	return nil
+}
+
 func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	glog.V(5).Infof("Killing and removing resources in agreements: %v", agreements)
 
@@ -2099,7 +2351,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	// gather agreement networks to free
 	for _, net := range networks {
 		for _, agreementId := range agreements {
-			if net.Name == agreementId {
+			if strings.HasPrefix(net.Name, agreementId) {
 				// disconnect the network from the containers if they are still connected to it.
 				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
 					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
@@ -2233,7 +2485,7 @@ func (b *ContainerWorker) findMicroserviceDefContainerNames(api_spec string, org
 	return container_names, nil
 }
 
-// This function finds the all the containers of the direct childrent for the given service.
+// This function finds the all the containers of the direct children of the given service.
 // It only includes the containers with "running" state.
 func (b *ContainerWorker) findDependencyContainersForService(parent *persistence.ServiceInstancePathElement, agreementIds []string, microservices []events.MicroserviceSpec) ([]docker.APIContainers, error) {
 	ms_containers := make([]docker.APIContainers, 0)
@@ -2309,19 +2561,19 @@ func (b *ContainerWorker) findDependencyContainersForService(parent *persistence
 	return ms_containers, nil
 }
 
-// This function finds the all the containers of the parents for the given service.
-// It only includes the containers with "running" state.
+// This function finds the all the containers of the parent services for the given dependency service. It returns only the containers
+// in the "running" state. It matches parents with the input dependency by finding microservices with parent service URLs that are
+// in the same agreement as the input service.
 func (b *ContainerWorker) findParentContainersForService(msinst_key string) ([]docker.APIContainers, error) {
-	glog.V(3).Infof("Get direct parent containers for %v", msinst_key)
+	glog.V(3).Infof("ContainerWorker Get direct parent containers for %v", msinst_key)
 
 	ms_containers := make([]docker.APIContainers, 0)
 
 	msi_child, err := persistence.FindMicroserviceInstanceWithKey(b.db, msinst_key)
 	if err != nil {
 		return nil, fmt.Errorf("Error finding service instance from db for %v. %v", msinst_key, err)
-	}
-
-	if msi_child == nil {
+	} else if msi_child == nil {
+		glog.V(3).Infof("ContainerWorker Service %v has no microservice instance.", msinst_key)
 		return nil, nil
 	}
 
@@ -2330,143 +2582,112 @@ func (b *ContainerWorker) findParentContainersForService(msinst_key string) ([]d
 		glog.V(3).Infof("No direct parents found for service %v.", msinst_key)
 		return nil, nil
 	}
-	glog.V(3).Infof("The direct parents for %v are %v", msinst_key, parents)
+	glog.V(3).Infof("ContainerWorker The direct parents for %v are %v", msinst_key, parents)
 
-	// the instances of top level services are stored in the "established_agreements" table.
-	// here we convert them to MicroserviceInstances for easier processing
+	// The instances of top level services are stored in the "established_agreements" table, not in the microservice instances database.
+	// Here we convert them to MicroserviceInstances for easier processing.
 	top_level_msinsts := make([]persistence.MicroserviceInstance, 0)
-	eas, err := persistence.FindEstablishedAgreementsAllProtocols(b.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()})
-	if err != nil {
+	if ags, err := persistence.FindEstablishedAgreementsAllProtocols(b.db, policy.AllAgreementProtocols(), []persistence.EAFilter{persistence.UnarchivedEAFilter()}); err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to read active agreements from db, error %v", err))
 	} else {
-		for _, ag := range eas {
+		for _, ag := range ags {
 			top_level_msinsts = append(top_level_msinsts, *persistence.AgreementToMicroserviceInstance(ag, ""))
 		}
 	}
 
-	if containers, err := b.client.ListContainers(docker.ListContainersOptions{}); err != nil {
+	glog.V(5).Infof("ContainerWorker Top level services are converted to microservices: %v", top_level_msinsts)
+
+	// Get all the containers on the system and examine them for matches.
+	containers, err := b.client.ListContainers(docker.ListContainersOptions{})
+	if err != nil {
 		return nil, fmt.Errorf("Unable to get list of running containers: %v", err)
-	} else {
-		for _, api_spec := range parents {
-			// find the ms from the local db,
-			if msc_names, err := b.findMicroserviceDefContainerNames(api_spec.URL, api_spec.Org, api_spec.Version, ""); err != nil {
-				return nil, fmt.Errorf("Error finding service containers for %v. %v", api_spec, err)
-			} else if msc_names == nil || len(msc_names) == 0 {
-				continue
-			} else if msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), persistence.AllInstancesMIFilter(api_spec.URL, api_spec.Org, api_spec.Version)}); err != nil {
-				return nil, fmt.Errorf("Error retrieving service instances for %v version %v from database, error: %v", api_spec.URL, api_spec.Version, err)
-			} else {
-				if msinsts == nil {
-					msinsts = make([]persistence.MicroserviceInstance, 0)
-				}
+	}
 
-				// add top level services to msinsts. a container can be belong to a dependent service and top level service at the same time
-				for _, tmsi := range top_level_msinsts {
-					if tmsi.SpecRef == api_spec.URL && tmsi.Org == api_spec.Org && tmsi.Version == api_spec.Version {
-						msinsts = append(msinsts, tmsi)
-					}
-				}
+	// Find the corresponding microservice instances for a given parent service by org, url and version.
+	for _, api_spec := range parents {
 
-				// find the ms instances that have the agreement id in it
-				var ms_instances_to_use = []persistence.MicroserviceInstance{}
-				for _, msi := range msinsts {
-					if msi.AgreementLess {
+		msinsts, err := persistence.FindMicroserviceInstances(b.db, []persistence.MIFilter{persistence.UnarchivedMIFilter(), persistence.AllInstancesMIFilter(api_spec.URL, api_spec.Org, api_spec.Version)})
+		if err != nil {
+			return nil, fmt.Errorf("Error retrieving service instances for %v version %v from database, error: %v", api_spec.URL, api_spec.Version, err)
+		} else if msinsts == nil {
+			msinsts = make([]persistence.MicroserviceInstance, 0)
+		}
+
+		// Add top level services to the list of potential parent microservice instances. A container can be belong to a dependent service
+		// and top level service at the same time.
+		for _, tmsi := range top_level_msinsts {
+			if tmsi.SpecRef == api_spec.URL && tmsi.Org == api_spec.Org && tmsi.Version == api_spec.Version {
+				msinsts = append(msinsts, tmsi)
+			}
+		}
+
+		glog.V(5).Infof("ContainerWorker found microservice instances for %v, %v", api_spec, msinsts)
+
+		// Find the parent ms instances that have the same agreement id as the input dependency service. This is done by intersecting the
+		// agreement ids for each potential parent microservice with the agreement ids of the input dependency service.
+		var ms_instances_to_use = []persistence.MicroserviceInstance{}
+		for _, msi := range msinsts {
+			if msi.AgreementLess {
+				ms_instances_to_use = append(ms_instances_to_use, msi)
+			} else if msi_child.AssociatedAgreements != nil && len(msi_child.AssociatedAgreements) > 0 {
+				// Make sure the dependent service is in our list of agreements, otherwise ignore it.
+				for _, id := range msi_child.AssociatedAgreements {
+					if cutil.SliceContains(msi.AssociatedAgreements, id) && msi.CleanupStartTime == 0 {
 						ms_instances_to_use = append(ms_instances_to_use, msi)
-					} else if msi_child.AssociatedAgreements != nil && len(msi_child.AssociatedAgreements) > 0 {
-						// Make sure the dependent service is in our agreement, ignore it if not.
-						for _, id := range msi_child.AssociatedAgreements {
-							if cutil.SliceContains(msi.AssociatedAgreements, id) && msi.CleanupStartTime == 0 {
-								ms_instances_to_use = append(ms_instances_to_use, msi)
-							}
-						}
-					}
-				}
-
-				if len(ms_instances_to_use) == 0 {
-					glog.Infof("Service instance has not been initiated for service %v yet.", api_spec)
-					continue
-				}
-
-				// to do ms_instance could be multiple.
-				glog.V(5).Infof("Found running service instance %v.", ms_instances_to_use)
-
-				// get the containers
-				for _, container := range containers {
-					for _, serviceName := range msc_names {
-						for _, msi_to_use := range ms_instances_to_use {
-							// compare with the container name. assume the container name = /<msname>_<version>-<service name> for dependent service
-							// or container name = /instanceid-<service name> for top level service
-							found := false
-							glog.V(5).Infof("container is %v.", container)
-							cname := container.Names[0]
-							// it could be a dependent service (microservice) or top level service (workload).
-							if _, ok := container.Labels[LABEL_PREFIX+".infrastructure"]; ok {
-								if cname == "/"+msi_to_use.GetKey()+"-"+serviceName {
-									found = true
-								}
-							} else if _, ok := container.Labels[LABEL_PREFIX+".agreement_id"]; ok {
-								if cname == "/"+msi_to_use.InstanceId+"-"+serviceName {
-									found = true
-								}
-							}
-
-							if found {
-								if container.State != "running" {
-									glog.Infof("The service container %v is not up and running. %v", serviceName, err)
-								} else {
-									glog.V(5).Infof("Found running service container %v for service %v", container, api_spec)
-									ms_containers = append(ms_containers, container)
-								}
-							}
-						}
 					}
 				}
 			}
 		}
+
+		// If there are no microservices for this parent URL, then skip it.
+		if len(ms_instances_to_use) == 0 {
+			glog.V(3).Infof("ContainerWorker Service instance has not been initiated for service %v yet, so there are no containers.", api_spec)
+			continue
+		}
+
+		glog.V(5).Infof("ContainerWorker Found running service instances %v.", ms_instances_to_use)
+
+		// Now find the containers for the parent microservices that we just found.
+		for _, container := range containers {
+
+			if container.State != "running" {
+				glog.V(5).Infof("ContainerWorker The service container %v is not up and running, skipping it.", container.Names)
+				continue
+			}
+
+			for _, msi_to_use := range ms_instances_to_use {
+				if strings.Contains(container.Names[0], msi_to_use.InstanceId) {
+					ms_containers = append(ms_containers, container)
+					glog.V(5).Infof("ContainerWorker Added container (%v) %v to parent container list.", container.ID, container.Names)
+					break
+				}
+			}
+		}
+
 	}
 
-	glog.V(5).Infof("Parent containers for %v are %v.", msinst_key, ms_containers)
+	glog.V(3).Infof("Parent containers for %v are %v.", msinst_key, ms_containers)
+
 	return ms_containers, nil
 }
 
 // connects the given containers to the given network
-func (b *ContainerWorker) connectContainers(netname string, containers []docker.APIContainers) error {
-	if len(containers) == 0 {
-		return nil
-	}
+func (b *ContainerWorker) connectContainers(network *docker.Network, containers []docker.APIContainers) error {
 
-	//find the network
-	var net_to_connect docker.Network
-	found := false
-	if networks, err := b.client.ListNetworks(); err != nil {
-		return fmt.Errorf("Unable to get list of docker networks: %v", err)
-	} else {
-		for _, net := range networks {
-			if net.Name == netname {
-				net_to_connect = net
-				found = true
-			}
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("The given docker network cannot be found: %v", netname)
+	if network == nil {
+		return fmt.Errorf("input network is nil")
+	} else if len(containers) == 0 {
+		return fmt.Errorf("input container list is empty")
 	}
 
 	for _, container := range containers {
-		glog.V(5).Infof("Connecting container %v to network %v.", container.ID, netname)
-		epc := docker.EndpointConfig{
-			Aliases:   nil,
-			Links:     nil,
-			NetworkID: net_to_connect.ID,
+		containerServiceName, ok := container.Labels[LABEL_PREFIX+".service_name"]
+		if !ok {
+			return fmt.Errorf("container is missing service_name label: %v", container)
 		}
-		err := b.client.ConnectNetwork(net_to_connect.ID, docker.NetworkConnectionOptions{
-			Container:      container.ID,
-			EndpointConfig: &epc,
-			Force:          true,
-		})
-		if err != nil {
-			return fmt.Errorf("Failed to connect container %v to network %v. %v", container.ID, netname, err)
+
+		if err := b.ConnectContainerToNetwork(network, container.ID, containerServiceName); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -2577,6 +2798,25 @@ func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, ag
 				}
 			}
 		}
+	}
+
+	return nil
+}
+
+func (b *ContainerWorker) ConnectContainerToNetwork(network *docker.Network, containerId, serviceName string) error {
+
+	epc := docker.EndpointConfig{
+		Aliases:   []string{serviceName},
+		Links:     nil,
+		NetworkID: network.ID,
+	}
+	err := b.GetClient().ConnectNetwork(network.ID, docker.NetworkConnectionOptions{
+		Container:      containerId,
+		EndpointConfig: &epc,
+		Force:          true,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to connect container %v to network %v, error %v", containerId, network.Name, err)
 	}
 
 	return nil

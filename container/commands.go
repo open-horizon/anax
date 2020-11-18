@@ -154,11 +154,26 @@ type ShutdownMicroserviceCommand struct {
 }
 
 func (c ShutdownMicroserviceCommand) ShortString() string {
-	return fmt.Sprintf("MaintainServiceCommand: MsInstKey %v", c.MsInstKey)
+	return fmt.Sprintf("ShutdownMicroserviceCommand: MsInstKey %v", c.MsInstKey)
 }
 
 func (b *ContainerWorker) NewShutdownMicroserviceCommand(key string) *ShutdownMicroserviceCommand {
 	return &ShutdownMicroserviceCommand{
+		MsInstKey: key,
+	}
+}
+
+// ==============================================================================================================
+type CancelMicroserviceNetworkCommand struct {
+	MsInstKey string // key to the MicroserviceInstance table.
+}
+
+func (c CancelMicroserviceNetworkCommand) ShortString() string {
+	return fmt.Sprintf("CancelMicroserviceNetworkCommand: MsInstKey %v", c.MsInstKey)
+}
+
+func (b *ContainerWorker) NewCancelMicroserviceNetworkCommand(key string) *CancelMicroserviceNetworkCommand {
+	return &CancelMicroserviceNetworkCommand{
 		MsInstKey: key,
 	}
 }
