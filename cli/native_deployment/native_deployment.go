@@ -313,7 +313,7 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 	}
 
 	// If the service has dependencies, get them started first.
-	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw)
+	msNetworks, perr := dev.ProcessStartDependencies(dir, cutil.FormOrgSpecUrl(serviceDef.URL, serviceDef.Org), deps, userInputs.Global, userInputs.Services, cw)
 	if perr != nil {
 		if !noFSS {
 			sync_service.Stop(cw.GetClient())
@@ -340,7 +340,7 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 	}
 
 	// Now we can start the service container.
-	_, err := dev.StartContainers(deployment, serviceDef.URL, serviceDef.Version, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)
+	_, err := dev.StartContainers(deployment, serviceDef.URL, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId, "")
 	if err != nil {
 		if !noFSS {
 			sync_service.Stop(cw.GetClient())

@@ -36,7 +36,7 @@ func Start(cw *container.ContainerWorker, org string, configFiles []string, conf
 	dc := cw.GetClient()
 
 	// Create a network for all the sync service containers.
-	network, err := createNetwork(dc, NETWORK_NAME)
+	network, err := container.CreateNetwork(dc, NETWORK_NAME)
 	if err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to create network %v for file sync service, error %v", NETWORK_NAME, err))
 	}
@@ -109,7 +109,7 @@ func Stop(dc *docker.Client) error {
 	}
 
 	// Delete the hzn-dev network.
-	if err := removeNetwork(dc, NETWORK_NAME); err != nil {
+	if err := container.RemoveNetwork(dc, NETWORK_NAME); err != nil {
 		cliutils.Verbose(msgPrinter.Sprintf("Unable to remove network %v for file sync service, error %v", NETWORK_NAME, err))
 	}
 
@@ -511,63 +511,6 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return errors.New(msgPrinter.Sprintf("unable to PUT file %v into CSS, HTTP code %v", *metadata, resp.StatusCode))
-	}
-
-	return nil
-}
-
-func createNetwork(client *docker.Client, name string) (*docker.Network, error) {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	// Labels on the docker network indicate attributes about the network.
-	labels := make(map[string]string)
-	labels[LABEL_PREFIX+".network"] = ""
-
-	bridgeOpts := docker.CreateNetworkOptions{
-		Name:           name,
-		EnableIPv6:     false,
-		Internal:       false,
-		Driver:         "bridge",
-		CheckDuplicate: true,
-		IPAM: &docker.IPAMOptions{
-			Driver: "default",
-			Config: []docker.IPAMConfig{},
-		},
-		Options: map[string]interface{}{
-			"com.docker.network.bridge.enable_icc":           "true",
-			"com.docker.network.bridge.enable_ip_masquerade": "true",
-			"com.docker.network.bridge.default_bridge":       "false",
-		},
-		Labels: labels,
-	}
-
-	bridge, err := client.CreateNetwork(bridgeOpts)
-	if err != nil {
-		return nil, err
-	}
-	cliutils.Verbose(msgPrinter.Sprintf("Created network %v", name))
-	return bridge, nil
-}
-
-func removeNetwork(client *docker.Client, name string) error {
-	// get message printer
-	msgPrinter := i18n.GetMessagePrinter()
-
-	// Remove named network
-	networks, err := client.ListNetworks()
-	if err != nil {
-		return errors.New(msgPrinter.Sprintf("unable to list docker networks, error %v", err))
-	}
-
-	for _, net := range networks {
-		if net.Name == name {
-			if err := client.RemoveNetwork(net.ID); err != nil {
-				return errors.New(msgPrinter.Sprintf("unable to remove docker network %v, error %v", name, err))
-			} else {
-				return nil
-			}
-		}
 	}
 
 	return nil

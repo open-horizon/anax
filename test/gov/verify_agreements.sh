@@ -187,6 +187,17 @@ function handleLocation {
 # $1 - the GET /service object for the cpu service
 #
 function handleCPU {
+        NETS_EXPECTED=0
+        # Define expected networks number, depending on svc version
+        VERS=$(echo $1 | jq -r '.version')
+
+        if [ "${VERS}" == "1.0" ]; then
+                # Expected 2 networks - default e2edev/cpu ntw and ntw for patent's e2edev/netspeed
+                NETS_EXPECTED=2
+        elif [ "${VERS}" == "1.2.2" ]; then
+                # Expected 3 networks - default IBM/cpu ntw and ntw for patent's e2edev/netspeed and e2edev/location
+                NETS_EXPECTED=3
+        fi
 
         REFURL=$(echo $1 | jq -r '.ref_url')
 
@@ -197,22 +208,20 @@ function handleCPU {
                 exit 2
         fi
 
-        # Grab the map of networks. There should be 1.
+        # Grab the map of networks. There should be $NETS_EXPECTED.
         NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
+
         NUM_NETS=$(echo ${NETS} | jq -r '. | length')
-        if [ "${NUM_NETS}" != "1" ]; then
-                echo -e "${PREFIX} ${REFURL} should have 1 network, but there are ${NUM_NETS}"
+        if [ "${NUM_NETS}" != "${NETS_EXPECTED}" ]; then
+                echo -e "${PREFIX} ${REFURL} should have ${NETS_EXPECTED} networks, but there are ${NUM_NETS}"
                 exit 2
         fi
 
-        # Grab the network name keys as a json array so we can iterate them. There sould be only 1.
-        NET_KEYS=$(echo ${NETS} | jq -r '. | keys')
-
-        # There is another cpu service which is from e2edev@somecomp.com2edev org. CPU_NET_NAME should be the one from IBM org.
-        netname=$(echo ${NET_KEYS} | jq -r '.[0]')
-        echo $netname | grep IBM
-        if [ $? -eq 0 ]; then
-            CPU_NET_NAME=$netname
+        # Grab the network name for the IBM's location service
+        # (there is another cpu service which is from e2edev@somecomp.com2edev org. CPU_NET_NAME should be the one from IBM org.)
+        NET_NAME=$(echo ${NETS} | jq -r '. | keys' | jq -r '.[] | select(. | test("IBM.*location"))')
+        if [ "${NET_NAME}" != "" ]; then
+                CPU_NET_NAME=$NET_NAME
         fi
 
         # LOC_CPU_NETNAME might not be filled in yet. We will do this same check when we verify the CPU service.
