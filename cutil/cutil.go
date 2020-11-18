@@ -18,6 +18,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -306,16 +307,12 @@ func SetSystemEnvvars(envAdds map[string]string, prefix string, lat string, lon 
 
 }
 
-// This is also used as the container name
+// This is also used as the container name.
 // The container name must start with an alphanumeric character and can then use _ . or - in addition to alphanumeric.
 // [a-zA-Z0-9][a-zA-Z0-9_.-]+
 func MakeMSInstanceKey(specRef string, org string, v string, id string) string {
-	s := specRef
-	// only take the part after "*://" for specRef
-	if strings.Contains(specRef, "://") {
-		s = strings.Split(specRef, "://")[1]
-	}
-	new_s := strings.Replace(s, "/", "-", -1)
+
+	new_s := NormalizeURL(specRef)
 
 	// form the key
 	instKey1 := ""
@@ -412,6 +409,23 @@ func CopyMap(m1 map[string]interface{}, m2 map[string]interface{}) {
 	for k, v := range m1 {
 		m2[k] = v
 	}
+}
+
+func GetMapKeys(aMap interface{}) []string {
+
+	keySlice := make([]string, 0)
+
+	theMap := reflect.ValueOf(aMap)
+	if theMap.IsNil() {
+		return keySlice
+	}
+
+	keys := theMap.MapKeys()
+	for _, k := range keys {
+		keySlice = append(keySlice, k.String())
+	}
+
+	return keySlice
 }
 
 // It will return the first n characters of the string and the rest will be as "..."
@@ -526,6 +540,15 @@ func FormOrgSpecUrl(url string, org string) string {
 		return url
 	} else {
 		return fmt.Sprintf("%v/%v", org, url)
+	}
+}
+
+// it returns the org_url form for an api spec
+func NormalizeOrgSpecUrl(url string, org string) string {
+	if org == "" {
+		return url
+	} else {
+		return fmt.Sprintf("%v_%v", org, url)
 	}
 }
 

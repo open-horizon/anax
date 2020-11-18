@@ -68,7 +68,7 @@ do
   NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT == 16 ]]; then echo -e "surface error failed to appear"; exit 2; fi
+  if [[ $TIMEOUT == 16 ]]; then echo -e "surface error failed to appear"; hzn eventlog list; docker ps -a; docker network ls; exit 2; fi
 done
 
 echo -e "Found surfaced error $ERRS"

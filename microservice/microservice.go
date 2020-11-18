@@ -422,7 +422,7 @@ func UnregisterMicroserviceExchange(getExchangeDevice exchange.DeviceHandler,
 }
 
 // Find the MicroserviceDefinition object in the local db for the given service spec. The version is a version range.
-// If not found, create one with hightest version within the range.
+// If not found, create one with highest version within the range.
 // TODO: we need to get the common version range if the msdef for this service exists.
 func FindOrCreateMicroserviceDef(db *bolt.DB, service_name string, service_org string, service_version string, service_arch string,
 	getService exchange.ServiceHandler) (*persistence.MicroserviceDefinition, error) {

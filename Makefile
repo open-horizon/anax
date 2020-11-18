@@ -605,10 +605,8 @@ check: lint test test-integration
 
 # build sequence diagrams
 diagrams:
-	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonSequenceDiagram.txt
-	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/protocolSequenceDiagram.txt
-	java -jar $(plantuml_path)/plantuml.jar ./messaging/diagrams/senderEncryption.txt
-	java -jar $(plantuml_path)/plantuml.jar ./messaging/diagrams/receiverEncryption.txt
+	java -jar $(plantuml_path)/plantuml.jar ./exchange/diagrams/senderEncryption.txt
+	java -jar $(plantuml_path)/plantuml.jar ./exchange/diagrams/receiverEncryption.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 

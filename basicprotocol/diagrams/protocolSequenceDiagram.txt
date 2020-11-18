@@ -1,19 +1,18 @@
 @startuml
 
-Consumer -> Producer: Send fully formed terms and conditions, do you agree to the terms?
-Producer --> Consumer: Respond with a decision (true - I agree, false - I don't agree)
-Consumer --> Producer: Acknowledge response
+Agbot -> Agent: Send fully formed terms and conditions, do you agree to the terms?
+Agent --> Agbot: Respond with a decision (true - I agree, false - I don't agree)
+Agbot --> Agent: Acknowledge response
 
-Producer -> BitTorrent: Fork (1) Download workload
-BitTorrent --> Producer: (1) workload docker containers
-Producer -> Producer: (1) Start workload
+Agent -> "Image Registry": Fork (1) Download workload
+"Image Registry" --> Agent: (1) workload docker containers
+Agent -> Agent: (1) Start workload
 
-Consumer -> Consumer: Fork (2): start polling for data being received
-Consumer ->> Producer: (2) If data not received in time, send cancel agreement message
-Producer ->> Consumer: (2) Workload sends data
-Consumer -> Producer: (2) Send Data Received message
-Producer --> Consumer: (2)Acknowledge data received
-Consumer -> Producer: (2) If metering enabled, send metering notification
-Producer -> Producer: Save metering records in local database
+Agbot -> Agent: Fork (2) If policy change, cancel agreement
+Agent -> Agbot: (2) acknowledge
+Agent -> Agbot: Fork (3) if policy change, cancel agreement
+Agbot -> Agent: (3) acknowledge
+Agbot -> Agent: (4) If metering enabled, send metering notification
+Agent -> Agbot: (4) acknowledge
 
-@enduml 
+@enduml
