@@ -11,6 +11,7 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
@@ -264,10 +265,16 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 		var logConfig docker.LogConfig
 
+		// Use syslog log driver by default
+		logDriver := "syslog"
+		if service.LogDriver != "" {
+			logDriver = service.LogDriver
+		}
+
 		if !deployment.ServicePattern.IsShared("singleton", serviceName) {
 			labels[LABEL_PREFIX+".agreement_id"] = agreementId
 			logConfig = docker.LogConfig{
-				Type: "syslog",
+				Type: logDriver,
 				Config: map[string]string{
 					"tag": fmt.Sprintf("workload-%v_%v", strings.ToLower(agreementId), serviceName),
 				},
@@ -279,12 +286,18 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			}
 
 			logConfig = docker.LogConfig{
-				Type: "syslog",
+				Type: logDriver,
 				Config: map[string]string{
 					"tag": fmt.Sprintf("workload-%v_%v", "singleton", logName),
 				},
 			}
 		}
+
+		// Some log drivers don't support tagging, the "tag" config should be removed for them
+		if !cliutils.LoggingDriverSupportsTagging(logDriver) {
+			delete(logConfig.Config, "tag")
+		}
+
 		serviceConfig := &persistence.ServiceConfig{
 			Config: docker.Config{
 				Image:        service.Image,

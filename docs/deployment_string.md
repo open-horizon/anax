@@ -38,6 +38,7 @@ Because Horizon uses the Docker API to start the containers on an edge node, man
     - `entrypoint`: `["executable", "param1", "param2"]` - override ENTRYPOINT specified in the dockerfile.
     - `max_memory_mb`: `4096` - the maximum amount of memory the service's container can use
     - `max_cpus`: `1.5` - how much of the available CPU resources ther service's container can use. For instance, if the host machine has two CPUs and you set value to 1.5, the container is guaranteed to use at most one and a half of the CPUs
+    - `log_driver`: the logging driver (e.g. `json-file`) to use for container logs, instead of default one (syslog)
 
 ## clusterDeployment String Fields
 

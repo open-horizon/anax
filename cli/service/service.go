@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
@@ -88,42 +89,69 @@ func Log(serviceName string, tailing bool) {
 	if horDevice.Org == nil || *horDevice.Org == "" {
 		msgPrinter.Printf("The node is not registered.")
 		msgPrinter.Println()
-	} else {
-		refUrl := serviceName
-		// Get the list of running services from the agent.
-		type AllServices struct {
-			Instances map[string][]api.MicroserviceInstanceOutput `json:"instances"` // The service instances that are running
-		}
-		var runningServices AllServices
-		cliutils.HorizonGet("service", []int{200}, &runningServices, false)
-		// Search the list of services to find one that matches the input service name. The service's instance Id
-		// is what appears in the syslog, so we need to save that.
-		serviceFound := false
-		var instanceId string
-		for _, serviceInstance := range runningServices.Instances["active"] {
-			org, name := cutil.SplitOrgSpecUrl(refUrl)
-			if (serviceInstance.SpecRef == name && serviceInstance.Org == org) || strings.Contains(serviceInstance.SpecRef, refUrl) {
-				instanceId = serviceInstance.InstanceId
-				serviceFound = true
-				msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
+		return
+	}
+
+	refUrl := serviceName
+	// Get the list of running services from the agent.
+	runningServices := api.AllServices{}
+
+	cliutils.HorizonGet("service", []int{200}, &runningServices, false)
+	// Search the list of services to find one that matches the input service name. The service's instance Id
+	// is what appears in the syslog, so we need to save that.
+	serviceFound := false
+	var instanceId string
+	org, name := cutil.SplitOrgSpecUrl(refUrl)
+	for _, serviceInstance := range runningServices.Instances["active"] {
+		if (serviceInstance.SpecRef == name && serviceInstance.Org == org) || strings.Contains(serviceInstance.SpecRef, refUrl) {
+			instanceId = serviceInstance.InstanceId
+			serviceFound = true
+			msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
+			msgPrinter.Println()
+			if tailing {
+				msgPrinter.Printf("Use ctrl-C to terminate this command.")
 				msgPrinter.Println()
-				if tailing {
-					msgPrinter.Printf("Use ctrl-C to terminate this command.")
-					msgPrinter.Println()
-				}
-				break
 			}
-		}
-		if !serviceFound {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
-		}
-		if runtime.GOOS == "darwin" {
-			cliutils.LogMac(instanceId, tailing)
-		} else {
-			cliutils.LogLinux(instanceId, tailing)
+			break
 		}
 	}
-	return
+	if !serviceFound {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service %v is not running on the node.", refUrl))
+	}
+
+	// Check service's log-driver to read logs from correct place
+	var nonDefaultLogDriverUsed bool
+	for _, v := range runningServices.Definitions["active"] {
+		def := &persistence.MicroserviceDefinition{}
+		defBytes, _ := json.Marshal(v)
+		if err := json.Unmarshal(defBytes, def); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service definition unmarshalling error: %v", err))
+		}
+
+		if (def.SpecRef == name && def.Org == org) || strings.Contains(def.SpecRef, refUrl) {
+			if def.Deployment != "" {
+				deployment := &containermessage.DeploymentDescription{}
+				if err := json.Unmarshal([]byte(def.Deployment), deployment); err != nil {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Deployment unmarshalling error: %v", err))
+				}
+
+				for _, service := range deployment.Services {
+					if service.LogDriver != "" && service.LogDriver != "syslog" {
+						cliutils.Verbose(msgPrinter.Sprintf("Service logs are only available for services with 'syslog' log-driver. This service is using log-driver %v", service.LogDriver))
+						nonDefaultLogDriverUsed = true
+					}
+					break
+				}
+			}
+			break
+		}
+	}
+
+	if runtime.GOOS == "darwin" || nonDefaultLogDriverUsed {
+		cliutils.LogMac(instanceId, tailing)
+	} else {
+		cliutils.LogLinux(instanceId, tailing)
+	}
 }
 
 func Registered() {
