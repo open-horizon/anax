@@ -136,9 +136,9 @@ func Log(serviceName string, tailing bool) {
 				}
 
 				for _, service := range deployment.Services {
-					if service.LogDriver != "" && service.LogDriver != "syslog" {
-						cliutils.Verbose(msgPrinter.Sprintf("Service logs are only available for services with 'syslog' log-driver. This service is using log-driver %v", service.LogDriver))
-						nonDefaultLogDriverUsed = true
+					var err error
+					if nonDefaultLogDriverUsed, err = cliutils.ChekServiceLogPossibility(service.LogDriver); err != nil {
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Service logs are unavailable: %v", err))
 					}
 					break
 				}
