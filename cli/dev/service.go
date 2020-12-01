@@ -259,14 +259,18 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, cerr)
 	}
 
+	logDriver := "syslog"
 	if serviceName == "" {
 		if len(dc.Services) > 1 {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one service has been found for deployment. Please specify the service name by -s flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND))
 		}
 
 		// Apply service name
-		for name, _ := range dc.Services {
+		for name, svc := range dc.Services {
 			serviceName = name
+			if svc.LogDriver != "" {
+				logDriver = svc.LogDriver
+			}
 		}
 	}
 
@@ -281,6 +285,11 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 		if _, isDevService := c.Labels[container.LABEL_PREFIX+".dev_service"]; isDevService {
 			msId := c.Labels[container.LABEL_PREFIX+".agreement_id"]
 
+			nonDefaultLogDriverUsed := false
+			if nonDefaultLogDriverUsed, err = cliutils.ChekServiceLogPossibility(logDriver); err != nil {
+				cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Unable to display log messages: %v", err))
+			}
+
 			msgPrinter.Printf("Displaying log messages for dev service %v with instance id prefix %v.", serviceName, msId)
 			msgPrinter.Println()
 			if tailing {
@@ -288,7 +297,7 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 				msgPrinter.Println()
 			}
 
-			if runtime.GOOS == "darwin" {
+			if runtime.GOOS == "darwin" || nonDefaultLogDriverUsed {
 				cliutils.LogMac(msId, tailing)
 			} else {
 				cliutils.LogLinux(msId, tailing)
