@@ -204,7 +204,8 @@ func NewDockerClient() (client *dockerclient.Client) {
 	return
 }
 
-// GetDockerAuth finds the docker credentials for this registry in ~/.docker/config.json
+// GetDockerAuth finds the docker credentials for this registry in ~/.docker/config.json.
+// It also will try to obtains credentials from a docker credential store if it's in use.
 func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err error) {
 	var auths *dockerclient.AuthConfigurations
 	if auths, err = dockerclient.NewAuthConfigurationsFromDockerCfg(); err != nil {
@@ -219,8 +220,17 @@ func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err erro
 		}
 	}
 
-	err = errors.New(i18n.GetMessagePrinter().Sprintf("unable to find docker credentials for %v", domain))
-	return
+	// try to load cred from configured credential store
+	var authPrt *dockerclient.AuthConfiguration
+	authPrt, err = dockerclient.NewAuthConfigurationsFromCredsHelpers(domain)
+	if err != nil {
+		err = errors.New(i18n.GetMessagePrinter().Sprintf("unable to load docker credentials for %s: %v", domain, err))
+		return
+	}
+	if authPrt != nil {
+		return *authPrt, nil
+	}
+	return dockerclient.AuthConfiguration{}, errors.New(i18n.GetMessagePrinter().Sprintf("unable to find docker credentials for %v", domain))
 }
 
 // PushDockerImage pushes the image to its docker registry, outputting progress to stdout. It returns the repo digest. If there is an error, it prints the error and exits.
@@ -282,16 +292,17 @@ func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	opts := dockerclient.PullImageOptions{Repository: repository, Tag: tag, OutputStream: multiWriter}
 
 	var auth dockerclient.AuthConfiguration
+	var loginErr error
 	loggedIn := true
-	if auth, err = GetDockerAuth(domain); err != nil {
+	if auth, loginErr = GetDockerAuth(domain); loginErr != nil {
 		Verbose(i18n.GetMessagePrinter().Sprintf("unable to get docker auth for docker.io or %s domain: %v", domain, err))
 		loggedIn = false
 	}
 
 	//Pull the image
-	if err = client.PullImage(opts, auth); err != nil {
+	if err := client.PullImage(opts, auth); err != nil {
 		if !loggedIn {
-			err = errors.New(msgPrinter.Sprintf("unable to pull docker image %v. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: %v", repository+":"+tag, err))
+			err = errors.New(msgPrinter.Sprintf("unable to pull docker image %v. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: %v: %v", repository+":"+tag, err, loginErr))
 		}
 		err = errors.New(msgPrinter.Sprintf("unable to pull docker image %v: %v", repository+":"+tag, err))
 		Verbose(err.Error())
