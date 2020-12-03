@@ -13,7 +13,7 @@ import (
 
 type Configuration struct {
 	ExchangeAPI     string `json:"exchange_api"`
-	ExchangeVersion string `json:"exchange_version"`
+	ExchangeVersion string `json:"exchange_version,omitempty"`
 	MinExchVersion  string `json:"required_minimum_exchange_version"`
 	PrefExchVersion string `json:"preferred_exchange_version"`
 	MMSAPI          string `json:"mms_api"`
@@ -49,6 +49,20 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 		Configuration: &Configuration{
 			ExchangeAPI:     exchangeUrl,
 			ExchangeVersion: exch_version,
+			MinExchVersion:  version.MINIMUM_EXCHANGE_VERSION,
+			PrefExchVersion: version.PREFERRED_EXCHANGE_VERSION,
+			MMSAPI:          mmsUrl,
+			Arch:            runtime.GOARCH,
+			HorizonVersion:  version.HORIZON_VERSION,
+		},
+	}
+}
+
+// NewLocalInfo is like NewInfo, except this does not attempt to get the exchange version
+func NewLocalInfo(exchangeUrl string, mmsUrl string, id string, token string) *Info {
+	return &Info{
+		Configuration: &Configuration{
+			ExchangeAPI:     exchangeUrl,
 			MinExchVersion:  version.MINIMUM_EXCHANGE_VERSION,
 			PrefExchVersion: version.PREFERRED_EXCHANGE_VERSION,
 			MMSAPI:          mmsUrl,

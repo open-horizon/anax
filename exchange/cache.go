@@ -33,7 +33,7 @@ const EXCH_VERS_TYPE_CACHE = "EXCH_VERS_CACHE"
 
 // This only applies to the exchange version.
 // All others are monitored for changes theough the changes api
-const CACHE_TIMEOUT_S = 120
+const CACHE_TIMEOUT_S = 900
 
 type CacheEntry struct {
 	Resource    interface{} `json:"resource"`
@@ -179,6 +179,8 @@ func UpdateCache(resourceKey string, resourceType string, updatedResource interf
 		resourceCache.Put(resourceKey, newRecord)
 		return
 	}
+	existingRecordTyped.LastUpdated = uint64(time.Now().Unix())
+	resourceCache.Put(resourceKey, existingRecordTyped)
 }
 
 // DeleteCache will delete the entire cache for this type of resource
