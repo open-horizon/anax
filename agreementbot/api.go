@@ -331,6 +331,7 @@ func (a *API) listen(apiListen string) {
 		router.HandleFunc("/policy/{name}/upgrade", a.policy).Methods("POST", "OPTIONS")
 		router.HandleFunc("/workloadusage", a.workloadusage).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status", a.status).Methods("GET", "OPTIONS")
+		router.HandleFunc("/health", a.health).Methods("GET", "OPTIONS")
 		router.HandleFunc("/status/workers", a.workerstatus).Methods("GET", "OPTIONS")
 		router.HandleFunc("/node", a.node).Methods("GET", "DELETE", "OPTIONS")
 		router.HandleFunc("/config", a.config).Methods("GET", "OPTIONS")
@@ -615,6 +616,28 @@ func (a *API) status(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 
 		info := apicommon.NewInfo(a.GetHTTPFactory(), a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
+
+		// Augment the common status with agbot specific stuff
+		health := &apicommon.HealthTimestamps{}
+		var err error
+		if health.LastDBHeartbeatTime, err = a.db.GetHeartbeat(); err != nil {
+			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get DB heartbeat, error: %v", err)))
+		}
+		info.LiveHealth = health
+
+		writeResponse(w, info, http.StatusOK)
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *API) health(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		info := apicommon.NewLocalInfo(a.GetExchangeURL(), a.GetCSSURL(), a.GetExchangeId(), a.GetExchangeToken())
 
 		// Augment the common status with agbot specific stuff
 		health := &apicommon.HealthTimestamps{}
