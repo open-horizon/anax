@@ -271,8 +271,10 @@ function results {
 }
 
 # make sure agreements are up and running
+# $1 - org ID for node check
+# $2 - admin auth for node check
 function verify_agreements {
-  HZN_REG_TEST=1 ./verify_agreements.sh
+  ORG_ID=$1 ADMIN_AUTH=$2 HZN_REG_TEST=1 ./verify_agreements.sh
   if [ $? -ne 0 ]; then
     echo -e "${PREFIX} Failed to verify agreement."
     exit 1
@@ -333,7 +335,7 @@ echo "Sleeping 90 seconds..."
 sleep 90
 
 checkNodePattern "e2edev@somecomp.com/sns"
-verify_agreements
+verify_agreements "e2edev@somecomp.com" "e2edevadmin:e2edevadminpw"
 
 
 # now change the pattern to sall, this will fail because there is not enough user input
@@ -375,7 +377,7 @@ sleep 60
 
 # the pattern should have change on local node
 checkNodePattern "e2edev@somecomp.com/sall"
-./verify_agreements.sh
+ORG_ID="e2edev@somecomp.com" ADMIN_AUTH="e2edevadmin:e2edevadminpw" ./verify_agreements.sh
 if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed to verify agreement."
   exit 1
