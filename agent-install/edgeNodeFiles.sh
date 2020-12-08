@@ -511,7 +511,7 @@ all_main() {
 
     cloudLogin
 
-    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+    if [[ -n $DIR && -d $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
@@ -534,7 +534,7 @@ all_main() {
         createTarFile
     fi
 
-    if [[ -n $DIR ]]; then popd; fi
+    if [[ -n $DIR && -d $DIR ]]; then popd; fi
 }
 
 cluster_main() {
@@ -542,7 +542,7 @@ cluster_main() {
 
     cloudLogin
 
-    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+    if [[ -n $DIR && -d $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
@@ -563,7 +563,7 @@ cluster_main() {
         createTarFile
     fi
 
-    if [[ -n $DIR ]]; then popd; fi
+    if [[ -n $DIR && -D $DIR ]]; then popd; fi
 }
 
 device_main() {
@@ -571,7 +571,7 @@ device_main() {
 
     cloudLogin
 
-    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+    if [[ -n $DIR && -d $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
@@ -590,7 +590,7 @@ device_main() {
         createTarFile
     fi
 
-    if [[ -n $DIR ]]; then popd; fi
+    if [[ -n $DIR && -d $DIR ]]; then popd; fi
 }
 
 main() {
