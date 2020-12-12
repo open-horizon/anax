@@ -19,10 +19,16 @@ function verifyAgreements {
                 TARGET_NUM_AG=5
             fi
         fi
+	
+	if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+          TIMEOUT_MUL=1
+        else
+          TIMEOUT_MUL=3
+        fi
 
         # Look for agreements to appear.
         AG_LOOP_CNT=0
-        while [ $AG_LOOP_CNT -le  $(expr 48 + 12 \* $TARGET_NUM_AG) ]
+        while [ $AG_LOOP_CNT -le  $(expr $(expr 48 + 12 \* $TARGET_NUM_AG) \* $TIMEOUT_MUL) ]
         do
                 echo -e "${PREFIX} waiting for ${TARGET_NUM_AG} agreement(s)"
 
