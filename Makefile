@@ -280,12 +280,6 @@ macupload: $(MAC_PKG)
 	@echo "Uploading $< to the staging dir of our apt repo svr"
 	rsync -avz $< root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
 
-# Upload the pkg cert to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/testing/macos/
-#todo: For now, you must have ssh access to the apt repo svr for this to work
-macuploadcert:
-	@echo "Uploading pkg/mac/build/horizon-cli.crt to http://pkg.bluehorizon.network/macos/testing/certs/"
-	rsync -avz pkg/mac/build/horizon-cli.crt root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing/certs
-
 # This target promotes the last version you uploaded to staging, so assumes MAC_PKG_VERSION is still set to that version
 promote-mac-pkg:
 	@echo "Promoting horizon-cli.crt"

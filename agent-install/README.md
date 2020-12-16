@@ -36,7 +36,7 @@ On Linux, the script updates the apt repositories, and verifies the required pre
 
 If the packages being installed are an older version than those currently installed, the script will prompt the user if they want to continue. If it is a batch install, the older version will not be installed unless `-f` was specified. If the package version is equal to the currently installed version, the script will show a warning and exit.
 
-The **bluehorizon**, **horizon**, and **horizon-cli** packages will be installed or updated.
+The **horizon** and **horizon-cli** packages will be installed or updated.
 
 After installation and configuration is complete, a node is created in the Exchange, and is registered with the pattern or policy, if specified. If -w <service name> is specified, the script will wait until the specified service begins executing on the node.
 
@@ -104,49 +104,39 @@ The script relies on an installation packages tree with the following directory 
     ├── README.md
     ├── agent-install.sh
     ├── linux
-    │   ├── debian
-    │   │   ├── buster
-    │   │   │   └── amd64
-    │   │   │       ├── bluehorizon_2.24.17~ppa~debian.buster_all.deb
-    │   │   │       ├── horizon-cli_2.24.17~ppa~debian.buster_amd64.deb
-    │   │   │       └── horizon_2.24.17~ppa~debian.buster_amd64.deb
-    │   │   └── stretch
-    │   │       └── amd64
-    │   │           ├── bluehorizon_2.24.17~ppa~debian.stretch_all.deb
-    │   │           ├── horizon-cli_2.24.17~ppa~debian.stretch_amd64.deb
-    │   │           └── horizon_2.24.17~ppa~debian.stretch_amd64.deb
-    │   ├── raspbian
-    │   │   ├── buster
-    │   │   │   └── armhf
-    │   │   │       ├── bluehorizon_2.24.17~ppa~raspbian.buster_all.deb
-    │   │   │       ├── horizon-cli_2.24.17~ppa~raspbian.buster_armhf.deb
-    │   │   │       └── horizon_2.24.17~ppa~raspbian.buster_armhf.deb
-    │   │   └── stretch
-    │   │       └── armhf
-    │   │           ├── bluehorizon_2.24.17~ppa~raspbian.stretch_all.deb
-    │   │           ├── horizon-cli_2.24.17~ppa~raspbian.stretch_armhf.deb
-    │   │           └── horizon_2.24.17~ppa~raspbian.stretch_armhf.deb
-    │   └── ubuntu
-    │       ├── bionic
-    │       │   ├── amd64
-    │       │   │   ├── bluehorizon_2.24.17~ppa~ubuntu.bionic_all.deb
-    │       │   │   ├── horizon-cli_2.24.17~ppa~ubuntu.bionic_amd64.deb
-    │       │   │   └── horizon_2.24.17~ppa~ubuntu.bionic_amd64.deb
-    │       │   └── arm64
-    │       │       ├── bluehorizon_2.24.17~ppa~ubuntu.bionic_all.deb
-    │       │       ├── horizon-cli_2.24.17~ppa~ubuntu.bionic_arm64.deb
-    │       │       └── horizon_2.24.17~ppa~ubuntu.bionic_arm64.deb
-    │       │   
-    │       └── xenial
-    │           ├── amd64
-    │           │   ├── bluehorizon_2.24.17~ppa~ubuntu.xenial_all.deb
-    │           │   ├── horizon-cli_2.24.17~ppa~ubuntu.xenial_amd64.deb
-    │           │   └── horizon_2.24.17~ppa~ubuntu.xenial_amd64.deb
-    │           └── arm64
-    │               ├── bluehorizon_2.24.17~ppa~ubuntu.xenial_all.deb
-    │               ├── horizon-cli_2.24.17~ppa~ubuntu.xenial_arm64.deb
-    │               └── horizon_2.24.17~ppa~ubuntu.xenial_arm64.deb
-    │           
+    │   ├── debian
+    │   │   ├── buster
+    │   │   │   └── amd64
+    │   │   │       ├── horizon-cli_2.24.17~ppa~debian.buster_amd64.deb
+    │   │   │       └── horizon_2.24.17~ppa~debian.buster_amd64.deb
+    │   │   └── stretch
+    │   │       └── amd64
+    │   │           ├── horizon-cli_2.24.17~ppa~debian.stretch_amd64.deb
+    │   │           └── horizon_2.24.17~ppa~debian.stretch_amd64.deb
+    │   ├── raspbian
+    │   │   ├── buster
+    │   │   │   └── armhf
+    │   │   │       ├── horizon-cli_2.24.17~ppa~raspbian.buster_armhf.deb
+    │   │   │       └── horizon_2.24.17~ppa~raspbian.buster_armhf.deb
+    │   │   └── stretch
+    │   │       └── armhf
+    │   │           ├── horizon-cli_2.24.17~ppa~raspbian.stretch_armhf.deb
+    │   │           └── horizon_2.24.17~ppa~raspbian.stretch_armhf.deb
+    │   └── ubuntu
+    │       ├── bionic
+    │       │   ├── amd64
+    │       │   │   ├── horizon-cli_2.24.17~ppa~ubuntu.bionic_amd64.deb
+    │       │   │   └── horizon_2.24.17~ppa~ubuntu.bionic_amd64.deb
+    │       │   └── arm64
+    │       │       ├── horizon-cli_2.24.17~ppa~ubuntu.bionic_arm64.deb
+    │       │       └── horizon_2.24.17~ppa~ubuntu.bionic_arm64.deb
+    │       └── xenial
+    │           ├── amd64
+    │           │   ├── horizon-cli_2.24.17~ppa~ubuntu.xenial_amd64.deb
+    │           │   └── horizon_2.24.17~ppa~ubuntu.xenial_amd64.deb
+    │           └── arm64
+    │               ├── horizon-cli_2.24.17~ppa~ubuntu.xenial_arm64.deb
+    │               └── horizon_2.24.17~ppa~ubuntu.xenial_arm64.deb
     └── macos
         ├── horizon-cli-2.24.17.pkg
         └── horizon-cli.crt
