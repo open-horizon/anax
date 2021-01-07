@@ -30,6 +30,7 @@ const SVC_DOCKAUTH_TYPE_CACHE = "SVC_DOCKAUTH_CACHE"
 const NODE_DEF_TYPE_CACHE = "NODE_DEF_CACHE"
 const NODE_POL_TYPE_CACHE = "NODE_POLICY_CACHE"
 const EXCH_VERS_TYPE_CACHE = "EXCH_VERS_CACHE"
+const ORG_DEF_TYPE_CACHE = "ORG_DEF_CACHE"
 
 // This only applies to the exchange version.
 // All others are monitored for changes theough the changes api
@@ -161,6 +162,15 @@ func GetExchangeVersionFromCache(exchangeURL string) string {
 		return typedExchVers
 	}
 	return ""
+}
+
+func GetOrgDefFromCache(org string) *Organization {
+	orgDef := GetResourceFromCache(org, ORG_DEF_TYPE_CACHE, 0)
+
+	if typedOrgDef, ok := orgDef.(Organization); ok {
+		return &typedOrgDef
+	}
+	return nil
 }
 
 // GetResourceFromCache will return the requested resource from the specified type exchange cache or nil if it is not present

@@ -83,6 +83,7 @@ type EstablishedAgreement struct {
 	BlockchainName                  string                   `json:"blockchain_name,omitempty"`       // the name of the blockchain instance
 	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`        // the org of the blockchain instance
 	RunningWorkload                 WorkloadInfo             `json:"workload_to_run,omitempty"`       // For display purposes, a copy of the workload info that this agreement is managing. It should be the same info that is buried inside the proposal.
+	AgreementTimeout                uint64                   `json:"agreement_timeout"`
 }
 
 func (c EstablishedAgreement) String() string {
@@ -114,17 +115,18 @@ func (c EstablishedAgreement) String() string {
 		"BlockchainType: %v, "+
 		"BlockchainName: %v, "+
 		"BlockchainOrg: %v, "+
-		"RunningWorkload: %v",
+		"RunningWorkload: %v"+
+		"AgreementTimeout: %v",
 		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		"********", c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload)
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload, c.AgreementTimeout)
 
 }
 
-func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, dependentSvcs ServiceSpecs, signature string, address string, bcType string, bcName string, bcOrg string, wi *WorkloadInfo) (*EstablishedAgreement, error) {
+func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consumerId string, proposal string, protocol string, protocolVersion int, dependentSvcs ServiceSpecs, signature string, address string, bcType string, bcName string, bcOrg string, wi *WorkloadInfo, agreementTimeout uint64) (*EstablishedAgreement, error) {
 
 	if name == "" || agreementId == "" || consumerId == "" || proposal == "" || protocol == "" || protocolVersion == 0 {
 		return nil, errors.New("Agreement id, consumer id, proposal, protocol, or protocol version are empty, cannot persist")
@@ -170,6 +172,7 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		BlockchainName:                  bcName,
 		BlockchainOrg:                   bcOrg,
 		RunningWorkload:                 *wi,
+		AgreementTimeout:                agreementTimeout,
 	}
 
 	return newAg, db.Update(func(tx *bolt.Tx) error {
@@ -333,6 +336,13 @@ func AgreementStateWorkloadTerminated(db *bolt.DB, dbAgreementId string, protoco
 func MeteringNotificationReceived(db *bolt.DB, dbAgreementId string, mn MeteringNotification, protocol string) (*EstablishedAgreement, error) {
 	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
 		c.MeteringNotificationMsg = mn
+		return &c
+	})
+}
+
+func SetAgreementTimeout(db *bolt.DB, dbAgreementId string, protocol string, agTimeoutS uint64) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.AgreementTimeout = agTimeoutS
 		return &c
 	})
 }

@@ -155,6 +155,20 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		}
 	}
 
+	exchDev, err := exchange.GetExchangeDevice(w.GetHTTPFactory(), messageTarget.ReceiverExchangeId, w.agbotId, w.token, w.config.AgreementBot.ExchangeURL)
+	if err != nil {
+		return fmt.Errorf("Unable to get device from exchange: %v", err)
+	}
+	maxHb := exchDev.HeartbeatIntv.MaxInterval
+	if maxHb == 0 {
+		exchOrg, err := exchange.GetOrganization(w.GetHTTPFactory(), exchange.GetOrg(messageTarget.ReceiverExchangeId), w.config.AgreementBot.ExchangeURL, w.agbotId, w.token)
+		if err != nil {
+			return fmt.Errorf("Unable to get org from exchange: %v", err)
+		}
+		maxHb = exchOrg.HeartbeatIntv.MaxInterval
+	}
+	exchangeMessageTTL := w.config.AgreementBot.GetExchangeMessageTTL(maxHb)
+
 	// Create an encrypted message
 	if encryptedMsg, err := exchange.ConstructExchangeMessage(pay, myPubKey, myPrivKey, messageTarget.ReceiverPublicKeyObj); err != nil {
 		return errors.New(fmt.Sprintf("Unable to construct encrypted message, error %v for message %s", err, pay))
@@ -163,7 +177,7 @@ func (w *BaseConsumerProtocolHandler) sendMessage(mt interface{}, pay []byte) er
 		return errors.New(fmt.Sprintf("Unable to marshal exchange message, error %v for message %v", err, encryptedMsg))
 		// Send it to the device's message queue
 	} else {
-		pm := exchange.CreatePostMessage(msgBody, w.config.AgreementBot.ExchangeMessageTTL)
+		pm := exchange.CreatePostMessage(msgBody, exchangeMessageTTL)
 		var resp interface{}
 		resp = new(exchange.PostDeviceResponse)
 		targetURL := w.config.AgreementBot.ExchangeURL + "orgs/" + exchange.GetOrg(messageTarget.ReceiverExchangeId) + "/nodes/" + exchange.GetId(messageTarget.ReceiverExchangeId) + "/msgs"
@@ -426,6 +440,7 @@ func (b *BaseConsumerProtocolHandler) PersistBaseAgreement(wi *InitiateAgreement
 	} else if err := b.RecordConsumerAgreementState(proposal.AgreementId(), pol, wi.Org, "Formed Proposal", workerID); err != nil {
 		return errors.New(BCPHlogstring2(workerID, fmt.Sprintf("error setting agreement state for %v", proposal.AgreementId())))
 	}
+
 	return nil
 }
 

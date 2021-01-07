@@ -363,6 +363,17 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 
 	// get the node type for later use
 	nodeType := wi.Device.GetNodeType()
+	// get the node max heartbeat interval if it's set on the node
+	nodeMaxHBInterval := exchangeDev.HeartbeatIntv.MaxInterval
+
+	// if the node max heartbeat interval is not set on the node, then get if from the org
+	if nodeMaxHBInterval == 0 {
+		exchOrg, err := exchange.GetOrganization(b.config.Collaborators.HTTPClientFactory, exchange.GetOrg(wi.Device.Id), b.config.AgreementBot.ExchangeURL, cph.GetExchangeId(), cph.GetExchangeToken())
+		if err != nil {
+			glog.Errorf(BAWlogstring(workerId, fmt.Errorf("Unable to get org %v from exchange: %v", exchange.GetOrg(wi.Device.Id), err)))
+		}
+		nodeMaxHBInterval = exchOrg.HeartbeatIntv.MaxInterval
+	}
 
 	// There could be more than 1 workload version in the consumer policy, and each version might NOT require the exact same
 	// services/microservices (and versions), so we first need to choose a workload. Choosing a workload is based on the priority of
@@ -687,7 +698,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	}
 
 	// Create pending agreement in database
-	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, nodeType, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcIds, wi.ConsumerPolicy.NodeH); err != nil {
+	if err := b.db.AgreementAttempt(agreementIdString, wi.Org, wi.Device.Id, nodeType, wi.ConsumerPolicy.Header.Name, bcType, bcName, bcOrg, cph.Name(), wi.ConsumerPolicy.PatternId, svcIds, wi.ConsumerPolicy.NodeH, b.config.AgreementBot.GetProtocolTimeout(nodeMaxHBInterval), b.config.AgreementBot.GetAgreementTimeout(nodeMaxHBInterval)); err != nil {
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error persisting agreement attempt: %v", err)))
 
 		// Decoding device publicKey to []byte

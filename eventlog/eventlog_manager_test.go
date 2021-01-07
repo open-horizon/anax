@@ -33,7 +33,7 @@ func Test_LogEvent(t *testing.T) {
 
 	// agreement source type
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180)
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
@@ -108,15 +108,15 @@ func Test_LogAgreementEvent(t *testing.T) {
 	sp3 := persistence.ServiceSpec{Url: "http://sensor3.org", Org: "sensor3"}
 
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp1}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag1, err1 := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp1}, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180)
 	if err1 != nil {
 		t.Errorf("error writing agreement1: %v", err1)
 	}
-	ag2, err2 := persistence.NewEstablishedAgreement(db, "name2", "agreementId2", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp2}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag2, err2 := persistence.NewEstablishedAgreement(db, "name2", "agreementId2", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp2}, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180)
 	if err2 != nil {
 		t.Errorf("error writing agreement2: %v", err2)
 	}
-	ag3, err3 := persistence.NewEstablishedAgreement(db, "name3", "agreementId3", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp3}, "signature", "address", "bcType", "bcName", "bcOrg", wi)
+	ag3, err3 := persistence.NewEstablishedAgreement(db, "name3", "agreementId3", "consumerId", "{}", "Basic", 1, []persistence.ServiceSpec{sp3}, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180)
 	if err3 != nil {
 		t.Errorf("error writing agreement3: %v", err3)
 	}
