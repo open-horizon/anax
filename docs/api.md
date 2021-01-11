@@ -49,10 +49,6 @@ curl -s http://localhost:8510/status | jq '.'
     "architecture": "amd64",
     "horizon_version": "2.24.5"
   },
-  "connectivity": {
-    "firmware.bluehorizon.network": true,
-    "images.bluehorizon.network": true
-  },
   "liveHealth": null
 }
 
