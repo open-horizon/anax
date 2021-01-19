@@ -31,7 +31,7 @@ const (
 	// image
 	EL_GOV_IMAGE_LOADED            = "Image loaded for %v/%v."
 	EL_GOV_IMAGE_LOADED_FOR_SVC    = "Image loaded for service %v/%v."
-	EL_GOV_ERR_LOADING_IMG         = "Error loading image for %v/%v."
+	EL_GOV_ERR_LOADING_IMG         = "Error loading image for %v/%v. Reason: %v"
 	EL_GOV_ERR_LOADING_IMG_FOR_SVC = "Error loading image for service %v/%v."
 
 	// agreement

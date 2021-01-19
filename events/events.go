@@ -775,6 +775,7 @@ type ImageFetchMessage struct {
 	event                 Event
 	DeploymentDescription *containermessage.DeploymentDescription
 	LaunchContext         interface{}
+	Error                 error
 }
 
 // fulfill interface of events.Message
@@ -795,7 +796,7 @@ func (b *ImageFetchMessage) ShortString() string {
 	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, lc)
 }
 
-func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}) *ImageFetchMessage {
+func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}, err error) *ImageFetchMessage {
 
 	return &ImageFetchMessage{
 		event: Event{
@@ -803,6 +804,7 @@ func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.De
 		},
 		DeploymentDescription: deploymentDescription,
 		LaunchContext:         launchContext,
+		Error:                 err,
 	}
 }
 

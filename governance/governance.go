@@ -180,10 +180,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 						fmt.Sprintf(persistence.EC_IMAGE_LOADED),
 						ags[0])
 				} else {
+					var errDetails = "unknown error"
+					if msg.Error != nil {
+						errDetails = msg.Error.Error()
+					}
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
+						persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL, errDetails),
 						persistence.EC_ERROR_IMAGE_LOADE,
 						ags[0])
 					cmd := w.NewCleanupExecutionCommand(lc.AgreementProtocol, lc.AgreementId, reason, nil)
