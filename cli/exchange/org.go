@@ -260,7 +260,7 @@ func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	cliutils.Verbose(msgPrinter.Sprintf("Deleting org %s from the Horizon Exchange...", theOrg))
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{204})
 	msgPrinter.Printf("Org %v is deleted from the Horizon Exchange", theOrg)
-        msgPrinter.Println()
+	msgPrinter.Println()
 
 	// Delete org and clean up resources for this org in MMS
 	cliutils.Verbose(msgPrinter.Sprintf("Deleting org %s from MMS...", theOrg))

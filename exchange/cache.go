@@ -376,3 +376,13 @@ func hashResource(resource interface{}) ([]byte, error) {
 	hash := sha3.Sum256([]byte(jsonResource))
 	return hash[:], nil
 }
+
+// clear cache for all resources
+func ClearAllResourceCache() {
+	if ExchangeResourceCache != nil && ExchangeResourceCache.allResources != nil {
+		ExchangeResourceCache.Lock.Lock()
+		defer ExchangeResourceCache.Lock.Unlock()
+
+		ExchangeResourceCache.allResources = map[string]cache.Cache{}
+	}
+}
