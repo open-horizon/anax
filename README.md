@@ -31,7 +31,22 @@ Note that the Makefile silences a lot of its output by default. If you want to s
 
 #### Build executable
 
+Regular usage for the same anax runtime platform:
+
     make
+
+> Note: If you want to run anax build on another platform (cross-platform build), set up the target architecture and kind of operating system platform (Linux/Darwin) as arch and opsys variables respectively:
+>
+> ```sh
+> # For example, to build ppc64le anax binary for Linux OS on Mac OS host use the commands below
+> # List of possible values:
+> #   `arch`: armhf, arm64, amd64, ppc64el
+> #   `opsys`: Linux, Darwin
+> export arch=ppc64el
+> export opsys=Linux
+> # then call make to run anax build
+> make
+> ```
 
 #### Execute code checks
 

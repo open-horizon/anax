@@ -13,7 +13,17 @@ This support provides the way to build and run a container running the Horizon e
 
 ## Build and Push the Horizon agent Container
 
+If you are building Docker image on another platform (cross-platform build), export target host platform variables at first, e.g. for `ppc64le` architecture with Ubuntu 18.04 host do:
+
+```sh
+# List of possible values:
+#   `arch`: armhf, arm64, amd64, ppc64el
+#   `opsys`: Linux, Darwin
+export arch=ppl64el
+export opsys=Linux # (output of 'uname -s' command on target)
 ```
+
+```sh
 # In Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x, or set that variable in the environment
 make docker-image
 # test container locally with:
