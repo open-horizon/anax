@@ -118,6 +118,7 @@ function checkPrereqsAndInput () {
         fatal 2 "cloudctl is not installed."
     fi
     echo " - cloudctl installed"
+
     if ! command -v oc >/dev/null 2>&1; then
         fatal 2 "oc is not installed."
     fi
@@ -135,6 +136,9 @@ function checkPrereqsAndInput () {
     if [[ $SUPPORTED_NODE_TYPES != *$EDGE_NODE_TYPE* ]]; then
         fatal 1 "Unknown edge node type. Valid values: $SUPPORTED_NODE_TYPES"
     fi
+    if [[ -n $DIR && ! -d $DIR ]]; then
+        fatal 1 "the value of option '-f' isn't an existing directory ..."
+    fi
     echo ' - Command arguments valid'
     echo ""
 
@@ -150,6 +154,7 @@ function checkPrereqsAndInput () {
     echo " - CLUSTER_USER: $CLUSTER_USER"
     echo " - CLUSTER_PW set"
     echo ""
+
 }
 
 function cloudLogin () {
@@ -452,7 +457,7 @@ all_main() {
 
     cloudLogin
 
-    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+    if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
@@ -481,7 +486,7 @@ cluster_main() {
 
     cloudLogin
 
-    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+    if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
@@ -508,7 +513,7 @@ device_main() {
 
     cloudLogin
 
-    if [[ -n $DIR ]]; then pushd; fi   # if they want the files somewhere else, make that our current dir
+    if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
 
