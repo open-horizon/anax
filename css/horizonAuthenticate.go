@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/edge-sync-service/core/security"
 	"github.com/open-horizon/edge-utilities/logger"
 	"github.com/open-horizon/edge-utilities/logger/log"
@@ -31,6 +32,9 @@ const HZN_EXCHANGE_CA_CERT = "HZN_EXCHANGE_CA_CERT"
 const EX_ROOT_USER = "root"
 const EX_ORG_ADMIN = "exchange_org_admin"
 const EX_HUB_ADMIN = "exchange_hub_admin"
+
+const EX_MAX_RETRY = 5
+const EX_RETRY_INTERVAL = 2
 
 // HorizonAuthenticate is the Horizon plugin for authentication used by the Cloud sync service (CSS). This plugin
 // can be used in environments where authentication is handled by something else in the network before
@@ -268,15 +272,15 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 
 	// Invoke the exchange API to verify the user.
 	user := fmt.Sprintf("%v/%v", orgId, id)
-	resp, err := auth.invokeExchange(url, user, appSecret)
+	resp, err := auth.invokeExchangeWithRetry(url, user, appSecret)
+
+	// If there was an error invoking the HTTP API, return it.
+        if err != nil {
+                return "", "", err
+        }
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
-
-	// If there was an error invoking the HTTP API, return it.
-	if err != nil {
-		return "", "", err
-	}
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
@@ -348,15 +352,15 @@ func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, ap
 
 	// Invoke the exchange API to verify the user.
 	agbot := fmt.Sprintf("%v/%v", orgId, id)
-	resp, err := auth.invokeExchange(url, agbot, appSecret)
+	resp, err := auth.invokeExchangeWithRetry(url, agbot, appSecret)
+
+	// If there was an error invoking the HTTP API, return it.
+        if err != nil {
+                return err
+        }
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
-
-	// If there was an error invoking the HTTP API, return it.
-	if err != nil {
-		return err
-	}
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
@@ -404,15 +408,15 @@ func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, app
 
 	// Invoke the exchange API to verify the node.
 	node := fmt.Sprintf("%v/%v", orgId, id)
-	resp, err := auth.invokeExchange(url, node, appSecret)
+	resp, err := auth.invokeExchangeWithRetry(url, node, appSecret)
+
+	// If there was an error invoking the HTTP API, return it.
+        if err != nil {
+                return err
+        }
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
-
-	// If there was an error invoking the HTTP API, return it.
-	if err != nil {
-		return err
-	}
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
@@ -466,6 +470,47 @@ func (auth *HorizonAuthenticate) invokeExchange(url string, user string, pw stri
 	} else {
 		return resp, nil
 	}
+}
+
+// Common function to invoke the Exchange API with retry
+func (auth *HorizonAuthenticate) invokeExchangeWithRetry(url string, user string, pw string) (*http.Response, error) {
+	fmt.Println("in invokeExchangeWithRetry")
+	var currRetry int
+	var resp *http.Response
+	var err error
+	for currRetry = EX_MAX_RETRY; currRetry > 0; {
+		resp, err = auth.invokeExchange(url, user, pw)
+
+		// Log the HTTP response code.
+		if trace.IsLogging(logger.TRACE) {
+			if resp == nil {
+				trace.Debug(cssALS(fmt.Sprintf("received nil response")))
+			} else {
+				trace.Debug(cssALS(fmt.Sprintf("received HTTP code: %d", resp.StatusCode)))
+			}
+		}
+
+		if err == nil {
+			break
+		}
+		if exchange.IsTransportError(resp, err) {
+			// Log the transport error and retry
+			if trace.IsLogging(logger.TRACE) {
+				trace.Debug(cssALS(fmt.Sprintf("received transport error, retry...")))
+			}
+
+			currRetry--
+			time.Sleep(time.Duration(EX_RETRY_INTERVAL) * time.Second)
+		} else {
+			return resp, err
+		}
+	}
+
+	if currRetry == 0 {
+		return resp, errors.New(fmt.Sprintf("unable to verify %v in the exchange, exceeded %v retries", user, EX_MAX_RETRY))
+	}
+
+	return resp, err
 }
 
 // Create an https connection, using a supplied SSL CA certificate.
