@@ -52,7 +52,7 @@ ANAX_IMAGE_PROD = $(ANAX_IMAGE_BASE):stable$(BRANCH_NAME)
 ANAX_IMAGE_LATEST = $(ANAX_IMAGE_BASE):latest$(BRANCH_NAME)
 ANAX_IMAGE_LABELS ?= --label "name=$(arch)_anax" --label "version=$(ANAX_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
-# By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
+# By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make anax-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
 I18N_OUT_GOTEXT_FILES := locales/*/out.gotext.json
@@ -136,6 +136,8 @@ else ifeq ($(arch),amd64)
 	COMPILE_ARGS +=  GOARCH=amd64
 else ifeq ($(arch),ppc64el)
 	COMPILE_ARGS +=  GOARCH=ppc64le
+else ifeq ($(arch),s390x)
+	COMPILE_ARGS +=  GOARCH=s390x
 endif
 
 opsys ?= $(shell uname -s)
@@ -156,6 +158,8 @@ else ifeq ($(arch_local),amd64)
 	COMPILE_ARGS_LOCAL +=  GOARCH=amd64
 else ifeq ($(arch_local),ppc64el)
 	COMPILE_ARGS_LOCAL +=  GOARCH=ppc64le
+else ifeq ($(arch_local),s390x)
+	COMPILE_ARGS_LOCAL +=  GOARCH=s390x
 endif
 
 opsys_local ?= $(shell uname -s)
@@ -302,7 +306,7 @@ macpkginfo:
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" ]]; then \
 	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
@@ -335,7 +339,7 @@ agbot-push-only:
 	docker push $(AGBOT_IMAGE)
 	docker push $(AGBOT_IMAGE_STG)
 
-docker-push: docker-image docker-push-only agbot-image agbot-push-only
+docker-push: anax-image docker-push-only agbot-image agbot-push-only
 
 # you must set ANAX_IMAGE_VERSION to the correct version for promotion to production
 promote-anax:
