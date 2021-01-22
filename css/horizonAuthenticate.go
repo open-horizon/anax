@@ -474,7 +474,6 @@ func (auth *HorizonAuthenticate) invokeExchange(url string, user string, pw stri
 
 // Common function to invoke the Exchange API with retry
 func (auth *HorizonAuthenticate) invokeExchangeWithRetry(url string, user string, pw string) (*http.Response, error) {
-	fmt.Println("in invokeExchangeWithRetry")
 	var currRetry int
 	var resp *http.Response
 	var err error
