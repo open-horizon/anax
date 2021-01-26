@@ -2,6 +2,8 @@
 
 echo "Testing model management APIs"
 
+organizations=( e2edev@somecomp.com userdev IBM Customer1 Customer2 )
+
 # Verify a response. The inputs are:
 # $1 - the response
 # $2 - expected result
@@ -15,11 +17,57 @@ function verify {
     fi
 }
 
+# Check if the given org exists in CSS:
+# $1 - the org name to be checked in MMS
+# $2 - the orgs exist in MMS
+# $3 - number of orgs in MMS
+function checkOrganizationsInMMS {
+  echo "check org $1 exist in CSS"
+  found=false
+  for (( ix=0; ix<$3; ix++ ))
+  do
+    org1=$(echo $2 | jq '.['${ix}']."org-id"' | tr -d '"')
+    
+    if [ "$org1" == "$1" ]; then
+      echo "Find org $1 in CSS"
+      found=true
+      break
+    fi
+  done
+
+  if [ ${found} == false ]; then
+    echo -e "\nERROR: Org $1 is not found in CSS"
+    exit 1
+  fi
+}
+
 if [ ${CERT_LOC} -eq "1" ]; then
   CERT_VAR="--cacert /certs/css.crt"
 else
   CERT_VAR=""
 fi
+
+# Test organization is put in MMS
+echo "Checking Orgs in CSS..."
+GET_ORGS_RESP=$(curl -X GET -w "%{http_code}" $CERT_VAR -u root/root:$EXCH_ROOTPW --header 'Content-Type: application/json' "${CSS_URL}/api/v1/organizations")
+RESP_LEN=${#GET_ORGS_RESP}
+GET_ORGS_CODE=${GET_ORGS_RESP: -3}
+echo "GET_ORGS_CODE: $GET_ORGS_CODE"
+
+ORG_RESP=${GET_ORGS_RESP:0:$RESP_LEN-3}
+
+if [ "$GET_ORGS_CODE" != "200" ]
+then
+  echo -e "Error getting organizations from CSS, should have received 200, received $GET_ORGS_CODE"
+  exit -1
+fi
+
+NUM_ORGS=$(echo $ORG_RESP | jq length)
+echo "Find $NUM_ORGS orgs in CSS"
+for org in ${organizations[*]}
+  do
+    checkOrganizationsInMMS "$org" "$ORG_RESP" "$NUM_ORGS"
+  done
 
 # Test what happens when an invalid user id format is attempted
 UFORMAT=$(curl -sLX GET -w "%{http_code}" $CERT_VAR -u fred:ethel "${CSS_URL}/api/v1/destinations/userdev")

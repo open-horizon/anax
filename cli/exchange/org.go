@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/edge-sync-service/common"
 	"net/http"
 	"strings"
 )
@@ -132,6 +133,13 @@ func OrgCreate(org, userPwCreds, theOrg string, label string, desc string, tags 
 	AddOrgToAgbotServingList(org, userPwCreds, theOrg, agbot)
 	msgPrinter.Printf("Agbot %v is responsible for deploying services in org %v", agbot, theOrg)
 	msgPrinter.Println()
+
+	// add org to sync service
+	mmsCreateOrgReq := common.Organization{OrgID: theOrg}
+	cliutils.ExchangePutPost("Model Management Service", http.MethodPut, cliutils.GetMMSUrl(), "api/v1/organizations/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{204}, mmsCreateOrgReq, nil)
+
+	msgPrinter.Printf("Organization %v is successfully added to MMS.", theOrg)
+	msgPrinter.Println()
 }
 
 func OrgUpdate(org, userPwCreds, theOrg string, label string, desc string, tags []string, min int, max int, adjust int, maxNodes int) {
@@ -201,7 +209,7 @@ func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	// "Are you sure?" prompt
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	if !force {
-		cliutils.ConfirmRemove(msgPrinter.Sprintf("Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user %v from the Horizon Exchange?", theOrg))
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user %v from the Horizon Exchange and the MMS?", theOrg))
 	}
 
 	if agbot == "" {
@@ -249,7 +257,16 @@ func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	}
 
 	// Search exchange for org and delete it.
+	cliutils.Verbose(msgPrinter.Sprintf("Deleting org %s from the Horizon Exchange...", theOrg))
 	cliutils.ExchangeDelete("Exchange", cliutils.GetExchangeUrl(), "orgs/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{204})
+	msgPrinter.Printf("Org %v is deleted from the Horizon Exchange", theOrg)
+        msgPrinter.Println()
+
+	// Delete org and clean up resources for this org in MMS
+	cliutils.Verbose(msgPrinter.Sprintf("Deleting org %s from MMS...", theOrg))
+	cliutils.ExchangeDelete("Model Management Service", cliutils.GetMMSUrl(), "api/v1/organizations/"+theOrg, cliutils.OrgAndCreds(org, userPwCreds), []int{204})
+	msgPrinter.Printf("Org %v is deleted from MMS", theOrg)
+	msgPrinter.Println()
 
 	msgPrinter.Printf("Organization %v is successfully removed.", theOrg)
 	msgPrinter.Println()
