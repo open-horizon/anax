@@ -17,15 +17,13 @@ RUN microdnf install --nodocs -y shadow-utils \
     && chmod +x ./jq \
     && mv jq /usr/bin
 
+# create dirs and add agbotuser
+RUN mkdir -p /licenses /usr/horizon/bin /usr/horizon/web /var/horizon/msgKey \
+    && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust \
+    && adduser agbotuser -f -1 -c "agbot user,1,2,3"
+
 # add license file
-RUN mkdir -p /licenses
 COPY LICENSE.txt /licenses
-
-RUN mkdir -p /usr/horizon/bin /usr/horizon/web /var/horizon/msgKey \
-    && mkdir -p /etc/horizon/agbot/policy.d /etc/horizon/policy.d /etc/horizon/trust
-
-# add agbotuser 
-RUN adduser agbotuser -f -1 -c "agbot user,1,2,3"
 
 # copy the horizon configurations and binaries
 COPY config/agbot.json.tmpl /etc/horizon/anax.json.tmpl
@@ -34,8 +32,7 @@ COPY script/agbot_start.sh /usr/horizon/bin
 ADD anax /usr/horizon/bin/
 ADD hzn /usr/bin/
 
-RUN chown -R agbotuser /etc/horizon
-RUN chown -R agbotuser /var/horizon
+RUN chown -R agbotuser /etc/horizon /var/horizon
 
 USER agbotuser
 WORKDIR /home/agbotuser
