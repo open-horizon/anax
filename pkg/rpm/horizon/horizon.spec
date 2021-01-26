@@ -42,8 +42,9 @@ Open-horizon edge node agent
 # The install phase puts all of the files in the paths they should be in when the rpm is installed on a system.
 # The $RPM_BUILD_ROOT is a simulated root file system and usually has a value like: ~/rpmbuild/BUILDROOT/horizon-1.0.0-1.x86_64
 # Following the LSB Filesystem Hierarchy Standard: https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.pdf
+# Note: the shell these cmds run in apparently don't support curly braces in paths
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr/horizon/{bin,samples} $RPM_BUILD_ROOT/etc/default $RPM_BUILD_ROOT/etc/horizon/trust/
+mkdir -p $RPM_BUILD_ROOT/usr/horizon/bin $RPM_BUILD_ROOT/usr/horizon/samples $RPM_BUILD_ROOT/etc/default $RPM_BUILD_ROOT/etc/horizon/trust/
 cp -a fs/* $RPM_BUILD_ROOT/
 
 %files
@@ -70,7 +71,7 @@ if systemctl --quiet is-active horizon.service; then
 fi
 systemctl start horizon.service
 #fi
-mkdir -p /var/{horizon/,run/horizon/}
+mkdir -p /var/horizon/ /var/run/horizon/
 
 %preun
 # This runs before the pkg is removed. But the way rpm updates work is the newer rpm is installed 1st (with reference counting on the files),
