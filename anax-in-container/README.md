@@ -15,9 +15,14 @@ This support provides the way to build and run a container running the Horizon e
 
 ## Build and Push the Horizon agent Container
 
-> **NOTE:** For RHEL7/8 platform on s390x hardware you also have to build `jq` utility from sources due to lack of its availability at s390x repositories (see *From source on Linux...* section at https://stedolan.github.io/jq/download).
+If you are building Docker image on another platform (cross-platform build), export target host platform variables at first, e.g. for `ppc64le` architecture with Ubuntu 18.04 host do:
 
 ```bash
+# List of possible values:
+#   `arch`: armhf, arm64, amd64, ppc64el
+#   `opsys`: Linux, Darwin
+export arch=ppl64el
+export opsys=Linux # (output of 'uname -s' command on target)
 # In Makefile, modify line: DOCKER_IMAGE_VERSION ?= x.x.x, or set that variable in the environment
 make anax-image
 # test container locally with:
