@@ -19,29 +19,32 @@ import (
 
 const (
 	// pollinterval update types
-	UPDATE_TYPE_RESET      = "RESET"      // set the poll interval to min
-	UPDATE_TYPE_ALERT      = "ALERT"      // set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
-	UPDATE_TYPE_NEW_CONFIG = "NEW_CONFIG" // adjust the poll interval according to the new configuration
-	UPDATE_TYPE_NO_CHANGES = "NO_CHANGES" // increate poll interval because there are no changes
+	UPDATE_TYPE_RESET       = "RESET"       // set the poll interval to min
+	UPDATE_TYPE_ALERT       = "ALERT"       // set the poll interval to (min + max)/POLL_INTERVAL_ALERT_LEVEL
+	UPDATE_TYPE_NEW_CONFIG  = "NEW_CONFIG"  // adjust the poll interval according to the new configuration
+	UPDATE_TYPE_NO_CHANGES  = "NO_CHANGES"  // increate poll interval because there are no changes
+	UPDATE_TYPE_HB_FAILED   = "HB_FAILED"   // set poll interval to minimum until hb succeds
+	UPDATE_TYPE_HB_RESTORED = "HB_RESTORED" // set poll interval back to what it was before failing
 
 	// alert level
 	POLL_INTERVAL_ALERT_LEVEL = 2
 )
 
 type ChangesWorker struct {
-	worker.BaseWorker // embedded field
-	db                *bolt.DB
-	pollInterval      int    // The current change polling interval. This interval will float between Min and Max intervals.
-	pollMinInterval   int    // The minimum time to wait between polls to the exchange.
-	pollMaxInterval   int    // The maximum time to wait between polls to the exchange.
-	pollAdjustment    int    // The amount to increase the polling time, each time it is increased.
-	pollInitTime      int64  // THe time when the polling starts 10sec interval
-	agreementReached  bool   // True when ths node has seen at least one agreement.
-	noMsgCount        int    // How many consecutive polls have returned no changes.
-	changeID          uint64 // The current change Id in the exchange.
-	lastHeartbeat     int64  // Last time a heartbeat was successful.
-	heartBeatFailed   bool   // Remember that the heartbeat has failed.
-	noworkDispatch    int64  // The last time the NoWorkHandler was dispatched.
+	worker.BaseWorker      // embedded field
+	db                     *bolt.DB
+	pollInterval           int    // The current change polling interval. This interval will float between Min and Max intervals.
+	pollHBRestoredInterval int    // When the node heartbeat fails, this will be used to store the poll interval to return to once the heartbeat is restored
+	pollMinInterval        int    // The minimum time to wait between polls to the exchange.
+	pollMaxInterval        int    // The maximum time to wait between polls to the exchange.
+	pollAdjustment         int    // The amount to increase the polling time, each time it is increased.
+	pollInitTime           int64  // THe time when the polling starts 10sec interval
+	agreementReached       bool   // True when ths node has seen at least one agreement.
+	noMsgCount             int    // How many consecutive polls have returned no changes.
+	changeID               uint64 // The current change Id in the exchange.
+	lastHeartbeat          int64  // Last time a heartbeat was successful.
+	heartBeatFailed        bool   // Remember that the heartbeat has failed.
+	noworkDispatch         int64  // The last time the NoWorkHandler was dispatched.
 }
 
 func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *ChangesWorker {
@@ -53,18 +56,19 @@ func NewChangesWorker(name string, cfg *config.HorizonConfig, db *bolt.DB) *Chan
 	}
 
 	worker := &ChangesWorker{
-		BaseWorker:       worker.NewBaseWorker(name, cfg, ec),
-		db:               db,
-		pollInterval:     cfg.Edge.ExchangeMessagePollInterval,
-		pollMinInterval:  cfg.Edge.ExchangeMessagePollInterval,
-		pollMaxInterval:  cfg.Edge.ExchangeMessagePollMaxInterval,
-		pollAdjustment:   cfg.Edge.ExchangeMessagePollIncrement,
-		pollInitTime:     0,
-		noMsgCount:       0,
-		agreementReached: false,
-		changeID:         0,
-		heartBeatFailed:  false,
-		noworkDispatch:   time.Now().Unix(),
+		BaseWorker:             worker.NewBaseWorker(name, cfg, ec),
+		db:                     db,
+		pollInterval:           cfg.Edge.ExchangeMessagePollInterval,
+		pollHBRestoredInterval: 0,
+		pollMinInterval:        cfg.Edge.ExchangeMessagePollInterval,
+		pollMaxInterval:        cfg.Edge.ExchangeMessagePollMaxInterval,
+		pollAdjustment:         cfg.Edge.ExchangeMessagePollIncrement,
+		pollInitTime:           0,
+		noMsgCount:             0,
+		agreementReached:       false,
+		changeID:               0,
+		heartBeatFailed:        false,
+		noworkDispatch:         time.Now().Unix(),
 	}
 
 	// Initialize the change state tracking from the local DB.
@@ -356,7 +360,7 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 			// The exchange context is configured for minimal retries and a small interval. This will cause retries
 			// to end quickly and to be handled like errors here. When there are errors, the "no work interval" is kept
 			// minimal so that the worker itself will retry very soon.
-			w.updatePollingInterval(UPDATE_TYPE_RESET)
+			w.updatePollingInterval(UPDATE_TYPE_HB_FAILED)
 
 			// If the heartbeat has been failing for the configured grace period, let other workers know that the heartbeat
 			// has failed. The message is sent out only when the heartbeat state changes from success to failed after the configured
@@ -377,6 +381,10 @@ func (w *ChangesWorker) handleHeartbeatStateAndError(changes *exchange.ExchangeC
 	} else {
 		// Record the last good heartbeat
 		w.lastHeartbeat = time.Now().Unix()
+
+		if w.pollHBRestoredInterval != 0 {
+			w.updatePollingInterval(UPDATE_TYPE_HB_RESTORED)
+		}
 
 		// The node could be transitioning from disconnected to connected state.
 		if w.heartBeatFailed {
@@ -425,6 +433,7 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 			w.SetNoWorkInterval(w.pollInterval)
 			glog.V(3).Infof(chglog(fmt.Sprintf("Resetting poll interval to %v, max interval is %v, increment is %v.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
 		}
+
 		w.noMsgCount = 0
 	} else if updateType == UPDATE_TYPE_ALERT {
 		// This is the case when the node should be watching the changes more often than max but not as frequent as min.
@@ -467,6 +476,28 @@ func (w *ChangesWorker) updatePollingInterval(updateType string) {
 			w.SetNoWorkInterval(w.pollInterval)
 			glog.V(3).Infof(chglog(fmt.Sprintf("Setting poll interval to %v, max interval is %v, increment is %v due to the node or org heartbeat config changes.", w.pollInterval, w.pollMaxInterval, w.pollAdjustment)))
 		}
+	} else if updateType == UPDATE_TYPE_HB_FAILED {
+		// Save the current poll interval to reset to once the hearbeat is restored
+		if w.pollHBRestoredInterval == 0 {
+			w.pollHBRestoredInterval = w.pollInterval
+		}
+
+		if w.pollInterval != w.pollMinInterval {
+			w.pollInterval = w.pollMinInterval
+			w.SetNoWorkInterval(w.pollInterval)
+			glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat failed. Temporarily setting poll interval to %v.", w.pollInterval)))
+		}
+
+		w.noMsgCount = 0
+	} else if updateType == UPDATE_TYPE_HB_RESTORED {
+		if w.pollHBRestoredInterval != 0 {
+			// Reset the poll interval to what it was before the hb failed
+			w.pollInterval = w.pollHBRestoredInterval
+			w.pollHBRestoredInterval = 0
+		}
+
+		w.SetNoWorkInterval(w.pollInterval)
+		glog.V(3).Infof(chglog(fmt.Sprintf("Heartbeat restored. Resetting poll interval to %v.", w.pollInterval)))
 	} else {
 		glog.Warningf(chglog(fmt.Sprintf("The update type '%v' passed to the updatePollingInterval function is not supported.", updateType)))
 	}
