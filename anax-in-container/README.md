@@ -36,6 +36,7 @@ One of the most convenient uses of the Horizon agent container is to run it on a
 
 You need the following prerequisites:
 
+
 - The horizon-cli package **is** available for Mac. Download and install the latest version of `horizon-cli-x.x.x.pkg.pkg` from http://pkg.bluehorizon.network/macos/, install using `sudo installer -pkg "<path>/horizon-cli-x.x.x.pkg" -target /` command.
 - Docker for Mac OS X: https://docs.docker.com/docker-for-mac/install/
 - Socat, install using **one** of these methods:

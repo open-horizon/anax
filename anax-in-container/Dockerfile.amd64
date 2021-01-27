@@ -1,24 +1,25 @@
 FROM ubuntu:16.04
 
-ARG HORIZON_REPO_CHANNEL
+ARG HORIZON_AGENT_VERSION=2.27.0-173
 ENV ANAX_LOG_LEVEL 3
 # This gets rid of ugly error msgs like: debconf: unable to initialize frontend: Dialog
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install pre-reqs for getting the horizon pkgs
-RUN apt-get update && apt-get upgrade -y && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg
+RUN apt-get update && apt-get upgrade -y && apt-get install -y curl vim jq wget apt-transport-https software-properties-common gettext-base psmisc gnupg iptables
 
 # Set up the apt repos for docker and horizon
 RUN wget -qO- https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-    add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-RUN wget -qO- http://pkg.bluehorizon.network/bluehorizon.network-public.key | apt-key add - && \
-    add-apt-repository "deb [arch=$(dpkg --print-architecture)] http://pkg.bluehorizon.network/linux/ubuntu $(lsb_release -cs)$HORIZON_REPO_CHANNEL main"
+    add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
+    apt-get update && apt-get remove -y docker docker-engine docker.io && apt install -y docker-ce
+RUN wget https://github.com/open-horizon/anax/releases/download/v${HORIZON_AGENT_VERSION}/horizon-agent-linux-deb-amd64.tar.gz && \
+    tar zxvf horizon-agent-linux-deb-amd64.tar.gz && dpkg -i horizon-cli_${HORIZON_AGENT_VERSION}_amd64.deb horizon_${HORIZON_AGENT_VERSION}_amd64.deb
 
-# Install bluehorizon
-RUN apt-get update && apt-get install -y bluehorizon mosquitto-clients
+# Install mosquitto client
+RUN apt-get update && apt-get install -y mosquitto-clients
 
 #RUN systemctl restart horizon.service  # <- systemd not available in a container w/o hacks
 WORKDIR /root
-COPY service/* /root/
+COPY script/anax.service /root/
 # You can add a 2nd arg to this on the docker run cmd or the CMD statement in another dockerfile, to configure a specific environment
 ENTRYPOINT ["/root/anax.service", "start"]
