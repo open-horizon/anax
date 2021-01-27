@@ -69,9 +69,9 @@ func TestGetServicePolicyFromCache(t *testing.T) {
 	svcPol := externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("prop1", 5)}, Constraints: externalpolicy.ConstraintExpression{"openhorizon.cpu > 2"}}
 	exchPol := ExchangePolicy{svcPol, "12:00:00"}
 
-	UpdateCache(ServicePolicyCacheMapKey("e2edev@somecomp.com", "test-service", "amd64", "2.9.13"), SVC_POL_TYPE_CACHE, exchPol)
+	UpdateCache("e2edev@somecomp.com/test-service_amd64_2.9.13", SVC_POL_TYPE_CACHE, exchPol)
 
-	cachedSvcPol := GetServicePolicyFromCache("e2edev@somecomp.com", "test-service", "amd64", "2.9.13")
+	cachedSvcPol := GetServicePolicyFromCache("e2edev@somecomp.com/test-service_amd64_2.9.13")
 
 	if cachedSvcPol.Properties[0].Name != "prop1" || cachedSvcPol.Properties[0].Value != 5 || cachedSvcPol.Constraints[0] != "openhorizon.cpu > 2" {
 		t.Errorf("Error: unexpected value found in cached service policy.")
@@ -104,8 +104,8 @@ func TestDeleteCacheResourceFromChange(t *testing.T) {
 	UpdateCache(ServiceCacheMapKey("userdev", "another-service", "amd64"), SVC_DEF_TYPE_CACHE, svcDefs2)
 	UpdateCache(NodeCacheMapKey("e2edev@somecomp.com", "test-node-1"), NODE_POL_TYPE_CACHE, nodePol1)
 	UpdateCache(NodeCacheMapKey("userdev", "test-node-3"), NODE_POL_TYPE_CACHE, nodePol2)
-	UpdateCache(ServicePolicyCacheMapKey("e2edev@somecomp.com", "a-new-service", "amd64", "0.0.1"), SVC_POL_TYPE_CACHE, svcPol1)
-	UpdateCache(ServicePolicyCacheMapKey("userdev", "another-service", "amd64", "0.0.0"), SVC_POL_TYPE_CACHE, svcPol2)
+	UpdateCache("e2edev@somecomp.com/a-new-service_amd64_0.0.1", SVC_POL_TYPE_CACHE, svcPol1)
+	UpdateCache("userdev/another-service_amd64_0.0.0", SVC_POL_TYPE_CACHE, svcPol2)
 
 	change := ExchangeChange{OrgID: "e2edev@somecomp.com", ID: "test-node-2", Resource: "node"}
 
@@ -131,9 +131,9 @@ func TestDeleteCacheResourceFromChange(t *testing.T) {
 		t.Errorf("Error: failed to remove node policy resource from cache after exchange org create change")
 	} else if cachedNodePol = GetNodePolicyFromCache("userdev", "test-node-3"); cachedNodePol == nil {
 		t.Errorf("Error: policy for node test-node-3 removed by exchange org create change on a different org")
-	} else if cachedSvcPol := GetServicePolicyFromCache("e2edev@somecomp.com", "a-new-service", "amd64", "0.0.1"); cachedSvcPol != nil {
+	} else if cachedSvcPol := GetServicePolicyFromCache("e2edev@somecomp.com/a-new-service_amd64_0.0.1"); cachedSvcPol != nil {
 		t.Errorf("Error: failed to remove service policy resource from cache after exchange org create change")
-	} else if cachedSvcPol = GetServicePolicyFromCache("userdev", "another-service", "amd64", "0.0.0"); cachedSvcPol == nil {
+	} else if cachedSvcPol = GetServicePolicyFromCache("userdev/another-service_amd64_0.0.0"); cachedSvcPol == nil {
 		t.Errorf("Error: policy for service another-service removed by exchange org create change on a different org")
 	}
 }
