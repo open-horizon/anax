@@ -787,9 +787,8 @@ curl -s http://localhost:8046/status |jq '.'
     "architecture": "amd64",
     "horizon_version": "2.17.2"
   },
-  "connectivity": {
-    "firmware.bluehorizon.network": true,
-    "images.bluehorizon.network": true
+  "liveHealth": {
+    "lastDBHeartbeat": 1609137731
   }
 }
 ```

@@ -120,7 +120,7 @@ func ServiceList(credOrg, userPw, service string, namesOnly bool, filePath strin
 }
 
 // ServicePublish signs the MS def and puts it in the exchange
-func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, overwrite bool, servicePolicyFilePath string) {
+func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath string, dontTouchImage bool, pullImage bool, registryTokens []string, overwrite bool, servicePolicyFilePath string, public string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -138,6 +138,19 @@ func ServicePublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath strin
 	}
 	if svcFile.Org != "" && svcFile.Org != org {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the org specified in the input file (%s) must match the org specified on the command line (%s)", svcFile.Org, org))
+	}
+	if public != "" {
+		public = strings.ToLower(public)
+		if public != "true" && public != "false" {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Need to set 'true' or 'false' when specifying flag --public."))
+		} else {
+			// Override public key with key set in the hzn command
+			svcFile.Public, err = strconv.ParseBool(public)
+			if err != nil {
+				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("failed to parse %s: %v", public, err))
+			}
+
+		}
 	}
 
 	// Compensate for old service definition files
