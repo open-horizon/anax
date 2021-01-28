@@ -884,14 +884,8 @@ func GetServicePolicy(ec ExchangeContext, url string, org string, version string
 		return nil, "", errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
 	}
 
-	if cachedPol := GetServicePolicyFromCache(org, url, version, arch); cachedPol != nil {
-		return cachedPol, s_id, nil
-	}
-
 	pol, err := GetServicePolicyWithId(ec, s_id)
-	if pol != nil {
-		UpdateCache(ServicePolicyCacheMapKey(org, url, version, arch), SVC_POL_TYPE_CACHE, pol)
-	}
+
 	return pol, s_id, err
 }
 
@@ -903,6 +897,13 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 	// Get the service policy object. There should only be 1.
 	var resp interface{}
 	resp = new(ExchangePolicy)
+
+	if cachedPol := GetServicePolicyFromCache(service_id); cachedPol != nil {
+		if cachedPol.LastUpdated == "" {
+			return nil, nil
+		}
+		return cachedPol, nil
+	}
 
 	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
 
@@ -927,11 +928,10 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service policy for %v.", service_id)))
 			servicePolicy := resp.(*ExchangePolicy)
-			if servicePolicy.GetLastUpdated() == "" {
-				return nil, nil
-			} else {
-				return servicePolicy, nil
+			if servicePolicy != nil {
+				UpdateCache(service_id, SVC_POL_TYPE_CACHE, *servicePolicy)
 			}
+			return servicePolicy, nil
 		}
 	}
 }
