@@ -42,9 +42,9 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 
 	if credBytes, err := json.Marshal(cred); err != nil {
 		return errors.New(fmt.Sprintf("unable to marshal new authentication credential, error: %v", err))
-	} else if err := os.MkdirAll(a.GetCredentialPath(key), 0700); err != nil {
+	} else if err := os.MkdirAll(a.GetCredentialPath(key), 0755); err != nil {
 		return errors.New(fmt.Sprintf("unable to create directory path %v for authentication credential, error: %v", a.GetCredentialPath(key), err))
-	} else if err := ioutil.WriteFile(fileName, credBytes, 0700); err != nil {
+	} else if err := ioutil.WriteFile(fileName, credBytes, 0755); err != nil {
 		return errors.New(fmt.Sprintf("unable to write authentication credential file %v, error: %v", fileName, err))
 	}
 
