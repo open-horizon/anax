@@ -30,6 +30,13 @@ function set_exports {
 function run_delete_loops {
   # Start the deletion loop tests if they have not been disabled.
   echo -e "No loop setting is $NOLOOP"
+
+  # get the admin auth for verify_agreements.sh
+  local admin_auth="e2edevadmin:e2edevadminpw"
+  if [ "$DEVICE_ORG" == "userdev" ]; then
+    admin_auth="userdevadmin:userdevadminpw"
+  fi
+
   if [ "$NOLOOP" != "1" ] && [ "$NOAGBOT" != "1" ]
   then
     echo "Starting deletion loop tests. Giving time for 1st agreement to complete."
@@ -48,7 +55,7 @@ function run_delete_loops {
     if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ] || [ "${PATTERN}" == "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
       if [ "$NOLOOP" == "1" ]; then
-        ./verify_agreements.sh
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
         echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
@@ -58,13 +65,13 @@ function run_delete_loops {
           sleep 30
           ./agbot_del_loop.sh
           if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
-          ./verify_agreements.sh
+          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
           if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
       else
-        ./verify_agreements.sh &
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh &
       fi
     else
       echo -e "Verifying policy based workload deployment"
@@ -74,7 +81,7 @@ function run_delete_loops {
           echo "Skipping agreement verification"
           sleep 30
         else
-          ./verify_agreements.sh
+          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
           if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
         fi
         ./del_loop.sh
@@ -89,7 +96,7 @@ function run_delete_loops {
       if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
         echo "Skipping agreement verification"
       else
-        ./verify_agreements.sh
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
       fi
     fi

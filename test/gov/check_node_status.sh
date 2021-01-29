@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ ${CERT_LOC} -eq "1" ]; then
+    CERT_VAR="--cacert /certs/css.crt"
+else
+    CERT_VAR=""
+fi
+
 # Check node status. The inputs are:
 # $1 - check for non-empty running services
 # $2 - expected number of running services
