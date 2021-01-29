@@ -58,7 +58,12 @@ rpmbuild: require-version
 	rm -rf $(RPMROOT)/BUILD/horizon-*
 	rm -f $(RPMROOT)/SRPMS/$(RPMNAME)-$${VERSION%%.*}*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$${VERSION%%.*}*rpm $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$${VERSION%%.*}*rpm.gz
 	rpmbuild --target $(rpm_arch)-linux $(RPM_OPTS) -ba $(RPMNAME).spec
-	gzip --keep $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$(VERSION)-$(BUILD_NUMBER).$(rpm_arch).rpm
+	$(eval target_rpm := $(RPMROOT)/RPMS/$(rpm_arch)/$(RPMNAME)-$(VERSION)-$(BUILD_NUMBER).$(rpm_arch).rpm)
+	@# There is a '--keep' flag available in gzip >= 1.6 for keeping original file (.rpm), but to
+	@# save compatibility with previous versions of gzip tool (older than 1.6, e.g.
+	@# RHEL 7.x has 1.5 basically), it's recommended to use simple shell redirects
+	@# See https://unix.stackexchange.com/a/58814
+	gzip < $(target_rpm) > $(target_rpm).gz
 	rm -f $(RPMNAME)-$(VERSION)   # remove the sym link
 
 .PHONY: rpmbuild
