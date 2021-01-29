@@ -16,15 +16,18 @@ VERB_INFO=3
 VERB_VERBOSE=4
 VERB_DEBUG=5
 
-SUPPORTED_OS=("macos" "linux")
-SUPPORTED_LINUX_DISTRO=("ubuntu" "raspbian" "debian" "rhel" "centos")
-DEBIAN_VARIANTS_REGEX='^(ubuntu|raspbian|debian)$'
-SUPPORTED_DEBIAN_VERSION=("focal" "bionic" "buster" "xenial" "stretch")   # all debian variants
-SUPPORTED_DEBIAN_ARCH=("amd64" "arm64" "armhf")
-REDHAT_VARIANTS_REGEX='^(rhel|centos)$'
-#RHEL 8.3 is not supported but is enabled only for testing and tech preview purposes
-SUPPORTED_REDHAT_VERSION=("8.1" "8.2" "8.3")   # for fedora versions see https://fedoraproject.org/wiki/Releases,
-SUPPORTED_REDHAT_ARCH=("x86_64" "aarch64")
+# You can add to these lists of supported values by setting/exporting the corresponding <varname>_APPEND variable to a string of space-separated words.
+# This allows you to experiment with platforms or variations that are not yet officially tested/supported.
+SUPPORTED_OS=(macos linux $SUPPORTED_OS_APPEND)   # compared to what our get_os() returns
+SUPPORTED_LINUX_DISTRO=(ubuntu raspbian debian rhel centos $SUPPORTED_LINUX_DISTRO_APPEND)   # compared to what our detect_distro() sets DISTRO to
+SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
+SUPPORTED_DEBIAN_VERSION=(focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
+SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
+SUPPORTED_REDHAT_VARIANTS=(rhel centos $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
+# Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
+SUPPORTED_REDHAT_VERSION=(8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
+
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
 PERMANENT_CERT_PATH='/etc/horizon/agent-install.crt'
@@ -1646,14 +1649,14 @@ function detect_distro() {
 }
 
 function is_debian_variant() {
-    #: ${DISTRO:?}   # verify this function is not called before DISTRO is set
-    if [[ $DISTRO =~ $DEBIAN_VARIANTS_REGEX ]]; then return 0
+    : ${DISTRO:?}   # verify this function is not called before DISTRO is set
+    if [[ $SUPPORTED_DEBIAN_VARIANTS =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
     else return 1; fi
 }
 
 function is_redhat_variant() {
-    #: ${DISTRO:?}   # verify this function is not called before DISTRO is set
-    if [[ $DISTRO =~ $REDHAT_VARIANTS_REGEX ]]; then return 0
+    : ${DISTRO:?}   # verify this function is not called before DISTRO is set
+    if [[ $SUPPORTED_REDHAT_VARIANTS =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
     else return 1; fi
 }
 
@@ -1681,16 +1684,11 @@ function get_arch() {
 # checks if OS/distribution/codename/arch is supported
 function check_support() {
     log_debug "check_support() begin"
-
-    # checks if OS, distro or arch is supported
-
-    if [[ ! "${1}" == *"${2}"* ]]; then
-        echo -n "Supported $3 are: "
-        for i in "${1}"; do echo -n "${i} "; done
-        echo ""
-        log_fatal 2 "The detected ${2} is not supported"
+    local supported_list=${1:?} our_value=${2:?} name=${3:?}
+    if [[ $supported_list =~ (^|[[:space:]])$our_value($|[[:space:]]) ]]; then
+        log_verbose "$our_value is one of the supported $name"
     else
-        log_verbose "The detected ${2} is supported"
+        log_fatal 2 "$our_value is NOT one of the supported $name: $supported_list"
     fi
 
     log_debug "check_support() end"
