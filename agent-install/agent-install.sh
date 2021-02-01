@@ -94,7 +94,7 @@ Additional Edge Device Variables (in environment or config file):
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
 
 Additional Edge Cluster Variables (in environment or config file):
-    IMAGE_ON_EDGE_CLUSTER_REGISTRY: (required) agent image path (without tag) in edge cluster registry. For OCP use: <registry-host>/<agent-project>/amd64_anax_k8s, for k3s use: <IP-address>:5000/<agent-namespace>/amd64_anax_k8s, for microsk8s: localhost:32000/<agent-namespace>/amd64_anax_k8s
+    IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
     EDGE_CLUSTER_REGISTRY_USERNAME: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_REGISTRY_TOKEN: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_STORAGE_CLASS: the storage class to use for the agent and edge services. Default: gp2
@@ -503,14 +503,36 @@ function get_all_variables() {
         get_variable APT_REPO_BRANCH 'updates'
         get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
     elif is_cluster; then
+        # check kubectl is available
+        KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
+        if command -v "$KUBECTL" >/dev/null 2>&1; then
+            : # nothing more to do
+        elif command -v microk8s.kubectl >/dev/null 2>&1; then
+            KUBECTL=microk8s.kubectl
+        elif command -v k3s kubectl; then
+            KUBECTL="k3s kubectl"
+        else
+            log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH"
+        fi
+
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE 'openhorizon-agent'
         USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '75'
 
         if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-            #lily: can we default IMAGE_ON_EDGE_CLUSTER_REGISTRY by querying the edge cluster, so the user doesn't have to input it unless they want to override it?
-            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY '' 'true'
+            local default_image_registry_on_edge_cluster
+            if [[ $KUBECTL == "microk8s.kubectl" ]]; then
+                default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_anax_k8s"
+            elif [[ $KUBECTL == "k3s kubectl" ]]; then
+                local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
+                default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
+            else
+                # ocp - image registry should be enabled/exposed and created in $AGENT_NAMESPACE before running agent install script
+                local default_image_registry_on_edge_cluster=$($KUBECTL get is amd64_anax_k8s -n $AGENT_NAMESPACE -o json | jq -r .status.publicDockerImageRepository)
+            fi
+
+            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster"
             get_variable EDGE_CLUSTER_REGISTRY_USERNAME
             get_variable EDGE_CLUSTER_REGISTRY_TOKEN
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
