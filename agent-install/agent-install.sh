@@ -2034,8 +2034,10 @@ function create_cluster_resources() {
     log_debug "create_cluster_resources() begin"
 
     create_namespace
-    #lily: is 2 seconds always the right amount? Is there something in the system it could wait on instead? If so, let's use wait_for() here.
-    sleep 2
+    local namespace_wait_seconds=10
+    if ! wait_for '[[ -n $($KUBECTL get namespace ${AGENT_NAMESPACE} 2>/dev/null) ]]' 'agent install namespace created' $namespace_wait_seconds; then
+        log_fatal 3 "${AGENT_NAMESPACE} did not created successfully"
+    fi
     create_service_account
     create_secret
     create_configmap
@@ -2259,8 +2261,7 @@ function update_deployment() {
                             chk $? 'deleting the Terminating pod for agent update on cluster'
                             pkill -f anax.service
                         else
-                            log_verbose "Will not force delete agent pod"
-                            #lily: should we exit here? What will happen if we continue?
+                            log_fatal 3 "Agent pod is not force deleted. Please mannually delete the agent pod and run agent-install.sh again"
                         fi
                     else
                         log_verbose "Agent pod ${POD_ID} is still in Terminating, force deleting..."
