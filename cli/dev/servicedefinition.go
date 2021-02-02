@@ -44,7 +44,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 
 	res.Org = "$HZN_ORG_ID"
 	res.Label = msgPrinter.Sprintf("$SERVICE_NAME for $ARCH")
-	res.Public = true
+	res.Public = false
 	res.URL = "$SERVICE_NAME"
 	res.Version = "$SERVICE_VERSION"
 	res.Arch = "$ARCH"

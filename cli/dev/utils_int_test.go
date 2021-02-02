@@ -126,7 +126,7 @@ func createSkeletalServiceDef(serviceName string) *common.ServiceFile {
 	res := new(common.ServiceFile)
 	res.Label = ""
 	res.Description = ""
-	res.Public = true
+	res.Public = false
 	res.URL = DEFAULT_SDEF_URL
 	res.Version = "1.0.0"
 	res.Arch = cutil.ArchString()
