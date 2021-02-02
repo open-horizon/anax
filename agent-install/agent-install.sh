@@ -1672,13 +1672,13 @@ function detect_distro() {
 
 function is_debian_variant() {
     : ${DISTRO:?}   # verify this function is not called before DISTRO is set
-    if [[ $SUPPORTED_DEBIAN_VARIANTS =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
+    if [[ ${SUPPORTED_DEBIAN_VARIANTS[*]} =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
     else return 1; fi
 }
 
 function is_redhat_variant() {
     : ${DISTRO:?}   # verify this function is not called before DISTRO is set
-    if [[ $SUPPORTED_REDHAT_VARIANTS =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
+    if [[ ${SUPPORTED_REDHAT_VARIANTS[*]} =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
     else return 1; fi
 }
 
