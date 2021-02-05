@@ -74,7 +74,7 @@ Options/Flags:
     -O    The exchange organization id (This flag is equivalent to HZN_ORG_ID)
     -u    Exchange user authorization credentials (This flag is equivalent to HZN_EXCHANGE_USER_AUTH)
     -a    Exchange node authorization credentials (This flag is equivalent to HZN_EXCHANGE_NODE_AUTH)
-    -d    The id to register this node with (This flag is equivalent to NODE_ID or HZN_DEVICE_ID)
+    -d    The id to register this node with (This flag is equivalent to HZN_NODE_ID, NODE_ID or HZN_DEVICE_ID. NODE_ID is deprecated)
     -p    Pattern name to register this edge node with. Default: registers node with policy. (This flag is equivalent to HZN_EXCHANGE_PATTERN)
     -n    Path to a node policy file (This flag is equivalent to HZN_NODE_POLICY)
     -w    Wait for this edge service to start executing on this node before this script exits. If using a pattern, this value can be '*'. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE)
@@ -134,7 +134,7 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:" opt; do
         ;;
     a)  ARG_HZN_EXCHANGE_NODE_AUTH="$OPTARG"
         ;;
-    d)  ARG_NODE_ID="$OPTARG"
+    d)  ARG_HZN_NODE_ID="$OPTARG"
         ;;
     p)  ARG_HZN_EXCHANGE_PATTERN="$OPTARG"
         ;;
@@ -484,8 +484,9 @@ function get_all_variables() {
     # Now that we have the values from cmd line and config file, we can get all of the variables
     get_variable AGENT_SKIP_REGISTRATION 'false'
     get_variable HZN_EXCHANGE_URL '' 'true'
-    get_variable NODE_ID   #future: maybe NODE_ID, HZN_DEVICE_ID, and HZN_EXCHANGE_NODE_AUTH should be combined
+    get_variable NODE_ID   # deprecated
     get_variable HZN_DEVICE_ID
+    get_variable HZN_NODE_ID
     get_variable HZN_EXCHANGE_PATTERN
     get_variable HZN_NODE_POLICY
     get_variable AGENT_WAIT_FOR_SERVICE
@@ -548,12 +549,21 @@ function get_all_variables() {
     ARCH=$(get_arch)
     log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
 
-    # The edge node id can be specified 3 different ways: -d (NODE_ID), the first part of -a (HZN_EXCHANGE_NODE_AUTH), or HZN_DEVICE_ID. Need to reconcile all of them.
+    # The edge node id can be specified 4 different ways: -d (HZN_NODE_ID), the first part of -a (HZN_EXCHANGE_NODE_AUTH), NODE_ID(deprecated) or HZN_DEVICE_ID. Need to reconcile all of them.
     local node_id   # just used in this section of code to sort out this mess
     # find the 1st occurrence of the user specifying node it
-    if [[ -n ${HZN_EXCHANGE_NODE_AUTH%%:*} ]]; then node_id=${HZN_EXCHANGE_NODE_AUTH%%:*}
-    elif [[ -n $NODE_ID ]]; then node_id=$NODE_ID
-    elif [[ -n $HZN_DEVICE_ID ]]; then node_id=$HZN_DEVICE_ID
+    if [[ -n ${HZN_EXCHANGE_NODE_AUTH%%:*} ]]; then 
+        node_id=${HZN_EXCHANGE_NODE_AUTH%%:*}
+        log_info "Using node id from HZN_EXCHANGE_NODE_AUTH"
+    elif [[ -n $HZN_NODE_ID ]]; then 
+        node_id=$HZN_NODE_ID
+        log_info "Using node id from HZN_NODE_ID"
+    elif [[ -n $NODE_ID ]]; then 
+        node_id=$NODE_ID
+        log_warning "Using node id from NODE_ID. NODE_ID is deprecated, please use HZN_NODE_ID in the future."
+    elif [[ -n $HZN_DEVICE_ID ]]; then 
+        node_id=$HZN_DEVICE_ID
+        log_warning "Using node id from HZN_DEVICE_ID"
     else   # not specified, default it
         #future: we should let 'hzn register' default the node id, but i think there are other parts of this script that depend on it being set
         # Try to get it from a previous installation
@@ -562,11 +572,12 @@ function get_all_variables() {
             log_info "Using node id from HZN_DEVICE_ID in /etc/default/horizon: $node_id"
         else
             node_id=${HOSTNAME}   # default
+            log_info "use hostname as node id"
         fi
     fi
     # check if they gave us conflicting values
-    if [[ ( -n ${HZN_EXCHANGE_NODE_AUTH%%:*} && ${HZN_EXCHANGE_NODE_AUTH%%:*} != $node_id ) || ( -n $NODE_ID && $NODE_ID != $node_id ) || ( -n $HZN_DEVICE_ID && $HZN_DEVICE_ID != $node_id ) ]]; then
-        log_fatal 1 "If the edge node id is specified via multiple means (-d (NODE_ID), -a (HZN_EXCHANGE_NODE_AUTH), or HZN_DEVICE_ID) they must all be the same value"
+    if [[ ( -n ${HZN_EXCHANGE_NODE_AUTH%%:*} && ${HZN_EXCHANGE_NODE_AUTH%%:*} != $node_id ) || ( -n $HZN_NODE_ID && $HZN_NODE_ID != $node_id ) || ( -n $NODE_ID && $NODE_ID != $node_id ) || ( -n $HZN_DEVICE_ID && $HZN_DEVICE_ID != $node_id ) ]]; then
+        log_fatal 1 "If the edge node id is specified via multiple means (-d (HZN_NODE_ID), -a (HZN_EXCHANGE_NODE_AUTH), HZN_DEVICE_ID, or NODE_ID) they must all be the same value"
     fi
     # regardless of how they specified it to us, we need these variables set for the rest of the script
     NODE_ID=$node_id
