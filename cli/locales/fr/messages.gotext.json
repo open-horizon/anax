@@ -1439,9 +1439,9 @@
       "fuzzy": true
     },
     {
-      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur par défaut est 0, ce qui signifie qu'il n'y a pas de limite.",
+      "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur ne peut pas excéder la limite globale d'Exchange. La valeur par défaut est 0, ce qui signifie qu'aucune limite n'est définie pour l'organisation.",
       "fuzzy": true
     },
     {
@@ -1477,7 +1477,7 @@
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
       "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "Nouvelle balise de l'organisation. Le format est mytag1=myvalue1. Cet indicateur peut être répété pour spécifier plusieurs balises. Utilisez '-t \"\"' une seule fois pour supprimer toutes les balises.",
+      "translation": "Nouvelle balise de l'organisation. Le format est mytag1=myvalue1. Cet indicateur peut être répété pour spécifier plusieurs balises. Utilisez '-t \"\"' une seule fois pour retirer toutes les balises.",
       "fuzzy": true
     },
     {
@@ -1499,9 +1499,9 @@
       "fuzzy": true
     },
     {
-      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté.",
+      "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur ne peut pas excéder la limite globale d'Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté.",
       "fuzzy": true
     },
     {
@@ -1514,6 +1514,12 @@
       "id": "Remove this organization.",
       "message": "Remove this organization.",
       "translation": "Retirer cette organisation.",
+      "fuzzy": true
+    },
+    {
+      "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "message": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "translation": "Agbot duquel retirer la règle de déploiement. En cas d'omission, le premier agbot identifié dans Exchange sera utilisé. Le format est 'agbot_org/agbot_id'.",
       "fuzzy": true
     },
     {
@@ -2259,6 +2265,12 @@
       "fuzzy": true
     },
     {
+      "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "message": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "translation": "Indique si le service est visible par les utilisateurs en dehors de l'organisation. Cet indicateur est facultatif. Si cette variable n'est pas définie, le service sera défini par défaut sur les métadonnées définies. Si la définition du service a également laissé indéfini le champ Public, le service sera non public par défaut.",
+      "fuzzy": true
+    },
+    {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
       "message": "Verify the signatures of a service resource in the Horizon Exchange.",
       "translation": "Vérifier les signatures d'une ressource de service dans Horizon Exchange.",
@@ -2821,9 +2833,9 @@
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy.",
-      "message": "The JSON input file name containing the node policy.",
-      "translation": "Nom du fichier d'entrée JSON qui contient la règle du noeud.",
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "translation": "Nom du fichier d'entrée JSON qui contient la règle de noeud. Spécifiez -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -2899,9 +2911,9 @@
       "fuzzy": true
     },
     {
-      "id": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "message": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "translation": "Type de noeud. Les valeurs valides sont 'device' et 'cluster'. La valeur par défaut est 'device'.",
+      "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "message": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "translation": "Type de noeud. Les valeurs valides sont 'device' et 'cluster'. La valeur par défaut est le type de nœud fourni par -n ou l'appareil enregistré en cours, s'il n'est pas présent.",
       "fuzzy": true
     },
     {
@@ -3497,6 +3509,18 @@
       "fuzzy": true
     },
     {
+      "id": "Show the container/system logs for a service.",
+      "message": "Show the container/system logs for a service.",
+      "translation": "Afficher les journaux du conteneur ou du système pour un service.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "translation": "Nom du service dont les enregistrements de journal doivent être affichés. Le nom de service est identique à celui de la zone d'URL d'une définition de service.",
+      "fuzzy": true
+    },
+    {
       "id": "For working with project dependencies.",
       "message": "For working with project dependencies.",
       "translation": "A utiliser avec des dépendances de projet.",
@@ -3893,9 +3917,9 @@
       "fuzzy": true
     },
     {
-      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "translation": "Définition de l'objet à publier. Vous pouvez obtenir un modèle vide à l'aide de la commande 'hzn mss object new'.",
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "translation": "Définition de l'objet à publier. Vous pouvez obtenir un modèle vide à l'aide de la commande 'hzn mss object new'. Spécifiez -m- pour lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -5123,9 +5147,9 @@
       "fuzzy": true
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez 'systemctl status horizon' pour vérifier si l'agent Horizon est en cours d'exécution. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}",
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5136,11 +5160,27 @@
           "expr": "apiMethod"
         },
         {
+          "id": "StatusCommand",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "statusCommand"
+        },
+        {
+          "id": "StatusURL",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "statusURL"
+        },
+        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[4]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 4,
           "expr": "err"
         }
       ],
@@ -6563,6 +6603,174 @@
       "fuzzy": true
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Le pilote de journal fourni ({LogDriver}) ne prend pas en charge l'affichage des journaux. Les journaux sont disponibles uniquement sur les pilotes suivants : {DockerDriversWithLoggingSupport}",
+      "placeholders": [
+        {
+          "id": "LogDriver",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "logDriver"
+        },
+        {
+          "id": "DockerDriversWithLoggingSupport",
+          "string": "%[2]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "message": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Erreur lors de la création de StdoutPipe pour la commande : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "message": "Error starting command: {Err}",
+      "translation": "Erreur lors du démarrage de la commande : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "message": "Error waiting for command: {Err}",
+      "translation": "Erreur lors de l'attente de la commande : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} n'a pas pu être ouvert ou n'existe pas : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} n'a pas pu obtenir les statistiques : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Erreur de lecture depuis {SysLogPath} : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossible d'obtenir l'état de {SysLogPath} : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "message": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "translation": "Aucun ID noeud ni aucune règle de noeud n'est spécifié. Obtention de la règle de noeud à partir du noeud local.",
@@ -6572,6 +6780,22 @@
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "message": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "translation": "Aucun ID noeud ni aucun fichier d'entrée utilisateur de noeud n'est spécifié. Obtention de l'entrée utilisateur de noeud à partir du noeud local.",
+      "fuzzy": true
+    },
+    {
+      "id": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "message": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "translation": "Aucun type de nœud n'a été fourni : le type de nœud '{NodeId}' sera utilisé",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "compCheckInput.NodeId"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -8373,6 +8597,155 @@
       "fuzzy": true
     },
     {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Plusieurs services ont été trouvés pour le déploiement. Spécifiez le nom du service par l'indicateur -s",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Impossible d'indiquer la liste des conteneurs : {Arg_3}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Found containers {Containers}",
+      "message": "Found containers {Containers}",
+      "translation": "Conteneurs trouvés {Containers}",
+      "placeholders": [
+        {
+          "id": "Containers",
+          "string": "%[1]v",
+          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "argNum": 1,
+          "expr": "containers"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to display log messages: {Err}",
+      "message": "Unable to display log messages: {Err}",
+      "translation": "Impossible d'afficher les messages de journal : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "message": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "translation": "Affichage des messages du journal pour le service de développement {ServiceName} avec le préfixe d'identifiant de l'instance {MsId}.",
+      "placeholders": [
+        {
+          "id": "ServiceName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        },
+        {
+          "id": "MsId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "msId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Use ctrl-C to terminate this command.",
+      "message": "Use ctrl-C to terminate this command.",
+      "translation": "Utilisez ctrl-C pour mettre fin à cette commande.",
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Impossible de trouver un conteneur en cours d'exécution pour le service de développement {ServiceName}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "ServiceName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "$SERVICE_NAME for $ARCH",
       "message": "$SERVICE_NAME for $ARCH",
       "translation": "$SERVICE_NAME pour $ARCH",
@@ -8713,7 +9086,7 @@
           "id": "AbstractUserInput",
           "string": "%[3]v",
           "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
-          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9431,7 +9804,7 @@
     {
       "id": "Failed to remove the UDS socket file: {Err}",
       "message": "Failed to remove the UDS socket file: {Err}",
-      "translation": "Echec de la suppression du fichier socket UDS : {Err}",
+      "translation": "Echec de retrait du fichier socket UDS : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9447,7 +9820,7 @@
     {
       "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
       "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
-      "translation": "Echec de la suppression du dossier des données d'authentification FSS. Erreur : {Err}",
+      "translation": "Echec de retrait du dossier des données d'authentification FSS. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9732,22 +10105,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Found containers {Containers}",
-      "message": "Found containers {Containers}",
-      "translation": "Conteneurs trouvés {Containers}",
-      "placeholders": [
-        {
-          "id": "Containers",
-          "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "argNum": 1,
-          "expr": "containers"
         }
       ],
       "fuzzy": true
@@ -10813,22 +11170,6 @@
       "fuzzy": true
     },
     {
-      "id": "can not create node {NodeId} because maxNodes limit has been reached",
-      "message": "can not create node {NodeId} because maxNodes limit has been reached",
-      "translation": "Impossible de créer le noeud {NodeId} car la limite maxNodes a été atteinte",
-      "placeholders": [
-        {
-          "id": "NodeId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nodeId"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Node {NodeId} updated.",
       "message": "Node {NodeId} updated.",
       "translation": "Le noeud {NodeId} a été mis à jour.",
@@ -11144,6 +11485,22 @@
           "underlyingType": "string",
           "argNum": 2,
           "expr": "node"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal node policy output: {Err}",
+      "message": "failed to marshal node policy output: {Err}",
+      "translation": "Impossible de sérialiser la sortie de la règle du nœud : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -11711,6 +12068,22 @@
       "fuzzy": true
     },
     {
+      "id": "Organization {TheOrg} is successfully added to MMS.",
+      "message": "Organization {TheOrg} is successfully added to MMS.",
+      "translation": "L'organisation {TheOrg} a bien été ajoutée à MMS.",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "translation": "Entrée non valide pour --max-nodes. Seuls -1, 0 et les entiers positifs sont autorisés.",
@@ -11733,9 +12106,9 @@
       "fuzzy": true
     },
     {
-      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc) risquent également d'être supprimées. Voulez-vous vraiment retirer l'utilisateur {TheOrg} d'Horizon Exchange ?",
+      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc) risquent également d'être supprimées. Voulez-vous vraiment supprimer l'utilisateur {TheOrg} d'Horizon Exchange et de MMS ?",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -11749,13 +12122,131 @@
       "fuzzy": true
     },
     {
-      "id": "org {TheOrg} not found.",
-      "message": "org {TheOrg} not found.",
-      "translation": "Organisation {TheOrg} introuvable.",
+      "id": "Using agbot {Agbot}",
+      "message": "Using agbot {Agbot}",
+      "translation": "Utilisation de l'agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "Agbot",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot unmarshal served pattern",
+      "message": "Cannot unmarshal served pattern",
+      "translation": "Impossible de désérialiser le modèle servi",
+      "fuzzy": true
+    },
+    {
+      "id": "Removing pattern {PatternId} from agbot {Agbot}",
+      "message": "Removing pattern {PatternId} from agbot {Agbot}",
+      "translation": "Suppression du modèle {PatternId} de l'agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "Agbot",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Removing policy {PolId} from agbot {Agbot}",
+      "message": "Removing policy {PolId} from agbot {Agbot}",
+      "translation": "Suppression de la règle {PolId} de l'agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "PolId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "polId"
+        },
+        {
+          "id": "Agbot",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "message": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "translation": "Suppression de l'organisation {TheOrg} d'Horizon Exchange...",
       "placeholders": [
         {
           "id": "TheOrg",
           "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "message": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "translation": "L'organisation {TheOrg} a été supprimée d'Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Deleting org {TheOrg} from MMS...",
+      "message": "Deleting org {TheOrg} from MMS...",
+      "translation": "Suppression de l'organisation {TheOrg} de MMS...",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Org {TheOrg} is deleted from MMS",
+      "message": "Org {TheOrg} is deleted from MMS",
+      "translation": "L'organisation {TheOrg} a été supprimée de MMS",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
@@ -11823,7 +12314,7 @@
     {
       "id": "Empty string is specified with -t, all tags will be removed.",
       "message": "Empty string is specified with -t, all tags will be removed.",
-      "translation": "Une chaîne vide est spécifiée avec -t, toutes les balises seront supprimées.",
+      "translation": "Une chaîne vide est spécifiée avec -t, toutes les balises seront retirées.",
       "fuzzy": true
     },
     {
@@ -12412,6 +12903,36 @@
       "id": "Flags -I and -P are mutually exclusive.",
       "message": "Flags -I and -P are mutually exclusive.",
       "translation": "Les indicateurs -I et -P s'excluent mutuellement.",
+      "fuzzy": true
+    },
+    {
+      "id": "Need to set 'true' or 'false' when specifying flag --public.",
+      "message": "Need to set 'true' or 'false' when specifying flag --public.",
+      "translation": "Vous devez définir 'true' ou 'false' lors de la spécification de l'indicateur --public.",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to parse {Public}: {Err}",
+      "message": "failed to parse {Public}: {Err}",
+      "translation": "échec de l'analyse de {Public} : {Err}",
+      "placeholders": [
+        {
+          "id": "Public",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "public"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -14551,7 +15072,7 @@
     {
       "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)",
       "message": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)",
-      "translation": "Impossible d'utiliser le pattern {Pattern} donné, car il est différent du pattern {ExchangePattern} défini pour le noeud dans Exchange.\nPour corriger le problème, effectuez l'une des opérations suivantes : \n \t- Supprimer le noeud du réseau Exchange \n\t- Retirer le pattern du noeud sur le réseau Exchange \n\t- S'enregistrer sans pattern (le pattern défini sur le noeud dans le réseau Exchange sera utilisé)",
+      "translation": "Impossible d'utiliser le pattern {Pattern} donné, car il est différent du pattern {ExchangePattern} défini pour le noeud dans Exchange.\nPour corriger le problème, effectuez l'une des opérations suivantes : \n \t- Retirer le noeud du réseau Exchange \n\t- Retirer le pattern du noeud sur le réseau Exchange \n\t- S'enregistrer sans pattern (le pattern défini sur le noeud dans le réseau Exchange sera utilisé)",
       "placeholders": [
         {
           "id": "Pattern",
@@ -14725,7 +15246,7 @@
     {
       "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
       "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
-      "translation": "REMARQUE : L'indicateur -s n'est actuellement pas pris en charge pour le type de noeud {NodeType}. L'enregistrement de noeud se terminera sans attente du démarrage du service. ",
+      "translation": "REMARQUE : L'indicateur -s n'est actuellement pas pris en charge pour le type de noeud {NodeType}. L'enregistrement de noeud se terminera sans attente du démarrage du service.",
       "placeholders": [
         {
           "id": "NodeType",
@@ -14958,6 +15479,42 @@
       "id": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted.",
       "message": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted.",
       "translation": "Lors de l'enregistrement avec un pattern, si -s est '*' (c'est-à-dire que tous les services de niveau supérieur dans le pattern seront surveillés), --serviceorg doit être omis.",
+      "fuzzy": true
+    },
+    {
+      "id": "could not validate node ID '{NodeId}': {Err}",
+      "message": "could not validate node ID '{NodeId}': {Err}",
+      "translation": "impossible de valider l'identifiant du nœud '{NodeId}' : {Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "translation": "Identifiant de nœud non valide. Seuls les caractères suivants sont autorisés : A-Za-z0-9, caractères Unicode et symboles spéciaux !-*+()?.,:&amp;TWBAMP;@",
+      "fuzzy": true
+    },
+    {
+      "id": "invalid node ID: Whitespace is not permitted",
+      "message": "invalid node ID: Whitespace is not permitted",
+      "translation": "Identifiant de nœud non valide. L'espace n'est pas autorisée",
       "fuzzy": true
     },
     {
@@ -15383,33 +15940,33 @@
       "fuzzy": true
     },
     {
-      "id": "{Status1} \t{Org}/{Name}",
-      "message": "{Status1} \t{Org}/{Name}",
-      "translation": "{Status1} \t{Org}/{Name}",
+      "id": "{Org}/{Name} \t{Status1}",
+      "message": "{Org}/{Name} \t{Status1}",
+      "translation": "{Org}/{Name} \t{Status1}",
       "placeholders": [
         {
-          "id": "Status1",
+          "id": "Org",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "statusArr[ss.status+1]"
-        },
-        {
-          "id": "Org",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
           "expr": "ss.org"
         },
         {
           "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ss.name"
+        },
+        {
+          "id": "Status1",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "ss.name"
+          "expr": "statusDetails[ss.status+1]"
         }
       ],
       "fuzzy": true
@@ -16113,12 +16670,6 @@
       "fuzzy": true
     },
     {
-      "id": "Use ctrl-C to terminate this command.",
-      "message": "Use ctrl-C to terminate this command.",
-      "translation": "Utilisez ctrl-C pour mettre fin à cette commande.",
-      "fuzzy": true
-    },
-    {
       "id": "Service {RefUrl} is not running on the node.",
       "message": "Service {RefUrl} is not running on the node.",
       "translation": "Le service {RefUrl} n'est pas en cours d'exécution sur le noeud.",
@@ -16135,9 +16686,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "message": "Error creating StdoutPipe for command: {Err}",
-      "translation": "Erreur lors de la création de StdoutPipe pour la commande : {Err}",
+      "id": "Service definition unmarshalling error: {Err}",
+      "message": "Service definition unmarshalling error: {Err}",
+      "translation": "Erreur de désérialisation de la définition du service : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16151,9 +16702,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error starting command: {Err}",
-      "message": "Error starting command: {Err}",
-      "translation": "Erreur lors du démarrage de la commande : {Err}",
+      "id": "Deployment unmarshalling error: {Err}",
+      "message": "Deployment unmarshalling error: {Err}",
+      "translation": "Erreur de désérialisation du déploiement : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16167,9 +16718,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error waiting for command: {Err}",
-      "message": "Error waiting for command: {Err}",
-      "translation": "Erreur lors de l'attente de la commande : {Err}",
+      "id": "Service logs are unavailable: {Err}",
+      "message": "Service logs are unavailable: {Err}",
+      "translation": "Les journaux de service ne sont pas disponibles : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16177,102 +16728,6 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "translation": "{SysLogPath} n'a pas pu être ouvert ou n'existe pas : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{SysLogPath} could not get stats: {Err}",
-      "message": "{SysLogPath} could not get stats: {Err}",
-      "translation": "{SysLogPath} n'a pas pu obtenir les statistiques : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error reading from {SysLogPath}: {Err}",
-      "message": "Error reading from {SysLogPath}: {Err}",
-      "translation": "Erreur de lecture depuis {SysLogPath} : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Unable to state {SysLogPath}: {Err}",
-      "message": "Unable to state {SysLogPath}: {Err}",
-      "translation": "Impossible d'obtenir l'état de {SysLogPath} : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -16647,9 +17102,9 @@
       "fuzzy": true
     },
     {
-      "id": "must specify objectType if set objectId",
-      "message": "must specify objectType if set objectId",
-      "translation": "doit spécifier objectType si objectId défini",
+      "id": "must specify --type with --id",
+      "message": "must specify --type with --id",
+      "translation": "Spécifiez l'indicateur --type avec --id",
       "fuzzy": true
     },
     {
@@ -16708,6 +17163,22 @@
           "underlyingType": "string",
           "argNum": 3,
           "expr": "org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "message": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "translation": "Échec de la sérialisation de la sortie 'hzn mms object list' : {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
         }
       ],
       "fuzzy": true
@@ -16867,12 +17338,6 @@
       "fuzzy": true
     },
     {
-      "id": "must specify --type with --id",
-      "message": "must specify --type with --id",
-      "translation": "Spécifiez l'indicateur --type avec --id",
-      "fuzzy": true
-    },
-    {
       "id": "must specify --id with --type",
       "message": "must specify --id with --type",
       "translation": "Spécifiez l'indicateur --id avec --type",
@@ -16894,30 +17359,6 @@
       "id": "cannot specify --pattern with --def",
       "message": "cannot specify --pattern with --def",
       "translation": "Impossible de spécifier l'indicateur --pattern avec --def",
-      "fuzzy": true
-    },
-    {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "message": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "Impossible de lire le fichier de définition {ObjMetadataFile} : {Err}",
-      "placeholders": [
-        {
-          "id": "ObjMetadataFile",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "objMetadataFile"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -17107,7 +17548,7 @@
     {
       "id": "Unable to stop {MakeLabelNameCSSNAME}, error {Err}, please stop manually, Remove the css image and try 'hzn dev service start' again",
       "message": "Unable to stop {MakeLabelNameCSSNAME}, error {Err}, please stop manually, Remove the css image and try 'hzn dev service start' again",
-      "translation": "Impossible d'arrêter {MakeLabelNameCSSNAME}, erreur {Err}. Arrêtez-le manuellement, supprimez l'image css et relancez 'hzn dev service start'",
+      "translation": "Impossible d'arrêter {MakeLabelNameCSSNAME}, erreur {Err}. Arrêtez-le manuellement, retirez l'image css et relancez 'hzn dev service start'",
       "placeholders": [
         {
           "id": "MakeLabelNameCSSNAME",
@@ -17131,7 +17572,7 @@
     {
       "id": "Unable to remove CSS image, err: {Err}",
       "message": "Unable to remove CSS image, err: {Err}",
-      "translation": "Impossible de supprimer l'image CSS, erreur : {Err}",
+      "translation": "Impossible de retirer l'image CSS, erreur : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -17329,7 +17770,7 @@
     {
       "id": "Removing docker image {Name}.",
       "message": "Removing docker image {Name}.",
-      "translation": "Suppression de l'image Docker {Name}.",
+      "translation": "Retrait de l'image Docker {Name}.",
       "placeholders": [
         {
           "id": "Name",
@@ -17361,7 +17802,7 @@
     {
       "id": "unable to remove CSS image: {Name}, please manually remove it 'docker rmi {Name_1}'",
       "message": "unable to remove CSS image: {Name}, please manually remove it 'docker rmi {Name_1}'",
-      "translation": "Impossible de supprimer l'image CSS : {Name}. Veuillez supprimer manuellement 'docker rmi {Name_1}'",
+      "translation": "Impossible de retirer l'image CSS : {Name}. Retirez manuellement 'docker rmi {Name_1}'",
       "placeholders": [
         {
           "id": "Name",
@@ -17385,7 +17826,7 @@
     {
       "id": "Docker image {Name} removed.",
       "message": "Docker image {Name} removed.",
-      "translation": "Image Docker {Name} supprimée.",
+      "translation": "Image Docker {Name} retirée.",
       "placeholders": [
         {
           "id": "Name",
@@ -18067,9 +18508,35 @@
       "fuzzy": true
     },
     {
-      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "L'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud a été complètement réinitialisé.",
+      "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "message": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "translation": "L'annulation de l'enregistrement du nœud à l'aide de l'API anax a échoué. Une tentative de nettoyage profond va être effectuée en externe. Erreur d'API anax spécifique : {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "unregErr.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "translation": "L'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud a été complètement réinitialisé. Erreur d'API anax spécifique : {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "unregErr.Error()"
+        }
+      ],
       "fuzzy": true
     },
     {

@@ -467,8 +467,8 @@
       "translation": "读取 HTTP 响应出错，错误：{Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。或运行“{StatusURL}”以检查 Horizon 代理程序状态。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -735,6 +735,38 @@
       "translation": "警告：未能解析映像路径 '{Image}'。 不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。"
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "所提供的日志驱动程序 ({LogDriver}) 不支持日志查看。日志仅在以下驱动程序上可用：{DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "为命令创建 StdoutPipe 出错：{Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "启动命令出错：{Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "等待命令出错：{Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 无法打开或不存在：{Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 无法获取统计信息：{Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "读取 {SysLogPath} 时出错：{Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "无法声明 {SysLogPath}：{Err}"
+    },
+    {
       "id": "no service name",
       "translation": "没有服务名称"
     },
@@ -780,11 +812,11 @@
     },
     {
       "id": "Error getting new user input format. {Err1}",
-      "translation": "获取新用户输入格式时出错。{Err1}"
+      "translation": "获取新用户输入格式时出错。 {Err1}"
     },
     {
       "id": "Failed to create json object for user input. {Err1}",
-      "translation": "未能为用户输入创建 JSON 对象。{Err1}"
+      "translation": "未能为用户输入创建 JSON 对象。 {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -1403,8 +1435,8 @@
       "translation": "已装入服务 {Arg_1}/{Arg_2} 的映像。"
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。"
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。 原因：{Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",

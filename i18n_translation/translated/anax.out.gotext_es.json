@@ -467,8 +467,8 @@
       "translation": "Se ha producido un error al leer la respuesta HTTP, error {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "No se puede conectar con la API REST de Horizon para ejecutar {ApiMethod}. Ejecute 'systemctl status horizon' para comprobar si el agente de Horizon se está ejecutando. O establezca HORIZON_URL para conectar con otro puerto local que esté conectado con un agente de Horizon remoto a través de un túnel ssh. El error específico es: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "No se puede conectar con la API REST de Horizon para ejecutar {ApiMethod}. Ejecute '{StatusCommand}' para comprobar si el agente de Horizon está en ejecución. O ejecute '{StatusURL}' para comprobar el estado del agente de Horizon. O establezca HORIZON_URL para conectar con otro puerto local que esté conectado con un agente de Horizon remoto a través de un túnel ssh. El error específico es: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +733,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Aviso: no se ha podido analizar la vía de acceso de imagen '{Image}'. No se envía a un registro Docker, solo se incluye tal cual en el campo 'deployment'."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "El controlador de registro proporcionado ({LogDriver}) no da soporte a la visualización de registros. Los registros sólo están disponibles en los siguientes controladores: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Se ha producido un error al crear StdoutPipe para el mandato: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Se ha producido un error al iniciar el mandato: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Se ha producido un error al esperar el mandato: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} no se ha podido abrir o no existe: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} no ha podido obtener estadísticas: {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Error al leer en {SysLogPath}: {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "No se puede indicar {SysLogPath}: {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1435,8 @@
       "translation": "Se ha cargado la imagen para el servicio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Se ha producido un error al cargar la imagen para {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Se ha producido un error al cargar la imagen para {Arg_1}/{Arg_2}.Razón: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",

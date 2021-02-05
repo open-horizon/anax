@@ -467,8 +467,8 @@
       "translation": "讀取 HTTP 回應時發生錯誤，錯誤為：{Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 'systemctl status horizon' 以檢查 Horizon 是否在執行中。 或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 '{StatusCommand}'，以檢查 Horizon 代理程式是否在執行中。或者執行 '{StatusURL}' 以檢查 Horizon 代理程式狀態。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -735,6 +735,38 @@
       "translation": "警告：無法剖析映像檔路徑 '{Image}'。 不要將它推送至 Docker 登錄，只需將它按原樣包含在 'deployment' 欄位中。"
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "為指令建立 StdoutPipe 時發生錯誤：{Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "啟動指令時發生錯誤：{Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "等待指令時發生錯誤：{Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 無法開啟或不存在：{Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 無法取得統計資料：{Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "從 {SysLogPath} 中讀取時發生錯誤：{Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "無法陳述 {SysLogPath}：{Err}"
+    },
+    {
       "id": "no service name",
       "translation": "無服務名稱"
     },
@@ -780,11 +812,11 @@
     },
     {
       "id": "Error getting new user input format. {Err1}",
-      "translation": "取得新的使用者輸入格式時發生錯誤。{Err1}"
+      "translation": "取得新的使用者輸入格式時發生錯誤。 {Err1}"
     },
     {
       "id": "Failed to create json object for user input. {Err1}",
-      "translation": "無法建立使用者輸入的 json 物件。{Err1}"
+      "translation": "無法建立使用者輸入的 json 物件。 {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -1403,8 +1435,8 @@
       "translation": "已針對服務 {Arg_1}/{Arg_2} 載入映像檔。"
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "針對 {Arg_1}/{Arg_2} 載入映像檔時發生錯誤。"
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "針對 {Arg_1}/{Arg_2} 載入映像檔時發生錯誤。 原因：{Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",

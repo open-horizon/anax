@@ -1439,9 +1439,9 @@
       "fuzzy": true
     },
     {
-      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "容許此組織具有的節點數目上限。 預設值是 0，這表示無限制。",
+      "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "translation": "容許此組織具有的節點數目上限。 該值不能超出 Exchange 廣域限制。預設值是 0，表示沒有組織限制。",
       "fuzzy": true
     },
     {
@@ -1499,9 +1499,9 @@
       "fuzzy": true
     },
     {
-      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "容許此組織具有的節點新數目上限。 預設負整數 -1 表示無變更。",
+      "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "translation": "容許此組織具有的節點新數目上限。 該值不能超出 Exchange 廣域限制。預設負整數 -1 表示無變更。",
       "fuzzy": true
     },
     {
@@ -1514,6 +1514,12 @@
       "id": "Remove this organization.",
       "message": "Remove this organization.",
       "translation": "移除此組織。",
+      "fuzzy": true
+    },
+    {
+      "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "message": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "translation": "要從中移除部署原則的 agbot。 如果省略，則將使用在 Exchange 中找到的第一個 agbot。格式為 'agbot_org/agbot_id'。",
       "fuzzy": true
     },
     {
@@ -2259,6 +2265,12 @@
       "fuzzy": true
     },
     {
+      "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "message": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "translation": "服務對組織外部的使用者是否可見。這是選用旗標。 如果保留未設定，則服務將預設為已設定的任何 meta 資料。如果服務定義也尚未設定公用欄位，則依預設服務不是公用的。",
+      "fuzzy": true
+    },
+    {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
       "message": "Verify the signatures of a service resource in the Horizon Exchange.",
       "translation": "驗證 Horizon Exchange 中的服務資源的簽章。",
@@ -2821,9 +2833,9 @@
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy.",
-      "message": "The JSON input file name containing the node policy.",
-      "translation": "包含節點原則的 JSON 輸入檔名稱。",
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "translation": "包含節點原則的 JSON 輸入檔名稱。 指定 -f- 以從 stdin 中讀取。",
       "fuzzy": true
     },
     {
@@ -2899,9 +2911,9 @@
       "fuzzy": true
     },
     {
-      "id": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "message": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "translation": "節點類型。 有效值為 device 和 cluster。 預設值為 'device'。",
+      "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "message": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "translation": "節點類型。 有效值為 device 和 cluster。 預設值是 -n 或現行已登錄裝置提供之節點的類型，如果已省略。",
       "fuzzy": true
     },
     {
@@ -3497,6 +3509,18 @@
       "fuzzy": true
     },
     {
+      "id": "Show the container/system logs for a service.",
+      "message": "Show the container/system logs for a service.",
+      "translation": "顯示服務的儲存器/系統日誌。",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "translation": "應該顯示其日誌記錄的服務名稱。 服務名稱與服務定義的 URL 欄位相同。",
+      "fuzzy": true
+    },
+    {
       "id": "For working with project dependencies.",
       "message": "For working with project dependencies.",
       "translation": "使用專案相依關係。",
@@ -3893,9 +3917,9 @@
       "fuzzy": true
     },
     {
-      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "translation": "要發佈之物件的定義。 空白範本可透過 'hzn mss object new' 指令來獲取。",
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "translation": "要發佈之物件的定義。 空白範本可透過 'hzn mss object new' 指令來獲取。 指定 -m- 以從 stdin 進行讀取。",
       "fuzzy": true
     },
     {
@@ -5123,9 +5147,9 @@
       "fuzzy": true
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 'systemctl status horizon' 以檢查 Horizon 是否在執行中。 或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}",
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 '{StatusCommand}'，以檢查 Horizon 代理程式是否在執行中。或者執行 '{StatusURL}' 以檢查 Horizon 代理程式狀態。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5136,11 +5160,27 @@
           "expr": "apiMethod"
         },
         {
+          "id": "StatusCommand",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "statusCommand"
+        },
+        {
+          "id": "StatusURL",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "statusURL"
+        },
+        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[4]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 4,
           "expr": "err"
         }
       ],
@@ -6563,6 +6603,174 @@
       "fuzzy": true
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}",
+      "placeholders": [
+        {
+          "id": "LogDriver",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "logDriver"
+        },
+        {
+          "id": "DockerDriversWithLoggingSupport",
+          "string": "%[2]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "message": "Error creating StdoutPipe for command: {Err}",
+      "translation": "為指令建立 StdoutPipe 時發生錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "message": "Error starting command: {Err}",
+      "translation": "啟動指令時發生錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "message": "Error waiting for command: {Err}",
+      "translation": "等待指令時發生錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 無法開啟或不存在：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 無法取得統計資料：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "從 {SysLogPath} 中讀取時發生錯誤：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "無法陳述 {SysLogPath}：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "message": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "translation": "未指定節點 ID 及節點原則。 正在從本端節點取得節點原則。",
@@ -6572,6 +6780,22 @@
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "message": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "translation": "未指定節點 ID 及節點使用者輸入檔。 正在從本端節點取得節點使用者輸入。",
+      "fuzzy": true
+    },
+    {
+      "id": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "message": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "translation": "尚未提供任何節點類型：將使用節點類型為 '{NodeId}' 的節點",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "compCheckInput.NodeId"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -8373,6 +8597,155 @@
       "fuzzy": true
     },
     {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 已找到多個服務以進行部署。請使用 -s 旗標指定服務名稱",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 無法列出儲存器：{Arg_3}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Found containers {Containers}",
+      "message": "Found containers {Containers}",
+      "translation": "找到儲存器 {Containers}",
+      "placeholders": [
+        {
+          "id": "Containers",
+          "string": "%[1]v",
+          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "argNum": 1,
+          "expr": "containers"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to display log messages: {Err}",
+      "message": "Unable to display log messages: {Err}",
+      "translation": "無法顯示日誌訊息：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "message": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "translation": "正在顯示實例 ID 字首為 {MsId} 之裝置服務 {ServiceName} 的日誌訊息。",
+      "placeholders": [
+        {
+          "id": "ServiceName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        },
+        {
+          "id": "MsId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "msId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Use ctrl-C to terminate this command.",
+      "message": "Use ctrl-C to terminate this command.",
+      "translation": "使用 ctrl-C 終止此指令。",
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 針對裝置服務 {ServiceName} 找不到任何執行中儲存器",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "ServiceName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "$SERVICE_NAME for $ARCH",
       "message": "$SERVICE_NAME for $ARCH",
       "translation": "$ARCH 的 $SERVICE_NAME",
@@ -8713,7 +9086,7 @@
           "id": "AbstractUserInput",
           "string": "%[3]v",
           "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
-          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9732,22 +10105,6 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Found containers {Containers}",
-      "message": "Found containers {Containers}",
-      "translation": "找到儲存器 {Containers}",
-      "placeholders": [
-        {
-          "id": "Containers",
-          "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "argNum": 1,
-          "expr": "containers"
         }
       ],
       "fuzzy": true
@@ -10813,22 +11170,6 @@
       "fuzzy": true
     },
     {
-      "id": "can not create node {NodeId} because maxNodes limit has been reached",
-      "message": "can not create node {NodeId} because maxNodes limit has been reached",
-      "translation": "因為已達到 maxNodes 限制，所以無法建立節點 {NodeId}",
-      "placeholders": [
-        {
-          "id": "NodeId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nodeId"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Node {NodeId} updated.",
       "message": "Node {NodeId} updated.",
       "translation": "節點 {NodeId} 已更新。",
@@ -11144,6 +11485,22 @@
           "underlyingType": "string",
           "argNum": 2,
           "expr": "node"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal node policy output: {Err}",
+      "message": "failed to marshal node policy output: {Err}",
+      "translation": "無法配置節點原則輸出：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -11711,6 +12068,22 @@
       "fuzzy": true
     },
     {
+      "id": "Organization {TheOrg} is successfully added to MMS.",
+      "message": "Organization {TheOrg} is successfully added to MMS.",
+      "translation": "組織 {TheOrg} 已順利新增至 MMS。",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "translation": "--max-nodes 的輸入無效。 僅容許 -1、0 及正整數。",
@@ -11733,9 +12106,9 @@
       "fuzzy": true
     },
     {
-      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "translation": "警告：這樣做還會刪除此組織擁有的所有 Exchange 資源（節點、服務、型樣等）。 確定要從 Horizon Exchange 中移除使用者 {TheOrg} 嗎？",
+      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "translation": "警告：這樣做還會刪除此組織擁有的所有 Exchange 資源（節點、服務、型樣等）。 確定要從 Horizon Exchange 及 MMS 中移除使用者 {TheOrg} 嗎？",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -11749,13 +12122,131 @@
       "fuzzy": true
     },
     {
-      "id": "org {TheOrg} not found.",
-      "message": "org {TheOrg} not found.",
-      "translation": "找不到組織 {TheOrg}。",
+      "id": "Using agbot {Agbot}",
+      "message": "Using agbot {Agbot}",
+      "translation": "正在使用 agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "Agbot",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot unmarshal served pattern",
+      "message": "Cannot unmarshal served pattern",
+      "translation": "無法解除配置提供的型樣",
+      "fuzzy": true
+    },
+    {
+      "id": "Removing pattern {PatternId} from agbot {Agbot}",
+      "message": "Removing pattern {PatternId} from agbot {Agbot}",
+      "translation": "正在從 agbot {Agbot} 中移除型樣 {PatternId}",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "Agbot",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Removing policy {PolId} from agbot {Agbot}",
+      "message": "Removing policy {PolId} from agbot {Agbot}",
+      "translation": "正在從 agbot {Agbot} 中移除原則 {PolId}",
+      "placeholders": [
+        {
+          "id": "PolId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "polId"
+        },
+        {
+          "id": "Agbot",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "message": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "translation": "正在從 Horizon Exchange 中刪除組織 {TheOrg}...",
       "placeholders": [
         {
           "id": "TheOrg",
           "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "message": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "translation": "已從 Horizon Exchange 中刪除組織 {TheOrg}",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Deleting org {TheOrg} from MMS...",
+      "message": "Deleting org {TheOrg} from MMS...",
+      "translation": "正在從 MMS 中刪除組織 {TheOrg}...",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Org {TheOrg} is deleted from MMS",
+      "message": "Org {TheOrg} is deleted from MMS",
+      "translation": "已從 MMS 中刪除組織 {TheOrg}",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
@@ -12412,6 +12903,36 @@
       "id": "Flags -I and -P are mutually exclusive.",
       "message": "Flags -I and -P are mutually exclusive.",
       "translation": "旗標 -I 和 -P 互斥。",
+      "fuzzy": true
+    },
+    {
+      "id": "Need to set 'true' or 'false' when specifying flag --public.",
+      "message": "Need to set 'true' or 'false' when specifying flag --public.",
+      "translation": "指定旗標 --public 時，需要設定 'true' 或 'false'。",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to parse {Public}: {Err}",
+      "message": "failed to parse {Public}: {Err}",
+      "translation": "無法剖析 {Public}：{Err}",
+      "placeholders": [
+        {
+          "id": "Public",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "public"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -14725,7 +15246,7 @@
     {
       "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
       "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
-      "translation": "附註：nodeType：{NodeType} 目前不支援 -s 旗標。節點登錄將完成，而不會等待服務啟動。",
+      "translation": "附註：nodeType：{NodeType} 目前不支援 -s 旗標。 節點登錄將完成，而不會等待服務啟動。",
       "placeholders": [
         {
           "id": "NodeType",
@@ -14958,6 +15479,42 @@
       "id": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted.",
       "message": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted.",
       "translation": "使用型樣登錄時，如果 -s 是 '*'（即，將監視型樣中的所有最上層服務），則必須省略 --serviceorg。",
+      "fuzzy": true
+    },
+    {
+      "id": "could not validate node ID '{NodeId}': {Err}",
+      "message": "could not validate node ID '{NodeId}': {Err}",
+      "translation": "無法驗證節點 ID '{NodeId}'：{Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "translation": "無效的節點 ID：A-Za-z0-9，僅容許 Unicode 字元及特殊符號 !-*+()?.,:&@",
+      "fuzzy": true
+    },
+    {
+      "id": "invalid node ID: Whitespace is not permitted",
+      "message": "invalid node ID: Whitespace is not permitted",
+      "translation": "無效的節點 ID：不允許空格",
       "fuzzy": true
     },
     {
@@ -15383,33 +15940,33 @@
       "fuzzy": true
     },
     {
-      "id": "{Status1} \t{Org}/{Name}",
-      "message": "{Status1} \t{Org}/{Name}",
-      "translation": "{Status1} \t{Org}/{Name}",
+      "id": "{Org}/{Name} \t{Status1}",
+      "message": "{Org}/{Name} \t{Status1}",
+      "translation": "{Org}/{Name} \t{Status1}",
       "placeholders": [
         {
-          "id": "Status1",
+          "id": "Org",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "statusArr[ss.status+1]"
-        },
-        {
-          "id": "Org",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
           "expr": "ss.org"
         },
         {
           "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ss.name"
+        },
+        {
+          "id": "Status1",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "ss.name"
+          "expr": "statusDetails[ss.status+1]"
         }
       ],
       "fuzzy": true
@@ -16113,12 +16670,6 @@
       "fuzzy": true
     },
     {
-      "id": "Use ctrl-C to terminate this command.",
-      "message": "Use ctrl-C to terminate this command.",
-      "translation": "使用 ctrl-C 終止此指令。",
-      "fuzzy": true
-    },
-    {
       "id": "Service {RefUrl} is not running on the node.",
       "message": "Service {RefUrl} is not running on the node.",
       "translation": "服務 {RefUrl} 未在節點上執行。",
@@ -16135,9 +16686,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "message": "Error creating StdoutPipe for command: {Err}",
-      "translation": "為指令建立 StdoutPipe 時發生錯誤：{Err}",
+      "id": "Service definition unmarshalling error: {Err}",
+      "message": "Service definition unmarshalling error: {Err}",
+      "translation": "服務定義解除配置錯誤：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16151,9 +16702,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error starting command: {Err}",
-      "message": "Error starting command: {Err}",
-      "translation": "啟動指令時發生錯誤：{Err}",
+      "id": "Deployment unmarshalling error: {Err}",
+      "message": "Deployment unmarshalling error: {Err}",
+      "translation": "部署解除配置錯誤：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16167,9 +16718,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error waiting for command: {Err}",
-      "message": "Error waiting for command: {Err}",
-      "translation": "等待指令時發生錯誤：{Err}",
+      "id": "Service logs are unavailable: {Err}",
+      "message": "Service logs are unavailable: {Err}",
+      "translation": "服務日誌無法使用：{Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16177,102 +16728,6 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "translation": "{SysLogPath} 無法開啟或不存在：{Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{SysLogPath} could not get stats: {Err}",
-      "message": "{SysLogPath} could not get stats: {Err}",
-      "translation": "{SysLogPath} 無法取得統計資料：{Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error reading from {SysLogPath}: {Err}",
-      "message": "Error reading from {SysLogPath}: {Err}",
-      "translation": "從 {SysLogPath} 中讀取時發生錯誤：{Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Unable to state {SysLogPath}: {Err}",
-      "message": "Unable to state {SysLogPath}: {Err}",
-      "translation": "無法陳述 {SysLogPath}：{Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -16647,9 +17102,9 @@
       "fuzzy": true
     },
     {
-      "id": "must specify objectType if set objectId",
-      "message": "must specify objectType if set objectId",
-      "translation": "如果設定了 objectId，則必須指定 objectType",
+      "id": "must specify --type with --id",
+      "message": "must specify --type with --id",
+      "translation": "必須指定 --type 與 --id",
       "fuzzy": true
     },
     {
@@ -16708,6 +17163,22 @@
           "underlyingType": "string",
           "argNum": 3,
           "expr": "org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "message": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "translation": "無法配置 'hzn mms object list' 輸出：{Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
         }
       ],
       "fuzzy": true
@@ -16867,12 +17338,6 @@
       "fuzzy": true
     },
     {
-      "id": "must specify --type with --id",
-      "message": "must specify --type with --id",
-      "translation": "必須指定 --type 與 --id",
-      "fuzzy": true
-    },
-    {
       "id": "must specify --id with --type",
       "message": "must specify --id with --type",
       "translation": "必須指定 --id 與 --type",
@@ -16894,30 +17359,6 @@
       "id": "cannot specify --pattern with --def",
       "message": "cannot specify --pattern with --def",
       "translation": "無法指定 --pattern 與 --def",
-      "fuzzy": true
-    },
-    {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "message": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "無法讀取定義檔 {ObjMetadataFile}：{Err}",
-      "placeholders": [
-        {
-          "id": "ObjMetadataFile",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "objMetadataFile"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
       "fuzzy": true
     },
     {
@@ -18067,9 +18508,35 @@
       "fuzzy": true
     },
     {
-      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "未順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。",
+      "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "message": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "translation": "使用 anax API 取消登錄節點失敗。將嘗試外部深度清理。特定 anax API 錯誤為：{Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "unregErr.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "translation": "未順利取消登錄節點，請使用 'hzn unregister -D' 來確保已完全重設節點。 特定 anax API 錯誤為：{Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "unregErr.Error()"
+        }
+      ],
       "fuzzy": true
     },
     {
