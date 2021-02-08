@@ -275,9 +275,9 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 	resp, err := auth.invokeExchangeWithRetry(url, user, appSecret)
 
 	// If there was an error invoking the HTTP API, return it.
-        if err != nil {
-                return "", "", err
-        }
+	if err != nil {
+		return "", "", err
+	}
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
@@ -355,9 +355,9 @@ func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, ap
 	resp, err := auth.invokeExchangeWithRetry(url, agbot, appSecret)
 
 	// If there was an error invoking the HTTP API, return it.
-        if err != nil {
-                return err
-        }
+	if err != nil {
+		return err
+	}
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
@@ -411,9 +411,9 @@ func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, app
 	resp, err := auth.invokeExchangeWithRetry(url, node, appSecret)
 
 	// If there was an error invoking the HTTP API, return it.
-        if err != nil {
-                return err
-        }
+	if err != nil {
+		return err
+	}
 
 	// Make sure the response reader is closed if we exit quickly.
 	defer resp.Body.Close()
