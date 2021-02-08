@@ -467,8 +467,8 @@
       "translation": "Erro ao ler a resposta de HTTP, erro {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Não é possível se conectar à API de REST do Horizon para executar {ApiMethod}. Execute 'systemctl status horizon' para verificar se o Horizon Agent está em execução. Ou configure HORIZON_URL para se conectar a outra porta local que esteja conectada a um Horizon Agent remoto por meio de um túnel de ssh. O erro específico é: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Não é possível se conectar à API de REST do Horizon para executar {ApiMethod}. Execute '{StatusCommand}' para verificar se o agente do Horizon está em execução. Ou execute '{StatusURL}' para verificar o status do agente do Horizon. Ou configure HORIZON_URL para se conectar a outra porta local que esteja conectada a um Horizon Agent remoto por meio de um túnel de ssh. O erro específico é: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +733,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Aviso: não foi possível analisar o caminho da imagem '{Image}'. Não será enviado por push para um registro do Docker, apenas incluído no campo 'deployment' no estado em que se encontra."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "O driver de log fornecido ({LogDriver}) não suporta a visualização de logs. Os logs estão disponíveis apenas nos drivers a seguir: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Erro ao criar StdoutPipe para o comando: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Erro ao iniciar o comando: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Erro ao aguardar o comando: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} não pôde ser aberto ou não existe: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} não pôde obter estatísticas: {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Erro ao fazer a leitura em {SysLogPath}: {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Não é possível declarar {SysLogPath}: {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1435,8 @@
       "translation": "Imagem carregada para o serviço {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Erro ao carregar a imagem para {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Erro ao carregar a imagem para {Arg_1}/{Arg_2}. Motivo: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",

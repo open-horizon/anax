@@ -467,8 +467,8 @@
       "translation": "Errore durante la lettura della risposta HTTP, errore {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire 'systemctl status horizon' per controllare se l'agent Horizon è in esecuzione. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +733,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Avvertenza: non è stato possibile analizzare il percorso dell'immagine '{Image}'. Non eseguire il push a un registro docker, includere solo così com'è nel campo 'deployment'."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Il log-driver fornito ({LogDriver}) non supporta la visualizzazione dei log. I log sono disponibili solo sui seguenti driver: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Errore durante la creazione di StdoutPipe per il comando: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Errore durante l'avvio del comando: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Errore durante l'attesa del comando: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} non può essere aperto o non esiste: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} non è riuscito ad ottenere le statistiche: {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Errore durante la lettura da {SysLogPath}: {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossibile determinare {SysLogPath}: {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1435,8 @@
       "translation": "Immagine caricata per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}. Motivo: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
@@ -1412,7 +1444,7 @@
     },
     {
       "id": "Start terminating agreement for {Arg_1}. Termination reason: {Arg_2}",
-      "translation": "Avvio interruzione dell'accordo per {Arg_1}. Motivo del interruzione: {Arg_2}"
+      "translation": "Avvio interruzione dell'accordo per {Arg_1}. Motivo dell'interruzione: {Arg_2}"
     },
     {
       "id": "Agreement reached for service {Arg_1}. The agreement id is {Arg_2}.",

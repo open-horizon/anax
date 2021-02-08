@@ -467,8 +467,8 @@
       "translation": "Fehler beim Lesen der HTTP-Antwort; Fehler: {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Verbindung zu Horizon-REST-API zum Ausführen von {ApiMethod} kann nicht hergestellt werden. Führen Sie 'systemctl status horizon' aus, um zu überprüfen, ob der Horizon-Agent aktiv ist. Legen Sie alternativ einen Wert für HORIZON_URL fest, um eine Verbindung zu einem anderen lokalen Port aufzubauen, der über einen SSH-Tunnel mit einem fernen Horizon-Agenten verbunden ist. Spezifischer Fehler ist: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Verbindung zu Horizon-REST-API zum Ausführen von {ApiMethod} kann nicht hergestellt werden. Führen Sie den Befehl '{StatusCommand}' aus, um zu überprüfen, ob der Horizon-Agent aktiv ist. Sie können auch '{StatusURL}' ausführen, um den Status des Horizon-Agenten zu überprüfen. Legen Sie alternativ einen Wert für HORIZON_URL fest, um eine Verbindung zu einem anderen lokalen Port aufzubauen, der über einen SSH-Tunnel mit einem fernen Horizon-Agenten verbunden ist. Spezifischer Fehler ist: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +733,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Warnung: Image-Pfad '{Image}' konnte nicht ausgewertet werden. Durchführung einer Push-Operation zu Docker-Registry nicht möglich, wird unverändert in Feld 'deployment' übernommen."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Der angegebene Protokolltreiber ({LogDriver}) unterstützt die Anzeige von Protokollen nicht. Protokolle sind nur mit den folgenden Treibern verfügbar: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Fehler beim Erstellen von 'StdoutPipe' für den Befehl. {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Fehler beim Starten des Befehls. {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Fehler beim Warten auf den Befehl. {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "'{SysLogPath}' konnte nicht geöffnet werden oder ist nicht vorhanden, {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "'{SysLogPath}' konnte keine Statistiken abrufen. {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Fehler beim Lesen aus '{SysLogPath}'. {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "'{SysLogPath}' konnte nicht angegeben werden. {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1435,8 @@
       "translation": "Image geladen für Service {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Fehler beim Laden des Image für {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Fehler beim Laden des Image für {Arg_1}/{Arg_2}. Ursache: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
