@@ -1534,9 +1534,9 @@
             "fuzzy": true
         },
         {
-            "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-            "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-            "translation": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
+            "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+            "message": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+            "translation": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1604,9 +1604,9 @@
             "fuzzy": true
         },
         {
-            "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-            "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-            "translation": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
+            "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+            "message": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+            "translation": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -1621,6 +1621,13 @@
             "id": "Remove this organization.",
             "message": "Remove this organization.",
             "translation": "Remove this organization.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+            "message": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+            "translation": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -2486,6 +2493,13 @@
             "fuzzy": true
         },
         {
+            "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+            "message": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+            "translation": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "Verify the signatures of a service resource in the Horizon Exchange.",
             "message": "Verify the signatures of a service resource in the Horizon Exchange.",
             "translation": "Verify the signatures of a service resource in the Horizon Exchange.",
@@ -3140,9 +3154,9 @@
             "fuzzy": true
         },
         {
-            "id": "The JSON input file name containing the node policy.",
-            "message": "The JSON input file name containing the node policy.",
-            "translation": "The JSON input file name containing the node policy.",
+            "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+            "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+            "translation": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3228,9 +3242,9 @@
             "fuzzy": true
         },
         {
-            "id": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-            "message": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-            "translation": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
+            "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+            "message": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+            "translation": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -3919,6 +3933,20 @@
             "fuzzy": true
         },
         {
+            "id": "Show the container/system logs for a service.",
+            "message": "Show the container/system logs for a service.",
+            "translation": "Show the container/system logs for a service.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+            "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+            "translation": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "For working with project dependencies.",
             "message": "For working with project dependencies.",
             "translation": "For working with project dependencies.",
@@ -4381,9 +4409,9 @@
             "fuzzy": true
         },
         {
-            "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-            "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-            "translation": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
+            "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+            "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+            "translation": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -5700,9 +5728,9 @@
             "fuzzy": true
         },
         {
-            "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-            "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-            "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+            "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+            "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+            "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -5714,11 +5742,27 @@
                     "expr": "apiMethod"
                 },
                 {
+                    "id": "StatusCommand",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "statusCommand"
+                },
+                {
+                    "id": "StatusURL",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "statusURL"
+                },
+                {
                     "id": "Err",
-                    "string": "%[2]v",
+                    "string": "%[4]v",
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
+                    "argNum": 4,
                     "expr": "err"
                 }
             ],
@@ -7207,6 +7251,182 @@
             "fuzzy": true
         },
         {
+            "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+            "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+            "translation": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "LogDriver",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "logDriver"
+                },
+                {
+                    "id": "DockerDriversWithLoggingSupport",
+                    "string": "%[2]v",
+                    "type": "[]string",
+                    "underlyingType": "[]string",
+                    "argNum": 2,
+                    "expr": "dockerDriversWithLoggingSupport"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error creating StdoutPipe for command: {Err}",
+            "message": "Error creating StdoutPipe for command: {Err}",
+            "translation": "Error creating StdoutPipe for command: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error starting command: {Err}",
+            "message": "Error starting command: {Err}",
+            "translation": "Error starting command: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error waiting for command: {Err}",
+            "message": "Error waiting for command: {Err}",
+            "translation": "Error waiting for command: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+            "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+            "translation": "{SysLogPath} could not be opened or does not exist: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SysLogPath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "{SysLogPath} could not get stats: {Err}",
+            "message": "{SysLogPath} could not get stats: {Err}",
+            "translation": "{SysLogPath} could not get stats: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SysLogPath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Error reading from {SysLogPath}: {Err}",
+            "message": "Error reading from {SysLogPath}: {Err}",
+            "translation": "Error reading from {SysLogPath}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SysLogPath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Unable to state {SysLogPath}: {Err}",
+            "message": "Unable to state {SysLogPath}: {Err}",
+            "translation": "Unable to state {SysLogPath}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SysLogPath",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "sysLogPath"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
             "message": "Neither node id nor node policy is specified. Getting node policy from the local node.",
             "translation": "Neither node id nor node policy is specified. Getting node policy from the local node.",
@@ -7218,6 +7438,23 @@
             "message": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
             "translation": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "No node type has been provided: node type of '{NodeId}' node will be used",
+            "message": "No node type has been provided: node type of '{NodeId}' node will be used",
+            "translation": "No node type has been provided: node type of '{NodeId}' node will be used",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeId",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "compCheckInput.NodeId"
+                }
+            ],
             "fuzzy": true
         },
         {
@@ -9123,6 +9360,162 @@
             "fuzzy": true
         },
         {
+            "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+            "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+            "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SERVICECOMMAND",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "SERVICE_COMMAND"
+                },
+                {
+                    "id": "SERVICELOGCOMMAND",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "SERVICE_LOG_COMMAND"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+            "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+            "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SERVICECOMMAND",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "SERVICE_COMMAND"
+                },
+                {
+                    "id": "SERVICELOGCOMMAND",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "SERVICE_LOG_COMMAND"
+                },
+                {
+                    "id": "Arg_3",
+                    "string": "%[3]v",
+                    "type": "",
+                    "underlyingType": "interface{}",
+                    "argNum": 3
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Found containers {Containers}",
+            "message": "Found containers {Containers}",
+            "translation": "Found containers {Containers}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Containers",
+                    "string": "%[1]v",
+                    "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+                    "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+                    "argNum": 1,
+                    "expr": "containers"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Unable to display log messages: {Err}",
+            "message": "Unable to display log messages: {Err}",
+            "translation": "Unable to display log messages: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+            "message": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+            "translation": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "ServiceName",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "serviceName"
+                },
+                {
+                    "id": "MsId",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "msId"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Use ctrl-C to terminate this command.",
+            "message": "Use ctrl-C to terminate this command.",
+            "translation": "Use ctrl-C to terminate this command.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+            "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+            "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "SERVICECOMMAND",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "SERVICE_COMMAND"
+                },
+                {
+                    "id": "SERVICELOGCOMMAND",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "SERVICE_LOG_COMMAND"
+                },
+                {
+                    "id": "ServiceName",
+                    "string": "%[3]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 3,
+                    "expr": "serviceName"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "$SERVICE_NAME for $ARCH",
             "message": "$SERVICE_NAME for $ARCH",
             "translation": "$SERVICE_NAME for $ARCH",
@@ -9480,7 +9873,7 @@
                     "id": "AbstractUserInput",
                     "string": "%[3]v",
                     "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
-                    "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
+                    "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
                     "argNum": 3,
                     "expr": "ms"
                 },
@@ -10547,23 +10940,6 @@
                     "underlyingType": "interface{Error() string}",
                     "argNum": 1,
                     "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Found containers {Containers}",
-            "message": "Found containers {Containers}",
-            "translation": "Found containers {Containers}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "Containers",
-                    "string": "%[1]v",
-                    "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-                    "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-                    "argNum": 1,
-                    "expr": "containers"
                 }
             ],
             "fuzzy": true
@@ -11695,23 +12071,6 @@
             "fuzzy": true
         },
         {
-            "id": "can not create node {NodeId} because maxNodes limit has been reached",
-            "message": "can not create node {NodeId} because maxNodes limit has been reached",
-            "translation": "can not create node {NodeId} because maxNodes limit has been reached",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "NodeId",
-                    "string": "%[1]s",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "nodeId"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
             "id": "Node {NodeId} updated.",
             "message": "Node {NodeId} updated.",
             "translation": "Node {NodeId} updated.",
@@ -12045,6 +12404,23 @@
                     "underlyingType": "string",
                     "argNum": 2,
                     "expr": "node"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to marshal node policy output: {Err}",
+            "message": "failed to marshal node policy output: {Err}",
+            "translation": "failed to marshal node policy output: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err"
                 }
             ],
             "fuzzy": true
@@ -12648,6 +13024,23 @@
             "fuzzy": true
         },
         {
+            "id": "Organization {TheOrg} is successfully added to MMS.",
+            "message": "Organization {TheOrg} is successfully added to MMS.",
+            "translation": "Organization {TheOrg} is successfully added to MMS.",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TheOrg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "theOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
             "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
             "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
             "translation": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
@@ -12672,9 +13065,9 @@
             "fuzzy": true
         },
         {
-            "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-            "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-            "translation": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
+            "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+            "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+            "translation": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -12689,14 +13082,139 @@
             "fuzzy": true
         },
         {
-            "id": "org {TheOrg} not found.",
-            "message": "org {TheOrg} not found.",
-            "translation": "org {TheOrg} not found.",
+            "id": "Using agbot {Agbot}",
+            "message": "Using agbot {Agbot}",
+            "translation": "Using agbot {Agbot}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Agbot",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "agbot"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Cannot unmarshal served pattern",
+            "message": "Cannot unmarshal served pattern",
+            "translation": "Cannot unmarshal served pattern",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Removing pattern {PatternId} from agbot {Agbot}",
+            "message": "Removing pattern {PatternId} from agbot {Agbot}",
+            "translation": "Removing pattern {PatternId} from agbot {Agbot}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PatternId",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "patternId"
+                },
+                {
+                    "id": "Agbot",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "agbot"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Removing policy {PolId} from agbot {Agbot}",
+            "message": "Removing policy {PolId} from agbot {Agbot}",
+            "translation": "Removing policy {PolId} from agbot {Agbot}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "PolId",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "polId"
+                },
+                {
+                    "id": "Agbot",
+                    "string": "%[2]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "agbot"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Deleting org {TheOrg} from the Horizon Exchange...",
+            "message": "Deleting org {TheOrg} from the Horizon Exchange...",
+            "translation": "Deleting org {TheOrg} from the Horizon Exchange...",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
                     "id": "TheOrg",
                     "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "theOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Org {TheOrg} is deleted from the Horizon Exchange",
+            "message": "Org {TheOrg} is deleted from the Horizon Exchange",
+            "translation": "Org {TheOrg} is deleted from the Horizon Exchange",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TheOrg",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "theOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Deleting org {TheOrg} from MMS...",
+            "message": "Deleting org {TheOrg} from MMS...",
+            "translation": "Deleting org {TheOrg} from MMS...",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TheOrg",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "theOrg"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "Org {TheOrg} is deleted from MMS",
+            "message": "Org {TheOrg} is deleted from MMS",
+            "translation": "Org {TheOrg} is deleted from MMS",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "TheOrg",
+                    "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
@@ -13388,6 +13906,38 @@
             "message": "Flags -I and -P are mutually exclusive.",
             "translation": "Flags -I and -P are mutually exclusive.",
             "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "Need to set 'true' or 'false' when specifying flag --public.",
+            "message": "Need to set 'true' or 'false' when specifying flag --public.",
+            "translation": "Need to set 'true' or 'false' when specifying flag --public.",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "failed to parse {Public}: {Err}",
+            "message": "failed to parse {Public}: {Err}",
+            "translation": "failed to parse {Public}: {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Public",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "public"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
             "fuzzy": true
         },
         {
@@ -16101,6 +16651,45 @@
             "fuzzy": true
         },
         {
+            "id": "could not validate node ID '{NodeId}': {Err}",
+            "message": "could not validate node ID '{NodeId}': {Err}",
+            "translation": "could not validate node ID '{NodeId}': {Err}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "NodeId",
+                    "string": "%[1]s",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "nodeId"
+                },
+                {
+                    "id": "Err",
+                    "string": "%[2]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 2,
+                    "expr": "err"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:\u0026@ are only allowed",
+            "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:\u0026@ are only allowed",
+            "translation": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:\u0026@ are only allowed",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
+            "id": "invalid node ID: Whitespace is not permitted",
+            "message": "invalid node ID: Whitespace is not permitted",
+            "translation": "invalid node ID: Whitespace is not permitted",
+            "translatorComment": "Copied from source.",
+            "fuzzy": true
+        },
+        {
             "id": "invalid version range '{Vr}': {Err}",
             "message": "invalid version range '{Vr}': {Err}",
             "translation": "invalid version range '{Vr}': {Err}",
@@ -16540,34 +17129,34 @@
             "fuzzy": true
         },
         {
-            "id": "{Status1} \t{Org}/{Name}",
-            "message": "{Status1} \t{Org}/{Name}",
-            "translation": "{Status1} \t{Org}/{Name}",
+            "id": "{Org}/{Name} \t{Status1}",
+            "message": "{Org}/{Name} \t{Status1}",
+            "translation": "{Org}/{Name} \t{Status1}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
-                    "id": "Status1",
+                    "id": "Org",
                     "string": "%[1]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 1,
-                    "expr": "statusArr[ss.status+1]"
-                },
-                {
-                    "id": "Org",
-                    "string": "%[2]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 2,
                     "expr": "ss.org"
                 },
                 {
                     "id": "Name",
+                    "string": "%[2]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 2,
+                    "expr": "ss.name"
+                },
+                {
+                    "id": "Status1",
                     "string": "%[3]v",
                     "type": "string",
                     "underlyingType": "string",
                     "argNum": 3,
-                    "expr": "ss.name"
+                    "expr": "statusDetails[ss.status+1]"
                 }
             ],
             "fuzzy": true
@@ -17312,13 +17901,6 @@
             "fuzzy": true
         },
         {
-            "id": "Use ctrl-C to terminate this command.",
-            "message": "Use ctrl-C to terminate this command.",
-            "translation": "Use ctrl-C to terminate this command.",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "Service {RefUrl} is not running on the node.",
             "message": "Service {RefUrl} is not running on the node.",
             "translation": "Service {RefUrl} is not running on the node.",
@@ -17336,9 +17918,9 @@
             "fuzzy": true
         },
         {
-            "id": "Error creating StdoutPipe for command: {Err}",
-            "message": "Error creating StdoutPipe for command: {Err}",
-            "translation": "Error creating StdoutPipe for command: {Err}",
+            "id": "Service definition unmarshalling error: {Err}",
+            "message": "Service definition unmarshalling error: {Err}",
+            "translation": "Service definition unmarshalling error: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -17353,9 +17935,9 @@
             "fuzzy": true
         },
         {
-            "id": "Error starting command: {Err}",
-            "message": "Error starting command: {Err}",
-            "translation": "Error starting command: {Err}",
+            "id": "Deployment unmarshalling error: {Err}",
+            "message": "Deployment unmarshalling error: {Err}",
+            "translation": "Deployment unmarshalling error: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -17370,9 +17952,9 @@
             "fuzzy": true
         },
         {
-            "id": "Error waiting for command: {Err}",
-            "message": "Error waiting for command: {Err}",
-            "translation": "Error waiting for command: {Err}",
+            "id": "Service logs are unavailable: {Err}",
+            "message": "Service logs are unavailable: {Err}",
+            "translation": "Service logs are unavailable: {Err}",
             "translatorComment": "Copied from source.",
             "placeholders": [
                 {
@@ -17381,106 +17963,6 @@
                     "type": "error",
                     "underlyingType": "interface{Error() string}",
                     "argNum": 1,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "{SysLogPath} could not be opened or does not exist: {Err}",
-            "message": "{SysLogPath} could not be opened or does not exist: {Err}",
-            "translation": "{SysLogPath} could not be opened or does not exist: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "SysLogPath",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "sysLogPath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "{SysLogPath} could not get stats: {Err}",
-            "message": "{SysLogPath} could not get stats: {Err}",
-            "translation": "{SysLogPath} could not get stats: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "SysLogPath",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "sysLogPath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Error reading from {SysLogPath}: {Err}",
-            "message": "Error reading from {SysLogPath}: {Err}",
-            "translation": "Error reading from {SysLogPath}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "SysLogPath",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "sysLogPath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
-            "fuzzy": true
-        },
-        {
-            "id": "Unable to state {SysLogPath}: {Err}",
-            "message": "Unable to state {SysLogPath}: {Err}",
-            "translation": "Unable to state {SysLogPath}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "SysLogPath",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "sysLogPath"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
                     "expr": "err"
                 }
             ],
@@ -17880,9 +18362,9 @@
             "fuzzy": true
         },
         {
-            "id": "must specify objectType if set objectId",
-            "message": "must specify objectType if set objectId",
-            "translation": "must specify objectType if set objectId",
+            "id": "must specify --type with --id",
+            "message": "must specify --type with --id",
+            "translation": "must specify --type with --id",
             "translatorComment": "Copied from source.",
             "fuzzy": true
         },
@@ -17946,6 +18428,23 @@
                     "underlyingType": "string",
                     "argNum": 3,
                     "expr": "org"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "failed to marshal 'hzn mms object list' output: {Err1}",
+            "message": "failed to marshal 'hzn mms object list' output: {Err1}",
+            "translation": "failed to marshal 'hzn mms object list' output: {Err1}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Err1",
+                    "string": "%[1]v",
+                    "type": "error",
+                    "underlyingType": "interface{Error() string}",
+                    "argNum": 1,
+                    "expr": "err1"
                 }
             ],
             "fuzzy": true
@@ -18129,13 +18628,6 @@
             "fuzzy": true
         },
         {
-            "id": "must specify --type with --id",
-            "message": "must specify --type with --id",
-            "translation": "must specify --type with --id",
-            "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
             "id": "must specify --id with --type",
             "message": "must specify --id with --type",
             "translation": "must specify --id with --type",
@@ -18161,31 +18653,6 @@
             "message": "cannot specify --pattern with --def",
             "translation": "cannot specify --pattern with --def",
             "translatorComment": "Copied from source.",
-            "fuzzy": true
-        },
-        {
-            "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-            "message": "unable to read definition file {ObjMetadataFile}: {Err}",
-            "translation": "unable to read definition file {ObjMetadataFile}: {Err}",
-            "translatorComment": "Copied from source.",
-            "placeholders": [
-                {
-                    "id": "ObjMetadataFile",
-                    "string": "%[1]v",
-                    "type": "string",
-                    "underlyingType": "string",
-                    "argNum": 1,
-                    "expr": "objMetadataFile"
-                },
-                {
-                    "id": "Err",
-                    "string": "%[2]v",
-                    "type": "error",
-                    "underlyingType": "interface{Error() string}",
-                    "argNum": 2,
-                    "expr": "err"
-                }
-            ],
             "fuzzy": true
         },
         {
@@ -19394,10 +19861,37 @@
             "fuzzy": true
         },
         {
-            "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-            "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-            "translation": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
+            "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+            "message": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+            "translation": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
             "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Error",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "unregErr.Error()"
+                }
+            ],
+            "fuzzy": true
+        },
+        {
+            "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+            "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+            "translation": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+            "translatorComment": "Copied from source.",
+            "placeholders": [
+                {
+                    "id": "Error",
+                    "string": "%[1]v",
+                    "type": "string",
+                    "underlyingType": "string",
+                    "argNum": 1,
+                    "expr": "unregErr.Error()"
+                }
+            ],
             "fuzzy": true
         },
         {

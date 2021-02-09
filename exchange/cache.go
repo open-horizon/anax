@@ -73,8 +73,8 @@ func GetServiceFromCache(svcOrg string, svcId string, svcArch string) map[string
 }
 
 // GetServicePolicyFromCache returns the service policy from the exchange cache if it is present, or nil if it is not
-func GetServicePolicyFromCache(svcOrg string, svcId string, svcArch string, svcVersion string) *ExchangePolicy {
-	svcPol := GetResourceFromCache(ServicePolicyCacheMapKey(svcOrg, svcId, svcArch, svcVersion), SVC_POL_TYPE_CACHE, 0)
+func GetServicePolicyFromCache(sId string) *ExchangePolicy {
+	svcPol := GetResourceFromCache(sId, SVC_POL_TYPE_CACHE, 0)
 
 	if typedSvcPol, ok := svcPol.(ExchangePolicy); ok {
 		return &typedSvcPol
@@ -375,4 +375,14 @@ func hashResource(resource interface{}) ([]byte, error) {
 	}
 	hash := sha3.Sum256([]byte(jsonResource))
 	return hash[:], nil
+}
+
+// clear cache for all resources
+func ClearAllResourceCache() {
+	if ExchangeResourceCache != nil && ExchangeResourceCache.allResources != nil {
+		ExchangeResourceCache.Lock.Lock()
+		defer ExchangeResourceCache.Lock.Unlock()
+
+		ExchangeResourceCache.allResources = map[string]cache.Cache{}
+	}
 }

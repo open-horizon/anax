@@ -105,6 +105,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(UDS):$(UDS):rw \
 		-v ~/.docker:/home/agbotuser/.docker \
+		-v ~/.docker:/root/.docker \
 		-v /etc/wiotp-edge/:/etc/wiotp-edge/ \
 		-v /var/wiotp-edge/persist/:/var/wiotp-edge/persist/ \
 		-v /tmp/ess-auth/:/tmp/ess-auth/:rw \

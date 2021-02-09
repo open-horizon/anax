@@ -16,15 +16,18 @@ VERB_INFO=3
 VERB_VERBOSE=4
 VERB_DEBUG=5
 
-SUPPORTED_OS=("macos" "linux")
-SUPPORTED_LINUX_DISTRO=("ubuntu" "raspbian" "debian" "rhel" "centos")
-DEBIAN_VARIANTS_REGEX='^(ubuntu|raspbian|debian)$'
-SUPPORTED_DEBIAN_VERSION=("focal" "bionic" "buster" "xenial" "stretch")   # all debian variants
-SUPPORTED_DEBIAN_ARCH=("amd64" "arm64" "armhf")
-REDHAT_VARIANTS_REGEX='^(rhel|centos)$'
-#RHEL 8.3 is not supported but is enabled only for testing and tech preview purposes
-SUPPORTED_REDHAT_VERSION=("8.1" "8.2" "8.3")   # for fedora versions see https://fedoraproject.org/wiki/Releases,
-SUPPORTED_REDHAT_ARCH=("x86_64" "aarch64")
+# You can add to these lists of supported values by setting/exporting the corresponding <varname>_APPEND variable to a string of space-separated words.
+# This allows you to experiment with platforms or variations that are not yet officially tested/supported.
+SUPPORTED_OS=(macos linux $SUPPORTED_OS_APPEND)   # compared to what our get_os() returns
+SUPPORTED_LINUX_DISTRO=(ubuntu raspbian debian rhel centos $SUPPORTED_LINUX_DISTRO_APPEND)   # compared to what our detect_distro() sets DISTRO to
+SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
+SUPPORTED_DEBIAN_VERSION=(focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
+SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
+SUPPORTED_REDHAT_VARIANTS=(rhel centos $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
+# Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
+SUPPORTED_REDHAT_VERSION=(8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
+
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
 PERMANENT_CERT_PATH='/etc/horizon/agent-install.crt'
@@ -62,27 +65,27 @@ Required Input Variables (via flag, environment, or config file):
     HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
 
 Options/Flags:
-    -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT . (equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. All other variables can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID and AGENT_CERT_FILE if -i css: is specified). (equivalent to AGENT_CFG_FILE)
-    -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (equivalent to INPUT_FILE_PATH)
-    -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (equivalent to AGENT_INSTALL_ZIP)
-    -j    File location for the public key for an APT repository specified with '-i' (equivalent to PKG_APT_KEY)
-    -t    Branch to use in the APT repo specified with -i. Default is 'updates' (equivalent to APT_REPO_BRANCH)
-    -O    The exchange organization id (equivalent to HZN_ORG_ID)
-    -u    Exchange user authorization credentials (equivalent to HZN_EXCHANGE_USER_AUTH)
-    -a    Exchange node authorization credentials (equivalent to HZN_EXCHANGE_NODE_AUTH)
-    -d    The id to register this node with (equivalent to NODE_ID or HZN_DEVICE_ID)
-    -p    Pattern name to register this edge node with. Default: registers node with policy. (equivalent to HZN_EXCHANGE_PATTERN)
-    -n    Path to a node policy file (equivalent to HZN_NODE_POLICY)
-    -w    Wait for this edge service to start executing on this node before this script exits. If using a pattern, this value can be '*'. (equivalent to AGENT_WAIT_FOR_SERVICE)
-    -T    Timeout value (in seconds) for how long to wait for the service to start (equivalent to AGENT_REGISTRATION_TIMEOUT)
-    -o    Specify an org id for the service specified with '-w'. Defaults to the value of HZN_ORG_ID. (equivalent to AGENT_WAIT_FOR_SERVICE_ORG)
-    -s    Skip registration, only install the agent (equivalent to AGENT_SKIP_REGISTRATION)
-    -D    Node type of agent being installed: device, cluster. Default: device. (equivalent to AGENT_DEPLOY_TYPE)
-    -U    Internal url for edge cluster registry. If not specified, this script will auto-detect the value if it is a small, single-node cluster (e.g. k3s or microk8s). For OCP use: image-registry.openshift-image-registry.svc:5000. (equivalent to INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY)
-    -l    Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (equivalent to AGENT_VERBOSITY)
-    -f    Install older version of agent (on macos) and/or overwrite node configuration without prompt. (equivalent to AGENT_OVERWRITE)
-    -b    Skip any prompts for user input (equivalent to AGENT_SKIP_PROMPT)
+    -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT . (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
+    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. All other variables can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
+    -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
+    -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
+    -j    File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
+    -t    Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
+    -O    The exchange organization id (This flag is equivalent to HZN_ORG_ID)
+    -u    Exchange user authorization credentials (This flag is equivalent to HZN_EXCHANGE_USER_AUTH)
+    -a    Exchange node authorization credentials (This flag is equivalent to HZN_EXCHANGE_NODE_AUTH)
+    -d    The id to register this node with (This flag is equivalent to NODE_ID or HZN_DEVICE_ID)
+    -p    Pattern name to register this edge node with. Default: registers node with policy. (This flag is equivalent to HZN_EXCHANGE_PATTERN)
+    -n    Path to a node policy file (This flag is equivalent to HZN_NODE_POLICY)
+    -w    Wait for this edge service to start executing on this node before this script exits. If using a pattern, this value can be '*'. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE)
+    -T    Timeout value (in seconds) for how long to wait for the service to start (This flag is equivalent to AGENT_REGISTRATION_TIMEOUT)
+    -o    Specify an org id for the service specified with '-w'. Defaults to the value of HZN_ORG_ID. (This flag is equivalent to AGENT_WAIT_FOR_SERVICE_ORG)
+    -s    Skip registration, only install the agent (This flag is equivalent to AGENT_SKIP_REGISTRATION)
+    -D    Node type of agent being installed: device, cluster. Default: device. (This flag is equivalent to AGENT_DEPLOY_TYPE)
+    -U    Internal url for edge cluster registry. If not specified, this script will auto-detect the value if it is a small, single-node cluster (e.g. k3s or microk8s). For OCP use: image-registry.openshift-image-registry.svc:5000. (This flag is equivalent to INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY)
+    -l    Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (This flag is equivalent to AGENT_VERBOSITY)
+    -f    Install older version of agent (on macos) and/or overwrite node configuration without prompt. (This flag is equivalent to AGENT_OVERWRITE)
+    -b    Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
     -h    This usage
 
 Additional Edge Device Variables (in environment or config file):
@@ -91,7 +94,7 @@ Additional Edge Device Variables (in environment or config file):
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
 
 Additional Edge Cluster Variables (in environment or config file):
-    IMAGE_ON_EDGE_CLUSTER_REGISTRY: (required) agent image path (without tag) in edge cluster registry. For OCP use: <registry-host>/<agent-project>/amd64_anax_k8s, for k3s use: <IP-address>:5000/<agent-namespace>/amd64_anax_k8s, for microsk8s: localhost:32000/<agent-namespace>/amd64_anax_k8s
+    IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
     EDGE_CLUSTER_REGISTRY_USERNAME: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_REGISTRY_TOKEN: specify this value if the edge cluster registry requires authentication
     EDGE_CLUSTER_STORAGE_CLASS: the storage class to use for the agent and edge services. Default: gp2
@@ -339,9 +342,6 @@ function download_css_file() {
     fi
 
     # Set cert flag. This is a special case, because sometimes the cert we need is coming from CSS. In that case be creative to try to get it.
-    if [[ -n $AGENT_CERT_FILE && $AGENT_CERT_FILE != $AGENT_CERT_FILE_DEFAULT ]]; then
-        log_fatal 1 "Can not specify both -c (AGENT_CERT_FILE) and -i (INPUT_FILE_PATH)"
-    fi
     local remote_cert_path="${remote_path%/*/data}/$AGENT_CERT_FILE_DEFAULT/data"
     if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
         # Either we have already downloaded it, or they gave it to us separately
@@ -472,7 +472,7 @@ function get_all_variables() {
     # these are needed to read the cfg file from CSS
     get_variable HZN_ORG_ID '' 'true'
     get_variable HZN_MGMT_HUB_CERT_PATH
-    get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"
+    get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"   # use the default value even if the file doesn't exist yet, because '-i css:'' might create it
     get_variable HZN_FSS_CSSURL '' 'true'
     get_variable HZN_EXCHANGE_USER_AUTH
     get_variable HZN_EXCHANGE_NODE_AUTH
@@ -503,14 +503,36 @@ function get_all_variables() {
         get_variable APT_REPO_BRANCH 'updates'
         get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
     elif is_cluster; then
+        # check kubectl is available
+        KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
+        if command -v "$KUBECTL" >/dev/null 2>&1; then
+            : # nothing more to do
+        elif command -v microk8s.kubectl >/dev/null 2>&1; then
+            KUBECTL=microk8s.kubectl
+        elif command -v k3s kubectl; then
+            KUBECTL="k3s kubectl"
+        else
+            log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH"
+        fi
+
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE 'openhorizon-agent'
-        get_variable USE_EDGE_CLUSTER_REGISTRY 'true'
+        USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
         get_variable AGENT_DEPLOYMENT_STATUS_TIMEOUT_SECONDS '75'
 
         if [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
-            #lily: can we default IMAGE_ON_EDGE_CLUSTER_REGISTRY by querying the edge cluster, so the user doesn't have to input it unless they want to override it?
-            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY '' 'true'
+            local default_image_registry_on_edge_cluster
+            if [[ $KUBECTL == "microk8s.kubectl" ]]; then
+                default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_anax_k8s"
+            elif [[ $KUBECTL == "k3s kubectl" ]]; then
+                local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
+                default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
+            else
+                # ocp - image registry should be enabled/exposed and created in $AGENT_NAMESPACE before running agent install script
+                local default_image_registry_on_edge_cluster=$($KUBECTL get is amd64_anax_k8s -n $AGENT_NAMESPACE -o json | jq -r .status.publicDockerImageRepository)
+            fi
+
+            get_variable IMAGE_ON_EDGE_CLUSTER_REGISTRY "$default_image_registry_on_edge_cluster"
             get_variable EDGE_CLUSTER_REGISTRY_USERNAME
             get_variable EDGE_CLUSTER_REGISTRY_TOKEN
             get_variable INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY
@@ -823,16 +845,16 @@ function download_pkgs_from_css() {
     log_debug "download_pkgs_from_css() end"
 }
 
-# Move the given cert file to a permanent place the cfg file can refer to it. Returns the permanent path.
-# Use for both linux and mac
+# Move the given cert file to a permanent place the cfg file can refer to it. Returns the permanent path. Returns "" if no cert file.
+# Used for both linux and mac
 function store_cert_file_permanently() {
     # Note: can not put debug statements in this function because it returns a value
     local cert_file=$1
     local abs_certificate
-    if [[ ${cert_file:0:1} == "/" ]]; then
+    if [[ ${cert_file:0:1} == "/" && -f $cert_file ]]; then
         # Cert file is already a full path, just refer to it there
-        abs_certificate=${cert_file}
-    elif [[ -n $cert_file ]]; then
+        abs_certificate=$cert_file
+    elif [[ -n $cert_file && -f $cert_file ]]; then
         # Cert file specified, but relative path. Move it to a permanent place
         abs_certificate="$PERMANENT_CERT_PATH"
         sudo mkdir -p "$(dirname $abs_certificate)"
@@ -853,13 +875,16 @@ function is_horizon_defaults_correct() {
 
     if is_device; then
         defaults_file='/etc/default/horizon'
-        if [[ ${AGENT_CERT_FILE:0:1} == '/' ]]; then
+        if [[ ${AGENT_CERT_FILE:0:1} == '/' && -f $AGENT_CERT_FILE ]]; then
             cert_file=$AGENT_CERT_FILE
-        else
+        elif [[ -f $PERMANENT_CERT_PATH ]]; then
             cert_file=$PERMANENT_CERT_PATH
+        # else leave cert_file empty
         fi
     else   # cluster
-        cert_file="/etc/default/cert/$(basename $AGENT_CERT_FILE)"   # this is the name we will give it later when we create the defaults file
+        if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
+            cert_file="/etc/default/cert/$(basename $AGENT_CERT_FILE)"   # this is the name we will give it later when we create the defaults file
+        fi   # else leave cert_file empty
 
         # Have to get the previous defaults from the configmap
         defaults_file="$HZN_ENV_FILE.previous"
@@ -933,7 +958,7 @@ function add_to_or_update_horizon_defaults() {
 function create_or_update_horizon_defaults() {
     log_debug "create_or_update_horizon_defaults() begin"
     local anax_port=$1   # optional
-    local abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")
+    local abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
     log_verbose "Permament localtion of certificate file: $abs_certificate"
 
     if [[ ! -f /etc/default/horizon ]]; then
@@ -1038,7 +1063,7 @@ function debian_device_install_prereqs() {
     log_info "Updating apt package index..."
     runCmdQuietly apt-get update -q
     log_info "Installing prerequisites, this could take a minute..."
-    runCmdQuietly apt-get install -yqf curl jq
+    runCmdQuietly apt-get install -yqf curl jq software-properties-common
 
     if ! isCmdInstalled docker; then
         log_info "Docker is required, installing it..."
@@ -1443,7 +1468,7 @@ function is_agent_registered() {
     # Verify we have hzn available to us
     if ! agent_exec 'hzn -h >/dev/null 2>&1'; then return 1; fi
 
-    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
+    local hzn_node_list=$(agent_exec 'hzn node list' 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
     if [[ $only_configured == 'true' && $node_state == 'configured' ]]; then return 0
     elif [[ $only_configured != 'true' && $node_state =~ ^(configured|configuring|unconfiguring)$ ]]; then return 0
@@ -1455,12 +1480,12 @@ function is_agent_registered() {
 function is_registration_correct() {
     log_debug "is_registration_correct() begin"
     if [[ $AGENT_SKIP_REGISTRATION == 'true' ]]; then return 0; fi   # the user doesn't care, so they are correct
-    local hzn_node_list=$(agent_exec 'hzn node list 2>/dev/null' || true)
+    local hzn_node_list=$(agent_exec 'hzn node list' 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
     local reg_pattern=$(jq -r .pattern 2>/dev/null <<< $hzn_node_list || true)
-    if [[ -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # pattern case
-    elif [[ -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # policy case (registration() will apply any new policy)
+    if [[ $node_state == 'configured' && -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # pattern case
+    elif [[ $node_state == 'configured' && -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # policy case (registration() will apply any new policy)
     else return 1; fi
     log_debug "is_registration_correct() end"
 }
@@ -1646,14 +1671,14 @@ function detect_distro() {
 }
 
 function is_debian_variant() {
-    #: ${DISTRO:?}   # verify this function is not called before DISTRO is set
-    if [[ $DISTRO =~ $DEBIAN_VARIANTS_REGEX ]]; then return 0
+    : ${DISTRO:?}   # verify this function is not called before DISTRO is set
+    if [[ ${SUPPORTED_DEBIAN_VARIANTS[*]} =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
     else return 1; fi
 }
 
 function is_redhat_variant() {
-    #: ${DISTRO:?}   # verify this function is not called before DISTRO is set
-    if [[ $DISTRO =~ $REDHAT_VARIANTS_REGEX ]]; then return 0
+    : ${DISTRO:?}   # verify this function is not called before DISTRO is set
+    if [[ ${SUPPORTED_REDHAT_VARIANTS[*]} =~ (^|[[:space:]])$DISTRO($|[[:space:]]) ]]; then return 0
     else return 1; fi
 }
 
@@ -1681,16 +1706,11 @@ function get_arch() {
 # checks if OS/distribution/codename/arch is supported
 function check_support() {
     log_debug "check_support() begin"
-
-    # checks if OS, distro or arch is supported
-
-    if [[ ! "${1}" == *"${2}"* ]]; then
-        echo -n "Supported $3 are: "
-        for i in "${1}"; do echo -n "${i} "; done
-        echo ""
-        log_fatal 2 "The detected ${2} is not supported"
+    local supported_list=${1:?} our_value=${2:?} name=${3:?}
+    if [[ $supported_list =~ (^|[[:space:]])$our_value($|[[:space:]]) ]]; then
+        log_verbose "$our_value is one of the supported $name"
     else
-        log_verbose "The detected ${2} is supported"
+        log_fatal 2 "$our_value is NOT one of the supported $name: $supported_list"
     fi
 
     log_debug "check_support() end"
@@ -2014,8 +2034,10 @@ function create_cluster_resources() {
     log_debug "create_cluster_resources() begin"
 
     create_namespace
-    #lily: is 2 seconds always the right amount? Is there something in the system it could wait on instead? If so, let's use wait_for() here.
-    sleep 2
+    local namespace_wait_seconds=10
+    if ! wait_for '[[ -n $($KUBECTL get namespace ${AGENT_NAMESPACE} 2>/dev/null) ]]' 'agent install namespace created' $namespace_wait_seconds; then
+        log_fatal 3 "${AGENT_NAMESPACE} did not created successfully"
+    fi
     create_service_account
     create_secret
     create_configmap
@@ -2239,8 +2261,7 @@ function update_deployment() {
                             chk $? 'deleting the Terminating pod for agent update on cluster'
                             pkill -f anax.service
                         else
-                            log_verbose "Will not force delete agent pod"
-                            #lily: should we exit here? What will happen if we continue?
+                            log_fatal 3 "Agent pod is not force deleted. Please mannually delete the agent pod and run agent-install.sh again"
                         fi
                     else
                         log_verbose "Agent pod ${POD_ID} is still in Terminating, force deleting..."

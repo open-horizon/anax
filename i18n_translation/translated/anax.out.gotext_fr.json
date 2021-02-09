@@ -467,8 +467,8 @@
       "translation": "Erreur lors de la lecture de la réponse HTTP, erreur {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez 'systemctl status horizon' pour vérifier si l'agent Horizon est en cours d'exécution. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +733,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Avertissement : Impossible d'analyser le chemin de l'image '{Image}'. Celle-ci n'est pas envoyée (push) vers un registre Docker, mais juste incluse telle quelle dans la zone 'deployment'."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Le pilote de journal fourni ({LogDriver}) ne prend pas en charge l'affichage des journaux. Les journaux sont disponibles uniquement sur les pilotes suivants : {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Erreur lors de la création de StdoutPipe pour la commande : {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Erreur lors du démarrage de la commande : {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Erreur lors de l'attente de la commande : {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} n'a pas pu être ouvert ou n'existe pas : {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} n'a pas pu obtenir les statistiques : {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Erreur de lecture depuis {SysLogPath} : {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossible d'obtenir l'état de {SysLogPath} : {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1435,8 @@
       "translation": "Image chargée pour le service {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Erreur lors du chargement de l'image pour {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Erreur lors du chargement de l'image pour {Arg_1}/{Arg_2}. Motif : {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",

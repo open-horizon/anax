@@ -83,6 +83,7 @@ var TempVerboseCache = []string{}
 type UserExchangeReq struct {
 	Password string `json:"password"`
 	Admin    bool   `json:"admin"`
+	HubAdmin bool   `json:"hubAdmin"`
 	Email    string `json:"email"`
 }
 

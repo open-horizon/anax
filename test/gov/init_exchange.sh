@@ -258,6 +258,9 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   ./clean_css.sh
 fi
 
+# Create Orgs in CSS
+./init_sync_service.sh
+
 # package resources
 ./resource_package.sh
 if [ $? -ne 0 ]
