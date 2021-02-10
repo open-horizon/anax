@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := 2.49.0
+DOCKER_EXCH_TAG := latest
 PKG_URL_BASE := http://169.45.88.181/linux/ubuntu
 PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
 DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
@@ -49,6 +49,7 @@ DOCKER_CSSDB_TAG := 4.0.6
 DOCKER_CSS_INAME := openhorizon/amd64_cloud-sync-service
 DOCKER_CSS_TAG := testing$(BRANCH_NAME)
 DOCKER_ANAX_K8S_INAME := openhorizon/amd64_anax_k8s:testing
+DOCKER_ANAX_INAME := openhorizon/amd64_anax:testing
 DOCKER_DEV_OPTS :=  --rm --no-cache
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 AGBOT_SAPI_URL ?= https://localhost:8083
@@ -210,16 +211,10 @@ clean:
 	gov/stop_kube.sh
 	@echo "Shutdown anax cleanly"
 	-@curl -sSLX DELETE http://localhost:8510/node 2>/dev/null || true
-	-@curl -sSLX DELETE http://localhost:8512/node 2>/dev/null || true
-	-@curl -sSLX DELETE http://localhost:8513/node 2>/dev/null || true
-	-@curl -sSLX DELETE http://localhost:8514/node 2>/dev/null || true
-	-@curl -sSLX DELETE http://localhost:8515/node 2>/dev/null || true
 	@echo "Removing agbot container"
 	-@docker rm -f "$(DOCKER_AGBOT_CNAME)" 2>/dev/null || true
 	@echo "Removing agent containers"
-	-@docker stop -t 120 "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
-	-@docker rm -f "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
-	-@docker volume rm "horizon6_var" "horizon6_etc" "horizon7_var" "horizon7_etc" "horizon8_var" "horizon8_etc" "horizon9_var" "horizon9_etc" 2>/dev/null || true
+	-@HC_BASE=$(ANAX_SOURCE)/anax-in-container $(ANAX_SOURCE)/test/gov/stop_multiple_agents.sh
 	@echo "Dropping and re-initializing the exchange DB"
 	@$(eval DROP_DB_TOKEN := $(shell curl -sLX GET -u "root/root:$(EXCH_ROOTPW)" "http://localhost:8080/v1/admin/dropdb/token" | jq -r '.token')) 2>/dev/null || true
 	-@curl -sLX POST -u "root/root:$(DROP_DB_TOKEN)" "http://localhost:8080/v1/admin/dropdb" | jq -r '.msg' 2>/dev/null || true
@@ -281,6 +276,9 @@ agbot-prereq-build-anax: $(ANAX_SOURCE)/anax
 	@echo "Configuring agbot prerequisites"
 	if [[ "$(shell docker images -q $(DOCKER_ANAX_K8S_INAME) 2>/dev/null)" == "" ]]; then \
 		cd $(ANAX_SOURCE) && make anax-k8s-image; \
+	fi
+	if [[ "$(shell docker images -q $(DOCKER_ANAX_INAME) 2>/dev/null)" == "" ]]; then \
+		cd $(ANAX_SOURCE) && make anax-image; \
 	fi
 
 agbot-prereq-download-anax:

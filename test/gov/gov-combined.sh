@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Grab exports to use in additional agents
-set > /tmp/exports_list
-
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
 function set_exports {
@@ -60,8 +57,7 @@ function run_delete_loops {
       if [ "$NOLOOP" == "1" ]; then
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
-        if [ ${MUL_AGENTS} -ne 0 ]; then export VERIFY_MUL=1; fi
-        echo -e "No cancellation setting is $NOCANCEL"
+         echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
           ./del_loop.sh
           if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
@@ -71,13 +67,11 @@ function run_delete_loops {
           if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
           ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
           if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
-          if [ ${MUL_AGENTS} -ne 0 ]; then export VERIFY_MUL=1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
       else
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh &
-        if [ ${MUL_AGENTS} -ne 0 ]; then export VERIFY_MUL=1; fi
       fi
     else
       echo -e "Verifying policy based workload deployment"
@@ -337,24 +331,38 @@ elif [ "$TESTFAIL" != "1" ]; then
     echo -e "***************************"
     echo -e "Start testing pattern $PATTERN..."
 
+    # Because of the limitation of docker networks, if the pattern for 
+    # the main agent is sall, the pattern for the multi-agent will be sns. 
+    # Otherwide they will have the same pattern. 
+    ma_pattern=$PATTERN
+    if [ "${PATTERN}" == "sall" ]; then
+      ma_pattern="sns"
+    fi
+
     # Allocate port 80 to see what anax does
     # socat - TCP4-LISTEN:80,crlf &
 
     # start pattern test
     set_exports $pat
 
-    if [ ${MUL_AGENTS} -ne 0 ]; then
-      echo "multiple agents..."
-      ./multiple_agents.sh
-      export VERIFY_MUL=0;
-    fi
-
+    # start main agent
     ./start_node.sh
     if [ $? -ne 0 ]
     then
       echo "Node start failure."
       TESTFAIL="1"
       break
+    fi
+
+    # start multiple agents
+    source ./multiple_agents.sh
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "Starting multiple agents with pattern ${ma_pattern} ..."
+      PATTERN=${ma_pattern} startMultiAgents
+      if [ $? -ne 0 ]; then
+        echo "Multiple agent startup failure."
+        break
+      fi
     fi
 
     run_delete_loops
@@ -366,16 +374,12 @@ elif [ "$TESTFAIL" != "1" ]; then
     fi
 
     if [ ${MUL_AGENTS} -ne 0 ]; then
-      echo "delete multiple agents..."
-      curl -sSLX DELETE http://localhost:8512/node 2>/dev/null
-      curl -sSLX DELETE http://localhost:8513/node 2>/dev/null
-      curl -sSLX DELETE http://localhost:8514/node 2>/dev/null
-      curl -sSLX DELETE http://localhost:8515/node 2>/dev/null
-      echo "Removing agent containers"
-      docker stop -t 120 "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
-      docker rm -f "horizon6" "horizon7" "horizon8" "horizon9" 2>/dev/null || true
-      docker volume rm "horizon6_var" "horizon6_etc" "horizon7_var" "horizon7_etc" "horizon8_var" "horizon8_etc" "horizon9_var" "horizon9_etc" 2>/dev/null || true
-      sleep 10
+      echo "Checking multiple agents..."
+      PATTERN=${ma_pattern} verifyMultiAgentsAgreements
+      if [ $? -ne 0 ]; then
+        echo "Multiple agent agreement varification failure."
+        break
+      fi
     fi
 
     if [ "$NORETRY" != "1" ]; then

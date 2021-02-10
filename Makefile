@@ -613,4 +613,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote

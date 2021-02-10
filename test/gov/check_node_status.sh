@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if [ ${CERT_LOC} -eq "1" ]; then
-    CERT_VAR="--cacert /certs/css.crt"
-else
-    CERT_VAR=""
-fi
-
 # Check node status. The inputs are:
 # $1 - check for non-empty running services
 # $2 - expected number of running services
@@ -15,8 +9,12 @@ fi
 # $6 - serviceUrl to check
 function checkNodeStatus {
     local nonEmptyRunningSvcCheckEnabled="$1"
-    local nodeId="${3:-an12345}"
     local svcUrl="$6"
+
+    local nodeId="${3:-an12345}"
+    if [ "$3" == "" ] && [ "$NODEID" != "" ]; then
+      nodeId="$NODEID"
+    fi
 
     local org="${4:-userdev}"
     if [ "$4" == "" ] && [ "$ORG_ID" != "" ]; then
@@ -30,7 +28,11 @@ function checkNodeStatus {
 
     echo -e "Checking node status in the exchange..."
 
-    NST=$(curl -sSL $CERT_VAR --header 'Accept: application/json' -u ${creds} "${EXCH_APP_HOST}/orgs/${org}/nodes/${nodeId}/status" | jq -r '.')
+    NST=$(hzn exchange node liststatus ${nodeId} -o ${org} -u ${creds})
+    if [ $? -ne 0 ]; then 
+       echo -e "Error getting node status from the exchange for node ${org}/${nodeId}: $NTS" 
+       return 1
+    fi
 
     # check if we got expected response
     respContains=$(echo $NST | grep "services")

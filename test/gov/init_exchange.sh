@@ -208,11 +208,7 @@ REGANAX1C=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --
 echo "$REGANAX1C"
 
 DEVICE_NUM=6
-if [ ${MUL_AGENTS} -lt 5 ]; then
-  NUM_AGENTS=$((${MUL_AGENTS}+$DEVICE_NUM))
-else
-  NUM_AGENTS=$((4+$DEVICE_NUM))
-fi
+NUM_AGENTS=$((${MUL_AGENTS}+$DEVICE_NUM))
 while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
   echo "Registering Anax device${DEVICE_NUM}..."
   REGANAXMUL=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
