@@ -116,6 +116,8 @@ type AGConfig struct {
 	MMSGarbageCollectionInterval  int64            // The amount of time to wait between MMS object cache garbage collection scans.
 	AgreementBatchSize            uint64           // The number of nodes that the agbot will process in a batch.
 	AgreementQueueSize            uint64           // The agreement bot work queue max size.
+	MessageQueueScale             float64          // Scaling factor applied to the AgreementQueueSize when determining how deep to keep the queues.
+	QueueHistorySize              int              // The number of statistics records to retain in the prioritized queue history.
 	FullRescanS                   uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
 	MaxExchangeChanges            int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
 	RetryLookBackWindow           uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
@@ -164,6 +166,14 @@ func (c *HorizonConfig) GetAgbotAgreementBatchSize() uint64 {
 
 func (c *HorizonConfig) GetAgbotAgreementQueueSize() uint64 {
 	return c.AgreementBot.AgreementQueueSize
+}
+
+func (c *HorizonConfig) GetAgbotMessageQueueScale() float64 {
+	return c.AgreementBot.MessageQueueScale
+}
+
+func (c *HorizonConfig) GetAgbotQueueHistorySize() int {
+	return c.AgreementBot.QueueHistorySize
 }
 
 func (c *HorizonConfig) GetAgbotFullRescan() uint64 {
@@ -312,6 +322,8 @@ func Read(file string) (*HorizonConfig, error) {
 				MessageKeyCheck:     AgbotMessageKeyCheck_DEFAULT,
 				AgreementBatchSize:  AgbotAgreementBatchSize_DEFAULT,
 				AgreementQueueSize:  AgbotAgreementQueueSize_DEFAULT,
+				MessageQueueScale:   AgbotMessageQueueScale_DEFAULT,
+				QueueHistorySize:    AgbotQueueHistorySize_DEFAULT,
 				FullRescanS:         AgbotFullRescan_DEFAULT,
 				MaxExchangeChanges:  AgbotMaxChanges_DEFAULT,
 				RetryLookBackWindow: AgbotRetryLookBackWindow_DEFAULT,
@@ -490,12 +502,21 @@ func (agc *AGConfig) String() string {
 		", CheckUpdatedPolicyS: %v"+
 		", CSSURL: %v"+
 		", CSSSSLCert: %v"+
-		", AgreementBatchSize: %v",
+		", AgreementBatchSize: %v"+
+		", AgreementQueueSize: %v"+
+		", MessageQueueScale: %v"+
+		", QueueHistorySize: %v"+
+		", FullRescanS: %v"+
+		", MaxExchangeChanges: %v"+
+		", RetryLookBackWindow: %v"+
+		", PolicySearchOrder: %v",
 		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
 		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
 		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
 		agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeId,
 		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
 		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
-		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize)
+		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize,
+		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.MaxExchangeChanges,
+		agc.RetryLookBackWindow, agc.PolicySearchOrder)
 }

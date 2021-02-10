@@ -1981,6 +1981,10 @@ func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {
 	}
 }
 
+type MessageCount struct {
+	Count int
+}
+
 type ProposalAcceptedMessage struct {
 	event Event
 }
