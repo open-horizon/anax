@@ -123,6 +123,33 @@ func (s ServiceDefinition) String() string {
 		s.LastUpdated)
 }
 
+func (s ServiceDefinition) DeepCopy() *ServiceDefinition {
+	svcCopy := ServiceDefinition{Owner: s.Owner, Label: s.Label, Description: s.Description, Documentation: s.Documentation, Public: s.Public, URL: s.URL, Version: s.Version, Arch: s.Arch, Sharable: s.Sharable, Deployment: s.Deployment, DeploymentSignature: s.DeploymentSignature, ClusterDeployment: s.ClusterDeployment, ClusterDeploymentSignature: s.ClusterDeploymentSignature, LastUpdated: s.LastUpdated}
+	if s.MatchHardware == nil {
+		svcCopy.MatchHardware = nil
+	} else {
+		svcCopy.MatchHardware = HardwareRequirement{}
+		for key, val := range s.MatchHardware {
+			svcCopy.MatchHardware[key] = val
+		}
+	}
+	if s.RequiredServices == nil {
+		svcCopy.RequiredServices = nil
+	} else {
+		for _, svcDep := range s.RequiredServices {
+			svcCopy.RequiredServices = append(svcCopy.RequiredServices, svcDep)
+		}
+	}
+	if s.UserInputs == nil {
+		svcCopy.UserInputs = nil
+	} else {
+		for _, userInput := range s.UserInputs {
+			svcCopy.UserInputs = append(svcCopy.UserInputs, userInput)
+		}
+	}
+	return &svcCopy
+}
+
 func (s ServiceDefinition) ShortString() string {
 	return fmt.Sprintf("URL: %v, "+
 		"Version: %v, "+
