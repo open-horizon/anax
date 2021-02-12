@@ -30,6 +30,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"os/user"
 )
 
 const LABEL_PREFIX = "openhorizon.anax"
@@ -207,6 +208,21 @@ func removeDuplicateVariable(existingArray *[]string, newVar string) {
 
 func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *containermessage.DeploymentDescription, environmentAdditions map[string]string, workloadRWStorageDir string, cpuSet string, uds string) (map[string]servicePair, error) {
 
+	 // final structur
+	temp_services := make(map[string]servicePair, 0)
+	msgPrinter := i18n.GetMessagePrinter()
+	cliutils.Verbose("finalizeDeployment func:")
+	groupIdInt := cutil.GenerateGidForContainer(agreementId)
+        groupId := strconv.Itoa(groupIdInt)
+        groupName := groupId
+	//groupName := cutil.GetHashFromString(agreementId)
+	group2, err := user.LookupGroup(groupName)
+        cliutils.Verbose(msgPrinter.Sprintf("5. get group from system: %v, %v", group2.Gid, group2.Name))
+        if err != nil {
+                return temp_services, errors.New(fmt.Sprintf("5. unable to look up group %v", groupName))
+        }
+
+
 	// final structure
 	services := make(map[string]servicePair, 0)
 
@@ -243,6 +259,11 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 		// Add a filesystem binding for the FSS (ESS) API SSL client certificate.
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
+
+		groupIdInt := cutil.GenerateGidForContainer(agreementId)
+		groupIdString := strconv.Itoa(groupIdInt)
+		groupAdds := make([]string, 0)
+		groupAdds = append(groupAdds, groupIdString)
 
 		// Create the volume map based on the container paths being bound to the host.
 		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
@@ -321,6 +342,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				Devices:         []docker.Device{},
 				LogConfig:       logConfig,
 				Binds:           service.Binds,
+				GroupAdd:        groupAdds,
 				Tmpfs:           service.Tmpfs,
 			},
 		}
@@ -1082,10 +1104,11 @@ func (b *ContainerWorker) workloadStorageDir(agreementId string) (string, bool) 
 
 // This function creates the containers, volumes, networks for the given agreement or service.
 func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol string, configure *events.ContainerConfig, deployment *containermessage.DeploymentDescription, configureRaw []byte, environmentAdditions map[string]string, ms_networks map[string]docker.ContainerNetwork, serviceURL string, sVer string) (persistence.DeploymentConfig, error) {
-
+	msgPrinter := i18n.GetMessagePrinter()
 	// local helpers
 	fail := func(container *docker.Container, name string, err error) error {
 		if container != nil {
+			cliutils.Verbose(msgPrinter.Sprintf("Error processing container setup, err: %v", err))
 			glog.Errorf("Error processing container setup: %v", container)
 		}
 
@@ -1161,10 +1184,23 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	if b.pattern == "" {
 		serviceVersion = sVer
 	}
+
+	cliutils.Verbose("ResourceCreate func: Before calling b.GetAuthenticationManager().Createredential()")
 	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion); err != nil {
 		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
 	}
 
+	groupIdInt := cutil.GenerateGidForContainer(agreementId)
+        groupId := strconv.Itoa(groupIdInt)
+        groupName := groupId
+	//groupName := cutil.GetHashFromString(agreementId)
+	group2, err := user.LookupGroup(groupName)
+        cliutils.Verbose(msgPrinter.Sprintf("4. get group from system: %v, %v", group2.Gid, group2.Name))
+        if err != nil {
+                return nil, errors.New(fmt.Sprintf("4. unable to look up group %v", groupName))
+        }
+
+	cliutils.Verbose("ResourceCreate func: Before calling b.finalizeDeployment")
 	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
 	if err != nil {
 		return nil, err
