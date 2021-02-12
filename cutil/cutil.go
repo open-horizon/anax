@@ -2,20 +2,13 @@ package cutil
 
 import (
 	"bufio"
-	"crypto/rand"
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"hash/fnv"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"math"
 	"net"
 	"os"
@@ -25,6 +18,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 const (
@@ -800,18 +800,4 @@ func GetHashFromString(str string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(str))
 	return hex.EncodeToString(hasher.Sum(nil))
-}
-
-// GetHashIntFromString returns the int result of hash for given string
-func GetHashIntFromString(str string) uint32 {
-	hasher := fnv.New32a()
-	hasher.Write([]byte(str))
-	return hasher.Sum32()
-}
-
-// GenerateGidForContainer generate system group id
-func GenerateGidForContainer(str string) int {
-	hashNumber := GetHashIntFromString(str)
-	res := hashNumber%1000000000
-	return int(res)
 }

@@ -1,21 +1,20 @@
 package resource
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/open-horizon/anax/config"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"os/user"
-	"strconv"
 	"path"
-	"github.com/open-horizon/anax/i18n"
+	"strconv"
+
+	"github.com/golang/glog"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/cli/cliutils"
-	"bytes"
 )
 
 type AuthenticationManager struct {
@@ -40,7 +39,6 @@ func (a *AuthenticationManager) GetCredentialPath(key string) string {
 // Create a new container authentication credential and write it into the Agent's host file system. The credential file
 // live in a directory named by the key input parameter.
 func (a *AuthenticationManager) CreateCredential(key string, id string, ver string) error {
-	msgPrinter := i18n.GetMessagePrinter()
 	cred, err := GenerateNewCredential(id, ver)
 	if err != nil {
 		return errors.New("unable to generate new authentication token")
@@ -50,39 +48,34 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 	if err != nil {
 		return errors.New("unable to get current OS user")
 	}
-	cliutils.Verbose(msgPrinter.Sprintf("current user's usdername %v, uid: %v", currUser.Username, currUser.Uid))
 	currUserUidInt, err := strconv.Atoi(currUser.Uid)
 	if err != nil {
 		return errors.New("unable to convert current user uid from string to int")
 	}
 
+	groupName := cutil.GetHashFromString(key)
+	groupAddCmd := exec.Command("groupadd", "-f", groupName)
+
 	var cmdErr bytes.Buffer
-	//groupName := cutil.GetHashFromString(key)
-	groupIdInt := cutil.GenerateGidForContainer(key)
-	groupId := strconv.Itoa(groupIdInt)
-	groupName := groupId
-	groupAddCmd := exec.Command("groupadd", "-f", groupName, "--gid", groupId)
 	groupAddCmd.Stderr = &cmdErr
 
 	if err := groupAddCmd.Run(); err != nil {
-		return errors.New(fmt.Sprintf("Failed to create group (%v:%v) for key(agreementId) %v, error: %v, stderr: %v", groupName, groupId, key, err, cmdErr.String()))
-	}
-
-	//groups, err := exec.Command("getent", "group").Output()
-	//if err != nil {
-	//	return errors.New(fmt.Sprintf("unable to list groups"))
-	//}
-
-	cliutils.Verbose(msgPrinter.Sprintf("Group added: %v:%v", groupName, groupId))
-
-	// Verifying group is created
-	group, err := user.LookupGroup(groupName)
-	cliutils.Verbose(msgPrinter.Sprintf("1. get group from system: %v, %v", group.Gid, group.Name))
-	if err != nil {
-		return errors.New(fmt.Sprintf("1. unable to look up group %v", groupName))
+		return errors.New(fmt.Sprintf("failed to create group %v for key(agreementId) %v, error: %v, stderr: %v", groupName, key, err, cmdErr.String()))
 	}
 
 	fileName := path.Join(a.GetCredentialPath(key), config.HZN_FSS_AUTH_FILE)
+
+	// Verifying group is created
+	group, err := user.LookupGroup(groupName)
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to find group %v created for auth file %v", groupName, fileName))
+	}
+
+	// get group id
+	groupIdInt, err := strconv.Atoi(group.Gid)
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed to get group id %v as string, error: %v", group.Gid, err))
+	}
 
 	if credBytes, err := json.Marshal(cred); err != nil {
 		return errors.New(fmt.Sprintf("unable to marshal new authentication credential, error: %v", err))
@@ -92,25 +85,14 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 		return errors.New(fmt.Sprintf("unable to write authentication credential file %v, error: %v", fileName, err))
 	}
 
-	group2, err := user.LookupGroup(groupName)
-        cliutils.Verbose(msgPrinter.Sprintf("2. get group from system: %v, %v", group2.Gid, group2.Name))
-        if err != nil {
-                return errors.New(fmt.Sprintf("2. unable to look up group %v", groupName))
-        }
-
+	// change group owner of auth foler and file, and set the group in groupAdd for service docker container in container.go
 	if err = os.Chown(a.GetCredentialPath(key), currUserUidInt, groupIdInt); err != nil {
-		return errors.New(fmt.Sprintf("unable to change group to (group id: %v, group name:%v) for the authentication credential folder %v, error: %v", groupIdInt, groupName, a.GetCredentialPath(key), err))
+		return errors.New(fmt.Sprintf("unable to change group to (group id: %v, group name:%v) for the authentication credential folder %v, error: %v", group.Gid, groupName, a.GetCredentialPath(key), err))
 	}
 
 	if err = os.Chown(fileName, currUserUidInt, groupIdInt); err != nil {
-		return errors.New(fmt.Sprintf("unable to change group to (group id: %v, group name:%v) for the authentication credential file %v, error: %v", groupIdInt, groupName, fileName, err))
+		return errors.New(fmt.Sprintf("unable to change group to (group id: %v, group name:%v) for the authentication credential file %v, error: %v", group.Gid, groupName, fileName, err))
 	}
-
-	group2, err = user.LookupGroup(groupName)
-        cliutils.Verbose(msgPrinter.Sprintf("3. get group from system: %v, %v", group2.Gid, group2.Name))
-        if err != nil {
-                return errors.New(fmt.Sprintf("3. unable to look up group %v", groupName))
-        }
 
 	glog.V(5).Infof(authLogString(fmt.Sprintf("Created credential for service %v, assigned id %v.", key, id)))
 
@@ -160,16 +142,22 @@ func (a *AuthenticationManager) RemoveCredential(key string) error {
 	}
 	glog.V(5).Infof(authLogString(fmt.Sprintf("Removed credential for service %v.", key)))
 
-	//groupName :=  cutil.GetHashFromString(key)
-	groupIdInt := cutil.GenerateGidForContainer(key)
-        groupId := strconv.Itoa(groupIdInt)
-        groupName := groupId
+	groupName := cutil.GetHashFromString(key)
+	if _, err := user.LookupGroup(groupName); err != nil {
+		switch err.(type) {
+		default:
+			return errors.New(fmt.Sprintf("failed to look up group by group name: %v for file %v, error: %v", groupName, path.Join(a.GetCredentialPath(key), config.HZN_FSS_AUTH_FILE), err))
+		case user.UnknownGroupIdError:
+			glog.V(5).Infof(authLogString(fmt.Sprintf("Group name %v not exist for %v, skip group deletion", groupName, key)))
+		}
+	}
+
 	var cmdErr bytes.Buffer
 	groupDelCmd := exec.Command("groupdel", groupName)
 	groupDelCmd.Stderr = &cmdErr
 
 	if err := groupDelCmd.Run(); err != nil {
-		return errors.New(fmt.Sprintf("Failed to delete group %v for agreementId: %v, error: %v, stderr: ", groupName, key, err, cmdErr.String()))
+		return errors.New(fmt.Sprintf("failed to delete group %v for agreementId: %v, error: %v, stderr: %v", groupName, key, err, cmdErr.String()))
 	}
 	glog.V(5).Infof(authLogString(fmt.Sprintf("Removed group for service %v.", key)))
 
