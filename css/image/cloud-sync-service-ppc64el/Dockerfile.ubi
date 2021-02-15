@@ -1,0 +1,31 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.0
+
+LABEL vendor="IBM"
+LABEL summary="Object model storage and APIs in the management hub."
+LABEL description="Provides the management hub side of the Model Management System, which stores object models and provides APIs for admins and edge nodes to access the object models."
+
+# yum is not installed, use microdnf instead
+RUN microdnf update -y --nodocs && microdnf clean all
+
+# shadow-utils contains groupadd and adduser commands
+RUN microdnf install --nodocs -y shadow-utils \
+	&& groupadd -g 1000 cssuser && adduser -u 1000 -g cssuser cssuser \
+    && microdnf install --nodocs -y openssl ca-certificates gettext \
+    && microdnf clean all
+
+# add license file
+RUN mkdir -p /licenses
+COPY LICENSE.txt /licenses
+
+ADD cloud-sync-service /home/cssuser/cloud-sync-service
+
+RUN mkdir -p /var/edge-sync-service /etc/edge-sync-service /usr/edge-sync-service/bin
+
+COPY config/sync.conf.tmpl /etc/edge-sync-service
+COPY script/css_start.sh /usr/edge-sync-service/bin
+
+RUN chown -R cssuser:cssuser /var/edge-sync-service /etc/edge-sync-service /usr/edge-sync-service/bin
+
+USER cssuser
+
+CMD ["/usr/edge-sync-service/bin/css_start.sh"]
