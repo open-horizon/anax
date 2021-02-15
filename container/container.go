@@ -931,6 +931,29 @@ func generatePermittedString(isolation *containermessage.NetworkIsolation, netwo
 }
 
 func processPostCreate(ipt *iptables.IPTables, client *docker.Client, agreementId string, deployment containermessage.DeploymentDescription, configureRaw []byte, hasSpecifiedEthAccount bool, containers []interface{}, fail func(container *docker.Container, name string, err error) error) error {
+	// check if any of the service containers require iptables manipulation to limit outbound traffic. If not, skip this step
+	requiresProcessPostCreate := false
+	for _, con := range containers {
+		switch con.(type) {
+		case *docker.Container:
+			container := con.(*docker.Container)
+
+			// incoming "container" type does not have Config member
+			conDetail, err := client.InspectContainer(container.ID)
+			if err != nil {
+				return fail(nil, container.Name, fmt.Errorf("Unable to find container detail for container during post-creation step: Error: %v", err))
+			}
+			if serviceName, exists := conDetail.Config.Labels[LABEL_PREFIX+".service_name"]; exists {
+				if deployment.Services[serviceName].NetworkIsolation != nil {
+					requiresProcessPostCreate = true
+				}
+			}
+		}
+	}
+
+	if !requiresProcessPostCreate {
+		return nil
+	}
 
 	if ipt != nil {
 		rules, err := ipt.List("filter", IPT_COLONUS_ISOLATED_CHAIN)
