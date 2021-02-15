@@ -312,8 +312,17 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		cliutils.Verbose(msgPrinter.Sprintf("Starting dependencies."))
 	}
 
+	// Generate an agreement id for testing purposes.
+	agreementId, aerr := cutil.GenerateAgreementId()
+	if aerr != nil {
+		if !noFSS {
+			sync_service.Stop(cw.GetClient())
+		}
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to generate test agreementId, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, aerr))
+	}
+
 	// If the service has dependencies, get them started first.
-	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw)
+	msNetworks, perr := dev.ProcessStartDependencies(dir, deps, userInputs.Global, userInputs.Services, cw, agreementId)
 	if perr != nil {
 		if !noFSS {
 			sync_service.Stop(cw.GetClient())
@@ -330,17 +339,8 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, cerr)
 	}
 
-	// Generate an agreement id for testing purposes.
-	agreementId, aerr := cutil.GenerateAgreementId()
-	if aerr != nil {
-		if !noFSS {
-			sync_service.Stop(cw.GetClient())
-		}
-		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to generate test agreementId, %v", dev.SERVICE_COMMAND, dev.SERVICE_START_COMMAND, aerr))
-	}
-
 	// Now we can start the service container.
-	_, err := dev.StartContainers(deployment, serviceDef.URL, serviceDef.Version, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)
+	_, err := dev.StartContainers(deployment, serviceDef.URL, userInputs.Global, serviceDef.UserInputs, userInputs.Services, serviceDef.Org, dc, cw, msNetworks, true, true, agreementId)
 	if err != nil {
 		if !noFSS {
 			sync_service.Stop(cw.GetClient())

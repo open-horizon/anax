@@ -3,7 +3,7 @@
 PREFIX="hzn reg test:"
 
 echo ""
-echo -e "${PREFIX} Registering and unregitering with hzn command."
+echo -e "${PREFIX} Registering and unregistering with hzn command."
 
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
@@ -193,7 +193,7 @@ else
 fi
 
 ## test registering node with both flags and positional arguments, conflict
-echo -e "${PREFIX} Testing 'hzn register' with conflict inputs"
+echo -e "${PREFIX} Testing 'hzn register' with conflicting inputs"
 cmd="hzn register -u $USERDEV_ADMIN_AUTH -n an12345:abcdefghijk -o userdev -f /tmp/reg_userinput.json --policy /tmp/node_policy.json e2edev@somecomp.com sns"
 echo -e "$cmd"
 ret=`$cmd 2>&1`

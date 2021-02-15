@@ -196,21 +196,21 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			}
 		case *events.ContainerLaunchContext:
 			lc := msg.LaunchContext.(*events.ContainerLaunchContext)
-
+			serviceInfo := lc.GetServicePathElement()
 			if msg.Event().Id == events.IMAGE_FETCHED {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_INFO,
-					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, serviceInfo.Org, serviceInfo.URL),
 					persistence.EC_IMAGE_LOADED,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 			} else {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, serviceInfo.Org, serviceInfo.URL),
 					persistence.EC_ERROR_IMAGE_LOADE,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
 				w.Commands <- cmd
 			}
@@ -1265,7 +1265,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf(logString(fmt.Sprintf("Error updating service execution status. %v", err)))
 			} else if msinst != nil {
 				if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msinst.MicroserviceDefId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error finding service definition fron db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
+					glog.Errorf(logString(fmt.Sprintf("Error finding service definition from db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
 				} else if msdef == nil {
 					glog.Errorf(logString(fmt.Sprintf("No service definition record in db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
 				} else {
