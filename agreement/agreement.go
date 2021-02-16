@@ -959,7 +959,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, pol *policy.P
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId + "?" + exchange.NOHEARTBEAT_PARAM
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), as, &resp); err != nil {
 			glog.Errorf(err.Error())

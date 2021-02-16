@@ -1776,7 +1776,7 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 	// Call the exchange API to set the agreement state.
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId + "?" + exchange.NOHEARTBEAT_PARAM
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
