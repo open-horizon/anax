@@ -403,9 +403,11 @@ anax-k8s-package: anax-k8s-image
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
-	cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR)
-	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
+	if [[ $(arch) == "amd64" ]]; then \
+		cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR); \
+		cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+		docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
+	else echo "Building the CSS docker image is not supported on $(arch)"; fi
 
 promote-css:
 	@echo "Promoting $(CSS_IMAGE)"
@@ -437,21 +439,24 @@ fss: ess-docker-image css-docker-image
 
 # This is a target that is ONLY called by the deb packager system. The ESS and CSS containers are built and published by that process
 # when new versions are created. Developers should not use this target.
+# Note that only ESS is supported by amd64 and ppc64el archs. CSS is amd64 only.
 fss-package: ess-docker-image css-docker-image
 	@echo "Packaging file sync service containers"
 	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
-		echo "Pushing ESS docker image $(ESS_IMAGE)"; \
+		echo "Pushing ESS Docker image $(ESS_IMAGE)"; \
 		docker push $(ESS_IMAGE); \
 		docker push $(ESS_IMAGE_STG); \
 	else \
 		echo "File sync service container $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
-		echo "Pushing CSS docker image $(CSS_IMAGE)"; \
-		docker push $(CSS_IMAGE); \
-		docker push $(CSS_IMAGE_STG); \
-	else \
-		echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
+	if [[ $(arch) == "amd64" ]]; then \
+		if [[ ($(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "") ]]; then \
+			echo "Pushing CSS Docker image $(CSS_IMAGE)"; \
+			docker push $(CSS_IMAGE); \
+			docker push $(CSS_IMAGE_STG); \
+		else \
+			echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
+		fi
 	fi
 
 clean: mostlyclean 
