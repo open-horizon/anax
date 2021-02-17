@@ -39,6 +39,7 @@ type ExNodeStatusService struct {
 	Arch            string          `json:"arch"`
 	ContainerStatus []ContainerStat `json:"containerStatus"`
 	OperatorStatus  interface{}     `json:"operatorStatus,omitempty"`
+	ConfigState     string          `json:"configState"`
 }
 
 type ExchangeNodeStatus struct {

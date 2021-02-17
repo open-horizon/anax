@@ -7,6 +7,7 @@ import (
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/exchangesync"
 	"github.com/open-horizon/anax/helm"
@@ -40,6 +41,7 @@ type WorkloadStatus struct {
 	Arch           string            `json:"arch,omitempty"`
 	Containers     []ContainerStatus `json:"containerStatus"`
 	OperatorStatus interface{}       `json:"operatorStatus,omitempty"`
+	ConfigState    string            `json:"configState,omitempty"`
 }
 
 func (w WorkloadStatus) String() string {
@@ -49,8 +51,9 @@ func (w WorkloadStatus) String() string {
 		"Version: %v, "+
 		"Arch: %v, "+
 		"Containers: %v"+
-		"OperatorStatus: %v",
-		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers, w.OperatorStatus)
+		"OperatorStatus: %v"+
+		"ConfigState: %v",
+		w.AgreementId, w.ServiceURL, w.Org, w.Version, w.Arch, w.Containers, w.OperatorStatus, w.ConfigState)
 }
 
 type DeviceStatus struct {
@@ -73,7 +76,10 @@ func NewDeviceStatus() *DeviceStatus {
 
 // Report the containers status and connectivity status to the exchange.
 func (w *GovernanceWorker) ReportDeviceStatus() int {
+	return w.reportDeviceStatus(nil)
+}
 
+func (w *GovernanceWorker) reportDeviceStatus(cfgStates []events.ServiceConfigState) int {
 	if !w.Config.Edge.ReportDeviceStatus {
 		glog.Info("ReportDeviceStatus is false. The status report to the exchange is turned off.")
 		return 3600
@@ -109,6 +115,32 @@ func (w *GovernanceWorker) ReportDeviceStatus() int {
 	} else {
 		device_status.Services = ms_status
 	}
+
+	if cfgStates != nil && len(cfgStates) != 0 {
+		// updating services cfg states
+		for _, cfgState := range cfgStates {
+			found := false
+			for i, workload := range device_status.Services {
+				if cfgState.Org == workload.Org && cfgState.Url == workload.ServiceURL {
+					device_status.Services[i].ConfigState = cfgState.ConfigState
+					found = true
+					glog.Errorf(logString(fmt.Sprintf("FOUND ALREADY -----: %v", cfgState)))
+				}
+			}
+			if !found {
+				// service has been suspended so it wasn't found, adding it to the status
+				glog.Errorf(logString(fmt.Sprintf("ADDING bcs 0 -----: %v", cfgState)))
+				device_status.Services = append(device_status.Services, WorkloadStatus{
+					ServiceURL:  cfgState.Url,
+					Org:         cfgState.Org,
+					Version:     cfgState.Version,
+					Arch:        cfgState.Arch,
+					ConfigState: cfgState.ConfigState,
+				})
+			}
+		}
+	}
+
 	// report the status to the exchange
 	w.deviceStatus = &device_status
 
@@ -117,6 +149,9 @@ func (w *GovernanceWorker) ReportDeviceStatus() int {
 	if err != nil {
 		glog.Errorf(logString(fmt.Sprintf("Failed to retrieve previous device status from local database: %v", err)))
 	} else {
+		nonChangedServices := getNonChangedServices(device_status.Services, oldWlStatus)
+		device_status.Services = append(device_status.Services, nonChangedServices...)
+
 		statusChanged = changeInWorkloadStatuses(device_status.Services, oldWlStatus)
 	}
 
@@ -133,6 +168,29 @@ func (w *GovernanceWorker) ReportDeviceStatus() int {
 		glog.V(5).Infof(logString(fmt.Sprintf("device status unchanged, skipping report to exchange: %v", device_status)))
 	}
 	return 60
+}
+
+// getNonChangedServices returns old services that don't have any updates, so their statuses will not be lost
+func getNonChangedServices(updatedServices []WorkloadStatus, oldServices []persistence.WorkloadStatus) (suspendedSvcs []WorkloadStatus) {
+	for _, svc := range oldServices {
+		hasUpdates := false
+		for _, updSvc := range updatedServices {
+			if updSvc.ServiceURL == svc.ServiceURL && updSvc.Org == svc.Org {
+				hasUpdates = true
+			}
+		}
+		if hasUpdates {
+			continue
+		}
+		suspendedSvcs = append(suspendedSvcs, WorkloadStatus{
+			ServiceURL:  svc.ServiceURL,
+			Org:         svc.Org,
+			Version:     svc.Version,
+			Arch:        svc.Arch,
+			ConfigState: svc.ConfigState,
+		})
+	}
+	return suspendedSvcs
 }
 
 // Find the status for all the Services.
@@ -253,6 +311,7 @@ func (w *GovernanceWorker) getWorkloadStatus(containers []docker.APIContainers) 
 						wl_status.Org = wl.Org
 						wl_status.Version = wl.Version
 						wl_status.Arch = wl.Arch
+						wl_status.ConfigState = exchange.SERVICE_CONFIGSTATE_ACTIVE
 
 						if wl.ClusterDeployment != "" {
 							opStatus, opErr := GetOperatorStatus(wl.ClusterDeployment)
@@ -384,6 +443,7 @@ func (w *GovernanceWorker) writeStatusToExchange(device_status *DeviceStatus) er
 	retryInterval := httpClientFactory.GetRetryInterval()
 
 	for {
+		glog.Errorf(logString(fmt.Sprintf("WRITING TO EX ---- %v", device_status.Services)))
 		if err, tpErr := exchange.InvokeExchange(httpClientFactory.NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), device_status, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))
 			return err
@@ -438,6 +498,9 @@ func changeInWorkloadStatuses(newStatuses []WorkloadStatus, oldStatuses []persis
 				if changeInContainerStatuses(newStatus.Containers, oldStatus.Containers) {
 					return true
 				}
+				if oldStatus.ConfigState != newStatus.ConfigState {
+					return true
+				}
 				matches++
 			}
 		}
@@ -479,7 +542,7 @@ func convertToPersistenceType(workload []WorkloadStatus) []persistence.WorkloadS
 	for _, wlStatus := range workload {
 		newPersistentWlStatus := persistence.WorkloadStatus{AgreementId: wlStatus.AgreementId,
 			ServiceURL: wlStatus.ServiceURL, Org: wlStatus.Org, Version: wlStatus.Version,
-			Arch: wlStatus.Arch, OperatorStatus: wlStatus.OperatorStatus}
+			Arch: wlStatus.Arch, OperatorStatus: wlStatus.OperatorStatus, ConfigState: wlStatus.ConfigState}
 		newPersistentWlStatus.Containers = converContainerStatusToPersistenceType(wlStatus.Containers)
 		persistentWls = append(persistentWls, newPersistentWlStatus)
 	}
