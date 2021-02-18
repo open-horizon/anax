@@ -454,9 +454,7 @@ fss-package: ess-docker-image css-docker-image
 			echo "Pushing CSS Docker image $(CSS_IMAGE)"; \
 			docker push $(CSS_IMAGE); \
 			docker push $(CSS_IMAGE_STG); \
-		else \
-			echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
-		fi
+		else echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; fi \
 	fi
 
 clean: mostlyclean 
