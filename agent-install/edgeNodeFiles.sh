@@ -3,7 +3,7 @@
 # This script gathers the necessary information and files to install the Horizon agent and register an edge node
 
 # Global constants
-SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ALL'
+SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
 AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
@@ -28,8 +28,8 @@ Parameters:
     -f <directory>     The directory to put the gathered files in. Default is current directory.
     -t          Create agentInstallFiles-<edge-node-type>.tar.gz file containing gathered files. If this flag is not set, the gathered files will be placed in the current directory.
     -p <package_name>   The base name of the horizon content tar file (can include a path). Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
-    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node type x86_64-Cluster.
-    -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node type x86_64-Cluster.
+    -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node types of <arch>-Cluster.
+    -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node types of <arch>-Cluster.
 
 Required Environment Variables:
     CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>
@@ -124,7 +124,7 @@ function checkPrereqsAndInput () {
     fi
     echo " - oc installed"
 
-    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then
         if ! command -v docker >/dev/null 2>&1; then
             fatal 2 "docker is not installed."
         fi
@@ -225,7 +225,7 @@ function createAgentInstallConfig () {
     echo "Creating agent-install.cfg file..."
     HUB_CERT_PATH="agent-install.crt"
 
-    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset
+    if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then   # if they chose ALL, the cluster agent-install.cfg is a superset
         cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
@@ -355,6 +355,9 @@ function gatherHorizonPackageFiles() {
     if [[ $EDGE_NODE_TYPE == 'x86_64-macOS' || $EDGE_NODE_TYPE == 'ALL' ]]; then
         getHorizonPackageFiles 'macos' 'pkg' 'x86_64'
     fi
+    if [[ $EDGE_NODE_TYPE == 'ppc64le-RPM' || $EDGE_NODE_TYPE == 'ALL' ]]; then
+        getHorizonPackageFiles 'linux' 'rpm' 'ppc64le'
+    fi
     # there are no packages to extract for edge-cluster, because that uses the agent docker image
 
     echo ""
@@ -437,7 +440,7 @@ function createTarFile () {
     local files_to_compress
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
         files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_IMAGE_TAR_FILE $AGENT_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml horizon*"
-    elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" ]]; then
+    elif [[ $EDGE_NODE_TYPE == "x86_64-Cluster" || $EDGE_NODE_TYPE == "ppc64le-Cluster" ]]; then
         files_to_compress="agent-install.sh agent-uninstall.sh agent-install.cfg agent-install.crt $AGENT_K8S_IMAGE_TAR_FILE deployment-template.yml persistentClaim-template.yml"
     elif [[ "$EDGE_NODE_TYPE" == "macOS" ]]; then
         files_to_compress="agent-install.sh agent-install.cfg agent-install.crt horizon-cli* $AGENT_IMAGE_TAR_FILE"
@@ -538,7 +541,7 @@ device_main() {
 main() {
     if [[ $EDGE_NODE_TYPE == 'ALL' ]]; then
         all_main
-    elif [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' ]]; then
+    elif [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' ]]; then
         cluster_main
     else
         device_main

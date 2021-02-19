@@ -26,7 +26,7 @@ SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # comp
 SUPPORTED_REDHAT_VARIANTS=(rhel centos $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
 SUPPORTED_REDHAT_VERSION=(8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
-SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
+SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
 
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
@@ -823,7 +823,7 @@ function download_pkgs_from_anax_release() {
     log_debug "download_pkgs_from_anax_release() begin"
     # This function is called if INPUT_FILE_PATH starts with at least https://github.com/open-horizon/anax/releases
     # Note: adjust_input_file_path() has already been called, which applies some default (if necessary) to INPUT_FILE_PATH
-    local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-$ARCH.tar.gz"
+    local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-${ARCH}.tar.gz"
     local remote_path="${INPUT_FILE_PATH%/}/$tar_file_name"
 
     # Download and unpack the package tar file
@@ -844,7 +844,7 @@ function download_pkgs_from_css() {
     log_debug "download_pkgs_from_css() begin"
     # This function is called if INPUT_FILE_PATH starts with css: . We have to add in HZN_FSS_CSSURL to the URL we download from.
     # Note: adjust_input_file_path() has already been called, which applies some default (if necessary) to INPUT_FILE_PATH
-    local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-$ARCH.tar.gz"
+    local tar_file_name="horizon-agent-${OS}-$(get_pkg_type)-${ARCH}.tar.gz"
 
     # Download and unpack the package tar file
     download_css_file "$INPUT_FILE_PATH/$tar_file_name"
@@ -1180,6 +1180,20 @@ function install_debian() {
     log_debug "install_debian() end"
 }
 
+# Ensure dnf package manager is installed on host when running in RedHat/CentOS
+function install_dnf() {
+    log_debug "install_dnf() begin"
+
+    log_info "Checking dnf is installed..."
+
+    if ! isCmdInstalled dnf; then
+        log_info "Installing dnf..."
+        yum install -y -q dnf
+    fi
+
+    log_debug "install_dnf() end"
+}
+
 # Ensure the software prereqs for a redhat variant device are installed
 function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() begin"
@@ -1189,7 +1203,6 @@ function redhat_device_install_prereqs() {
         dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
     fi
 
-    log_info "Installing prerequisites, this could take a minute..."
     dnf install -yq curl jq
 
     if ! isCmdInstalled docker; then
@@ -1257,6 +1270,8 @@ function install_redhat_device_horizon_pkgs() {
 function install_redhat() {
     log_debug "install_redhat() begin"
 
+    log_info "Installing prerequisites, this could take a minute..."
+    install_dnf
     redhat_device_install_prereqs
     check_and_set_anax_port   # sets ANAX_PORT
     check_existing_exch_node_is_correct_type "device"
@@ -1707,11 +1722,22 @@ function get_arch() {
         if is_debian_variant; then
             dpkg --print-architecture
         elif is_redhat_variant; then
-            uname -m   # x86_64 or aarch64 (i think)
+            uname -m
         fi
     elif is_macos; then
         uname -m   # e.g. x86_64. We don't currently use ARCH on macos
     fi
+}
+
+# Returns hardware architecture for Docker image names
+function get_image_arch() {
+    local image_arch=${ARCH:-$(get_arch)}
+    if [[ $image_arch == 'x86_64' ]]; then
+        image_arch='amd64'
+    elif [[ $image_arch == 'aarch64' ]]; then
+        image_arch='arm64'
+    fi
+    echo $image_arch
 }
 
 # checks if OS/distribution/codename/arch is supported
@@ -1834,7 +1860,8 @@ function loadClusterAgentImage() {
             if [[ -z $image_tag ]]; then
                 image_tag='latest'
             fi
-            local image_path="openhorizon/amd64_anax_k8s:$image_tag"
+            local image_arch=$(get_image_arch)
+            local image_path="openhorizon/${image_arch}_anax_k8s:$image_tag"
             log_info "Pulling $image_path from docker hub..."
             docker pull "$image_path"
             chk $? "pulling $image_path"
