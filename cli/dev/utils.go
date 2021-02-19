@@ -544,7 +544,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 				for nwName, _ := range msn {
 					// Get APIContainers given a network name
 					var err error
-					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{Filters:map[string][]string{"network":[]string{nwName}}})
+					serviceContainers, err := cw.GetClient().ListContainers(docker.ListContainersOptions{Filters: map[string][]string{"network": []string{nwName}}})
 					if err != nil {
 						return nil, fmt.Errorf("unable to get list of containers in network %v, error %v", nwName, err)
 					} else {
@@ -561,7 +561,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 				for serviceName, _ := range depConfig.Services {
 					serviceContainers, err := findContainers(serviceName, cutil.MakeMSInstanceKey(depDef.URL, depDef.Org, depDef.Version, ""), cw)
 					if err != nil {
-						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' unable to list existing containers: %v",SERVICE_COMMAND, SERVICE_START_COMMAND, err))
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' unable to list existing containers: %v", SERVICE_COMMAND, SERVICE_START_COMMAND, err))
 					}
 					containers = append(containers, serviceContainers...)
 				}

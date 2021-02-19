@@ -15,6 +15,8 @@ func TestConstructor(t *testing.T) {
 		t.Errorf("Factory returned nil, but should not. Error: %v \n", err)
 	} else if c.Get_expression() != "[1.2.3,INFINITY)" {
 		t.Errorf("Factory did not correctly save the full expression, returned %v\n", c.Get_expression())
+	} else if c, err := Version_Expression_Factory(""); c != nil {
+		t.Errorf("Factory did not return nil but should have, it returned %v Error: %v \n", c, err)
 	} else if c, err := Version_Expression_Factory("a"); c != nil {
 		t.Errorf("Factory did not return nil but should have, it returned %v Error: %v \n", c, err)
 	} else if c, err := Version_Expression_Factory("1a"); c != nil {
@@ -140,6 +142,8 @@ func TestRanges1(t *testing.T) {
 		t.Errorf("Input is in range. Error: %v \n", err)
 	} else if inrange, err := c.Is_within_range("2.1"); err != nil || inrange {
 		t.Errorf("Input is NOT in range. Error: %v \n", err)
+	} else if inrange, err := c.Is_within_range(""); err == nil || inrange {
+		t.Errorf("Input is invalid, but did not return an error\n")
 	}
 
 }

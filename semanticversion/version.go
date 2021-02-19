@@ -60,6 +60,11 @@ func Version_Expression_Factory(ver_string string) (*Version_Expression, error) 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
+	if len(ver_string) == 0 {
+		errorString := msgPrinter.Sprintf("Version_Expression: Empty string is not a valid version.")
+		return nil, errors.New(errorString)
+	}
+
 	startVersion := ""
 	endVersion := ""
 	expr := ver_string
@@ -273,6 +278,11 @@ func (self *Version_Expression) IntersectsWith(other *Version_Expression) error 
 
 // change the ceiling of this version range.
 func (self *Version_Expression) ChangeCeiling(ceiling_version string, inclusive bool) error {
+
+	if len(ceiling_version) == 0 {
+		return fmt.Errorf("The input string is not a version string, it is an empty string.")
+	}
+
 	if ceiling_version == INF {
 		self.end = INF
 		// always set the false, ignore the inclusive input
@@ -339,6 +349,11 @@ func multipleVersions(expr string) bool {
 // Return true if the input version string is a valid version according to the version string schema above.
 // A number with leading 0's, for example 1.02.1, is not a valid version string.
 func IsVersionString(expr string) bool {
+
+	if len(expr) == 0 {
+		return false
+	}
+
 	if expr == INF {
 		return true
 	}
@@ -369,6 +384,10 @@ func IsVersionString(expr string) bool {
 
 // Return true if the input version string is a full version expression
 func IsVersionExpression(expr string) bool {
+
+	if len(expr) == 0 {
+		return false
+	}
 
 	if !(leftIncluded(expr) || leftExcluded(expr)) && !(rightIncluded(expr) || rightExcluded(expr)) {
 		return false

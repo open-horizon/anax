@@ -2082,7 +2082,7 @@ func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers
 		// connected to this network when the workload containers are created.
 
 		var parentSpecificNetwork *docker.Network
-		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name":{nwForParentSvc:true}}); err != nil {
+		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name": {nwForParentSvc: true}}); err != nil {
 			glog.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 			continue
 		} else if len(nws) == 0 {
@@ -2110,7 +2110,7 @@ func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers
 			ms_children_networks[nwForParentSvc] = parentSpecificNetwork.ID
 
 			// When a dependency is created, a network is created for it. The network name matches the dependency's microservice instance name,
-			// which is the same as the agreement_id label on each of the dependency's containers. If this original network still exists, then 
+			// which is the same as the agreement_id label on each of the dependency's containers. If this original network still exists, then
 			// disconnect the container from it so that the original network can be deleted.
 			originalBaseNetwork, ok := msc.Networks.Networks[dependencyBaseNetworkName]
 			if !ok {
@@ -2156,7 +2156,7 @@ func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, p
 	// Get the list of containers in the service's default network, so that we can move them to parent specific networks.
 	var originalNetwork *docker.Network
 	var serviceContainers []docker.APIContainers
-	filter := docker.NetworkFilterOpts{"name":{networkName:true}}
+	filter := docker.NetworkFilterOpts{"name": {networkName: true}}
 	if nws, err := b.client.FilteredListNetworks(filter); err != nil {
 		return fmt.Errorf("failure getting original network %v, error %v", networkName, err)
 	} else if len(nws) == 0 {
@@ -2169,7 +2169,7 @@ func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, p
 		originalNetwork = netInfo
 
 		var err error
-		serviceContainers, err = b.client.ListContainers(docker.ListContainersOptions{Filters:map[string][]string{"network":[]string{networkName}}})
+		serviceContainers, err = b.client.ListContainers(docker.ListContainersOptions{Filters: map[string][]string{"network": []string{networkName}}})
 		if err != nil {
 			return fmt.Errorf("unable to get list of containers in network %v, error %v", networkName, err)
 		}
@@ -2190,7 +2190,7 @@ func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, p
 
 		// Create parent specific network for this service and connect it to the dependency.
 		var parentSpecificNetwork *docker.Network
-		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name":{nwForParentSvc:true}}); err != nil {
+		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name": {nwForParentSvc: true}}); err != nil {
 			return fmt.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 		} else if len(nws) == 0 {
 			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
