@@ -19,6 +19,14 @@ It can optionally contain any arbitrary properties; for example, the product mod
 Node policy constraints can be used to restrict which services are permitted to run on this node.
 Each node has only one policy that contains all the properties and constraints that are assigned to that node.
 
+The JSON representation of node policy contains properties and constraints as defined [here](./properties_and_constraints.md):
+```
+{
+	"properties": [],
+	"constraints": []
+}
+```
+
 ## Service policy
 
 Service policy is an optional feature.
@@ -31,6 +39,15 @@ For example, the service developer can assert that this service requires a parti
 Typically, properties and constraints remain static for the life of the service because they describe aspects of the service implementation.
 In expected usage scenarios, a change to one of these is usually coincident with code changes that necessitate a new service version.
 Deployment policies are used to capture the more dynamic aspects of service deployment that arise from business requirements.
+
+The JSON representation of service policy contains properties and constraints as defined [here](./properties_and_constraints.md):
+```
+{
+	"properties": [],
+	"constraints": []
+}
+```
+
 
 ## Deployment policy
 
@@ -46,11 +63,15 @@ The node health configuration indicates how the deployment engine should gauge t
 Because deployment policies capture the more dynamic, business-like service properties and constraints, they are expected to change more often than service policy. Their lifecycle is independent from the service they refer to, which gives the policy administrator the ability to state a specific service version or a version range.
 The deployment engine merges service policy and deployment policy (by performing a logical AND of the 2 policies), and then attempts to find nodes whose policy is compatible with that merged policy.
 
+The JSON representation of deployment policy is more complex than node and service policy, as shown [here](./deployment_policy.md).
+
 ## Model policy
 
 Machine learning (ML)-based services require specific trained models to operate correctly.
 OpenHorizon provides the ability to deploy models independently from services.
-In ML use case, the model tends to be large and change more more often than the algorithmic code which uses the model to analyze data.
+In ML use cases, the model tends to be large and change more more often than the algorithmic code which uses the model to analyze data.
 Model policy enables the administrator to deploy specific models on the same, or a subset of, nodes where the services that use the mode have been placed.
 The purpose of model policy is to further narrow the set of nodes where a given service is deployed, which enables a subset of those nodes to receive a specific model object.
 This is useful when you want to test a new model on a subset of nodes where the algorithmic service is deployed.
+
+The JSON representation of model policy is more complex than node and service policy, as shown [here](./model_policy.md).
