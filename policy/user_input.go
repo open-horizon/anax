@@ -74,6 +74,14 @@ func (s UserInput) ShortString() string {
 		s.ServiceOrgid, s.ServiceUrl, s.ServiceArch, s.ServiceVersionRange, strings.Join(inputs, ","))
 }
 
+func (s UserInput) DeepCopy() *UserInput {
+	userInCopy := UserInput{ServiceOrgid: s.ServiceOrgid, ServiceUrl: s.ServiceUrl, ServiceArch: s.ServiceArch, ServiceVersionRange: s.ServiceVersionRange}
+	for _, input := range s.Inputs {
+		userInCopy.Inputs = append(userInCopy.Inputs, input)
+	}
+	return &userInCopy
+}
+
 // The following functions implement AbstractUserInput interface
 func (s UserInput) GetServiceOrgid() string {
 	return s.ServiceOrgid

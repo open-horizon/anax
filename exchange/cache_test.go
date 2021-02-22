@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"github.com/open-horizon/anax/externalpolicy"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -135,5 +136,58 @@ func TestDeleteCacheResourceFromChange(t *testing.T) {
 		t.Errorf("Error: failed to remove service policy resource from cache after exchange org create change")
 	} else if cachedSvcPol = GetServicePolicyFromCache("userdev/another-service_amd64_0.0.0"); cachedSvcPol == nil {
 		t.Errorf("Error: policy for service another-service removed by exchange org create change on a different org")
+	}
+}
+
+func TestCopy(t *testing.T) {
+	dev := Device{Token: "12345", Name: "cachedNode", Owner: "Kim", NodeType: "cluster", Pattern: "helloworld", MsgEndPoint: "an endpoint", LastHeartbeat: "23:00", PublicKey: "a key", Arch: "amd64", LastUpdated: "now",
+		RegisteredServices: []Microservice{Microservice{Url: "helloworld1", NumAgreements: 1, Policy: "a policy", ConfigState: "Configured", Properties: []MSProp{MSProp{Name: "HW_WHO", Value: "world", PropType: "string", Op: "=="}, MSProp{Name: "HW_WHO2", Value: "world2", PropType: "string", Op: "=="}}}},
+		HeartbeatIntv:      HeartbeatIntervals{MinInterval: 15, MaxInterval: 60, IntervalAdjustment: 5}}
+
+	cachedObj := CacheEntry{Resource: dev}
+	copy := cachedObj.Copy().(Device)
+	if !reflect.DeepEqual(dev, copy) {
+		t.Errorf("Device copy failed to accurately copy something.\n%v\n%v", dev, copy)
+	}
+
+	hwReq := map[string]interface{}{"cpu": 4, "camera": "yes"}
+	svcDep := []ServiceDependency{ServiceDependency{URL: "supportservice", Org: "userdev", Version: "2.3.4", VersionRange: "[1.3.2,4.2.3)", Arch: "amd64"},
+		ServiceDependency{URL: "supportservice2", Org: "userdev", Version: "2.3.7", VersionRange: "[1.3.2,4.2.3)", Arch: "amd64"}}
+	userIn := []UserInput{UserInput{Name: "input1", Label: "input for service", Type: "string", DefaultValue: "Mexico City"}, UserInput{Name: "input2", Label: "input for service", Type: "string", DefaultValue: "Caracas"}}
+	svc1 := ServiceDefinition{Owner: "userdev", Label: "newservice", Description: "A service definition", Documentation: "this is a service definition", Public: true, URL: "helloworld",
+		Version: "0.0.1", Arch: "amd64", Sharable: "singleton", Deployment: "a long string", DeploymentSignature: "the deployment signature", ClusterDeployment: "a cluster deployment",
+		ClusterDeploymentSignature: "a cluster deployment signature", LastUpdated: "now", MatchHardware: hwReq, RequiredServices: svcDep, UserInputs: userIn}
+	svc2 := ServiceDefinition{Owner: "userdev", Label: "newservice2", Description: "A service definition", Documentation: "this is a service definition", Public: true, URL: "helloworld",
+		Version: "1.0.1", Arch: "amd64", Sharable: "singleton", Deployment: "a long string", DeploymentSignature: "the deployment signature", ClusterDeployment: "a cluster deployment",
+		ClusterDeploymentSignature: "a cluster deployment signature", LastUpdated: "now", MatchHardware: hwReq, RequiredServices: svcDep, UserInputs: userIn}
+	svcMap := map[string]ServiceDefinition{"0.0.1": svc1, "1.0.1": svc2}
+	cachedObj = CacheEntry{Resource: svcMap}
+	svcCopy := cachedObj.Copy().(map[string]ServiceDefinition)
+	if !reflect.DeepEqual(svcMap, svcCopy) {
+		t.Errorf("Service definition copy failed to accurately copy something.\n%v\n%v", svcMap, svcCopy)
+	}
+
+	svcKey := map[string]string{"key-type": "the key", "key-type2": "the key 2"}
+	cachedObj = CacheEntry{Resource: svcKey}
+	keyCopy := cachedObj.Copy().(map[string]string)
+	if !reflect.DeepEqual(svcKey, keyCopy) {
+		t.Errorf("Service keys copy failed to accurately copy something. \n%v\n%v", svcKey, keyCopy)
+	}
+
+	exchPol := ExchangePolicy{ExternalPolicy: externalpolicy.ExternalPolicy{Properties: externalpolicy.PropertyList{*externalpolicy.Property_Factory("color", "blue"),
+		*externalpolicy.Property_Factory("shape", "oval")}, Constraints: externalpolicy.ConstraintExpression{"owner = Jim", "shift in \"day,night\"}"}}, LastUpdated: "16:14:32"}
+	cachedObj = CacheEntry{Resource: exchPol}
+	polCopy := cachedObj.Copy().(ExchangePolicy)
+	if !reflect.DeepEqual(exchPol, polCopy) {
+		t.Errorf("Exchange Policy copy failed to accurately copy something \n%v\n%v", exchPol, polCopy)
+	}
+
+	imgAuth1 := ImageDockerAuth{DockAuthId: 1, Registry: "dockerhub.io", UserName: "user1", Token: "user1token", LastUpdated: "10:11:12"}
+	imgAuth2 := ImageDockerAuth{DockAuthId: 2, Registry: "quay.io", UserName: "user2", Token: "user2token", LastUpdated: "01:02:03"}
+	imgAuthSlice := []ImageDockerAuth{imgAuth1, imgAuth2}
+	cachedObj = CacheEntry{Resource: imgAuthSlice}
+	imgAuthCopy := cachedObj.Copy().([]ImageDockerAuth)
+	if !reflect.DeepEqual(imgAuthSlice, imgAuthCopy) {
+		t.Errorf("Image Docker Auth copy failed to accurately copy something \n%v\n%v", imgAuthSlice, imgAuthCopy)
 	}
 }

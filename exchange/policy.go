@@ -27,6 +27,12 @@ func (e ExchangePolicy) ShortString() string {
 	return e.String()
 }
 
+func (e ExchangePolicy) DeepCopy() *ExchangePolicy {
+	extPolicy := e.GetExternalPolicy()
+	polCopy := ExchangePolicy{ExternalPolicy: *(&extPolicy).DeepCopy(), LastUpdated: e.LastUpdated}
+	return &polCopy
+}
+
 func (e *ExchangePolicy) GetExternalPolicy() externalpolicy.ExternalPolicy {
 	return e.ExternalPolicy
 }
