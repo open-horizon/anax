@@ -26,6 +26,8 @@ import (
 const PATTERN = "pattern"
 const SERVICE = "service"
 
+const NOHEARTBEAT_PARAM = "noheartbeat=true"
+
 // Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
 func GetOrg(id string) string {
 	if ix := strings.Index(id, "/"); ix < 0 {
