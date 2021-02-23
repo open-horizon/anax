@@ -43,8 +43,8 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 		return errors.New("unable to generate new authentication token")
 	}
 
-	// The auth folder and auth file need to be access by service account (root or non-root). 
-	// We configured ess auth and service container with the same group, so that the ess auth can only be accessed by the correct service. 
+	// The auth folder and auth file need to be access by service account (root or non-root).
+	// We configured ess auth and service container with the same group, so that the ess auth can only be accessed by the correct service.
 	// This is achieved by:
 	// 1. agent creates a group using the hash value of agreement id as group name
 	// 2. agent sets the group created above as the group owner of ess auth folder/file on the host
@@ -67,7 +67,6 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 	if err := groupAddCmd.Run(); err != nil {
 		return errors.New(fmt.Sprintf("failed to create group %v for key(agreementId) %v, error: %v, stderr: %v", groupName, key, err, cmdErr.String()))
 	}
-
 
 	fileName := path.Join(a.GetCredentialPath(key), config.HZN_FSS_AUTH_FILE)
 
