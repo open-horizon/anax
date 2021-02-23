@@ -3,10 +3,6 @@ SHELL := /bin/bash
 
 #Versioning
 DOCKER_EXCH_TAG := 2.44.0
-PKG_URL_BASE := http://169.45.88.181/linux/ubuntu
-PKGS_URL := $(PKG_URL_BASE)/dists/xenial-testing/main/binary-amd64/Packages
-DEB_PKGS_URL := $(PKG_URL_BASE)/pool/main/h/horizon
-HORIZON_PKG_VER ?= $(shell curl -s $(PKGS_URL) | grep -A 2 'Package: horizon' | grep -m 1 'Version:' | awk -F ' |~' '{print $$2}')
 
 # user configurable variables
 # The TEST_PATTERNS is a comma separated list of following patterns.
@@ -69,8 +65,8 @@ endif
 all: default
 default: build
 stop: clean
-build: version-check agbot-image exchange-db-image exchange-image css-mongo-db-image
-build-remote: version-check agbot-image
+build: agbot-image exchange-db-image exchange-image css-mongo-db-image
+build-remote: agbot-image
 run: test
 distclean: realclean
 
@@ -277,16 +273,8 @@ agbot-docker-prereqs: get-anax
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(AGBOT_TEMPFS)/root
 	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	curl $(DEB_PKGS_URL)/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
-	-o $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz
-	tar --strip=6 -C $(AGBOT_TEMPFS)/root/.colonus -zxvf $(AGBOT_TEMPFS)/etc/colonus/horizon_$(HORIZON_PKG_VER)~ppa~ubuntu.xenial.orig.tar.gz \
-	./debian/fs-bluehorizon/etc/horizon/trust/horizon.pem ./debian/fs-bluehorizon/etc/horizon/trust/mtn-publicKey.pem
-
-version-check:
-	@echo "Horizon version being used for public keys/configs: $(HORIZON_PKG_VER)"
-ifeq ($(HORIZON_PKG_VER),)
-        $(error Version not found. Likely the apt-repo is down; $(PKGS_URL))
-endif
+	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(AGBOT_TEMPFS)/root/.colonus/.
+	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(AGBOT_TEMPFS)/root/.colonus/.
 
 agbot-image:
 	@echo "Handling $(DOCKER_AGBOT_INAME)"
@@ -361,5 +349,5 @@ run-css: run-mongo-db
 		-v $(AGBOT_TEMPFS)/certs/:/certs/ \
 		-t $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs version-check agbot-image exchange-db-image exchange-image css-mongo-db-image run-mongo-db run-css copy-cert
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs agbot-image exchange-db-image exchange-image css-mongo-db-image run-mongo-db run-css copy-cert
 #.SILENT: clean
