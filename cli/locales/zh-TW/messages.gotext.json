@@ -1441,7 +1441,7 @@
     {
       "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
       "message": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
-      "translation": "容許此組織具有的節點數目上限。 該值不能超出 Exchange 廣域限制。預設值是 0，表示沒有組織限制。",
+      "translation": "容許此組織具有的節點數目上限。 該值不能超出 Exchange 廣域限制。 預設值是 0，表示沒有組織限制。",
       "fuzzy": true
     },
     {
@@ -1501,7 +1501,7 @@
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
       "message": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
-      "translation": "容許此組織具有的節點新數目上限。 該值不能超出 Exchange 廣域限制。預設負整數 -1 表示無變更。",
+      "translation": "容許此組織具有的節點新數目上限。 該值不能超出 Exchange 廣域限制。 預設負整數 -1 表示無變更。",
       "fuzzy": true
     },
     {
@@ -1519,7 +1519,7 @@
     {
       "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
       "message": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
-      "translation": "要從中移除部署原則的 agbot。 如果省略，則將使用在 Exchange 中找到的第一個 agbot。格式為 'agbot_org/agbot_id'。",
+      "translation": "要從中移除部署原則的 agbot。 如果省略，則將使用在 Exchange 中找到的第一個 agbot。 格式為 'agbot_org/agbot_id'。",
       "fuzzy": true
     },
     {
@@ -1589,6 +1589,12 @@
       "fuzzy": true
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "message": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "此使用者應該為中心管理者，能夠管理此管理中心的組織。",
+      "fuzzy": true
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "message": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "將現有使用者變更為管理使用者（例如其組織內的 root 使用者）或變更為非管理使用者。 只有 Exchange root 使用者或其他管理使用者才能執行此動作。",
@@ -1604,6 +1610,18 @@
       "id": "True if they should be an admin user, otherwise false.",
       "message": "True if they should be an admin user, otherwise false.",
       "translation": "如果他們應該為管理使用者，則為 True，否則為 False。",
+      "fuzzy": true
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "將現有使用者變更為中心管理者或讓使用者不再成為中心管理者。中心管理者可以建立、修改及刪除管理中心的組織。",
+      "fuzzy": true
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "message": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "如果此使用者應該為中心管理者，則為 True，否則為 false。",
       "fuzzy": true
     },
     {
@@ -2267,7 +2285,7 @@
     {
       "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
       "message": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "服務對組織外部的使用者是否可見。這是選用旗標。 如果保留未設定，則服務將預設為已設定的任何 meta 資料。如果服務定義也尚未設定公用欄位，則依預設服務不是公用的。",
+      "translation": "服務對組織外部的使用者是否可見。 這是選用旗標。 如果保留未設定，則服務將預設為已設定的任何 meta 資料。 如果服務定義也尚未設定公用欄位，則依預設服務不是公用的。",
       "fuzzy": true
     },
     {
@@ -5149,7 +5167,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 '{StatusCommand}'，以檢查 Horizon 代理程式是否在執行中。或者執行 '{StatusURL}' 以檢查 Horizon 代理程式狀態。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}",
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 '{StatusCommand}'，以檢查 Horizon 代理程式是否在執行中。 或者執行 '{StatusURL}' 以檢查 Horizon 代理程式狀態。 或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -6605,7 +6623,7 @@
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}",
+      "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。 僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}",
       "placeholders": [
         {
           "id": "LogDriver",
@@ -8599,7 +8617,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
       "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 已找到多個服務以進行部署。請使用 -s 旗標指定服務名稱",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 已找到多個服務以進行部署。 請使用 -s 旗標指定服務名稱",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -13535,6 +13553,50 @@
       "id": "the email must be specified via -e if the username is not an email address.",
       "message": "the email must be specified via -e if the username is not an email address.",
       "translation": "如果使用者名稱不是電子郵件位址，則必須透過 -e 來指定電子郵件。",
+      "fuzzy": true
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "message": "Only exchange users in the root org can be hubadmins.",
+      "translation": "只有 root 組織中的 Exchange 使用者可以成為中心管理者。",
+      "fuzzy": true
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "message": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "在從 Exchange 傳回的清單中找不到使用者 '{ExchUser}'",
+      "placeholders": [
+        {
+          "id": "ExchUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchUser"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "message": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "只有中心管理者使用者和 Exchange root 使用者可以建立中心管理者。",
+      "fuzzy": true
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "message": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "無法設定中心管理者狀態，因為 root 組織中不存在使用者 {User}。",
+      "placeholders": [
+        {
+          "id": "User",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "user"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -18510,7 +18572,7 @@
     {
       "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
       "message": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
-      "translation": "使用 anax API 取消登錄節點失敗。將嘗試外部深度清理。特定 anax API 錯誤為：{Error}",
+      "translation": "使用 anax API 取消登錄節點失敗。 將嘗試外部深度清理。 特定 anax API 錯誤為：{Error}",
       "placeholders": [
         {
           "id": "Error",

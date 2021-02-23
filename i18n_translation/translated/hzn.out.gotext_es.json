@@ -483,6 +483,10 @@
       "translation": "Este usuario debe ser un administrador, capaz de gestionar todos los recursos de esta organización de Exchange."
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Este usuario debe ser un administrador de hub, capaz de gestionar las organizaciones de este hub de administración."
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Cambiar el usuario existente para que sea un usuario administrador (como por ejemplo root en su organización) o para que ya no lo sea. Solo lo puede ejecutar root de Exchange u otro usuario administrador."
     },
@@ -493,6 +497,14 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "True si deben ser un usuario administrador, false en caso contrario."
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Modificar un usuario existente para que sea un administrador del hub o hacer que un usuario deje de ser un administrador del hub. Un administrador del hub puede crear, modificar y suprimir organizaciones en el centro de gestión."
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "True si este usuario debe ser un usuario administrador del hub, false en caso contrario."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -4177,6 +4189,22 @@
     {
       "id": "the email must be specified via -e if the username is not an email address.",
       "translation": "Se debe especificar el correo electrónico a través de -e si el nombre de usuario no es una dirección de correo electrónico."
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Sólo los usuarios de Exchange de la organización raíz pueden ser administradores del hub."
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "No se ha encontrado el usuario '{ExchUser}' en la lista que ha devuelto Exchange"
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Solo los usuarios administradores del hub y el usuario root de Exchange pueden crear administradores del hub."
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "El estado de administrador del hub no se puede establecer porque el usuario {User} no existe en la organización raíz."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",

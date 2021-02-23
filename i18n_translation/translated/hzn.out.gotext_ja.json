@@ -384,7 +384,7 @@
     },
     {
       "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
-      "translation": "この組織が持つことができるノードの最大数。 この値は Exchange の全体的な制限を超えません。デフォルトは 0 で、組織の制限なしを意味します。"
+      "translation": "この組織が持つことができるノードの最大数。 この値は Exchange の全体的な制限を超えません。 デフォルトは 0 で、組織の制限なしを意味します。"
     },
     {
       "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
@@ -424,7 +424,7 @@
     },
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
-      "translation": "この組織が持つことができる新しい、ノードの最大数。 この値は Exchange の全体的な制限を超えません。デフォルトは負の整数 -1 で、変更がないことを意味します。"
+      "translation": "この組織が持つことができる新しい、ノードの最大数。 この値は Exchange の全体的な制限を超えません。 デフォルトは負の整数 -1 で、変更がないことを意味します。"
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -436,7 +436,7 @@
     },
     {
       "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
-      "translation": "デプロイメント・ポリシーを削除する対象の agbot。省略すると、Exchange 内で見つかった最初の agbot が使用されます。形式は「agbot_org/agbot_id」です。"
+      "translation": "デプロイメント・ポリシーを削除する対象の agbot。 省略すると、Exchange 内で見つかった最初の agbot が使用されます。 形式は「agbot_org/agbot_id」です。"
     },
     {
       "id": "Skip the 'are you sure?' prompt.",
@@ -483,6 +483,10 @@
       "translation": "このユーザーは、Exchange 内でこの org のすべてのリソースを管理できる管理者である必要があります。"
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "このユーザーは、この管理ハブで組織を管理できるハブ管理者である必要があります。"
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "既存のユーザーを管理ユーザー (すなわち、そのユーザーの組織内の root) に変更するか、または管理ユーザーではなくなるように変更します。 Exchange の root ユーザーまたは別の管理ユーザーのみが実行することができます。"
     },
@@ -493,6 +497,14 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "管理ユーザーであるべき場合は TRUE、それ以外の場合は FALSE。"
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "既存のユーザーをハブ管理者に変更するか、ユーザーがハブ管理者ではなくなるようにします。ハブ管理者は管理ハブで組織を作成、変更、および削除できます。"
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "このユーザーがハブ管理ユーザーである場合は true、そうでない場合は false です。"
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -916,7 +928,7 @@
     },
     {
       "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "組織外部のユーザーにサービスが表示されるかどうか。このフラグはオプションです。 未設定のままにする場合、サービスはデフォルトでメタデータが設定したものになります。サービス定義が public フィールドも設定していない場合は、サービスはデフォルトでは  public ではありません。"
+      "translation": "組織外部のユーザーにサービスが表示されるかどうか。 このフラグはオプションです。 未設定のままにする場合、サービスはデフォルトでメタデータが設定したものになります。 サービス定義が public フィールドも設定していない場合は、サービスはデフォルトでは  public ではありません。"
     },
     {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
@@ -1180,7 +1192,7 @@
     },
     {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
-      "translation": "指定されたサービスの実行がこのノード上で開始されるまで待機します。 パターンへの登録時に、パターン内のすべてのサービスを監視するには「*」を使用します。 ポリシーへの登録時には、「*」は -s に対して有効な値ではありません。このフラグはエッジ・クラスター・ノードではサポートされません。"
+      "translation": "指定されたサービスの実行がこのノード上で開始されるまで待機します。 パターンへの登録時に、パターン内のすべてのサービスを監視するには「*」を使用します。 ポリシーへの登録時には、「*」は -s に対して有効な値ではありません。 このフラグはエッジ・クラスター・ノードではサポートされません。"
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -1972,7 +1984,7 @@
     },
     {
       "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
-      "translation": "公開するオブジェクトの定義。 「hzn mss object new」コマンドによって空のテンプレートを取得できます。標準入力から読み取るには、-m- を指定します。"
+      "translation": "公開するオブジェクトの定義。 「hzn mss object new」コマンドによって空のテンプレートを取得できます。 標準入力から読み取るには、-m- を指定します。"
     },
     {
       "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
@@ -2328,7 +2340,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}"
+      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。 または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。 または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -2596,7 +2608,7 @@
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
+      "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。 ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
     },
     {
       "id": "Error creating StdoutPipe for command: {Err}",
@@ -3056,7 +3068,7 @@
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' デプロイメントのサービスが複数見つかりました。-s フラグでサービス名を指定してください"
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' デプロイメントのサービスが複数見つかりました。 -s フラグでサービス名を指定してください"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
@@ -4179,6 +4191,22 @@
       "translation": "ユーザー名が E メール・アドレスではない場合、-e で　E メールを指定する必要があります。"
     },
     {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "translation": "root 組織の Exchange ユーザーのみがハブ管理者になれます。"
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "ユーザー「{ExchUser}」は Exchange から返されたリスト内で検出されませんでした"
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "ハブ管理ユーザーと Exchange root ユーザーのみがハブ管理者を作成できます。"
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "ユーザー {User} が root 組織に存在しないため、ハブ管理者状況を設定できません。"
+    },
+    {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
       "translation": "警告: このユーザーが所有するすべての Exchange リソース (ノード、サービス、パターン、その他) も削除されます。 Horizon Exchange からユーザー {Org}/{User} を削除しますか?"
     },
@@ -4596,7 +4624,7 @@
     },
     {
       "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
-      "translation": "注: ノード・タイプ: {NodeType} の -s フラグは現在サポートされていません。ノード登録はサービスの開始を待たずに完了します。"
+      "translation": "注: ノード・タイプ: {NodeType} の -s フラグは現在サポートされていません。 ノード登録はサービスの開始を待たずに完了します。"
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",
@@ -5416,11 +5444,11 @@
     },
     {
       "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
-      "translation": "anax API 使用のノードの登録抹消に失敗しました。外部ディープ・クリーンが試行されます。特定の anax API エラーです: {Error}"
+      "translation": "anax API 使用のノードの登録抹消に失敗しました。 外部ディープ・クリーンが試行されます。 特定の anax API エラーです: {Error}"
     },
     {
       "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
-      "translation": "ノードが正常に登録抹消されませんでした。「hzn unregister -D」を使用して、ノードが完全にリセットされるようにしてください。特定の anax API エラーです: {Error}"
+      "translation": "ノードが正常に登録抹消されませんでした。「hzn unregister -D」を使用して、ノードが完全にリセットされるようにしてください。 特定の anax API エラーです: {Error}"
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
