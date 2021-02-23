@@ -1589,6 +1589,12 @@
       "fuzzy": true
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "message": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Esse usuário deve ser um administrador de hub capaz de gerenciar organizações neste hub de administração.",
+      "fuzzy": true
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "message": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Alterar o usuário existente para ser um usuário administrativo (como o usuário raiz em sua organização) ou para não ser mais um usuário administrativo. Só pode ser executado pelo usuário raiz do Exchange ou por outro usuário administrativo.",
@@ -1604,6 +1610,18 @@
       "id": "True if they should be an admin user, otherwise false.",
       "message": "True if they should be an admin user, otherwise false.",
       "translation": "True se ele deve ser o usuário administrativo, caso contrário, false.",
+      "fuzzy": true
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Mude um usuário existente para ser um administrador de hub ou faça com que um usuário não seja mais um administrador de hub. Um administrador de hub pode criar, modificar e excluir organizações no hub de gerenciamento.",
+      "fuzzy": true
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "message": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "True se este usuário deve ser um usuário administrador de hub, caso contrário, false.",
       "fuzzy": true
     },
     {
@@ -13535,6 +13553,50 @@
       "id": "the email must be specified via -e if the username is not an email address.",
       "message": "the email must be specified via -e if the username is not an email address.",
       "translation": "O e-mail deve ser especificado por meio de -e, caso o nome do usuário não seja um endereço de e-mail.",
+      "fuzzy": true
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "message": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Apenas usuários do Exchange na organização raiz podem ser administradores de hub.",
+      "fuzzy": true
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "message": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "usuário '{ExchUser}' não localizado na lista retornada do Exchange",
+      "placeholders": [
+        {
+          "id": "ExchUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchUser"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "message": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Apenas os usuários administradores de hub e o usuário raiz do Exchange podem criar administradores de hub.",
+      "fuzzy": true
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "message": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "O status do administrador de hub não pode ser configurado porque o usuário {User} não existe na organização raiz.",
+      "placeholders": [
+        {
+          "id": "User",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "user"
+        }
+      ],
       "fuzzy": true
     },
     {

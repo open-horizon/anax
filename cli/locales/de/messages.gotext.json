@@ -1589,6 +1589,12 @@
       "fuzzy": true
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "message": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Der Benutzer muss ein Hubadministrator sein, der Organisationen in diesem Administrations-Hub verwalten kann.",
+      "fuzzy": true
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "message": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Ändert den vorhandenen Benutzer in einen Benutzer mit Administratorberechtigung (zum Beispiel einen Root in der Organisation) oder einen Benutzer mit Administratorberechtigung in einen normalen Benutzer. Kann nur von einem Exchange-Root oder einem anderen Benutzer mit Administratorberechtigung ausgeführt werden.",
@@ -1604,6 +1610,18 @@
       "id": "True if they should be an admin user, otherwise false.",
       "message": "True if they should be an admin user, otherwise false.",
       "translation": "'true', wenn es ein Benutzer mit Administratorberechtigung sein soll, andernfalls 'false'.",
+      "fuzzy": true
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Ändert den vorhandenen Benutzer in einen Hubadministrator oder entfernt die Berechtigung als Hubadministrator von einem Benutzer. Ein Hubadministrator kann Organisationen (Orgs) im Management-Hub erstellen, ändern und löschen. ",
+      "fuzzy": true
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "message": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "'true', wenn dieser Benutzer ein Hubadministrator sein soll, andernfalls 'false'.",
       "fuzzy": true
     },
     {
@@ -1999,7 +2017,7 @@
     {
       "id": "The agbot to remove the deployment policy from.",
       "message": "The agbot to remove the deployment policy from.",
-      "translation": "Der Agbot, aus dem die Bereitstellungsrichtlinie entfernt werden soll.",
+      "translation": "Der Agbot, aus dem die Bereitstellungsrichtlinie entfernt werden soll. ",
       "fuzzy": true
     },
     {
@@ -2649,7 +2667,7 @@
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.",
       "message": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.",
-      "translation": "Das Horizon Exchange-Muster, von dem die Workloads beschrieben werden, die auf diesem Knoten bereitgestellt werden müssen. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'. Dieser Wert und die Argumente <nodeorg> und <pattern> schließen sich gegenseitig aus.",
+      "translation": "Das Horizon Exchange-Muster, von dem die Workloads beschrieben werden, die auf diesem Knoten bereitgestellt werden müssen. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'.Dieser Wert und die Argumente <nodeorg> und <pattern> schließen sich gegenseitig aus.",
       "fuzzy": true
     },
     {
@@ -2667,7 +2685,7 @@
     {
       "id": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.",
       "message": "The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with -o and -p.",
-      "translation": "Das Horizon Exchange-Muster, von dem die Workloads beschrieben werden, die auf diesem Knoten bereitgestellt werden müssen. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'. Diese Angabe und -o und -p schließen sich gegenseitig aus.",
+      "translation": "Das Horizon Exchange-Muster, von dem die Workloads beschrieben werden, die auf diesem Knoten bereitgestellt werden müssen. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'.Diese Angabe und -o und -p schließen sich gegenseitig aus.",
       "fuzzy": true
     },
     {
@@ -4003,7 +4021,7 @@
     {
       "id": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
       "message": "The SDO ownership voucher file. Must be file type extension: json, tar, tar.gz, tgz, or zip. If it is any of the tar/zip formats, all json files within it will be imported (other files/dirs will be silently ignored).",
-      "translation": "Die Datei mit dem The SDO-Ownership Voucher. Die Datei muss eine der folgenden Dateityperweiterungen haben: json, tar, tar.gz, tgz, or zip. Wenn es sich um eines der tar/zip-Formate handelt, werden alle in der Datei enthaltenen JSON-Dateien importiert (andere Dateien oder Verzeichnisse werden ohne Benachrichtigung ignoriert).",
+      "translation": "Die Datei mit dem The SDO-Ownership Voucher.Die Datei muss eine der folgenden Dateityperweiterungen haben: json, tar, tar.gz, tgz, or zip. Wenn es sich um eines der tar/zip-Formate handelt, werden alle in der Datei enthaltenen JSON-Dateien importiert (andere Dateien oder Verzeichnisse werden ohne Benachrichtigung ignoriert).",
       "fuzzy": true
     },
     {
@@ -4027,7 +4045,7 @@
     {
       "id": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
       "message": "The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.",
-      "translation": "Der Name des Bereitstellungsmusters, das für Edge-Einheit verwendet werden soll, die diesem Voucher zugeordnet ist. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'. Diese Angabe und -e und --policy schließen sich gegenseitig aus.",
+      "translation": "Der Name des Bereitstellungsmusters, das für Edge-Einheit verwendet werden soll, die diesem Voucher zugeordnet ist. Wenn das Muster zu einer anderen Organisation als der Knoten gehört, verwenden Sie das Format 'other_org/pattern'.Diese Angabe und -e und --policy schließen sich gegenseitig aus.",
       "fuzzy": true
     },
     {
@@ -5989,7 +6007,7 @@
     {
       "id": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
       "message": "Encountered HTTP error: {Err} calling {Service} REST API {ApiMsg}. HTTP status: {Httpstatus}.",
-      "translation": "HTTP-Fehler aufgetreten: {Err} beim Aufrufen von {ApiMsg} für REST-API {Service}. HTTP-Status: {Httpstatus}.",
+      "translation": "HTTP-Fehler aufgetreten: {Err} beim Aufrufen von {ApiMsg} für REST-API {Service}. HTTP-Status: {Httpstatus}. ",
       "placeholders": [
         {
           "id": "Err",
@@ -10874,7 +10892,7 @@
     {
       "id": "The name of the service.",
       "message": "The name of the service.",
-      "translation": "Der Name des Service.",
+      "translation": "Der Name des Service. ",
       "fuzzy": true
     },
     {
@@ -13535,6 +13553,50 @@
       "id": "the email must be specified via -e if the username is not an email address.",
       "message": "the email must be specified via -e if the username is not an email address.",
       "translation": "Die E-Mail-Adresse muss unter Verwendung von -e angegeben werden, wenn der Benutzername keine E-Mail-Adresse ist.",
+      "fuzzy": true
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "message": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Nur Exchange-Benutzer in der Stammorganisation (Root Org) können Hubadministratoren sein.",
+      "fuzzy": true
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "message": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "Der Benutzer '{ExchUser}' wurde nicht in der vom Exchange zurückgegebenen Liste gefunden",
+      "placeholders": [
+        {
+          "id": "ExchUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchUser"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "message": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Nur Hubadministratoren und der Rootbenutzer des Exchange können Hubadministratoren erstellen.",
+      "fuzzy": true
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "message": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "Der Status als Hubadministrator kann nicht festgelegt werden, da der Benutzer {User} nicht in der Stammorganisation (Root Org) vorhanden ist.",
+      "placeholders": [
+        {
+          "id": "User",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "user"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -21659,7 +21721,7 @@
     {
       "id": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
       "message": "Compatibility Error: Schema versions are not the same, Consumer policy: {Version}, Producer policy {Version_1}",
-      "translation": "Kompatibilitätsfehler: Sie Schemaversionen sind nicht identisch. Nutzerrichtlinie: {Version}, Produzentenrichtlinie: {Version_1}",
+      "translation": "Kompatibilitätsfehler: Die Schemaversionen sind nicht identisch. Nutzerrichtlinie: {Version}, Produzentenrichtlinie: {Version_1}",
       "placeholders": [
         {
           "id": "Version",

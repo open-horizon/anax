@@ -1589,6 +1589,12 @@
       "fuzzy": true
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "message": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Cet utilisateur doit être un administrateur de concentrateur pouvant gérer des organisations dans ce concentrateur d'administration.",
+      "fuzzy": true
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "message": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Changer l'utilisateur existant pour qu'il soit administrateur (root dans son organisation, par exemple) ou qu'il ne soit plus administrateur. Accessible uniquement par un utilisateur root Exchange ou autre administrateur.",
@@ -1604,6 +1610,18 @@
       "id": "True if they should be an admin user, otherwise false.",
       "message": "True if they should be an admin user, otherwise false.",
       "translation": "True s'il doit s'agir d'un administrateur, false dans le cas contraire.",
+      "fuzzy": true
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Modifiez un utilisateur existant en administrateur de concentrateur ou faites en sorte qu'un utilisateur ne soit plus administrateur de concentrateur. Un administrateur de concentrateur peut créer, modifier et supprimer des organisations dans le concentrateur de gestion.",
+      "fuzzy": true
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "message": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "True si cet utilisateur doit être un administrateur de concentrateur, false dans le cas contraire.",
       "fuzzy": true
     },
     {
@@ -13535,6 +13553,50 @@
       "id": "the email must be specified via -e if the username is not an email address.",
       "message": "the email must be specified via -e if the username is not an email address.",
       "translation": "L'adresse e-mail doit être renseignée à l'aide de l'indicateur -e si le nom d'utilisateur n'est pas une adresse électronique.",
+      "fuzzy": true
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "message": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Seuls les utilisateurs Exchange de l'organisation racine peuvent être des administrateurs de concentrateur.",
+      "fuzzy": true
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "message": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "Utilisateur '{ExchUser}' introuvable dans la liste renvoyée par Exchange",
+      "placeholders": [
+        {
+          "id": "ExchUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchUser"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "message": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Seuls les administrateurs de concentrateur et l'utilisateur root Exchange peuvent créer des administrateurs de concentrateur.",
+      "fuzzy": true
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "message": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "Impossible de définir le statut de l'administrateur de concentrateur car l'utilisateur {User} n'existe pas dans l'organisation racine.",
+      "placeholders": [
+        {
+          "id": "User",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "user"
+        }
+      ],
       "fuzzy": true
     },
     {
