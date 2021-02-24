@@ -400,7 +400,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			}
 		}
 
-		// HostPort schema: <host_port>:<container_port>:<protocol>
+		// HostPort schema: <host_port>:<container_port>/<protocol>
 		// If <host_port> is absent, <container_port> is used instead.
 		// If <protocol> is absent, "/tcp" is used.
 		// service.SpecificPorts is for backward compatibility, the new way is using service.Ports.
@@ -418,9 +418,10 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 			if !strings.Contains(cPort, "/") {
 				cPort = cPort + "/tcp"
 			}
-			if !strings.Contains(hPort, "/") {
-				hPort = hPort + "/tcp"
-			}
+
+			// trim the protocol part for hPort
+			port_pieces := strings.Split(hPort, "/")
+			hPort = port_pieces[0]
 
 			dPort := docker.Port(cPort)
 			serviceConfig.Config.ExposedPorts[dPort] = emptyS
