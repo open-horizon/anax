@@ -231,7 +231,7 @@ function handleCPU {
         NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
 
         NUM_NETS=$(echo ${NETS} | jq -r '. | length')
-        if [[ ("${NUM_NETS}" != "${NETS_EXPECTED}" && "$PATTERN" != "sall") || ("$PATTERN" == "sall" && "${NUM_NETS}" != "4" && "${NUM_NETS}" != "5") ]]; then
+        if [ "${NUM_NETS}" != "${NETS_EXPECTED}" ]; then
                 echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have ${NETS_EXPECTED} networks, but there are ${NUM_NETS}"
                 exit 2
         fi

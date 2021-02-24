@@ -37,14 +37,14 @@ function checkNetspeedLocationContainers {
 	fi
 	out=$(docker ps | grep locgps)
 	ret=$?
-	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is not $1."
+	if [ $ret -ne 0 ]; then
+		echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is missing."
 		return 1
 	fi
 	out=$(docker ps | grep cpu | grep -v "my.company.com" | grep e2edev)
 	ret=$?
-	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev@somecomp.com/cpu is not $1."
+	if [ $ret -ne 0 ]; then
+		echo -e "${PREFIX} container for e2edev@somecomp.com/cpu is missing."
 		return 1
 	fi
 
