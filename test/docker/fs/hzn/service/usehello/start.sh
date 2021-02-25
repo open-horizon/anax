@@ -74,7 +74,7 @@ do
         # First sync service call should pick up any objects received the last time we were started.
         echo -e "Retrieving sync service objects that have already been received."
 
-        FILE_LOC="/root/objects"
+        FILE_LOC="/e2edevuser/objects"
         mkdir -p ${FILE_LOC}
 
         # For each object, write the data into the local file system using the object ID as the file name. Then mark the object

@@ -34,7 +34,7 @@ func CreateCertificate(org string, keyPath string, certPath string) error {
 
 	glog.V(5).Infof(reslog(fmt.Sprintf("creating self signed cert in %v", common.Configuration.ServerCertificate)))
 
-	if err := os.MkdirAll(certPath, 0700); err != nil {
+	if err := os.MkdirAll(certPath, 0755); err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to make directory for self signed MMS API certificate, error %v", err))
 	}
 
