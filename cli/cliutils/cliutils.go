@@ -235,7 +235,8 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	msgPrinter.Printf("Pushing %v:%v...", repository, tag) // Note: tag can be the empty string
+	imageName := fmt.Sprintf("%s:%s", repository, tag) // Note: tag can be the empty string
+	msgPrinter.Printf("Pushing %v...", imageName)
 	msgPrinter.Println()
 
 	// Get the docker client object for this registry, and set the push options and creds
@@ -258,9 +259,24 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	reDigest := regexp.MustCompile(`\s+digest:\s+(\S+)\s+size:`)
 	var matches []string
 	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
-		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not find the image digest in the docker push output"))
+		Verbose(msgPrinter.Sprintf("Could not find the image digest in the docker push output, retrieving image digest directly from the image."))
+	} else {
+		digest = matches[1]
+		return
 	}
-	digest = matches[1]
+
+	// The digest was not in the stdout response, try to find it in the image's metadata.
+	if image, err := client.InspectImage(imageName); err != nil {
+		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not inspect image %v: %v.", imageName, err))
+	} else {
+		for _, rDigest := range image.RepoDigests {
+			if strings.Contains(rDigest, repository) {
+				_, _, _, digest = cutil.ParseDockerImagePath(rDigest)
+				return
+			}
+		}
+		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not find digest for image %v.", imageName))
+	}
 	return
 }
 
