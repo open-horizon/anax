@@ -1615,13 +1615,13 @@
     {
       "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
       "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "Mude um usuário existente para ser um administrador de hub ou faça com que um usuário não seja mais um administrador de hub. Um administrador de hub pode criar, modificar e excluir organizações no hub de gerenciamento.",
+      "translation": "Mudar um usuário existente para ser um administrador de hub ou fazer com que um usuário não seja mais um administrador de hub. Um administrador de hub pode criar, modificar e excluir organizações no hub de gerenciamento.",
       "fuzzy": true
     },
     {
       "id": "True if this user should be a hub admin user, otherwise false.",
       "message": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "True se este usuário deve ser um usuário administrador de hub, caso contrário, false.",
+      "translation": "Verdadeiro se este usuário deve ser um usuário administrador de hub, caso contrário, falso.",
       "fuzzy": true
     },
     {

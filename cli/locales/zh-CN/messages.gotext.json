@@ -1501,7 +1501,7 @@
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
       "message": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
-      "translation": "允许此组织拥有的新的最大节点数。 值不能超过 Exchange 全局限制。 缺省负整数 -1 意味着无更改。",
+      "translation": "允许此组织拥有的新的最大节点数。 值不能超过 Exchange 全局限制。 缺省负整数 -1 表示无更改。",
       "fuzzy": true
     },
     {
@@ -2853,7 +2853,7 @@
     {
       "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
       "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
-      "translation": "节点策略所在 JSON 输入文件的名称。 指定 -f- 可从 stdin 读取。",
+      "translation": "包含节点策略的 JSON 输入文件的名称。 指定 -f- 可从 stdin 读取。",
       "fuzzy": true
     },
     {
@@ -2931,7 +2931,7 @@
     {
       "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
       "message": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "节点类型。 有效值为“device”和“cluster”。 如果省略此项，缺省值是由 -n 或当前注册设备提供的节点的类型。",
+      "translation": "节点类型。 有效值为“device”和“cluster”。 如果省略，缺省值是由 -n 或当前注册设备提供的节点的类型。",
       "fuzzy": true
     },
     {
@@ -2943,7 +2943,7 @@
     {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
       "message": "The JSON input file name containing the node policy. Mutually exclusive with -n.",
-      "translation": "节点策略所在 JSON 输入文件的名称。 与 -n 互斥。",
+      "translation": "包含节点策略的 JSON 输入文件的名称。 与 -n 互斥。",
       "fuzzy": true
     },
     {
@@ -3039,7 +3039,7 @@
     {
       "id": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
       "message": "The JSON input file name containing the node policy. Mutually exclusive with -n, -p and -P.",
-      "translation": "节点策略所在 JSON 输入文件的名称。 与 -n、-p 和 -P 互斥。",
+      "translation": "包含节点策略的 JSON 输入文件的名称。 与 -n、-p 和 -P 互斥。",
       "fuzzy": true
     },
     {
@@ -3201,7 +3201,7 @@
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
       "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
-      "translation": "要显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。 显示日志记录类似于 tail 行为并返回。",
+      "translation": "应显示日志记录的服务名称。服务名称与服务定义的 URL 字段相同。 显示日志记录类似于 tail 行为并返回。",
       "fuzzy": true
     },
     {
@@ -3535,7 +3535,7 @@
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
       "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
-      "translation": "要显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。",
+      "translation": "应显示日志记录的服务名称。服务名称与服务定义的 URL 字段相同。",
       "fuzzy": true
     },
     {
@@ -5167,7 +5167,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。 或运行“{StatusURL}”以检查 Horizon 代理程序状态。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。 或运行“{StatusURL}”以检查 Horizon 代理程序状态。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5207,7 +5207,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5767,7 +5767,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -5823,7 +5823,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "HorizonService",

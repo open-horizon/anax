@@ -84,7 +84,7 @@
     },
     {
       "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Echec de l'authentification de l'utilisateur avec Exchange. {Err}"
+      "translation": "Echec d'authentification de l'utilisateur avec Exchange. {Err}"
     },
     {
       "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -364,7 +364,7 @@
     },
     {
       "id": "Node heartbeat failed for node {Arg_1}/{Arg_2}. Error: {Arg_3}",
-      "translation": "Echec du signal de présence du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
+      "translation": "Echec de signal de présence du noeud {Arg_1}/{Arg_2}. Erreur : {Arg_3}"
     },
     {
       "id": "Node heartbeat restored for node {Arg_1}/{Arg_2}.",
@@ -384,11 +384,11 @@
     },
     {
       "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "Echec de la désérialisation des octets à partir de {ErrMsg} : {Err}"
+      "translation": "Echec de désérialisation des octets à partir de {ErrMsg} : {Err}"
     },
     {
       "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "Echec de la sérialisation du type de données à partir de {ErrMsg} : {Err}"
+      "translation": "Echec de sérialisation du type de données à partir de {ErrMsg} : {Err}"
     },
     {
       "id": "problem testing api key match: {Err}",
@@ -444,11 +444,11 @@
     },
     {
       "id": "reading stdin failed: {Err}",
-      "translation": "Echec de la lecture de stdin : {Err}"
+      "translation": "Echec de lecture de stdin : {Err}"
     },
     {
       "id": "reading {FilePath} failed: {Err}",
-      "translation": "Echec de la lecture {FilePath} : {Err}"
+      "translation": "Echec de lecture {FilePath} : {Err}"
     },
     {
       "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
@@ -468,15 +468,15 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon pour exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. Erreur spécifique : {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon pour exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. Erreur spécifique : {Err}"
     },
     {
       "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} - Echec de la nouvelle demande : {Err}"
+      "translation": "{ApiMsg} - Echec de nouvelle demande : {Err}"
     },
     {
       "id": "HTTP code: {HttpCode}",
@@ -492,19 +492,19 @@
     },
     {
       "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
@@ -512,11 +512,11 @@
     },
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps pour {ApiMsg} : {Err}"
+      "translation": "Echec de sérialisation du corps pour {ApiMsg} : {Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "Echec de la désérialisation des octets. {Err}"
+      "translation": "Echec de désérialisation des octets. {Err}"
     },
     {
       "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
@@ -584,15 +584,15 @@
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. Erreur spécifique : {Err}"
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. Erreur spécifique : {Err}"
     },
     {
       "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps Exchange pour {ApiMsg} : {Err}"
+      "translation": "Echec de sérialisation du corps Exchange pour {ApiMsg} : {Err}"
     },
     {
       "id": "Failed to get file info: {Err}",
@@ -620,15 +620,15 @@
     },
     {
       "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}"
+      "translation": "Echec de désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation de la sortie Exchange de {ApiMsg} : {Err}"
+      "translation": "Echec de sérialisation de la sortie Exchange de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps Exchange de {ApiMsg} : {Err}"
+      "translation": "Echec de lecture de la réponse du corps Exchange de {ApiMsg} : {Err}"
     },
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
@@ -660,7 +660,7 @@
     },
     {
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -708,7 +708,7 @@
     },
     {
       "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "Echec de la commande : {Err}, stderr : {StringstderrBytes}"
+      "translation": "Echec de commande : {Err}, stderr : {StringstderrBytes}"
     },
     {
       "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
@@ -776,11 +776,11 @@
     },
     {
       "id": "failed to marshal body for {D}: {Err}",
-      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}"
+      "translation": "Echec de sérialisation du corps de texte pour {D} : {Err}"
     },
     {
       "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
+      "translation": "Echec de désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
     },
     {
       "id": "user input {Name} has no default value and is not set",
@@ -808,7 +808,7 @@
     },
     {
       "id": "failed to unmarshal json input {JsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation de l'entrée json {JsonBytes} : {Err}"
+      "translation": "Echec de désérialisation de l'entrée json {JsonBytes} : {Err}"
     },
     {
       "id": "Error getting new user input format. {Err1}",
@@ -816,7 +816,7 @@
     },
     {
       "id": "Failed to create json object for user input. {Err1}",
-      "translation": "Echec de la création de l'objet json pour l'entrée utilisateur. {Err1}"
+      "translation": "Echec de création de l'objet json pour l'entrée utilisateur. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -860,7 +860,7 @@
     },
     {
       "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "Echec de la recherche de définition pour des services dépendants de {TopSvcId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange."
+      "translation": "Echec de recherche de définition pour des services dépendants de {TopSvcId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange."
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -1060,11 +1060,11 @@
     },
     {
       "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Echec de la sérialisation de la configuration de déploiement pour le service {SIdTop}, erreur {Err}"
+      "translation": "Echec de sérialisation de la configuration de déploiement pour le service {SIdTop}, erreur {Err}"
     },
     {
       "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Echec de la sérialisation de la configuration de déploiement du cluster pour le service {SIdTop}, erreur {Err}"
+      "translation": "Echec de sérialisation de la configuration de déploiement du cluster pour le service {SIdTop}, erreur {Err}"
     },
     {
       "id": "Unable to find service definition from the input services.",
@@ -1152,7 +1152,7 @@
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
-      "translation": "Echec de l'obtention du service depuis Exchange. {Err}"
+      "translation": "Echec d'obtention du service depuis Exchange. {Err}"
     },
     {
       "id": "Service does not exist on the Exchange.",
@@ -1308,11 +1308,11 @@
     },
     {
       "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}"
+      "translation": "Anax est en cours d'arrêt. Echec d'instanciation du client iptables. {Arg_1}"
     },
     {
       "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}"
+      "translation": "Anax est en cours d'arrêt. Echec d'instanciation du client docker. {Arg_1}"
     },
     {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1324,7 +1324,7 @@
     },
     {
       "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriétés autorisés sont : version, string, int, boolean, float et list of strings."
+      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriété autorisés sont : version, string (chaîne), int(entier), boolean (booléen), float (flottant) et list of strings (liste de chaînes)."
     },
     {
       "id": "Property value is of type {ActualType}, expected type {DeclaredType}",
@@ -1584,7 +1584,7 @@
     },
     {
       "id": "Failed to upgrade service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}, error: {Arg_5}",
-      "translation": "Echec de la mise à niveau du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}. Erreur : {Arg_5}"
+      "translation": "Echec de mise à niveau du service {Arg_1}/{Arg_2} de la version {Arg_3} vers la version {Arg_4}. Erreur : {Arg_5}"
     },
     {
       "id": "Start downgrading service {Arg_1}/{Arg_2} version {Arg_3} because service for agreement failed to start.",
@@ -1600,7 +1600,7 @@
     },
     {
       "id": "Failed to downgrade service {Arg_1}/{Arg_2} version {Arg_3}, error: {Arg_4}",
-      "translation": "Echec de la rétromigration du service {Arg_1}/{Arg_2} version {Arg_3}. Erreur : {Arg_4}"
+      "translation": "Echec de rétromigration du service {Arg_1}/{Arg_2} version {Arg_3}. Erreur : {Arg_4}"
     },
     {
       "id": "Completed downgrading service {Arg_1}/{Arg_2} from version {Arg_3} to version {Arg_4}.",
@@ -1628,11 +1628,11 @@
     },
     {
       "id": "Failed retrying number {Arg_1} for dependent service {Arg_2} version {Arg_3}.",
-      "translation": "Echec de la nouvelle tentative {Arg_1} pour le service dépendant {Arg_2} version {Arg_3}."
+      "translation": "Echec de nouvelle tentative {Arg_1} pour le service dépendant {Arg_2} version {Arg_3}."
     },
     {
       "id": "Failed to get the service retry count for {Arg_1} version {Arg_2}. {Arg_3}",
-      "translation": "Echec de l'obtention du nombre de tentatives de service pour {Arg_1} version {Arg_2}. {Arg_3}"
+      "translation": "Echec d'obtention du nombre de tentatives de service pour {Arg_1} version {Arg_2}. {Arg_3}"
     },
     {
       "id": "Error updating retry start state for service instance {Arg_1} in dadabase. {Arg_2}",
