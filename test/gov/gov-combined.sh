@@ -312,6 +312,15 @@ then
     fi
   fi
 
+  if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
+    ./service_configstate_test.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Service configstate test failure."
+      TESTFAIL="1"
+    fi
+  fi
+
 elif [ "$TESTFAIL" != "1" ]; then
   # make agreements based on patterns
   last_pattern=$(echo $TEST_PATTERNS |sed -e 's/^.*,//')

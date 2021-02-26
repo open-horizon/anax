@@ -59,8 +59,8 @@ function checkNetspeedLocationContainers {
 }
 
 # main code starts here
-if [ "${PATTERN}" != "sall" ]; then
-	echo -e "${PREFIX} will not perform this test because the pattern is not sall."
+if ([ "${PATTERN}" != "" ] && [ "${PATTERN}" != "sall" ]); then
+	echo -e "${PREFIX} will not perform this test because the pattern is not sall and not a policy."
 	exit 0
 fi
 
