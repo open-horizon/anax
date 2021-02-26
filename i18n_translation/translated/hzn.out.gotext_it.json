@@ -2340,7 +2340,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per stabilire una connessione ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -4192,7 +4192,7 @@
     },
     {
       "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "Solo gli utenti exchange nell'organizzazione root possono essere hubadmin. "
+      "translation": "Solo gli utenti exchange nell'organizzazione root possono essere admin hub. "
     },
     {
       "id": "user '{ExchUser}' not found in list returned from exchange",
@@ -4200,11 +4200,11 @@
     },
     {
       "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "Solo gli utenti hubadmin e l'utente root exchange possono creare hubadmin."
+      "translation": "Solo gli utenti admin hub e l'utente root exchange possono creare admin hub."
     },
     {
       "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "Impossibile impostare lo stato hubadmin perché l'utente {User} non esiste nell'organizzazione root. "
+      "translation": "Impossibile impostare lo stato dell'admin hub perché l'utente {User} non esiste nell'organizzazione root. "
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",

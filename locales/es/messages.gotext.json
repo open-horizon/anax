@@ -3576,7 +3576,7 @@
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
       "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "El controlador de registro proporcionado ({LogDriver}) no da soporte a la visualización de registros. Los registros sólo están disponibles en los siguientes controladores: {DockerDriversWithLoggingSupport}",
+      "translation": "El controlador de registro proporcionado ({LogDriver}) no da soporte a la visualización de registros. Los registros solo están disponibles en los siguientes controladores: {DockerDriversWithLoggingSupport}",
       "placeholders": [
         {
           "id": "LogDriver",
