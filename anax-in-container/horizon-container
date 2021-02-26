@@ -210,7 +210,14 @@ start() {
 	# Get the horizon image. The image version is the same as the hzn CLI version unless it is
 	# overwitten by $HC_DOCKER_IMAGE and $HC_DOCKER_TAG.
 	# $HC_DOCKER_IMAGE and $HC_DOCKER_TAG are intentionally undocumented env vars that allow us to test the staging version of the docker image
-	dockerImage='openhorizon/amd64_anax'
+
+	# get the architecture from hzn
+	arch=$(LANG=en_US hzn architecture)
+	if [ $? -ne 0 ]; then
+		arch="amd64"
+	fi
+
+	dockerImage='openhorizon/'$arch'_anax'
 	dockerTag='latest'
 	if [[ -n "$HC_DOCKER_IMAGE" ]]; then
 		dockerImage="$HC_DOCKER_IMAGE"

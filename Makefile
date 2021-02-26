@@ -284,7 +284,7 @@ macpkginfo:
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" || $(arch) == "arm64" ]]; then \
 	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
