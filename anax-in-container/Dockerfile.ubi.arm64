@@ -13,7 +13,7 @@ RUN microdnf update -y --nodocs && microdnf clean all
 COPY EPEL.repo /etc/yum.repos.d
 
 # shadow-utils contains groupadd and adduser commands
-# install jq pkg (ppc64le)
+# install jq pkg
 RUN microdnf install --nodocs -y shadow-utils \
     && microdnf install --nodocs -y openssl ca-certificates \
     && microdnf install -y wget iptables vim-minimal procps tar gzip \
