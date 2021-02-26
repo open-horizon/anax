@@ -1,0 +1,6 @@
+[dl_fedoraproject_org_pub_epel_7_ppc64le_]
+name=https://dl.fedoraproject.org/pub/epel/7/ppc64le/
+baseurl=https://dl.fedoraproject.org/pub/epel/7/ppc64le/
+enabled=1
+gpgcheck=1
+gpgkey=https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
