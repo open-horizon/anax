@@ -6,7 +6,12 @@
 SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
 AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
+AGENT_IMAGE='amd64_anax'
 AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
+AGENT_K8S_IMAGE='amd64_anax_k8s'
+AGENT_IMAGE_TAG=$(hzn version | grep "^Horizon CLI" | sed 's/.*\://' | awk '{$1=$1};1')
+DEFAULT_PULL_REGISTRY='docker.io/openhorizon'
+ALREADY_LOGGED_INTO_REGISTRY='false'
 
 # Environment variables and their defaults
 PACKAGE_NAME=${PACKAGE_NAME:-horizon-edge-packages-4.2.0}
@@ -16,7 +21,7 @@ AGENT_NAMESPACE=${AGENT_NAMESPACE:-openhorizon-agent}
 function scriptUsage() {
     cat << EOF
 
-Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>]
+Usage: ./edgeNodeFiles.sh <edge-node-type> [-o <hzn-org-id>] [-c] [-f <directory>] [-t] [-p <package_name>] [-s <edge-cluster-storage-class>] [-i <agent-image-tag>] [-m <agent-namespace>] [-r <registry/repo-path>] [-g <tag>] [-b]
 
 Parameters:
   Required:
@@ -30,6 +35,9 @@ Parameters:
     -p <package_name>   The base name of the horizon content tar file (can include a path). Default is $PACKAGE_NAME, which means it will look for $PACKAGE_NAME.tar.gz and expects a standardized directory structure of $PACKAGE_NAME/<OS>/<pkg-type>/<arch>
     -s <edge-cluster-storage-class>   Default storage class to be used for all the edge clusters. If not specified, can be specified when running agnet-install.sh. Only applies to node types of <arch>-Cluster.
     -m <agent-namespace>   The edge cluster namespace that the agent will be installed into. Default is $AGENT_NAMESPACE. Only applies to node types of <arch>-Cluster.
+    -r <registry/repo-path>     The agent images (both device and cluster) will be pulled from the specified authenticated docker registry. If this flag is set, you must also export the username and password for the registry in REGISTRY_USERNAME and REGISTRY_PASSWORD. Default is $DEFAULT_PULL_REGISTRY.
+    -g <tag>    Overwrite the default agent image tag. Default is $AGENT_IMAGE_TAG.
+    -b          Get the agent images from the horizon content tar file.
 
 Required Environment Variables:
     CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>
@@ -39,6 +47,8 @@ Required Environment Variables:
 Optional Environment Variables:
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
     AGENT_NAMESPACE: The edge cluster namespace that the agent will be installed into. Default: $AGENT_NAMESPACE
+    REGISTRY_USERNAME: The username used to login to the registry supplied with the -r flag.
+    REGISTRY_PASSWORD: The password used to login to the registry supplied with the -r flag.
 EOF
     exit $1
 }
@@ -94,6 +104,16 @@ while (( "$#" )); do
             AGENT_NAMESPACE=$2
             shift 2
             ;;
+        -r) # registry to pull agent images from 
+            PULL_REGISTRY=$2
+            shift 2
+            ;;
+        -g) AGENT_IMAGE_TAG=$2
+            shift 2
+            ;;
+        -b) AGENT_IMAGES_FROM_TAR='true'
+            shift
+            ;;
         -h) scriptUsage 0
             shift
             ;;
@@ -110,7 +130,6 @@ done
 if [[ -z $EDGE_NODE_TYPE ]]; then
     scriptUsage 1
 fi
-
 
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
@@ -138,6 +157,13 @@ function checkPrereqsAndInput () {
     fi
     if [[ -n $DIR && ! -d $DIR ]]; then
         fatal 1 "the value of option '-f' isn't an existing directory ..."
+    fi
+    if [[ -n $PULL_REGISTRY ]]; then
+        if [[ -z $REGISTRY_USERNAME || -z $REGISTRY_PASSWORD ]]; then
+            fatal 1 "REGISTRY_USERNAME or REGISTRY_PASSWORD not set. When using the '-r' flag you must supply the username and password for the registry you are attempting to pull the agent images from ..."
+        fi
+    else
+        PULL_REGISTRY=$DEFAULT_PULL_REGISTRY
     fi
     echo ' - Command arguments valid'
     echo ""
@@ -175,12 +201,29 @@ function cleanUpPreviousFiles() {
     echo
 }
 
-# Get the edge cluster agent image tar file from the mgmt hub installation content
+# Pull the edge cluster agent image tar file either from a specified registry or the openhorizon docker hub 
 function getAgentImageTarFile() {
-    local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
-    echo "Extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
-    tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE"
-    chk $? "extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+    if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
+        local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
+        echo "Extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
+        tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE"
+        chk $? "extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+    else
+        if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
+            echo "Logging into $PULL_REGISTRY ..."
+            echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+            chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
+            ALREADY_LOGGED_INTO_REGISTRY='true'
+        fi
+
+        echo "Pulling $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG ..."
+        docker pull $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG
+        chk $? "pulling $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
+
+        echo "Saving $AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG to $AGENT_K8S_IMAGE_TAR_FILE ..."
+        docker save $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG > $AGENT_K8S_IMAGE_TAR_FILE
+        chk $? "saving $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
+    fi
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
         echo "Extracting version from $AGENT_K8S_IMAGE_TAR_FILE ..."
@@ -325,8 +368,26 @@ function getHorizonPackageFiles() {
     fi
 
     if [[ $opsys == 'macos' ]]; then   #future: do this for all amd64/x86_64
-        tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
-        chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+        if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
+            tar --strip-components 2 -zxf $PACKAGE_NAME.tar.gz "$pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE"
+            chk $? "extracting $pkgBaseName/docker/$AGENT_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz"
+        else
+            if [[ ($PULL_REGISTRY != $DEFAULT_PULL_REGISTRY) && ($ALREADY_LOGGED_INTO_REGISTRY == 'false') ]]; then
+                echo "Logging into $PULL_REGISTRY ..."
+                echo "$REGISTRY_PASSWORD" | docker login -u $REGISTRY_USERNAME --password-stdin $PULL_REGISTRY
+                chk $? "logging into edge cluster's registry: $PULL_REGISTRY"
+                ALREADY_LOGGED_INTO_REGISTRY='true'
+            fi
+
+            echo "Pulling $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG ..."
+            docker pull $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG
+            chk $? "pulling $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
+
+            echo "Saving $AGENT_IMAGE:$AGENT_IMAGE_TAG to $AGENT_IMAGE_TAR_FILE ..."
+            docker save $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG > $AGENT_IMAGE_TAR_FILE
+            chk $? "saving $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
+        fi
+
         if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
             echo "Extracting version from $AGENT_IMAGE_TAR_FILE ..."
             local version=$(tar -zxOf "$AGENT_IMAGE_TAR_FILE" manifest.json | jq -r '.[0].RepoTags[0]')   # this gets the full path
