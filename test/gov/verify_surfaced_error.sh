@@ -62,13 +62,13 @@ hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while re
 echo "Waiting on error to surface"
 NUM_ERRS=0
 TIMEOUT=0
-while [[ $NUM_ERRS -le 0 ]] && [[ $TIMEOUT -le 80 ]]
+while [[ $NUM_ERRS -le 0 ]] && [[ $TIMEOUT -le 300 ]]
 do
   ERRS=$(hzn eventlog surface)
   NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
   sleep 1s
   ((TIMEOUT++))
-  if [[ $TIMEOUT == 80 ]]; then echo -e "surface error failed to appear"; hzn eventlog list; docker ps -a; docker network ls; exit 2; fi
+  if [[ $TIMEOUT -ge 300 ]]; then echo -e "surface error failed to appear"; hzn eventlog list; docker ps -a; docker network ls; exit 2; fi
 done
 
 echo -e "Found surfaced error $ERRS"
@@ -115,13 +115,13 @@ hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while re
 echo "Waiting on the surfaced error to be resolved"
 NUM_ERRS=1
 TIMEOUT=0
-while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 25 ]]
+while [[ $NUM_ERRS -ge 1 ]] && [[ $TIMEOUT -le 50 ]]
 do
   ERRS=$(hzn eventlog surface)
   NUM_ERRS=$(echo ${ERRS} | jq -r '. | length')
   sleep 5s
   ((TIMEOUT++))
-  if [[ $TIMEOUT == 26 ]]; then echo -e "surface error failed to resolve"; exit 2; fi
+  if [[ $TIMEOUT -ge 50 ]]; then echo -e "surface error failed to resolve"; exit 2; fi
 done
 
 echo -e "All surfaced errors resolved"

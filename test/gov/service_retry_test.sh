@@ -5,7 +5,20 @@ CPU_CONTAINER_ID=""
 
 # this function gets the cpu container docker id
 function get_cpu_container_id {
-    cpu_container=$(docker ps |grep cpu |grep example)
+    CPU_CONTAINER_ID=""
+
+    # get the instance id of the cpu service with quotes removed
+    cpu_inst=$(curl -s $ANAX_API/service | jq -r '.instances.active[] | select (.ref_url == "https://bluehorizon.network/service-cpu") | select (.organization == "IBM")')
+    if [ $? -ne 0 ]; then
+        echo -e "${PREFIX} failed to get cpu service instace. ${cpu_inst}"
+        return 2
+    fi
+    inst_id=$(echo "$cpu_inst" | jq '.instance_id')
+    inst_id="${inst_id%\"}"
+    inst_id="${inst_id#\"}"
+
+    # get the cpu service container for the main agent
+    cpu_container=$(docker ps |grep $inst_id)
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} cannot not find cpu container. ${cpu_container}"
         return 2
