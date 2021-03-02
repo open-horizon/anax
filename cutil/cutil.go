@@ -2,6 +2,7 @@ package cutil
 
 import (
 	"bufio"
+	 "crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
@@ -814,4 +815,11 @@ func FloatFromQuantity(quantVal *resource.Quantity) float64 {
 	scale := decVal.Scale()
 	floatVal := float64(unscaledVal) * math.Pow10(-1*int(scale))
 	return floatVal
+}
+
+// GetHashFromString returns the md5 hash for given string
+func GetHashFromString(str string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(str))
+	return hex.EncodeToString(hasher.Sum(nil))
 }

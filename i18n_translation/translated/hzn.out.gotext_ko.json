@@ -384,7 +384,7 @@
     },
     {
       "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
-      "translation": "이 조직에 있을 수 있는 최대 노드 수입니다. 이 값은 Exchange 글로벌 한계를 초과할 수 없습니다. 기본값 0은 조직 한계가 없음을 의미합니다. "
+      "translation": "이 조직에 있을 수 있는 최대 노드 수입니다. 이 값은 Exchange 글로벌 한계를 초과할 수 없습니다. 기본값 0은 조직 한계가 없음을 의미합니다."
     },
     {
       "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
@@ -436,7 +436,7 @@
     },
     {
       "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
-      "translation": "배치 정책을 제거할 agbot입니다. 생략 시, Exchange에서 맨 처음 발견된 agbot을 사용합니다. 형식은 'agbot_org/agbot_id'입니다. "
+      "translation": "배치 정책을 제거할 agbot입니다. 생략 시, Exchange에서 맨 처음 발견된 agbot을 사용합니다. 형식은 'agbot_org/agbot_id'입니다."
     },
     {
       "id": "Skip the 'are you sure?' prompt.",
@@ -483,6 +483,10 @@
       "translation": "이 사용자는 Exchange에 대한 이 조직의 모든 리소스를 관리할 수 있는 관리자여야 합니다."
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "이 사용자는 이 관리 허브에서 조직을 관리할 수 있는 허브 관리자여야 합니다."
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "기존 사용자를 관리자(예: 조직의 루트)로 변경하거나 더 이상 관리자가 아니도록 변경합니다. exchange 루트 또는 다른 관리자만 실행 가능합니다."
     },
@@ -493,6 +497,14 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "관리자인 경우 true, 그렇지 않으면 false입니다."
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "기존 사용자를 허브 관리자로 변경하거나 사용자를 더 이상 허브 관리자로 지정하지 마십시오. 허브 관리자는 관리 허브에서 조직을 작성, 수정 및 삭제할 수 있습니다."
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "이 사용자가 허브 관리자여야 하는 경우 true이고, 그렇지 않으면 false입니다."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -916,7 +928,7 @@
     },
     {
       "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "조직 외부 사용자에게 서비스가 표시되는지 여부입니다. 이 플래그는 선택사항입니다. 설정하지 않은 상태로 두면 이 서비스의 기본값이 메타데이터에서 설정한 값으로 지정됩니다. 서비스 정의에 공용 필드 또한 설정되지 않은 경우, 이 서비스가 기본적으로 공용 서비스가 되지 않습니다. "
+      "translation": "조직 외부 사용자에게 서비스가 표시되는지 여부입니다. 이 플래그는 선택사항입니다. 설정하지 않은 상태로 두면 이 서비스의 기본값이 메타데이터에서 설정한 값으로 지정됩니다. 서비스 정의에 공용 필드 또한 설정되지 않은 경우, 이 서비스가 기본적으로 공용 서비스가 되지 않습니다."
     },
     {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
@@ -1180,7 +1192,7 @@
     },
     {
       "id": "Wait for the named service to start executing on this node. When registering with a pattern, use '*' to watch all the services in the pattern. When registering with a policy, '*' is not a valid value for -s. This flag is not supported for edge cluster nodes.",
-      "translation": "이름 지정된 서비스가 이 노드에서 실행되기 시작할 때까지 대기하십시오. 패턴으로 등록하는 경우 패턴의 모든 서비스를 보려면 '*'를 사용하십시오. 정책으로 등록하는 경우 '*'는 -s에 올바른 값이 아닙니다. 이 플래그는 에지 클러스터 노드에 지원되지 않습니다. "
+      "translation": "이름 지정된 서비스가 이 노드에서 실행되기 시작할 때까지 대기하십시오. 패턴으로 등록하는 경우 패턴의 모든 서비스를 보려면 '*'를 사용하십시오. 정책으로 등록하는 경우 '*'는 -s에 올바른 값이 아닙니다. 이 플래그는 에지 클러스터 노드에 지원되지 않습니다."
     },
     {
       "id": "The org of the service to wait for on this node. If '-s *' is specified, then --serviceorg must be omitted.",
@@ -1328,7 +1340,7 @@
     },
     {
       "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "노드 유형입니다. 유효한 값은 'device' 및 'cluster'입니다. 생략 시, 기본값은 현재 등록된 디바이스 또는 -n에서 제공한 노드 유형입니다. "
+      "translation": "노드 유형입니다. 유효한 값은 'device' 및 'cluster'입니다. 생략 시, 기본값은 현재 등록된 디바이스 또는 -n에서 제공한 노드 유형입니다."
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -3056,7 +3068,7 @@
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 배치의 서비스가 둘 이상 발견되었습니다. -s 플래그를 사용하여 서비스 이름을 지정하십시오. "
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' 배치의 서비스가 둘 이상 발견되었습니다. -s 플래그를 사용하여 서비스 이름을 지정하십시오."
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
@@ -3072,7 +3084,7 @@
     },
     {
       "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
-      "translation": "인스턴스 ID 접두부가 {MsId}인 dev 서비스 {ServiceName}에 대한 로그 메시지를 표시합니다. "
+      "translation": "인스턴스 ID 접두부가 {MsId}인 dev 서비스 {ServiceName}에 대한 로그 메시지를 표시합니다."
     },
     {
       "id": "Use ctrl-C to terminate this command.",
@@ -3840,7 +3852,7 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "경고: 이렇게 하면 이 조직이 소유한 모든 Exchange 리소스(노드, 서비스, 패턴 등)도 삭제됩니다. Horizon Exchange와 MMS에서 {TheOrg} 사용자를 제거하시겠습니까? "
+      "translation": "경고: 이렇게 하면 이 조직이 소유한 모든 Exchange 리소스(노드, 서비스, 패턴 등)도 삭제됩니다. Horizon Exchange와 MMS에서 {TheOrg} 사용자를 제거하시겠습니까?"
     },
     {
       "id": "Using agbot {Agbot}",
@@ -4016,7 +4028,7 @@
     },
     {
       "id": "Need to set 'true' or 'false' when specifying flag --public.",
-      "translation": "--public 플래그를 지정할 때는 'true' 또는 'false'를 설정해야 합니다. "
+      "translation": "--public 플래그를 지정할 때는 'true' 또는 'false'를 설정해야 합니다."
     },
     {
       "id": "failed to parse {Public}: {Err}",
@@ -4177,6 +4189,22 @@
     {
       "id": "the email must be specified via -e if the username is not an email address.",
       "translation": "사용자 이름이 이메일 주소가 아닌 경우 -e를 통해 이메일을 지정해야 합니다."
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "translation": "루트 조직의 exchange 사용자만 hubadmin이 될 수 있습니다."
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "exchange에서 리턴된 목록에서 '{ExchUser}' 사용자를 찾을 수 없음"
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "hubadmin 사용자와 exchange 루트 사용자만 hubadmin을 작성할 수 있습니다."
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "{User} 사용자가 루트 조직에 없기 때문에 hubadmin 상태를 설정할 수 없습니다."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4596,7 +4624,7 @@
     },
     {
       "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
-      "translation": "참고: 현재 -s 플래그가 노드 유형: {NodeType}에 지원되지 않습니다. 서비스가 시작될 때까지 기다리지 않고 노드 등록이 완료됩니다. "
+      "translation": "참고: 현재 -s 플래그가 노드 유형: {NodeType}에 지원되지 않습니다. 서비스가 시작될 때까지 기다리지 않고 노드 등록이 완료됩니다."
     },
     {
       "id": "Horizon node is registered. Workload agreement negotiation should begin shortly. Run 'hzn agreement list' to view.",

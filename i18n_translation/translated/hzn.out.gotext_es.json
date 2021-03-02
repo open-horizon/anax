@@ -340,7 +340,7 @@
     },
     {
       "id": "Display the organization resource from the Horizon Exchange. (Normally you can only display your own organiztion. If the org does not exist, you will get an invalid credentials error.)",
-      "translation": "Visualizar el recurso de organización de Horizon Exchange. (Normalmente sólo puede visualizar su propia organización. Si la organización no existe, obtendrá un error de credenciales no válidas)."
+      "translation": "Visualizar el recurso de organización de Horizon Exchange. (Normalmente solo puede visualizar su propia organización. Si la organización no existe, obtendrá un error de credenciales no válidas)."
     },
     {
       "id": "List this one organization.",
@@ -436,7 +436,7 @@
     },
     {
       "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
-      "translation": "El agbot del que eliminar la política de despliegue.Si se omite, se utilizará el primer agbot encontrado en el intercambio. El formato es 'agbot_org/agbot_id'."
+      "translation": "El agbot del que eliminar la política de despliegue. Si se omite, se utilizará el primer agbot encontrado en Exchange. El formato es 'agbot_org/agbot_id'."
     },
     {
       "id": "Skip the 'are you sure?' prompt.",
@@ -460,7 +460,7 @@
     },
     {
       "id": "When listing all of the users, show only the usernames, instead of each entire resource.",
-      "translation": "Al listar todos los usuarios, mostrar sólo los nombres de usuario, en lugar de cada recurso completo."
+      "translation": "Al listar todos los usuarios, mostrar solo los nombres de usuario, en lugar de cada recurso completo."
     },
     {
       "id": "Create the user resource in the Horizon Exchange.",
@@ -483,6 +483,10 @@
       "translation": "Este usuario debe ser un administrador, capaz de gestionar todos los recursos de esta organización de Exchange."
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Este usuario debe ser un administrador de hub, capaz de gestionar las organizaciones de este hub de administración."
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Cambiar el usuario existente para que sea un usuario administrador (como por ejemplo root en su organización) o para que ya no lo sea. Solo lo puede ejecutar root de Exchange u otro usuario administrador."
     },
@@ -493,6 +497,14 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "True si deben ser un usuario administrador, false en caso contrario."
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Modificar un usuario existente para que sea un administrador del hub o hacer que un usuario deje de ser un administrador del hub. Un administrador del hub puede crear, modificar y suprimir organizaciones en el centro de gestión."
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "True si este usuario debe ser un usuario administrador del hub, false en caso contrario."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -740,7 +752,7 @@
     },
     {
       "id": "Add this deployment policy to the list of policies this agbot is serving. Currently only support adding all the deployment policies from an organization.",
-      "translation": "Añada esta política de despliegue a la lista de políticas a las que este agbot da servicio. Actualmente sólo se da soporte a la adición de todas las políticas de despliegue de una organización."
+      "translation": "Añada esta política de despliegue a la lista de políticas a las que este agbot da servicio. Actualmente solo se da soporte a la adición de todas las políticas de despliegue de una organización."
     },
     {
       "id": "The agbot to add the deployment policy to.",
@@ -752,7 +764,7 @@
     },
     {
       "id": "Remove this deployment policy from the list of policies this agbot is serving. Currently only support removing all the deployment policies from an organization.",
-      "translation": "Eliminar esta política de despliegue de la lista de políticas a las que este agbot da servicio. Actualmente sólo se da soporte a la eliminación de todas las políticas de despliegue de una organización."
+      "translation": "Eliminar esta política de despliegue de la lista de políticas a las que este agbot da servicio. Actualmente solo se da soporte a la eliminación de todas las políticas de despliegue de una organización."
     },
     {
       "id": "The agbot to remove the deployment policy from.",
@@ -852,7 +864,7 @@
     },
     {
       "id": "The existing key name to remove.",
-      "translation": "El nombre de clave existente a eliminar."
+      "translation": "El nombre de clave existente que se va a eliminar."
     },
     {
       "id": "List and manage services in the Horizon Exchange",
@@ -872,7 +884,7 @@
     },
     {
       "id": "The name of the file where the cluster deployment operator yaml archive will be saved. This flag is only used when listing a specific service. This flag is ignored when the service does not have a clusterDeployment attribute.",
-      "translation": "El nombre del archivo donde se guardará el archivo yaml de operador de despliegue de clúster. Este distintivo sólo se utiliza cuando se lista un servicio específico. Este distintivo se ignora cuando el servicio no tiene un atributo clusterDeployment."
+      "translation": "El nombre del archivo donde se guardará el archivo yaml de operador de despliegue de clúster. Este distintivo solo se utiliza cuando se lista un servicio específico. Este distintivo se ignora cuando el servicio no tiene un atributo clusterDeployment."
     },
     {
       "id": "Skip the 'do you want to overwrite?' prompt when -f is specified and the file exists.",
@@ -976,7 +988,7 @@
     },
     {
       "id": "The existing docker auth id to remove.",
-      "translation": "El ID de autorización de Docker existente a eliminar."
+      "translation": "El ID de autorización de Docker existente que se va a eliminar."
     },
     {
       "id": "Display the service policy from the Horizon Exchange.",
@@ -1260,7 +1272,7 @@
     },
     {
       "id": "The name of a specific key to remove.",
-      "translation": "El nombre de una clave específica a eliminar."
+      "translation": "El nombre de una clave específica que se va a eliminar."
     },
     {
       "id": "List and manage general information about this Horizon edge node.",
@@ -1328,7 +1340,7 @@
     },
     {
       "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "El tipo de nodo. Los valores válidos son 'device' y 'cluster'. El valor predeterminado es el tipo del nodo proporcionado por el dispositivo actual o -n, si se omite."
+      "translation": "El tipo de nodo. Los valores válidos son 'device' y 'cluster'. El valor predeterminado es el tipo del nodo proporcionado por el dispositivo registrado actual o -n, si se omite."
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1972,7 +1984,7 @@
     },
     {
       "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
-      "translation": "La definición del objeto que se va a publicar. Se puede obtener una plantilla en blanco a partir del mandato 'hzn mss object new'.Especifique -m-para leer desde stdin."
+      "translation": "La definición del objeto que se va a publicar. Se puede obtener una plantilla en blanco a partir del mandato 'hzn mss object new'. Especifique -m- para leer desde stdin."
     },
     {
       "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
@@ -2596,7 +2608,7 @@
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "El controlador de registro proporcionado ({LogDriver}) no da soporte a la visualización de registros. Los registros sólo están disponibles en los siguientes controladores: {DockerDriversWithLoggingSupport}"
+      "translation": "El controlador de registro proporcionado ({LogDriver}) no da soporte a la visualización de registros. Los registros solo están disponibles en los siguientes controladores: {DockerDriversWithLoggingSupport}"
     },
     {
       "id": "Error creating StdoutPipe for command: {Err}",
@@ -3832,7 +3844,7 @@
     },
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
-      "translation": "Entrada no válida para --max-nodes. Sólo se permite -1, 0 y enteros positivos."
+      "translation": "Entrada no válida para --max-nodes. Solo se permite -1, 0 y enteros positivos."
     },
     {
       "id": "Organization {TheOrg} is successfully updated.",
@@ -3880,7 +3892,7 @@
     },
     {
       "id": "Invalid input for {JoinnegFlags_}. Only -1, 0 and positive integers are allowed.",
-      "translation": "Entrada no válida para {JoinnegFlags_}. Sólo se permite -1, 0 y enteros positivos."
+      "translation": "Entrada no válida para {JoinnegFlags_}. Solo se permite -1, 0 y enteros positivos."
     },
     {
       "id": "The value for heartbeat minInterval ({Min}) must be less than or equal to the value for heartbeat maxInterval ({Max}).",
@@ -3992,11 +4004,11 @@
     },
     {
       "id": "-f can only be used when one service is specified.",
-      "translation": "-f sólo se puede utilizar cuando se especifica un servicio."
+      "translation": "-f solo se puede utilizar cuando se especifica un servicio."
     },
     {
       "id": "-F can only be used when -f is specified.",
-      "translation": "-F sólo se puede utilizar cuando se especifica -f."
+      "translation": "-F solo se puede utilizar cuando se especifica -f."
     },
     {
       "id": "failed to marshal 'hzn exchange service list' output: {Err}",
@@ -4177,6 +4189,22 @@
     {
       "id": "the email must be specified via -e if the username is not an email address.",
       "translation": "Se debe especificar el correo electrónico a través de -e si el nombre de usuario no es una dirección de correo electrónico."
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Solo los usuarios de Exchange de la organización raíz pueden ser administradores del hub."
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "No se ha encontrado el usuario '{ExchUser}' en la lista que ha devuelto Exchange"
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Solo los usuarios administradores del hub y el usuario root de Exchange pueden crear administradores del hub."
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "El estado de administrador del hub no se puede establecer porque el usuario {User} no existe en la organización raíz."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4684,7 +4712,7 @@
     },
     {
       "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "ID de nodo no válido: Solo se permiten A-Za-z0-9, caracteres unicode y símbolos especiales !-*+()?.,:&@ "
+      "translation": "ID de nodo no válido: Solo se permiten caracteres A-Z, a-z, 0-9, unicode y símbolos especiales !-*+()?.,:&@ "
     },
     {
       "id": "invalid node ID: Whitespace is not permitted",

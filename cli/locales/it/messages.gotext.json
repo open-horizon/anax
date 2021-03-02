@@ -1589,6 +1589,12 @@
       "fuzzy": true
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "message": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Questo utente deve essere un amministratore dell'hub, in grado di gestire le org in questo hub di amministrazione. ",
+      "fuzzy": true
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "message": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Modificare l'utente esistente in modo che sia un utente amministratore (ad esempio root nell'organizzazione) o non sia più un utente amministratore. Può essere eseguito solo da root exchange o da un altro utente amministratore.",
@@ -1604,6 +1610,18 @@
       "id": "True if they should be an admin user, otherwise false.",
       "message": "True if they should be an admin user, otherwise false.",
       "translation": "True se deve essere un utente amministratore, altrimenti false.",
+      "fuzzy": true
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Modificare un utente esistente in modo che sia un admin hub oppure revocare il ruolo di admin hub. Un admin hub può creare, modificare ed eliminare le org nell'hub di gestione. ",
+      "fuzzy": true
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "message": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "True se questo utente deve essere un utente admin hub; in caso contrario, false. ",
       "fuzzy": true
     },
     {
@@ -2267,7 +2285,7 @@
     {
       "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
       "message": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "Indica se il servizio è visibile agli utenti esterni all'organizzazione. Questo indicatore è facoltativo. Se lasciato non impostato, per impostazione predefinita verrà utilizzata l'impostazione dei metadati. Se anche per la definizione del servizio non è impostato il campo pubblico, per impostazione predefinita il servizio non sarà pubblico. ",
+      "translation": "Indica se il servizio è visibile agli utenti esterni all'organizzazione. Questo indicatore è facoltativo. Se lasciato non impostato, per impostazione predefinita verrà utilizzata l'impostazione dei metadati. Se anche per la definizione del servizio non è impostato il campo pubblico, per impostazione predefinita il servizio non sarà pubblico.",
       "fuzzy": true
     },
     {
@@ -2913,7 +2931,7 @@
     {
       "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
       "message": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "Il tipo di nodo. I valori validi sono 'device' e 'cluster'. Il valore predefinito è il tipo del nodo fornito mediante -n o il dispositivo registrato corrente, se omesso. ",
+      "translation": "Il tipo di nodo. I valori validi sono 'device' e 'cluster'. Il valore predefinito è il tipo del nodo fornito mediante -n o il dispositivo registrato corrente, se omesso.",
       "fuzzy": true
     },
     {
@@ -3511,7 +3529,7 @@
     {
       "id": "Show the container/system logs for a service.",
       "message": "Show the container/system logs for a service.",
-      "translation": "Mostra i log del contenitore/sistema per un servizio. ",
+      "translation": "Mostra i log del contenitore/sistema per un servizio.",
       "fuzzy": true
     },
     {
@@ -5149,7 +5167,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per stabilire una connessione ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -6785,7 +6803,7 @@
     {
       "id": "No node type has been provided: node type of '{NodeId}' node will be used",
       "message": "No node type has been provided: node type of '{NodeId}' node will be used",
-      "translation": "Non è stato fornito alcun tipo di nodo: verrà utilizzato il tipo di nodo del nodo '{NodeId}' ",
+      "translation": "Non è stato fornito alcun tipo di nodo: verrà utilizzato il tipo di nodo del nodo '{NodeId}'",
       "placeholders": [
         {
           "id": "NodeId",
@@ -8599,7 +8617,7 @@
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
       "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' È stato trovato più di un servizio per la distribuzione. Specificare il nome del servizio mediante l'indicatore -s ",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' È stato trovato più di un servizio per la distribuzione. Specificare il nome del servizio mediante l'indicatore -s",
       "placeholders": [
         {
           "id": "SERVICECOMMAND",
@@ -12070,7 +12088,7 @@
     {
       "id": "Organization {TheOrg} is successfully added to MMS.",
       "message": "Organization {TheOrg} is successfully added to MMS.",
-      "translation": "Organizzazione {TheOrg} correttamente aggiunta a MMS. ",
+      "translation": "Organizzazione {TheOrg} correttamente aggiunta a MMS.",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -12108,7 +12126,7 @@
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
       "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "Avvertenza: questa operazione eliminerà anche tutte le risorse Exchange di proprietà di questa org (nodi, servizi, modelli, ecc.). Si è sicuri di voler rimuovere l'utente {TheOrg} da Horizon Exchange e MMS? ",
+      "translation": "Avvertenza: questa operazione eliminerà anche tutte le risorse Exchange di proprietà di questa org (nodi, servizi, modelli, ecc.). Si è sicuri di voler rimuovere l'utente {TheOrg} da Horizon Exchange e MMS?",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -12140,7 +12158,7 @@
     {
       "id": "Cannot unmarshal served pattern",
       "message": "Cannot unmarshal served pattern",
-      "translation": "Impossibile annullare il marshalling del modello ",
+      "translation": "Impossibile annullare il marshalling del modello",
       "fuzzy": true
     },
     {
@@ -13535,6 +13553,50 @@
       "id": "the email must be specified via -e if the username is not an email address.",
       "message": "the email must be specified via -e if the username is not an email address.",
       "translation": "l'email deve essere specificata con -e se il nome utente non è un indirizzo email.",
+      "fuzzy": true
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "message": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Solo gli utenti exchange nell'organizzazione root possono essere admin hub. ",
+      "fuzzy": true
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "message": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "utente '{ExchUser}' non trovato nell'elenco restituito da exchange",
+      "placeholders": [
+        {
+          "id": "ExchUser",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "exchUser"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "message": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Solo gli utenti admin hub e l'utente root exchange possono creare admin hub.",
+      "fuzzy": true
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "message": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "Impossibile impostare lo stato dell'admin hub perché l'utente {User} non esiste nell'organizzazione root. ",
+      "placeholders": [
+        {
+          "id": "User",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "user"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -15508,13 +15570,13 @@
     {
       "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
       "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "ID nodo non valido: sono consentiti solo i caratteri A-Za-z0-9, i caratteri unicode ed i simboli speciali !-*+()?.,:&@ ",
+      "translation": "ID nodo non valido: sono consentiti solo i caratteri A-Za-z0-9, i caratteri unicode ed i simboli speciali !-*+()?.,:&@",
       "fuzzy": true
     },
     {
       "id": "invalid node ID: Whitespace is not permitted",
       "message": "invalid node ID: Whitespace is not permitted",
-      "translation": "ID nodo non valido: spazi non consentiti ",
+      "translation": "ID nodo non valido: spazi non consentiti",
       "fuzzy": true
     },
     {

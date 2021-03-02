@@ -26,6 +26,8 @@ import (
 const PATTERN = "pattern"
 const SERVICE = "service"
 
+const NOHEARTBEAT_PARAM = "noheartbeat=true"
+
 // Helper functions for dealing with exchangeIds that are already prefixed with the org name and then "/".
 func GetOrg(id string) string {
 	if ix := strings.Index(id, "/"); ix < 0 {
@@ -69,6 +71,14 @@ func (m Microservice) String() string {
 
 func (m Microservice) ShortString() string {
 	return fmt.Sprintf("URL: %v, NumAgreements: %v, ConfigState: %v", m.Url, m.NumAgreements, m.ConfigState)
+}
+
+func (m Microservice) DeepCopy() *Microservice {
+	svcCopy := Microservice{Url: m.Url, NumAgreements: m.NumAgreements, Policy: m.Policy, ConfigState: m.ConfigState}
+	for _, msprop := range m.Properties {
+		svcCopy.Properties = append(svcCopy.Properties, msprop)
+	}
+	return &svcCopy
 }
 
 // structs and types for working with microservice based exchange searches
@@ -151,6 +161,30 @@ func (d Device) ShortString() string {
 		str += fmt.Sprintf("%v,", ms.Url)
 	}
 	return str
+}
+
+func (n Device) DeepCopy() *Device {
+	nodeCopy := Device{Token: n.Token, Name: n.Name, Owner: n.Owner, NodeType: n.NodeType, Pattern: n.Pattern, MsgEndPoint: n.MsgEndPoint, LastHeartbeat: n.LastHeartbeat, PublicKey: n.PublicKey, Arch: n.Arch, HeartbeatIntv: n.HeartbeatIntv, LastUpdated: n.LastUpdated}
+	if n.RegisteredServices == nil {
+		nodeCopy.RegisteredServices = nil
+	} else {
+		for _, svc := range n.RegisteredServices {
+			nodeCopy.RegisteredServices = append(nodeCopy.RegisteredServices, *svc.DeepCopy())
+		}
+	}
+	if n.SoftwareVersions == nil {
+		nodeCopy.SoftwareVersions = nil
+	} else {
+		nodeCopy.SoftwareVersions = *n.SoftwareVersions.DeepCopy()
+	}
+	if n.UserInput == nil {
+		nodeCopy.UserInput = nil
+	} else {
+		for _, userInput := range n.UserInput {
+			nodeCopy.UserInput = append(nodeCopy.UserInput, *userInput.DeepCopy())
+		}
+	}
+	return &nodeCopy
 }
 
 func (d *Device) GetNodeType() string {
@@ -377,6 +411,14 @@ func (p PutAgreementState) String() string {
 }
 
 type SoftwareVersion map[string]string
+
+func (s SoftwareVersion) DeepCopy() *SoftwareVersion {
+	swVersCopy := make(SoftwareVersion, len(s))
+	for key, val := range s {
+		swVersCopy[key] = val
+	}
+	return &swVersCopy
+}
 
 type PutDeviceRequest struct {
 	Token              string             `json:"token"`

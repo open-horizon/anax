@@ -66,6 +66,9 @@ const (
 	HTTP_REQ_BODYTYPE_DEFAULT = 0
 	HTTP_REQ_BODYTYPE_BYTES   = 1
 	HTTP_REQ_BODYTYPE_FILE    = 2
+
+	// set on heartbeating api endpoints since cli calls are not coming from an agent
+	NOHEARTBEAT_PARAM = "noheartbeat=true"
 )
 
 // Holds the cmd line flags that were set so other pkgs can access

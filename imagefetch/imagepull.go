@@ -2,7 +2,6 @@ package imagefetch
 
 import (
 	docker "github.com/fsouza/go-dockerclient"
-	"strings"
 
 	"fmt"
 	"github.com/golang/glog"
@@ -10,6 +9,7 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -82,7 +82,6 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 			glog.Errorf("Invalid image name format specified: %v", service.Image)
 			return fmt.Errorf("Invalid image name format specified: %v", service.Image)
 		}
-
 		// the image name format is [[repo][:port]/][somedir/]image[:tag][@digest].
 		// tag and digest do not contain '/'
 		if digest != "" {
@@ -116,21 +115,38 @@ func pullImageFromRepos(config config.Config, authConfigs map[string][]docker.Au
 			}
 		}
 
-		var err error
+		// default the doman to docker io.
 		if domain == "" {
-			err = pullSingleImageFromRepo(client, opts, docker.AuthConfiguration{})
-		} else if auth_array, ok := authConfigs[domain]; !ok {
-			err = pullSingleImageFromRepo(client, opts, docker.AuthConfiguration{})
-		} else {
-			for i, auth := range auth_array {
-				err = pullSingleImageFromRepo(client, opts, auth)
-				if err == nil {
-					break
-				} else if i < len(auth_array)-1 {
-					glog.V(5).Infof("Docker image pull(s) failed for service %v docker image %v with auth name %v. Error: %v. Try next auth.", name, service.Image, auth.Username, err)
-				}
+			domain = "docker.io"
+		}
+
+		// get all the auths for this domain or repo.
+		auth_array := []docker.AuthConfiguration{}
+		for k, _ := range authConfigs {
+			// for "docker.io" repo, the repo string in ~/.docker/config.json is something like:
+			// "https://index.docker.io/v1/"
+			if k == domain || (domain == "docker.io" && strings.Contains(k, domain)) {
+				auth_array = append(auth_array, authConfigs[k]...)
 			}
 		}
+
+		// try auths one at a time
+		var err error
+		for i, auth := range auth_array {
+			err = pullSingleImageFromRepo(client, opts, auth)
+			if err == nil {
+				break
+			} else if i < len(auth_array)-1 {
+				glog.V(5).Infof("Docker image pull(s) failed for service %v docker image %v with auth name %v. Error: %v. Try next auth.", name, service.Image, auth.Username, err)
+			}
+		}
+
+		// if all auths failed or no auth specified for this domain, try without auth
+		if err != nil || len(auth_array) == 0 {
+			glog.V(5).Infof("Pulling image %v without auth.", service.Image)
+			err = pullSingleImageFromRepo(client, opts, docker.AuthConfiguration{})
+		}
+
 		if err != nil {
 			glog.Errorf("Docker image pull(s) failed for docker image %v. Error: %v.", service.Image, err)
 			return err

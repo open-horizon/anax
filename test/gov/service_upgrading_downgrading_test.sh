@@ -1,7 +1,7 @@
 
 echo "Testing service upgrading"
 
-IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
+ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 KEY_TEST_DIR="/tmp/keytest"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
@@ -32,7 +32,7 @@ function WaitForService() {
 }
 
 CPU_URL="https://bluehorizon.network/service-cpu"
-CPU_ORG="IBM"
+CPU_ORG="e2edev@somecomp.com"
 
 # Ensure cpu service is up and running
 echo "Waiting for old version of cpu service to be running..."
@@ -40,14 +40,15 @@ WaitForService $CPU_URL $CPU_ORG
 if [ $? -ne 0 ]; then exit $?; fi
 
 # Save current cpu version for later comparing
-old_cpu_version="$current_svc_version"
+old_cpu_version="${current_svc_version}"
+echo "Running ${CPU_ORG} ${CPU_URL} version $current_svc_version"
 
 # Deploy newer version of service
 CPU_URL="https://bluehorizon.network/service-cpu"
-CPU_ORG="IBM"
-CPU_VERS_NEW="1.2.5"
+CPU_ORG="e2edev@somecomp.com"
+CPU_VERS_NEW="1.0.3"
 
-# cpu service - needed by the hzn dev tests and the location top level service as a 3rd level dependency.
+# cpu service - needed by the e2edev@somecomp.com/netspeed service as a dependency.
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 {
   "label":"CPU service",
@@ -68,19 +69,18 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/example_ms_x86_cpu:1.2.2",
-        "binds":["/tmp:/hosttmp"]
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
   "deploymentSignature":""
 }
 EOF
-echo -e "Register new version ($CPU_VERS_NEW) of IBM/cpu service:"
-hzn exchange service publish -I -O -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+echo -e "Register new version ($CPU_VERS_NEW) of e2edev@somecomp.com/cpu service:"
+hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for IBM/cpu."
+    echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
@@ -108,8 +108,8 @@ echo "Testing service downgrading"
 
 # Deploy newer version of service with deployment error
 CPU_URL="https://bluehorizon.network/service-cpu"
-CPU_ORG="IBM"
-CPU_VERS_ERR="1.2.6"
+CPU_ORG="e2edev@somecomp.com"
+CPU_VERS_ERR="1.0.4"
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 {
   "label":"CPU service",
@@ -130,7 +130,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/example_ms_x86_cpu:1.2.2",
+        "image":"openhorizon/amd64_cpu:1.2.2",
         "binds":["/tmp:/hosttmp", ""]
       }
     }
@@ -138,11 +138,11 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deploymentSignature":""
 }
 EOF
-echo -e "Register new version ($CPU_VERS_ERR) of IBM/cpu service with an error in deployment:"
-hzn exchange service publish -I -O -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+echo -e "Register new version ($CPU_VERS_ERR) of e2edev@somecomp.com/cpu service with an error in deployment:"
+hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for IBM/cpu."
+    echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
@@ -172,7 +172,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Remove service with deployment error
-hzn exchange service remove -u $IBM_ADMIN_AUTH -o IBM -f $CPU_ORG/bluehorizon.network-service-cpu_1.2.6_amd64
+hzn exchange service remove -u $ADMIN_AUTH -o e2edev@somecomp.com -f $CPU_ORG/bluehorizon.network-service-cpu_${CPU_VERS_ERR}_amd64
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service remove failed for $CPU_ORG/cpu with deployment error"

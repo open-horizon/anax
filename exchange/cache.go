@@ -41,6 +41,27 @@ type CacheEntry struct {
 	Hash        []byte      `json:"hash"`
 }
 
+// Allow getresources to return a copy of cached resource so that multiple threads can use the same resource concurrently
+func (c *CacheEntry) Copy() interface{} {
+	var resourceCopy interface{}
+	switch c.Resource.(type) {
+	case map[string]ServiceDefinition:
+		resourceCopy = ServiceMap(c.Resource.(map[string]ServiceDefinition)).DeepCopy()
+	case map[string]string:
+		resourceCopy = ServiceKeys(c.Resource.(map[string]string)).DeepCopy()
+	case []ImageDockerAuth:
+		resourceCopy = ServiceDockerAuth(c.Resource.([]ImageDockerAuth)).DeepCopy()
+	case Device:
+		resourceCopy = *(c.Resource.(Device)).DeepCopy()
+	case ExchangePolicy:
+		exchPol := c.Resource.(ExchangePolicy)
+		resourceCopy = *(&exchPol).DeepCopy()
+	default:
+		resourceCopy = c.Resource
+	}
+	return resourceCopy
+}
+
 // GetNodeFromCache returns the node definition from the exchange cache if it is present, or nil if it is not
 func GetNodeFromCache(nodeOrg string, nodeId string) *Device {
 	node := GetResourceFromCache(NodeCacheMapKey(nodeOrg, nodeId), NODE_DEF_TYPE_CACHE, 0)
@@ -72,6 +93,16 @@ func GetServiceFromCache(svcOrg string, svcId string, svcArch string) map[string
 	return nil
 }
 
+type ServiceMap map[string]ServiceDefinition
+
+func (s ServiceMap) DeepCopy() map[string]ServiceDefinition {
+	svcMapCopy := make(map[string]ServiceDefinition, len(s))
+	for key, val := range s {
+		svcMapCopy[key] = *val.DeepCopy()
+	}
+	return svcMapCopy
+}
+
 // GetServicePolicyFromCache returns the service policy from the exchange cache if it is present, or nil if it is not
 func GetServicePolicyFromCache(sId string) *ExchangePolicy {
 	svcPol := GetResourceFromCache(sId, SVC_POL_TYPE_CACHE, 0)
@@ -92,6 +123,16 @@ func GetServiceDockAuthFromCache(sId string) *[]ImageDockerAuth {
 	return nil
 }
 
+type ServiceDockerAuth []ImageDockerAuth
+
+func (s ServiceDockerAuth) DeepCopy() []ImageDockerAuth {
+	authCopy := []ImageDockerAuth{}
+	for _, auth := range s {
+		authCopy = append(authCopy, auth)
+	}
+	return authCopy
+}
+
 // GetServiceKeysFromCache returns the service keys from the exchange cache if it is present, or nil if it is not
 func GetServiceKeysFromCache(svcOrg string, svcId string, svcArch string, svcVersion string) *map[string]string {
 	svcKeys := GetResourceFromCache(ServicePolicyCacheMapKey(svcOrg, svcId, svcArch, svcVersion), SVC_KEY_TYPE_CACHE, 0)
@@ -100,6 +141,16 @@ func GetServiceKeysFromCache(svcOrg string, svcId string, svcArch string, svcVer
 		return &typedSvcKeys
 	}
 	return nil
+}
+
+type ServiceKeys map[string]string
+
+func (s ServiceKeys) DeepCopy() map[string]string {
+	svcKeysCopy := make(map[string]string, len(s))
+	for key, val := range s {
+		svcKeysCopy[key] = val
+	}
+	return svcKeysCopy
 }
 
 // GetExchangeVersionFromCache returns the version of the exchange from the exchange cache if it is present or an emty string otherwise
@@ -140,7 +191,7 @@ func GetResourceFromCache(resourceKey string, resourceType string, expirationS u
 	if expirationS > 0 && expired {
 		return nil
 	}
-	return typedEntry.Resource
+	return typedEntry.Copy()
 }
 
 // UpdateCache will replace or create the provided resource in the given resource type cache

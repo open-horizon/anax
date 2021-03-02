@@ -12,7 +12,7 @@
     },
     {
       "id": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Echec de l'authentification de l'utilisateur avec Exchange. {Err}"
+      "translation": "Echec d'authentification de l'utilisateur avec Exchange. {Err}"
     },
     {
       "id": "Input body couldn't be deserialized to JSON object. {Err}",
@@ -412,19 +412,19 @@
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouveau nombre minimal de secondes entre les signaux de présence de l'agent sur Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut."
+      "translation": "Nouveau nombre minimal de secondes entre les signaux de présence de l'agent sur Exchange. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté à cet attribut."
     },
     {
       "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouveau nombre maximal de secondes entre les signaux de présence de l'agent sur Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut."
+      "translation": "Nouveau nombre maximal de secondes entre les signaux de présence de l'agent sur Exchange. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté à cet attribut."
     },
     {
       "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des signaux de présence de l'agent. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut."
+      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des signaux de présence de l'agent. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté à cet attribut."
     },
     {
       "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
-      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur ne peut pas excéder la limite globale d'Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté."
+      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur ne peut pas excéder la limite globale d'Exchange. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -483,8 +483,12 @@
       "translation": "Cet utilisateur doit être un administrateur, capable de gérer l'ensemble des ressources de cette organisation dans Exchange."
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Cet utilisateur doit être un administrateur de concentrateur pouvant gérer des organisations dans ce concentrateur d'administration."
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
-      "translation": "Changer l'utilisateur existant pour qu'il soit administrateur (root dans son organisation, par exemple) ou qu'il ne soit plus administrateur. Accessible uniquement par un utilisateur root Exchange ou autre administrateur."
+      "translation": "Changer l'utilisateur existant pour qu'il soit administrateur (root dans son organisation, par exemple) ou qu'il ne soit plus administrateur. Accessible uniquement par un utilisateur racine (root) Exchange ou un autre administrateur."
     },
     {
       "id": "The user to be modified.",
@@ -493,6 +497,14 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "True s'il doit s'agir d'un administrateur, false dans le cas contraire."
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Transformer un utilisateur existant en administrateur de concentrateur ou faire en sorte qu'un utilisateur ne soit plus administrateur de concentrateur. Un administrateur de concentrateur peut créer, modifier et supprimer des organisations dans le concentrateur de gestion."
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "Vrai (true) si cet utilisateur doit être administrateur de concentrateur, faux (false) dans le cas contraire."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -916,7 +928,7 @@
     },
     {
       "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "Indique si le service est visible par les utilisateurs en dehors de l'organisation. Cet indicateur est facultatif. Si cette variable n'est pas définie, le service sera défini par défaut sur les métadonnées définies. Si la définition du service a également laissé indéfini le champ Public, le service sera non public par défaut."
+      "translation": "Indique si le service est visible des utilisateurs en dehors de l'organisation. Cet indicateur est facultatif. Si cette variable n'est pas définie, le service sera défini par défaut sur la valeur définie par les métadonnées. Si la définition de service n'a pas non plus défini la zone Public, par défaut le service ne sera pas public."
     },
     {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
@@ -1328,7 +1340,7 @@
     },
     {
       "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "Type de noeud. Les valeurs valides sont 'device' et 'cluster'. La valeur par défaut est le type de nœud fourni par -n ou l'appareil enregistré en cours, s'il n'est pas présent."
+      "translation": "Type de noeud. Les valeurs valides sont 'device' et 'cluster'. La valeur par défaut est le type de nœud fourni par -n ou l'appareil enregistré en cours (si omis)."
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1604,7 +1616,7 @@
     },
     {
       "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'AND'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attribut communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attribut."
+      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'ET'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attribut communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attribut."
     },
     {
       "id": "List all the active errors that will be shared with the Exchange if the node is online.",
@@ -2080,7 +2092,7 @@
     },
     {
       "id": "failed to marshal agreement with index {I}: {Err}",
-      "translation": "Echec de la sérialisation de l'accord avec l'index {I} : {Err}"
+      "translation": "Echec de sérialisation de l'accord avec l'index {I} : {Err}"
     },
     {
       "id": "agreement id {AgreementId} not found",
@@ -2088,7 +2100,7 @@
     },
     {
       "id": "failed to marshal 'hzn agreement list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn agreement list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn agreement list' : {Err}"
     },
     {
       "id": "No active agreements to cancel.",
@@ -2112,7 +2124,7 @@
     },
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn node list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn node list' : {Err}"
     },
     {
       "id": "org must be specified with -o when pattern name is specified.",
@@ -2144,7 +2156,7 @@
     },
     {
       "id": "failed to marshal 'policy list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'policy list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'policy list' : {Err}"
     },
     {
       "id": "Error: The organization '{Org}' does not exist.",
@@ -2164,7 +2176,7 @@
     },
     {
       "id": "failed to marshal 'hzn attribute list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn attribute list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn attribute list' : {Err}"
     },
     {
       "id": "Reading configuration file: {ConfigFile}",
@@ -2184,15 +2196,15 @@
     },
     {
       "id": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
-      "translation": "Echec de la définition de la variable d'environnement spécifiée dans l'attribut MetadataVars du fichier {ConfigFile}. {Err}"
+      "translation": "Echec de définition de la variable d'environnement spécifiée dans l'attribut MetadataVars du fichier {ConfigFile}. {Err}"
     },
     {
       "id": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
-      "translation": "Echec de la définition de la variable d'environnement de premier niveau dans le fichier {ConfigFile}. {Err}"
+      "translation": "Echec de définition de la variable d'environnement de premier niveau dans le fichier {ConfigFile}. {Err}"
     },
     {
       "id": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
-      "translation": "Echec de la définition de la variable d'environnement spécifiée dans le fichier {ConfigFile}. {Err}"
+      "translation": "Echec de définition de la variable d'environnement spécifiée dans le fichier {ConfigFile}. {Err}"
     },
     {
       "id": "Local configuration {LocalConfigFile} has been setup at the beginning of this command. Will not setup twice.",
@@ -2200,15 +2212,15 @@
     },
     {
       "id": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
-      "translation": "Echec de la définition de la variable d'environnement à partir du fichier de configuration locale {LocalConfigFile} pour le fichier {FilePath}. Erreur : {Err}"
+      "translation": "Echec de définition de la variable d'environnement à partir du fichier de configuration locale {LocalConfigFile} pour le fichier {FilePath}. Erreur : {Err}"
     },
     {
       "id": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
-      "translation": "Echec de la restauration de la variable d'environnement après utilisation du fichier de configuration locale {UseLocalConfig}. {Err}"
+      "translation": "Echec de restauration de la variable d'environnement après utilisation du fichier de configuration locale {UseLocalConfig}. {Err}"
     },
     {
       "id": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {ConfigFilepkg}. {Err}"
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier {ConfigFilepkg}. {Err}"
     },
     {
       "id": "Error reading environment variables from file {ConfigFilepkg}. {Err}",
@@ -2220,7 +2232,7 @@
     },
     {
       "id": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier ~/.hzn/hzn.json. {Err}"
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier ~/.hzn/hzn.json. {Err}"
     },
     {
       "id": "Error getting project level configuration file name. {Err}",
@@ -2244,11 +2256,11 @@
     },
     {
       "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "Echec de la désérialisation des octets à partir de {ErrMsg} : {Err}"
+      "translation": "Echec de désérialisation des octets à partir de {ErrMsg} : {Err}"
     },
     {
       "id": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "Echec de la sérialisation du type de données à partir de {ErrMsg} : {Err}"
+      "translation": "Echec de sérialisation du type de données à partir de {ErrMsg} : {Err}"
     },
     {
       "id": "problem testing api key match: {Err}",
@@ -2304,11 +2316,11 @@
     },
     {
       "id": "reading stdin failed: {Err}",
-      "translation": "Echec de la lecture de stdin : {Err}"
+      "translation": "Echec de lecture de stdin : {Err}"
     },
     {
       "id": "reading {FilePath} failed: {Err}",
-      "translation": "Echec de la lecture {FilePath} : {Err}"
+      "translation": "Echec de lecture {FilePath} : {Err}"
     },
     {
       "id": "Warning: environment variable '{EnvVarName}' is referenced in input file, but not defined in the environment.",
@@ -2328,15 +2340,15 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon pour exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. Erreur spécifique : {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon pour exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. Erreur spécifique : {Err}"
     },
     {
       "id": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} - Echec de la nouvelle demande : {Err}"
+      "translation": "{ApiMsg} - Echec de nouvelle demande : {Err}"
     },
     {
       "id": "HTTP code: {HttpCode}",
@@ -2352,19 +2364,19 @@
     },
     {
       "id": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de lecture de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
+      "translation": "Echec de désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}"
     },
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Body}",
@@ -2372,11 +2384,11 @@
     },
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps pour {ApiMsg} : {Err}"
+      "translation": "Echec de sérialisation du corps pour {ApiMsg} : {Err}"
     },
     {
       "id": "Failed to unmarshal bytes. {Err}",
-      "translation": "Echec de la désérialisation des octets. {Err}"
+      "translation": "Echec de désérialisation des octets. {Err}"
     },
     {
       "id": "Error getting {OldMgmtHubCertPath} from {ANAXOVERWRITEFILE}: {Err}",
@@ -2444,15 +2456,15 @@
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. Erreur spécifique : {Err}"
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. L'erreur associée est la suivante : {Err}"
+      "translation": "Connexion impossible à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. Erreur spécifique : {Err}"
     },
     {
       "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps Exchange pour {ApiMsg} : {Err}"
+      "translation": "Echec de sérialisation du corps Exchange pour {ApiMsg} : {Err}"
     },
     {
       "id": "Failed to get file info: {Err}",
@@ -2480,15 +2492,15 @@
     },
     {
       "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}"
+      "translation": "Echec de désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation de la sortie Exchange de {ApiMsg} : {Err}"
+      "translation": "Echec de sérialisation de la sortie Exchange de {ApiMsg} : {Err}"
     },
     {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps Exchange de {ApiMsg} : {Err}"
+      "translation": "Echec de lecture de la réponse du corps Exchange de {ApiMsg} : {Err}"
     },
     {
       "id": "bad HTTP code {HttpCode} from {ApiMsg}: {Code}, {Msg}",
@@ -2520,7 +2532,7 @@
     },
     {
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}"
     },
     {
       "id": "{Err}. Please create the signing key.",
@@ -2568,7 +2580,7 @@
     },
     {
       "id": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "Echec de la commande : {Err}, stderr : {StringstderrBytes}"
+      "translation": "Echec de commande : {Err}, stderr : {StringstderrBytes}"
     },
     {
       "id": "Unable to use {HTTPRequestTimeoutOverride} to set the request timeout, the value is not a valid number: {EnvTimeout}",
@@ -2688,7 +2700,7 @@
     },
     {
       "id": "failed to unmarshal deployment policy json input file {BusinessPolFile}: {Err}",
-      "translation": "Echec de la désérialisation du fichier d'entrée json de la règle de déploiement {BusinessPolFile} : {Err}"
+      "translation": "Echec de désérialisation du fichier d'entrée json de la règle de déploiement {BusinessPolFile} : {Err}"
     },
     {
       "id": "Deployment policy not found for {PolOrg}/{PolId}",
@@ -2700,7 +2712,7 @@
     },
     {
       "id": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "Echec de la désérialisation du fichier d'entrée json {FilePath} : {Err}"
+      "translation": "Echec de désérialisation du fichier d'entrée json {FilePath} : {Err}"
     },
     {
       "id": "Either -b or -B must be specified.",
@@ -2744,7 +2756,7 @@
     },
     {
       "id": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
-      "translation": "Echec de la désérialisation du fichier d'entrée JSON de pattern {PatternFile} : {Err}"
+      "translation": "Echec de désérialisation du fichier d'entrée JSON de pattern {PatternFile} : {Err}"
     },
     {
       "id": "Pattern not found for {PatOrg}/{PatId}",
@@ -2784,15 +2796,15 @@
     },
     {
       "id": "dependency validation failed, unable to read {Name}, error: {Err}",
-      "translation": "Echec de la validation de dépendance, impossible de lire {Name}. Erreur : {Err}"
+      "translation": "Echec de validation de la dépendance, impossible de lire {Name}. Erreur : {Err}"
     },
     {
       "id": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
-      "translation": "Echec de la validation de dépendance. La dépendance {Name} comporte une version {Version} non valide. Erreur : {Err}"
+      "translation": "Echec de validation de la dépendance. La dépendance {Name} comporte une version {Version} non valide. Erreur : {Err}"
     },
     {
       "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
-      "translation": "Echec de la validation de dépendance, impossible de vérifier que la plage de versions {Version} est comprise dans la plage requise {Expression}. Erreur : {Err}"
+      "translation": "Echec de validation de la dépendance, impossible de vérifier que la plage de versions {Version} est comprise dans la plage requise {Expression}. Erreur : {Err}"
     },
     {
       "id": "dependency {URL} at version {VersionRange} does not exist in {Joindirectory_DEFAULTDEPENDENCYDIR}.",
@@ -2852,11 +2864,11 @@
     },
     {
       "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
-      "translation": "Echec de l'obtention du fichier de configuration hzn.json sous le répertoire {Project}. Erreur : {Err}"
+      "translation": "Echec d'obtention du fichier de configuration hzn.json sous le répertoire {Project}. Erreur : {Err}"
     },
     {
       "id": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
-      "translation": "Echec de la définition des variables d'environnement à partir du fichier de configuration {Projconfigfile}. Erreur : {Err}"
+      "translation": "Echec de définition des variables d'environnement à partir du fichier de configuration {Projconfigfile}. Erreur : {Err}"
     },
     {
       "id": "Reading Horizon metadata from dependency: {AbsProject}",
@@ -2868,7 +2880,7 @@
     },
     {
       "id": "Failed to restore the environment variables. {Err}",
-      "translation": "Echec de la restauration des variables d'environnement. {Err}"
+      "translation": "Echec de restauration des variables d'environnement. {Err}"
     },
     {
       "id": "Updated {HomeDirectory}/{USERINPUTFILE} with the dependency's variable and global attribute configuration.",
@@ -2912,7 +2924,7 @@
     },
     {
       "id": "failed to unmarshal deployment {Deployment}: {Err}",
-      "translation": "Echec de la désérialisation du déploiement {Deployment} : {Err}"
+      "translation": "Echec de désérialisation du déploiement {Deployment} : {Err}"
     },
     {
       "id": "The image docker auths for the service {Org}/{Surl} are: {Imgauths}",
@@ -2920,7 +2932,7 @@
     },
     {
       "id": "failed to get images for {Org}/{Surl}: {Err}",
-      "translation": "Echec de l'obtention des images pour {Org}/{Surl} : {Err}"
+      "translation": "Echec d'obtention des images pour {Org}/{Surl} : {Err}"
     },
     {
       "id": "Unable to get dependency info for {Sp} , error {Err}",
@@ -3072,7 +3084,7 @@
     },
     {
       "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
-      "translation": "Affichage des messages du journal pour le service de développement {ServiceName} avec le préfixe d'identifiant de l'instance {MsId}."
+      "translation": "Affichage des messages du journal pour le service de développement {ServiceName} avec le préfixe d'ID instance {MsId}."
     },
     {
       "id": "Use ctrl-C to terminate this command.",
@@ -3348,15 +3360,15 @@
     },
     {
       "id": "failed to create docker client, error: {Derr}",
-      "translation": "Echec de la création du client Docker. Erreur : {Derr}"
+      "translation": "Echec de création du client Docker. Erreur : {Derr}"
     },
     {
       "id": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
-      "translation": "Echec de la conversion des attributs globaux dans {USERINPUTFILE}. Erreur : {Err}"
+      "translation": "Echec de conversion des attributs globaux dans {USERINPUTFILE}. Erreur : {Err}"
     },
     {
       "id": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
-      "translation": "Echec de l'extraction de l'attribut d'authentification à partir de {USERINPUTFILE}. Erreur : {Err}"
+      "translation": "Echec d'extraction de l'attribut d'authentification à partir de {USERINPUTFILE}. Erreur : {Err}"
     },
     {
       "id": "getting container images into docker.",
@@ -3364,7 +3376,7 @@
     },
     {
       "id": "failed to get container images, error: {Err}",
-      "translation": "Echec de l'obtention des images de conteneur. Erreur : {Err}"
+      "translation": "Echec d'obtention des images de conteneur. Erreur : {Err}"
     },
     {
       "id": "invalid image format: {Image}",
@@ -3392,11 +3404,11 @@
     },
     {
       "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn eventlog surface' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn eventlog surface' : {Err}"
     },
     {
       "id": "failed to marshal 'exchange agbot list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange agbot list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'exchange agbot list' : {Err}"
     },
     {
       "id": "agbot '{Agbot}' not found in org {AgbotOrg}",
@@ -3432,7 +3444,7 @@
     },
     {
       "id": "failed to marshal 'hzn exchange deployment listpolicy' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange deployment listpolicy' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange deployment listpolicy' : {Err}"
     },
     {
       "id": "Incorrect deployment policy format in file {JsonFilePath}: {Err}",
@@ -3452,7 +3464,7 @@
     },
     {
       "id": "failed to unmarshal attribute input {Attribute}: {Err}",
-      "translation": "Echec de la désérialisation de l'entrée d'attribut {Attribute} : {Err}"
+      "translation": "Echec de désérialisation de l'entrée d'attribut {Attribute} : {Err}"
     },
     {
       "id": "Updating Policy {PolOrg}/{PolicyName} in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.",
@@ -3544,31 +3556,31 @@
     },
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog servicelist -l' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog servicelist -l' : {Err}"
     },
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog servicelist -s' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog servicelist -s' : {Err}"
     },
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog servicelist' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog servicelist' : {Err}"
     },
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog patternlist -l' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog patternlist -l' : {Err}"
     },
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog patternlist -s' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog patternlist -s' : {Err}"
     },
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog patternlist' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog patternlist' : {Err}"
     },
     {
       "id": "failed to marshal 'exchange node list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange node list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'exchange node list' : {Err}"
     },
     {
       "id": "node '{Node}' not found in org {NodeOrg}",
@@ -3620,7 +3632,7 @@
     },
     {
       "id": "failed to unmarshal attribute: {Err}",
-      "translation": "Echec de la désérialisation de l'attribut : {Err}"
+      "translation": "Echec de désérialisation de l'attribut : {Err}"
     },
     {
       "id": "Cannot update attribute {K}. Supported attributes are: userInput, pattern, heartbeatIntervals.",
@@ -3744,7 +3756,7 @@
     },
     {
       "id": "failed to marshal 'hzn exchange node listerrors' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange node listerrors' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange node listerrors' : {Err}"
     },
     {
       "id": "node status not found for node '{NodeOrg}/{Node}'.",
@@ -3800,7 +3812,7 @@
     },
     {
       "id": "failed to marshal 'exchange org list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange org list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'exchange org list' : {Err}"
     },
     {
       "id": "Invalid input for {Negatives}. Negative integer is not allowed.",
@@ -3840,7 +3852,7 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc) risquent également d'être supprimées. Voulez-vous vraiment supprimer l'utilisateur {TheOrg} d'Horizon Exchange et de MMS ?"
+      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc.) risquent d'être également supprimées. Voulez-vous vraiment retirer l'utilisateur {TheOrg} d'Horizon Exchange et de MMS ?"
     },
     {
       "id": "Using agbot {Agbot}",
@@ -3900,7 +3912,7 @@
     },
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange pattern list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'exchange pattern list' : {Err}"
     },
     {
       "id": "pattern '{Pattern}' not found in org {PatOrg}",
@@ -3908,7 +3920,7 @@
     },
     {
       "id": "failed to marshal 'hzn exchange pattern list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange pattern list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange pattern list' : {Err}"
     },
     {
       "id": "Pattern {Pattern} not found in org {PatOrg}",
@@ -3924,11 +3936,11 @@
     },
     {
       "id": "failed to marshal body for {D}: {Err}",
-      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}"
+      "translation": "Echec de sérialisation du corps de texte pour {D} : {Err}"
     },
     {
       "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation de json pour la zone des substitutions de déploiement {StringjsonBytes} : {Err}"
+      "translation": "Echec de désérialisation de json pour la zone des substitutions de déploiement {StringjsonBytes} : {Err}"
     },
     {
       "id": "the org specified in the input file ({Org}) must match the org specified on the command line ({Org_1})",
@@ -3944,7 +3956,7 @@
     },
     {
       "id": "failed to marshal deployment_overrides field in service {I__1}, serviceVersion number {J__1}: {Err}",
-      "translation": "Echec de la sérialisation de la zone deployment_overrides dans le service {I__1}, serviceVersion number {J__1} : {Err}"
+      "translation": "Echec de sérialisation de la zone deployment_overrides dans le service {I__1}, serviceVersion number {J__1} : {Err}"
     },
     {
       "id": "problem signing the deployment_overrides string with {KeyFilePath}: {Err}",
@@ -4000,7 +4012,7 @@
     },
     {
       "id": "failed to marshal 'hzn exchange service list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange service list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange service list' : {Err}"
     },
     {
       "id": "service '{Service}' not found in org {SvcOrg}",
@@ -4112,7 +4124,7 @@
     },
     {
       "id": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange service listpolicy' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange service listpolicy' : {Err}"
     },
     {
       "id": "Adding built-in property values...",
@@ -4148,11 +4160,11 @@
     },
     {
       "id": "Failed to create file {FileName}. {Err}",
-      "translation": "Echec de la création du fichier {FileName}. {Err}"
+      "translation": "Echec de création du fichier {FileName}. {Err}"
     },
     {
       "id": "Failed to save the clusterDeployment operator yaml to file {FileName}. {Err}",
-      "translation": "Echec de la sauvegarde du fichier yaml de l'opérateur clusterDeployment dans le fichier {FileName}. {Err}"
+      "translation": "Echec de sauvegarde du fichier yaml de l'opérateur clusterDeployment dans le fichier {FileName}. {Err}"
     },
     {
       "id": "The clusterDeployment operator yaml archive is saved to file {FileName}",
@@ -4172,19 +4184,35 @@
     },
     {
       "id": "failed to marshal 'exchange user list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange user list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'exchange user list' : {Err}"
     },
     {
       "id": "the email must be specified via -e if the username is not an email address.",
       "translation": "L'adresse e-mail doit être renseignée à l'aide de l'indicateur -e si le nom d'utilisateur n'est pas une adresse électronique."
     },
     {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Seuls les utilisateurs Exchange de l'organisation racine peuvent être des administrateurs de concentrateur."
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "Utilisateur '{ExchUser}' introuvable dans la liste renvoyée par Exchange"
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Seuls les administrateurs de concentrateur et l'utilisateur root (racine) Exchange peuvent créer des administrateurs de concentrateur."
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "Impossible de définir le statut de l'administrateur de concentrateur car l'utilisateur {User} n'existe pas dans l'organisation racine."
+    },
+    {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
-      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc). Voulez-vous vraiment retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?"
+      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc.). Voulez-vous vraiment retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?"
     },
     {
       "id": "failed to marshal 'key list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'key list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'key list' : {Err}"
     },
     {
       "id": "horizon api trust output did not include 'pem' key",
@@ -4204,7 +4232,7 @@
     },
     {
       "id": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
-      "translation": "Echec du déplacement du fichier de clé privée depuis {PrivKeyName} vers {PrivKeyFile}. {Err}"
+      "translation": "Echec de déplacement du fichier de clé privée depuis {PrivKeyName} vers {PrivKeyFile}. {Err}"
     },
     {
       "id": "Move public key file from {PubKeyName} to {PubKeyFile}.",
@@ -4212,7 +4240,7 @@
     },
     {
       "id": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
-      "translation": "Echec du déplacement du fichier de clé publique de {PubKeyName} vers {PubKeyFile}. {Err}"
+      "translation": "Echec de déplacement du fichier de clé publique de {PubKeyName} vers {PubKeyFile}. {Err}"
     },
     {
       "id": "Created keys:\n \t{PrivKeyFile}\n\t{PubKeyFile}",
@@ -4272,7 +4300,7 @@
     },
     {
       "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
-      "translation": "Echec de la sérialisation de la chaîne de déploiement {KUBEDEPLOYMENTCONFIGTYPE} {Dep}, erreur {Err}"
+      "translation": "Echec de sérialisation de la chaîne de déploiement {KUBEDEPLOYMENTCONFIGTYPE} {Dep}, erreur {Err}"
     },
     {
       "id": "problem signing {KUBEDEPLOYMENTCONFIGTYPE} deployment string with {KeyFilePath}: {Err}",
@@ -4300,7 +4328,7 @@
     },
     {
       "id": "failed to marshal deployment string {Dep}, error {Err}",
-      "translation": "Echec de la sérialisation de la chaîne de déploiement {Dep}, erreur {Err}"
+      "translation": "Echec de sérialisation de la chaîne de déploiement {Dep}, erreur {Err}"
     },
     {
       "id": "problem signing deployment string with {KeyFilePath}: {Err}",
@@ -4368,7 +4396,7 @@
     },
     {
       "id": "Failed to get proper response from Horizon agent",
-      "translation": "Echec de l'obtention d'une réponse appropriée de la part de l'agent Horizon"
+      "translation": "Echec d'obtention d'une réponse appropriée de la part de l'agent Horizon"
     },
     {
       "id": "Horizon CLI version: {HORIZONVERSION}",
@@ -4412,7 +4440,7 @@
     },
     {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn policy list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn policy list' : {Err}"
     },
     {
       "id": "Warning: built-in properties {IncludedBuiltIns} are read-only. The given value will be ignored.",
@@ -4476,7 +4504,7 @@
     },
     {
       "id": "Failed to get proper response from the Horizon agent",
-      "translation": "Echec de l'obtention d'une réponse appropriée de la part de l'agent Horizon"
+      "translation": "Echec d'obtention d'une réponse appropriée de la part de l'agent Horizon"
     },
     {
       "id": "Unable to read machine serial number, error: {MsErr}. Continuing device registration.",
@@ -4616,15 +4644,15 @@
     },
     {
       "id": "Failed to unregister node. Attempting a deep clean of the node.",
-      "translation": "Echec de l'annulation de l'enregistrement du noeud. Tentative de nettoyage profond du noeud."
+      "translation": "Echec d'annulation de l'enregistrement du noeud. Tentative de nettoyage profond du noeud."
     },
     {
       "id": "Failed to deep clean the node. {Err}",
-      "translation": "Echec du nettoyage profond du noeud. {Err}"
+      "translation": "Echec de nettoyage en profondeur du noeud. {Err}"
     },
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
-      "translation": "Echec de l'enregistrement. Le noeud a repris son état non enregistré."
+      "translation": "Echec d'enregistrement. Le noeud a repris son état non enregistré."
     },
     {
       "id": "Call to anax to create node timed out.",
@@ -4636,7 +4664,7 @@
     },
     {
       "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "Echec de l'enregistrement, car {Matches0}. Veuillez mettre à jour la section des services dans le fichier d'entrée {InputFile}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau"
+      "translation": "Echec d'enregistrement, car {Matches0}. Veuillez mettre à jour la section des services dans le fichier d'entrée {InputFile}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau"
     },
     {
       "id": "Error setting service variables from user input file: {RespBody}",
@@ -4684,11 +4712,11 @@
     },
     {
       "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "Identifiant de nœud non valide. Seuls les caractères suivants sont autorisés : A-Za-z0-9, caractères Unicode et symboles spéciaux !-*+()?.,:&amp;TWBAMP;@"
+      "translation": "ID noeud non valide. Seuls les caractères suivants sont autorisés : A-Za-z0-9, caractères Unicode et symboles spéciaux !-*+()?.,:&@"
     },
     {
       "id": "invalid node ID: Whitespace is not permitted",
-      "translation": "Identifiant de nœud non valide. L'espace n'est pas autorisée"
+      "translation": "ID noeud non valide. Les espaces (blancs) ne sont pas autorisés"
     },
     {
       "id": "invalid version range '{Vr}': {Err}",
@@ -4896,7 +4924,7 @@
     },
     {
       "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
-      "translation": "Echec de la désérialisation de la chaîne json '{PolicyStr}' : {Err}"
+      "translation": "Echec de désérialisation de la chaîne json '{PolicyStr}' : {Err}"
     },
     {
       "id": "Incorrect policy format in '{PolicyStr}': {Err}",
@@ -4908,15 +4936,15 @@
     },
     {
       "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
-      "translation": "Echec de la sérialisation de l'attribut de sortie '/service/config' {Attr}. {Err}"
+      "translation": "Echec de sérialisation de l'attribut de sortie '/service/config' {Attr}. {Err}"
     },
     {
       "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
-      "translation": "Echec de la conversion de l'attribut de sortie '/service/config' {Attr} vers son type d'origine. {Err}"
+      "translation": "Echec de conversion de l'attribut de sortie '/service/config' {Attr} vers son type d'origine. {Err}"
     },
     {
       "id": "failed to marshal 'hzn service list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn service list' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn service list' : {Err}"
     },
     {
       "id": "The node is not registered.",
@@ -4944,11 +4972,11 @@
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn service registered' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn service registered' : {Err}"
     },
     {
       "id": "failed to marshal 'hzn service configstate' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn service configstate' : {Err}"
+      "translation": "Echec de sérialisation de la sortie 'hzn service configstate' : {Err}"
     },
     {
       "id": "all the registered services",
@@ -5132,7 +5160,7 @@
     },
     {
       "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "Liste des expressions de contrainte au format <property name> <operator> <property value>, séparées par les opérateurs booléens AND (&&) ou OR (||)."
+      "translation": "Liste des expressions de contrainte au format <property name> <operator> <property value>, séparées par les opérateurs booléens ET (&&) ou OU (||)."
     },
     {
       "id": "The service(s) that will use this object.",
@@ -5180,7 +5208,7 @@
     },
     {
       "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
-      "translation": "Echec de la désérialisation du fichier de définition {ObjMetadataFile} : {Err}"
+      "translation": "Echec de désérialisation du fichier de définition {ObjMetadataFile} : {Err}"
     },
     {
       "id": "Object {ObjFile} uploaded to org {Org} in the Model Management Service",
@@ -5512,7 +5540,7 @@
     },
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
-      "translation": "Echec de la sauvegarde du fichier des journaux des événements {FileName}. {Err}"
+      "translation": "Echec de sauvegarde du fichier des journaux des événements {FileName}. {Err}"
     },
     {
       "id": "failed to save the eventlogs to file {FileName}. {Err}",
@@ -5592,7 +5620,7 @@
     },
     {
       "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
+      "translation": "Echec de désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}"
     },
     {
       "id": "user input {Name} has no default value and is not set",
@@ -5620,7 +5648,7 @@
     },
     {
       "id": "failed to unmarshal json input {JsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation de l'entrée json {JsonBytes} : {Err}"
+      "translation": "Echec de désérialisation de l'entrée json {JsonBytes} : {Err}"
     },
     {
       "id": "Error getting new user input format. {Err1}",
@@ -5628,7 +5656,7 @@
     },
     {
       "id": "Failed to create json object for user input. {Err1}",
-      "translation": "Echec de la création de l'objet json pour l'entrée utilisateur. {Err1}"
+      "translation": "Echec de création de l'objet json pour l'entrée utilisateur. {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -5668,7 +5696,7 @@
     },
     {
       "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "Echec de la recherche de définition pour des services dépendants de {TopSvcId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange."
+      "translation": "Echec de recherche de définition pour des services dépendants de {TopSvcId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange."
     },
     {
       "id": "Error unmarshaling deployment string to internal deployment structure: {Err}",
@@ -5868,11 +5896,11 @@
     },
     {
       "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Echec de la sérialisation de la configuration de déploiement pour le service {SIdTop}, erreur {Err}"
+      "translation": "Echec de sérialisation de la configuration de déploiement pour le service {SIdTop}, erreur {Err}"
     },
     {
       "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Echec de la sérialisation de la configuration de déploiement du cluster pour le service {SIdTop}, erreur {Err}"
+      "translation": "Echec de sérialisation de la configuration de déploiement du cluster pour le service {SIdTop}, erreur {Err}"
     },
     {
       "id": "Unable to find service definition from the input services.",
@@ -5960,7 +5988,7 @@
     },
     {
       "id": "Failed to get the service from the Exchange. {Err}",
-      "translation": "Echec de l'obtention du service depuis Exchange. {Err}"
+      "translation": "Echec d'obtention du service depuis Exchange. {Err}"
     },
     {
       "id": "Service does not exist on the Exchange.",
@@ -6112,11 +6140,11 @@
     },
     {
       "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}"
+      "translation": "Anax est en cours d'arrêt. Echec d'instanciation du client iptables. {Arg_1}"
     },
     {
       "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}"
+      "translation": "Anax est en cours d'arrêt. Echec d'instanciation du client docker. {Arg_1}"
     },
     {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -6128,7 +6156,7 @@
     },
     {
       "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriétés autorisés sont : version, string, int, boolean, float et list of strings."
+      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriété autorisés sont : version, string (chaîne), int(entier), boolean (booléen), float (flottant) et list of strings (liste de chaînes)."
     },
     {
       "id": "Property value is of type {ActualType}, expected type {DeclaredType}",

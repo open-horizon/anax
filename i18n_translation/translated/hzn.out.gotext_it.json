@@ -483,6 +483,10 @@
       "translation": "Questo utente deve essere un amministratore, in grado di gestire tutte le risorse in questa organizzazione di Exchange."
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Questo utente deve essere un amministratore dell'hub, in grado di gestire le org in questo hub di amministrazione. "
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "translation": "Modificare l'utente esistente in modo che sia un utente amministratore (ad esempio root nell'organizzazione) o non sia più un utente amministratore. Può essere eseguito solo da root exchange o da un altro utente amministratore."
     },
@@ -493,6 +497,14 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "True se deve essere un utente amministratore, altrimenti false."
+    },
+    {
+      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
+      "translation": "Modificare un utente esistente in modo che sia un admin hub oppure revocare il ruolo di admin hub. Un admin hub può creare, modificare ed eliminare le org nell'hub di gestione. "
+    },
+    {
+      "id": "True if this user should be a hub admin user, otherwise false.",
+      "translation": "True se questo utente deve essere un utente admin hub; in caso contrario, false. "
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -916,7 +928,7 @@
     },
     {
       "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
-      "translation": "Indica se il servizio è visibile agli utenti esterni all'organizzazione. Questo indicatore è facoltativo. Se lasciato non impostato, per impostazione predefinita verrà utilizzata l'impostazione dei metadati. Se anche per la definizione del servizio non è impostato il campo pubblico, per impostazione predefinita il servizio non sarà pubblico. "
+      "translation": "Indica se il servizio è visibile agli utenti esterni all'organizzazione. Questo indicatore è facoltativo. Se lasciato non impostato, per impostazione predefinita verrà utilizzata l'impostazione dei metadati. Se anche per la definizione del servizio non è impostato il campo pubblico, per impostazione predefinita il servizio non sarà pubblico."
     },
     {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
@@ -1328,7 +1340,7 @@
     },
     {
       "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
-      "translation": "Il tipo di nodo. I valori validi sono 'device' e 'cluster'. Il valore predefinito è il tipo del nodo fornito mediante -n o il dispositivo registrato corrente, se omesso. "
+      "translation": "Il tipo di nodo. I valori validi sono 'device' e 'cluster'. Il valore predefinito è il tipo del nodo fornito mediante -n o il dispositivo registrato corrente, se omesso."
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1700,7 +1712,7 @@
     },
     {
       "id": "Show the container/system logs for a service.",
-      "translation": "Mostra i log del contenitore/sistema per un servizio. "
+      "translation": "Mostra i log del contenitore/sistema per un servizio."
     },
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
@@ -2328,7 +2340,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per stabilire una connessione ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -2636,7 +2648,7 @@
     },
     {
       "id": "No node type has been provided: node type of '{NodeId}' node will be used",
-      "translation": "Non è stato fornito alcun tipo di nodo: verrà utilizzato il tipo di nodo del nodo '{NodeId}' "
+      "translation": "Non è stato fornito alcun tipo di nodo: verrà utilizzato il tipo di nodo del nodo '{NodeId}'"
     },
     {
       "id": "Using compatibility checking input: {CompCheckInput}",
@@ -3056,7 +3068,7 @@
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
-      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' È stato trovato più di un servizio per la distribuzione. Specificare il nome del servizio mediante l'indicatore -s "
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' È stato trovato più di un servizio per la distribuzione. Specificare il nome del servizio mediante l'indicatore -s"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
@@ -3828,7 +3840,7 @@
     },
     {
       "id": "Organization {TheOrg} is successfully added to MMS.",
-      "translation": "Organizzazione {TheOrg} correttamente aggiunta a MMS. "
+      "translation": "Organizzazione {TheOrg} correttamente aggiunta a MMS."
     },
     {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
@@ -3840,7 +3852,7 @@
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
-      "translation": "Avvertenza: questa operazione eliminerà anche tutte le risorse Exchange di proprietà di questa org (nodi, servizi, modelli, ecc.). Si è sicuri di voler rimuovere l'utente {TheOrg} da Horizon Exchange e MMS? "
+      "translation": "Avvertenza: questa operazione eliminerà anche tutte le risorse Exchange di proprietà di questa org (nodi, servizi, modelli, ecc.). Si è sicuri di voler rimuovere l'utente {TheOrg} da Horizon Exchange e MMS?"
     },
     {
       "id": "Using agbot {Agbot}",
@@ -3848,7 +3860,7 @@
     },
     {
       "id": "Cannot unmarshal served pattern",
-      "translation": "Impossibile annullare il marshalling del modello "
+      "translation": "Impossibile annullare il marshalling del modello"
     },
     {
       "id": "Removing pattern {PatternId} from agbot {Agbot}",
@@ -4177,6 +4189,22 @@
     {
       "id": "the email must be specified via -e if the username is not an email address.",
       "translation": "l'email deve essere specificata con -e se il nome utente non è un indirizzo email."
+    },
+    {
+      "id": "Only exchange users in the root org can be hubadmins.",
+      "translation": "Solo gli utenti exchange nell'organizzazione root possono essere admin hub. "
+    },
+    {
+      "id": "user '{ExchUser}' not found in list returned from exchange",
+      "translation": "utente '{ExchUser}' non trovato nell'elenco restituito da exchange"
+    },
+    {
+      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
+      "translation": "Solo gli utenti admin hub e l'utente root exchange possono creare admin hub."
+    },
+    {
+      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
+      "translation": "Impossibile impostare lo stato dell'admin hub perché l'utente {User} non esiste nell'organizzazione root. "
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4684,11 +4712,11 @@
     },
     {
       "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
-      "translation": "ID nodo non valido: sono consentiti solo i caratteri A-Za-z0-9, i caratteri unicode ed i simboli speciali !-*+()?.,:&@ "
+      "translation": "ID nodo non valido: sono consentiti solo i caratteri A-Za-z0-9, i caratteri unicode ed i simboli speciali !-*+()?.,:&@"
     },
     {
       "id": "invalid node ID: Whitespace is not permitted",
-      "translation": "ID nodo non valido: spazi non consentiti "
+      "translation": "ID nodo non valido: spazi non consentiti"
     },
     {
       "id": "invalid version range '{Vr}': {Err}",
