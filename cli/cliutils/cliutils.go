@@ -213,7 +213,7 @@ func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err erro
 
 	for domainName, creds := range auths.Configs {
 		Verbose(i18n.GetMessagePrinter().Sprintf("docker auth domainName: %v", domainName))
-		if (domainName == domain) || (domain == "" && strings.Contains(domainName, "docker.io/")) {
+		if (domainName == domain) || (domain == "" && strings.Contains(domainName, "docker.io")) {
 			auth = creds
 			return
 		}
@@ -255,28 +255,8 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("unable to push docker image %v: %v", repository+":"+tag, err))
 	}
 
-	// Get the digest value that docker calculated when pushing the image
-	reDigest := regexp.MustCompile(`\s+digest:\s+(\S+)\s+size:`)
-	var matches []string
-	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
-		Verbose(msgPrinter.Sprintf("Could not find the image digest in the docker push output, retrieving image digest directly from the image."))
-	} else {
-		digest = matches[1]
-		return
-	}
-
-	// The digest was not in the stdout response, try to find it in the image's metadata.
-	if image, err := client.InspectImage(imageName); err != nil {
-		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not inspect image %v: %v.", imageName, err))
-	} else {
-		for _, rDigest := range image.RepoDigests {
-			if strings.Contains(rDigest, repository) {
-				_, _, _, digest = cutil.ParseDockerImagePath(rDigest)
-				return
-			}
-		}
-		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not find digest for image %v.", imageName))
-	}
+	// Get the digest value from the docker output or the image itself.
+	digest = retrieveDigest(client, buf, repository, imageName)
 	return
 }
 
@@ -292,7 +272,8 @@ func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	msgPrinter.Printf("Pulling %v:%v...", repository, tag) // Note: tag can be the empty string
+	imageName := fmt.Sprintf("%s:%s", repository, tag) // Note: tag can be the empty string
+	msgPrinter.Printf("Pulling %v...", imageName)
 	i18n.GetMessagePrinter().Println()
 
 	// Get the docker client object for this registry, and set the push options and creds
@@ -315,15 +296,44 @@ func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("unable to pull docker image %v: %v", repository+":"+tag, err))
 	}
 
-	// Get the digest value from the docker image
-	reDigest := regexp.MustCompile(`\s+Digest:\s+(\S+)\s+Status:`)
+	// Get the digest value from the docker output or the image itself.
+	digest = retrieveDigest(client, buf, repository, imageName)
+
+	return
+
+}
+
+// Get the image digest so that it can be set into the published service definition. The digest will be in
+// the stdout from the docker pull/push that was done previously, or it can be retrieved from the image itself.
+func retrieveDigest(client *dockerclient.Client, buf bytes.Buffer, repository string, imageName string) (digest string) {
+
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// Get the digest value that docker calculated for the image
+	reDigest := regexp.MustCompile(`\s+digest:\s+(\S+)\s+size:`)
 	var matches []string
 	if matches = reDigest.FindStringSubmatch(buf.String()); len(matches) < 2 {
-		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not find the image digest in the docker push output"))
+		Verbose(msgPrinter.Sprintf("Could not find the image digest in the docker output, retrieving image digest directly from the image."))
+	} else {
+		digest = matches[1]
+		return
 	}
-	digest = matches[1]
+
+	// The digest was not in the stdout response, try to find it in the image's metadata.
+	if image, err := client.InspectImage(imageName); err != nil {
+		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not inspect image %v: %v.", imageName, err))
+	} else {
+		for _, rDigest := range image.RepoDigests {
+			if strings.Contains(rDigest, repository) {
+				_, _, _, digest = cutil.ParseDockerImagePath(rDigest)
+				return
+			}
+		}
+		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("could not find digest for image %v.", imageName))
+	}
 	return
 }
+
 
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
