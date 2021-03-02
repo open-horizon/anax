@@ -275,7 +275,7 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 	}
 
 	// Locate the dev container(s) and show logs
-	containers, err := findContainers(serviceName, cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, ""), cw)
+	containers, err := findContainers(serviceName, "", cw)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' Unable to list containers: %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND), err)
 	}

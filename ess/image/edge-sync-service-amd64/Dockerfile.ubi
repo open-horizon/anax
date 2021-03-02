@@ -14,6 +14,8 @@ COPY LICENSE.txt /licenses
 RUN microdnf install -y --nodocs openssl ca-certificates \
 	&& microdnf clean all
 
+RUN mkdir -p /edge-sync-service
+
 ADD edge-sync-service /edge-sync-service/
 
 CMD ["/edge-sync-service/edge-sync-service"]

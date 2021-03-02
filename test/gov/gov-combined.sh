@@ -57,7 +57,7 @@ function run_delete_loops {
       if [ "$NOLOOP" == "1" ]; then
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
-        echo -e "No cancellation setting is $NOCANCEL"
+         echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
           ./del_loop.sh
           if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
@@ -312,6 +312,15 @@ then
     fi
   fi
 
+  if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
+    ./service_configstate_test.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Service configstate test failure."
+      TESTFAIL="1"
+    fi
+  fi
+
 elif [ "$TESTFAIL" != "1" ]; then
   # make agreements based on patterns
   last_pattern=$(echo $TEST_PATTERNS |sed -e 's/^.*,//')
@@ -322,12 +331,21 @@ elif [ "$TESTFAIL" != "1" ]; then
     echo -e "***************************"
     echo -e "Start testing pattern $PATTERN..."
 
+    # Because of the limitation of docker networks, if the pattern for 
+    # the main agent is sall, the pattern for the multi-agent will be sns. 
+    # Otherwide they will have the same pattern. 
+    ma_pattern=$PATTERN
+    if [ "${PATTERN}" == "sall" ]; then
+      ma_pattern="sns"
+    fi
+
     # Allocate port 80 to see what anax does
     # socat - TCP4-LISTEN:80,crlf &
 
     # start pattern test
     set_exports $pat
 
+    # start main agent
     ./start_node.sh
     if [ $? -ne 0 ]
     then
@@ -336,12 +354,32 @@ elif [ "$TESTFAIL" != "1" ]; then
       break
     fi
 
+    # start multiple agents
+    source ./multiple_agents.sh
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "Starting multiple agents with pattern ${ma_pattern} ..."
+      PATTERN=${ma_pattern} startMultiAgents
+      if [ $? -ne 0 ]; then
+        echo "Multiple agent startup failure."
+        break
+      fi
+    fi
+
     run_delete_loops
     if [ $? -ne 0 ]
     then
       echo "Delete loop failure."
       TESTFAIL="1"
       break
+    fi
+
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "Checking multiple agents..."
+      PATTERN=${ma_pattern} verifyMultiAgentsAgreements
+      if [ $? -ne 0 ]; then
+        echo "Multiple agent agreement varification failure."
+        break
+      fi
     fi
 
     if [ "$NORETRY" != "1" ]; then
