@@ -2036,7 +2036,7 @@ function prepare_k8s_deployment_file() {
         local image_full_path_on_edge_cluster_registry_internal_url
         if [[ "$INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY" == "" ]]; then
             # check if using local cluster or remote ocp
-            if $KUBECTL cluster-info | grep -q -E 'Kubernetes master.*//(127|172|10|192.168)\.'; then
+            if $KUBECTL cluster-info | grep -q -E 'Kubernetes .* is running at .*//(127|172|10|192.168)\.'; then
                 # using small kube
                 image_full_path_on_edge_cluster_registry_internal_url="$IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY"
             else
