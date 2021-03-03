@@ -25,7 +25,7 @@ SUPPORTED_DEBIAN_VERSION=(focal bionic buster xenial stretch $SUPPORTED_DEBIAN_V
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel centos $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
-SUPPORTED_REDHAT_VERSION=(8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+SUPPORTED_REDHAT_VERSION=(7.9 8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
 
 HOSTNAME=$(hostname -s)
