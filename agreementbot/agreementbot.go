@@ -384,6 +384,27 @@ func (w *AgreementBotWorker) Initialize() bool {
 	return true
 }
 
+// Sets the timeouts for the given agreement in the db and returns the agreementTimeout then the protocolTimeout
+func (w *AgreementBotWorker) SetAgreementTimeouts(ag persistence.Agreement, protocol string) (uint64, uint64) {
+	maxHb := 0
+	dev, _ := GetDevice(w.BaseWorker.EC.HTTPFactory.NewHTTPClient(nil), ag.DeviceId, w.BaseWorker.EC.URL, w.BaseWorker.EC.Id, w.BaseWorker.EC.Token)
+	if dev != nil {
+		maxHb = dev.HeartbeatIntv.MaxInterval
+	}
+
+	if maxHb == 0 {
+		exchOrg, _ := exchange.GetOrganization(w.BaseWorker.EC.HTTPFactory, exchange.GetOrg(ag.DeviceId), w.BaseWorker.EC.URL, w.BaseWorker.EC.Id, w.BaseWorker.EC.Token)
+		if exchOrg != nil {
+			maxHb = exchOrg.HeartbeatIntv.MaxInterval
+		}
+	}
+
+	agTimeout := w.Config.AgreementBot.GetAgreementTimeout(maxHb)
+	protTimeout := w.Config.AgreementBot.GetProtocolTimeout(maxHb)
+	persistence.SetAgreementTimeouts(w.db, ag.CurrentAgreementId, protocol, agTimeout, protTimeout)
+	return agTimeout, protTimeout
+}
+
 func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 
 	// Enter the command processing loop. Initialization is complete so wait for commands to

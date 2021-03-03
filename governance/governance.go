@@ -440,7 +440,11 @@ func (w *GovernanceWorker) governAgreements() {
 				}
 				// If we fall through to here, then the agreement is Not finalized yet, check for a timeout.
 				now := uint64(time.Now().Unix())
-				if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.Edge.AgreementTimeoutS < now {
+				timeout := w.BaseWorker.Manager.Config.Edge.AgreementTimeoutS
+				if timeout == 0 {
+					timeout = ag.AgreementTimeout
+				}
+				if ag.AgreementCreationTime+timeout < now {
 					// Start timing out the agreement
 					glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
 
