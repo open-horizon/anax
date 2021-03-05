@@ -68,7 +68,7 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", pLocalDevice.Id, err))), nil
 	}
 
-	// save the services that are turned into suspeded state
+	// save the services that are turned into suspended state
 	suspended_services := []events.ServiceConfigState{}
 
 	found := false

@@ -335,7 +335,8 @@ func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy,
 }
 
 // Check all agreement protocol buckets to see if there are any agreements with this device.
-// Return true if there is already an agreement for this node and policy.
+// Return true if there is already an agreement for this node and policy. The input list of agreements has already been filtered to
+// include only agreements using the input policy.
 func (n *NodeSearch) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy, allAgreements map[string][]persistence.Agreement) bool {
 
 	// Check to see if we're already doing something with this device.
