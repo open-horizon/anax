@@ -2375,7 +2375,8 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	// gather agreement networks to free
 	for _, net := range networks {
 		for _, agreementId := range agreements {
-			if strings.HasPrefix(net.Name, agreementId) {
+
+			if strings.HasPrefix(net.Name, agreementId) || strings.Contains(net.Name, agreementId) {
 				// disconnect the network from the containers if they are still connected to it.
 				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
 					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
