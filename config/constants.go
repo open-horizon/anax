@@ -98,3 +98,6 @@ const AgreementTimeoutScaleFactor_DEFAULT = 2
 
 // Scale factor of node max hb interval to wait before declaring a proposal response is lost for that node
 const AgbotProtocolTimeoutScaleFactor_DEFAULT = 2
+
+// Time to allow a kube agent to attempt to install a custom resource before timing out
+const K8sCRInstallTimeoutS_DEFAULT = 180

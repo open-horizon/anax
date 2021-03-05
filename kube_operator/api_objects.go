@@ -29,7 +29,7 @@ type APIObjectInterface interface {
 // Sort a slice of k8s api objects by kind of object
 // Returns a map of object type names to api object interfaces types, the namespace to be used for the operator, and an error if one occurs
 // Also verifies that all objects are named so they can be found and uninstalled
-func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstructured, envVarMap map[string]string, agreementId string) (map[string][]APIObjectInterface, string, error) {
+func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstructured, envVarMap map[string]string, agreementId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	namespace := ""
 	objMap := map[string][]APIObjectInterface{}
 	for _, obj := range allObjects {
@@ -107,7 +107,7 @@ func sortAPIObjects(allObjects []APIObjects, customResource *unstructured.Unstru
 			}
 		case K8S_CRD_TYPE:
 			if typedCRD, ok := obj.Object.(*crdv1beta1.CustomResourceDefinition); ok {
-				newCustomResource := CustomResourceV1Beta1{CustomResourceDefinitionObject: typedCRD, CustomResourceObject: customResource}
+				newCustomResource := CustomResourceV1Beta1{CustomResourceDefinitionObject: typedCRD, CustomResourceObject: customResource, InstallTimeout: crInstallTimeout}
 				if newCustomResource.Name() != "" {
 					glog.V(4).Infof(kwlog(fmt.Sprintf("Found kubernetes custom resource definition object %s.", newCustomResource.Name())))
 					objMap[K8S_CRD_TYPE] = append(objMap[K8S_CRD_TYPE], newCustomResource)
@@ -356,6 +356,7 @@ func NewCRDV1beta1Client() (*apiv1beta1client.ApiextensionsV1beta1Client, error)
 type CustomResourceV1Beta1 struct {
 	CustomResourceDefinitionObject *crdv1beta1.CustomResourceDefinition
 	CustomResourceObject           *unstructured.Unstructured
+	InstallTimeout                 int64
 }
 
 func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
@@ -394,16 +395,20 @@ func (cr CustomResourceV1Beta1) Install(c KubeClient, namespace string) error {
 
 	// the cluster has to create the endpoint for the custom resource, this can take some time
 	// the cr cannot exist without the crd so we don't have to worry about it already existing
-	glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", cr.CustomResourceObject)))
+	timeout := cr.InstallTimeout
+	glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, cr.CustomResourceObject)))
 	for {
 		_, err = crClient.Namespace(namespace).Create(cr.CustomResourceObject, metav1.CreateOptions{})
-		if err != nil {
+		if err != nil && timeout > 0 {
 			glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 			time.Sleep(time.Second * 5)
+		} else if err != nil {
+			return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
 		} else {
 			glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
 			break
 		}
+		timeout = timeout - 5
 	}
 
 	return nil
@@ -550,6 +555,7 @@ func NewCRDV1Client() (*apiv1client.ApiextensionsV1Client, error) {
 type CustomResourceV1 struct {
 	CustomResourceDefinitionObject *crdv1.CustomResourceDefinition
 	CustomResourceObject           *unstructured.Unstructured
+	InstallTimeout                 int64
 }
 
 func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
@@ -588,16 +594,20 @@ func (cr CustomResourceV1) Install(c KubeClient, namespace string) error {
 
 	// the cluster has to create the endpoint for the custom resource, this can take some time
 	// the cr cannot exist without the crd so we don't have to worry about it already existing
-	glog.V(3).Infof(kwlog(fmt.Sprintf("creating operator custom resource %v", cr.CustomResourceObject)))
+	timeout := cr.InstallTimeout
+	glog.V(3).Infof(kwlog(fmt.Sprintf("creating the operator custom resource. Timeout is %v. Resource is %v", timeout, cr.CustomResourceObject)))
 	for {
 		_, err = crClient.Namespace(namespace).Create(cr.CustomResourceObject, metav1.CreateOptions{})
-		if err != nil {
+		if err != nil && timeout > 0 {
 			glog.Warningf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Trying again in 5s. Error was: %v", resourceName, err)))
 			time.Sleep(time.Second * 5)
+		} else if err != nil {
+			return fmt.Errorf(kwlog(fmt.Sprintf("Failed to create custom resource %s. Timeout exceeded. Error was: %v", resourceName, err)))
 		} else {
-			glog.V(3).Infof(kwlog("Sucessfully created custom resource."))
+			glog.V(3).Infof(kwlog(fmt.Sprintf("Sucessfully created custom resource %s.", resourceName)))
 			break
 		}
+		timeout = timeout - 5
 	}
 
 	return nil

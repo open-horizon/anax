@@ -67,6 +67,7 @@ type Config struct {
 	SurfaceErrorAgreementPersistentS int       // How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
 	InitialPollingBuffer             int       // the number of seconds to wait before increasing the polling interval while there is no agreement on the node.
 	MaxAgreementPrelaunchTimeM       int64     // The maximum numbers of minutes to wait for workload to start in an agreement
+	K8sCRInstallTimeoutS             int64     // The number of seconds to wait for the custom resouce to install successfully before it is considered a failure
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -175,6 +176,10 @@ func (c *HorizonConfig) GetAgbotRetryLookBackWindow() uint64 {
 
 func (c *HorizonConfig) GetAgbotPolicyOrder() bool {
 	return c.AgreementBot.PolicySearchOrder
+}
+
+func (c *HorizonConfig) GetK8sCRInstallTimeouts() int64 {
+	return c.Edge.K8sCRInstallTimeoutS
 }
 
 func (a *AGConfig) GetProtocolTimeout(maxHeartbeatInterval int) uint64 {
@@ -301,6 +306,7 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollMaxInterval: ExchangeMessagePollMaxInterval_DEFAULT,
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
 				MaxAgreementPrelaunchTimeM:     EdgeMaxAgreementPrelaunchTimeM_DEFAULT,
+				K8sCRInstallTimeoutS:           K8sCRInstallTimeoutS_DEFAULT,
 			},
 			AgreementBot: AGConfig{
 				MessageKeyCheck:     AgbotMessageKeyCheck_DEFAULT,
