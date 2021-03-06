@@ -462,17 +462,23 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// the cgoup permission can be omitted. It defaults to "rwm" when omitted.
 		for _, givenDevice := range service.Devices {
 			cgp := "rwm"
+			pic := ""
 			sp := strings.Split(givenDevice, ":")
 			if len(sp) == 3 {
 				// the cgroup permission
 				cgp = sp[2]
-			} else if len(sp) < 2 || len(sp) > 3 {
+				pic = sp[1]
+			} else if len(sp) == 2 {
+				pic = sp[1]
+			}else if len(sp) == 1{
+				pic = sp[0]
+			} else if len(sp) <= 0 || len(sp) >3{
 				return nil, fmt.Errorf("Illegal device specified in deployment description: %v", givenDevice)
 			}
 
 			serviceConfig.HostConfig.Devices = append(serviceConfig.HostConfig.Devices, docker.Device{
 				PathOnHost:        sp[0],
-				PathInContainer:   sp[1],
+				PathInContainer:   pic,
 				CgroupPermissions: cgp,
 			})
 		}
