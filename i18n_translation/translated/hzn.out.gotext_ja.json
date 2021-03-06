@@ -475,8 +475,8 @@
       "translation": "Horizon Exchange 内にユーザー・アカウントを作成するとき、そのユーザー・アカウントのパスワード。"
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Horizon Exchange 内にユーザー・アカウントを作成するとき、そのユーザー・アカウントに関連付けるべき E メール・アドレス。 ユーザー名が E メール・アドレスの場合は、この引数を省略することができます。"
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Horizon Exchange 内にユーザー・アカウントを作成するとき、そのユーザー・アカウントに関連付けるべき E メール・アドレス。 この引数はオプションです。"
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -497,14 +497,6 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "管理ユーザーであるべき場合は TRUE、それ以外の場合は FALSE。"
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "既存のユーザーをハブ管理者に変更するか、ユーザーがハブ管理者ではなくなるようにします。ハブ管理者は管理ハブで組織を作成、変更、および削除できます。"
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "このユーザーがハブ管理ユーザーである場合は true、そうでない場合は false です。"
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -2283,8 +2275,8 @@
       "translation": "{Domain} 用の Docker 資格情報が見つかりませんでした"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} のプッシュ中..."
+      "id": "Pushing {ImageName}...",
+      "translation": "{ImageName} をプッシュ中..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2295,12 +2287,8 @@
       "translation": "Docker イメージ {Repository____tag} をプッシュできません: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Docker プッシュ出力でイメージ・ダイジェストが見つかりませんでした"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} のプル中..."
+      "id": "Pulling {ImageName}...",
+      "translation": "{ImageName} をプル中..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2309,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "Docker イメージ {Repository____tag} をプルできません: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Docker 出力でイメージ・ダイジェストが見つけられなかったので、イメージ・ダイジェストを直接イメージから取得します。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "イメージ {ImageName} を検査できませんでした: {Err}"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "イメージ {ImageName} のダイジェストを見つけられませんでした。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -3303,20 +3303,20 @@
       "translation": "既存のコンテナーをリストできません: {Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "サービス {Nwname}、{ContainerNetwork} のメイン・ネットワークが見つかりました。"
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "サービス {AgreementId}、{ContainerNetwork} のメイン・ネットワークが見つかりました。"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」依存関係 {URL} の {StartErr}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "依存関係メタデータを取得できません: {Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」は既存のコンテナーをリストできません: {Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "依存関係を開始できません: {Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "サービス {Org}/{URL} のコンテナーはネットワーク {NetName} にあります。"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3325,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "インスタンス ID を生成できません: {Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "サービス {SId} での処理"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "依存関係メタデータを取得できません: {Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "依存関係を開始できません: {Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3377,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "コンテナー・イメージの取得に失敗しました、エラー: {Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "ネットワーク {Name} を作成しました"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4187,24 +4203,24 @@
       "translation": "「exchange user list」の出力のマーシャルに失敗しました: {Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "ユーザー名が E メール・アドレスではない場合、-e で　E メールを指定する必要があります。"
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "Exchange のバージョンの確認に失敗しました、エラー: {Err}"
     },
     {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "root 組織の Exchange ユーザーのみがハブ管理者になれます。"
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "Exchange API バージョンは {USEREMAILOPTIONALEXCHANGEVERSION} より小さいので、E メールを指定する必要があります。"
     },
     {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "ユーザー「{ExchUser}」は Exchange から返されたリスト内で検出されませんでした"
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "root 組織のユーザーのみがハブ管理者になれます。"
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "ハブ管理ユーザーと Exchange root ユーザーのみがハブ管理者を作成できます。"
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "root 組織のユーザーはハブ管理者である必要があります。-H オプションは指定しないでください。"
     },
     {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "ユーザー {User} が root 組織に存在しないため、ハブ管理者状況を設定できません。"
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "root 組織のユーザーは組織管理者にはなれません。"
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4375,12 +4391,12 @@
       "translation": "依存関係を開始中。"
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はサービス依存を開始できません、{Perr}"
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はテスト用の agreementID を生成できません、{Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "「{SERVICECOMMAND} {SERVICESTARTCOMMAND}」はサービス依存を開始できません、{Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -5411,24 +5427,16 @@
       "translation": "ファイル {Metadata} を CSS に PUT できません、HTTP コード {StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "ネットワーク {Name} を作成しました"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "Docker ネットワークをリストできません、エラー {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Docker ネットワーク {Name} を削除できません、エラー {Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "CSS 状況の取得要求を作成できません。エラー {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "{Timeout} 秒待機しましたが CSS 状況の準備ができていません。タイムアウトになります"
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "{Timeout__checkLimit} 秒待機しましたが CSS 状況の準備ができていません。タイムアウトになります。"
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "CSS 状況の準備ができていないため、サービス開始要求を終了します。"
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -6253,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: 空ストリングは有効なバージョンではありません。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

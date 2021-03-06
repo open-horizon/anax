@@ -1577,9 +1577,9 @@
       "fuzzy": true
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "message": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Adresse e-mail à associer à ce compte utilisateur lors de sa création dans Horizon Exchange. Si votre nom d'utilisateur est une adresse e-mail, cet argument peut être omis.",
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "message": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Adresse e-mail à associer à ce compte utilisateur lors de sa création dans Horizon Exchange. Cet argument est facultatif.",
       "fuzzy": true
     },
     {
@@ -1610,18 +1610,6 @@
       "id": "True if they should be an admin user, otherwise false.",
       "message": "True if they should be an admin user, otherwise false.",
       "translation": "True s'il doit s'agir d'un administrateur, false dans le cas contraire.",
-      "fuzzy": true
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "message": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "Transformer un utilisateur existant en administrateur de concentrateur ou faire en sorte qu'un utilisateur ne soit plus administrateur de concentrateur. Un administrateur de concentrateur peut créer, modifier et supprimer des organisations dans le concentrateur de gestion.",
-      "fuzzy": true
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "message": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "Vrai (true) si cet utilisateur doit être administrateur de concentrateur, faux (false) dans le cas contraire.",
       "fuzzy": true
     },
     {
@@ -4923,25 +4911,17 @@
       "fuzzy": true
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "message": "Pushing {Repository}:{Tag}...",
-      "translation": "Push vers {Repository} :{Tag}...",
+      "id": "Pushing {ImageName}...",
+      "message": "Pushing {ImageName}...",
+      "translation": "Envoi en cours : {ImageName}...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -4987,31 +4967,17 @@
       "fuzzy": true
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "message": "could not find the image digest in the docker push output",
-      "translation": "Impossible de trouver le digest dans la sortie push Docker",
-      "fuzzy": true
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "message": "Pulling {Repository}:{Tag}...",
-      "translation": "Pull {Repository} :{Tag}...",
+      "id": "Pulling {ImageName}...",
+      "message": "Pulling {ImageName}...",
+      "translation": "Extraction en cours : {ImageName}...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -5060,6 +5026,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "message": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Historique de l'image introuvable dans la sortie Docker, extraction de l'historique directement depuis l'image.",
+      "fuzzy": true
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "message": "could not inspect image {ImageName}: {Err}.",
+      "translation": "Impossible d'inspecter l'image {ImageName} : {Err}.",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "message": "could not find digest for image {ImageName}.",
+      "translation": "Historique introuvable pour l'image {ImageName}.",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -9884,17 +9896,17 @@
       "fuzzy": true
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "message": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "Réseau principal trouvé pour le service {Nwname}, {ContainerNetwork}",
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "message": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "Réseau principal trouvé pour le service {AgreementId}, {ContainerNetwork}",
       "placeholders": [
         {
-          "id": "Nwname",
+          "id": "AgreementId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "nw_name"
+          "expr": "agreementId"
         },
         {
           "id": "ContainerNetwork",
@@ -9948,33 +9960,65 @@
       "fuzzy": true
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "message": "unable to retrieve dependency metadata: {Err}",
-      "translation": "Impossible d'obtenir les métadonnées de dépendance : {Err}",
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas répertorier les conteneurs existants : {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SERVICECOMMAND",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICESTARTCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_START_COMMAND"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 3,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "message": "unable to start dependencies: {Err}",
-      "translation": "Impossible de démarrer les dépendances : {Err}",
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "message": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "Conteneurs pour le service {Org}/{URL} sur le réseau {NetName}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Org",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "depDef.Org"
+        },
+        {
+          "id": "URL",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "depDef.URL"
+        },
+        {
+          "id": "NetName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "netName"
         }
       ],
       "fuzzy": true
@@ -9999,6 +10043,54 @@
       "id": "unable to generate instance ID: {Err}",
       "message": "unable to generate instance ID: {Err}",
       "translation": "Impossible de générer un ID instance : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Working on service {SId}",
+      "message": "Working on service {SId}",
+      "translation": "Travail en cours sur le service {SId}",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "message": "unable to retrieve dependency metadata: {Err}",
+      "translation": "Impossible d'obtenir les métadonnées de dépendance : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "message": "unable to start dependencies: {Err}",
+      "translation": "Impossible de démarrer les dépendances : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10241,6 +10333,22 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Created network {Name}",
+      "message": "Created network {Name}",
+      "translation": "Création du réseau {Name}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "name"
         }
       ],
       "fuzzy": true
@@ -13550,53 +13658,53 @@
       "fuzzy": true
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "message": "the email must be specified via -e if the username is not an email address.",
-      "translation": "L'adresse e-mail doit être renseignée à l'aide de l'indicateur -e si le nom d'utilisateur n'est pas une adresse électronique.",
-      "fuzzy": true
-    },
-    {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "message": "Only exchange users in the root org can be hubadmins.",
-      "translation": "Seuls les utilisateurs Exchange de l'organisation racine peuvent être des administrateurs de concentrateur.",
-      "fuzzy": true
-    },
-    {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "message": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "Utilisateur '{ExchUser}' introuvable dans la liste renvoyée par Exchange",
+      "id": "failed to check exchange version, error: {Err}",
+      "message": "failed to check exchange version, error: {Err}",
+      "translation": "Echec de vérification de la version d'Exchange. Erreur : {Err}",
       "placeholders": [
         {
-          "id": "ExchUser",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "exchUser"
+          "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "message": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "Seuls les administrateurs de concentrateur et l'utilisateur root (racine) Exchange peuvent créer des administrateurs de concentrateur.",
-      "fuzzy": true
-    },
-    {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "message": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "Impossible de définir le statut de l'administrateur de concentrateur car l'utilisateur {User} n'existe pas dans l'organisation racine.",
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "message": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "Un e-mail est obligatoire car la version d'API Exchange est inférieure à {USEREMAILOPTIONALEXCHANGEVERSION}.",
       "placeholders": [
         {
-          "id": "User",
-          "string": "%[1]s",
+          "id": "USEREMAILOPTIONALEXCHANGEVERSION",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "user"
+          "expr": "USER_EMAIL_OPTIONAL_EXCHANGE_VERSION"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only users in the root org can be hubadmins.",
+      "message": "Only users in the root org can be hubadmins.",
+      "translation": "Seuls les utilisateurs de l'organisation racine peuvent être des administrateurs de concentrateur.",
+      "fuzzy": true
+    },
+    {
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "message": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "Les utilisateurs de l'organisation racine dvoient être administrateurs de concentrateur. Ignorez l'option -H.",
+      "fuzzy": true
+    },
+    {
+      "id": "A user in the root org cannot be an org admin.",
+      "message": "A user in the root org cannot be an org admin.",
+      "translation": "Un utilisateur de l'organisation racine ne peut pas être administrateur d'organisation.",
       "fuzzy": true
     },
     {
@@ -14396,38 +14504,6 @@
       "fuzzy": true
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas démarrer les dépendances du service, {Perr}",
-      "placeholders": [
-        {
-          "id": "SERVICECOMMAND",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "dev.SERVICE_COMMAND"
-        },
-        {
-          "id": "SERVICESTARTCOMMAND",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "dev.SERVICE_START_COMMAND"
-        },
-        {
-          "id": "Perr",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "perr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas générer l'ID d'accord test, {Aerr}",
@@ -14455,6 +14531,38 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 3,
           "expr": "aerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas démarrer les dépendances du service, {Perr}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "dev.SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICESTARTCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "dev.SERVICE_START_COMMAND"
+        },
+        {
+          "id": "Perr",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "perr"
         }
       ],
       "fuzzy": true
@@ -18454,62 +18562,6 @@
       "fuzzy": true
     },
     {
-      "id": "Created network {Name}",
-      "message": "Created network {Name}",
-      "translation": "Création du réseau {Name}",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "message": "unable to list docker networks, error {Err}",
-      "translation": "Impossible de répertorier les réseaux Docker, erreur {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "message": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Impossible de retirer le réseau Docker {Name}, erreur {Err}",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "name"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "message": "unable to create get CSS status request, error {Err}",
       "translation": "Impossible de créer une demande d'obtention de statut CSS, erreur {Err}",
@@ -18526,19 +18578,25 @@
       "fuzzy": true
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "message": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "Le statut CSS n'est pas prêt après {Timeout} secondes d'attente, dépassement du délai",
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "message": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "Le statut CSS n'est pas prêt après {Timeout__checkLimit} secondes d'attente, dépassement du délai",
       "placeholders": [
         {
-          "id": "Timeout",
+          "id": "Timeout__checkLimit",
           "string": "%[1]d",
           "type": "int",
           "underlyingType": "int",
           "argNum": 1,
-          "expr": "timeout"
+          "expr": "timeout * checkLimit"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "message": "CSS status is not ready, terminating service start request.",
+      "translation": "Le statut CSS n'est pas prêt, fin de la demande de démarrage du service.",
       "fuzzy": true
     },
     {
@@ -22100,6 +22158,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "message": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression : Une chaîne vide n'est pas une version valide.",
       "fuzzy": true
     },
     {
