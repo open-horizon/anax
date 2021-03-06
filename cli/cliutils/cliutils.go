@@ -334,7 +334,6 @@ func retrieveDigest(client *dockerclient.Client, buf bytes.Buffer, repository st
 	return
 }
 
-
 // OrgAndCreds prepends the org to creds (separated by /) unless creds already has an org prepended
 func OrgAndCreds(org, creds string) string {
 	// org is the org of the resource being accessed, so if they want to use creds from a different org, the prepend that org to creds before calling this
