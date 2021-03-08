@@ -189,7 +189,6 @@ func (c *BasicProtocolHandler) CanCancelNow(ag *persistence.Agreement) bool {
 }
 
 func (c *BasicProtocolHandler) HandleDeferredCommands() {
-
 	cmds := c.GetDeferredCommands()
 	for _, cmd := range cmds {
 		switch cmd.Type() {
