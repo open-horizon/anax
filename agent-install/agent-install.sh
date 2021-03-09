@@ -1508,10 +1508,11 @@ function is_registration_correct() {
     if [[ $AGENT_SKIP_REGISTRATION == 'true' ]]; then return 0; fi   # the user doesn't care, so they are correct
     local hzn_node_list=$(agent_exec 'hzn node list' 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
+    local reg_hzn_org_id=$(jq -r .organization 2>/dev/null <<< $hzn_node_list || true)
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
     local reg_pattern=$(jq -r .pattern 2>/dev/null <<< $hzn_node_list || true)
-    if [[ $node_state == 'configured' && -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # pattern case
-    elif [[ $node_state == 'configured' && -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # policy case (registration() will apply any new policy)
+    if [[ $node_state == 'configured' && -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) && $reg_hzn_org_id == $HZN_ORG_ID ]]; then return 0   # pattern case
+    elif [[ $node_state == 'configured' && -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) && $reg_hzn_org_id == $HZN_ORG_ID ]]; then return 0   # policy case (registration() will apply any new policy)
     else return 1; fi
     log_debug "is_registration_correct() end"
 }
@@ -2288,7 +2289,7 @@ function update_deployment() {
             if wait_for '! ( $KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID >/dev/null 2>&1 || [[ $? -ge 2 ]] )' 'Horizon agent terminated' $AGENT_WAIT_MAX_SECONDS; then
                 log_verbose "Horizon agent pod terminated successfully"
             else
-                AGENT_POD_STATUS=$($KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID 2>/dev/null | grep -E '^agent-' | cut -d " " -f3)
+                AGENT_POD_STATUS=$($KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID 2>/dev/null | grep -E '^agent-' | awk '{print $3;}')
                 if [[ $AGENT_POD_STATUS == "Terminating" ]]; then
                     if [[ $AGENT_SKIP_PROMPT == 'false' ]]; then
                         echo "Agent pod ${POD_ID} is still in Terminating, force delete pod?[y/N]:"
