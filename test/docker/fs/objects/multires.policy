@@ -10,7 +10,7 @@
   "services": [
     {
       "orgID": "e2edev@somecomp.com",
-      "arch": "amd64",
+      "arch": "__ARCH__",
       "serviceName": "my.company.com.services.usehello2",
       "version": "1.0.0"
     }

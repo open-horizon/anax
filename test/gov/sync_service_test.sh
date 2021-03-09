@@ -27,7 +27,7 @@ function checkOrganizationsInMMS {
   for (( ix=0; ix<$3; ix++ ))
   do
     org1=$(echo $2 | jq '.['${ix}']."org-id"' | tr -d '"')
-    
+
     if [ "$org1" == "$1" ]; then
       echo "Find org $1 in CSS"
       found=true
@@ -148,9 +148,9 @@ export HZN_HTTP_TIMEOUT="1"
 
 hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
 RC=$?
-if [ $RC -eq 5 ]
+if [ $RC -eq 5 ] || [ $RC -eq 0 ]
 then
-  echo -e "Got expected error with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
+  echo -e "Got expected error/return code with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
 else
   echo -e "Got unexpected error with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
   exit -1

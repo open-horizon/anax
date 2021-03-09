@@ -1,12 +1,12 @@
 {
     "org": "e2edev@somecomp.com",
-    "label": "Location for x86_64",
+    "label": "Location for __ARCH__",
     "description": "Location service",
     "documentation": "",
     "public": true,
     "url": "https://bluehorizon.network/services/location",
     "version": "2.0.7",
-    "arch": "amd64",
+    "arch": "__ARCH__",
     "sharable": "multiple",
     "matchHardware": {},
     "requiredServices": [
@@ -15,21 +15,21 @@
         "org": "e2edev@somecomp.com",
         "version": "2.0.4",
         "versionRange": "2.0.4",
-        "arch": "amd64"
+        "arch": "__ARCH__"
       },
       {
         "url": "https://bluehorizon.network/service-cpu",
         "org": "IBM",
         "version": "1.0.0",
         "versionRange": "1.0.0",
-        "arch": "amd64"
+        "arch": "__ARCH__"
       }
     ],
     "userInput": [],
     "deployment": {
       "services": {
       "location2": {
-        "image": "openhorizon/amd64_cpu:1.2.2"
+        "image": "openhorizon/__ARCH___cpu:1.2.2"
       }
     }
   },

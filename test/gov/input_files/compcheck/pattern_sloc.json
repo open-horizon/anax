@@ -6,7 +6,7 @@
       {
         "serviceUrl": "https://bluehorizon.network/services/location",
         "serviceOrgid": "e2edev@somecomp.com",
-        "serviceArch": "amd64",
+        "serviceArch": "__ARCH__",
         "serviceVersions": [
           {
             "version": "2.0.6",
@@ -54,7 +54,7 @@
       {
         "serviceUrl": "https://bluehorizon.network/services/locgps",
         "serviceOrgid": "e2edev@somecomp.com",
-        "serviceArch": "amd64",
+        "serviceArch": "__ARCH__",
         "agreementLess": true,
         "serviceVersions": [
           {

@@ -1,3 +1,5 @@
+CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 echo "Testing service upgrading"
 
@@ -56,7 +58,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"$CPU_URL",
   "version":"$CPU_VERS_NEW",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -69,7 +71,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -117,7 +119,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"$CPU_URL",
   "version":"$CPU_VERS_ERR",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -130,7 +132,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2",
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}",
         "binds":["/tmp:/hosttmp", ""]
       }
     }
@@ -172,7 +174,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Remove service with deployment error
-hzn exchange service remove -u $ADMIN_AUTH -o e2edev@somecomp.com -f $CPU_ORG/bluehorizon.network-service-cpu_${CPU_VERS_ERR}_amd64
+hzn exchange service remove -u $ADMIN_AUTH -o e2edev@somecomp.com -f $CPU_ORG/bluehorizon.network-service-cpu_${CPU_VERS_ERR}_${ARCH}
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service remove failed for $CPU_ORG/cpu with deployment error"

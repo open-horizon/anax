@@ -7,6 +7,8 @@ unset HZN_ORG_ID
 unset HZN_EXCHANGE_NODE_AUTH
 unset HZN_EXCHANGE_USER_AUTH
 
+export ARCH=${ARCH}
+
 PREFIX="HZN deployment compatibility test:"
 
 
@@ -103,7 +105,7 @@ RES=$($CMD 2>&1)
 results "$RES" "\-n and \-\-node-pol are mutually exclusive"
 
 echo -e "\n${PREFIX} test conflict2."
-CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest -B input_files/business_pol_gpstest.json.json"
+CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n userdev/an12345 -b userdev/bp_gpstest -B input_files/business_pol_gpstest.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
 results "$RES" "\-b and \-B are mutually exclusive"
@@ -160,7 +162,7 @@ echo -e "\n${PREFIX} test input: node id, business policy. wrong arch"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH -n an12345 -B input_files/compcheck/business_pol_gpstest2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-check_comp_results "$RES" "false" "Service with 'arch' amd64 cannot be found in the deployment policy"
+check_comp_results "$RES" "false" "Service with 'arch' ${ARCH} cannot be found in the deployment policy"
 
 echo -e "\n${PREFIX} test input: node policy, business policy and service policy. not compatible"
 CMD="hzn deploycheck policy -u $USERDEV_ADMIN_AUTH --node-pol input_files/compcheck/node_policy.json -B input_files/compcheck/business_pol_gpstest.json --service-pol input_files/compcheck/service_policy2.json"
@@ -189,14 +191,14 @@ if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible
+echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_${ARCH}\"" | grep -q Incompatible
 if [ $? -ne 0 ]; then
-  echo "Service bluehorizon.network-services-location_2.0.6_amd64 should be incompatible but not."
+  echo "Service bluehorizon.network-services-location_2.0.6_${ARCH} should be incompatible but not."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible
+echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_${ARCH}\"" | grep -q Incompatible
 if [ $? -eq 0 ]; then
-  echo "Service bluehorizon.network-services-location_2.0.7_amd64 should be compatible but not."
+  echo "Service bluehorizon.network-services-location_2.0.7_${ARCH} should be compatible but not."
   exit 2
 fi
 echo "Compatibility result expected."
@@ -303,7 +305,7 @@ echo -e "\n${PREFIX} test input: node id, business policy. wrong arch"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH -n an12345 -B input_files/compcheck/business_pol_gpstest2.json"
 echo "$CMD"
 RES=$($CMD 2>&1)
-results "$RES" "No service versions with architecture amd64 specified in the deployment policy or pattern"
+results "$RES" "No service versions with architecture ${ARCH} specified in the deployment policy or pattern"
 
 echo -e "\n${PREFIX} test input: node user input, business policy and service. not compatible"
 CMD="hzn deploycheck userinput -u $USERDEV_ADMIN_AUTH --node-ui input_files/compcheck/node_ui2.json -B input_files/compcheck/business_pol_location.json --service input_files/compcheck/service_location.json"
@@ -390,14 +392,14 @@ if [ "$l" != "2" ]; then
   echo "It should return 2 service result but got $l."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_amd64"' | grep -q Incompatible
+echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.6_${ARCH}\"" | grep -q Incompatible
 if [ $? -ne 0 ]; then
-  echo "Service bluehorizon.network-services-location_2.0.6_amd64 should be incompatible but not."
+  echo "Service bluehorizon.network-services-location_2.0.6_${ARCH} should be incompatible but not."
   exit 2
 fi
-echo $RES | jq '.reason."e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_amd64"' | grep -q Incompatible
+echo $RES | jq ".reason.\"e2edev@somecomp.com/bluehorizon.network-services-location_2.0.7_${ARCH}\"" | grep -q Incompatible
 if [ $? -eq 0 ]; then
-  echo "Service bluehorizon.network-services-location_2.0.7_amd64 should be compatible but not."
+  echo "Service bluehorizon.network-services-location_2.0.7_${ARCH} should be compatible but not."
   exit 2
 fi
 echo "Compatibility result expected."

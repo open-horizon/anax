@@ -2,9 +2,10 @@
 
 ## Overview
 
-The e2e project is used by Horizon developers to test an X86 device and X86 agbot together, thus the name End to End test.
+The e2e project is used by Horizon developers to test an x86 device and x86 agbot together, thus the name End to End test. Also it is possible for ppc64le platform with remote test mode.
 
 The project will create 3 containers:
+
 - exchange-db
   - A postgres container for the exchange-api
 - exchange-api
@@ -16,19 +17,21 @@ And depending on which PATTERN is chosen, a series of workload containers
 ## Building and running
 
 ### One time steps to setup your environment
+
 - Install docker
   - `curl https://get.docker.com/ | sh`
 - Install make and jq
   - `apt update && apt install -y make jq build-essential`
-- Install golang version 1.14.* ...
-  - `curl https://dl.google.com/go/go1.14.linux-amd64.tar.gz | tar -xzf- -C /usr/local/`
+- Install `golang=^1.14.*`...
+  - `export ARCH=$(uname -m)`
+  - `curl https://dl.google.com/go/go1.14.linux-<ARCH>.tar.gz | tar -xzf- -C /usr/local/`
   - `export PATH=$PATH:/usr/local/go/bin` (and modify your ~/.bashrc file with the same)
 - GOPATH cannot be set to the same path as GOROOT
   - `export GOPATH=</your/go/path>` (typically $HOME/go)
   - `export ANAX_SOURCE=</path/to/anax>`
 - Set up a single node k8s for testing, follow the instructions here:
   - https://microk8s.io/docs/
-  - make sure you install from the 1.18 channel: `sudo snap install microk8s --classic --channel=1.18/stable`
+  - make sure you install from the 1.18 channel: `sudo snap install microk8s --classic --channel=1.18/stable` (amd64 only)
   - see also https://microk8s.io/docs/setting-snap-channel when deciding when to upgrade to a newer Kubernetes
 - Clone this repo  
   - `git clone git@github.com:open-horizon/anax.git`
@@ -48,23 +51,25 @@ This is the most comprehensive "Basic" test:
 make test
 ```
 
+NOTE: This test is not supported for ppc64le architecture so far. See [Remote Environment Testing](#remote-environment-testing)
 
 ### Development Iterations - Advanced
 There are several env vars that you can specify on the make run-combined command to condition what happens in the e2edev environment.
 
 A common way to run the environment during development is:
 
-```
+```sh
 make test TEST_VARS="NOLOOP=1 PATTERN=sloc"
 ```
 
 Light Test:
 
-```
+```sh
 make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOUPGRADE=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1"
 ```
 
 Here is a full description of all the variables you can use to setup the test the way you want it:
+
 - NOLOOP=1 - turns off the loop that cancels agreements on the device and agbot (alternating), every 10 mins. Usually you want to specify NOLOOP=1 when actively iterating code.
 - NOCANCEL=1 - when set with NOLOOP=1, skips the single round of cancellation tests for less log clutter and time when just interested in agreement formation.
 - UNCONFIG=1 - turns on the unconfig/reconfig loop tests.
@@ -85,10 +90,13 @@ Here is a full description of all the variables you can use to setup the test th
 - NOANAX=1 - anax is started for API tests but is then stopped and is NOT restarted to run workloads.
 - NOAGBOT=1 - the agbot is never started.
 - HA=1 - register 2 devices (and the workload services) as an HA pair. You will get 2 anax device processes in the container.
-- OLD_ANAX=1 - run the anax device based on the current commit in github, i.e. the device before you made your changes. This is helpfiul for compatibility testing of new agbot with previous device.
-- OLD_AGBOT=1 - run the agbot based on the current commit in github, i.e. the agbot before you made your changes. This is helpfiul for compatibility testing of new device with previous agbot.
+- OLDANAX=1 - run the anax device based on the current commit in github, i.e. the device before you made your changes. This is helpfiul for compatibility testing of new agbot with previous device.
+- OLDAGBOT=1 - run the agbot based on the current commit in github, i.e. the agbot before you made your changes. This is helpfiul for compatibility testing of new device with previous agbot.
+- MULTIAGBOT=1 - run two instances of agbot for testing pursposes.
+- NOKUBE=1 - Don't use Kubernetes cluster mode in testing.
 
 ### Debugging
+
 - `docker exec -it agbot /bin/bash`
 - All log files are in the container at /tmp; /tmp/anax.log for the device and /tmp/agbot.log for the agbot
 - Important data files and scripts are in /root/ and /root/.colonus and /root/eth
@@ -101,6 +109,7 @@ Here is a full description of all the variables you can use to setup the test th
 - Access the exchange API documentation at http://localhost:8080/v1
 
 ### Clean options/developer flow
+
 - `make clean`
   - Removes workloads, the agbot/exchange-api/db containers, all data from the exchange, and all stale configs/scripts ... runs automatically on `make test`
 - `make mostlyclean`
@@ -116,24 +125,28 @@ Here is a full description of all the variables you can use to setup the test th
 - `export EXCH_ROOTPW="Exchange Root PW"`
 - `export AGBOT_NAME="Agbot Name"`
 - `export API_KEY="Main Org API Key"`
-- `export AGBOT_SAPI_URL="Agbot Secure API URL"`
+- `export AGBOT_SAPI_URL="Agbot Secure API URL"`  
+  AGBOT_SAPI_URL may be omit or empty string to skip Agbot Secure API testing
 - `export ICP_HOST_IP="IP address of ICP Host"` If required to be added to hosts file only!
-- `export CERT_LOC=1` 1 for if cert is used. 0 if cert is not being used.
-- put css.crt file in test directory if using cert with ICP or DEV
-- put agbotapi.crt file in test directory
+- `export CERT_LOC=1` 1 for if cert is used. 0 if cert is not being used, depends on CSS_URL setting with https or http.
+- Mandatory put css.crt file in test directory if using cert with ICP or DEV. If CSS_URL has http protocol could be any.
+- Mandatory put agbotapi.crt file in test directory. If AGBOT_SAPI_URL is empty or uses http protocol could be any.
 - `(cd .. $$ make)`
 - `make build-remote`
 - `make test-remote`
 - `make stop` # used between runs
 
 ### Remote Environment - Continuous Integration (CI) Testing
-The e2edev tests can be run against pre-built anax and hzn binaries and against a remote management hub. This is useful in a CI environment where we want to utilize binaries that have already been built instead of always rebuilding them. This is to remove the chance of any build environment inconsistencies from the time a binary was built to the time it was deployed to the time it was tested. 
+The e2edev tests can be run against pre-built anax and hzn binaries and against a remote management hub. This is useful in a CI environment where we want to utilize binaries that have already been built instead of always rebuilding them. This is to remove the chance of any build environment inconsistencies from the time a binary was built to the time it was deployed to the time it was tested.
 
 Execute the following target. All other existing options are valid.
-```
+
+```sh
 make test-remote-prebuilt
 ```
+
 The following environment variables are needed in addition ot the Remote Environment Testing variables specified in the previous section.
+
 - `export PREBUILT_DOCKER_REG_URL=<Docker Registry URL>`
 - `export PREBUILT_DOCKER_REG_USER=<Docker User>`
 - `export PREBUILT_DOCKER_REG_PW=<Docker Password`

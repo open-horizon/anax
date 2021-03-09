@@ -5,12 +5,14 @@ E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
+export ARCH=${ARCH}
+
 # ==================================================================
 # Begin testing publish presigned service
 
 echo "Start Testing Publishing Presigned Services"
 
-result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_amd64 | jq '."e2edev@somecomp.com/my.company.com.services.hello2_1.0.0_amd64"' | jq 'del(.owner, .lastUpdated)')
+result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_${ARCH} | jq ".\"e2edev@somecomp.com/my.company.com.services.hello2_1.0.0_${ARCH}\"" | jq 'del(.owner, .lastUpdated)')
 if [ $? -ne 0 ]; then
     echo "Failed to get service: $result"
     exit 1
@@ -19,21 +21,21 @@ echo "$result"
 
 result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
 if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_amd64 successfully published"
+    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_${ARCH} successfully published"
 else
     echo "Failed to publish service: $result2"
     exit 1
 fi
 
-result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_amd64 -f)
+result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_${ARCH} -f)
 if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_amd64 successfully removed"
+    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_${ARCH} successfully removed"
 else
     echo "Failed to remove service: $result3"
     exit 1
 fi
 
-result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH k8s-service1_1.0.0_amd64 | jq '."e2edev@somecomp.com/k8s-service1_1.0.0_amd64"' | jq 'del(.owner, .lastUpdated)')
+result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH k8s-service1_1.0.0_${ARCH} | jq ".\"e2edev@somecomp.com/k8s-service1_1.0.0_${ARCH}\"" | jq 'del(.owner, .lastUpdated)')
 if [ $? -ne 0 ]; then
     echo "Failed to get service: $result"
     exit 1
@@ -42,15 +44,15 @@ echo "$result"
 
 result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
 if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/k8s-service1_1.0.0_amd64 successfully published"
+    echo "Presigned service userdev/k8s-service1_1.0.0_${ARCH} successfully published"
 else
     echo "Failed to publish service: $result2"
     exit 1
 fi
 
-result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH k8s-service1_1.0.0_amd64 -f)
+result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH k8s-service1_1.0.0_${ARCH} -f)
 if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/k8s-service1_1.0.0_amd64 successfully removed"
+    echo "Presigned service userdev/k8s-service1_1.0.0_${ARCH} successfully removed"
 else
     echo "Failed to remove service: $result3"
     exit 1
@@ -236,7 +238,7 @@ read -d '' service <<EOF
   "public":false,
   "url":"https://bluehorizon.network/services/testservice",
   "version":"1.0.0",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"multiple",
   "matchHardware":{},
   "userInput":[
@@ -275,7 +277,7 @@ EOF
 WLRES=$(echo "$service" | curl -sS -X POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "e2edev@somecomp.com/e2edevadmin:e2edevadminpw" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services")
 echo -e "Registered testwl: $WLRES"
 MSG=$(echo $WLRES | jq -r ".msg")
-if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_amd64' created" ]
+if [ "$MSG" != "service 'e2edev@somecomp.com/bluehorizon.network-services-testservice_1.0.0_${ARCH}' created" ]
 then
   echo -e "Register testservice resulted in incorrect response: $WLRES"
   exit 2

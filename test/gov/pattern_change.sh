@@ -27,7 +27,7 @@ cat <<EOF > /tmp/userinput_for_sns.json
         "value": 22.2
       }
     ],
-    "serviceArch": "amd64",
+    "serviceArch": "${ARCH}",
     "serviceOrgid": "IBM",
     "serviceUrl": "https://bluehorizon.network/services/netspeed",
     "serviceVersionRange": "[2.2.0,INFINITY)"
@@ -39,7 +39,7 @@ cat <<EOF > /tmp/userinput_for_sns.json
         "value": "ibmnodevar1"
       }
     ],
-    "serviceArch": "amd64",
+    "serviceArch": "${ARCH}",
     "serviceOrgid": "IBM",
     "serviceUrl": "https://bluehorizon.network/service-cpu",
     "serviceVersionRange": "[0.0.0,INFINITY)"
@@ -53,7 +53,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "IBM",
       "serviceUrl": "https://bluehorizon.network/services/netspeed",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "[2.2.0,INFINITY)",
       "inputs": [
         {
@@ -77,7 +77,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/services/netspeed",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "2.2.0",
       "inputs": [
         {
@@ -101,7 +101,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "IBM",
       "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "[0.0.0,INFINITY)",
       "inputs": [
         {
@@ -113,7 +113,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "1.0.0",
       "inputs": [
         {
@@ -125,7 +125,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/services/locgps",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "2.0.3",
       "inputs": [
         {
@@ -157,7 +157,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "IBM",
       "serviceUrl": "https://bluehorizon.network/service-gps",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "2.0.3",
       "inputs": [
         {
@@ -181,7 +181,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "https://bluehorizon.network/services/weather",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "1.5.0",
       "inputs": [
         {
@@ -225,7 +225,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "my.company.com.services.usehello2",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "[0.0.0,INFINITY)",
       "inputs": [
         {
@@ -237,7 +237,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "my.company.com.services.hello2",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "[0.0.0,INFINITY)",
       "inputs": [
         {
@@ -249,7 +249,7 @@ cat <<EOF > /tmp/userinput_for_sall.json
     {
       "serviceOrgid": "e2edev@somecomp.com",
       "serviceUrl": "my.company.com.services.cpu2",
-      "serviceArch": "amd64",
+      "serviceArch": "${ARCH}",
       "serviceVersionRange": "[0.0.0,INFINITY)",
       "inputs": [
         {

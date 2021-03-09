@@ -49,7 +49,8 @@ export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 export HZN_ORG_ID=IBM
 export MYDOMAIN="bluehorizon.network"
 
-export ARCH=amd64   # arch of your edge node: amd64, or arm for Raspberry Pi, or arm64 for TX2
+# arch of your edge node: amd64, or arm for Raspberry Pi, or arm64 for TX2
+export ARCH=${ARCH}
 export CPU2MSGHUB_NAME=cpu2msghub   # the name of the service, used in the docker image path and in the service url
 export CPU2MSGHUB_VERSION=1.2.2   # the service version, and also used as the tag for the docker image. Must be in OSGI version format.
 

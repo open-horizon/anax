@@ -31,7 +31,7 @@ function createProject {
     echo -e "Building $2 service container."
     cd $1
 
-    buildOut=$(make 2>&1)
+    buildOut=$(make ARCH="${ARCH}" 2>&1)
 
     verify "${buildOut}" "Successfully built" "$2 container did not build"
     if [ $? -ne 0 ]; then exit $?; fi
@@ -39,14 +39,14 @@ function createProject {
     verify "${buildOut}" "$3" "$2 container did not produce output"
     if [ $? -ne 0 ]; then exit $?; fi
 
-    buildStop=$(make stop 2>&1)
+    buildStop=$(make stop ARCH="${ARCH}" 2>&1)
 
     echo -e "Removing any existing working directory content"
     rm -rf $1/horizon
 
     echo -e "Creating Horizon $2 service project."
 
-    newProject=$(hzn dev service new -s $4 -V 1.0.0 -i "localhost:443/amd64_$9:1.0" --noImageGen --noPattern 2>&1)
+    newProject=$(hzn dev service new -s $4 -V 1.0.0 -i "localhost:443/${ARCH}_$9:1.0" --noImageGen --noPattern 2>&1)
     verify "${newProject}" "Created horizon metadata" "Horizon project was not created"
     if [ $? -ne 0 ]; then exit $?; fi
 
@@ -65,12 +65,12 @@ function createProject {
     sed -e 's|"defaultValue": ""|"defaultValue": "'$8'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
 
     if [ "${10}" != "" ]; then
-      jq_filter=.deployment.services.amd64_$9.max_memory_mb=${10}
+      jq_filter=.deployment.services.${ARCH}_$9.max_memory_mb=${10}
       jq $jq_filter ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     fi
 
     if [ "${11}" != "" ]; then
-      jq_filter=.deployment.services.amd64_$9.max_cpus=${11}
+      jq_filter=.deployment.services.${ARCH}_$9.max_cpus=${11}
       jq $jq_filter ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     fi
 
@@ -119,10 +119,10 @@ function deployWithPull {
     cd $1
 
     # First remove the existing docker image.
-    removeImage=$(docker rmi localhost:443/amd64_${3}:1.0)
+    removeImage=$(docker rmi localhost:443/${ARCH}_${3}:1.0)
     removed=$(echo ${removeImage} | grep "Deleted:")
     if [ "${removed}" == "" ]; then
-        echo -e "\nERROR: image localhost:443/amd64_${3}:1.0 was not removed from local repository. Output was:"
+        echo -e "\nERROR: image localhost:443/${ARCH}_${3}:1.0 was not removed from local repository. Output was:"
         echo -e "${removeImage}"
         exit 1
     fi
@@ -173,7 +173,7 @@ echo -e "Begin hzn dev service testing."
 
 export HZN_ORG_ID="e2edev@somecomp.com"
 export HZN_EXCHANGE_URL=$1
-export ARCH=$(uname -m | sed -e 's/aarch64.*/arm64/' -e 's/x86_64.*/amd64/' -e 's/armv.*/arm/')
+export ARCH=${ARCH}
 E2EDEV_ADMIN_AUTH=$2
 CLEAN_UP=$3
 
@@ -267,7 +267,7 @@ if [ "${restarting}" != "" ]; then
 fi
 
 # make sure max memory and max CPUs for usehello service are configured correctly (512 MB & 0.5 CPUs)
-checkMemoryAndCpus amd64_usehello 536870912 500000000
+checkMemoryAndCpus ${ARCH}_usehello 536870912 500000000
 
 stopServices
 
@@ -327,10 +327,10 @@ then
 
   echo -e "Undeploying services."
 
-  undeploy my.company.com.services.leaf_1.0.0_amd64
-  undeploy my.company.com.services.cpu2_1.0.0_amd64
-  undeploy my.company.com.services.hello2_1.0.0_amd64
-  undeploy my.company.com.services.usehello2_1.0.0_amd64
+  undeploy my.company.com.services.leaf_1.0.0_${ARCH}
+  undeploy my.company.com.services.cpu2_1.0.0_${ARCH}
+  undeploy my.company.com.services.hello2_1.0.0_${ARCH}
+  undeploy my.company.com.services.usehello2_1.0.0_${ARCH}
 
   echo -e "Removing keys"
 
