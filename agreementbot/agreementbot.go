@@ -242,6 +242,9 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 		case events.CHANGE_NODE_AGREEMENT_TYPE:
 			// A node agreement has changed.
 			w.nodeSearch.SetRescanNeeded()
+		case events.CHANGE_NODE_CONFIGSTATE_TYPE:
+			// A service's config state has changed on a node.
+			w.nodeSearch.SetRescanNeeded()
 		case events.CHANGE_NODE_TYPE:
 			// The node itself has changed.
 			w.nodeSearch.SetRescanNeeded()
