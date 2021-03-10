@@ -318,6 +318,22 @@ function get_anax_release_version() {
     #else return empty string, meaning we couldn't find it (so they should probably just use latest)
 }
 
+# Download the certificate file from CSS if not present
+function get_certificate() {
+    log_debug "get_certificate() begin"
+
+    local input_file_path=$1   # normally the value of INPUT_FILE_PATH
+    if [[ $input_file_path == css:* ]]; then
+            if [[ -n $AGENT_CERT_FILE && ! -f $AGENT_CERT_FILE ]]; then
+		    download_css_file "$input_file_path/$AGENT_CERT_FILE_DEFAULT"
+	    fi
+    fi
+
+    #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
+
+    log_debug "get_certificate() end"
+}
+
 # Download a file from the specified CSS path
 function download_css_file() {
     log_debug "download_css_file() begin"
@@ -552,16 +568,16 @@ function get_all_variables() {
     # The edge node id can be specified 4 different ways: -d (HZN_NODE_ID), the first part of -a (HZN_EXCHANGE_NODE_AUTH), NODE_ID(deprecated) or HZN_DEVICE_ID. Need to reconcile all of them.
     local node_id   # just used in this section of code to sort out this mess
     # find the 1st occurrence of the user specifying node it
-    if [[ -n ${HZN_EXCHANGE_NODE_AUTH%%:*} ]]; then 
+    if [[ -n ${HZN_EXCHANGE_NODE_AUTH%%:*} ]]; then
         node_id=${HZN_EXCHANGE_NODE_AUTH%%:*}
         log_info "Using node id from HZN_EXCHANGE_NODE_AUTH"
-    elif [[ -n $HZN_NODE_ID ]]; then 
+    elif [[ -n $HZN_NODE_ID ]]; then
         node_id=$HZN_NODE_ID
         log_info "Using node id from HZN_NODE_ID"
-    elif [[ -n $NODE_ID ]]; then 
+    elif [[ -n $NODE_ID ]]; then
         node_id=$NODE_ID
         log_warning "Using node id from NODE_ID. NODE_ID is deprecated, please use HZN_NODE_ID in the future."
-    elif [[ -n $HZN_DEVICE_ID ]]; then 
+    elif [[ -n $HZN_DEVICE_ID ]]; then
         node_id=$HZN_DEVICE_ID
         log_warning "Using node id from HZN_DEVICE_ID"
     else   # not specified, default it
@@ -970,7 +986,7 @@ function create_or_update_horizon_defaults() {
     log_debug "create_or_update_horizon_defaults() begin"
     local anax_port=$1   # optional
     local abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
-    log_verbose "Permament localtion of certificate file: $abs_certificate"
+    log_verbose "Permanent location of certificate file: $abs_certificate"
 
     if [[ ! -f /etc/default/horizon ]]; then
         log_info "Creating /etc/default/horizon ..."
@@ -1032,9 +1048,12 @@ function install_macos() {
         unregister
     fi
 
+    get_certificate $INPUT_FILE_PATH
+
     create_or_update_horizon_defaults
 
     get_pkgs
+
     mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
     install_mac_horizon-cli
     start_device_agent_container   # even if it already running, it restarts it
@@ -1166,6 +1185,8 @@ function install_debian() {
         unregister
     fi
 
+    get_certificate $INPUT_FILE_PATH
+
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     get_pkgs
@@ -1197,7 +1218,7 @@ function install_dnf() {
 # Ensure the software prereqs for a redhat variant device are installed
 function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() begin"
-    
+
     # Need EPEL for at least jq
     if [[ -z "$(dnf repolist -q epel)" ]]; then
         dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
@@ -1279,6 +1300,8 @@ function install_redhat() {
     if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
         unregister
     fi
+
+    get_certificate $INPUT_FILE_PATH
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
@@ -1710,9 +1733,9 @@ function is_redhat_variant() {
 
 # Returns the extension used for pkgs in this distro
 function get_pkg_type() {
-    if is_debian_variant; then echo 'deb'
+    if is_macos; then echo 'pkg'  # Test macos first since DISTRO is not set for macos and results in an error if debian or redhat is checked first 
+    elif is_debian_variant; then echo 'deb'
     elif is_redhat_variant; then echo 'rpm'
-    elif is_macos; then echo 'pkg'
     fi
 }
 
@@ -2130,7 +2153,7 @@ function create_service_account() {
     fi
 
     log_verbose "checking if clusterrolebinding exist..."
-    
+
     if ! $KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} 2>/dev/null; then
         log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
         $KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
@@ -2147,7 +2170,7 @@ function create_secret() {
     log_debug "create_secrets() begin"
 
     log_verbose "checking if secret ${SECRET_NAME} exist..."
-    
+
     if ! $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "creating secret for cert file..."
         $KUBECTL create secret generic ${SECRET_NAME} --from-file=${AGENT_CERT_FILE} -n ${AGENT_NAMESPACE}
@@ -2163,7 +2186,7 @@ function create_secret() {
 # Cluster only: to update secret
 function update_secret() {
     log_debug "update_secret() begin"
-    
+
     if $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
         # secret exists, delete it
         log_verbose "Find secret ${SECRET_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old secret..."
@@ -2182,7 +2205,7 @@ function create_configmap() {
     log_debug "create_configmap() begin"
 
     log_verbose "checking if configmap ${CONFIGMAP_NAME} exist..."
-    
+
     if ! $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "create configmap from ${HZN_ENV_FILE}..."
         create_horizon_env
@@ -2201,7 +2224,7 @@ function create_configmap() {
 # Cluster only: to update configmap based on /tmp/agent-install-horizon-env for agent deployment
 function update_configmap() {
     log_debug "update_configmap() begin"
-    
+
     if [[ "$IS_HORIZON_DEFAULTS_CORRECT" == "true" ]]; then
         log_verbose "Values in configmap are same, will skip updating configmap"
     else
