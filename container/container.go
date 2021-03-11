@@ -470,9 +470,9 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				pic = sp[1]
 			} else if len(sp) == 2 {
 				pic = sp[1]
-			}else if len(sp) == 1{
+			} else if len(sp) == 1 {
 				pic = sp[0]
-			} else if len(sp) <= 0 || len(sp) >3{
+			} else if len(sp) <= 0 || len(sp) > 3 {
 				return nil, fmt.Errorf("Illegal device specified in deployment description: %v", givenDevice)
 			}
 
@@ -2882,8 +2882,10 @@ func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, ag
 
 					// same the volume in local db so that it can be cleaned up at unregistration time
 					// Ling todo - only save the ones that are specified by the user in binds.
-					if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
-						return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+					if b.db != nil {
+						if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
+							return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+						}
 					}
 				}
 			}
