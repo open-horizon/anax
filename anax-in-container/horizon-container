@@ -219,7 +219,7 @@ start() {
 		dockerTag="$HC_DOCKER_TAG"
 	else
 		# get the image tag from the hzn version
-		local hzn_version=$(LANG=en_US hzn version | grep "^Horizon CLI")
+		local hzn_version=$(LANG=en_US HZN_LANG=en_US hzn version | grep "^Horizon CLI")
 		if [ $? -eq 0 ]; then 
         	dockerTag=${hzn_version##* }   # remove all of the space-separated words, except the last one
         fi
