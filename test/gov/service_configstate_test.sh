@@ -170,7 +170,7 @@ do
 
     if [ $ag_canceled -ne 1 ]; then
 		# make sure the agreement is gone
-		echo -e "${PREFIX} making sure the agreements are canceled..."
+		echo -e "${PREFIX} making sure the agreements are cancelled..."
 		getNetspeedLocationAgreements
 		if [ "$E2EDEV_NETSPEED_AG_ID" != "" ]; then
 			echo -e "${PREFIX} error: agreement for e2edev@somecomp.com/netspeed not canceled."

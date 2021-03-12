@@ -172,6 +172,9 @@ func (w *ChangesWorker) findAndProcessChanges() {
 		} else if change.IsNodeAgreement("") {
 			batchedEvents[events.CHANGE_NODE_AGREEMENT_TYPE] = true
 
+		} else if change.IsNodeServiceConfigState("") {
+			batchedEvents[events.CHANGE_NODE_CONFIGSTATE_TYPE] = true
+
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))
 		}

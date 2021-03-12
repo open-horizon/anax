@@ -2,7 +2,7 @@
 SHELL := /bin/bash
 
 #Versioning
-DOCKER_EXCH_TAG := latest
+DOCKER_EXCH_TAG := testing
 
 # user configurable variables
 # The TEST_PATTERNS is a comma separated list of following patterns.
