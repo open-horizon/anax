@@ -740,11 +740,16 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func MakeBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
+func MakeBridge(client *docker.Client, name string, infrastructure, sharedPattern, isDev bool) (*docker.Network, error) {
 
 	// Labels on the docker network indicate attributes about the network.
 	labels := make(map[string]string)
-	labels[LABEL_PREFIX+".network"] = ""
+
+	if isDev {
+		labels[LABEL_PREFIX+".dev_network"] = "true"
+	} else {
+		labels[LABEL_PREFIX+".network"] = ""
+	}
 	if infrastructure {
 		labels[LABEL_PREFIX+".infrastructure"] = ""
 	}
@@ -1362,7 +1367,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 
 		if existingNetwork == nil {
-			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true)
+			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true, b.isDevInstance)
 			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", containerName, existingNetwork)
 			if err != nil {
 				return nil, fail(nil, containerName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
@@ -1405,7 +1410,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			}
 			if agBridge == nil {
 				glog.V(5).Infof("Making network %v", agreementId)
-				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false)
+				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false, b.isDevInstance)
 				if err != nil {
 					return nil, err
 				}
@@ -2026,7 +2031,11 @@ func (b *ContainerWorker) syncupResources() {
 			// Look for orphaned containers.
 			for _, container := range containers {
 				glog.V(5).Infof("ContainerWorker working on container %v", container)
-
+				if val, exists := container.Labels[LABEL_PREFIX+".dev_service"]; exists && val == "true" {
+					//skip dev containers
+					glog.V(4).Infof("Skipping non-leftover dev container: %v", container.ID)
+					continue
+				}
 				// Containers that are part of our horizon infrastructure or are shared or without an agreement id label will be ignored.
 				if _, infraLabel := container.Labels[LABEL_PREFIX+".infrastructure"]; infraLabel {
 					continue
@@ -2050,6 +2059,9 @@ func (b *ContainerWorker) syncupResources() {
 			for _, net := range networks {
 				glog.V(5).Infof("ContainerWorker working on network %v", net)
 				if _, anaxNet := net.Labels[LABEL_PREFIX+".network"]; !anaxNet {
+					continue
+				} else if val, exists := net.Labels[LABEL_PREFIX+".dev_network"]; exists && val == "true" {
+					//skip dev networks
 					continue
 				} else if val, exists := net.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 
@@ -2164,7 +2176,7 @@ func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers
 			glog.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 			continue
 		} else if len(nws) == 0 {
-			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false, b.isDevInstance); err != nil {
 				glog.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
 				continue
 			} else {
@@ -2271,7 +2283,7 @@ func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, p
 		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name": {nwForParentSvc: true}}); err != nil {
 			return fmt.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 		} else if len(nws) == 0 {
-			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false, b.isDevInstance); err != nil {
 				return fmt.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
 			} else {
 				parentSpecificNetwork = newNetwork
@@ -2329,6 +2341,11 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 
 	freeNets := make([]docker.Network, 0)
 	destroy := func(container *docker.APIContainers, agreementId string) error {
+		if !serviceAndWorkerTypeMatches(b.isDevInstance, container) {
+			// skip dev containers is it's non-dev instance and vice versa
+			glog.V(4).Infof("Skipping dev container: %v", container.ID)
+			return nil
+		}
 		if val, exists := container.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 			// must investigate bridge to see if other containers are still using this shared service
 
@@ -2977,4 +2994,19 @@ func DeleteLeftoverDockerVolumes(db *bolt.DB, config *config.HorizonConfig) erro
 		}
 	}
 	return nil
+}
+
+// serviceAndWorkerTypeMatches returns true if the container type matches the ContainerWorker instance type
+// (for dev and non-dev containers)
+func serviceAndWorkerTypeMatches(isDevInstance bool, container *docker.APIContainers) bool {
+	isDevContainer := false
+	if val, exists := container.Labels[LABEL_PREFIX+".dev_service"]; exists && val == "true" {
+		isDevContainer = true
+	}
+
+	if isDevInstance == isDevContainer {
+		return true
+	}
+
+	return false
 }
