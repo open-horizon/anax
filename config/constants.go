@@ -81,6 +81,12 @@ const AgbotAgreementBatchSize_DEFAULT = 300
 // The default max agreement bot work queue size. This is essentially the maximum queue depth for a given agbot protocol worker pool.
 const AgbotAgreementQueueSize_DEFAULT = 300
 
+// The default scaling factor applied to Agreement Queue size inorder to keep the message queue full.
+const AgbotMessageQueueScale_DEFAULT = 33.0
+
+// The default number of prioritized queue history records to keep before aging out the old ones.
+const AgbotQueueHistorySize_DEFAULT = 30
+
 // The default full rescan interval
 const AgbotFullRescan_DEFAULT = 600
 

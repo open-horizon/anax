@@ -43,18 +43,19 @@ var businessPolManager *BusinessPolicyManager
 
 // must be safely-constructed!!
 type AgreementBotWorker struct {
-	worker.BaseWorker // embedded field
-	db                persistence.AgbotDatabase
-	httpClient        *http.Client // a shared HTTP client instance for this worker
-	pm                *policy.PolicyManager
-	consumerPH        *ConsumerPHMgr
-	ready             bool
-	NHManager         *NodeHealthManager
-	GovTiming         DVState
-	shutdownStarted   bool
-	MMSObjectPM       *MMSObjectPolicyManager
-	noworkDispatch    int64       // The last time the NoWorkHandler was dispatched.
-	nodeSearch        *NodeSearch // The object that controls node searches and the state of search sessions.
+	worker.BaseWorker    // embedded field
+	db                   persistence.AgbotDatabase
+	httpClient           *http.Client // a shared HTTP client instance for this worker
+	pm                   *policy.PolicyManager
+	consumerPH           *ConsumerPHMgr
+	ready                bool
+	NHManager            *NodeHealthManager
+	GovTiming            DVState
+	shutdownStarted      bool
+	MMSObjectPM          *MMSObjectPolicyManager
+	noworkDispatch       int64       // The last time the NoWorkHandler was dispatched.
+	newMessagesToProcess bool        // True when the agbot has been notified (through the exchange /changes API) that there are messages to process.
+	nodeSearch           *NodeSearch // The object that controls node searches and the state of search sessions.
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
@@ -63,16 +64,17 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 
 	baseWorker := worker.NewBaseWorker(name, cfg, ec)
 	worker := &AgreementBotWorker{
-		BaseWorker:      baseWorker,
-		db:              db,
-		httpClient:      cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
-		consumerPH:      NewConsumerPHMgr(),
-		ready:           false,
-		NHManager:       NewNodeHealthManager(),
-		GovTiming:       DVState{},
-		shutdownStarted: false,
-		noworkDispatch:  time.Now().Unix(),
-		nodeSearch:      NewNodeSearch(),
+		BaseWorker:           baseWorker,
+		db:                   db,
+		httpClient:           cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil),
+		consumerPH:           NewConsumerPHMgr(),
+		ready:                false,
+		NHManager:            NewNodeHealthManager(),
+		GovTiming:            DVState{},
+		shutdownStarted:      false,
+		noworkDispatch:       time.Now().Unix(),
+		newMessagesToProcess: false,
+		nodeSearch:           NewNodeSearch(),
 	}
 
 	patternManager = NewPatternManager()
@@ -565,7 +567,25 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 		go w.handleObjectPoliciesChange(&cmd.Msg)
 
 	case *MessageCommand:
-		w.processProtocolMessage()
+		// The arrival of a message for the agbot could be occurring under light or heavy load. If the load is light,
+		// this message might be the only one in the exchange and therefore consuming it now would improve the
+		// response time for the agent that sent the message. If the load is heavy, this might be one of thousands
+		// of messages, in which case it is better to defer consumption of the message to the NoWorkHandler in order
+		// to avoid consuming the same message more than once. This can happen when the agbot gets busy and cant process
+		// all the incoming messages within a few seconds. To discriminate light vs heavy load, check the depth of the
+		// high priority work queue. If the queue is not empty, then assume we are under heavy load.
+		cmd, _ := command.(*MessageCommand)
+		newMessages := 0
+		if cmd.Msg.GetChange() != nil {
+			newMessages = cmd.Msg.GetChange().(events.MessageCount).Count
+			glog.V(3).Infof("AgreementBotWorker was notified about %v messages", newMessages)
+		}
+
+		if w.deferMessageProcessing(newMessages) {
+			glog.V(3).Infof("AgreementBotWorker deferring message processing")
+		} else {
+			w.processProtocolMessage(w.calculateMessageLimit())
+		}
 
 	case *PatternChangeCommand:
 		cmd, _ := command.(*PatternChangeCommand)
@@ -608,10 +628,41 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 
 }
 
-func (w *AgreementBotWorker) processProtocolMessage() {
-	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange"))
+// This function determines whether the agbot should try to process incoming protocol messages right now, or defer
+// until the NoWorkHandler runs. If the internal agreement worker queue is building up, then consuming more messages
+// could result in duplicate messages being added to the work queue. This is something to be avoided.
+func (w *AgreementBotWorker) deferMessageProcessing(msgCount int) bool {
+	return !w.highWorkQueueEmpty()
+}
 
-	if msgs, err := w.getMessages(); err != nil {
+// This function figures out what message limit to use with the exchange when retrieving messages. Limiting the number
+// of messages reduces the size of the /msg API response, which prevents excessive memory usage in the exchange. The limit
+// also allows the agbot to throttle message in-take, reducing the possibilty of retrieving messages before they are
+// processed and deleted by the agbot. This function is called when message consumption has been deferred until now.
+func (w *AgreementBotWorker) calculateMessageLimit() int {
+
+	limit := int(w.Config.GetAgbotAgreementQueueSize())
+	if w.highWorkQueueEmpty() {
+		return int(float64(limit) * w.Config.GetAgbotMessageQueueScale())
+	}
+
+	calcLimit := int(float64(limit)*w.Config.GetAgbotMessageQueueScale()) - w.highWorkQueueDepth()
+	if calcLimit < 0 {
+		return 0
+	}
+
+	return calcLimit
+}
+
+// Pull messages from the exchange, decrypt them and put them on the high priority protocol specific work queue.
+func (w *AgreementBotWorker) processProtocolMessage(limit int) {
+	glog.V(3).Infof(fmt.Sprintf("AgreementBotWorker retrieving messages from the exchange, limit: %v", limit))
+
+	if limit == 0 {
+		return
+	}
+
+	if msgs, err := w.getMessages(limit); err != nil {
 		glog.Errorf(fmt.Sprintf("AgreementBotWorker unable to retrieve exchange messages, error: %v", err))
 	} else {
 		// Loop through all the returned messages and process them.
@@ -680,11 +731,16 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 	// the agreement protocol process. If there are any, then we will hold the quiesce from completing.
 	if !w.ShutdownStarted() {
 
-		// Ensure that no messages are missed, and then perform a node scan if necessary. If the agreement protocol work queues are
-		// at their configured max depth, then don't bother processing anything so that the protocol worker threads have a chance
+		// Ensure that messages are consumed, and then perform a node scan if there is room in the work queues. If the agreement protocol
+		// work queues are at their configured max depth, then don't bother processing anything so that the protocol worker threads have a chance
 		// to catch up.
+		//if !w.workQueuesAtDepth() && w.newMessagesToProcess {
 		if !w.workQueuesAtDepth() {
-			w.processProtocolMessage()
+			w.processProtocolMessage(w.calculateMessageLimit())
+			// w.newMessagesToProcess = false
+		}
+
+		if !w.workQueuesAtDepth() {
 			w.nodeSearch.Scan()
 		}
 
@@ -740,19 +796,37 @@ func (w *AgreementBotWorker) NoWorkHandler() {
 func (w *AgreementBotWorker) reportWorkQueues() {
 	rep := ""
 	for _, cph := range w.consumerPH.GetAll() {
-		rep += fmt.Sprintf("%v High: %v, Low: %v ", cph, w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen(), w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen())
+		rep += fmt.Sprintf("%v High: %6d, Low: %6d\n", cph, w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen(), w.consumerPH.Get(cph).WorkQueue().LowPriorityBufferLen())
+		rep += fmt.Sprintf(w.consumerPH.Get(cph).WorkQueue().queueHistory.report())
 	}
-	glog.V(3).Infof(AWlogString(fmt.Sprintf("work queues: %v", rep)))
+	glog.V(3).Infof(AWlogString(fmt.Sprintf("Prioritized Work Queues: %v", rep)))
 }
 
 func (w *AgreementBotWorker) workQueuesAtDepth() bool {
 	for _, cph := range w.consumerPH.GetAll() {
 		if w.consumerPH.Get(cph).WorkQueue().HighAtDepth() || w.consumerPH.Get(cph).WorkQueue().LowAtDepth() {
-			glog.V(3).Infof(AWlogString(fmt.Sprintf("skipping make agreements due to work queue depth")))
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("internal work queue for protocol %v is at max depth", cph)))
 			return true
 		}
 	}
 	return false
+}
+
+func (w *AgreementBotWorker) highWorkQueueEmpty() bool {
+	for _, cph := range w.consumerPH.GetAll() {
+		if w.consumerPH.Get(cph).WorkQueue().HighIsEmpty() {
+			glog.V(3).Infof(AWlogString(fmt.Sprintf("internal high priority work queue for protocol %v is empty", cph)))
+			return true
+		}
+	}
+	return false
+}
+
+func (w *AgreementBotWorker) highWorkQueueDepth() int {
+	for _, cph := range w.consumerPH.GetAll() {
+		return w.consumerPH.Get(cph).WorkQueue().HighPriorityBufferLen()
+	}
+	return 0
 }
 
 func (w *AgreementBotWorker) policyWatcher(name string, quit chan bool) {
@@ -800,10 +874,10 @@ func (w *AgreementBotWorker) errorPolicy(org string, fileName string, err error)
 	glog.Errorf(fmt.Sprintf("AgreementBotWorker tried to read policy file %v/%v, encountered error: %v", org, fileName, err))
 }
 
-func (w *AgreementBotWorker) getMessages() ([]exchange.AgbotMessage, error) {
+func (w *AgreementBotWorker) getMessages(limit int) ([]exchange.AgbotMessage, error) {
 	var resp interface{}
 	resp = new(exchange.GetAgbotMessageResponse)
-	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/msgs"
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/agbots/" + exchange.GetId(w.GetExchangeId()) + "/msgs?maxmsgs=" + strconv.Itoa(limit)
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.httpClient, "GET", targetURL, w.GetExchangeId(), w.GetExchangeToken(), nil, &resp); err != nil {
 			glog.Errorf(err.Error())
