@@ -55,16 +55,15 @@ const (
 )
 
 func DisplayServiceStatus(servSpecArr []serviceSpec, displayStarOrg bool) {
-	statusDetails := []string{
-		"Failed",
-		"Waiting: no agreements formed yet",
-		"Waiting: agreement is formed",
-		"Waiting: agreement is accepted",
-		"Waiting: service is created",
-		"Waiting: execution is started",
-		"Success"}
-
 	msgPrinter := i18n.GetMessagePrinter()
+	statusDetails := []string{
+		msgPrinter.Sprintf("Failed"),
+		msgPrinter.Sprintf("Waiting: no agreements formed yet"),
+		msgPrinter.Sprintf("Waiting: agreement is formed"),
+		msgPrinter.Sprintf("Waiting: agreement is accepted"),
+		msgPrinter.Sprintf("Waiting: service is created"),
+		msgPrinter.Sprintf("Waiting: execution is started"),
+		msgPrinter.Sprintf("Success")}
 
 	msgPrinter.Printf("Status of the services you are watching:")
 	msgPrinter.Println()
