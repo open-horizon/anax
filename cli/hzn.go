@@ -3,10 +3,13 @@ package main
 
 import (
 	"flag"
-	"github.com/open-horizon/anax/cli/sdo"
-	"github.com/open-horizon/anax/version"
 	"os"
 	"strings"
+
+	"github.com/open-horizon/anax/cli/sdo"
+	"github.com/open-horizon/anax/version"
+
+	"runtime"
 
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
@@ -35,7 +38,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
-	"runtime"
 )
 
 func main() {
@@ -69,6 +71,32 @@ func main() {
 
 	// Command flags and args - see https://github.com/alecthomas/kingpin
 	app := kingpin.New("hzn", msgPrinter.Sprintf(`Command line interface for Horizon agent. Most of the sub-commands use the Horizon Agent API at the default location http://localhost (see environment Environment Variables section to override this).
+
+Subcommands Description:
+  evn: Show the Horizon Environment Variables.
+  version: Show the Horizon version.
+  architecture: Show the architecture of this machine ( as defined by Horizon and golang).
+  exchange: List and manage Horizon Exchange resources.
+  reginput: Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). 
+            This examines the services that the specified pattern uses, and determines the node owner input that is required for them.
+  key: List and manage keys for signing and verifying services.
+  register: Register this edge node with horizon.
+  node: List and manage general information about this Horizon edge node.
+  policy: List and manage policy for this Horizon edge node.
+  deploycheck: Check deployment compatibility.
+  agreement: List or manage the active or archived agreements this edge node has made with a Horizon agreement bot.
+  metering: List or manage the metering (payment) information for the active or archived agreements.
+  attribute: List or manage the global attributes that are currently registered on this Horizon edge node.
+  userinput: List or manager the service user inputs that are currently registered on this Horizon edge node.
+  service: List or manage the services that are currently registered on this Horizon edge node.
+  unregister: Unregister and reset this Horizon edge node so that it is ready to be registered again.
+  status: Display the current horizon internal status for the node.
+  eventlog: List the event logs for the current or all registrations.
+  dev: Deployment tools for creation of services.
+  agbot: List and manage Horizon agreement bot resources.
+  util: Utility commands.
+  mms: List and manage Horizon Model Management Service resources.
+  voucher:	List and manage Horizon SDO ownership vouchers.
 
 Environment Variables:
   HORIZON_URL:  Override the URL at which hzn contacts the Horizon Agent API.
