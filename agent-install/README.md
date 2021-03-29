@@ -74,7 +74,7 @@ Command line flags override the corresponding environment variables or config fi
 
 `-c <path>` - path to the CA certificate file from your ICP instance. Default: `./agent-install.crt`
 
-`-i <path>` - path to the packages. Default: current directory
+`-i <path>` - path to the packages. Specify `https://github.com/open-horizon/anax/releases` to get latest packages from open horizon anax github repository. Default: current directory
 
 `-p <pattern>` - pattern name to register this node with. Default: register the node
 
