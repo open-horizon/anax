@@ -142,9 +142,6 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 	if log.IsLogging(logger.DEBUG) {
 		log.Debug(cssALS(fmt.Sprintf("received exchange authentication request for URL Path %v user %v", otherOrg, appKey)))
 	}
-	if trace.IsLogging(logger.TRACE) {
-		trace.Debug(cssALS(fmt.Sprintf("received exchange authentication request for URL Path %v for user %v with secret %v", otherOrg, appKey, appSecret)))
-	}
 
 	// Assume the request will be rejected.
 	authCode := security.AuthFailed
