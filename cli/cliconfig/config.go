@@ -62,6 +62,7 @@ type HorizonCliConfig struct {
 	// the following are only used by 'hzn dev' commands
 	HZN_DEVICE_ID           string `json:"HZN_DEVICE_ID,omitempty"`
 	HZN_PATTERN             string `json:"HZN_PATTERN,omitempty"`
+	HZN_DEV_FSS_IMAGE_REPO  string `json:"HZN_DEV_FSS_IMAGE_REPO,omitempty"`
 	HZN_DEV_FSS_IMAGE_TAG   string `json:"HZN_DEV_FSS_IMAGE_TAG,omitempty"`
 	HZN_DEV_FSS_CSS_PORT    string `json:"HZN_DEV_FSS_CSS_PORT,omitempty"`
 	HZN_DEV_FSS_MONGO_IMAGE string `json:"HZN_DEV_FSS_MONGO_IMAGE,omitempty"`
