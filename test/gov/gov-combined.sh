@@ -491,6 +491,14 @@ if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   fi
 fi
 
+if [ "$TEST_PATTERNS" == "sall" ] && [ "$NOHZNLOG" != "1" ] && [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
+  ./service_log_test.sh
+  if [ $? -ne 0 ]; then
+    echo "Failed hzn service log tests."
+    exit 1
+  fi
+fi
+
 if [ "$NOPATTERNCHANGE" != "1" ] && [ "$TESTFAIL" != "1" ]; then
   if [ "$TEST_PATTERNS" == "sall" ]; then
     ./pattern_change.sh
