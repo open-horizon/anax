@@ -475,8 +475,8 @@
       "translation": "Horizon exchange에서 작성하는 경우 이 사용자 계정의 비밀번호입니다."
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Horizon exchange에서 작성하는 경우 이 사용자 계정과 연관시킬 이메일 주소입니다. 사용자 이름이 이메일 주소인 경우 이 인수는 생략할 수 있습니다."
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Horizon exchange에서 작성하는 경우 이 사용자 계정과 연관시킬 이메일 주소입니다. 이 인수는 선택사항입니다."
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -497,14 +497,6 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "관리자인 경우 true, 그렇지 않으면 false입니다."
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "기존 사용자를 허브 관리자로 변경하거나 사용자를 더 이상 허브 관리자로 지정하지 마십시오. 허브 관리자는 관리 허브에서 조직을 작성, 수정 및 삭제할 수 있습니다."
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "이 사용자가 허브 관리자여야 하는 경우 true이고, 그렇지 않으면 false입니다."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -2283,8 +2275,8 @@
       "translation": "{Domain}에 대한 Docker 인증 정보를 찾을 수 없음"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag}을(를) 공개하는 중..."
+      "id": "Pushing {ImageName}...",
+      "translation": "{ImageName} 푸시 중..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2295,12 +2287,8 @@
       "translation": "Docker 이미지 {Repository____tag}을(를) 푸시할 수 없음: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Docker 푸시 출력에서 이미지 요약을 찾을 수 없음"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag}을(를) 가져오는 중..."
+      "id": "Pulling {ImageName}...",
+      "translation": "{ImageName} 가져오는 중..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2309,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "Docker 이미지 {Repository____tag}을(를) 가져올 수 없음: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Docker 출력에서 이미지 요약을 찾을 수 없어 이미지에서 직접 이미지 요약을 검색하는 중입니다."
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "{ImageName} 이미지를 검사할 수 없음: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "{ImageName} 이미지에 대한 요약을 찾을 수 없습니다."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -3303,20 +3303,20 @@
       "translation": "기존 컨테이너를 나열할 수 없음: {Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "{Nwname} 서비스의 기본 네트워크 {ContainerNetwork}을(를) 찾을 수 없음"
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "서비스 {AgreementId}, {ContainerNetwork}에 대한 기본 네트워크를 찾음"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "종속성 {URL}의 '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "종속성 메타데이터를 검색할 수 없음: {Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'에서 기존 컨테이너를 나열할 수 없음: {Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "종속성을 시작할 수 없음: {Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "서비스 {Org}/{URL}의 컨테이너가 네트워크 {NetName}에 있음"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3325,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "인스턴스 ID를 생성할 수 없음: {Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "{SId} 서비스 작업 중"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "종속성 메타데이터를 검색할 수 없음: {Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "종속성을 시작할 수 없음: {Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3377,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "컨테이너 이미지를 가져오는 데 실패했습니다. 오류: {Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "{Name} 네트워크가 작성됨"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4187,24 +4203,24 @@
       "translation": "'exchange user list' 출력을 마샬링하는 데 실패함: {Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "사용자 이름이 이메일 주소가 아닌 경우 -e를 통해 이메일을 지정해야 합니다."
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "exchange 버전을 확인하는 데 실패했습니다. 오류: {Err}"
     },
     {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "루트 조직의 exchange 사용자만 hubadmin이 될 수 있습니다."
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "Exchange API 버전이 {USEREMAILOPTIONALEXCHANGEVERSION} 미만이므로 이메일을 지정해야 합니다."
     },
     {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "exchange에서 리턴된 목록에서 '{ExchUser}' 사용자를 찾을 수 없음"
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "루트 조직의 사용자만 hubadmin이 될 수 있습니다."
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "hubadmin 사용자와 exchange 루트 사용자만 hubadmin을 작성할 수 있습니다."
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "루트 조직의 사용자는 hubadmin여야 합니다. -H 옵션을 생략하십시오."
     },
     {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "{User} 사용자가 루트 조직에 없기 때문에 hubadmin 상태를 설정할 수 없습니다."
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "루트 조직의 사용자는 조직 관리자가 될 수 없습니다."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4375,12 +4391,12 @@
       "translation": "종속성을 시작하는 중입니다."
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'이(가) 서비스 종속성을 시작할 수 없습니다. {Perr}"
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'이(가) 테스트 agreementId를 생성할 수 없습니다. {Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'이(가) 서비스 종속성을 시작할 수 없습니다. {Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -5411,24 +5427,16 @@
       "translation": "CSS에 {Metadata} 파일을 넣을 수 없습니다. HTTP 코드 {StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "{Name} 네트워크가 작성됨"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "Docker 네트워크를 나열할 수 없습니다. 오류 {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Docker 네트워크 {Name}을(를) 제거할 수 없습니다. 오류 {Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "CSS 상태 가져오기 요청을 작성할 수 없습니다. 오류 {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "{Timeout}초 대기 후 CSS 상태가 '준비되지 않음'입니다. 제한시간 초과"
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "{Timeout__checkLimit}초 대기 후 CSS 상태가 '준비되지 않음'입니다. 제한시간 초과"
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "CSS 상태가 준비되지 않아 서비스 시작 요청을 종료합니다."
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -6253,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "MMS API 인증서 개인 키 파일 {ServerKey}을(를) 닫을 수 없습니다. 오류 {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: 빈 문자열은 올바른 버전이 아닙니다."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

@@ -411,8 +411,8 @@
       "translation": "{Domain} 用の Docker 資格情報が見つかりませんでした"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} のプッシュ中..."
+      "id": "Pushing {ImageName}...",
+      "translation": "{ImageName} をプッシュ中..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "Docker イメージ {Repository____tag} をプッシュできません: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Docker プッシュ出力でイメージ・ダイジェストが見つかりませんでした"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} のプル中..."
+      "id": "Pulling {ImageName}...",
+      "translation": "{ImageName} をプル中..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "Docker イメージ {Repository____tag} をプルできません: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Docker 出力でイメージ・ダイジェストが見つけられなかったので、イメージ・ダイジェストを直接イメージから取得します。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "イメージ {ImageName} を検査できませんでした: {Err}"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "イメージ {ImageName} のダイジェストを見つけられませんでした。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -468,7 +476,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}"
+      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。 または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。 または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -736,7 +744,7 @@
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
+      "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。 ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。"
     },
     {
       "id": "Error creating StdoutPipe for command: {Err}",
@@ -1380,7 +1388,7 @@
     },
     {
       "id": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-      "translation": "データベースで契約 {Arg_1} に終了のマークを付けているときにエラーが発生しました: {Arg_2}."
+      "translation": "データベースで契約 {Arg_1} に終了のマークを付けているときにエラーが発生しました: {Arg_2}"
     },
     {
       "id": "Error getting service definitions {Arg_1} from db. {Arg_2}",
@@ -1436,7 +1444,7 @@
     },
     {
       "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
-      "translation": "{Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。理由: {Arg_3}"
+      "translation": "{Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。 理由: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
@@ -1464,7 +1472,7 @@
     },
     {
       "id": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-      "translation": "Exchange で {Arg_1} に対する契約を削除しているときにエラーが発生しました: {Arg_2}. 再試行します。"
+      "translation": "Exchange で {Arg_1} に対する契約を削除しているときにエラーが発生しました: {Arg_2}。再試行します。"
     },
     {
       "id": "Encountered error for AgreementVerification for {Arg_1} with agbot, error {Arg_2}",
@@ -1757,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "MMS API 証明書の秘密鍵ファイル {ServerKey} を閉じることができません、エラー {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: 空ストリングは有効なバージョンではありません。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

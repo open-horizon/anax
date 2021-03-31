@@ -110,6 +110,34 @@ function deploy {
     echo -e "$2 service deployed."
 }
 
+# Deploy a new hzn dev service project that also tests the -P (docker pull) variant. Do not call this function
+# before pushing or publishing the target image. The inputs are:
+# $1 - project directory
+# $2 - project name
+# $3 - service name
+function deployWithPull {
+    cd $1
+
+    # First remove the existing docker image.
+    removeImage=$(docker rmi localhost:443/amd64_${3}:1.0)
+    removed=$(echo ${removeImage} | grep "Deleted:")
+    if [ "${removed}" == "" ]; then
+        echo -e "\nERROR: image localhost:443/amd64_${3}:1.0 was not removed from local repository. Output was:"
+        echo -e "${removeImage}"
+        exit 1
+    fi
+
+    # Redeploy by pulling the image and extracting the image digest. Also overwrite the previous deployment.
+    deploy=$(hzn exchange service publish -vOP -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploying=$(echo ${deploy} | grep "HTTP code: 201")
+    if [ "${deploying}" == "" ]; then
+        echo -e "\nERROR: $2 did not deploy. Output was:"
+        echo -e "${deploy}"
+        exit 1
+    fi
+    echo -e "$2 service deployed via image pull."
+}
+
 # Undeploy a new hzn dev service project. The input is:
 # $1 - service
 function undeploy {
@@ -275,6 +303,10 @@ then
 fi
 
 deploy ${LEAF_HOME} "LEAF"
+if [ $? -ne 0 ]; then exit $?; fi
+
+echo -e "Redploying, but this time with the docker pull option."
+deployWithPull ${LEAF_HOME} "LEAF" "leaf"
 if [ $? -ne 0 ]; then exit $?; fi
 
 deploy ${CPU_HOME} "CPU"

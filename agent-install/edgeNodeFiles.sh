@@ -2,6 +2,8 @@
 
 # This script gathers the necessary information and files to install the Horizon agent and register an edge node
 
+function getHznVersion() { local hzn_version=$(hzn version | grep "^Horizon CLI"); echo ${hzn_version##* }; }
+
 # Global constants
 SUPPORTED_NODE_TYPES='ARM32-Deb ARM64-Deb AMD64-Deb x86_64-RPM x86_64-macOS x86_64-Cluster ppc64le-RPM ppc64le-Cluster ALL'
 EDGE_CLUSTER_TAR_FILE_NAME='horizon-agent-edge-cluster-files.tar.gz'
@@ -9,7 +11,7 @@ AGENT_IMAGE_TAR_FILE='amd64_anax.tar.gz'
 AGENT_IMAGE='amd64_anax'
 AGENT_K8S_IMAGE_TAR_FILE='amd64_anax_k8s.tar.gz'
 AGENT_K8S_IMAGE='amd64_anax_k8s'
-AGENT_IMAGE_TAG=$(hzn version | grep "^Horizon CLI" | sed 's/.*\://' | awk '{$1=$1};1')
+AGENT_IMAGE_TAG=$(getHznVersion)
 DEFAULT_PULL_REGISTRY='docker.io/openhorizon'
 ALREADY_LOGGED_INTO_REGISTRY='false'
 
@@ -46,6 +48,7 @@ Required Environment Variables:
 
 Optional Environment Variables:
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
+    HZN_EXCHANGE_USER_AUTH: The exchange credentials to use to publish artifacts in CSS. Must have access to publish to the IBM org. If not set, will use exchange root credentials.
     AGENT_NAMESPACE: The edge cluster namespace that the agent will be installed into. Default: $AGENT_NAMESPACE
     REGISTRY_USERNAME: The username used to login to the registry supplied with the -r flag.
     REGISTRY_PASSWORD: The password used to login to the registry supplied with the -r flag.
@@ -143,6 +146,11 @@ function checkPrereqsAndInput () {
     fi
     echo " - oc installed"
 
+    if ! command -v hzn >/dev/null 2>&1; then
+        fatal 2 "hzn is not installed."
+    fi
+    echo " - hzn installed"
+
     if [[ $EDGE_NODE_TYPE == 'x86_64-Cluster' || $EDGE_NODE_TYPE == 'ppc64le-Cluster' || $EDGE_NODE_TYPE == 'ALL' ]]; then
         if ! command -v docker >/dev/null 2>&1; then
             fatal 2 "docker is not installed."
@@ -201,8 +209,8 @@ function cleanUpPreviousFiles() {
     echo
 }
 
-# Pull the edge cluster agent image tar file either from a specified registry or the openhorizon docker hub 
-function getAgentImageTarFile() {
+# Pull the edge cluster agent image from the package tar file or from a docker registry
+function getAgentK8sImageTarFile() {
     if [[ $AGENT_IMAGES_FROM_TAR == 'true' ]]; then
         local pkgBaseName=${PACKAGE_NAME##*/}   # inside the tar file, the paths start with the base name
         echo "Extracting $pkgBaseName/docker/$AGENT_K8S_IMAGE_TAR_FILE from $PACKAGE_NAME.tar.gz ..."
@@ -221,7 +229,7 @@ function getAgentImageTarFile() {
         chk $? "pulling $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
 
         echo "Saving $AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG to $AGENT_K8S_IMAGE_TAR_FILE ..."
-        docker save $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG > $AGENT_K8S_IMAGE_TAR_FILE
+        docker save $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG | gzip > $AGENT_K8S_IMAGE_TAR_FILE
         chk $? "saving $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
     fi
 
@@ -384,7 +392,7 @@ function getHorizonPackageFiles() {
             chk $? "pulling $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
 
             echo "Saving $AGENT_IMAGE:$AGENT_IMAGE_TAG to $AGENT_IMAGE_TAR_FILE ..."
-            docker save $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG > $AGENT_IMAGE_TAR_FILE
+            docker save $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG | gzip > $AGENT_IMAGE_TAR_FILE
             chk $? "saving $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
         fi
 
@@ -424,7 +432,7 @@ function gatherHorizonPackageFiles() {
     echo ""
 }
 
-# Get agent-install.sh from where it was install by horizon-cli
+# Get agent-install.sh from where it was installed by horizon-cli
 function getAgentInstallScript () {
     local installDir   # where the file has been installed by horizon-cli
     if [[ $OSTYPE == darwin* ]]; then
@@ -439,6 +447,10 @@ function getAgentInstallScript () {
     echo "Getting $installFile ..."
     cp "$installFile" .   # should already be executable
     chk $? "Getting $installFile"
+
+    if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
+        putOneFileInCss agent-install.sh $(getHznVersion)
+    fi
 }
 
 # Get agent-uninstall.sh from where it was install by horizon-cli
@@ -478,7 +490,6 @@ function getClusterDeployTemplates () {
 
 # Get agent-uninstall.sh, deployment-template.yml, and persistentClaim-template.yml and create tar file
 function getEdgeClusterFiles() {
-    getAgentInstallScript
     getAgentUninstallScript
     getClusterDeployTemplates
 
@@ -486,9 +497,7 @@ function getEdgeClusterFiles() {
         echo "Creating tar file of edge cluster files..."
         tar -zcf $EDGE_CLUSTER_TAR_FILE_NAME agent-uninstall.sh deployment-template.yml persistentClaim-template.yml
         chk $? 'Creating tar file of edge cluster files'
-        local hzn_version=$(hzn version | grep "^Horizon CLI")
-        hzn_version=${hzn_version##* }   # remove all of the space-separated words, except the last one
-        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME $hzn_version
+        putOneFileInCss $EDGE_CLUSTER_TAR_FILE_NAME $(getHznVersion)
         rm $EDGE_CLUSTER_TAR_FILE_NAME
         chk $? "removing $EDGE_CLUSTER_TAR_FILE_NAME"
     fi
@@ -525,7 +534,7 @@ all_main() {
 
     cleanUpPreviousFiles
 
-    getAgentImageTarFile
+    getAgentK8sImageTarFile
 
     createAgentInstallConfig
 
@@ -534,6 +543,8 @@ all_main() {
     gatherHorizonPackageFiles
 
     getEdgeClusterFiles
+
+    getAgentInstallScript
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created
@@ -554,13 +565,15 @@ cluster_main() {
 
     cleanUpPreviousFiles
 
-    getAgentImageTarFile
+    getAgentK8sImageTarFile
 
     createAgentInstallConfig
 
     getClusterCert
 
     getEdgeClusterFiles
+
+    getAgentInstallScript
     echo
 
     # Note: if they specified they wanted files in CSS, we did that as the files were created

@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.28.0
+export VERSION ?= 2.29.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
@@ -87,7 +87,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.5.2$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.6.0$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -100,7 +100,7 @@ CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.5.2$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.6.0$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -244,9 +244,6 @@ rpmpkgs:
 # Build the horizon-cli pkg for mac
 MAC_PKG_VERSION = $(VERSION)$(BUILD_NUMBER)
 MAC_PKG = pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
-# this is Softlayer hostname aptrepo-sjc03-1
-APT_REPO_HOST ?= 169.45.88.181
-APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
 
 # This is a 1-time step to create the private signing key and public cert for the mac pkg.
 # You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
@@ -277,19 +274,6 @@ macpkg: $(MAC_PKG)
 
 $(MAC_PKG):
 	$(MAKE) -C pkg/mac macpkg
-
-# Upload the pkg to the staging dir of our apt repo svr
-#todo: For now, you must have ssh access to the apt repo svr for this to work
-macupload: $(MAC_PKG)
-	@echo "Uploading $< to the staging dir of our apt repo svr"
-	rsync -avz $< root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
-
-# This target promotes the last version you uploaded to staging, so assumes MAC_PKG_VERSION is still set to that version
-promote-mac-pkg:
-	@echo "Promoting horizon-cli.crt"
-	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/certs/horizon-cli.crt $(APT_REPO_DIR)/macos/certs'
-	@echo "Promoting horizon-cli-$(MAC_PKG_VERSION).pkg"
-	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/horizon-cli-$(MAC_PKG_VERSION).pkg $(APT_REPO_DIR)/macos'
 
 macinstall: $(MAC_PKG)
 	$(MAKE) -C pkg/mac macinstall
@@ -360,8 +344,6 @@ promote-anax-k8s:
 	docker push $(ANAX_K8S_IMAGE_PROD)
 	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_LATEST)
 	docker push $(ANAX_K8S_IMAGE_LATEST)
-
-promote-mac-pkg-and-docker: promote-mac-pkg promote-anax promote-agbot promote-css promote-anax-k8s
 
 anax-package: anax-image
 	@echo "Packaging anax image"
@@ -613,4 +595,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-anax gen-mac-key install-mac-key css-docker-image ess-promote

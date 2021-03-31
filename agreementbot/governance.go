@@ -64,8 +64,12 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 					if ag.AgreementFinalizedTime == 0 {
 
 						glog.V(5).Infof("AgreementBot Governance detected agreement %v not yet final.", ag.CurrentAgreementId)
+						timeout := ag.AgreementTimeoutS
+						if timeout == 0 {
+							timeout, _ = w.SetAgreementTimeouts(ag, agp)
+						}
 						now := uint64(time.Now().Unix())
-						if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.AgreementTimeoutS < now {
+						if ag.AgreementCreationTime+timeout < now {
 							// Start timing out the agreement
 							w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NOT_FINALIZED_TIMEOUT))
 						}
@@ -181,8 +185,12 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 				} else {
 					// We are waiting for a reply
 					glog.V(5).Infof("AgreementBot Governance waiting for reply to %v.", ag.CurrentAgreementId)
+					timeout := ag.ProtocolTimeoutS
+					if timeout == 0 {
+						_, timeout = w.SetAgreementTimeouts(ag, agp)
+					}
 					now := uint64(time.Now().Unix())
-					if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.AgreementBot.ProtocolTimeoutS < now {
+					if ag.AgreementCreationTime+timeout < now {
 						w.nodeSearch.AddRetry(ag.PolicyName, ag.AgreementCreationTime-w.BaseWorker.Manager.Config.GetAgbotRetryLookBackWindow())
 						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
 					}

@@ -475,8 +475,8 @@
       "translation": "Das Kennwort für dieses Benutzerkonto, wenn es in Horizon Exchange erstellt wird."
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Die E-Mail-Adresse, die diesem Benutzerkonto zugeordnet werden soll, wenn es in Horizon Exchange erstellt wird. Wenn der Benutzername eine E-Mail-Adresse ist, muss dieses Argument nicht angegeben werden."
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Die E-Mail-Adresse, die diesem Benutzerkonto zugeordnet werden soll, wenn es in Horizon Exchange erstellt wird. Dieses Argument ist optional. "
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -497,14 +497,6 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "'true', wenn es ein Benutzer mit Administratorberechtigung sein soll, andernfalls 'false'."
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "Ändert den vorhandenen Benutzer in einen Hubadministrator oder entfernt die Berechtigung als Hubadministrator von einem Benutzer. Ein Hubadministrator kann Organisationen (Orgs) im Management-Hub erstellen, ändern und löschen. "
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "'true', wenn dieser Benutzer ein Hubadministrator sein soll, andernfalls 'false'."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -2283,8 +2275,8 @@
       "translation": "Docker-Berechtigungsnachweise für {Domain} können nicht gefunden werden"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} wird mit Push-Operation übertragen..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Push-Operation für {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2295,12 +2287,8 @@
       "translation": "Push-Operation für Docker-Image {Repository____tag} nicht möglich: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Image-Digest konnte in Ausgabe der Docker-Push-Operation nicht gefunden werden."
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} wird mit Pull-Operation übertragen..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Pull-Operation für {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2309,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "Pull-Operation für Docker-Image {Repository____tag} nicht möglich: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Das Image-Digest konnte in der Docker-Ausgabe nicht gefunden werden; es wird direkt aus dem Image abgerufen. "
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "Das Image {ImageName} konnte nicht untersucht werden: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "Für das Image {ImageName} konnte kein Digest gefunden werden."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -3303,20 +3303,20 @@
       "translation": "Auflisten vorhandener Container nicht möglich: {Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "Hauptnetz für Service {Nwname}, {ContainerNetwork}, gefunden."
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "Hauptnetz für Service {AgreementId}, {ContainerNetwork}, gefunden."
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} für Abhängigkeit {URL}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "Abrufen der Metadaten für Abhängigkeit nicht möglich: {Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "Auflisten der vorhandenen Container durch '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' nicht möglich: {Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "Start der Startabhängigkeiten nicht möglich: {Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "Die Container für den Service {Org}/{URL} befinden sich im Netz {NetName}"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3325,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "Generierung der Instanz-ID nicht möglich: {Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "Arbeit am Service {SId}"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "Abrufen der Metadaten für Abhängigkeit nicht möglich: {Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "Start der Startabhängigkeiten nicht möglich: {Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3377,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "Abrufen der Container-Images fehlgeschlagen; Fehler: {Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "Netz {Name} erstellt"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4187,24 +4203,24 @@
       "translation": "Marshalling der Ausgabe von 'exchange user list' ist fehlgeschlagen: {Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "Die E-Mail-Adresse muss unter Verwendung von -e angegeben werden, wenn der Benutzername keine E-Mail-Adresse ist."
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "Prüfung der Exchange-Version fehlgeschlagen; Fehler: {Err}"
     },
     {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "Nur Exchange-Benutzer in der Stammorganisation (Root Org) können Hubadministratoren sein."
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "Eine E-Mail muss angegeben werden, da die Version der Exchange-API niedriger als {USEREMAILOPTIONALEXCHANGEVERSION} ist."
     },
     {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "Der Benutzer '{ExchUser}' wurde nicht in der vom Exchange zurückgegebenen Liste gefunden"
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "Nur Benutzer in der Stammorganisation (Root Org) können Hubadministratoren sein."
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "Nur Hubadministratoren und der Rootbenutzer des Exchange können Hubadministratoren erstellen."
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "Benutzer in der Stammorganisation (Root Org) müssen Hubadministratoren sein. Geben Sie die Option -H nicht an."
     },
     {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "Der Status als Hubadministrator kann nicht festgelegt werden, da der Benutzer {User} nicht in der Stammorganisation (Root Org) vorhanden ist."
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "Ein Benutzer in der Stammorganisation (Root Org) Kann kein Organisationsadministrator (Org Admin) sein."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4375,12 +4391,12 @@
       "translation": "Abhängigkeiten werden gestartet."
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "Starten der Serviceabhängigkeiten durch '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' nicht möglich: {Perr}"
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "Generieren einer Vereinbarungs-ID (agreementId) für Test durch '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' nicht möglich: {Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "Starten der Serviceabhängigkeiten durch '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' nicht möglich: {Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -5411,24 +5427,16 @@
       "translation": "PUT-Datei {Metadata} in CSS nicht möglich; HTTP-Code {StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "Netz {Name} erstellt"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "Docker-Netze können nicht aufgelistet werden; Fehler: {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Docker-Netz {Name} kann nicht entfernt werden; Fehler: {Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "Die Statusanforderung für den CSS-Abruf kann nicht erstellt werden; Fehler: {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "Der CSS-Status ist nicht bereit, nachdem {Timeout} Sekunden gewartet wurde. Zeitlimitüberschreitung."
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "Der CSS-Status ist nicht bereit, nachdem {Timeout__checkLimit} Sekunden gewartet wurde. Zeitlimitüberschreitung."
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "Der CSS-Status ist nicht bereit. Die Startanforderung für den Service wird beendet."
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -6253,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "Datei für privaten Schlüssel {ServerKey} des MMS-API-Zertifikats kann nicht geschlossen werden; Fehler: {Err}."
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: Eine leere Zeichenfolge ist keine gültige Version."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

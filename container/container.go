@@ -36,6 +36,13 @@ import (
 const LABEL_PREFIX = "openhorizon.anax"
 const IPT_COLONUS_ISOLATED_CHAIN = "OPENHORIZON-ANAX-ISOLATION"
 
+const (
+	API_SERVER_TYPE_DOCKER = "docker"
+	API_SERVER_TYPE_PODMAN = "podman"
+	LOG_DRIVER_SYSLOG      = "syslog"
+	LOG_DRIVER_JOURNALD    = "journald"
+)
+
 // messages for event logs
 const (
 	EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL   = "Deployment config %v contains unsupported capability for a workload"
@@ -276,8 +283,14 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 		var logConfig docker.LogConfig
 
-		// Use syslog log driver by default
-		logDriver := "syslog"
+		// Use -log-driver defined in the deployment string of the service.
+		// If -log-driver is not defined
+		// Use syslog log driver by default.
+		// Use journald log driver by default if podman is running
+		logDriver := LOG_DRIVER_SYSLOG
+		if w.apiServerType == API_SERVER_TYPE_PODMAN {
+			logDriver = LOG_DRIVER_JOURNALD
+		}
 		if service.LogDriver != "" {
 			logDriver = service.LogDriver
 		}
@@ -449,17 +462,23 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// the cgoup permission can be omitted. It defaults to "rwm" when omitted.
 		for _, givenDevice := range service.Devices {
 			cgp := "rwm"
+			pic := ""
 			sp := strings.Split(givenDevice, ":")
 			if len(sp) == 3 {
 				// the cgroup permission
 				cgp = sp[2]
-			} else if len(sp) < 2 || len(sp) > 3 {
+				pic = sp[1]
+			} else if len(sp) == 2 {
+				pic = sp[1]
+			} else if len(sp) == 1 {
+				pic = sp[0]
+			} else if len(sp) <= 0 || len(sp) > 3 {
 				return nil, fmt.Errorf("Illegal device specified in deployment description: %v", givenDevice)
 			}
 
 			serviceConfig.HostConfig.Devices = append(serviceConfig.HostConfig.Devices, docker.Device{
 				PathOnHost:        sp[0],
-				PathInContainer:   sp[1],
+				PathInContainer:   pic,
 				CgroupPermissions: cgp,
 			})
 		}
@@ -473,6 +492,38 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 	return services, nil
 }
 
+// Check if the client is talking with docker or podman
+// The /version api returns something like:
+// {
+//   "Components": [{"Name": "Podman Engine","Version": "3.1.0-dev",...]
+//   ...
+// }
+func GetServerEnginType(client *docker.Client) (string, error) {
+	svType := API_SERVER_TYPE_DOCKER
+
+	if client == nil {
+		return svType, fmt.Errorf("Invalid client pointer: nil.")
+	}
+
+	versionInfo, err := client.Version()
+	if err != nil {
+		return svType, fmt.Errorf("Failed to get the container HTTP server version info. %v", err)
+	}
+	glog.V(5).Infof("API version info: %v", versionInfo)
+
+	if versionInfo != nil {
+		for _, info := range *versionInfo {
+			if strings.Contains(strings.ToLower(info), "podman") {
+				glog.V(3).Infof("podman endpoint is detected.")
+				svType = API_SERVER_TYPE_PODMAN
+				break
+			}
+		}
+	}
+
+	return svType, nil
+}
+
 type ContainerWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
@@ -481,6 +532,7 @@ type ContainerWorker struct {
 	authMgr           *resource.AuthenticationManager
 	pattern           string
 	isDevInstance     bool
+	apiServerType     string
 }
 
 func (cw *ContainerWorker) GetClient() *docker.Client {
@@ -502,6 +554,11 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		return nil, derr
 	}
 
+	svType, err := GetServerEnginType(client)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ContainerWorker{
 		BaseWorker:    worker.NewBaseWorker("mock", config, nil),
 		db:            nil,
@@ -510,6 +567,7 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		authMgr:       resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
 		pattern:       "",
 		isDevInstance: true,
+		apiServerType: svType,
 	}, nil
 }
 
@@ -561,18 +619,24 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		}
 	}
 
+	svType, err := GetServerEnginType(client)
+	if err != nil {
+		glog.Errorf(fmt.Sprintf("Failed to get the docker API server engine type. %v", err))
+	}
+
 	pattern := ""
 	if dev != nil {
 		pattern = dev.Pattern
 	}
 
 	worker := &ContainerWorker{
-		BaseWorker: worker.NewBaseWorker(name, config, nil),
-		db:         db,
-		client:     client,
-		iptables:   ipt,
-		authMgr:    am,
-		pattern:    pattern,
+		BaseWorker:    worker.NewBaseWorker(name, config, nil),
+		db:            db,
+		client:        client,
+		iptables:      ipt,
+		authMgr:       am,
+		pattern:       pattern,
+		apiServerType: svType,
 	}
 	worker.SetDeferredDelay(15)
 
@@ -676,11 +740,16 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func MakeBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
+func MakeBridge(client *docker.Client, name string, infrastructure, sharedPattern, isDev bool) (*docker.Network, error) {
 
 	// Labels on the docker network indicate attributes about the network.
 	labels := make(map[string]string)
-	labels[LABEL_PREFIX+".network"] = ""
+
+	if isDev {
+		labels[LABEL_PREFIX+".dev_network"] = "true"
+	} else {
+		labels[LABEL_PREFIX+".network"] = ""
+	}
 	if infrastructure {
 		labels[LABEL_PREFIX+".infrastructure"] = ""
 	}
@@ -722,7 +791,7 @@ func serviceStart(client *docker.Client,
 	sharedEndpoints map[string]*docker.EndpointConfig,
 	postCreateContainers *[]interface{},
 	fail func(container *docker.Container, name string, err error) error,
-	useSyslog bool) error {
+	isFirstTry bool) error {
 
 	var namePrefix string
 	if shareLabel != "" {
@@ -741,7 +810,7 @@ func serviceStart(client *docker.Client,
 	}
 
 	// this for the retry after log driver using syslog failed.
-	if !useSyslog {
+	if !isFirstTry {
 		containerOpts.HostConfig.LogConfig = docker.LogConfig{}
 	}
 
@@ -757,16 +826,17 @@ func serviceStart(client *docker.Client,
 	}
 
 	// second arg just a backwards compat feature, will go away someday
+	logDriverName := serviceConfig.HostConfig.LogConfig.Type
 	err := client.StartContainer(container.ID, nil)
 	if err != nil {
-		if strings.Contains(err.Error(), "logging driver") && strings.Contains(err.Error(), "syslog") {
+		if strings.Contains(err.Error(), "logging driver") && (strings.Contains(err.Error(), LOG_DRIVER_SYSLOG) || strings.Contains(err.Error(), LOG_DRIVER_JOURNALD)) {
 			// prevent infinit loop, just in case
-			if !useSyslog {
+			if !isFirstTry {
 				return fail(container, serviceName, err)
 			}
 
-			// if the error is related to syslog, use the default for logconfig and retry
-			glog.V(3).Infof("StartContainer logconfig cannot use syslog: %v. Switching to default. You can use 'docker logs -f <container_name> to view the logs.", err)
+			// if the error is related to syslog or journald, use the default for logconfig and retry
+			glog.V(3).Infof("StartContainer logconfig cannot use %v: %v. Switching to default. You can use 'docker logs -f <container_name> to view the logs.", logDriverName, err)
 
 			if err_r := client.RemoveContainer(docker.RemoveContainerOptions{ID: container.ID, RemoveVolumes: false, Force: true}); err_r != nil {
 				return fail(container, serviceName, err_r)
@@ -1297,7 +1367,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 
 		if existingNetwork == nil {
-			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true)
+			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true, b.isDevInstance)
 			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", containerName, existingNetwork)
 			if err != nil {
 				return nil, fail(nil, containerName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
@@ -1340,7 +1410,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			}
 			if agBridge == nil {
 				glog.V(5).Infof("Making network %v", agreementId)
-				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false)
+				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false, b.isDevInstance)
 				if err != nil {
 					return nil, err
 				}
@@ -1961,7 +2031,11 @@ func (b *ContainerWorker) syncupResources() {
 			// Look for orphaned containers.
 			for _, container := range containers {
 				glog.V(5).Infof("ContainerWorker working on container %v", container)
-
+				if val, exists := container.Labels[LABEL_PREFIX+".dev_service"]; exists && val == "true" {
+					//skip dev containers
+					glog.V(4).Infof("Skipping non-leftover dev container: %v", container.ID)
+					continue
+				}
 				// Containers that are part of our horizon infrastructure or are shared or without an agreement id label will be ignored.
 				if _, infraLabel := container.Labels[LABEL_PREFIX+".infrastructure"]; infraLabel {
 					continue
@@ -1985,6 +2059,9 @@ func (b *ContainerWorker) syncupResources() {
 			for _, net := range networks {
 				glog.V(5).Infof("ContainerWorker working on network %v", net)
 				if _, anaxNet := net.Labels[LABEL_PREFIX+".network"]; !anaxNet {
+					continue
+				} else if val, exists := net.Labels[LABEL_PREFIX+".dev_network"]; exists && val == "true" {
+					//skip dev networks
 					continue
 				} else if val, exists := net.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 
@@ -2099,7 +2176,7 @@ func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers
 			glog.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 			continue
 		} else if len(nws) == 0 {
-			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false, b.isDevInstance); err != nil {
 				glog.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
 				continue
 			} else {
@@ -2206,7 +2283,7 @@ func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, p
 		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name": {nwForParentSvc: true}}); err != nil {
 			return fmt.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 		} else if len(nws) == 0 {
-			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false, b.isDevInstance); err != nil {
 				return fmt.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
 			} else {
 				parentSpecificNetwork = newNetwork
@@ -2264,6 +2341,11 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 
 	freeNets := make([]docker.Network, 0)
 	destroy := func(container *docker.APIContainers, agreementId string) error {
+		if !serviceAndWorkerTypeMatches(b.isDevInstance, container) {
+			// skip dev containers is it's non-dev instance and vice versa
+			glog.V(4).Infof("Skipping dev container: %v", container.ID)
+			return nil
+		}
 		if val, exists := container.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 			// must investigate bridge to see if other containers are still using this shared service
 
@@ -2375,7 +2457,8 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	// gather agreement networks to free
 	for _, net := range networks {
 		for _, agreementId := range agreements {
-			if strings.HasPrefix(net.Name, agreementId) {
+
+			if strings.HasPrefix(net.Name, agreementId) || strings.Contains(net.Name, agreementId) {
 				// disconnect the network from the containers if they are still connected to it.
 				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
 					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)
@@ -2816,8 +2899,10 @@ func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, ag
 
 					// same the volume in local db so that it can be cleaned up at unregistration time
 					// Ling todo - only save the ones that are specified by the user in binds.
-					if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
-						return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+					if b.db != nil {
+						if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
+							return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+						}
 					}
 				}
 			}
@@ -2909,4 +2994,19 @@ func DeleteLeftoverDockerVolumes(db *bolt.DB, config *config.HorizonConfig) erro
 		}
 	}
 	return nil
+}
+
+// serviceAndWorkerTypeMatches returns true if the container type matches the ContainerWorker instance type
+// (for dev and non-dev containers)
+func serviceAndWorkerTypeMatches(isDevInstance bool, container *docker.APIContainers) bool {
+	isDevContainer := false
+	if val, exists := container.Labels[LABEL_PREFIX+".dev_service"]; exists && val == "true" {
+		isDevContainer = true
+	}
+
+	if isDevInstance == isDevContainer {
+		return true
+	}
+
+	return false
 }

@@ -2,7 +2,7 @@ package cutil
 
 import (
 	"bufio"
-	 "crypto/md5"
+	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"

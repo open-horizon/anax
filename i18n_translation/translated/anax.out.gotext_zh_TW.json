@@ -411,8 +411,8 @@
       "translation": "找不到 {Domain} 的 Docker 認證"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "正在推送 {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "無法推送 Docker 映像檔 {Repository____tag}：{Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送輸出中找不到映像檔摘要"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在擷取 {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "正在取回 {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "無法擷取 Docker 映像檔 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "在 Docker 輸出中找不到映像檔摘要，正在直接從映像檔中擷取映像檔摘要。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "無法檢查映像檔 {ImageName}：{Err}。"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "找不到映像檔 {ImageName} 的摘要。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -468,7 +476,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 '{StatusCommand}'，以檢查 Horizon 代理程式是否在執行中。或者執行 '{StatusURL}' 以檢查 Horizon 代理程式狀態。或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}"
+      "translation": "無法連接至 Horizon REST API 以執行 {ApiMethod}。 請執行 '{StatusCommand}'，以檢查 Horizon 代理程式是否在執行中。 或者執行 '{StatusURL}' 以檢查 Horizon 代理程式狀態。 或者，將 HORIZON_URL 設定為連接至已透過 ssh 通道連接至遠端 Horizon 代理程式的其他本端埠。 特定的錯誤為：{Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -736,7 +744,7 @@
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}"
+      "translation": "所提供的 log-driver ({LogDriver}) 不支援日誌檢視。 僅在下列驅動程式上提供日誌：{DockerDriversWithLoggingSupport}"
     },
     {
       "id": "Error creating StdoutPipe for command: {Err}",
@@ -1757,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression：空字串不是有效的版本。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

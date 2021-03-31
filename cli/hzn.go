@@ -148,15 +148,12 @@ Environment Variables:
 	exUserCreateCmd := exUserCmd.Command("create", msgPrinter.Sprintf("Create the user resource in the Horizon Exchange."))
 	exUserCreateUser := exUserCreateCmd.Arg("user", msgPrinter.Sprintf("Your username for this user account when creating it in the Horizon exchange.")).Required().String()
 	exUserCreatePw := exUserCreateCmd.Arg("pw", msgPrinter.Sprintf("Your password for this user account when creating it in the Horizon exchange.")).Required().String()
-	exUserCreateEmail := exUserCreateCmd.Arg("email", msgPrinter.Sprintf("Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.")).String()
+	exUserCreateEmail := exUserCreateCmd.Arg("email", msgPrinter.Sprintf("Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional")).String()
 	exUserCreateIsAdmin := exUserCreateCmd.Flag("admin", msgPrinter.Sprintf("This user should be an administrator, capable of managing all resources in this org of the Exchange.")).Short('A').Bool()
 	exUserCreateIsHubAdmin := exUserCreateCmd.Flag("hubadmin", msgPrinter.Sprintf("This user should be a hub administrator, capable of managing orgs in this administration hub.")).Short('H').Bool()
 	exUserSetAdminCmd := exUserCmd.Command("setadmin", msgPrinter.Sprintf("Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user."))
 	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", msgPrinter.Sprintf("The user to be modified.")).Required().String()
 	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", msgPrinter.Sprintf("True if they should be an admin user, otherwise false.")).Required().Bool()
-	exUserSetHubAdminCmd := exUserCmd.Command("sethubadmin", msgPrinter.Sprintf("Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub."))
-	exUserSetHubAminUser := exUserSetHubAdminCmd.Arg("user", msgPrinter.Sprintf("The user to be modified.")).Required().String()
-	exUserSetHubAdminBool := exUserSetHubAdminCmd.Arg("ishubadmin", msgPrinter.Sprintf("True if this user should be a hub admin user, otherwise false.")).Required().Bool()
 	exUserDelCmd := exUserCmd.Command("remove", msgPrinter.Sprintf("Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc)."))
 	exDelUser := exUserDelCmd.Arg("user", msgPrinter.Sprintf("The user to remove.")).Required().String()
 	exUserDelForce := exUserDelCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
@@ -870,8 +867,6 @@ Environment Variables:
 		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateUser, *exUserCreatePw, *exUserCreateEmail, *exUserCreateIsAdmin, *exUserCreateIsHubAdmin)
 	case exUserSetAdminCmd.FullCommand():
 		exchange.UserSetAdmin(*exOrg, *exUserPw, *exUserSetAdminUser, *exUserSetAdminBool)
-	case exUserSetHubAdminCmd.FullCommand():
-		exchange.UserSetHubAdmin(*exOrg, *exUserPw, *exUserSetHubAminUser, *exUserSetHubAdminBool)
 	case exUserDelCmd.FullCommand():
 		exchange.UserRemove(*exOrg, *exUserPw, *exDelUser, *exUserDelForce)
 	case exNodeListCmd.FullCommand():

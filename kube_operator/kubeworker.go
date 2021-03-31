@@ -91,7 +91,7 @@ func (w *KubeWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf(kwlog(fmt.Sprintf("received error updating database deployment state, %v", err)))
 				w.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, lc.AgreementProtocol, lc.AgreementId, kd)
 				return true
-			} else if err := w.processKubeOperator(lc, kd); err != nil {
+			} else if err := w.processKubeOperator(lc, kd, w.Config.GetK8sCRInstallTimeouts()); err != nil {
 				glog.Errorf(kwlog(fmt.Sprintf("failed to process kube package after agreement negotiation: %v", err)))
 				w.Messages() <- events.NewWorkloadMessage(events.EXECUTION_FAILED, lc.AgreementProtocol, lc.AgreementId, kd)
 				return true
@@ -138,13 +138,13 @@ func (w *KubeWorker) getLaunchContext(launchContext interface{}) *events.Agreeme
 	return nil
 }
 
-func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *persistence.KubeDeploymentConfig) error {
+func (w *KubeWorker) processKubeOperator(lc *events.AgreementLaunchContext, kd *persistence.KubeDeploymentConfig, crInstallTimeout int64) error {
 	glog.V(3).Infof(kwlog(fmt.Sprintf("begin install of Kube Deployment %s", lc.AgreementId)))
 	client, err := NewKubeClient()
 	if err != nil {
 		return err
 	}
-	err = client.Install(kd.OperatorYamlArchive, *(lc.EnvironmentAdditions), lc.AgreementId)
+	err = client.Install(kd.OperatorYamlArchive, *(lc.EnvironmentAdditions), lc.AgreementId, crInstallTimeout)
 	if err != nil {
 		return err
 	}

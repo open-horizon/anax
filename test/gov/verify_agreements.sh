@@ -233,20 +233,7 @@ function handleCPU {
         NUM_NETS=$(echo ${NETS} | jq -r '. | length')
         if [ "${NUM_NETS}" != "${NETS_EXPECTED}" ]; then
             echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have ${NETS_EXPECTED} networks, but there are ${NUM_NETS}"
-
-            ### this part is added because of issue 2338, it will be removed after the issue is resolved.
-            if  [ "$PATTERN" == "" ] && [ "${VERS}" == "1.2.2" ]; then
-                if [ "${NUM_NETS}" != "4" ]; then
-                    echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have 4 networks, but there are ${NUM_NETS}"
-                    exit 2
-                 fi
-            else
-                exit 2
-            fi
-            ###
-
-            ### uncomment the following line after issue 2338 is resolved
-            #exit 2
+            exit 2
         fi
 
         # Grab the network name for the IBM's location service

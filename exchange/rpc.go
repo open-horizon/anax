@@ -728,6 +728,10 @@ func GetOrganization(httpClientFactory *config.HTTPClientFactory, org string, ex
 
 	glog.V(3).Infof(rpclogString(fmt.Sprintf("getting organization definition %v", org)))
 
+	if orgDef := GetOrgDefFromCache(org); orgDef != nil {
+		return orgDef, nil
+	}
+
 	var resp interface{}
 	resp = new(GetOrganizationResponse)
 
@@ -758,6 +762,7 @@ func GetOrganization(httpClientFactory *config.HTTPClientFactory, org string, ex
 				return nil, errors.New(fmt.Sprintf("organization %v not found", org))
 			} else {
 				glog.V(3).Infof(rpclogString(fmt.Sprintf("found organization %v definition %v", org, theOrg)))
+				UpdateCache(org, ORG_DEF_TYPE_CACHE, theOrg)
 				return &theOrg, nil
 			}
 		}

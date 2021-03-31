@@ -49,11 +49,11 @@ func Test_FindAgreementsForOutput1(t *testing.T) {
 	sps := []persistence.ServiceSpec{sp}
 
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -86,11 +86,11 @@ func Test_DeleteAgreement0(t *testing.T) {
 	sps := []persistence.ServiceSpec{sp}
 
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -125,11 +125,11 @@ func Test_DeleteAgreement1(t *testing.T) {
 	sps := []persistence.ServiceSpec{sp}
 
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -162,11 +162,11 @@ func Test_DeleteAgreement2(t *testing.T) {
 	sps := []persistence.ServiceSpec{sp}
 
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
@@ -199,11 +199,11 @@ func Test_DeleteAgreement3(t *testing.T) {
 	sps := []persistence.ServiceSpec{sp}
 
 	wi, _ := persistence.NewWorkloadInfo("url", "org", "version", "")
-	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId1", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement1: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId2", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement2: %v", err)
-	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(db, "name1", "agreementId3", "consumerId", "{}", "Basic", 1, sps, "signature", "address", "bcType", "bcName", "bcOrg", wi, 180); err != nil {
 		t.Errorf("error writing agreement3: %v", err)
 	} else if _, err := persistence.ArchiveEstablishedAgreement(db, "agreementId2", "Basic"); err != nil {
 		t.Errorf("error archiving agreement2: %v", err)
