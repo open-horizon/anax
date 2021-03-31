@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
+	"github.com/open-horizon/anax/policy"
 )
 
 // get the service configuration state for all the registered services.
@@ -68,8 +69,8 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 		return errorhandler(NewSystemError(fmt.Sprintf("Unable to retrieve node resource for %v from the exchange, error %v", pLocalDevice.Id, err))), nil
 	}
 
-	// save the services that are turned into suspended state
-	suspended_services := []events.ServiceConfigState{}
+	// save the services
+	changed_services := []events.ServiceConfigState{}
 
 	found := false
 	for _, svc_exchange := range pDevice.RegisteredServices {
@@ -82,12 +83,25 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 			svc_exchange.ConfigState = exchange.SERVICE_CONFIGSTATE_ACTIVE
 		}
 
+		var version, arch string
+		pol, err := policy.DemarshalPolicy(svc_exchange.Policy)
+		if err != nil {
+			glog.Errorf(fmt.Sprintf("Error unmarshaling service policy: %v", err))
+		} else {
+			for _, spec := range pol.APISpecs {
+				if spec.SpecRef == url && spec.Org == org {
+					version = spec.Version
+					arch = spec.Arch
+				}
+			}
+		}
+
 		if service_cs.Url != "" {
 			// single service case
 			if service_cs.Url == url && service_cs.Org == org {
 				found = true
-				if service_cs.ConfigState != svc_exchange.ConfigState && service_cs.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-					suspended_services = append(suspended_services, *(events.NewServiceConfigState(url, org, service_cs.ConfigState)))
+				if service_cs.ConfigState != svc_exchange.ConfigState {
+					changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, version, arch, service_cs.ConfigState)))
 				}
 				break
 			}
@@ -95,15 +109,15 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 			if service_cs.Org == "" {
 				// for all the registered services
 				found = true
-				if service_cs.ConfigState != svc_exchange.ConfigState && service_cs.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-					suspended_services = append(suspended_services, *(events.NewServiceConfigState(url, org, service_cs.ConfigState)))
+				if service_cs.ConfigState != svc_exchange.ConfigState {
+					changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, version, arch, service_cs.ConfigState)))
 				}
 			} else {
 				// for all the registered services in the org
 				if service_cs.Org == org {
 					found = true
-					if service_cs.ConfigState != svc_exchange.ConfigState && service_cs.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-						suspended_services = append(suspended_services, *(events.NewServiceConfigState(url, org, service_cs.ConfigState)))
+					if service_cs.ConfigState != svc_exchange.ConfigState {
+						changed_services = append(changed_services, *(events.NewServiceConfigState(url, org, version, arch, service_cs.ConfigState)))
 					}
 				}
 			}
@@ -131,5 +145,5 @@ func ChangeServiceConfigState(service_cs *exchange.ServiceConfigState,
 	}
 	glog.V(5).Infof(apiLogString(fmt.Sprintf("Complete changing service configuration state to %v for the node.", service_cs)))
 
-	return false, suspended_services
+	return false, changed_services
 }
