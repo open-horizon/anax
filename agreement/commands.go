@@ -90,3 +90,15 @@ func (c NodePolicyChangeCommand) ShortString() string {
 func NewNodePolicyChangeCommand() *NodePolicyChangeCommand {
 	return &NodePolicyChangeCommand{}
 }
+
+// ==============================================================================================================
+type NodeSvcConfigStateChangeCommand struct {
+}
+
+func (c NodeSvcConfigStateChangeCommand) ShortString() string {
+	return fmt.Sprintf("NodeSvcConfigStateChangeCommand")
+}
+
+func NewNodeSvcConfigStateChangeCommand() *NodeSvcConfigStateChangeCommand {
+	return &NodeSvcConfigStateChangeCommand{}
+}

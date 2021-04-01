@@ -86,9 +86,6 @@ func (w *AgreementWorker) checkNodeChanges() {
 	// check the pattern changes
 	w.checkNodePatternChanges(exchNode)
 
-	// check the service configstate changes
-	w.checkServiceConfigStateChanges(exchNode)
-
 	return
 }
 
@@ -174,8 +171,39 @@ func (w *AgreementWorker) checkNodeUserInputChanges(pDevice *persistence.Exchang
 
 // get the service configuration state from the exchange, check if any of them are suspended.
 // if a service is suspended, cancel the agreements and remove the containers associated with it.
-func (w *AgreementWorker) checkServiceConfigStateChanges(exchDevice *exchange.Device) {
-	glog.V(4).Infof(logString(fmt.Sprintf("Check the service configuration state")))
+func (w *AgreementWorker) checkServiceConfigStateChanges() {
+	glog.V(3).Infof(logString(fmt.Sprintf("Check the service configuration state")))
+
+	// get the node
+	pDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
+			persistence.EC_DATABASE_ERROR)
+		return
+	} else if pDevice == nil {
+		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
+		return
+	}
+
+	// save a local copy of the exchange node
+	exchDevice, err := exchangesync.SyncNodeWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w.limitedRetryEC))
+	if err != nil {
+		if !w.hznOffline {
+			glog.Errorf(logString(fmt.Sprintf("Unable to sync the node with the exchange copy. Error: %v", err)))
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_WITH_EXCH, err.Error()),
+				persistence.EC_ERROR_NODE_SYNC,
+				exchange.GetOrg(w.GetExchangeId()),
+				exchange.GetId(w.GetExchangeId()),
+				w.devicePattern, "")
+			w.isOffline()
+			return
+		}
+	} else {
+		w.hznOffline = false
+	}
 
 	if exchDevice == nil {
 		return

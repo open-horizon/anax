@@ -223,6 +223,8 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			w.Commands <- NewNodeChangeCommand()
 		case events.CHANGE_NODE_POLICY_TYPE:
 			w.Commands <- NewNodePolicyChangeCommand()
+		case events.CHANGE_SERVICE_CONFIGSTATE_TYPE:
+			w.Commands <- NewNodeSvcConfigStateChangeCommand()
 		}
 
 	case *events.NodeHeartbeatStateChangeMessage:
@@ -235,6 +237,7 @@ func (w *AgreementWorker) NewEvent(incoming events.Message) {
 			// never see them now. So, assume there were some changes we care about.
 			w.Commands <- NewNodeChangeCommand()
 			w.Commands <- NewNodePolicyChangeCommand()
+			w.Commands <- NewNodeSvcConfigStateChangeCommand()
 
 		}
 
@@ -497,6 +500,9 @@ func (w *AgreementWorker) CommandHandler(command worker.Command) bool {
 
 	case *NodePolicyChangeCommand:
 		w.checkNodePolicyChanges()
+
+	case *NodeSvcConfigStateChangeCommand:
+		w.checkServiceConfigStateChanges()
 
 	default:
 		// Unexpected commands are not handled.
