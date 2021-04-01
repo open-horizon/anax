@@ -253,14 +253,15 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
-		groupName := cutil.GetHashFromString(agreementId)
-		group, err := user.LookupGroup(groupName)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to find group %v created for ess auth file %v", groupName, agreementId))
-		}
-
 		groupAdds := make([]string, 0)
-		groupAdds = append(groupAdds, group.Gid)
+		if !cliutils.GetIsHznDevEnv() {
+			groupName := cutil.GetHashFromString(agreementId)
+			group, err := user.LookupGroup(groupName)
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("unable to find group %v created for ess auth file %v", groupName, agreementId))
+			}
+			groupAdds = append(groupAdds, group.Gid)
+		}
 
 		// Create the volume map based on the container paths being bound to the host.
 		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.

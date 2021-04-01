@@ -171,6 +171,7 @@ function checkMemoryAndCpus {
 #
 echo -e "Begin hzn dev service testing."
 
+export IS_HZN_DEV_ENVIRONMENT="true"
 export HZN_ORG_ID="e2edev@somecomp.com"
 export HZN_EXCHANGE_URL=$1
 export ARCH=$(uname -m | sed -e 's/aarch64.*/arm64/' -e 's/x86_64.*/amd64/' -e 's/armv.*/arm/')
@@ -339,5 +340,7 @@ then
   rm -rf /root/.colonus/*public.pem
 
 fi
+
+unset IS_HZN_DEV_ENVIRONMENT
 
 echo -e "End of hzn dev service testing: success."
