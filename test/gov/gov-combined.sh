@@ -527,6 +527,19 @@ else
   echo -e "Edge cluster agreement verification skipped."
 fi
 
+#Starting vault tests.
+if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ] && [ "$TESTFAIL" != "1" ]
+then
+  echo -e "Checking hashicorp vault reachability"
+  ./vault_test.sh
+  if [ $? -ne 0 ]; then
+    echo -e "Failed hashicorp vault startup tests."
+    exit 1
+  fi
+else
+  echo -e "Vault reachability tests were skipped."
+fi
+
 # Clean up remote environment
 if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   echo "Clean up remote environment"
