@@ -75,7 +75,7 @@ Subcommands Description:
   architecture: Show the architecture of this machine (as defined by Horizon and golang). 
   attribute: List or manage the global attributes that are currently registered on this Horizon edge node.
   deploycheck: Check deployment compatibility.
-  dev: Deployment tools for creation of services.
+  dev: Development tools for creation of services.
   env: Show the Horizon Environment Variables.
   eventlog: List the event logs for the current or all registrations.
   exchange: List and manage Horizon Exchange resources.
