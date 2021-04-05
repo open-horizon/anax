@@ -3,11 +3,11 @@ package main
 
 import (
 	"flag"
-	"os"
-	"strings"
 	"github.com/open-horizon/anax/cli/sdo"
 	"github.com/open-horizon/anax/version"
-	"runtime"
+	"os"
+	"strings"
+	
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -35,6 +35,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
+	"runtime"
 )
 
 func main() {
