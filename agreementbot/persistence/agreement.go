@@ -56,6 +56,8 @@ type Agreement struct {
 	NHCheckAgreementStatus         int      `json:"check_agreement_status"`            // How often to check that the node agreement entry still exists in the exchange (in seconds)
 	Pattern                        string   `json:"pattern"`                           // The pattern used to make the agreement, used for pattern case only
 	ServiceId                      []string `json:"service_id"`                        // All the service ids whose policy is used to make the agreement, used for policy case only
+	ProtocolTimeoutS               uint64   `json:"protocol_timeout_sec"`              // Number of seconds to wait before declaring proposal response is lost
+	AgreementTimeoutS              uint64   `json:"agreement_timeout_sec"`
 }
 
 func (a Agreement) String() string {
@@ -98,7 +100,9 @@ func (a Agreement) String() string {
 		"NHMissingHBInterval: %v, "+
 		"NHCheckAgreementStatus: %v, "+
 		"Pattern: %v, "+
-		"ServiceId: %v",
+		"ServiceId: %v, "+
+		"ProtocolTimeoutS: %v, "+
+		"AgreementTimeoutS: %v",
 		a.Archived, a.CurrentAgreementId, a.Org, a.AgreementProtocol, a.AgreementProtocolVersion, a.DeviceId, a.DeviceType, a.HAPartners,
 		a.AgreementInceptionTime, a.AgreementCreationTime, a.AgreementFinalizedTime,
 		a.AgreementTimedout, a.ProposalSig, a.ProposalHash, a.ConsumerProposalSig, a.PolicyName, a.CounterPartyAddress,
@@ -106,11 +110,11 @@ func (a Agreement) String() string {
 		a.DisableDataVerificationChecks, a.DataVerifiedTime, a.DataNotificationSent,
 		a.MeteringTokens, a.MeteringPerTimeUnit, a.MeteringNotificationInterval, a.MeteringNotificationSent, a.MeteringNotificationMsgs,
 		a.TerminatedReason, a.TerminatedDescription, a.BlockchainType, a.BlockchainName, a.BlockchainOrg, a.BCUpdateAckTime,
-		a.NHMissingHBInterval, a.NHCheckAgreementStatus, a.Pattern, a.ServiceId)
+		a.NHMissingHBInterval, a.NHCheckAgreementStatus, a.Pattern, a.ServiceId, a.ProtocolTimeoutS, a.AgreementTimeoutS)
 }
 
 // Factory method for agreement w/out persistence safety.
-func NewAgreement(agreementid string, org string, deviceid string, deviceType string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth) (*Agreement, error) {
+func NewAgreement(agreementid string, org string, deviceid string, deviceType string, policyName string, bcType string, bcName string, bcOrg string, agreementProto string, pattern string, serviceId []string, nhPolicy policy.NodeHealth, protocolTimeout uint64, agreementTimeout uint64) (*Agreement, error) {
 	if agreementid == "" || agreementProto == "" {
 		return nil, errors.New("Illegal input: agreement id or agreement protocol is empty")
 	} else {
@@ -157,6 +161,8 @@ func NewAgreement(agreementid string, org string, deviceid string, deviceType st
 			NHCheckAgreementStatus:         nhPolicy.CheckAgreementStatus,
 			Pattern:                        pattern,
 			ServiceId:                      serviceId,
+			ProtocolTimeoutS:               protocolTimeout,
+			AgreementTimeoutS:              agreementTimeout,
 		}, nil
 	}
 }
@@ -324,6 +330,18 @@ func ArchiveAgreement(db AgbotDatabase, agreementid string, protocol string, rea
 		a.Archived = true
 		a.TerminatedReason = reason
 		a.TerminatedDescription = desc
+		return &a
+	}); err != nil {
+		return nil, err
+	} else {
+		return agreement, nil
+	}
+}
+
+func SetAgreementTimeouts(db AgbotDatabase, agreementid string, protocol string, agreementTimeoutS uint64, protocolTimeoutS uint64) (*Agreement, error) {
+	if agreement, err := db.SingleAgreementUpdate(agreementid, protocol, func(a Agreement) *Agreement {
+		a.AgreementTimeoutS = agreementTimeoutS
+		a.ProtocolTimeoutS = protocolTimeoutS
 		return &a
 	}); err != nil {
 		return nil, err

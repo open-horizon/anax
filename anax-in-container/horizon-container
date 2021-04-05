@@ -207,7 +207,8 @@ start() {
 	#mkdir -p $serviceStorageDir/service_storage
 	#checkrc $? "mkdir -p $serviceStorageDir/service_storage"
 
-	# Get the latest horizon image
+	# Get the horizon image. The image version is the same as the hzn CLI version unless it is
+	# overwitten by $HC_DOCKER_IMAGE and $HC_DOCKER_TAG.
 	# $HC_DOCKER_IMAGE and $HC_DOCKER_TAG are intentionally undocumented env vars that allow us to test the staging version of the docker image
 	dockerImage='openhorizon/amd64_anax'
 	dockerTag='latest'
@@ -216,9 +217,32 @@ start() {
 	fi
 	if [[ -n "$HC_DOCKER_TAG" ]]; then
 		dockerTag="$HC_DOCKER_TAG"
+	else
+		# get the image tag from the hzn version
+		local hzn_version=$(LANG=en_US HZN_LANG=en_US hzn version | grep "^Horizon CLI")
+		if [ $? -eq 0 ]; then 
+        	dockerTag=${hzn_version##* }   # remove all of the space-separated words, except the last one
+        fi
 	fi
+
+	local pull_image=1
 	# HC_DONT_PULL is an intentionally undocumented env var that allows us to test a new image before pushing it to docker hub
-	if [[ -z "$HC_DONT_PULL" ]]; then
+	if [[ -n "$HC_DONT_PULL" ]]; then
+		# check if the image exists,if not exit out
+		docker inspect $dockerImage:$dockerTag > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			pull_image=0
+		else
+			echo "Image $dockerImage:$dockerTag cannot be found locally. Please unset HC_DONT_PULL or use 'docker pull' command to pull it from the registry."
+			exit 2
+		fi
+	fi 
+	# Use local image if the tag is not latest and testing
+	if [[ "$dockerTag" != "latest" ]] && [[ "$dockerTag" != "testing" ]]; then
+		pull_image=0
+	fi
+
+	if [[ $pull_image -eq 1 ]];  then
 		docker pull $dockerImage:$dockerTag
 		checkrc $? "docker pull $dockerImage:$dockerTag"
 	fi

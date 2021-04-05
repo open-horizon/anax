@@ -411,8 +411,8 @@
       "translation": "找不到 {Domain} 的 Docker 凭证"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "正在推送 {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "无法推送 Docker 映像 {Repository____tag}：{Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送输出中找不到映像摘要"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在拉取 {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "正在拉取 {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "无法拉取 Docker 映像 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "在 Docker 输出中找不到映像摘要，将直接从映像中检索映像摘要。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "无法检查映像 {ImageName}：{Err}。"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "找不到映像 {ImageName} 的摘要。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -467,12 +475,12 @@
       "translation": "读取 HTTP 响应出错，错误：{Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。 或运行“{StatusURL}”以检查 Horizon 代理程序状态。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 特定的错误为：{Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 具体错误为：{Err}"
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 特定的错误为：{Err}"
     },
     {
       "id": "{ApiMsg} new request failed: {Err}",
@@ -584,11 +592,11 @@
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 具体错误为：{Err}"
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 特定的错误为：{Err}"
     },
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 具体错误为：{Err}"
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 特定的错误为：{Err}"
     },
     {
       "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
@@ -735,6 +743,38 @@
       "translation": "警告：未能解析映像路径 '{Image}'。 不会将其推送到 Docker 注册表，而只是将其按原样包括在 'deployment' 字段中。"
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "所提供的日志驱动程序 ({LogDriver}) 不支持日志查看。 日志仅在以下驱动程序上可用：{DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "为命令创建 StdoutPipe 出错：{Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "启动命令出错：{Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "等待命令出错：{Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 无法打开或不存在：{Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 无法获取统计信息：{Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "读取 {SysLogPath} 时出错：{Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "无法声明 {SysLogPath}：{Err}"
+    },
+    {
       "id": "no service name",
       "translation": "没有服务名称"
     },
@@ -780,11 +820,11 @@
     },
     {
       "id": "Error getting new user input format. {Err1}",
-      "translation": "获取新用户输入格式时出错。{Err1}"
+      "translation": "获取新用户输入格式时出错。 {Err1}"
     },
     {
       "id": "Failed to create json object for user input. {Err1}",
-      "translation": "未能为用户输入创建 JSON 对象。{Err1}"
+      "translation": "未能为用户输入创建 JSON 对象。 {Err1}"
     },
     {
       "id": "Deployment policy and pattern are mutually exclusive.",
@@ -816,7 +856,7 @@
     },
     {
       "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "translation": "未在标识为 {NodeId} 的给定节点中指定组织。"
     },
     {
       "id": "Error getting node {NodeId} from the Exchange. {Err}",
@@ -1403,8 +1443,8 @@
       "translation": "已装入服务 {Arg_1}/{Arg_2} 的映像。"
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。"
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。 原因：{Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
@@ -1725,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression：空字符串不是有效的版本。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

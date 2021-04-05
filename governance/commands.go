@@ -135,14 +135,15 @@ func (w *GovernanceWorker) NewUpdateMicroserviceCommand(key string, started bool
 
 // ==============================================================================================================
 type ReportDeviceStatusCommand struct {
+	configStates []events.ServiceConfigState
 }
 
 func (c ReportDeviceStatusCommand) ShortString() string {
 	return fmt.Sprintf("ReportDeviceStatusCommand")
 }
 
-func (w *GovernanceWorker) NewReportDeviceStatusCommand() *ReportDeviceStatusCommand {
-	return &ReportDeviceStatusCommand{}
+func (w *GovernanceWorker) NewReportDeviceStatusCommand(cfgStates []events.ServiceConfigState) *ReportDeviceStatusCommand {
+	return &ReportDeviceStatusCommand{configStates: cfgStates}
 }
 
 // ==============================================================================================================

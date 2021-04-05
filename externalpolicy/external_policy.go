@@ -112,7 +112,7 @@ func (e *ExternalPolicy) DeepCopy() *ExternalPolicy {
 	if e.Constraints == nil {
 		copyCons = nil
 	} else {
-		copyCons := make(ConstraintExpression, len(e.Constraints))
+		copyCons = make(ConstraintExpression, len(e.Constraints))
 		copy(copyCons, e.Constraints)
 	}
 

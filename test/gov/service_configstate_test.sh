@@ -14,6 +14,24 @@ function getNetspeedLocationAgreements {
 	echo -e "${PREFIX} agreement for e2edev@somecomp.com/location: $E2EDEV_LOCATION_AG_ID"
 }
 
+# get if the docker container for the service with given org and url is up.
+# $1 - service org
+# $2 - service url
+# returns 0 for up and non-zero for down
+function checkContainer {
+    # get the instance id of the cpu service with quotes removed
+    service_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"${2}\") | select (.organization == \"${1}\")")
+    if [ -n "$service_inst" ]; then
+    	inst_id=$(echo "$service_inst" | jq '.instance_id')
+    	inst_id="${inst_id%\"}"
+    	inst_id="${inst_id#\"}"
+    	out=$(docker ps | grep $inst_id)
+    	return $?
+    else
+    	return 1
+    fi
+}
+
 # check if the containers for e2edev@somecomp.com/netspeed and e2edev@somecomp.com/location services
 # are up/down.
 function checkNetspeedLocationContainers {
@@ -35,32 +53,42 @@ function checkNetspeedLocationContainers {
 		echo -e "${PREFIX} container for e2edev@somecomp.com/location is not $1."
 		return 1
 	fi
-	out=$(docker ps | grep locgps)
+
+	checkContainer "e2edev@somecomp.com" "https://bluehorizon.network/services/locgps"
 	ret=$?
-	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is not $1."
-		return 1
-	fi
-	out=$(docker ps | grep cpu | grep -v "my.company.com" | grep e2edev)
+	if [[ "$PATTERN" == "sall" ]]; then
+		# in this pattern case, locgps is agreementless service, so it should stay up
+		# all the time.  
+		if [ $ret -ne 0 ]; then
+			echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is missing."
+			return 1
+		fi
+	else
+		if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
+			echo -e "${PREFIX} container for e2edev@somecomp.com/locgps is missing."
+			return 1
+		fi
+	fi		
+
+	checkContainer "e2edev@somecomp.com" "my.company.com.services.cpu2"
 	ret=$?
-	if ([ "$1" == "up" ] && [ $ret -ne 0 ]) || ([ "$1" == "down" ] && [ $ret -eq 0 ]); then
-		echo -e "${PREFIX} container for e2edev@somecomp.com/cpu is not $1."
+	if [ $ret -ne 0 ]; then
+		echo -e "${PREFIX} container for e2edev@somecomp.com/cpu is missing."
 		return 1
 	fi
 
 	# only check if the containers for IBM/cpu are up.
-	# not checking down state because it is used by another service which is now down.
-	out=$(docker ps | grep cpu | grep IBM)
 	ret=$?
-	if [ "$1" == "up" ] && [ $ret -ne 0 ]; then
+	checkContainer "IBM" "https://bluehorizon.network/service-cpu"
+	if [ $ret -ne 0 ]; then
 		echo -e "${PREFIX} container for IBM/cpu is not up."
 		return 1
 	fi
 }
 
 # main code starts here
-if [ "${PATTERN}" != "sall" ]; then
-	echo -e "${PREFIX} will not perform this test because the pattern is not sall."
+if ([ "${PATTERN}" != "" ] && [ "${PATTERN}" != "sall" ]); then
+	echo -e "${PREFIX} will not perform this test because the pattern is not sall and not a policy."
 	exit 0
 fi
 
@@ -94,7 +122,7 @@ if [ $? -ne 0 ]; then
 	exit 2
 fi
 
-# suspending the two servicess: e2edev@somecomp.com/netspeed, e2edev@somecomp.com/location
+# suspending the two services: e2edev@somecomp.com/netspeed, e2edev@somecomp.com/location
 echo -e "${PREFIX} suspending the e2edev@somecomp.com/netspeed service..."
 out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed -f)
 if [ $? -ne 0 ]; then
@@ -142,7 +170,7 @@ do
 
     if [ $ag_canceled -ne 1 ]; then
 		# make sure the agreement is gone
-		echo -e "${PREFIX} making sure the agreements are canceled..."
+		echo -e "${PREFIX} making sure the agreements are cancelled..."
 		getNetspeedLocationAgreements
 		if [ "$E2EDEV_NETSPEED_AG_ID" != "" ]; then
 			echo -e "${PREFIX} error: agreement for e2edev@somecomp.com/netspeed not canceled."
@@ -218,11 +246,11 @@ do
 		echo -e "${PREFIX} making sure the agreements are formed..."
 		getNetspeedLocationAgreements
 		if [ "$E2EDEV_NETSPEED_AG_ID" == "" ]; then
-  			echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/netspeed."
+			echo -e "${PREFIX} cannot find agreement for e2edev@somecomp.com/netspeed."
   			continue
 		fi
 		if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
-  			echo -e "${PREFIX} error: cannot find agreement for e2edev@somecomp.com/location."
+			echo -e "${PREFIX} cannot find agreement for e2edev@somecomp.com/location."
   			continue
 		fi
 	fi

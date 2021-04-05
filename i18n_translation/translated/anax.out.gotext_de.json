@@ -411,8 +411,8 @@
       "translation": "Docker-Berechtigungsnachweise für {Domain} können nicht gefunden werden"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} wird mit Push-Operation übertragen..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Push-Operation für {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "Push-Operation für Docker-Image {Repository____tag} nicht möglich: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Image-Digest konnte in Ausgabe der Docker-Push-Operation nicht gefunden werden."
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} wird mit Pull-Operation übertragen..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Pull-Operation für {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "Pull-Operation für Docker-Image {Repository____tag} nicht möglich: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Das Image-Digest konnte in der Docker-Ausgabe nicht gefunden werden; es wird direkt aus dem Image abgerufen. "
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "Das Image {ImageName} konnte nicht untersucht werden: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "Für das Image {ImageName} konnte kein Digest gefunden werden."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -467,8 +475,8 @@
       "translation": "Fehler beim Lesen der HTTP-Antwort; Fehler: {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Verbindung zu Horizon-REST-API zum Ausführen von {ApiMethod} kann nicht hergestellt werden. Führen Sie 'systemctl status horizon' aus, um zu überprüfen, ob der Horizon-Agent aktiv ist. Legen Sie alternativ einen Wert für HORIZON_URL fest, um eine Verbindung zu einem anderen lokalen Port aufzubauen, der über einen SSH-Tunnel mit einem fernen Horizon-Agenten verbunden ist. Spezifischer Fehler ist: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Verbindung zu Horizon-REST-API zum Ausführen von {ApiMethod} kann nicht hergestellt werden. Führen Sie den Befehl '{StatusCommand}' aus, um zu überprüfen, ob der Horizon-Agent aktiv ist. Sie können auch '{StatusURL}' ausführen, um den Status des Horizon-Agenten zu überprüfen. Legen Sie alternativ einen Wert für HORIZON_URL fest, um eine Verbindung zu einem anderen lokalen Port aufzubauen, der über einen SSH-Tunnel mit einem fernen Horizon-Agenten verbunden ist. Spezifischer Fehler ist: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +741,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Warnung: Image-Pfad '{Image}' konnte nicht ausgewertet werden. Durchführung einer Push-Operation zu Docker-Registry nicht möglich, wird unverändert in Feld 'deployment' übernommen."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Der angegebene Protokolltreiber ({LogDriver}) unterstützt die Anzeige von Protokollen nicht. Protokolle sind nur mit den folgenden Treibern verfügbar: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Fehler beim Erstellen von 'StdoutPipe' für den Befehl. {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Fehler beim Starten des Befehls. {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Fehler beim Warten auf den Befehl. {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "'{SysLogPath}' konnte nicht geöffnet werden oder ist nicht vorhanden, {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "'{SysLogPath}' konnte keine Statistiken abrufen. {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Fehler beim Lesen aus '{SysLogPath}'. {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "'{SysLogPath}' konnte nicht angegeben werden. {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1443,8 @@
       "translation": "Image geladen für Service {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Fehler beim Laden des Image für {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Fehler beim Laden des Image für {Arg_1}/{Arg_2}. Ursache: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
@@ -1725,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "Die Datei für den privaten Schlüssel {ServerKey} des MMS-API-Zertifikats kann nicht geschlossen werden; Fehler: {Err}."
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: Eine leere Zeichenfolge ist keine gültige Version."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

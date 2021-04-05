@@ -148,8 +148,9 @@ Environment Variables:
 	exUserCreateCmd := exUserCmd.Command("create", msgPrinter.Sprintf("Create the user resource in the Horizon Exchange."))
 	exUserCreateUser := exUserCreateCmd.Arg("user", msgPrinter.Sprintf("Your username for this user account when creating it in the Horizon exchange.")).Required().String()
 	exUserCreatePw := exUserCreateCmd.Arg("pw", msgPrinter.Sprintf("Your password for this user account when creating it in the Horizon exchange.")).Required().String()
-	exUserCreateEmail := exUserCreateCmd.Arg("email", msgPrinter.Sprintf("Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.")).String()
+	exUserCreateEmail := exUserCreateCmd.Arg("email", msgPrinter.Sprintf("Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional")).String()
 	exUserCreateIsAdmin := exUserCreateCmd.Flag("admin", msgPrinter.Sprintf("This user should be an administrator, capable of managing all resources in this org of the Exchange.")).Short('A').Bool()
+	exUserCreateIsHubAdmin := exUserCreateCmd.Flag("hubadmin", msgPrinter.Sprintf("This user should be a hub administrator, capable of managing orgs in this administration hub.")).Short('H').Bool()
 	exUserSetAdminCmd := exUserCmd.Command("setadmin", msgPrinter.Sprintf("Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user."))
 	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", msgPrinter.Sprintf("The user to be modified.")).Required().String()
 	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", msgPrinter.Sprintf("True if they should be an admin user, otherwise false.")).Required().Bool()
@@ -281,6 +282,7 @@ Environment Variables:
 	exSvcRegistryTokens := exServicePublishCmd.Flag("registry-token", msgPrinter.Sprintf("Docker registry domain and auth that should be stored with the service, to enable the Horizon edge node to access the service's docker images. This flag can be repeated, and each flag should be in the format: registry:user:token")).Short('r').Strings()
 	exSvcOverwrite := exServicePublishCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing version if the service exists in the Exchange. It will skip the 'do you want to overwrite' prompt.")).Short('O').Bool()
 	exSvcPolicyFile := exServicePublishCmd.Flag("service-policy-file", msgPrinter.Sprintf("The path of the service policy JSON file to be used for the service to be published. This flag is optional")).Short('p').String()
+	exSvcPublic := exServicePublishCmd.Flag("public", msgPrinter.Sprintf("Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.")).String()
 	exServiceVerifyCmd := exServiceCmd.Command("verify", msgPrinter.Sprintf("Verify the signatures of a service resource in the Horizon Exchange."))
 	exVerService := exServiceVerifyCmd.Arg("service", msgPrinter.Sprintf("The service to verify.")).Required().String()
 	exServiceVerifyNodeIdTok := exServiceVerifyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -862,7 +864,7 @@ Environment Variables:
 	case exUserListCmd.FullCommand():
 		exchange.UserList(*exOrg, *exUserPw, *exUserListUser, *exUserListAll, *exUserListNamesOnly)
 	case exUserCreateCmd.FullCommand():
-		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateUser, *exUserCreatePw, *exUserCreateEmail, *exUserCreateIsAdmin)
+		exchange.UserCreate(*exOrg, *exUserPw, *exUserCreateUser, *exUserCreatePw, *exUserCreateEmail, *exUserCreateIsAdmin, *exUserCreateIsHubAdmin)
 	case exUserSetAdminCmd.FullCommand():
 		exchange.UserSetAdmin(*exOrg, *exUserPw, *exUserSetAdminUser, *exUserSetAdminBool)
 	case exUserDelCmd.FullCommand():
@@ -930,7 +932,7 @@ Environment Variables:
 	case exServiceListCmd.FullCommand():
 		exchange.ServiceList(*exOrg, credToUse, *exService, !*exServiceLong, *exSvcOpYamlFilePath, *exSvcOpYamlForce)
 	case exServicePublishCmd.FullCommand():
-		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcPubPullImage, *exSvcRegistryTokens, *exSvcOverwrite, *exSvcPolicyFile)
+		exchange.ServicePublish(*exOrg, *exUserPw, *exSvcJsonFile, *exSvcPrivKeyFile, *exSvcPubPubKeyFile, *exSvcPubDontTouchImage, *exSvcPubPullImage, *exSvcRegistryTokens, *exSvcOverwrite, *exSvcPolicyFile, *exSvcPublic)
 	case exServiceVerifyCmd.FullCommand():
 		exchange.ServiceVerify(*exOrg, credToUse, *exVerService, *exSvcPubKeyFile)
 	case exSvcDelCmd.FullCommand():

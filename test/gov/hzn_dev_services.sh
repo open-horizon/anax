@@ -57,6 +57,7 @@ function createProject {
 
     sed -e 's|"label": "$SERVICE_NAME for $ARCH"|"label": "'$2'service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"description": ""|"description": "'$2' service"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
+    sed -e 's|"public": false|"public": true|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"sharable": "multiple"|"sharable": "'$5'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"name": ""|"name": "'$6'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
     sed -e 's|"type": ""|"type": "'$7'"|' ${serviceDef} > ${serviceDef}.tmp && mv ${serviceDef}.tmp ${serviceDef}
@@ -109,6 +110,34 @@ function deploy {
     echo -e "$2 service deployed."
 }
 
+# Deploy a new hzn dev service project that also tests the -P (docker pull) variant. Do not call this function
+# before pushing or publishing the target image. The inputs are:
+# $1 - project directory
+# $2 - project name
+# $3 - service name
+function deployWithPull {
+    cd $1
+
+    # First remove the existing docker image.
+    removeImage=$(docker rmi localhost:443/amd64_${3}:1.0)
+    removed=$(echo ${removeImage} | grep "Deleted:")
+    if [ "${removed}" == "" ]; then
+        echo -e "\nERROR: image localhost:443/amd64_${3}:1.0 was not removed from local repository. Output was:"
+        echo -e "${removeImage}"
+        exit 1
+    fi
+
+    # Redeploy by pulling the image and extracting the image digest. Also overwrite the previous deployment.
+    deploy=$(hzn exchange service publish -vOP -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem -f ./horizon/service.definition.json 2>&1)
+    deploying=$(echo ${deploy} | grep "HTTP code: 201")
+    if [ "${deploying}" == "" ]; then
+        echo -e "\nERROR: $2 did not deploy. Output was:"
+        echo -e "${deploy}"
+        exit 1
+    fi
+    echo -e "$2 service deployed via image pull."
+}
+
 # Undeploy a new hzn dev service project. The input is:
 # $1 - service
 function undeploy {
@@ -150,6 +179,7 @@ CLEAN_UP=$3
 
 PROJECT_HOME="/root/hzn/service"
 
+LEAF_HOME=${PROJECT_HOME}/leaf
 CPU_HOME=${PROJECT_HOME}/cpu
 HELLO_HOME=${PROJECT_HOME}/hello
 USEHELLO_HOME=${PROJECT_HOME}/usehello
@@ -157,23 +187,39 @@ USEHELLO_HOME=${PROJECT_HOME}/usehello
 # ============= Service creation =====================================
 #
 
+NUMBER_SERVICES=0
+
+createProject "${LEAF_HOME}" "LEAF" "\"leaf\":" "my.company.com.services.leaf" "singleton" "MY_LEAF_VAR" "string" "leafVarValue" "leaf"
+if [ $? -ne 0 ]; then exit $?; fi
+let "NUMBER_SERVICES+=1"
+
 createProject "${CPU_HOME}" "CPU" "\"cpu\":" "my.company.com.services.cpu2" "singleton" "MY_CPU_VAR" "string" "cpuVarValue" "cpu"
 if [ $? -ne 0 ]; then exit $?; fi
+let "NUMBER_SERVICES+=1"
 
 createProject "${HELLO_HOME}" "Hello" "Star Wars" "my.company.com.services.hello2" "multiple" "MY_S_VAR1" "string" "inside" "helloservice"
 if [ $? -ne 0 ]; then exit $?; fi
+let "NUMBER_SERVICES+=1"
 
 createProject "${USEHELLO_HOME}" "UseHello" "variables verified." "my.company.com.services.usehello2" "singleton" "MY_VAR1" "string" "inside" "usehello" "512" "0.5"
 if [ $? -ne 0 ]; then exit $?; fi
+let "NUMBER_SERVICES+=1"
 
 # ============= Connect dependencies =================================
 
 echo -e "Creating dependencies."
 
+cd ${CPU_HOME}
+depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
+verify "${depCreate}" "New dependency created" "Could not create CPU dependency on leaf."
+
 cd ${HELLO_HOME}
 
 depCreate=$(hzn dev dependency fetch -p ${CPU_HOME}/horizon -v 2>&1)
 verify "${depCreate}" "New dependency created" "Could not create hello dependency on CPU."
+
+depCreate=$(hzn dev dependency fetch -p ${LEAF_HOME}/horizon -v 2>&1)
+verify "${depCreate}" "New dependency created" "Could not create hello dependency on leaf."
 
 echo -e "Verifying the Hello project."
 verifyProject=$(hzn dev service verify -v 2>&1)
@@ -200,9 +246,9 @@ echo -e "Starting the top level service in the Horizon test environment."
 
 startDev=$(hzn dev service start -v -m /root/resources/private/basicres/basicres.tgz -m /root/resources/private/multires/multires.tgz -t model 2>&1)
 startedServices=$(echo ${startDev} | sed 's/Running service./Running service.\n/g' | grep -c "Running service.")
-if [ "${startedServices}" != "3" ]; then
+if [ "${startedServices}" != "${NUMBER_SERVICES}" ]; then
     echo -e "${startedServices}"
-    echo -e "\nERROR: Did not detect 3 services started. Output was:"
+    echo -e "\nERROR: Did not detect ${NUMBER_SERVICES} services started. Output was:"
     echo -e "${startDev}"
     stopServices
     exit 1
@@ -256,6 +302,13 @@ then
     exit 1
 fi
 
+deploy ${LEAF_HOME} "LEAF"
+if [ $? -ne 0 ]; then exit $?; fi
+
+echo -e "Redploying, but this time with the docker pull option."
+deployWithPull ${LEAF_HOME} "LEAF" "leaf"
+if [ $? -ne 0 ]; then exit $?; fi
+
 deploy ${CPU_HOME} "CPU"
 if [ $? -ne 0 ]; then exit $?; fi
 
@@ -274,6 +327,7 @@ then
 
   echo -e "Undeploying services."
 
+  undeploy my.company.com.services.leaf_1.0.0_amd64
   undeploy my.company.com.services.cpu2_1.0.0_amd64
   undeploy my.company.com.services.hello2_1.0.0_amd64
   undeploy my.company.com.services.usehello2_1.0.0_amd64

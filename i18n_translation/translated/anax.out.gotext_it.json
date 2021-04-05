@@ -411,8 +411,8 @@
       "translation": "impossibile trovare le credenziali docker per {Domain}"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Push di {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Esecuzione del push di {ImageName} in corso..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,20 +423,28 @@
       "translation": "impossibile eseguire il push dell'immagine docker {Repository____tag}: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "impossibile trovare il digest dell'immagine nell'output di push docker"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Estrazione di {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Esecuzione del pull di {ImageName} in corso..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "impossibile estrarre l'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}"
+      "translation": "impossibile eseguire il pull dell'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}"
     },
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "impossibile estrarre l'immagine docker {Repository____tag}: {Err}"
+      "translation": "impossibile eseguire il pull dell'immagine docker {Repository____tag}: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Impossibile trovare il digest dell'immagine nell'output docker, il digest dell'immagine verrà richiamato direttamente dall'immagine."
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "impossibile ispezionare l'immagine {ImageName}: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "impossibile trovare il digest per l'immagine {ImageName}."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -467,8 +475,8 @@
       "translation": "Errore durante la lettura della risposta HTTP, errore {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire 'systemctl status horizon' per controllare se l'agent Horizon è in esecuzione. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per stabilire la connessione ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +741,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Avvertenza: non è stato possibile analizzare il percorso dell'immagine '{Image}'. Non eseguire il push a un registro docker, includere solo così com'è nel campo 'deployment'."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Il log-driver fornito ({LogDriver}) non supporta la visualizzazione dei log. I log sono disponibili solo sui seguenti driver: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Errore durante la creazione di StdoutPipe per il comando: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Errore durante l'avvio del comando: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Errore durante l'attesa del comando: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} non può essere aperto o non esiste: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} non è riuscito ad ottenere le statistiche: {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Errore durante la lettura da {SysLogPath}: {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossibile determinare {SysLogPath}: {Err}"
     },
     {
       "id": "no service name",
@@ -1276,11 +1316,11 @@
     },
     {
       "id": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax è in fase di interruzione. Impossibile instanziare il client iptables. {Arg_1}"
+      "translation": "anax è in fase di interruzione. Impossibile istanziare il client iptables. {Arg_1}"
     },
     {
       "id": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax è in fase di interruzione. Impossibile instanziare il client docker. {Arg_1}"
+      "translation": "anax è in fase di interruzione. Impossibile istanziare il client docker. {Arg_1}"
     },
     {
       "id": "Property {PROPNODEPRIVILEGED} must have a boolean value (true or false).",
@@ -1403,8 +1443,8 @@
       "translation": "Immagine caricata per il servizio {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}. Motivo: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
@@ -1725,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "impossibile chiudere il file di chiave privata del certificato API MMS {ServerKey}, errore {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: una stringa vuota non è una versione valida."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

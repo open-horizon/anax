@@ -20,9 +20,15 @@ function verifyAgreements {
             fi
         fi
 
+        if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
+          TIMEOUT_MUL=1
+        else
+          TIMEOUT_MUL=3
+        fi
+
         # Look for agreements to appear.
         AG_LOOP_CNT=0
-        while [ $AG_LOOP_CNT -le  $(expr 48 + 12 \* $TARGET_NUM_AG) ]
+        while [ $AG_LOOP_CNT -le  $(expr $(expr 48 + 12 \* $TARGET_NUM_AG) \* $TIMEOUT_MUL) ]
         do
                 echo -e "${PREFIX} waiting for ${TARGET_NUM_AG} agreement(s)"
 
@@ -95,7 +101,7 @@ function agreementsReached {
 # assumes that MONITOR_AGS has been previously set.
 function monitorAgreements {
     NUM_AGS=$(echo ${MONITOR_AGS} | jq -r '. | length')
-	NOT_YET=0
+    NOT_YET=0
         while :
         do
                 AGS=$(curl -sSL $ANAX_API/agreement | jq -r '.agreements.active')
@@ -190,32 +196,51 @@ function handleLocation {
 # $1 - the GET /service object for the cpu service
 #
 function handleCPU {
+        NETS_EXPECTED=0
+        # Define expected networks number, depending on svc version
+        VERS=$(echo $1 | jq -r '.version')
+
+        if [ "${VERS}" == "1.0" ] || [ "${VERS}" == "1.0.0" ] || [ "${VERS}" == "1.2.5" ]; then
+                # Expected 2 networks - default e2edev/cpu ntw and ntw for parent's e2edev/netspeed
+                NETS_EXPECTED=2
+                if  [ "$PATTERN" == "sall" ] && [ "${VERS}" == "1.2.5" ]; then
+                    NETS_EXPECTED=4
+                fi
+        elif [ "${VERS}" == "1.2.2" ]; then
+                # Expected 3 networks - default IBM/cpu ntw and ntw for parent's e2edev/netspeed and e2edev/location
+                NETS_EXPECTED=3
+                if  [ "$PATTERN" == "sall" ]; then
+                    NETS_EXPECTED=4
+                elif  [ "$PATTERN" == "sloc" ]; then
+                    NETS_EXPECTED=2
+                elif  [ "$PATTERN" == "sns" ]; then
+                    NETS_EXPECTED=1
+                fi
+        fi
 
         REFURL=$(echo $1 | jq -r '.ref_url')
 
         # Validate that it has 1 container.
         CONT_NUM=$(echo $1 | jq -r '.containers | length')
         if [ "${CONT_NUM}" != "1" ]; then
-                echo -e "${PREFIX} ${REFURL} should have 1 container, but there are ${CONT_NUM}"
+                echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have 1 container, but there are ${CONT_NUM}"
                 exit 2
         fi
 
-        # Grab the map of networks. There should be 1.
+        # Grab the map of networks. There should be $NETS_EXPECTED.
         NETS=$(echo $1 | jq -r '.containers[0].NetworkSettings.Networks')
+
         NUM_NETS=$(echo ${NETS} | jq -r '. | length')
-        if [ "${NUM_NETS}" != "1" ]; then
-                echo -e "${PREFIX} ${REFURL} should have 1 network, but there are ${NUM_NETS}"
-                exit 2
+        if [ "${NUM_NETS}" != "${NETS_EXPECTED}" ]; then
+            echo -e "${PREFIX} ${REFURL} (version ${VERS}) should have ${NETS_EXPECTED} networks, but there are ${NUM_NETS}"
+            exit 2
         fi
 
-        # Grab the network name keys as a json array so we can iterate them. There sould be only 1.
-        NET_KEYS=$(echo ${NETS} | jq -r '. | keys')
-
-        # There is another cpu service which is from e2edev@somecomp.com2edev org. CPU_NET_NAME should be the one from IBM org.
-        netname=$(echo ${NET_KEYS} | jq -r '.[0]')
-        echo $netname | grep IBM
-        if [ $? -eq 0 ]; then
-            CPU_NET_NAME=$netname
+        # Grab the network name for the IBM's location service
+        # (there is another cpu service which is from e2edev@somecomp.com org. CPU_NET_NAME should be the one from IBM org.)
+        NET_NAME=$(echo ${NETS} | jq -r '. | keys' | jq -r '.[] | select(. | test("IBM.*location"))')
+        if [ "${NET_NAME}" != "" ]; then
+                CPU_NET_NAME=$NET_NAME
         fi
 
         # LOC_CPU_NETNAME might not be filled in yet. We will do this same check when we verify the CPU service.
@@ -239,12 +264,13 @@ function verifyServices {
         do
                 INST=$(echo ${ALLSERV} | jq -r '.['$ix']')
                 REFURL=$(echo ${INST} | jq -r '.ref_url')
+                REFORG=$(echo ${INST} | jq -r '.organization')
                 # echo -e "${PREFIX} working on service ${ix}, ${REFURL}: ${INST}"
-                echo -e "${PREFIX} working on service ${ix}, ${REFURL}"
+                echo -e "${PREFIX} working on service ${ix}, ${REFORG}/${REFURL}"
 
                 if [ "${REFURL}" == "https://bluehorizon.network/services/location" ]; then
                         handleLocation "${INST}"
-                elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ]; then
+                elif [ "${REFURL}" == "https://bluehorizon.network/service-cpu" ] && [ "${REFORG}" == "IBM" ] && [ "${HZN_REG_TEST}" != "1" ]; then
                         handleCPU "${INST}"
                 fi
         done

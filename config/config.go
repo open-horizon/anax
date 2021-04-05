@@ -42,6 +42,7 @@ type Config struct {
 	ExchangeHeartbeat                int       // Seconds between heartbeats
 	ExchangeVersionCheckIntervalM    int64     // Exchange version check interval in minutes. The default is 720. This is now deprecated with the usage of /changes API which returns exchange version on every call.
 	AgreementTimeoutS                uint64    // Number of seconds to wait before declaring agreement not finalized in blockchain
+	AgreementTimeoutScaleFactor      float64   // Time to wait before declaring an agreement did not finalize. Expressed as a scaling factor of the max heartbeat interval for this node
 	DVPrefix                         string    // When passing agreement ids into a workload container, add this prefix to the agreement id
 	RegistrationDelayS               uint64    // The number of seconds to wait after blockchain init before registering with the exchange. This is for testing initialization ONLY.
 	ExchangeMessageTTL               int       // The number of seconds the exchange will keep this message before automatically deleting it
@@ -66,6 +67,7 @@ type Config struct {
 	SurfaceErrorAgreementPersistentS int       // How long an agreement needs to persist before it is considered persistent and the related errors are dismisse. Default is 90 seconds
 	InitialPollingBuffer             int       // the number of seconds to wait before increasing the polling interval while there is no agreement on the node.
 	MaxAgreementPrelaunchTimeM       int64     // The maximum numbers of minutes to wait for workload to start in an agreement
+	K8sCRInstallTimeoutS             int64     // The number of seconds to wait for the custom resouce to install successfully before it is considered a failure
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -74,47 +76,52 @@ type Config struct {
 
 // This is the configuration options for Agreement bot flavor of Anax
 type AGConfig struct {
-	TxLostDelayTolerationSeconds int
-	AgreementWorkers             int
-	DBPath                       string
-	Postgresql                   PostgresqlConfig // The Postgresql config if it is being used
-	PartitionStale               uint64           // Number of seconds to wait before declaring a partition to be stale (i.e. the previous owner has unexpectedly terminated).
-	ProtocolTimeoutS             uint64           // Number of seconds to wait before declaring proposal response is lost
-	AgreementTimeoutS            uint64           // Number of seconds to wait before declaring agreement not finalized in blockchain
-	NoDataIntervalS              uint64           // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
-	ActiveAgreementsURL          string           // This field is used when policy files indicate they want data verification but they dont specify a URL
-	ActiveAgreementsUser         string           // This is the userid the agbot uses to authenticate to the data verifivcation API
-	ActiveAgreementsPW           string           // This is the password for the ActiveAgreementsUser
-	PolicyPath                   string           // The directory where policy files are kept, default /etc/provider-tremor/policy/
-	NewContractIntervalS         uint64           // default should be 1
-	ProcessGovernanceIntervalS   uint64           // How long the gov sleeps before general gov checks (new payloads, interval payments, etc).
-	IgnoreContractWithAttribs    string           // A comma seperated list of contract attributes. If set, the contracts that contain one or more of the attributes will be ignored. The default is "ethereum_account".
-	ExchangeURL                  string           // The URL of the Horizon exchange. If not configured, the exchange will not be used.
-	ExchangeHeartbeat            int              // Seconds between heartbeats to the exchange
-	ExchangeId                   string           // The id of the agbot, not the userid of the exchange user. Must be org qualified.
-	ExchangeToken                string           // The agbot's authentication token
-	DVPrefix                     string           // When looking for agreement ids in the data verification API response, look for agreement ids with this prefix.
-	ActiveDeviceTimeoutS         int              // The amount of time a device can go without heartbeating and still be considered active for the purposes of search
-	ExchangeMessageTTL           int              // The number of seconds the exchange will keep this message before automatically deleting it
-	MessageKeyPath               string           // The path to the location of messaging keys
-	MessageKeyCheck              int              // The interval (in seconds) indicating how often the agbot checks its own object in the exchange to ensure that the message key is still available.
-	DefaultWorkloadPW            string           // The default workload password if none is specified in the policy file
-	APIListen                    string           // Host and port for the API to listen on
-	SecureAPIListenHost          string           // The host for the secure API to listen on
-	SecureAPIListenPort          string           // The port for the secure API to listen on
-	SecureAPIServerCert          string           // The path to the certificate file for the secure api
-	SecureAPIServerKey           string           // The path to the server key file for the secure api
-	PurgeArchivedAgreementHours  int              // Number of hours to leave an archived agreement in the database before automatically deleting it
-	CheckUpdatedPolicyS          int              // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
-	CSSURL                       string           // The URL used to access the CSS.
-	CSSSSLCert                   string           // The path to the client side SSL certificate for the CSS.
-	MMSGarbageCollectionInterval int64            // The amount of time to wait between MMS object cache garbage collection scans.
-	AgreementBatchSize           uint64           // The number of nodes that the agbot will process in a batch.
-	AgreementQueueSize           uint64           // The agreement bot work queue max size.
-	FullRescanS                  uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
-	MaxExchangeChanges           int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
-	RetryLookBackWindow          uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
-	PolicySearchOrder            bool             // When true, search policies from most recently changed to least recently changed.
+	TxLostDelayTolerationSeconds  int
+	AgreementWorkers              int
+	DBPath                        string
+	Postgresql                    PostgresqlConfig // The Postgresql config if it is being used
+	PartitionStale                uint64           // Number of seconds to wait before declaring a partition to be stale (i.e. the previous owner has unexpectedly terminated).
+	ProtocolTimeoutS              uint64           // Number of seconds to wait before declaring proposal response is lost
+	AgreementTimeoutS             uint64           // Number of seconds to wait before declaring agreement not finalized in blockchain
+	ProtocolTimeoutScaleFactor    float64          // Time to wait before declaring a proposal response is lost. Expressed as a scaling factor of the max heartbeat interval for a given node
+	AgreementTimeoutScaleFactor   float64          // Time to wait before declaring an agreement did not finalize. Expressed as a scaling factor of the max heartbeat interval for a given node
+	NoDataIntervalS               uint64           // default should be 15 mins == 15*60 == 900. Ignored if the policy has data verification disabled.
+	ActiveAgreementsURL           string           // This field is used when policy files indicate they want data verification but they dont specify a URL
+	ActiveAgreementsUser          string           // This is the userid the agbot uses to authenticate to the data verifivcation API
+	ActiveAgreementsPW            string           // This is the password for the ActiveAgreementsUser
+	PolicyPath                    string           // The directory where policy files are kept, default /etc/provider-tremor/policy/
+	NewContractIntervalS          uint64           // default should be 1
+	ProcessGovernanceIntervalS    uint64           // How long the gov sleeps before general gov checks (new payloads, interval payments, etc).
+	IgnoreContractWithAttribs     string           // A comma seperated list of contract attributes. If set, the contracts that contain one or more of the attributes will be ignored. The default is "ethereum_account".
+	ExchangeURL                   string           // The URL of the Horizon exchange. If not configured, the exchange will not be used.
+	ExchangeHeartbeat             int              // Seconds between heartbeats to the exchange
+	ExchangeId                    string           // The id of the agbot, not the userid of the exchange user. Must be org qualified.
+	ExchangeToken                 string           // The agbot's authentication token
+	DVPrefix                      string           // When looking for agreement ids in the data verification API response, look for agreement ids with this prefix.
+	ActiveDeviceTimeoutS          int              // The amount of time a device can go without heartbeating and still be considered active for the purposes of search
+	ExchangeMessageTTL            int              // The number of seconds the exchange will keep this message before automatically deleting it
+	ExchangeMessageTTLScaleFactor float64          // Scale factor for thee time the exchange will keep this ,essage before automatically deleting it. Scaled relativee to the max heeartbeat interval
+	MessageKeyPath                string           // The path to the location of messaging keys
+	MessageKeyCheck               int              // The interval (in seconds) indicating how often the agbot checks its own object in the exchange to ensure that the message key is still available.
+	DefaultWorkloadPW             string           // The default workload password if none is specified in the policy file
+	APIListen                     string           // Host and port for the API to listen on
+	SecureAPIListenHost           string           // The host for the secure API to listen on
+	SecureAPIListenPort           string           // The port for the secure API to listen on
+	SecureAPIServerCert           string           // The path to the certificate file for the secure api
+	SecureAPIServerKey            string           // The path to the server key file for the secure api
+	PurgeArchivedAgreementHours   int              // Number of hours to leave an archived agreement in the database before automatically deleting it
+	CheckUpdatedPolicyS           int              // The number of seconds to wait between checks for an updated policy file. Zero means auto checking is turned off.
+	CSSURL                        string           // The URL used to access the CSS.
+	CSSSSLCert                    string           // The path to the client side SSL certificate for the CSS.
+	MMSGarbageCollectionInterval  int64            // The amount of time to wait between MMS object cache garbage collection scans.
+	AgreementBatchSize            uint64           // The number of nodes that the agbot will process in a batch.
+	AgreementQueueSize            uint64           // The agreement bot work queue max size.
+	MessageQueueScale             float64          // Scaling factor applied to the AgreementQueueSize when determining how deep to keep the queues.
+	QueueHistorySize              int              // The number of statistics records to retain in the prioritized queue history.
+	FullRescanS                   uint64           // The number of seconds between policy scans when there have been no changes reported by the exchange.
+	MaxExchangeChanges            int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
+	RetryLookBackWindow           uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
+	PolicySearchOrder             bool             // When true, search policies from most recently changed to least recently changed.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -161,6 +168,14 @@ func (c *HorizonConfig) GetAgbotAgreementQueueSize() uint64 {
 	return c.AgreementBot.AgreementQueueSize
 }
 
+func (c *HorizonConfig) GetAgbotMessageQueueScale() float64 {
+	return c.AgreementBot.MessageQueueScale
+}
+
+func (c *HorizonConfig) GetAgbotQueueHistorySize() int {
+	return c.AgreementBot.QueueHistorySize
+}
+
 func (c *HorizonConfig) GetAgbotFullRescan() uint64 {
 	return c.AgreementBot.FullRescanS
 }
@@ -171,6 +186,70 @@ func (c *HorizonConfig) GetAgbotRetryLookBackWindow() uint64 {
 
 func (c *HorizonConfig) GetAgbotPolicyOrder() bool {
 	return c.AgreementBot.PolicySearchOrder
+}
+
+func (c *HorizonConfig) GetK8sCRInstallTimeouts() int64 {
+	return c.Edge.K8sCRInstallTimeoutS
+}
+
+func (a *AGConfig) GetProtocolTimeout(maxHeartbeatInterval int) uint64 {
+	if a.ProtocolTimeoutS != 0 {
+		return a.ProtocolTimeoutS
+	}
+	scaleFactor := a.ProtocolTimeoutScaleFactor
+	if a.ProtocolTimeoutScaleFactor == 0 {
+		scaleFactor = AgbotProtocolTimeoutScaleFactor_DEFAULT
+	}
+	hbInterval := maxHeartbeatInterval
+	if hbInterval == 0 {
+		hbInterval = ExchangeMessagePollMaxInterval_DEFAULT
+	}
+	return uint64(float64(hbInterval) * scaleFactor)
+}
+
+func (a *AGConfig) GetAgreementTimeout(maxHeartbeatInterval int) uint64 {
+	if a.AgreementTimeoutS != 0 {
+		return a.AgreementTimeoutS
+	}
+	scaleFactor := a.AgreementTimeoutScaleFactor
+	if a.AgreementTimeoutScaleFactor == 0 {
+		scaleFactor = AgreementTimeoutScaleFactor_DEFAULT
+	}
+	hbInterval := maxHeartbeatInterval
+	if hbInterval == 0 {
+		hbInterval = ExchangeMessagePollMaxInterval_DEFAULT
+	}
+	return uint64(float64(hbInterval) * scaleFactor)
+}
+
+func (c *Config) GetAgreementTimeout(maxHeartbeatInterval int) uint64 {
+	if c.AgreementTimeoutS != 0 {
+		return c.AgreementTimeoutS
+	}
+	scaleFactor := c.AgreementTimeoutScaleFactor
+	if c.AgreementTimeoutScaleFactor == 0 {
+		scaleFactor = AgreementTimeoutScaleFactor_DEFAULT
+	}
+	hbInterval := maxHeartbeatInterval
+	if hbInterval == 0 {
+		hbInterval = ExchangeMessagePollMaxInterval_DEFAULT
+	}
+	return uint64(float64(hbInterval) * scaleFactor)
+}
+
+func (a *AGConfig) GetExchangeMessageTTL(maxHeartbeatInterval int) int {
+	if a.ExchangeMessageTTL != 0 {
+		return int(a.ExchangeMessageTTL)
+	}
+	scaleFactor := a.ExchangeMessageTTLScaleFactor
+	if a.ExchangeMessageTTLScaleFactor == 0 {
+		scaleFactor = 2
+	}
+	hbInterval := maxHeartbeatInterval
+	if hbInterval == 0 {
+		hbInterval = ExchangeMessagePollMaxInterval_DEFAULT
+	}
+	return int(float64(hbInterval) * scaleFactor)
 }
 
 func getDefaultBase() string {
@@ -237,11 +316,14 @@ func Read(file string) (*HorizonConfig, error) {
 				ExchangeMessagePollMaxInterval: ExchangeMessagePollMaxInterval_DEFAULT,
 				ExchangeMessagePollIncrement:   ExchangeMessagePollIncrement_DEFAULT,
 				MaxAgreementPrelaunchTimeM:     EdgeMaxAgreementPrelaunchTimeM_DEFAULT,
+				K8sCRInstallTimeoutS:           K8sCRInstallTimeoutS_DEFAULT,
 			},
 			AgreementBot: AGConfig{
 				MessageKeyCheck:     AgbotMessageKeyCheck_DEFAULT,
 				AgreementBatchSize:  AgbotAgreementBatchSize_DEFAULT,
 				AgreementQueueSize:  AgbotAgreementQueueSize_DEFAULT,
+				MessageQueueScale:   AgbotMessageQueueScale_DEFAULT,
+				QueueHistorySize:    AgbotQueueHistorySize_DEFAULT,
 				FullRescanS:         AgbotFullRescan_DEFAULT,
 				MaxExchangeChanges:  AgbotMaxChanges_DEFAULT,
 				RetryLookBackWindow: AgbotRetryLookBackWindow_DEFAULT,
@@ -420,12 +502,21 @@ func (agc *AGConfig) String() string {
 		", CheckUpdatedPolicyS: %v"+
 		", CSSURL: %v"+
 		", CSSSSLCert: %v"+
-		", AgreementBatchSize: %v",
+		", AgreementBatchSize: %v"+
+		", AgreementQueueSize: %v"+
+		", MessageQueueScale: %v"+
+		", QueueHistorySize: %v"+
+		", FullRescanS: %v"+
+		", MaxExchangeChanges: %v"+
+		", RetryLookBackWindow: %v"+
+		", PolicySearchOrder: %v",
 		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
 		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
 		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
 		agc.IgnoreContractWithAttribs, agc.ExchangeURL, agc.ExchangeHeartbeat, agc.ExchangeId,
 		mask, agc.DVPrefix, agc.ActiveDeviceTimeoutS, agc.ExchangeMessageTTL, agc.MessageKeyPath, mask, agc.APIListen,
 		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
-		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize)
+		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize,
+		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.MaxExchangeChanges,
+		agc.RetryLookBackWindow, agc.PolicySearchOrder)
 }

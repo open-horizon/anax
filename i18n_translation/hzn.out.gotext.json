@@ -383,8 +383,8 @@
       "translation": "The number of seconds to increment the agent's heartbeat interval."
     },
     {
-      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit."
+      "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "translation": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit."
     },
     {
       "id": "Add the organization to this agbot so that it will be responsible for deploying services in this org. The agbot will deploy services to nodes in this org, using the patterns and deployment policies in this org. If omitted, the first agbot found in the exchange will become responsible for this org. The format is 'agbot_org/agbot_id'.",
@@ -423,8 +423,8 @@
       "translation": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute."
     },
     {
-      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change."
+      "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "translation": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change."
     },
     {
       "id": "Remove an organization resource from the Horizon Exchange.",
@@ -433,6 +433,10 @@
     {
       "id": "Remove this organization.",
       "translation": "Remove this organization."
+    },
+    {
+      "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "translation": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'."
     },
     {
       "id": "Skip the 'are you sure?' prompt.",
@@ -471,12 +475,16 @@
       "translation": "Your password for this user account when creating it in the Horizon exchange."
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted."
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional"
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
       "translation": "This user should be an administrator, capable of managing all resources in this org of the Exchange."
+    },
+    {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "This user should be a hub administrator, capable of managing orgs in this administration hub."
     },
     {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
@@ -911,6 +919,10 @@
       "translation": "The path of the service policy JSON file to be used for the service to be published. This flag is optional"
     },
     {
+      "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "translation": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public."
+    },
+    {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
       "translation": "Verify the signatures of a service resource in the Horizon Exchange."
     },
@@ -1279,8 +1291,8 @@
       "translation": "Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged."
     },
     {
-      "id": "The JSON input file name containing the node policy.",
-      "translation": "The JSON input file name containing the node policy."
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "translation": "The JSON input file name containing the node policy. Specify -f- to read from stdin."
     },
     {
       "id": "(DEPRECATED) This command is deprecated. Please use 'hzn policy update' to update the node policy. This command is used to update either the node policy properties or the constraints, but not both.",
@@ -1319,8 +1331,8 @@
       "translation": "The architecture of the node. It is required when -n is not specified. If omitted, the service of all the architectures referenced in the deployment policy will be checked for compatibility."
     },
     {
-      "id": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "translation": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'."
+      "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "translation": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted."
     },
     {
       "id": "The Horizon exchange node ID. Mutually exclusive with --node-pol. If omitted, the node ID that the current device is registered with will be used. If you don't prepend it with the organization id, it will automatically be prepended with the -o value.",
@@ -1691,6 +1703,14 @@
       "translation": "File containing user input values for verification of a project. If omitted, the userinput file for the project will be used."
     },
     {
+      "id": "Show the container/system logs for a service.",
+      "translation": "Show the container/system logs for a service."
+    },
+    {
+      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "translation": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition."
+    },
+    {
       "id": "For working with project dependencies.",
       "translation": "For working with project dependencies."
     },
@@ -1955,8 +1975,8 @@
       "translation": "If you want the object to be deployed on nodes using a given pattern, specify it using this flag. This flag is optional and can only be used with --type and --id. It is mutually exclusive with -m"
     },
     {
-      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "translation": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command."
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "translation": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin."
     },
     {
       "id": "The object (in the form of a file) to publish. This flag is optional so that you can update only the object's definition.",
@@ -2255,8 +2275,8 @@
       "translation": "unable to find docker credentials for {Domain}"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Pushing {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Pushing {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2267,12 +2287,8 @@
       "translation": "unable to push docker image {Repository____tag}: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "could not find the image digest in the docker push output"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Pulling {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Pulling {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2281,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "unable to pull docker image {Repository____tag}: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Could not find the image digest in the docker output, retrieving image digest directly from the image."
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "could not inspect image {ImageName}: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "could not find digest for image {ImageName}."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -2311,8 +2339,8 @@
       "translation": "Error reading HTTP response, error {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -2579,12 +2607,48 @@
       "translation": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is."
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Error creating StdoutPipe for command: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Error starting command: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Error waiting for command: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} could not be opened or does not exist: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} could not get stats: {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Error reading from {SysLogPath}: {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Unable to state {SysLogPath}: {Err}"
+    },
+    {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "translation": "Neither node id nor node policy is specified. Getting node policy from the local node."
     },
     {
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "translation": "Neither node id nor node user input file is specified. Getting node user input from the local node."
+    },
+    {
+      "id": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "translation": "No node type has been provided: node type of '{NodeId}' node will be used"
     },
     {
       "id": "Using compatibility checking input: {CompCheckInput}",
@@ -3003,6 +3067,34 @@
       "translation": "unsupported deployment config type: {Dconfig}"
     },
     {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}"
+    },
+    {
+      "id": "Found containers {Containers}",
+      "translation": "Found containers {Containers}"
+    },
+    {
+      "id": "Unable to display log messages: {Err}",
+      "translation": "Unable to display log messages: {Err}"
+    },
+    {
+      "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "translation": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}."
+    },
+    {
+      "id": "Use ctrl-C to terminate this command.",
+      "translation": "Use ctrl-C to terminate this command."
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}"
+    },
+    {
       "id": "$SERVICE_NAME for $ARCH",
       "translation": "$SERVICE_NAME for $ARCH"
     },
@@ -3211,20 +3303,20 @@
       "translation": "unable to list existing containers: {Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "Found main network for service {Nwname}, {ContainerNetwork}"
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "Found main network for service {AgreementId}, {ContainerNetwork}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "unable to retrieve dependency metadata: {Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "unable to start dependencies: {Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "Containers for service {Org}/{URL} are in network {NetName}"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3233,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "unable to generate instance ID: {Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "Working on service {SId}"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "unable to retrieve dependency metadata: {Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "unable to start dependencies: {Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3263,10 +3367,6 @@
       "translation": "unable to stop dependencies: {Err}"
     },
     {
-      "id": "Found containers {Containers}",
-      "translation": "Found containers {Containers}"
-    },
-    {
       "id": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
       "translation": "Stop {LogName}: {CLIString} with instance id prefix {MsId}"
     },
@@ -3289,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "failed to get container images, error: {Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "Created network {Name}"
     },
     {
       "id": "invalid image format: {Image}",
@@ -3531,10 +3635,6 @@
       "translation": "can not update existing node {NodeId} because it is owned by another user ({Owner})"
     },
     {
-      "id": "can not create node {NodeId} because maxNodes limit has been reached",
-      "translation": "can not create node {NodeId} because maxNodes limit has been reached"
-    },
-    {
       "id": "Node {NodeId} updated.",
       "translation": "Node {NodeId} updated."
     },
@@ -3605,6 +3705,10 @@
     {
       "id": "node '{NodeOrg}/{Node}' not found.",
       "translation": "node '{NodeOrg}/{Node}' not found."
+    },
+    {
+      "id": "failed to marshal node policy output: {Err}",
+      "translation": "failed to marshal node policy output: {Err}"
     },
     {
       "id": "Incorrect policy format in file {JsonFilePath}: {Err}",
@@ -3751,6 +3855,10 @@
       "translation": "Agbot {Agbot} is responsible for deploying services in org {TheOrg}"
     },
     {
+      "id": "Organization {TheOrg} is successfully added to MMS.",
+      "translation": "Organization {TheOrg} is successfully added to MMS."
+    },
+    {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "translation": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed."
     },
@@ -3759,12 +3867,40 @@
       "translation": "Organization {TheOrg} is successfully updated."
     },
     {
-      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "translation": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?"
+      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "translation": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?"
     },
     {
-      "id": "org {TheOrg} not found.",
-      "translation": "org {TheOrg} not found."
+      "id": "Using agbot {Agbot}",
+      "translation": "Using agbot {Agbot}"
+    },
+    {
+      "id": "Cannot unmarshal served pattern",
+      "translation": "Cannot unmarshal served pattern"
+    },
+    {
+      "id": "Removing pattern {PatternId} from agbot {Agbot}",
+      "translation": "Removing pattern {PatternId} from agbot {Agbot}"
+    },
+    {
+      "id": "Removing policy {PolId} from agbot {Agbot}",
+      "translation": "Removing policy {PolId} from agbot {Agbot}"
+    },
+    {
+      "id": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "translation": "Deleting org {TheOrg} from the Horizon Exchange..."
+    },
+    {
+      "id": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "translation": "Org {TheOrg} is deleted from the Horizon Exchange"
+    },
+    {
+      "id": "Deleting org {TheOrg} from MMS...",
+      "translation": "Deleting org {TheOrg} from MMS..."
+    },
+    {
+      "id": "Org {TheOrg} is deleted from MMS",
+      "translation": "Org {TheOrg} is deleted from MMS"
     },
     {
       "id": "Organization {TheOrg} is successfully removed.",
@@ -3905,6 +4041,14 @@
     {
       "id": "Flags -I and -P are mutually exclusive.",
       "translation": "Flags -I and -P are mutually exclusive."
+    },
+    {
+      "id": "Need to set 'true' or 'false' when specifying flag --public.",
+      "translation": "Need to set 'true' or 'false' when specifying flag --public."
+    },
+    {
+      "id": "failed to parse {Public}: {Err}",
+      "translation": "failed to parse {Public}: {Err}"
     },
     {
       "id": "Error validating the input service: {Err}",
@@ -4059,8 +4203,24 @@
       "translation": "failed to marshal 'exchange user list' output: {Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "the email must be specified via -e if the username is not an email address."
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "failed to check exchange version, error: {Err}"
+    },
+    {
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}."
+    },
+    {
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "Only users in the root org can be hubadmins."
+    },
+    {
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "Users in the root org must be hubadmins. Omit the -H option."
+    },
+    {
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "A user in the root org cannot be an org admin."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4231,12 +4391,12 @@
       "translation": "Starting dependencies."
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}"
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -4563,6 +4723,18 @@
       "translation": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted."
     },
     {
+      "id": "could not validate node ID '{NodeId}': {Err}",
+      "translation": "could not validate node ID '{NodeId}': {Err}"
+    },
+    {
+      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "translation": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed"
+    },
+    {
+      "id": "invalid node ID: Whitespace is not permitted",
+      "translation": "invalid node ID: Whitespace is not permitted"
+    },
+    {
       "id": "invalid version range '{Vr}': {Err}",
       "translation": "invalid version range '{Vr}': {Err}"
     },
@@ -4631,8 +4803,8 @@
       "translation": "Status of the services you are watching:"
     },
     {
-      "id": "{Status1} \t{Org}/{Name}",
-      "translation": "{Status1} \t{Org}/{Name}"
+      "id": "{Org}/{Name} \t{Status1}",
+      "translation": "{Org}/{Name} \t{Status1}"
     },
     {
       "id": "--timeout must be a positive integer.",
@@ -4799,40 +4971,20 @@
       "translation": "Displaying log messages for service {SpecRef} with service id {InstanceId}."
     },
     {
-      "id": "Use ctrl-C to terminate this command.",
-      "translation": "Use ctrl-C to terminate this command."
-    },
-    {
       "id": "Service {RefUrl} is not running on the node.",
       "translation": "Service {RefUrl} is not running on the node."
     },
     {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "translation": "Error creating StdoutPipe for command: {Err}"
+      "id": "Service definition unmarshalling error: {Err}",
+      "translation": "Service definition unmarshalling error: {Err}"
     },
     {
-      "id": "Error starting command: {Err}",
-      "translation": "Error starting command: {Err}"
+      "id": "Deployment unmarshalling error: {Err}",
+      "translation": "Deployment unmarshalling error: {Err}"
     },
     {
-      "id": "Error waiting for command: {Err}",
-      "translation": "Error waiting for command: {Err}"
-    },
-    {
-      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "translation": "{SysLogPath} could not be opened or does not exist: {Err}"
-    },
-    {
-      "id": "{SysLogPath} could not get stats: {Err}",
-      "translation": "{SysLogPath} could not get stats: {Err}"
-    },
-    {
-      "id": "Error reading from {SysLogPath}: {Err}",
-      "translation": "Error reading from {SysLogPath}: {Err}"
-    },
-    {
-      "id": "Unable to state {SysLogPath}: {Err}",
-      "translation": "Unable to state {SysLogPath}: {Err}"
+      "id": "Service logs are unavailable: {Err}",
+      "translation": "Service logs are unavailable: {Err}"
     },
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
@@ -4935,8 +5087,8 @@
       "translation": "updateTime should be in RC3339 format: yyyy-MM-ddTHH:mm:ssZ, or yyyy-MM-dd"
     },
     {
-      "id": "must specify objectType if set objectId",
-      "translation": "must specify objectType if set objectId"
+      "id": "must specify --type with --id",
+      "translation": "must specify --type with --id"
     },
     {
       "id": "must specify destinationType if set destinationId",
@@ -4953,6 +5105,10 @@
     {
       "id": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}",
       "translation": "destination detail for object '{ObjectID}' of type '{ObjectType}' not found in org {Org}"
+    },
+    {
+      "id": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "translation": "failed to marshal 'hzn mms object list' output: {Err1}"
     },
     {
       "id": "Listing objects in org {Org}:",
@@ -5051,10 +5207,6 @@
       "translation": "A timestamp/date as to when this object should automatically be activated. The timestamp should be provided in RFC3339 format."
     },
     {
-      "id": "must specify --type with --id",
-      "translation": "must specify --type with --id"
-    },
-    {
       "id": "must specify --id with --type",
       "translation": "must specify --id with --type"
     },
@@ -5069,10 +5221,6 @@
     {
       "id": "cannot specify --pattern with --def",
       "translation": "cannot specify --pattern with --def"
-    },
-    {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "unable to read definition file {ObjMetadataFile}: {Err}"
     },
     {
       "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
@@ -5279,24 +5427,16 @@
       "translation": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "Created network {Name}"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "unable to list docker networks, error {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "unable to remove docker network {Name}, error {Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "unable to create get CSS status request, error {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "CSS status is not ready after waiting {Timeout} seconds, timeout"
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout"
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "CSS status is not ready, terminating service start request."
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -5311,8 +5451,12 @@
       "translation": "Unregistering this node, cancelling all agreements, stopping all workloads, and restarting Horizon..."
     },
     {
-      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset."
+      "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "translation": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}"
+    },
+    {
+      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "translation": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}"
     },
     {
       "id": "{Err}\nThe node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
@@ -6117,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: Empty string is not a valid version."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

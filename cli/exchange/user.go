@@ -5,13 +5,25 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/semanticversion"
 	"net/http"
 	"strings"
 )
 
+const USER_EMAIL_OPTIONAL_EXCHANGE_VERSION = "2.61.0"
+
 type ExchangeUsers struct {
-	Users     map[string]interface{} `json:"users"`
-	ListIndex int                    `json:"lastIndex"`
+	Users     map[string]ExchangeUser `json:"users"`
+	ListIndex int                     `json:"lastIndex"`
+}
+
+type ExchangeUser struct {
+	Password    string `json:"password"`
+	Email       string `json:"email,omitempty"`
+	Admin       bool   `json:"admin"`
+	HubAdmin    bool   `json:"hubAdmin"`
+	LastUpdated string `json:"lastUpdated"`
+	UpdatedBy   string `json:"updatedBy"`
 }
 
 func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
@@ -53,16 +65,33 @@ func UserList(org, userPwCreds, theUser string, allUsers, namesOnly bool) {
 	}
 }
 
-func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool) {
-	if email == "" {
-		if strings.Contains(user, "@") {
-			email = user
-		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("the email must be specified via -e if the username is not an email address."))
-		}
+func UserCreate(org, userPwCreds, user, pw, email string, isAdmin bool, isHubAdmin bool) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	var emailIsOptional bool
+	var err error
+	if emailIsOptional, err = checkExchangeVersionForOptionalUserEmail(org, userPwCreds); err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("failed to check exchange version, error: %v", err))
 	}
+
+	if email == "" && strings.Contains(user, "@") {
+		email = user
+	} else if email == "" && !emailIsOptional {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("an email must be specified because the Exchange API version is less than %v.", USER_EMAIL_OPTIONAL_EXCHANGE_VERSION))
+	}
+
+	if isHubAdmin && org != "root" {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Only users in the root org can be hubadmins."))
+	}
+
+	if !isHubAdmin && org == "root" {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Users in the root org must be hubadmins. Omit the -H option."))
+	}
+
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
-	postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: isAdmin, Email: email}
+
+	postUserReq := cliutils.UserExchangeReq{Password: pw, Admin: isAdmin, HubAdmin: isHubAdmin, Email: email}
 	cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, postUserReq, nil)
 }
 
@@ -71,6 +100,12 @@ type UserExchangePatchAdmin struct {
 }
 
 func UserSetAdmin(org, userPwCreds, user string, isAdmin bool) {
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if isAdmin && org == "root" {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("A user in the root org cannot be an org admin."))
+	}
+
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	patchUserReq := UserExchangePatchAdmin{Admin: isAdmin}
 	cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/users/"+user, cliutils.OrgAndCreds(org, userPwCreds), []int{201}, patchUserReq, nil)
@@ -86,4 +121,29 @@ func UserRemove(org, userPwCreds, user string, force bool) {
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("user '%s' not found in org %s", user, org))
 	}
+}
+
+// check if current exchange version is greater than 2.61.0, which makes user email optional.
+// return (true, nil) if user email is optional
+// return (false, nil) if user email is required
+func checkExchangeVersionForOptionalUserEmail(org, userPwCreds string) (bool, error) {
+	cliutils.SetWhetherUsingApiKey(userPwCreds)
+
+	var output []byte
+	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "admin/version", cliutils.OrgAndCreds(org, userPwCreds), []int{200}, &output)
+
+	exchangeVersion := strings.TrimSpace(string(output))
+
+	if !semanticversion.IsVersionString(exchangeVersion) {
+		return false, fmt.Errorf("The current exchange version %v is not a valid version string.", exchangeVersion)
+	} else if comp, err := semanticversion.CompareVersions(exchangeVersion, USER_EMAIL_OPTIONAL_EXCHANGE_VERSION); err != nil {
+		return false, fmt.Errorf("Failed to compare the versions. %v", err)
+	} else if comp < 0 {
+		// current exchange version < 2.61.0. User email is required
+		return false, nil
+	} else {
+		// current exchange version >= 2.61.0. User email is optional
+		return true, nil
+	}
+
 }

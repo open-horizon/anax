@@ -81,6 +81,12 @@ const AgbotAgreementBatchSize_DEFAULT = 300
 // The default max agreement bot work queue size. This is essentially the maximum queue depth for a given agbot protocol worker pool.
 const AgbotAgreementQueueSize_DEFAULT = 300
 
+// The default scaling factor applied to Agreement Queue size inorder to keep the message queue full.
+const AgbotMessageQueueScale_DEFAULT = 33.0
+
+// The default number of prioritized queue history records to keep before aging out the old ones.
+const AgbotQueueHistorySize_DEFAULT = 30
+
 // The default full rescan interval
 const AgbotFullRescan_DEFAULT = 600
 
@@ -92,3 +98,12 @@ const AgbotRetryLookBackWindow_DEFAULT = 3600
 
 // Policy search order
 const AgbotPolicySearchOrder_DEFAULT = true
+
+// Scale factor of node max hb interval to wait before declaring an a agreement for that node did not finalize
+const AgreementTimeoutScaleFactor_DEFAULT = 2
+
+// Scale factor of node max hb interval to wait before declaring a proposal response is lost for that node
+const AgbotProtocolTimeoutScaleFactor_DEFAULT = 2
+
+// Time to allow a kube agent to attempt to install a custom resource before timing out
+const K8sCRInstallTimeoutS_DEFAULT = 180

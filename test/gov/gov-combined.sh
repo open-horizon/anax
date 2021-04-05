@@ -30,6 +30,13 @@ function set_exports {
 function run_delete_loops {
   # Start the deletion loop tests if they have not been disabled.
   echo -e "No loop setting is $NOLOOP"
+
+  # get the admin auth for verify_agreements.sh
+  local admin_auth="e2edevadmin:e2edevadminpw"
+  if [ "$DEVICE_ORG" == "userdev" ]; then
+    admin_auth="userdevadmin:userdevadminpw"
+  fi
+
   if [ "$NOLOOP" != "1" ] && [ "$NOAGBOT" != "1" ]
   then
     echo "Starting deletion loop tests. Giving time for 1st agreement to complete."
@@ -48,9 +55,9 @@ function run_delete_loops {
     if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ] || [ "${PATTERN}" == "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
       if [ "$NOLOOP" == "1" ]; then
-        ./verify_agreements.sh
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
-        echo -e "No cancellation setting is $NOCANCEL"
+         echo -e "No cancellation setting is $NOCANCEL"
         if [ "$NOCANCEL" != "1" ]; then
           ./del_loop.sh
           if [ $? -ne 0 ]; then echo "Agreement deletion failure."; exit 1; fi
@@ -58,13 +65,13 @@ function run_delete_loops {
           sleep 30
           ./agbot_del_loop.sh
           if [ $? -ne 0 ]; then echo "Agbot agreement deletion failure."; exit 1; fi
-          ./verify_agreements.sh
+          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
           if [ $? -ne 0 ]; then echo "Agreement restart failure."; exit 1; fi
         else
           echo -e "Cancellation tests are disabled"
         fi
       else
-        ./verify_agreements.sh &
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh &
       fi
     else
       echo -e "Verifying policy based workload deployment"
@@ -74,7 +81,7 @@ function run_delete_loops {
           echo "Skipping agreement verification"
           sleep 30
         else
-          ./verify_agreements.sh
+          ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
           if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
         fi
         ./del_loop.sh
@@ -89,7 +96,7 @@ function run_delete_loops {
       if [ "$NONS" == "1" ] || [ "$NOPWS" == "1" ] || [ "$NOLOC" == "1" ] || [ "$NOGPS" == "1" ] || [ "$NOHELLO" == "1" ] || [ "$NOK8S" == "1" ]; then
         echo "Skipping agreement verification"
       else
-        ./verify_agreements.sh
+        ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
         if [ $? -ne 0 ]; then echo "Verify agreement failure."; exit 1; fi
       fi
     fi
@@ -305,6 +312,15 @@ then
     fi
   fi
 
+  if [ "$NOSVC_CONFIGSTATE" != "1" ]; then
+    ./service_configstate_test.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Service configstate test failure."
+      TESTFAIL="1"
+    fi
+  fi
+
 elif [ "$TESTFAIL" != "1" ]; then
   # make agreements based on patterns
   last_pattern=$(echo $TEST_PATTERNS |sed -e 's/^.*,//')
@@ -315,12 +331,21 @@ elif [ "$TESTFAIL" != "1" ]; then
     echo -e "***************************"
     echo -e "Start testing pattern $PATTERN..."
 
+    # Because of the limitation of docker networks, if the pattern for 
+    # the main agent is sall, the pattern for the multi-agent will be sns. 
+    # Otherwide they will have the same pattern. 
+    ma_pattern=$PATTERN
+    if [ "${PATTERN}" == "sall" ]; then
+      ma_pattern="sns"
+    fi
+
     # Allocate port 80 to see what anax does
     # socat - TCP4-LISTEN:80,crlf &
 
     # start pattern test
     set_exports $pat
 
+    # start main agent
     ./start_node.sh
     if [ $? -ne 0 ]
     then
@@ -329,12 +354,32 @@ elif [ "$TESTFAIL" != "1" ]; then
       break
     fi
 
+    # start multiple agents
+    source ./multiple_agents.sh
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "Starting multiple agents with pattern ${ma_pattern} ..."
+      PATTERN=${ma_pattern} startMultiAgents
+      if [ $? -ne 0 ]; then
+        echo "Multiple agent startup failure."
+        break
+      fi
+    fi
+
     run_delete_loops
     if [ $? -ne 0 ]
     then
       echo "Delete loop failure."
       TESTFAIL="1"
       break
+    fi
+
+    if [ ${MUL_AGENTS} -ne 0 ]; then
+      echo "Checking multiple agents..."
+      PATTERN=${ma_pattern} verifyMultiAgentsAgreements
+      if [ $? -ne 0 ]; then
+        echo "Multiple agent agreement varification failure."
+        break
+      fi
     fi
 
     if [ "$NORETRY" != "1" ]; then
@@ -379,18 +424,20 @@ elif [ "$TESTFAIL" != "1" ]; then
 fi
 
 if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
-  ./agbot_apitest.sh
-  if [ $? -ne 0 ]
-  then
-    echo "Policy compatibility test using Agbot API failure."
-    exit 1
-  fi
+  if [ "$TEST_PATTERNS" == "sall" ] || [ "$TEST_PATTERNS" == "" ]; then
+    ./agbot_apitest.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Policy compatibility test using Agbot API failure."
+      exit 1
+    fi
 
-  ./hzn_compcheck.sh
-  if [ $? -ne 0 ]
-  then
-    echo "Policy compatibility test using hzn command failure."
-    exit 1
+    ./hzn_compcheck.sh
+    if [ $? -ne 0 ]
+    then
+      echo "Policy compatibility test using hzn command failure."
+      exit 1
+    fi
   fi
 
 fi
@@ -424,7 +471,7 @@ if [ "$NOHZNREG" != "1" ] && [ "$TESTFAIL" != "1" ]; then
 
     ./hzn_reg.sh
     if [ $? -ne 0 ]; then
-      echo "Failed registering and unregitering tests with hzn commands."
+      echo "Failed registering and unregistering tests with hzn commands."
       exit 1
     fi
   fi

@@ -137,7 +137,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		}
 
-		cmd := w.NewReportDeviceStatusCommand()
+		cmd := w.NewReportDeviceStatusCommand(nil)
 		w.Commands <- cmd
 
 	case *events.ImageFetchMessage:
@@ -180,10 +180,14 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 						fmt.Sprintf(persistence.EC_IMAGE_LOADED),
 						ags[0])
 				} else {
+					var errDetails = "unknown error"
+					if msg.Error != nil {
+						errDetails = msg.Error.Error()
+					}
 					eventlog.LogAgreementEvent(
 						w.db,
 						persistence.SEVERITY_ERROR,
-						persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL),
+						persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG, ags[0].RunningWorkload.Org, ags[0].RunningWorkload.URL, errDetails),
 						persistence.EC_ERROR_IMAGE_LOADE,
 						ags[0])
 					cmd := w.NewCleanupExecutionCommand(lc.AgreementProtocol, lc.AgreementId, reason, nil)
@@ -192,21 +196,21 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			}
 		case *events.ContainerLaunchContext:
 			lc := msg.LaunchContext.(*events.ContainerLaunchContext)
-
+			serviceInfo := lc.GetServicePathElement()
 			if msg.Event().Id == events.IMAGE_FETCHED {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_INFO,
-					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_IMAGE_LOADED_FOR_SVC, serviceInfo.Org, serviceInfo.URL),
 					persistence.EC_IMAGE_LOADED,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 			} else {
 				eventlog.LogServiceEvent2(
 					w.db,
 					persistence.SEVERITY_ERROR,
-					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, lc.ServicePathElement.Org, lc.ServicePathElement.URL),
+					persistence.NewMessageMeta(EL_GOV_ERR_LOADING_IMG_FOR_SVC, serviceInfo.Org, serviceInfo.URL),
 					persistence.EC_ERROR_IMAGE_LOADE,
-					"", lc.ServicePathElement.URL, "", lc.ServicePathElement.Version, "", lc.AgreementIds)
+					"", serviceInfo.URL, "", serviceInfo.Version, "", lc.AgreementIds)
 				cmd := w.NewUpdateMicroserviceCommand(lc.Name, false, microservice.MS_IMAGE_FETCH_FAILED, microservice.DecodeReasonCode(microservice.MS_IMAGE_FETCH_FAILED))
 				w.Commands <- cmd
 			}
@@ -277,7 +281,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 				w.Commands <- cmd
 			}
 
-			cmd := w.NewReportDeviceStatusCommand()
+			cmd := w.NewReportDeviceStatusCommand(nil)
 			w.Commands <- cmd
 		}
 	case *events.MicroserviceContainersDestroyedMessage:
@@ -289,7 +293,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		}
 
-		cmd := w.NewReportDeviceStatusCommand()
+		cmd := w.NewReportDeviceStatusCommand(nil)
 		w.Commands <- cmd
 
 	case *events.NodeShutdownMessage:
@@ -314,7 +318,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 
 			// Make sure device status is up to date since heartbeating is now restored. It means connectivity to
 			// the exchange has been out but is now working again.
-			w.Commands <- w.NewReportDeviceStatusCommand()
+			w.Commands <- w.NewReportDeviceStatusCommand(nil)
 
 			// Now that heartbeating is restored, fire the functions to check on exchange state changes. If the node
 			// was offline long enough, the exchange might have pruned changes we needed to see, which means we will
@@ -327,9 +331,9 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	case *events.ServiceConfigStateChangeMessage:
 		msg, _ := incoming.(*events.ServiceConfigStateChangeMessage)
 		switch msg.Event().Id {
-		case events.SERVICE_SUSPENDED:
-			cmd := w.NewServiceSuspendedCommand(msg.ServiceConfigState)
-			w.Commands <- cmd
+		case events.SERVICE_CONFIG_STATE_CHANGED:
+			w.Commands <- w.NewServiceSuspendedCommand(msg.ServiceConfigState)
+			w.Commands <- w.NewReportDeviceStatusCommand(msg.ServiceConfigState)
 		}
 
 	case *events.UpdatePolicyMessage:
@@ -436,7 +440,11 @@ func (w *GovernanceWorker) governAgreements() {
 				}
 				// If we fall through to here, then the agreement is Not finalized yet, check for a timeout.
 				now := uint64(time.Now().Unix())
-				if ag.AgreementCreationTime+w.BaseWorker.Manager.Config.Edge.AgreementTimeoutS < now {
+				timeout := w.BaseWorker.Manager.Config.Edge.AgreementTimeoutS
+				if timeout == 0 {
+					timeout = ag.AgreementTimeout
+				}
+				if ag.AgreementCreationTime+timeout < now {
 					// Start timing out the agreement
 					glog.V(3).Infof(logString(fmt.Sprintf("detected agreement %v timed out.", ag.CurrentAgreementId)))
 
@@ -1261,7 +1269,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 				glog.Errorf(logString(fmt.Sprintf("Error updating service execution status. %v", err)))
 			} else if msinst != nil {
 				if msdef, err := persistence.FindMicroserviceDefWithKey(w.db, msinst.MicroserviceDefId); err != nil {
-					glog.Errorf(logString(fmt.Sprintf("Error finding service definition fron db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
+					glog.Errorf(logString(fmt.Sprintf("Error finding service definition from db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
 				} else if msdef == nil {
 					glog.Errorf(logString(fmt.Sprintf("No service definition record in db for %v version %v key %v. %v", cutil.FormOrgSpecUrl(msinst.SpecRef, msinst.Org), msinst.Version, msinst.MicroserviceDefId, err)))
 				} else {
@@ -1293,7 +1301,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		glog.V(5).Infof(logString(fmt.Sprintf("Report device status command %v", cmd)))
 		if !w.IsWorkerShuttingDown() {
-			w.ReportDeviceStatus()
+			w.reportDeviceStatus(cmd.configStates)
 		}
 
 	case *NodeShutdownCommand:
@@ -1772,7 +1780,7 @@ func recordProducerAgreementState(httpClient *http.Client, url string, deviceId 
 	// Call the exchange API to set the agreement state.
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId
+	targetURL := url + "orgs/" + exchange.GetOrg(deviceId) + "/nodes/" + exchange.GetId(deviceId) + "/agreements/" + agreementId + "?" + exchange.NOHEARTBEAT_PARAM
 	for {
 		if err, tpErr := exchange.InvokeExchange(httpClient, "PUT", targetURL, deviceId, token, &as, &resp); err != nil {
 			glog.Errorf(logString(fmt.Sprintf(err.Error())))

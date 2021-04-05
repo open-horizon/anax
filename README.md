@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project contains the Horizon client system source code. Stable versions of the Horizon agent are packaged for many Debian-based distributions. They are available for download at http://pkg.bluehorizon.network/linux/. To build the packages yourself, consult https://github.com/open-horizon/horizon-deb-packager.
+This project contains the Horizon client system source code. Stable versions of the Horizon agent are packaged for many Debian-based distributions. They are available for download at https://github.com/open-horizon/anax/releases. To build the packages yourself, consult https://github.com/open-horizon/horizon-deb-packager.
 To run the agent, you will need access to systems where the Exchange (https://github.com/open-horizon/exchange-api), the CSS (https://github.com/open-horizon/anax/tree/master/css/image/cloud-sync-service-amd64), and an Agbot (which is just anax deployed as an agbot instead of an agent) are deployed.
 
 Related Projects:
@@ -31,7 +31,22 @@ Note that the Makefile silences a lot of its output by default. If you want to s
 
 #### Build executable
 
+Regular usage for the same anax runtime platform:
+
     make
+
+> Note: If you want to run anax build on another platform (cross-platform build), set up the target architecture and kind of operating system platform (Linux/Darwin) as arch and opsys variables respectively:
+>
+> ```sh
+> # For example, to build ppc64le anax binary for Linux OS on Mac OS host use the commands below
+> # List of possible values:
+> #   `arch`: armhf, arm64, amd64, ppc64el
+> #   `opsys`: Linux, Darwin
+> export arch=ppc64el
+> export opsys=Linux
+> # then call make to run anax build
+> make
+> ```
 
 #### Execute code checks
 
@@ -61,7 +76,7 @@ Note that this target is automatically executed when executing targets `check` a
 
 #### Debug Logging
 
-* Add `"ANAX_LOG_LEVEL=5"` to the `Environment=` configuration in the systemd unit file `/etc/systemd/system/snap.bluehorizon.anax.service`. Note that the value `5` is the classification of most debug log messages, `6` is used for even more granular log messages, something like a 'trace' level.
+* Add `"ANAX_LOG_LEVEL=5"` to the `Environment=` configuration in the systemd unit file `/etc/systemd/system/horizon.service`. Note that the value `5` is the classification of most debug log messages, `6` is used for even more granular log messages, something like a 'trace' level.
 * Reload the systemd unit file with `systemctl daemon-reload`.
 * Restart the anax process with `systemctl restart horizon.service`.
 

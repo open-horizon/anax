@@ -1876,25 +1876,17 @@
       "fuzzy": true
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "message": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}...",
+      "id": "Pushing {ImageName}...",
+      "message": "Pushing {ImageName}...",
+      "translation": "正在推送 {ImageName}...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -1940,31 +1932,17 @@
       "fuzzy": true
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "message": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送输出中找不到映像摘要",
-      "fuzzy": true
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "message": "Pulling {Repository}:{Tag}...",
-      "translation": "正在拉取 {Repository}:{Tag}...",
+      "id": "Pulling {ImageName}...",
+      "message": "Pulling {ImageName}...",
+      "translation": "正在拉取 {ImageName}...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -2013,6 +1991,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "message": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "在 Docker 输出中找不到映像摘要，将直接从映像中检索映像摘要。",
+      "fuzzy": true
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "message": "could not inspect image {ImageName}: {Err}.",
+      "translation": "无法检查映像 {ImageName}：{Err}。",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "message": "could not find digest for image {ImageName}.",
+      "translation": "找不到映像 {ImageName} 的摘要。",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -2118,9 +2142,9 @@
       "fuzzy": true
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 请运行 'systemctl status horizon'，以检查 Horizon 代理程序是否在运行中。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 具体错误为：{Err}",
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。 或运行“{StatusURL}”以检查 Horizon 代理程序状态。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -2131,11 +2155,27 @@
           "expr": "apiMethod"
         },
         {
+          "id": "StatusCommand",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "statusCommand"
+        },
+        {
+          "id": "StatusURL",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "statusURL"
+        },
+        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[4]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 4,
           "expr": "err"
         }
       ],
@@ -2144,7 +2184,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 与该端口相关联的 SSH 隧道可能已关闭。 或者，该隧道另一端的远程 Horizon 代理程序可能已关闭。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -2704,7 +2744,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 请设置 {ServiceEnvVarName}，以使用除当前配置给 Horizon Agent 的项之外的 {Article} {HorizonService_1}。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -2760,7 +2800,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 具体错误为：{Err}",
+      "translation": "无法连接至 Horizon {HorizonService} REST API 以运行 {ApiMethod}。 可能是未正确设置 {ServiceEnvVarName}。 或者，请取消设置 {ServiceEnvVarName_1}，以使用配置给 Horizon Agent 的 {HorizonService_1}。 特定的错误为：{Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -3558,6 +3598,174 @@
       "fuzzy": true
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "所提供的日志驱动程序 ({LogDriver}) 不支持日志查看。 日志仅在以下驱动程序上可用：{DockerDriversWithLoggingSupport}",
+      "placeholders": [
+        {
+          "id": "LogDriver",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "logDriver"
+        },
+        {
+          "id": "DockerDriversWithLoggingSupport",
+          "string": "%[2]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "message": "Error creating StdoutPipe for command: {Err}",
+      "translation": "为命令创建 StdoutPipe 出错：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "message": "Error starting command: {Err}",
+      "translation": "启动命令出错：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "message": "Error waiting for command: {Err}",
+      "translation": "等待命令出错：{Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} 无法打开或不存在：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} 无法获取统计信息：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "读取 {SysLogPath} 时出错：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "无法声明 {SysLogPath}：{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "no service name",
       "message": "no service name",
       "translation": "没有服务名称",
@@ -3780,7 +3988,7 @@
     {
       "id": "Error getting new user input format. {Err1}",
       "message": "Error getting new user input format. {Err1}",
-      "translation": "获取新用户输入格式时出错。{Err1}",
+      "translation": "获取新用户输入格式时出错。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -3796,7 +4004,7 @@
     {
       "id": "Failed to create json object for user input. {Err1}",
       "message": "Failed to create json object for user input. {Err1}",
-      "translation": "未能为用户输入创建 JSON 对象。{Err1}",
+      "translation": "未能为用户输入创建 JSON 对象。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -3881,7 +4089,7 @@
     {
       "id": "Organization is not specified in the given node id: {NodeId}.",
       "message": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。",
+      "translation": "未在标识为 {NodeId} 的给定节点中指定组织。",
       "placeholders": [
         {
           "id": "NodeId",
@@ -6748,10 +6956,10 @@
     {
       "id": [
         "EL_GOV_ERR_LOADING_IMG",
-        "Error loading image for {Arg_1}/{Arg_2}."
+        "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}"
       ],
-      "message": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。",
+      "message": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "装入 {Arg_1}/{Arg_2} 的映像出错。 原因：{Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6766,6 +6974,13 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
         }
       ],
       "fuzzy": true
@@ -8874,6 +9089,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "message": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression：空字符串不是有效的版本。",
       "fuzzy": true
     },
     {

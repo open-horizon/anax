@@ -1,7 +1,7 @@
 
 echo "Testing service upgrading"
 
-IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
+ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 KEY_TEST_DIR="/tmp/keytest"
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
@@ -13,26 +13,33 @@ function WaitForService() {
   TIMEOUT=0
   while [[ $TIMEOUT -le 25 ]]
   do
+    if [ "${3}" == "" ]; then
+        echo -e "Waiting for service $2/$1 with any version."
+    else
+        echo -e "Waiting for service $2/$1 with version $3."
+    fi
     svc_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\")")
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get $1 service instace. ${svc_inst}"
         exit 2
     fi
+
     current_svc_version=$(echo "$svc_inst" | jq -r '.version')
 
     if [ "$current_svc_version" == "" ] || ([ "$3" != "" ] && [ "$current_svc_version" != "$3" ]); then
         sleep 5s
         ((TIMEOUT++))
     else
+        echo -e "Found service $2/$1 with version $3."
         break
     fi
 
-    if [[ $TIMEOUT == 26 ]]; then echo -e "Timeout for waiting to $1 service to start"; exit 2; fi
+    if [[ $TIMEOUT == 26 ]]; then echo -e "Timeout waiting for service $1 to start"; exit 2; fi
   done
 }
 
 CPU_URL="https://bluehorizon.network/service-cpu"
-CPU_ORG="IBM"
+CPU_ORG="e2edev@somecomp.com"
 
 # Ensure cpu service is up and running
 echo "Waiting for old version of cpu service to be running..."
@@ -40,14 +47,15 @@ WaitForService $CPU_URL $CPU_ORG
 if [ $? -ne 0 ]; then exit $?; fi
 
 # Save current cpu version for later comparing
-old_cpu_version="$current_svc_version"
+old_cpu_version="${current_svc_version}"
+echo "Running ${CPU_ORG} ${CPU_URL} version $current_svc_version"
 
 # Deploy newer version of service
 CPU_URL="https://bluehorizon.network/service-cpu"
-CPU_ORG="IBM"
-CPU_VERS_NEW="1.2.5"
+CPU_ORG="e2edev@somecomp.com"
+CPU_VERS_NEW="1.0.3"
 
-# cpu service - needed by the hzn dev tests and the location top level service as a 3rd level dependency.
+# cpu service - needed by the e2edev@somecomp.com/netspeed service as a dependency.
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 {
   "label":"CPU service",
@@ -68,19 +76,18 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/example_ms_x86_cpu:1.2.2",
-        "binds":["/tmp:/hosttmp"]
+        "image":"openhorizon/amd64_cpu:1.2.2"
       }
     }
   },
   "deploymentSignature":""
 }
 EOF
-echo -e "Register new version ($CPU_VERS_NEW) of IBM/cpu service:"
-hzn exchange service publish -I -O -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+echo -e "Register new version ($CPU_VERS_NEW) of e2edev@somecomp.com/cpu service:"
+hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for IBM/cpu."
+    echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
@@ -88,19 +95,21 @@ fi
 hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
 
 # Ensure service is upgrading
-echo "Waiting for new cpu version to be started..."
+echo "Waiting for new cpu version ${CPU_VERS_NEW} to be started..."
 WaitForService $CPU_URL $CPU_ORG $CPU_VERS_NEW
-if [ $? -ne 0 ]; then exit $?; fi
+if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
 
 # Check upgrading logs were produced
 ret=$(hzn eventlog list | grep "Start upgrading service $CPU_ORG/$CPU_URL from version $old_cpu_version to version $CPU_VERS_NEW.")
 if [ $? -ne 0 ]; then
     echo -e "'Start upgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 ret=$(hzn eventlog list | grep "Complete upgrading service $CPU_ORG/$CPU_URL from version $old_cpu_version to version $CPU_VERS_NEW.")
 if [ $? -ne 0 ]; then
     echo -e "'Complete upgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 
@@ -108,8 +117,8 @@ echo "Testing service downgrading"
 
 # Deploy newer version of service with deployment error
 CPU_URL="https://bluehorizon.network/service-cpu"
-CPU_ORG="IBM"
-CPU_VERS_ERR="1.2.6"
+CPU_ORG="e2edev@somecomp.com"
+CPU_VERS_ERR="1.0.4"
 cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
 {
   "label":"CPU service",
@@ -130,7 +139,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/example_ms_x86_cpu:1.2.2",
+        "image":"openhorizon/amd64_cpu:1.2.2",
         "binds":["/tmp:/hosttmp", ""]
       }
     }
@@ -138,29 +147,36 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deploymentSignature":""
 }
 EOF
-echo -e "Register new version ($CPU_VERS_ERR) of IBM/cpu service with an error in deployment:"
-hzn exchange service publish -I -O -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
+echo -e "Register new version ($CPU_VERS_ERR) of e2edev@somecomp.com/cpu service with an error in deployment:"
+hzn exchange service publish -I -O -u $ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
 then
-    echo -e "hzn exchange service publish failed for IBM/cpu."
+    echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
 
 # Stop agreements in order to start the service upgrading and downgrading because of error
 hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
 
-# Wait 10 seconds to let the old version of cpu service to be stopped
-sleep 10
+# Wait for the old version of the cpu service to stop
+sleep 5
+
+echo "Display agreement status, there should be none:"
+hzn agreement list
 
 # Ensure service is upgrading/downgrading
-echo "Waiting for cpu service to be upgraded and downgraded because od an error..."
+echo "Waiting for cpu service to be upgraded and downgraded because of an error..."
+WaitForService $CPU_URL $CPU_ORG $CPU_VERS_ERR
+if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
+
 WaitForService $CPU_URL $CPU_ORG $CPU_VERS_NEW
-if [ $? -ne 0 ]; then exit $?; fi
+if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
 
 # Check upgrading logs were produced
 ret=$(hzn eventlog list | grep "Start upgrading service $CPU_ORG/$CPU_URL from version $CPU_VERS_NEW to version $CPU_VERS_ERR.")
 if [ $? -ne 0 ]; then
     echo -e "'Start upgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 
@@ -168,11 +184,12 @@ fi
 ret=$(hzn eventlog list | grep "Start downgrading service $CPU_ORG/$CPU_URL version $CPU_VERS_ERR")
 if [ $? -ne 0 ]; then
     echo -e "'Start downgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 
 # Remove service with deployment error
-hzn exchange service remove -u $IBM_ADMIN_AUTH -o IBM -f $CPU_ORG/bluehorizon.network-service-cpu_1.2.6_amd64
+hzn exchange service remove -u $ADMIN_AUTH -o e2edev@somecomp.com -f $CPU_ORG/bluehorizon.network-service-cpu_${CPU_VERS_ERR}_amd64
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service remove failed for $CPU_ORG/cpu with deployment error"

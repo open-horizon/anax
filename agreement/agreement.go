@@ -612,6 +612,11 @@ func (w *AgreementWorker) syncOnInit() error {
 			}
 			neededBCInstances[bcOrg][bcType][bcName] = true
 
+			// If the agent has been updated from a version 4.2 or ealier, the agreement timeout field will not be set on agreements and must be set for in-flight agreements to be finalized
+			if ag.AgreementTimeout == 0 {
+				w.setAgreementTimeout(ag)
+			}
+
 			// If there is an active agreement that is marked as terminated, then anax was restarted in the middle of
 			// termination processing, and therefore we dont know how far it got. Initiate a cancel again to clean it up.
 			if ag.AgreementTerminatedTime != 0 {
@@ -684,7 +689,6 @@ func (w *AgreementWorker) syncOnInit() error {
 				}
 				glog.V(3).Infof(logString(fmt.Sprintf("added agreement %v to policy agreement counter.", ag.CurrentAgreementId)))
 			}
-
 		}
 
 		// Fire off start requests for each BC client that we need running. The blockchain worker and the container worker will tolerate
@@ -704,6 +708,23 @@ func (w *AgreementWorker) syncOnInit() error {
 	glog.V(3).Infof(logString("sync up completed normally."))
 	return nil
 
+}
+
+func (w *AgreementWorker) setAgreementTimeout(ag persistence.EstablishedAgreement) {
+	exchDev, err := exchange.GetExchangeDevice(w.GetHTTPFactory(), w.GetExchangeId(), w.GetExchangeId(), w.GetExchangeToken(), w.GetExchangeURL())
+	if err != nil {
+		glog.Errorf("Unable to get device from exchange: %v", err)
+	}
+	maxHb := exchDev.HeartbeatIntv.MaxInterval
+	if maxHb == 0 {
+		exchOrg, err := exchange.GetOrganization(w.GetHTTPFactory(), exchange.GetOrg(w.GetExchangeId()), w.GetExchangeURL(), w.GetExchangeId(), w.GetExchangeToken())
+		if err != nil {
+			glog.Errorf("Unable to get org from exchange: %v", err)
+		}
+		maxHb = exchOrg.HeartbeatIntv.MaxInterval
+	}
+
+	persistence.SetAgreementTimeout(w.db, ag.CurrentAgreementId, ag.AgreementProtocol, w.Config.Edge.GetAgreementTimeout(maxHb))
 }
 
 // This function verifies that an agreement is present in the blockchain. An agreement might not be present for a variety of reasons,
@@ -959,7 +980,7 @@ func (w *AgreementWorker) recordAgreementState(agreementId string, pol *policy.P
 
 	var resp interface{}
 	resp = new(exchange.PostDeviceResponse)
-	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId
+	targetURL := w.GetExchangeURL() + "orgs/" + exchange.GetOrg(w.GetExchangeId()) + "/nodes/" + exchange.GetId(w.GetExchangeId()) + "/agreements/" + agreementId + "?" + exchange.NOHEARTBEAT_PARAM
 	for {
 		if err, tpErr := exchange.InvokeExchange(w.GetHTTPFactory().NewHTTPClient(nil), "PUT", targetURL, w.GetExchangeId(), w.GetExchangeToken(), as, &resp); err != nil {
 			glog.Errorf(err.Error())

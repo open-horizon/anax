@@ -16,7 +16,7 @@
     {
       "id": "Failed to authenticate the user with the Exchange. {Err}",
       "message": "Failed to authenticate the user with the Exchange. {Err}",
-      "translation": "Echec de l'authentification de l'utilisateur avec Exchange. {Err}",
+      "translation": "Echec d'authentification de l'utilisateur avec Exchange. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -1439,9 +1439,9 @@
       "fuzzy": true
     },
     {
-      "id": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "message": "The maximum number of nodes this organization is allowed to have. The default is 0 which means no limit.",
-      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur par défaut est 0, ce qui signifie qu'il n'y a pas de limite.",
+      "id": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "message": "The maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default is 0 which means no organization limit.",
+      "translation": "Nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur ne peut pas excéder la limite globale d'Exchange. La valeur par défaut est 0, ce qui signifie qu'aucune limite n'est définie pour l'organisation.",
       "fuzzy": true
     },
     {
@@ -1477,31 +1477,31 @@
     {
       "id": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
       "message": "New tag for organization. The format is mytag1=myvalue1. This flag can be repeated to specify multiple tags. Use '-t \"\"' once to remove all the tags.",
-      "translation": "Nouvelle balise de l'organisation. Le format est mytag1=myvalue1. Cet indicateur peut être répété pour spécifier plusieurs balises. Utilisez '-t \"\"' une seule fois pour supprimer toutes les balises.",
+      "translation": "Nouvelle balise de l'organisation. Le format est mytag1=myvalue1. Cet indicateur peut être répété pour spécifier plusieurs balises. Utilisez '-t \"\"' une seule fois pour retirer toutes les balises.",
       "fuzzy": true
     },
     {
       "id": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
       "message": "New minimum number of seconds the between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouveau nombre minimal de secondes entre les signaux de présence de l'agent sur Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
+      "translation": "Nouveau nombre minimal de secondes entre les signaux de présence de l'agent sur Exchange. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté à cet attribut.",
       "fuzzy": true
     },
     {
       "id": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
       "message": "New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouveau nombre maximal de secondes entre les signaux de présence de l'agent sur Exchange. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
+      "translation": "Nouveau nombre maximal de secondes entre les signaux de présence de l'agent sur Exchange. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté à cet attribut.",
       "fuzzy": true
     },
     {
       "id": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
       "message": "New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.",
-      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des signaux de présence de l'agent. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté à cet attribut.",
+      "translation": "Nouvelle valeur pour le nombre de secondes permettant d'incrémenter l'intervalle des signaux de présence de l'agent. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté à cet attribut.",
       "fuzzy": true
     },
     {
-      "id": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "message": "The new maximum number of nodes this organization is allowed to have. The default negative integer -1 means no change.",
-      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. L'entier négatif -1 par défaut indique qu'aucun changement n'est apporté.",
+      "id": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "message": "The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.",
+      "translation": "Nouveau nombre maximal de noeuds que cette organisation est autorisée à avoir. La valeur ne peut pas excéder la limite globale d'Exchange. La valeur par défaut de l'entier négatif -1 indique qu'aucun changement n'est apporté.",
       "fuzzy": true
     },
     {
@@ -1514,6 +1514,12 @@
       "id": "Remove this organization.",
       "message": "Remove this organization.",
       "translation": "Retirer cette organisation.",
+      "fuzzy": true
+    },
+    {
+      "id": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "message": "The agbot to remove the deployment policy from. If omitted, the first agbot found in the exchange will be used. The format is 'agbot_org/agbot_id'.",
+      "translation": "Agbot duquel retirer la règle de déploiement. En cas d'omission, le premier agbot identifié dans Exchange sera utilisé. Le format est 'agbot_org/agbot_id'.",
       "fuzzy": true
     },
     {
@@ -1571,9 +1577,9 @@
       "fuzzy": true
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "message": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Adresse e-mail à associer à ce compte utilisateur lors de sa création dans Horizon Exchange. Si votre nom d'utilisateur est une adresse e-mail, cet argument peut être omis.",
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "message": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Adresse e-mail à associer à ce compte utilisateur lors de sa création dans Horizon Exchange. Cet argument est facultatif.",
       "fuzzy": true
     },
     {
@@ -1583,9 +1589,15 @@
       "fuzzy": true
     },
     {
+      "id": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "message": "This user should be a hub administrator, capable of managing orgs in this administration hub.",
+      "translation": "Cet utilisateur doit être un administrateur de concentrateur pouvant gérer des organisations dans ce concentrateur d'administration.",
+      "fuzzy": true
+    },
+    {
       "id": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
       "message": "Change the existing user to be an admin user (like root in his/her org) or to no longer be an admin user. Can only be run by exchange root or another admin user.",
-      "translation": "Changer l'utilisateur existant pour qu'il soit administrateur (root dans son organisation, par exemple) ou qu'il ne soit plus administrateur. Accessible uniquement par un utilisateur root Exchange ou autre administrateur.",
+      "translation": "Changer l'utilisateur existant pour qu'il soit administrateur (root dans son organisation, par exemple) ou qu'il ne soit plus administrateur. Accessible uniquement par un utilisateur racine (root) Exchange ou un autre administrateur.",
       "fuzzy": true
     },
     {
@@ -2259,6 +2271,12 @@
       "fuzzy": true
     },
     {
+      "id": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "message": "Whether the service is visible to users outside of the organization. This flag is optional. If left unset, the service will default to whatever the metadata has set. If the service definition has also not set the public field, then the service will by default not be public.",
+      "translation": "Indique si le service est visible des utilisateurs en dehors de l'organisation. Cet indicateur est facultatif. Si cette variable n'est pas définie, le service sera défini par défaut sur la valeur définie par les métadonnées. Si la définition de service n'a pas non plus défini la zone Public, par défaut le service ne sera pas public.",
+      "fuzzy": true
+    },
+    {
       "id": "Verify the signatures of a service resource in the Horizon Exchange.",
       "message": "Verify the signatures of a service resource in the Horizon Exchange.",
       "translation": "Vérifier les signatures d'une ressource de service dans Horizon Exchange.",
@@ -2821,9 +2839,9 @@
       "fuzzy": true
     },
     {
-      "id": "The JSON input file name containing the node policy.",
-      "message": "The JSON input file name containing the node policy.",
-      "translation": "Nom du fichier d'entrée JSON qui contient la règle du noeud.",
+      "id": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "message": "The JSON input file name containing the node policy. Specify -f- to read from stdin.",
+      "translation": "Nom du fichier d'entrée JSON qui contient la règle de noeud. Spécifiez -f- pour pouvoir lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -2899,9 +2917,9 @@
       "fuzzy": true
     },
     {
-      "id": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "message": "The node type. The valid values are 'device' and 'cluster'. The default is 'device'.",
-      "translation": "Type de noeud. Les valeurs valides sont 'device' et 'cluster'. La valeur par défaut est 'device'.",
+      "id": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "message": "The node type. The valid values are 'device' and 'cluster'. The default value is the type of the node provided by -n or current registered device, if omitted.",
+      "translation": "Type de noeud. Les valeurs valides sont 'device' et 'cluster'. La valeur par défaut est le type de nœud fourni par -n ou l'appareil enregistré en cours (si omis).",
       "fuzzy": true
     },
     {
@@ -3315,7 +3333,7 @@
     {
       "id": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
       "message": "Selection string. This flag can be repeated which means 'AND'. Each flag should be in the format of attribute=value, attribute~value, \"attribute>value\" or \"attribute<value\", where '~' means contains. The common attribute names are timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Use the '-l' flag to see all the attribute names.",
-      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'AND'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attribut communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attribut.",
+      "translation": "Chaîne de sélection. Cet indicateur peut être répété, ce qui correspond à 'ET'. Chaque indicateur doit avoir le format attribute=value, attribute~value, \"attribute>value\" ou \"attribute<value\", '~' signifiant \"contient\". Les noms d'attribut communs sont timestamp, severity, message, event_code, source_type, agreement_id, service_url etc. Utilisez l'indicateur '-l' pour voir tous les noms d'attribut.",
       "fuzzy": true
     },
     {
@@ -3494,6 +3512,18 @@
       "id": "File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.",
       "message": "File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.",
       "translation": "Fichier qui contient les valeurs d'entrée utilisateur pour la vérification d'un projet. S'il est omis, le fichier d'entrée utilisateur du projet sera utilisé.",
+      "fuzzy": true
+    },
+    {
+      "id": "Show the container/system logs for a service.",
+      "message": "Show the container/system logs for a service.",
+      "translation": "Afficher les journaux du conteneur ou du système pour un service.",
+      "fuzzy": true
+    },
+    {
+      "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "message": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
+      "translation": "Nom du service dont les enregistrements de journal doivent être affichés. Le nom de service est identique à celui de la zone d'URL d'une définition de service.",
       "fuzzy": true
     },
     {
@@ -3893,9 +3923,9 @@
       "fuzzy": true
     },
     {
-      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command.",
-      "translation": "Définition de l'objet à publier. Vous pouvez obtenir un modèle vide à l'aide de la commande 'hzn mss object new'.",
+      "id": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "message": "The definition of the object to publish. A blank template can be obtained from the 'hzn mss object new' command. Specify -m- to read from stdin.",
+      "translation": "Définition de l'objet à publier. Vous pouvez obtenir un modèle vide à l'aide de la commande 'hzn mss object new'. Spécifiez -m- pour lire à partir de stdin.",
       "fuzzy": true
     },
     {
@@ -4067,7 +4097,7 @@
     {
       "id": "failed to marshal agreement with index {I}: {Err}",
       "message": "failed to marshal agreement with index {I}: {Err}",
-      "translation": "Echec de la sérialisation de l'accord avec l'index {I} : {Err}",
+      "translation": "Echec de sérialisation de l'accord avec l'index {I} : {Err}",
       "placeholders": [
         {
           "id": "I",
@@ -4107,7 +4137,7 @@
     {
       "id": "failed to marshal 'hzn agreement list' output: {Err}",
       "message": "failed to marshal 'hzn agreement list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn agreement list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn agreement list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -4183,7 +4213,7 @@
     {
       "id": "failed to marshal 'hzn node list' output: {Err}",
       "message": "failed to marshal 'hzn node list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn node list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn node list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -4307,7 +4337,7 @@
     {
       "id": "failed to marshal 'policy list' output: {Err}",
       "message": "failed to marshal 'policy list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'policy list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'policy list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -4375,7 +4405,7 @@
     {
       "id": "failed to marshal 'hzn attribute list' output: {Err}",
       "message": "failed to marshal 'hzn attribute list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn attribute list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn attribute list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -4471,7 +4501,7 @@
     {
       "id": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
       "message": "Failed to set the environment variable defined in the MetadataVars attribute in file {ConfigFile}. {Err}",
-      "translation": "Echec de la définition de la variable d'environnement spécifiée dans l'attribut MetadataVars du fichier {ConfigFile}. {Err}",
+      "translation": "Echec de définition de la variable d'environnement spécifiée dans l'attribut MetadataVars du fichier {ConfigFile}. {Err}",
       "placeholders": [
         {
           "id": "ConfigFile",
@@ -4495,7 +4525,7 @@
     {
       "id": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
       "message": "Failed to set the environment variable in top level in file {ConfigFile}. {Err}",
-      "translation": "Echec de la définition de la variable d'environnement de premier niveau dans le fichier {ConfigFile}. {Err}",
+      "translation": "Echec de définition de la variable d'environnement de premier niveau dans le fichier {ConfigFile}. {Err}",
       "placeholders": [
         {
           "id": "ConfigFile",
@@ -4519,7 +4549,7 @@
     {
       "id": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
       "message": "Failed to set the environment variable defined in file {ConfigFile}. {Err}",
-      "translation": "Echec de la définition de la variable d'environnement spécifiée dans le fichier {ConfigFile}. {Err}",
+      "translation": "Echec de définition de la variable d'environnement spécifiée dans le fichier {ConfigFile}. {Err}",
       "placeholders": [
         {
           "id": "ConfigFile",
@@ -4559,7 +4589,7 @@
     {
       "id": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
       "message": "Failed to set the environment variable from the local configuration file {LocalConfigFile} for file {FilePath}. Error: {Err}",
-      "translation": "Echec de la définition de la variable d'environnement à partir du fichier de configuration locale {LocalConfigFile} pour le fichier {FilePath}. Erreur : {Err}",
+      "translation": "Echec de définition de la variable d'environnement à partir du fichier de configuration locale {LocalConfigFile} pour le fichier {FilePath}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "LocalConfigFile",
@@ -4591,7 +4621,7 @@
     {
       "id": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
       "message": "Failed to restore the environment variable after using local configuration file {UseLocalConfig}. {Err}",
-      "translation": "Echec de la restauration de la variable d'environnement après utilisation du fichier de configuration locale {UseLocalConfig}. {Err}",
+      "translation": "Echec de restauration de la variable d'environnement après utilisation du fichier de configuration locale {UseLocalConfig}. {Err}",
       "placeholders": [
         {
           "id": "UseLocalConfig",
@@ -4615,7 +4645,7 @@
     {
       "id": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
       "message": "Failed to get the absolute path for file {ConfigFilepkg}. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {ConfigFilepkg}. {Err}",
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier {ConfigFilepkg}. {Err}",
       "placeholders": [
         {
           "id": "ConfigFilepkg",
@@ -4679,7 +4709,7 @@
     {
       "id": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
       "message": "Failed to get the absolute path for file ~/.hzn/hzn.json. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier ~/.hzn/hzn.json. {Err}",
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier ~/.hzn/hzn.json. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -4765,7 +4795,7 @@
     {
       "id": "failed to unmarshal bytes from {ErrMsg}: {Err}",
       "message": "failed to unmarshal bytes from {ErrMsg}: {Err}",
-      "translation": "Echec de la désérialisation des octets à partir de {ErrMsg} : {Err}",
+      "translation": "Echec de désérialisation des octets à partir de {ErrMsg} : {Err}",
       "placeholders": [
         {
           "id": "ErrMsg",
@@ -4789,7 +4819,7 @@
     {
       "id": "failed to marshal data type from {ErrMsg}: {Err}",
       "message": "failed to marshal data type from {ErrMsg}: {Err}",
-      "translation": "Echec de la sérialisation du type de données à partir de {ErrMsg} : {Err}",
+      "translation": "Echec de sérialisation du type de données à partir de {ErrMsg} : {Err}",
       "placeholders": [
         {
           "id": "ErrMsg",
@@ -4881,25 +4911,17 @@
       "fuzzy": true
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "message": "Pushing {Repository}:{Tag}...",
-      "translation": "Push vers {Repository} :{Tag}...",
+      "id": "Pushing {ImageName}...",
+      "message": "Pushing {ImageName}...",
+      "translation": "Envoi en cours : {ImageName}...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -4945,31 +4967,17 @@
       "fuzzy": true
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "message": "could not find the image digest in the docker push output",
-      "translation": "Impossible de trouver le digest dans la sortie push Docker",
-      "fuzzy": true
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "message": "Pulling {Repository}:{Tag}...",
-      "translation": "Pull {Repository} :{Tag}...",
+      "id": "Pulling {ImageName}...",
+      "message": "Pulling {ImageName}...",
+      "translation": "Extraction en cours : {ImageName}...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -5023,6 +5031,52 @@
       "fuzzy": true
     },
     {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "message": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Historique de l'image introuvable dans la sortie Docker, extraction de l'historique directement depuis l'image.",
+      "fuzzy": true
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "message": "could not inspect image {ImageName}: {Err}.",
+      "translation": "Impossible d'inspecter l'image {ImageName} : {Err}.",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "message": "could not find digest for image {ImageName}.",
+      "translation": "Historique introuvable pour l'image {ImageName}.",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "the id can not contain more than 1 '/'",
       "message": "the id can not contain more than 1 '/'",
       "translation": "L'ID ne doit pas contenir plus de 1 '/'",
@@ -5031,7 +5085,7 @@
     {
       "id": "reading stdin failed: {Err}",
       "message": "reading stdin failed: {Err}",
-      "translation": "Echec de la lecture de stdin : {Err}",
+      "translation": "Echec de lecture de stdin : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5047,7 +5101,7 @@
     {
       "id": "reading {FilePath} failed: {Err}",
       "message": "reading {FilePath} failed: {Err}",
-      "translation": "Echec de la lecture {FilePath} : {Err}",
+      "translation": "Echec de lecture {FilePath} : {Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -5123,9 +5177,9 @@
       "fuzzy": true
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Exécutez 'systemctl status horizon' pour vérifier si l'agent Horizon est en cours d'exécution. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. L'erreur associée est la suivante : {Err}",
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Connexion impossible à l'API REST Horizon pour exécuter {ApiMethod}. Exécutez '{StatusCommand}' pour vérifier si l'agent Horizon est en cours d'exécution. Ou exécutez '{StatusURL}' pour vérifier le statut de l'agent Horizon. Vous pouvez également définir la variable HORIZON_URL afin de vous connecter à un autre port local qui est connecté à un agent Horizon distant via un tunnel SSH. Erreur spécifique : {Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5136,11 +5190,27 @@
           "expr": "apiMethod"
         },
         {
+          "id": "StatusCommand",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "statusCommand"
+        },
+        {
+          "id": "StatusURL",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "statusURL"
+        },
+        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[4]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 4,
           "expr": "err"
         }
       ],
@@ -5149,7 +5219,7 @@
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
       "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon à exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. L'erreur associée est la suivante : {Err}",
+      "translation": "Connexion impossible à l'API REST Horizon pour exécuter {ApiMethod}. Il se peut que le tunnel SSH associé à ce port soit inactif, à moins que ce ne soit l'agent Horizon distant à l'autre bout du tunnel. Erreur spécifique : {Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -5173,7 +5243,7 @@
     {
       "id": "{ApiMsg} new request failed: {Err}",
       "message": "{ApiMsg} new request failed: {Err}",
-      "translation": "{ApiMsg} - Echec de la nouvelle demande : {Err}",
+      "translation": "{ApiMsg} - Echec de nouvelle demande : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -5261,7 +5331,7 @@
     {
       "id": "Failed to read body response from {ApiMsg}: {Err}",
       "message": "Failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}",
+      "translation": "Echec de lecture de la réponse du corps à partir de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -5285,7 +5355,7 @@
     {
       "id": "failed to read body response from {ApiMsg}: {Err}",
       "message": "failed to read body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps à partir de {ApiMsg} : {Err}",
+      "translation": "Echec de lecture de la réponse du corps à partir de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -5309,7 +5379,7 @@
     {
       "id": "Failed to unmarshal body response from {ApiMsg}: {Err}",
       "message": "Failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}",
+      "translation": "Echec de désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -5333,7 +5403,7 @@
     {
       "id": "failed to unmarshal body response from {ApiMsg}: {Err}",
       "message": "failed to unmarshal body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}",
+      "translation": "Echec de désérialisation de la réponse du corps à partir de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -5389,7 +5459,7 @@
     {
       "id": "failed to marshal body for {ApiMsg}: {Err}",
       "message": "failed to marshal body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps pour {ApiMsg} : {Err}",
+      "translation": "Echec de sérialisation du corps pour {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -5413,7 +5483,7 @@
     {
       "id": "Failed to unmarshal bytes. {Err}",
       "message": "Failed to unmarshal bytes. {Err}",
-      "translation": "Echec de la désérialisation des octets. {Err}",
+      "translation": "Echec de désérialisation des octets. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -5709,7 +5779,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Set {ServiceEnvVarName} to use {Article} {HorizonService_1} other than the one the Horizon Agent is currently configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. L'erreur associée est la suivante : {Err}",
+      "translation": "Connexion impossible à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. Définissez {ServiceEnvVarName} afin d'utiliser un {Article} {HorizonService_1} autre que celui pour lequel l'agent Horizon est actuellement configuré. Erreur spécifique : {Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -5765,7 +5835,7 @@
     {
       "id": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
       "message": "Can't connect to the Horizon {HorizonService} REST API to run {ApiMethod}. Maybe {ServiceEnvVarName} is set incorrectly? Or unset {ServiceEnvVarName_1} to use the {HorizonService_1} that the Horizon Agent is configured for. Specific error is: {Err}",
-      "translation": "Impossible de se connecter à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. L'erreur associée est la suivante : {Err}",
+      "translation": "Connexion impossible à l'API REST Horizon {HorizonService} pour exécuter {ApiMethod}. {ServiceEnvVarName} a peut-être été défini de manière incorrecte. Vous pouvez également annuler la configuration de {ServiceEnvVarName_1} afin d'utiliser le service {HorizonService_1} pour lequel est configuré l'agent Horizon. Erreur spécifique : {Err}",
       "placeholders": [
         {
           "id": "HorizonService",
@@ -5821,7 +5891,7 @@
     {
       "id": "failed to marshal exchange body for {ApiMsg}: {Err}",
       "message": "failed to marshal exchange body for {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation du corps Exchange pour {ApiMsg} : {Err}",
+      "translation": "Echec de sérialisation du corps Exchange pour {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -6021,7 +6091,7 @@
     {
       "id": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
       "message": "failed to unmarshal exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}",
+      "translation": "Echec de désérialisation de la réponse du corps Exchange de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -6045,7 +6115,7 @@
     {
       "id": "failed to marshal exchange output from {ApiMsg}: {Err}",
       "message": "failed to marshal exchange output from {ApiMsg}: {Err}",
-      "translation": "Echec de la sérialisation de la sortie Exchange de {ApiMsg} : {Err}",
+      "translation": "Echec de sérialisation de la sortie Exchange de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -6069,7 +6139,7 @@
     {
       "id": "failed to read exchange body response from {ApiMsg}: {Err}",
       "message": "failed to read exchange body response from {ApiMsg}: {Err}",
-      "translation": "Echec de la lecture de la réponse du corps Exchange de {ApiMsg} : {Err}",
+      "translation": "Echec de lecture de la réponse du corps Exchange de {ApiMsg} : {Err}",
       "placeholders": [
         {
           "id": "ApiMsg",
@@ -6207,7 +6277,7 @@
     {
       "id": "Failed to get absolute path for file {KeyFile}. {Err}",
       "message": "Failed to get absolute path for file {KeyFile}. {Err}",
-      "translation": "Echec de l'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}",
+      "translation": "Echec d'obtention du chemin d'accès absolu pour le fichier {KeyFile}. {Err}",
       "placeholders": [
         {
           "id": "KeyFile",
@@ -6397,7 +6467,7 @@
     {
       "id": "command failed: {Err}, stderr: {StringstderrBytes}",
       "message": "command failed: {Err}, stderr: {StringstderrBytes}",
-      "translation": "Echec de la commande : {Err}, stderr : {StringstderrBytes}",
+      "translation": "Echec de commande : {Err}, stderr : {StringstderrBytes}",
       "placeholders": [
         {
           "id": "Err",
@@ -6563,6 +6633,174 @@
       "fuzzy": true
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Le pilote de journal fourni ({LogDriver}) ne prend pas en charge l'affichage des journaux. Les journaux sont disponibles uniquement sur les pilotes suivants : {DockerDriversWithLoggingSupport}",
+      "placeholders": [
+        {
+          "id": "LogDriver",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "logDriver"
+        },
+        {
+          "id": "DockerDriversWithLoggingSupport",
+          "string": "%[2]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "message": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Erreur lors de la création de StdoutPipe pour la commande : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "message": "Error starting command: {Err}",
+      "translation": "Erreur lors du démarrage de la commande : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "message": "Error waiting for command: {Err}",
+      "translation": "Erreur lors de l'attente de la commande : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} n'a pas pu être ouvert ou n'existe pas : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} n'a pas pu obtenir les statistiques : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Erreur de lecture depuis {SysLogPath} : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossible d'obtenir l'état de {SysLogPath} : {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "message": "Neither node id nor node policy is specified. Getting node policy from the local node.",
       "translation": "Aucun ID noeud ni aucune règle de noeud n'est spécifié. Obtention de la règle de noeud à partir du noeud local.",
@@ -6572,6 +6810,22 @@
       "id": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "message": "Neither node id nor node user input file is specified. Getting node user input from the local node.",
       "translation": "Aucun ID noeud ni aucun fichier d'entrée utilisateur de noeud n'est spécifié. Obtention de l'entrée utilisateur de noeud à partir du noeud local.",
+      "fuzzy": true
+    },
+    {
+      "id": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "message": "No node type has been provided: node type of '{NodeId}' node will be used",
+      "translation": "Aucun type de nœud n'a été fourni : le type de nœud '{NodeId}' sera utilisé",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "compCheckInput.NodeId"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -6697,7 +6951,7 @@
     {
       "id": "failed to unmarshal deployment policy json input file {BusinessPolFile}: {Err}",
       "message": "failed to unmarshal deployment policy json input file {BusinessPolFile}: {Err}",
-      "translation": "Echec de la désérialisation du fichier d'entrée json de la règle de déploiement {BusinessPolFile} : {Err}",
+      "translation": "Echec de désérialisation du fichier d'entrée json de la règle de déploiement {BusinessPolFile} : {Err}",
       "placeholders": [
         {
           "id": "BusinessPolFile",
@@ -6761,7 +7015,7 @@
     {
       "id": "failed to unmarshal json input file {FilePath}: {Err}",
       "message": "failed to unmarshal json input file {FilePath}: {Err}",
-      "translation": "Echec de la désérialisation du fichier d'entrée json {FilePath} : {Err}",
+      "translation": "Echec de désérialisation du fichier d'entrée json {FilePath} : {Err}",
       "placeholders": [
         {
           "id": "FilePath",
@@ -6901,7 +7155,7 @@
     {
       "id": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
       "message": "failed to unmarshal pattern json input file {PatternFile}: {Err}",
-      "translation": "Echec de la désérialisation du fichier d'entrée JSON de pattern {PatternFile} : {Err}",
+      "translation": "Echec de désérialisation du fichier d'entrée JSON de pattern {PatternFile} : {Err}",
       "placeholders": [
         {
           "id": "PatternFile",
@@ -7173,7 +7427,7 @@
     {
       "id": "dependency validation failed, unable to read {Name}, error: {Err}",
       "message": "dependency validation failed, unable to read {Name}, error: {Err}",
-      "translation": "Echec de la validation de dépendance, impossible de lire {Name}. Erreur : {Err}",
+      "translation": "Echec de validation de la dépendance, impossible de lire {Name}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Name",
@@ -7197,7 +7451,7 @@
     {
       "id": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
       "message": "dependency validation failed, dependency {Name} has an invalid version {Version}, error: {Err}",
-      "translation": "Echec de la validation de dépendance. La dépendance {Name} comporte une version {Version} non valide. Erreur : {Err}",
+      "translation": "Echec de validation de la dépendance. La dépendance {Name} comporte une version {Version} non valide. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Name",
@@ -7229,7 +7483,7 @@
     {
       "id": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
       "message": "dependency validation failed, unable to verify version range {Version} is within required range {Expression}, error: {Err}",
-      "translation": "Echec de la validation de dépendance, impossible de vérifier que la plage de versions {Version} est comprise dans la plage requise {Expression}. Erreur : {Err}",
+      "translation": "Echec de validation de la dépendance, impossible de vérifier que la plage de versions {Version} est comprise dans la plage requise {Expression}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Version",
@@ -7447,7 +7701,7 @@
     {
       "id": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
       "message": "Failed to get the hzn.json configuration file under {Project} directory. Error: {Err}",
-      "translation": "Echec de l'obtention du fichier de configuration hzn.json sous le répertoire {Project}. Erreur : {Err}",
+      "translation": "Echec d'obtention du fichier de configuration hzn.json sous le répertoire {Project}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Project",
@@ -7471,7 +7725,7 @@
     {
       "id": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
       "message": "Failed to set the environment variables from configuration file {Projconfigfile}. Error: {Err}",
-      "translation": "Echec de la définition des variables d'environnement à partir du fichier de configuration {Projconfigfile}. Erreur : {Err}",
+      "translation": "Echec de définition des variables d'environnement à partir du fichier de configuration {Projconfigfile}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Projconfigfile",
@@ -7535,7 +7789,7 @@
     {
       "id": "Failed to restore the environment variables. {Err}",
       "message": "Failed to restore the environment variables. {Err}",
-      "translation": "Echec de la restauration des variables d'environnement. {Err}",
+      "translation": "Echec de restauration des variables d'environnement. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -7709,7 +7963,7 @@
     {
       "id": "failed to unmarshal deployment {Deployment}: {Err}",
       "message": "failed to unmarshal deployment {Deployment}: {Err}",
-      "translation": "Echec de la désérialisation du déploiement {Deployment} : {Err}",
+      "translation": "Echec de désérialisation du déploiement {Deployment} : {Err}",
       "placeholders": [
         {
           "id": "Deployment",
@@ -7765,7 +8019,7 @@
     {
       "id": "failed to get images for {Org}/{Surl}: {Err}",
       "message": "failed to get images for {Org}/{Surl}: {Err}",
-      "translation": "Echec de l'obtention des images pour {Org}/{Surl} : {Err}",
+      "translation": "Echec d'obtention des images pour {Org}/{Surl} : {Err}",
       "placeholders": [
         {
           "id": "Org",
@@ -8373,6 +8627,155 @@
       "fuzzy": true
     },
     {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' More than one service has been found for deployment. Please specify the service name by -s flag",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Plusieurs services ont été trouvés pour le déploiement. Spécifiez le nom du service par l'indicateur -s",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Unable to list containers: {Arg_3}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Impossible d'indiquer la liste des conteneurs : {Arg_3}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Found containers {Containers}",
+      "message": "Found containers {Containers}",
+      "translation": "Conteneurs trouvés {Containers}",
+      "placeholders": [
+        {
+          "id": "Containers",
+          "string": "%[1]v",
+          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
+          "argNum": 1,
+          "expr": "containers"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to display log messages: {Err}",
+      "message": "Unable to display log messages: {Err}",
+      "translation": "Impossible d'afficher les messages de journal : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "message": "Displaying log messages for dev service {ServiceName} with instance id prefix {MsId}.",
+      "translation": "Affichage des messages du journal pour le service de développement {ServiceName} avec le préfixe d'ID instance {MsId}.",
+      "placeholders": [
+        {
+          "id": "ServiceName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "serviceName"
+        },
+        {
+          "id": "MsId",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "msId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Use ctrl-C to terminate this command.",
+      "message": "Use ctrl-C to terminate this command.",
+      "translation": "Utilisez ctrl-C pour mettre fin à cette commande.",
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "message": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Cannot find any running container for dev service {ServiceName}",
+      "translation": "'{SERVICECOMMAND} {SERVICELOGCOMMAND}' Impossible de trouver un conteneur en cours d'exécution pour le service de développement {ServiceName}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICELOGCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_LOG_COMMAND"
+        },
+        {
+          "id": "ServiceName",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "serviceName"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "$SERVICE_NAME for $ARCH",
       "message": "$SERVICE_NAME for $ARCH",
       "translation": "$SERVICE_NAME pour $ARCH",
@@ -8713,7 +9116,7 @@
           "id": "AbstractUserInput",
           "string": "%[3]v",
           "type": "github.com/open-horizon/anax/policy.AbstractUserInput",
-          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputType(string) (string, error); GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
+          "underlyingType": "interface{GetInputLength() int; GetInputMap() map[string]interface{}; GetInputNames() []string; GetInputValue(string) (interface{}, error); GetServiceArch() string; GetServiceOrgid() string; GetServiceUrl() string; GetServiceVersionRange() string}",
           "argNum": 3,
           "expr": "ms"
         },
@@ -9431,7 +9834,7 @@
     {
       "id": "Failed to remove the UDS socket file: {Err}",
       "message": "Failed to remove the UDS socket file: {Err}",
-      "translation": "Echec de la suppression du fichier socket UDS : {Err}",
+      "translation": "Echec de retrait du fichier socket UDS : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9447,7 +9850,7 @@
     {
       "id": "Failed to remove FSS Authentication credential folder, error: {Err}",
       "message": "Failed to remove FSS Authentication credential folder, error: {Err}",
-      "translation": "Echec de la suppression du dossier des données d'authentification FSS. Erreur : {Err}",
+      "translation": "Echec de retrait du dossier des données d'authentification FSS. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9493,17 +9896,17 @@
       "fuzzy": true
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "message": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "Réseau principal trouvé pour le service {Nwname}, {ContainerNetwork}",
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "message": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "Réseau principal trouvé pour le service {AgreementId}, {ContainerNetwork}",
       "placeholders": [
         {
-          "id": "Nwname",
+          "id": "AgreementId",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "nw_name"
+          "expr": "agreementId"
         },
         {
           "id": "ContainerNetwork",
@@ -9557,33 +9960,65 @@
       "fuzzy": true
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "message": "unable to retrieve dependency metadata: {Err}",
-      "translation": "Impossible d'obtenir les métadonnées de dépendance : {Err}",
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas répertorier les conteneurs existants : {Err}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "SERVICECOMMAND",
           "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICESTARTCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "SERVICE_START_COMMAND"
+        },
+        {
+          "id": "Err",
+          "string": "%[3]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 1,
+          "argNum": 3,
           "expr": "err"
         }
       ],
       "fuzzy": true
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "message": "unable to start dependencies: {Err}",
-      "translation": "Impossible de démarrer les dépendances : {Err}",
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "message": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "Conteneurs pour le service {Org}/{URL} sur le réseau {NetName}",
       "placeholders": [
         {
-          "id": "Err",
+          "id": "Org",
           "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
+          "type": "string",
+          "underlyingType": "string",
           "argNum": 1,
-          "expr": "err"
+          "expr": "depDef.Org"
+        },
+        {
+          "id": "URL",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "depDef.URL"
+        },
+        {
+          "id": "NetName",
+          "string": "%[3]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "netName"
         }
       ],
       "fuzzy": true
@@ -9608,6 +10043,54 @@
       "id": "unable to generate instance ID: {Err}",
       "message": "unable to generate instance ID: {Err}",
       "translation": "Impossible de générer un ID instance : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Working on service {SId}",
+      "message": "Working on service {SId}",
+      "translation": "Travail en cours sur le service {SId}",
+      "placeholders": [
+        {
+          "id": "SId",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sId"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "message": "unable to retrieve dependency metadata: {Err}",
+      "translation": "Impossible d'obtenir les métadonnées de dépendance : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "message": "unable to start dependencies: {Err}",
+      "translation": "Impossible de démarrer les dépendances : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9737,22 +10220,6 @@
       "fuzzy": true
     },
     {
-      "id": "Found containers {Containers}",
-      "message": "Found containers {Containers}",
-      "translation": "Conteneurs trouvés {Containers}",
-      "placeholders": [
-        {
-          "id": "Containers",
-          "string": "%[1]v",
-          "type": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "underlyingType": "[]github.com/open-horizon/anax/vendor/github.com/fsouza/go-dockerclient.APIContainers",
-          "argNum": 1,
-          "expr": "containers"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
       "message": "Stop {LogName}: {CLIString} with instance id prefix {MsId}",
       "translation": "Arrêt de {LogName} : {CLIString} avec le préfixe d'ID instance {MsId}",
@@ -9787,7 +10254,7 @@
     {
       "id": "failed to create docker client, error: {Derr}",
       "message": "failed to create docker client, error: {Derr}",
-      "translation": "Echec de la création du client Docker. Erreur : {Derr}",
+      "translation": "Echec de création du client Docker. Erreur : {Derr}",
       "placeholders": [
         {
           "id": "Derr",
@@ -9803,7 +10270,7 @@
     {
       "id": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
       "message": "failed to convert global attributes in {USERINPUTFILE}, error: {Err}",
-      "translation": "Echec de la conversion des attributs globaux dans {USERINPUTFILE}. Erreur : {Err}",
+      "translation": "Echec de conversion des attributs globaux dans {USERINPUTFILE}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "USERINPUTFILE",
@@ -9827,7 +10294,7 @@
     {
       "id": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
       "message": "failed to extract authentication attribute from {USERINPUTFILE}, error: {Err}",
-      "translation": "Echec de l'extraction de l'attribut d'authentification à partir de {USERINPUTFILE}. Erreur : {Err}",
+      "translation": "Echec d'extraction de l'attribut d'authentification à partir de {USERINPUTFILE}. Erreur : {Err}",
       "placeholders": [
         {
           "id": "USERINPUTFILE",
@@ -9857,7 +10324,7 @@
     {
       "id": "failed to get container images, error: {Err}",
       "message": "failed to get container images, error: {Err}",
-      "translation": "Echec de l'obtention des images de conteneur. Erreur : {Err}",
+      "translation": "Echec d'obtention des images de conteneur. Erreur : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9866,6 +10333,22 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Created network {Name}",
+      "message": "Created network {Name}",
+      "translation": "Création du réseau {Name}",
+      "placeholders": [
+        {
+          "id": "Name",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "name"
         }
       ],
       "fuzzy": true
@@ -9967,7 +10450,7 @@
     {
       "id": "failed to marshal 'hzn eventlog surface' output: {Err}",
       "message": "failed to marshal 'hzn eventlog surface' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn eventlog surface' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn eventlog surface' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -9983,7 +10466,7 @@
     {
       "id": "failed to marshal 'exchange agbot list' output: {Err}",
       "message": "failed to marshal 'exchange agbot list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange agbot list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'exchange agbot list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10205,7 +10688,7 @@
     {
       "id": "failed to marshal 'hzn exchange deployment listpolicy' output: {Err}",
       "message": "failed to marshal 'hzn exchange deployment listpolicy' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange deployment listpolicy' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange deployment listpolicy' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10299,7 +10782,7 @@
     {
       "id": "failed to unmarshal attribute input {Attribute}: {Err}",
       "message": "failed to unmarshal attribute input {Attribute}: {Err}",
-      "translation": "Echec de la désérialisation de l'entrée d'attribut {Attribute} : {Err}",
+      "translation": "Echec de désérialisation de l'entrée d'attribut {Attribute} : {Err}",
       "placeholders": [
         {
           "id": "Attribute",
@@ -10583,7 +11066,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog servicelist -l' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog servicelist -l' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog servicelist -l' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10599,7 +11082,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog servicelist -s' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog servicelist -s' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog servicelist -s' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10615,7 +11098,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog servicelist' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog servicelist' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog servicelist' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10631,7 +11114,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog patternlist -l' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog patternlist -l' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog patternlist -l' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10647,7 +11130,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog patternlist -s' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog patternlist -s' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog patternlist -s' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10663,7 +11146,7 @@
     {
       "id": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
       "message": "failed to marshal 'hzn exchange catalog patternlist' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange catalog patternlist' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange catalog patternlist' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10679,7 +11162,7 @@
     {
       "id": "failed to marshal 'exchange node list' output: {Err}",
       "message": "failed to marshal 'exchange node list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange node list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'exchange node list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -10813,22 +11296,6 @@
       "fuzzy": true
     },
     {
-      "id": "can not create node {NodeId} because maxNodes limit has been reached",
-      "message": "can not create node {NodeId} because maxNodes limit has been reached",
-      "translation": "Impossible de créer le noeud {NodeId} car la limite maxNodes a été atteinte",
-      "placeholders": [
-        {
-          "id": "NodeId",
-          "string": "%[1]s",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "nodeId"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "Node {NodeId} updated.",
       "message": "Node {NodeId} updated.",
       "translation": "Le noeud {NodeId} a été mis à jour.",
@@ -10887,7 +11354,7 @@
     {
       "id": "failed to unmarshal attribute: {Err}",
       "message": "failed to unmarshal attribute: {Err}",
-      "translation": "Echec de la désérialisation de l'attribut : {Err}",
+      "translation": "Echec de désérialisation de l'attribut : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11149,6 +11616,22 @@
       "fuzzy": true
     },
     {
+      "id": "failed to marshal node policy output: {Err}",
+      "message": "failed to marshal node policy output: {Err}",
+      "translation": "Impossible de sérialiser la sortie de la règle du nœud : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Incorrect policy format in file {JsonFilePath}: {Err}",
       "message": "Incorrect policy format in file {JsonFilePath}: {Err}",
       "translation": "Format de règle incorrect dans le fichier {JsonFilePath} : {Err}",
@@ -11381,7 +11864,7 @@
     {
       "id": "failed to marshal 'hzn exchange node listerrors' output: {Err}",
       "message": "failed to marshal 'hzn exchange node listerrors' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange node listerrors' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange node listerrors' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11623,7 +12106,7 @@
     {
       "id": "failed to marshal 'exchange org list' output: {Err}",
       "message": "failed to marshal 'exchange org list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange org list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'exchange org list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11711,6 +12194,22 @@
       "fuzzy": true
     },
     {
+      "id": "Organization {TheOrg} is successfully added to MMS.",
+      "message": "Organization {TheOrg} is successfully added to MMS.",
+      "translation": "L'organisation {TheOrg} a bien été ajoutée à MMS.",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "message": "Invalid input for --max-nodes. Only -1, 0 and positive integers are allowed.",
       "translation": "Entrée non valide pour --max-nodes. Seuls -1, 0 et les entiers positifs sont autorisés.",
@@ -11733,9 +12232,9 @@
       "fuzzy": true
     },
     {
-      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange?",
-      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc) risquent également d'être supprimées. Voulez-vous vraiment retirer l'utilisateur {TheOrg} d'Horizon Exchange ?",
+      "id": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "message": "Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove user {TheOrg} from the Horizon Exchange and the MMS?",
+      "translation": "Avertissement : Toutes les ressources Exchange appartenant à cette organisation (noeuds, services, patterns, etc.) risquent d'être également supprimées. Voulez-vous vraiment retirer l'utilisateur {TheOrg} d'Horizon Exchange et de MMS ?",
       "placeholders": [
         {
           "id": "TheOrg",
@@ -11749,13 +12248,131 @@
       "fuzzy": true
     },
     {
-      "id": "org {TheOrg} not found.",
-      "message": "org {TheOrg} not found.",
-      "translation": "Organisation {TheOrg} introuvable.",
+      "id": "Using agbot {Agbot}",
+      "message": "Using agbot {Agbot}",
+      "translation": "Utilisation de l'agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "Agbot",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Cannot unmarshal served pattern",
+      "message": "Cannot unmarshal served pattern",
+      "translation": "Impossible de désérialiser le modèle servi",
+      "fuzzy": true
+    },
+    {
+      "id": "Removing pattern {PatternId} from agbot {Agbot}",
+      "message": "Removing pattern {PatternId} from agbot {Agbot}",
+      "translation": "Suppression du modèle {PatternId} de l'agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "PatternId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "patternId"
+        },
+        {
+          "id": "Agbot",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Removing policy {PolId} from agbot {Agbot}",
+      "message": "Removing policy {PolId} from agbot {Agbot}",
+      "translation": "Suppression de la règle {PolId} de l'agbot {Agbot}",
+      "placeholders": [
+        {
+          "id": "PolId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "polId"
+        },
+        {
+          "id": "Agbot",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "agbot"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "message": "Deleting org {TheOrg} from the Horizon Exchange...",
+      "translation": "Suppression de l'organisation {TheOrg} d'Horizon Exchange...",
       "placeholders": [
         {
           "id": "TheOrg",
           "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "message": "Org {TheOrg} is deleted from the Horizon Exchange",
+      "translation": "L'organisation {TheOrg} a été supprimée d'Horizon Exchange",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Deleting org {TheOrg} from MMS...",
+      "message": "Deleting org {TheOrg} from MMS...",
+      "translation": "Suppression de l'organisation {TheOrg} de MMS...",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "theOrg"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Org {TheOrg} is deleted from MMS",
+      "message": "Org {TheOrg} is deleted from MMS",
+      "translation": "L'organisation {TheOrg} a été supprimée de MMS",
+      "placeholders": [
+        {
+          "id": "TheOrg",
+          "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
@@ -11823,7 +12440,7 @@
     {
       "id": "Empty string is specified with -t, all tags will be removed.",
       "message": "Empty string is specified with -t, all tags will be removed.",
-      "translation": "Une chaîne vide est spécifiée avec -t, toutes les balises seront supprimées.",
+      "translation": "Une chaîne vide est spécifiée avec -t, toutes les balises seront retirées.",
       "fuzzy": true
     },
     {
@@ -11869,7 +12486,7 @@
     {
       "id": "failed to marshal 'exchange pattern list' output: {Err}",
       "message": "failed to marshal 'exchange pattern list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange pattern list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'exchange pattern list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11909,7 +12526,7 @@
     {
       "id": "failed to marshal 'hzn exchange pattern list' output: {Err}",
       "message": "failed to marshal 'hzn exchange pattern list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange pattern list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange pattern list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -11979,7 +12596,7 @@
     {
       "id": "failed to marshal body for {D}: {Err}",
       "message": "failed to marshal body for {D}: {Err}",
-      "translation": "Echec de la sérialisation du corps de texte pour {D} : {Err}",
+      "translation": "Echec de sérialisation du corps de texte pour {D} : {Err}",
       "placeholders": [
         {
           "id": "D",
@@ -12003,7 +12620,7 @@
     {
       "id": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
       "message": "failed to unmarshal json for deployment overrides field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation de json pour la zone des substitutions de déploiement {StringjsonBytes} : {Err}",
+      "translation": "Echec de désérialisation de json pour la zone des substitutions de déploiement {StringjsonBytes} : {Err}",
       "placeholders": [
         {
           "id": "StringjsonBytes",
@@ -12091,7 +12708,7 @@
     {
       "id": "failed to marshal deployment_overrides field in service {I__1}, serviceVersion number {J__1}: {Err}",
       "message": "failed to marshal deployment_overrides field in service {I__1}, serviceVersion number {J__1}: {Err}",
-      "translation": "Echec de la sérialisation de la zone deployment_overrides dans le service {I__1}, serviceVersion number {J__1} : {Err}",
+      "translation": "Echec de sérialisation de la zone deployment_overrides dans le service {I__1}, serviceVersion number {J__1} : {Err}",
       "placeholders": [
         {
           "id": "I__1",
@@ -12365,7 +12982,7 @@
     {
       "id": "failed to marshal 'hzn exchange service list' output: {Err}",
       "message": "failed to marshal 'hzn exchange service list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange service list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange service list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -12412,6 +13029,36 @@
       "id": "Flags -I and -P are mutually exclusive.",
       "message": "Flags -I and -P are mutually exclusive.",
       "translation": "Les indicateurs -I et -P s'excluent mutuellement.",
+      "fuzzy": true
+    },
+    {
+      "id": "Need to set 'true' or 'false' when specifying flag --public.",
+      "message": "Need to set 'true' or 'false' when specifying flag --public.",
+      "translation": "Vous devez définir 'true' ou 'false' lors de la spécification de l'indicateur --public.",
+      "fuzzy": true
+    },
+    {
+      "id": "failed to parse {Public}: {Err}",
+      "message": "failed to parse {Public}: {Err}",
+      "translation": "échec de l'analyse de {Public} : {Err}",
+      "placeholders": [
+        {
+          "id": "Public",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "public"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -12785,7 +13432,7 @@
     {
       "id": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
       "message": "failed to marshal 'hzn exchange service listpolicy' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn exchange service listpolicy' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn exchange service listpolicy' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -12877,7 +13524,7 @@
     {
       "id": "Failed to create file {FileName}. {Err}",
       "message": "Failed to create file {FileName}. {Err}",
-      "translation": "Echec de la création du fichier {FileName}. {Err}",
+      "translation": "Echec de création du fichier {FileName}. {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -12901,7 +13548,7 @@
     {
       "id": "Failed to save the clusterDeployment operator yaml to file {FileName}. {Err}",
       "message": "Failed to save the clusterDeployment operator yaml to file {FileName}. {Err}",
-      "translation": "Echec de la sauvegarde du fichier yaml de l'opérateur clusterDeployment dans le fichier {FileName}. {Err}",
+      "translation": "Echec de sauvegarde du fichier yaml de l'opérateur clusterDeployment dans le fichier {FileName}. {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -12997,7 +13644,7 @@
     {
       "id": "failed to marshal 'exchange user list' output: {Err}",
       "message": "failed to marshal 'exchange user list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'exchange user list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'exchange user list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13011,15 +13658,59 @@
       "fuzzy": true
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "message": "the email must be specified via -e if the username is not an email address.",
-      "translation": "L'adresse e-mail doit être renseignée à l'aide de l'indicateur -e si le nom d'utilisateur n'est pas une adresse électronique.",
+      "id": "failed to check exchange version, error: {Err}",
+      "message": "failed to check exchange version, error: {Err}",
+      "translation": "Echec de vérification de la version d'Exchange. Erreur : {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "message": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "Un e-mail est obligatoire car la version d'API Exchange est inférieure à {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "placeholders": [
+        {
+          "id": "USEREMAILOPTIONALEXCHANGEVERSION",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "USER_EMAIL_OPTIONAL_EXCHANGE_VERSION"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Only users in the root org can be hubadmins.",
+      "message": "Only users in the root org can be hubadmins.",
+      "translation": "Seuls les utilisateurs de l'organisation racine peuvent être des administrateurs de concentrateur.",
+      "fuzzy": true
+    },
+    {
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "message": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "Les utilisateurs de l'organisation racine dvoient être administrateurs de concentrateur. Ignorez l'option -H.",
+      "fuzzy": true
+    },
+    {
+      "id": "A user in the root org cannot be an org admin.",
+      "message": "A user in the root org cannot be an org admin.",
+      "translation": "Un utilisateur de l'organisation racine ne peut pas être administrateur d'organisation.",
       "fuzzy": true
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
       "message": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
-      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc). Voulez-vous vraiment retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?",
+      "translation": "Avertissement : Ceci risque de supprimer toutes les ressources Exchange appartenant à cet utilisateur (noeuds, services, patterns, etc.). Voulez-vous vraiment retirer l'utilisateur {Org}/{User} d'Horizon Exchange ?",
       "placeholders": [
         {
           "id": "Org",
@@ -13043,7 +13734,7 @@
     {
       "id": "failed to marshal 'key list' output: {Err}",
       "message": "failed to marshal 'key list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'key list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'key list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -13111,7 +13802,7 @@
     {
       "id": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
       "message": "failed to move private key file from {PrivKeyName} to {PrivKeyFile}. {Err}",
-      "translation": "Echec du déplacement du fichier de clé privée depuis {PrivKeyName} vers {PrivKeyFile}. {Err}",
+      "translation": "Echec de déplacement du fichier de clé privée depuis {PrivKeyName} vers {PrivKeyFile}. {Err}",
       "placeholders": [
         {
           "id": "PrivKeyName",
@@ -13167,7 +13858,7 @@
     {
       "id": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
       "message": "failed to move public key file from {PubKeyName} to {PubKeyFile}. {Err}",
-      "translation": "Echec du déplacement du fichier de clé publique de {PubKeyName} vers {PubKeyFile}. {Err}",
+      "translation": "Echec de déplacement du fichier de clé publique de {PubKeyName} vers {PubKeyFile}. {Err}",
       "placeholders": [
         {
           "id": "PubKeyName",
@@ -13417,7 +14108,7 @@
     {
       "id": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
       "message": "failed to marshal {KUBEDEPLOYMENTCONFIGTYPE} deployment string {Dep}, error {Err}",
-      "translation": "Echec de la sérialisation de la chaîne de déploiement {KUBEDEPLOYMENTCONFIGTYPE} {Dep}, erreur {Err}",
+      "translation": "Echec de sérialisation de la chaîne de déploiement {KUBEDEPLOYMENTCONFIGTYPE} {Dep}, erreur {Err}",
       "placeholders": [
         {
           "id": "KUBEDEPLOYMENTCONFIGTYPE",
@@ -13575,7 +14266,7 @@
     {
       "id": "failed to marshal deployment string {Dep}, error {Err}",
       "message": "failed to marshal deployment string {Dep}, error {Err}",
-      "translation": "Echec de la sérialisation de la chaîne de déploiement {Dep}, erreur {Err}",
+      "translation": "Echec de sérialisation de la chaîne de déploiement {Dep}, erreur {Err}",
       "placeholders": [
         {
           "id": "Dep",
@@ -13813,38 +14504,6 @@
       "fuzzy": true
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas démarrer les dépendances du service, {Perr}",
-      "placeholders": [
-        {
-          "id": "SERVICECOMMAND",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "dev.SERVICE_COMMAND"
-        },
-        {
-          "id": "SERVICESTARTCOMMAND",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "dev.SERVICE_START_COMMAND"
-        },
-        {
-          "id": "Perr",
-          "string": "%[3]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 3,
-          "expr": "perr"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas générer l'ID d'accord test, {Aerr}",
@@ -13872,6 +14531,38 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 3,
           "expr": "aerr"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "message": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "La commande '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' ne peut pas démarrer les dépendances du service, {Perr}",
+      "placeholders": [
+        {
+          "id": "SERVICECOMMAND",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "dev.SERVICE_COMMAND"
+        },
+        {
+          "id": "SERVICESTARTCOMMAND",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "dev.SERVICE_START_COMMAND"
+        },
+        {
+          "id": "Perr",
+          "string": "%[3]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 3,
+          "expr": "perr"
         }
       ],
       "fuzzy": true
@@ -13949,7 +14640,7 @@
     {
       "id": "Failed to get proper response from Horizon agent",
       "message": "Failed to get proper response from Horizon agent",
-      "translation": "Echec de l'obtention d'une réponse appropriée de la part de l'agent Horizon",
+      "translation": "Echec d'obtention d'une réponse appropriée de la part de l'agent Horizon",
       "fuzzy": true
     },
     {
@@ -14085,7 +14776,7 @@
     {
       "id": "failed to marshal 'hzn policy list' output: {Err}",
       "message": "failed to marshal 'hzn policy list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn policy list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn policy list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -14309,7 +15000,7 @@
     {
       "id": "Failed to get proper response from the Horizon agent",
       "message": "Failed to get proper response from the Horizon agent",
-      "translation": "Echec de l'obtention d'une réponse appropriée de la part de l'agent Horizon",
+      "translation": "Echec d'obtention d'une réponse appropriée de la part de l'agent Horizon",
       "fuzzy": true
     },
     {
@@ -14551,7 +15242,7 @@
     {
       "id": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)",
       "message": "Cannot proceed with the given pattern {Pattern} because it is different from the pattern {ExchangePattern} defined for the node in the Exchange.\nTo correct the problem, please do one of the following: \n\t- Remove the node from the Exchange \n\t- Remove the pattern from the node in the Exchange \n\t- Register without a pattern (the pattern defined on the node in the Exchange will be used)",
-      "translation": "Impossible d'utiliser le pattern {Pattern} donné, car il est différent du pattern {ExchangePattern} défini pour le noeud dans Exchange.\nPour corriger le problème, effectuez l'une des opérations suivantes : \n \t- Supprimer le noeud du réseau Exchange \n\t- Retirer le pattern du noeud sur le réseau Exchange \n\t- S'enregistrer sans pattern (le pattern défini sur le noeud dans le réseau Exchange sera utilisé)",
+      "translation": "Impossible d'utiliser le pattern {Pattern} donné, car il est différent du pattern {ExchangePattern} défini pour le noeud dans Exchange.\nPour corriger le problème, effectuez l'une des opérations suivantes : \n \t- Retirer le noeud du réseau Exchange \n\t- Retirer le pattern du noeud sur le réseau Exchange \n\t- S'enregistrer sans pattern (le pattern défini sur le noeud dans le réseau Exchange sera utilisé)",
       "placeholders": [
         {
           "id": "Pattern",
@@ -14725,7 +15416,7 @@
     {
       "id": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
       "message": "NOTE: The -s flag is currently not supported for nodeType: {NodeType}. Node registration will complete without waiting for the service to start.",
-      "translation": "REMARQUE : L'indicateur -s n'est actuellement pas pris en charge pour le type de noeud {NodeType}. L'enregistrement de noeud se terminera sans attente du démarrage du service. ",
+      "translation": "REMARQUE : L'indicateur -s n'est actuellement pas pris en charge pour le type de noeud {NodeType}. L'enregistrement de noeud se terminera sans attente du démarrage du service.",
       "placeholders": [
         {
           "id": "NodeType",
@@ -14765,13 +15456,13 @@
     {
       "id": "Failed to unregister node. Attempting a deep clean of the node.",
       "message": "Failed to unregister node. Attempting a deep clean of the node.",
-      "translation": "Echec de l'annulation de l'enregistrement du noeud. Tentative de nettoyage profond du noeud.",
+      "translation": "Echec d'annulation de l'enregistrement du noeud. Tentative de nettoyage profond du noeud.",
       "fuzzy": true
     },
     {
       "id": "Failed to deep clean the node. {Err}",
       "message": "Failed to deep clean the node. {Err}",
-      "translation": "Echec du nettoyage profond du noeud. {Err}",
+      "translation": "Echec de nettoyage en profondeur du noeud. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -14787,7 +15478,7 @@
     {
       "id": "Registration failed. Node successfully returned to unregistered state.",
       "message": "Registration failed. Node successfully returned to unregistered state.",
-      "translation": "Echec de l'enregistrement. Le noeud a repris son état non enregistré.",
+      "translation": "Echec d'enregistrement. Le noeud a repris son état non enregistré.",
       "fuzzy": true
     },
     {
@@ -14815,7 +15506,7 @@
     {
       "id": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
       "message": "Registration failed because {Matches0} Please update the services section in the input file {InputFile}. Run 'hzn unregister' and then 'hzn register...' again",
-      "translation": "Echec de l'enregistrement, car {Matches0}. Veuillez mettre à jour la section des services dans le fichier d'entrée {InputFile}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau",
+      "translation": "Echec d'enregistrement, car {Matches0}. Veuillez mettre à jour la section des services dans le fichier d'entrée {InputFile}. Exécutez 'hzn unregister', puis 'hzn register...' à nouveau",
       "placeholders": [
         {
           "id": "Matches0",
@@ -14958,6 +15649,42 @@
       "id": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted.",
       "message": "When registering with a pattern, if -s is '*' (i.e. all the top-level services in the pattern will be monitored), --serviceorg must be omitted.",
       "translation": "Lors de l'enregistrement avec un pattern, si -s est '*' (c'est-à-dire que tous les services de niveau supérieur dans le pattern seront surveillés), --serviceorg doit être omis.",
+      "fuzzy": true
+    },
+    {
+      "id": "could not validate node ID '{NodeId}': {Err}",
+      "message": "could not validate node ID '{NodeId}': {Err}",
+      "translation": "impossible de valider l'identifiant du nœud '{NodeId}' : {Err}",
+      "placeholders": [
+        {
+          "id": "NodeId",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "nodeId"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "message": "invalid node ID: A-Za-z0-9, unicode characters and special symbols !-*+()?.,:&@ are only allowed",
+      "translation": "ID noeud non valide. Seuls les caractères suivants sont autorisés : A-Za-z0-9, caractères Unicode et symboles spéciaux !-*+()?.,:&@",
+      "fuzzy": true
+    },
+    {
+      "id": "invalid node ID: Whitespace is not permitted",
+      "message": "invalid node ID: Whitespace is not permitted",
+      "translation": "ID noeud non valide. Les espaces (blancs) ne sont pas autorisés",
       "fuzzy": true
     },
     {
@@ -15383,33 +16110,33 @@
       "fuzzy": true
     },
     {
-      "id": "{Status1} \t{Org}/{Name}",
-      "message": "{Status1} \t{Org}/{Name}",
-      "translation": "{Status1} \t{Org}/{Name}",
+      "id": "{Org}/{Name} \t{Status1}",
+      "message": "{Org}/{Name} \t{Status1}",
+      "translation": "{Org}/{Name} \t{Status1}",
       "placeholders": [
         {
-          "id": "Status1",
+          "id": "Org",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "statusArr[ss.status+1]"
-        },
-        {
-          "id": "Org",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
           "expr": "ss.org"
         },
         {
           "id": "Name",
+          "string": "%[2]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "ss.name"
+        },
+        {
+          "id": "Status1",
           "string": "%[3]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 3,
-          "expr": "ss.name"
+          "expr": "statusDetails[ss.status+1]"
         }
       ],
       "fuzzy": true
@@ -15967,7 +16694,7 @@
     {
       "id": "failed to unmarshal json string '{PolicyStr}': {Err}",
       "message": "failed to unmarshal json string '{PolicyStr}': {Err}",
-      "translation": "Echec de la désérialisation de la chaîne json '{PolicyStr}' : {Err}",
+      "translation": "Echec de désérialisation de la chaîne json '{PolicyStr}' : {Err}",
       "placeholders": [
         {
           "id": "PolicyStr",
@@ -16021,7 +16748,7 @@
     {
       "id": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
       "message": "failed to marshal '/service/config' output attribute {Attr}. {Err}",
-      "translation": "Echec de la sérialisation de l'attribut de sortie '/service/config' {Attr}. {Err}",
+      "translation": "Echec de sérialisation de l'attribut de sortie '/service/config' {Attr}. {Err}",
       "placeholders": [
         {
           "id": "Attr",
@@ -16045,7 +16772,7 @@
     {
       "id": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
       "message": "failed to convert '/service/config' output attribute {Attr} to its original type. {Err}",
-      "translation": "Echec de la conversion de l'attribut de sortie '/service/config' {Attr} vers son type d'origine. {Err}",
+      "translation": "Echec de conversion de l'attribut de sortie '/service/config' {Attr} vers son type d'origine. {Err}",
       "placeholders": [
         {
           "id": "Attr",
@@ -16069,7 +16796,7 @@
     {
       "id": "failed to marshal 'hzn service list' output: {Err}",
       "message": "failed to marshal 'hzn service list' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn service list' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn service list' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16113,12 +16840,6 @@
       "fuzzy": true
     },
     {
-      "id": "Use ctrl-C to terminate this command.",
-      "message": "Use ctrl-C to terminate this command.",
-      "translation": "Utilisez ctrl-C pour mettre fin à cette commande.",
-      "fuzzy": true
-    },
-    {
       "id": "Service {RefUrl} is not running on the node.",
       "message": "Service {RefUrl} is not running on the node.",
       "translation": "Le service {RefUrl} n'est pas en cours d'exécution sur le noeud.",
@@ -16135,9 +16856,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error creating StdoutPipe for command: {Err}",
-      "message": "Error creating StdoutPipe for command: {Err}",
-      "translation": "Erreur lors de la création de StdoutPipe pour la commande : {Err}",
+      "id": "Service definition unmarshalling error: {Err}",
+      "message": "Service definition unmarshalling error: {Err}",
+      "translation": "Erreur de désérialisation de la définition du service : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16151,9 +16872,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error starting command: {Err}",
-      "message": "Error starting command: {Err}",
-      "translation": "Erreur lors du démarrage de la commande : {Err}",
+      "id": "Deployment unmarshalling error: {Err}",
+      "message": "Deployment unmarshalling error: {Err}",
+      "translation": "Erreur de désérialisation du déploiement : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16167,9 +16888,9 @@
       "fuzzy": true
     },
     {
-      "id": "Error waiting for command: {Err}",
-      "message": "Error waiting for command: {Err}",
-      "translation": "Erreur lors de l'attente de la commande : {Err}",
+      "id": "Service logs are unavailable: {Err}",
+      "message": "Service logs are unavailable: {Err}",
+      "translation": "Les journaux de service ne sont pas disponibles : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16177,102 +16898,6 @@
           "type": "error",
           "underlyingType": "interface{Error() string}",
           "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
-      "translation": "{SysLogPath} n'a pas pu être ouvert ou n'existe pas : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "{SysLogPath} could not get stats: {Err}",
-      "message": "{SysLogPath} could not get stats: {Err}",
-      "translation": "{SysLogPath} n'a pas pu obtenir les statistiques : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Error reading from {SysLogPath}: {Err}",
-      "message": "Error reading from {SysLogPath}: {Err}",
-      "translation": "Erreur de lecture depuis {SysLogPath} : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "Unable to state {SysLogPath}: {Err}",
-      "message": "Unable to state {SysLogPath}: {Err}",
-      "translation": "Impossible d'obtenir l'état de {SysLogPath} : {Err}",
-      "placeholders": [
-        {
-          "id": "SysLogPath",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "sysLogPath"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
           "expr": "err"
         }
       ],
@@ -16281,7 +16906,7 @@
     {
       "id": "failed to marshal 'hzn service registered' output: {Err}",
       "message": "failed to marshal 'hzn service registered' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn service registered' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn service registered' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16297,7 +16922,7 @@
     {
       "id": "failed to marshal 'hzn service configstate' output: {Err}",
       "message": "failed to marshal 'hzn service configstate' output: {Err}",
-      "translation": "Echec de la sérialisation de la sortie 'hzn service configstate' : {Err}",
+      "translation": "Echec de sérialisation de la sortie 'hzn service configstate' : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -16647,9 +17272,9 @@
       "fuzzy": true
     },
     {
-      "id": "must specify objectType if set objectId",
-      "message": "must specify objectType if set objectId",
-      "translation": "doit spécifier objectType si objectId défini",
+      "id": "must specify --type with --id",
+      "message": "must specify --type with --id",
+      "translation": "Spécifiez l'indicateur --type avec --id",
       "fuzzy": true
     },
     {
@@ -16708,6 +17333,22 @@
           "underlyingType": "string",
           "argNum": 3,
           "expr": "org"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "message": "failed to marshal 'hzn mms object list' output: {Err1}",
+      "translation": "Échec de la sérialisation de la sortie 'hzn mms object list' : {Err1}",
+      "placeholders": [
+        {
+          "id": "Err1",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err1"
         }
       ],
       "fuzzy": true
@@ -16821,7 +17462,7 @@
     {
       "id": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
       "message": "A list of constraint expressions of the form <property name> <operator> <property value>, separated by boolean operators AND (&&) or OR (||).",
-      "translation": "Liste des expressions de contrainte au format <property name> <operator> <property value>, séparées par les opérateurs booléens AND (&&) ou OR (||).",
+      "translation": "Liste des expressions de contrainte au format <property name> <operator> <property value>, séparées par les opérateurs booléens ET (&&) ou OU (||).",
       "fuzzy": true
     },
     {
@@ -16867,12 +17508,6 @@
       "fuzzy": true
     },
     {
-      "id": "must specify --type with --id",
-      "message": "must specify --type with --id",
-      "translation": "Spécifiez l'indicateur --type avec --id",
-      "fuzzy": true
-    },
-    {
       "id": "must specify --id with --type",
       "message": "must specify --id with --type",
       "translation": "Spécifiez l'indicateur --id avec --type",
@@ -16897,33 +17532,9 @@
       "fuzzy": true
     },
     {
-      "id": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "message": "unable to read definition file {ObjMetadataFile}: {Err}",
-      "translation": "Impossible de lire le fichier de définition {ObjMetadataFile} : {Err}",
-      "placeholders": [
-        {
-          "id": "ObjMetadataFile",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "objMetadataFile"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
       "message": "failed to unmarshal definition file {ObjMetadataFile}: {Err}",
-      "translation": "Echec de la désérialisation du fichier de définition {ObjMetadataFile} : {Err}",
+      "translation": "Echec de désérialisation du fichier de définition {ObjMetadataFile} : {Err}",
       "placeholders": [
         {
           "id": "ObjMetadataFile",
@@ -17107,7 +17718,7 @@
     {
       "id": "Unable to stop {MakeLabelNameCSSNAME}, error {Err}, please stop manually, Remove the css image and try 'hzn dev service start' again",
       "message": "Unable to stop {MakeLabelNameCSSNAME}, error {Err}, please stop manually, Remove the css image and try 'hzn dev service start' again",
-      "translation": "Impossible d'arrêter {MakeLabelNameCSSNAME}, erreur {Err}. Arrêtez-le manuellement, supprimez l'image css et relancez 'hzn dev service start'",
+      "translation": "Impossible d'arrêter {MakeLabelNameCSSNAME}, erreur {Err}. Arrêtez-le manuellement, retirez l'image css et relancez 'hzn dev service start'",
       "placeholders": [
         {
           "id": "MakeLabelNameCSSNAME",
@@ -17131,7 +17742,7 @@
     {
       "id": "Unable to remove CSS image, err: {Err}",
       "message": "Unable to remove CSS image, err: {Err}",
-      "translation": "Impossible de supprimer l'image CSS, erreur : {Err}",
+      "translation": "Impossible de retirer l'image CSS, erreur : {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -17329,7 +17940,7 @@
     {
       "id": "Removing docker image {Name}.",
       "message": "Removing docker image {Name}.",
-      "translation": "Suppression de l'image Docker {Name}.",
+      "translation": "Retrait de l'image Docker {Name}.",
       "placeholders": [
         {
           "id": "Name",
@@ -17361,7 +17972,7 @@
     {
       "id": "unable to remove CSS image: {Name}, please manually remove it 'docker rmi {Name_1}'",
       "message": "unable to remove CSS image: {Name}, please manually remove it 'docker rmi {Name_1}'",
-      "translation": "Impossible de supprimer l'image CSS : {Name}. Veuillez supprimer manuellement 'docker rmi {Name_1}'",
+      "translation": "Impossible de retirer l'image CSS : {Name}. Retirez manuellement 'docker rmi {Name_1}'",
       "placeholders": [
         {
           "id": "Name",
@@ -17385,7 +17996,7 @@
     {
       "id": "Docker image {Name} removed.",
       "message": "Docker image {Name} removed.",
-      "translation": "Image Docker {Name} supprimée.",
+      "translation": "Image Docker {Name} retirée.",
       "placeholders": [
         {
           "id": "Name",
@@ -17951,62 +18562,6 @@
       "fuzzy": true
     },
     {
-      "id": "Created network {Name}",
-      "message": "Created network {Name}",
-      "translation": "Création du réseau {Name}",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "name"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "message": "unable to list docker networks, error {Err}",
-      "translation": "Impossible de répertorier les réseaux Docker, erreur {Err}",
-      "placeholders": [
-        {
-          "id": "Err",
-          "string": "%[1]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 1,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "message": "unable to remove docker network {Name}, error {Err}",
-      "translation": "Impossible de retirer le réseau Docker {Name}, erreur {Err}",
-      "placeholders": [
-        {
-          "id": "Name",
-          "string": "%[1]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 1,
-          "expr": "name"
-        },
-        {
-          "id": "Err",
-          "string": "%[2]v",
-          "type": "error",
-          "underlyingType": "interface{Error() string}",
-          "argNum": 2,
-          "expr": "err"
-        }
-      ],
-      "fuzzy": true
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "message": "unable to create get CSS status request, error {Err}",
       "translation": "Impossible de créer une demande d'obtention de statut CSS, erreur {Err}",
@@ -18023,19 +18578,25 @@
       "fuzzy": true
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "message": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "Le statut CSS n'est pas prêt après {Timeout} secondes d'attente, dépassement du délai",
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "message": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "Le statut CSS n'est pas prêt après {Timeout__checkLimit} secondes d'attente, dépassement du délai",
       "placeholders": [
         {
-          "id": "Timeout",
+          "id": "Timeout__checkLimit",
           "string": "%[1]d",
           "type": "int",
           "underlyingType": "int",
           "argNum": 1,
-          "expr": "timeout"
+          "expr": "timeout * checkLimit"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "message": "CSS status is not ready, terminating service start request.",
+      "translation": "Le statut CSS n'est pas prêt, fin de la demande de démarrage du service.",
       "fuzzy": true
     },
     {
@@ -18067,9 +18628,35 @@
       "fuzzy": true
     },
     {
-      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset.",
-      "translation": "L'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud a été complètement réinitialisé.",
+      "id": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "message": "Node unregistering using anax API failed. External deep clean will be attempted. Specific anax API error is: {Error}",
+      "translation": "L'annulation de l'enregistrement du nœud à l'aide de l'API anax a échoué. Une tentative de nettoyage profond va être effectuée en externe. Erreur d'API anax spécifique : {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "unregErr.Error()"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "message": "The node was not successfully unregistered, please use 'hzn unregister -D' to ensure the node is completely reset. Specific anax API error is: {Error}",
+      "translation": "L'annulation de l'enregistrement du noeud n'a pas abouti. Utilisez 'hzn unregister -D' pour vous assurer que le noeud a été complètement réinitialisé. Erreur d'API anax spécifique : {Error}",
+      "placeholders": [
+        {
+          "id": "Error",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "unregErr.Error()"
+        }
+      ],
       "fuzzy": true
     },
     {
@@ -18315,7 +18902,7 @@
     {
       "id": "failed to backup eventlogs file {FileName}. {Err}",
       "message": "failed to backup eventlogs file {FileName}. {Err}",
-      "translation": "Echec de la sauvegarde du fichier des journaux des événements {FileName}. {Err}",
+      "translation": "Echec de sauvegarde du fichier des journaux des événements {FileName}. {Err}",
       "placeholders": [
         {
           "id": "FileName",
@@ -18555,7 +19142,7 @@
     {
       "id": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
       "message": "failed to unmarshal json for deployment field {StringjsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}",
+      "translation": "Echec de désérialisation json pour la zone de déploiement {StringjsonBytes} : {Err}",
       "placeholders": [
         {
           "id": "StringjsonBytes",
@@ -18705,7 +19292,7 @@
     {
       "id": "failed to unmarshal json input {JsonBytes}: {Err}",
       "message": "failed to unmarshal json input {JsonBytes}: {Err}",
-      "translation": "Echec de la désérialisation de l'entrée json {JsonBytes} : {Err}",
+      "translation": "Echec de désérialisation de l'entrée json {JsonBytes} : {Err}",
       "placeholders": [
         {
           "id": "JsonBytes",
@@ -18745,7 +19332,7 @@
     {
       "id": "Failed to create json object for user input. {Err1}",
       "message": "Failed to create json object for user input. {Err1}",
-      "translation": "Echec de la création de l'objet json pour l'entrée utilisateur. {Err1}",
+      "translation": "Echec de création de l'objet json pour l'entrée utilisateur. {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -18880,7 +19467,7 @@
     {
       "id": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
       "message": "Failed to find definition for dependent services of {TopSvcId}. Compatability of {PROPNODEPRIVILEGED} cannot be fully evaluated until all services are in the Exchange.",
-      "translation": "Echec de la recherche de définition pour des services dépendants de {TopSvcId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange.",
+      "translation": "Echec de recherche de définition pour des services dépendants de {TopSvcId}. La compatibilité de {PROPNODEPRIVILEGED} ne peut pas être complètement évaluée tant que tous les services ne sont pas dans Exchange.",
       "placeholders": [
         {
           "id": "TopSvcId",
@@ -19748,7 +20335,7 @@
     {
       "id": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
       "message": "Failed to marshal deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Echec de la sérialisation de la configuration de déploiement pour le service {SIdTop}, erreur {Err}",
+      "translation": "Echec de sérialisation de la configuration de déploiement pour le service {SIdTop}, erreur {Err}",
       "placeholders": [
         {
           "id": "SIdTop",
@@ -19772,7 +20359,7 @@
     {
       "id": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
       "message": "Failed to marshal cluster deployment configuration for service {SIdTop}, error {Err}",
-      "translation": "Echec de la sérialisation de la configuration de déploiement du cluster pour le service {SIdTop}, erreur {Err}",
+      "translation": "Echec de sérialisation de la configuration de déploiement du cluster pour le service {SIdTop}, erreur {Err}",
       "placeholders": [
         {
           "id": "SIdTop",
@@ -20114,7 +20701,7 @@
     {
       "id": "Failed to get the service from the Exchange. {Err}",
       "message": "Failed to get the service from the Exchange. {Err}",
-      "translation": "Echec de l'obtention du service depuis Exchange. {Err}",
+      "translation": "Echec d'obtention du service depuis Exchange. {Err}",
       "placeholders": [
         {
           "id": "Err",
@@ -20953,7 +21540,7 @@
         "anax terminating. Failed to instantiate iptables client. {Arg_1}"
       ],
       "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client iptables. {Arg_1}",
+      "translation": "Anax est en cours d'arrêt. Echec d'instanciation du client iptables. {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -20971,7 +21558,7 @@
         "anax terminating. Failed to instantiate docker client. {Arg_1}"
       ],
       "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "Anax est en cours d'arrêt. Echec de l'instanciation du client docker. {Arg_1}",
+      "translation": "Anax est en cours d'arrêt. Echec d'instanciation du client docker. {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -21018,7 +21605,7 @@
     {
       "id": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
       "message": "Property {Name} has invalid property type {DeclaredType}. Allowed property types are: version, string, int, boolean, float, and list of strings.",
-      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriétés autorisés sont : version, string, int, boolean, float et list of strings.",
+      "translation": "La propriété {Name} comporte un type de propriété non valide {DeclaredType}. Les types de propriété autorisés sont : version, string (chaîne), int(entier), boolean (booléen), float (flottant) et list of strings (liste de chaînes).",
       "placeholders": [
         {
           "id": "Name",
@@ -21571,6 +22158,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "message": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression : Une chaîne vide n'est pas une version valide.",
       "fuzzy": true
     },
     {

@@ -207,6 +207,22 @@ echo "Registering Anax device1 in customer org..."
 REGANAX1C=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/Customer1/nodes/an12345" | jq -r '.msg')
 echo "$REGANAX1C"
 
+DEVICE_NUM=6
+NUM_AGENTS=$((${MUL_AGENTS}+$DEVICE_NUM))
+while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
+  echo "Registering Anax device${DEVICE_NUM}..."
+  REGANAXMUL=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
+  echo "$REGANAXMUL"
+  echo "Registering Anax device${DEVICE_NUM} in userdev org..."
+  REGUANAXMULU=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "userdev/useranax1:useranax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/userdev/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
+  echo "$REGUANAXMULU"
+  echo "Registering Anax device${DEVICE_NUM} in customer org..."
+  REGANAXMULC=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "Customer1/icpadmin:icpadminpw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"amd64"}' "${EXCH_URL}/orgs/Customer1/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
+  echo "$REGANAXMULC"
+  let DEVICE_NUM=DEVICE_NUM+1
+done
+
+
 # Register agreement bot in the exchange
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
@@ -257,6 +273,9 @@ fi
 if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   ./clean_css.sh
 fi
+
+# Create Orgs in CSS
+./init_sync_service.sh
 
 # package resources
 ./resource_package.sh

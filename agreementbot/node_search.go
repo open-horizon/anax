@@ -36,6 +36,7 @@ type NodeSearch struct {
 	activeDeviceTimeoutS int        // The amount of time a device can go without heartbeating and still be considered active for the purposes of search.
 	retryLookBack        uint64     // The amount of time to look backward for node changes when node retries are happening.
 	policyOrder          bool       // When true, order policies most recently changed to least recently changed.
+	clearExchangeCache   bool       // When true, the exchange cache will be deleted after a seach is made with devices returned.
 }
 
 func NewNodeSearch() *NodeSearch {
@@ -46,6 +47,7 @@ func NewNodeSearch() *NodeSearch {
 		lastSearchTime:      0,
 		searchThread:        make(chan bool, 10),
 		rescanNeeded:        false,
+		clearExchangeCache:  false,
 	}
 	return ns
 }
@@ -153,6 +155,10 @@ func (n *NodeSearch) findAndMakeAgreements() {
 	// Errors encountered during the search will cause the next set of searches to be performed with the same changedSince
 	// time and the same search session.
 	searchError := false
+
+	// allow clearing the cache for all the exchange resources, the searchNodesAndMakeAgreements
+	// function will clear the cache and set it false after it finds devices to make agreements.
+	n.clearExchangeCache = true
 
 	// Get a list of all the orgs this agbot is serving.
 	allOrgs := n.pm.GetAllPolicyOrgs()
@@ -263,6 +269,13 @@ func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy,
 			}
 		}
 
+		// For each Scan(), clear the cache only once when there are devices returned from the search api.
+		if n.clearExchangeCache && len(*devices) != 0 {
+			glog.V(5).Infof("Clearing cache for all resources.")
+			exchange.ClearAllResourceCache()
+			n.clearExchangeCache = false
+		}
+
 		for _, dev := range *devices {
 
 			glog.V(3).Infof(AWlogString(fmt.Sprintf("picked up %v for policy %v.", dev.ShortString(), consumerPolicy.Header.Name)))
@@ -322,7 +335,8 @@ func (n *NodeSearch) searchNodesAndMakeAgreements(consumerPolicy *policy.Policy,
 }
 
 // Check all agreement protocol buckets to see if there are any agreements with this device.
-// Return true if there is already an agreement for this node and policy.
+// Return true if there is already an agreement for this node and policy. The input list of agreements has already been filtered to
+// include only agreements using the input policy.
 func (n *NodeSearch) alreadyMakingAgreementWith(dev *exchange.SearchResultDevice, consumerPolicy *policy.Policy, allAgreements map[string][]persistence.Agreement) bool {
 
 	// Check to see if we're already doing something with this device.

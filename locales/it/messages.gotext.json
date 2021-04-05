@@ -1876,25 +1876,17 @@
       "fuzzy": true
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "message": "Pushing {Repository}:{Tag}...",
-      "translation": "Push di {Repository}:{Tag}...",
+      "id": "Pushing {ImageName}...",
+      "message": "Pushing {ImageName}...",
+      "translation": "Esecuzione del push di {ImageName} in corso...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -1940,31 +1932,17 @@
       "fuzzy": true
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "message": "could not find the image digest in the docker push output",
-      "translation": "impossibile trovare il digest dell'immagine nell'output di push docker",
-      "fuzzy": true
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "message": "Pulling {Repository}:{Tag}...",
-      "translation": "Estrazione di {Repository}:{Tag}...",
+      "id": "Pulling {ImageName}...",
+      "message": "Pulling {ImageName}...",
+      "translation": "Esecuzione del pull di {ImageName} in corso...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -1972,7 +1950,7 @@
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
       "message": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
-      "translation": "impossibile estrarre l'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}",
+      "translation": "impossibile eseguire il pull dell'immagine docker {Repository____tag}. Le credenziali docker non sono state trovate. Potrebbe essere necessario eseguire 'docker login ...' se il registro di immagini è privato. Errore: {Err}",
       "placeholders": [
         {
           "id": "Repository____tag",
@@ -1996,7 +1974,7 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "message": "unable to pull docker image {Repository____tag}: {Err}",
-      "translation": "impossibile estrarre l'immagine docker {Repository____tag}: {Err}",
+      "translation": "impossibile eseguire il pull dell'immagine docker {Repository____tag}: {Err}",
       "placeholders": [
         {
           "id": "Repository____tag",
@@ -2013,6 +1991,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "message": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Impossibile trovare il digest dell'immagine nell'output docker, il digest dell'immagine verrà richiamato direttamente dall'immagine.",
+      "fuzzy": true
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "message": "could not inspect image {ImageName}: {Err}.",
+      "translation": "impossibile ispezionare l'immagine {ImageName}: {Err}.",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "message": "could not find digest for image {ImageName}.",
+      "translation": "impossibile trovare il digest per l'immagine {ImageName}.",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -2118,9 +2142,9 @@
       "fuzzy": true
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire 'systemctl status horizon' per controllare se l'agent Horizon è in esecuzione. Oppure impostare HORIZON_URL per connettersi ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}",
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Impossibile connettersi all'API REST Horizon per eseguire {ApiMethod}. Eseguire '{StatusCommand}' per verificare se l'agent Horizon è in esecuzione. In alternativa, eseguire '{StatusURL}' per verificare lo stato dell'agent Horizon. Oppure impostare HORIZON_URL per stabilire la connessione ad un'altra porta locale che sia connessa a un agent Horizon remoto tramite tunnel ssh. L'errore specifico è: {Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -2131,11 +2155,27 @@
           "expr": "apiMethod"
         },
         {
+          "id": "StatusCommand",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "statusCommand"
+        },
+        {
+          "id": "StatusURL",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "statusURL"
+        },
+        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[4]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 4,
           "expr": "err"
         }
       ],
@@ -3553,6 +3593,174 @@
           "underlyingType": "string",
           "argNum": 1,
           "expr": "image"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Il log-driver fornito ({LogDriver}) non supporta la visualizzazione dei log. I log sono disponibili solo sui seguenti driver: {DockerDriversWithLoggingSupport}",
+      "placeholders": [
+        {
+          "id": "LogDriver",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "logDriver"
+        },
+        {
+          "id": "DockerDriversWithLoggingSupport",
+          "string": "%[2]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "message": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Errore durante la creazione di StdoutPipe per il comando: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "message": "Error starting command: {Err}",
+      "translation": "Errore durante l'avvio del comando: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "message": "Error waiting for command: {Err}",
+      "translation": "Errore durante l'attesa del comando: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} non può essere aperto o non esiste: {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} non è riuscito ad ottenere le statistiche: {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Errore durante la lettura da {SysLogPath}: {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Impossibile determinare {SysLogPath}: {Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
         }
       ],
       "fuzzy": true
@@ -6016,7 +6224,7 @@
         "anax terminating. Failed to instantiate iptables client. {Arg_1}"
       ],
       "message": "anax terminating. Failed to instantiate iptables client. {Arg_1}",
-      "translation": "anax è in fase di interruzione. Impossibile instanziare il client iptables. {Arg_1}",
+      "translation": "anax è in fase di interruzione. Impossibile istanziare il client iptables. {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6034,7 +6242,7 @@
         "anax terminating. Failed to instantiate docker client. {Arg_1}"
       ],
       "message": "anax terminating. Failed to instantiate docker client. {Arg_1}",
-      "translation": "anax è in fase di interruzione. Impossibile instanziare il client docker. {Arg_1}",
+      "translation": "anax è in fase di interruzione. Impossibile istanziare il client docker. {Arg_1}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6748,10 +6956,10 @@
     {
       "id": [
         "EL_GOV_ERR_LOADING_IMG",
-        "Error loading image for {Arg_1}/{Arg_2}."
+        "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}"
       ],
-      "message": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}.",
+      "message": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Errore durante il caricamento dell'immagine per {Arg_1}/{Arg_2}. Motivo: {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6766,6 +6974,13 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
         }
       ],
       "fuzzy": true
@@ -8874,6 +9089,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "message": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: una stringa vuota non è una versione valida.",
       "fuzzy": true
     },
     {

@@ -288,8 +288,9 @@ func (b *ImageFetchWorker) CommandHandler(command worker.Command) bool {
 
 			_, deploymentDesc, err := processDeployment(b.Config, lc.ContainerConfig())
 			if err != nil {
-				glog.Errorf("Failed to process deployment description and signature after agreement negotiation: %v", err)
-				b.Messages() <- events.NewImageFetchMessage(events.IMAGE_FETCH_ERROR, deploymentDesc, lc)
+				err = fmt.Errorf("Failed to process deployment description and signature after agreement negotiation: %v", err)
+				glog.Errorf(err.Error())
+				b.Messages() <- events.NewImageFetchMessage(events.IMAGE_FETCH_ERROR, deploymentDesc, lc, err)
 				return true
 			}
 
@@ -301,9 +302,9 @@ func (b *ImageFetchWorker) CommandHandler(command worker.Command) bool {
 					id = events.IMAGE_FETCH_ERROR
 				}
 				glog.Errorf("Failed to fetch image files: %v", fetchErr)
-				b.Messages() <- events.NewImageFetchMessage(id, deploymentDesc, lc)
+				b.Messages() <- events.NewImageFetchMessage(id, deploymentDesc, lc, fetchErr)
 			} else {
-				b.Messages() <- events.NewImageFetchMessage(events.IMAGE_FETCHED, deploymentDesc, lc)
+				b.Messages() <- events.NewImageFetchMessage(events.IMAGE_FETCHED, deploymentDesc, lc, nil)
 			}
 
 		}

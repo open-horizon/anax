@@ -1876,25 +1876,17 @@
       "fuzzy": true
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "message": "Pushing {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} のプッシュ中...",
+      "id": "Pushing {ImageName}...",
+      "message": "Pushing {ImageName}...",
+      "translation": "{ImageName} をプッシュ中...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -1940,31 +1932,17 @@
       "fuzzy": true
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "message": "could not find the image digest in the docker push output",
-      "translation": "Docker プッシュ出力でイメージ・ダイジェストが見つかりませんでした",
-      "fuzzy": true
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "message": "Pulling {Repository}:{Tag}...",
-      "translation": "{Repository}:{Tag} のプル中...",
+      "id": "Pulling {ImageName}...",
+      "message": "Pulling {ImageName}...",
+      "translation": "{ImageName} をプル中...",
       "placeholders": [
         {
-          "id": "Repository",
+          "id": "ImageName",
           "string": "%[1]v",
           "type": "string",
           "underlyingType": "string",
           "argNum": 1,
-          "expr": "repository"
-        },
-        {
-          "id": "Tag",
-          "string": "%[2]v",
-          "type": "string",
-          "underlyingType": "string",
-          "argNum": 2,
-          "expr": "tag"
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -2013,6 +1991,52 @@
           "underlyingType": "interface{Error() string}",
           "argNum": 2,
           "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "message": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Docker 出力でイメージ・ダイジェストが見つけられなかったので、イメージ・ダイジェストを直接イメージから取得します。",
+      "fuzzy": true
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "message": "could not inspect image {ImageName}: {Err}.",
+      "translation": "イメージ {ImageName} を検査できませんでした: {Err}",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "message": "could not find digest for image {ImageName}.",
+      "translation": "イメージ {ImageName} のダイジェストを見つけられませんでした。",
+      "placeholders": [
+        {
+          "id": "ImageName",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "imageName"
         }
       ],
       "fuzzy": true
@@ -2118,9 +2142,9 @@
       "fuzzy": true
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「systemctl status horizon」を実行して Horizon エージェントが実行中であるか確認してください。 または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}",
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "message": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "{ApiMethod} を実行するために Horizon REST API に接続できません。 「{StatusCommand}」を実行して Horizon エージェントが実行中であるか確認してください。 または「{StatusURL}」を実行して Horizon エージェントの状況を確認してください。 または、SSH トンネルを介してリモート Horizon エージェントに接続されている別のローカル・ポートに接続するように HORIZON_URL を設定します。 具体的なエラーは次のとおりです: {Err}",
       "placeholders": [
         {
           "id": "ApiMethod",
@@ -2131,11 +2155,27 @@
           "expr": "apiMethod"
         },
         {
+          "id": "StatusCommand",
+          "string": "%[2]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 2,
+          "expr": "statusCommand"
+        },
+        {
+          "id": "StatusURL",
+          "string": "%[3]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 3,
+          "expr": "statusURL"
+        },
+        {
           "id": "Err",
-          "string": "%[2]v",
+          "string": "%[4]v",
           "type": "error",
           "underlyingType": "interface{Error() string}",
-          "argNum": 2,
+          "argNum": 4,
           "expr": "err"
         }
       ],
@@ -3558,6 +3598,174 @@
       "fuzzy": true
     },
     {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "message": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "提供されたログ・ドライバー ({LogDriver}) はログの表示をサポートしません。 ログが使用可能なドライバーは {DockerDriversWithLoggingSupport} だけです。",
+      "placeholders": [
+        {
+          "id": "LogDriver",
+          "string": "%[1]s",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "logDriver"
+        },
+        {
+          "id": "DockerDriversWithLoggingSupport",
+          "string": "%[2]v",
+          "type": "[]string",
+          "underlyingType": "[]string",
+          "argNum": 2,
+          "expr": "dockerDriversWithLoggingSupport"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "message": "Error creating StdoutPipe for command: {Err}",
+      "translation": "コマンドの StdoutPipe を作成しているときにエラーが発生しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "message": "Error starting command: {Err}",
+      "translation": "コマンドを開始中にエラーが発生しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "message": "Error waiting for command: {Err}",
+      "translation": "コマンドを待機中にエラーが発生しました: {Err}",
+      "placeholders": [
+        {
+          "id": "Err",
+          "string": "%[1]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 1,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "message": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} を開けなかったか、存在しません。{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "message": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} は stats を取得できませんでした。{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "message": "Error reading from {SysLogPath}: {Err}",
+      "translation": "{SysLogPath} から読み取り中にエラーが発生しました。{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "message": "Unable to state {SysLogPath}: {Err}",
+      "translation": "{SysLogPath} の状態がわかりません。{Err}",
+      "placeholders": [
+        {
+          "id": "SysLogPath",
+          "string": "%[1]v",
+          "type": "string",
+          "underlyingType": "string",
+          "argNum": 1,
+          "expr": "sysLogPath"
+        },
+        {
+          "id": "Err",
+          "string": "%[2]v",
+          "type": "error",
+          "underlyingType": "interface{Error() string}",
+          "argNum": 2,
+          "expr": "err"
+        }
+      ],
+      "fuzzy": true
+    },
+    {
       "id": "no service name",
       "message": "no service name",
       "translation": "サービス名がありません",
@@ -3780,7 +3988,7 @@
     {
       "id": "Error getting new user input format. {Err1}",
       "message": "Error getting new user input format. {Err1}",
-      "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。{Err1}",
+      "translation": "新しいユーザー入力形式の取得中にエラーが発生しました。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -3796,7 +4004,7 @@
     {
       "id": "Failed to create json object for user input. {Err1}",
       "message": "Failed to create json object for user input. {Err1}",
-      "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。{Err1}",
+      "translation": "ユーザー入力用の JSON オブジェクトの作成に失敗しました。 {Err1}",
       "placeholders": [
         {
           "id": "Err1",
@@ -6401,7 +6609,7 @@
         "Error marking agreement {Arg_1} terminated in database: {Arg_2}."
       ],
       "message": "Error marking agreement {Arg_1} terminated in database: {Arg_2}.",
-      "translation": "データベースで契約 {Arg_1} に終了のマークを付けているときにエラーが発生しました: {Arg_2}.",
+      "translation": "データベースで契約 {Arg_1} に終了のマークを付けているときにエラーが発生しました: {Arg_2}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6748,10 +6956,10 @@
     {
       "id": [
         "EL_GOV_ERR_LOADING_IMG",
-        "Error loading image for {Arg_1}/{Arg_2}."
+        "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}"
       ],
-      "message": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "{Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。",
+      "message": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "{Arg_1}/{Arg_2} に対するイメージをロードしているときにエラーが発生しました。 理由: {Arg_3}",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -6766,6 +6974,13 @@
           "type": "",
           "underlyingType": "interface{}",
           "argNum": 2
+        },
+        {
+          "id": "Arg_3",
+          "string": "%[3]v",
+          "type": "",
+          "underlyingType": "interface{}",
+          "argNum": 3
         }
       ],
       "fuzzy": true
@@ -6919,7 +7134,7 @@
         "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry."
       ],
       "message": "Error deleting agreement for {Arg_1} in exchange: {Arg_2}. Will retry.",
-      "translation": "Exchange で {Arg_1} に対する契約を削除しているときにエラーが発生しました: {Arg_2}. 再試行します。",
+      "translation": "Exchange で {Arg_1} に対する契約を削除しているときにエラーが発生しました: {Arg_2}。再試行します。",
       "placeholders": [
         {
           "id": "Arg_1",
@@ -8874,6 +9089,12 @@
           "expr": "err"
         }
       ],
+      "fuzzy": true
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "message": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: 空ストリングは有効なバージョンではありません。",
       "fuzzy": true
     },
     {

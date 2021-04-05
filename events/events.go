@@ -44,17 +44,17 @@ const (
 	IMAGE_SIG_VERIF_ERROR  EventId = "IMAGE_SIG_VERIF_ERROR"
 
 	// container-related
-	EXECUTION_FAILED    EventId = "EXECUTION_FAILED"
-	EXECUTION_BEGUN     EventId = "EXECUTION_BEGUN"
-	WORKLOAD_DESTROYED  EventId = "WORKLOAD_DESTROYED"
-	CONTAINER_STOPPING  EventId = "CONTAINER_STOPPING"
-	CONTAINER_DESTROYED EventId = "CONTAINER_DESTROYED"
-	CONTAINER_MAINTAIN  EventId = "CONTAINER_MAINTAIN"
-	LOAD_CONTAINER      EventId = "LOAD_CONTAINER"
-	START_MICROSERVICE  EventId = "START_MICROSERVICE"
-	CANCEL_MICROSERVICE EventId = "CANCEL_MICROSERVICE"
-	NEW_BC_CLIENT       EventId = "NEW_BC_CONTAINER"
-	IMAGE_LOAD_FAILED   EventId = "IMAGE_LOAD_FAILED"
+	EXECUTION_FAILED            EventId = "EXECUTION_FAILED"
+	EXECUTION_BEGUN             EventId = "EXECUTION_BEGUN"
+	WORKLOAD_DESTROYED          EventId = "WORKLOAD_DESTROYED"
+	CONTAINER_STOPPING          EventId = "CONTAINER_STOPPING"
+	CONTAINER_DESTROYED         EventId = "CONTAINER_DESTROYED"
+	CONTAINER_MAINTAIN          EventId = "CONTAINER_MAINTAIN"
+	LOAD_CONTAINER              EventId = "LOAD_CONTAINER"
+	CANCEL_MICROSERVICE         EventId = "CANCEL_MICROSERVICE"
+	CANCEL_MICROSERVICE_NETWORK EventId = "CANCEL_MICROSERVICE_NETWORK"
+	NEW_BC_CLIENT               EventId = "NEW_BC_CONTAINER"
+	IMAGE_LOAD_FAILED           EventId = "IMAGE_LOAD_FAILED"
 
 	// policy-related
 	NEW_POLICY             EventId = "NEW_POLICY"
@@ -91,7 +91,7 @@ const (
 	MESSAGE_STOP                 EventId = "MESSAGE_STOP"
 
 	// Service related
-	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
+	SERVICE_CONFIG_STATE_CHANGED EventId = "SERVICE_CONFIG_STATE_CHANGED"
 
 	// Object Policy related
 	OBJECT_POLICY_NEW       EventId = "OBJECT_POLICY_NEW"
@@ -106,6 +106,7 @@ const (
 	CHANGE_NODE_POLICY_TYPE       EventId = "EXCHANGE_CHANGE_NODE_POLICY"
 	CHANGE_NODE_AGREEMENT_TYPE    EventId = "EXCHANGE_CHANGE_NODE_AGREEMENT"
 	CHANGE_NODE_ERROR_TYPE        EventId = "EXCHANGE_CHANGE_NODE_ERROR"
+	CHANGE_NODE_CONFIGSTATE_TYPE  EventId = "EXCHANGE_CHANGE_NODE_CONFIGSTATE"
 	CHANGE_SERVICE_TYPE           EventId = "EXCHANGE_CHANGE_SERVICE"
 	CHANGE_DEPLOYMENT_POLICY_TYPE EventId = "EXCHANGE_CHANGE_DEPLOYMENT_POLICY"
 	CHANGE_SERVICE_POLICY_TYPE    EventId = "EXCHANGE_CHANGE_SERVICE_POLICY"
@@ -230,17 +231,17 @@ type ContainerLaunchContext struct {
 	Blockchain           BlockchainConfig
 	Name                 string // used as the docker network name and part of container name. For microservice it is the ms instance key
 	AgreementIds         []string
-	Microservices        []MicroserviceSpec                     // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
-	ServicePathElement   persistence.ServiceInstancePathElement // The service that we're trying to start.
+	Microservices        []MicroserviceSpec                       // Service dependencies go here. Microservices (in the workload/microservice model) never have dependencies.
+	ServicePath          []persistence.ServiceInstancePathElement // The full path to service that we're trying to start.
 	IsRetry              bool
 }
 
 func (c ContainerLaunchContext) String() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementIds, c.Microservices, c.ServicePathElement, c.IsRetry)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Blockchain: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure, c.EnvironmentAdditions, c.Blockchain, c.Name, c.AgreementIds, c.Microservices, c.ServicePath, c.IsRetry)
 }
 
 func (c ContainerLaunchContext) ShortString() string {
-	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure.ShortString(), c.EnvironmentAdditions, c.Name, c.AgreementIds, c.Microservices, c.ServicePathElement, c.IsRetry)
+	return fmt.Sprintf("ContainerConfig: %v, EnvironmentAdditions: %v, Name: %v, AgreementIds: %v, ServiceDependencies: %v, ThisService: %v, IsRetry: %v", c.Configure.ShortString(), c.EnvironmentAdditions, c.Name, c.AgreementIds, c.Microservices, c.ServicePath, c.IsRetry)
 }
 
 func (c ContainerLaunchContext) ContainerConfig() ContainerConfig {
@@ -255,17 +256,31 @@ func (c ContainerLaunchContext) GetMicroservices() []MicroserviceSpec {
 	return c.Microservices
 }
 
+// GetServicePathElement returns the last element of service's path that represents the leaf of the service path.
+// The empty path element will be returned if the service path is empty.
 func (c ContainerLaunchContext) GetServicePathElement() *persistence.ServiceInstancePathElement {
-	return &c.ServicePathElement
+	if len(c.ServicePath) == 0 {
+		return persistence.NewServiceInstancePathElement("", "", "")
+	}
+	// Return the last element in the array, because that will be the service we are working on.
+	return &c.ServicePath[len(c.ServicePath)-1]
 }
 
-func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agIds []string, mss []MicroserviceSpec, spe *persistence.ServiceInstancePathElement, isRetry bool) *ContainerLaunchContext {
-
-	spe_temp := spe
-	if spe_temp == nil {
-		spe_temp = persistence.NewServiceInstancePathElement("", "", "")
+// GetDirectParentElement returns the immediately preceding parent of the service.
+func (c ContainerLaunchContext) GetDirectParentElement() *persistence.ServiceInstancePathElement {
+	if len(c.ServicePath) < 2 {
+		return nil
 	}
+	// Return the immediate parent (2nd to last element) of the service we are working on.
+	return &c.ServicePath[len(c.ServicePath)-2]
+}
 
+// Return true if this container is a grandchild (in terms of the dependency tree) or even farther back.
+func (c ContainerLaunchContext) IsGrandChild() bool {
+	return len(c.ServicePath) > 2
+}
+
+func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]string, bc BlockchainConfig, name string, agIds []string, mss []MicroserviceSpec, fullPath []persistence.ServiceInstancePathElement, isRetry bool) *ContainerLaunchContext {
 	return &ContainerLaunchContext{
 		Configure:            *config,
 		EnvironmentAdditions: envAdds,
@@ -273,7 +288,7 @@ func NewContainerLaunchContext(config *ContainerConfig, envAdds *map[string]stri
 		Name:                 name,
 		AgreementIds:         agIds,
 		Microservices:        mss,
-		ServicePathElement:   *spe_temp,
+		ServicePath:          fullPath,
 		IsRetry:              isRetry,
 	}
 }
@@ -775,6 +790,7 @@ type ImageFetchMessage struct {
 	event                 Event
 	DeploymentDescription *containermessage.DeploymentDescription
 	LaunchContext         interface{}
+	Error                 error
 }
 
 // fulfill interface of events.Message
@@ -795,7 +811,7 @@ func (b *ImageFetchMessage) ShortString() string {
 	return fmt.Sprintf("event: %v, deploymentDescription: %v, launchContext: %v", b.event, b.DeploymentDescription, lc)
 }
 
-func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}) *ImageFetchMessage {
+func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.DeploymentDescription, launchContext interface{}, err error) *ImageFetchMessage {
 
 	return &ImageFetchMessage{
 		event: Event{
@@ -803,6 +819,7 @@ func NewImageFetchMessage(id EventId, deploymentDescription *containermessage.De
 		},
 		DeploymentDescription: deploymentDescription,
 		LaunchContext:         launchContext,
+		Error:                 err,
 	}
 }
 
@@ -1836,17 +1853,21 @@ func NewNodeHeartbeatStateChangeMessage(id EventId, node_org string, node_id str
 type ServiceConfigState struct {
 	Url         string `json:"url"`
 	Org         string `json:"org"`
+	Version     string `json:"version"`
+	Arch        string `json:"arch"`
 	ConfigState string `json:"configState"`
 }
 
 func (s *ServiceConfigState) String() string {
-	return fmt.Sprintf("Url: %v, Org: %v, ConfigState: %v", s.Url, s.Org, s.ConfigState)
+	return fmt.Sprintf("Url: %v, Org: %v, Version: %v, Arch: %v, ConfigState: %v", s.Url, s.Org, s.Version, s.Arch, s.ConfigState)
 }
 
-func NewServiceConfigState(url, org, state string) *ServiceConfigState {
+func NewServiceConfigState(url, org, version, arch, state string) *ServiceConfigState {
 	return &ServiceConfigState{
 		Url:         url,
 		Org:         org,
+		Version:     version,
+		Arch:        arch,
 		ConfigState: state,
 	}
 }
@@ -1962,6 +1983,10 @@ func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {
 			Id: id,
 		},
 	}
+}
+
+type MessageCount struct {
+	Count int
 }
 
 type ProposalAcceptedMessage struct {

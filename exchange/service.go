@@ -123,6 +123,33 @@ func (s ServiceDefinition) String() string {
 		s.LastUpdated)
 }
 
+func (s ServiceDefinition) DeepCopy() *ServiceDefinition {
+	svcCopy := ServiceDefinition{Owner: s.Owner, Label: s.Label, Description: s.Description, Documentation: s.Documentation, Public: s.Public, URL: s.URL, Version: s.Version, Arch: s.Arch, Sharable: s.Sharable, Deployment: s.Deployment, DeploymentSignature: s.DeploymentSignature, ClusterDeployment: s.ClusterDeployment, ClusterDeploymentSignature: s.ClusterDeploymentSignature, LastUpdated: s.LastUpdated}
+	if s.MatchHardware == nil {
+		svcCopy.MatchHardware = nil
+	} else {
+		svcCopy.MatchHardware = HardwareRequirement{}
+		for key, val := range s.MatchHardware {
+			svcCopy.MatchHardware[key] = val
+		}
+	}
+	if s.RequiredServices == nil {
+		svcCopy.RequiredServices = nil
+	} else {
+		for _, svcDep := range s.RequiredServices {
+			svcCopy.RequiredServices = append(svcCopy.RequiredServices, svcDep)
+		}
+	}
+	if s.UserInputs == nil {
+		svcCopy.UserInputs = nil
+	} else {
+		for _, userInput := range s.UserInputs {
+			svcCopy.UserInputs = append(svcCopy.UserInputs, userInput)
+		}
+	}
+	return &svcCopy
+}
+
 func (s ServiceDefinition) ShortString() string {
 	return fmt.Sprintf("URL: %v, "+
 		"Version: %v, "+
@@ -884,14 +911,8 @@ func GetServicePolicy(ec ExchangeContext, url string, org string, version string
 		return nil, "", errors.New(rpclogString(fmt.Sprintf("unable to find the service %v %v %v %v.", url, org, version, arch)))
 	}
 
-	if cachedPol := GetServicePolicyFromCache(org, url, version, arch); cachedPol != nil {
-		return cachedPol, s_id, nil
-	}
-
 	pol, err := GetServicePolicyWithId(ec, s_id)
-	if pol != nil {
-		UpdateCache(ServicePolicyCacheMapKey(org, url, version, arch), SVC_POL_TYPE_CACHE, pol)
-	}
+
 	return pol, s_id, err
 }
 
@@ -903,6 +924,13 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 	// Get the service policy object. There should only be 1.
 	var resp interface{}
 	resp = new(ExchangePolicy)
+
+	if cachedPol := GetServicePolicyFromCache(service_id); cachedPol != nil {
+		if cachedPol.LastUpdated == "" {
+			return nil, nil
+		}
+		return cachedPol, nil
+	}
 
 	targetURL := fmt.Sprintf("%vorgs/%v/services/%v/policy", ec.GetExchangeURL(), GetOrg(service_id), GetId(service_id))
 
@@ -927,11 +955,10 @@ func GetServicePolicyWithId(ec ExchangeContext, service_id string) (*ExchangePol
 		} else {
 			glog.V(3).Infof(rpclogString(fmt.Sprintf("returning service policy for %v.", service_id)))
 			servicePolicy := resp.(*ExchangePolicy)
-			if servicePolicy.GetLastUpdated() == "" {
-				return nil, nil
-			} else {
-				return servicePolicy, nil
+			if servicePolicy != nil {
+				UpdateCache(service_id, SVC_POL_TYPE_CACHE, *servicePolicy)
 			}
+			return servicePolicy, nil
 		}
 	}
 }

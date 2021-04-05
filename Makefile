@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.28.0
+export VERSION ?= 2.29.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
@@ -52,7 +52,7 @@ ANAX_IMAGE_PROD = $(ANAX_IMAGE_BASE):stable$(BRANCH_NAME)
 ANAX_IMAGE_LATEST = $(ANAX_IMAGE_BASE):latest$(BRANCH_NAME)
 ANAX_IMAGE_LABELS ?= --label "name=$(arch)_anax" --label "version=$(ANAX_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
 
-# By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make docker-image
+# By default we do not use cache for the anax container build, so it picks up the latest horizon deb pkgs. If you do want to use the cache: DOCKER_MAYBE_CACHE='' make anax-image
 DOCKER_MAYBE_CACHE ?= --no-cache
 
 I18N_OUT_GOTEXT_FILES := locales/*/out.gotext.json
@@ -87,7 +87,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.5.0$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.6.0$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -100,7 +100,7 @@ CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.5.0$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.6.0$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -136,6 +136,8 @@ else ifeq ($(arch),amd64)
 	COMPILE_ARGS +=  GOARCH=amd64
 else ifeq ($(arch),ppc64el)
 	COMPILE_ARGS +=  GOARCH=ppc64le
+else ifeq ($(arch),s390x)
+	COMPILE_ARGS +=  GOARCH=s390x
 endif
 
 opsys ?= $(shell uname -s)
@@ -156,6 +158,8 @@ else ifeq ($(arch_local),amd64)
 	COMPILE_ARGS_LOCAL +=  GOARCH=amd64
 else ifeq ($(arch_local),ppc64el)
 	COMPILE_ARGS_LOCAL +=  GOARCH=ppc64le
+else ifeq ($(arch_local),s390x)
+	COMPILE_ARGS_LOCAL +=  GOARCH=s390x
 endif
 
 opsys_local ?= $(shell uname -s)
@@ -240,9 +244,6 @@ rpmpkgs:
 # Build the horizon-cli pkg for mac
 MAC_PKG_VERSION = $(VERSION)$(BUILD_NUMBER)
 MAC_PKG = pkg/mac/build/horizon-cli-$(MAC_PKG_VERSION).pkg
-# this is Softlayer hostname aptrepo-sjc03-1
-APT_REPO_HOST ?= 169.45.88.181
-APT_REPO_DIR ?= /vol/aptrepo-local/repositories/view-public
 
 # This is a 1-time step to create the private signing key and public cert for the mac pkg.
 # You must first set HORIZON_CLI_PRIV_KEY_PW to the passphrase to use the private key.
@@ -274,25 +275,6 @@ macpkg: $(MAC_PKG)
 $(MAC_PKG):
 	$(MAKE) -C pkg/mac macpkg
 
-# Upload the pkg to the staging dir of our apt repo svr
-#todo: For now, you must have ssh access to the apt repo svr for this to work
-macupload: $(MAC_PKG)
-	@echo "Uploading $< to the staging dir of our apt repo svr"
-	rsync -avz $< root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing
-
-# Upload the pkg cert to the staging dir of our apt repo svr, so users can get to it at http://pkg.bluehorizon.network/testing/macos/
-#todo: For now, you must have ssh access to the apt repo svr for this to work
-macuploadcert:
-	@echo "Uploading pkg/mac/build/horizon-cli.crt to http://pkg.bluehorizon.network/macos/testing/certs/"
-	rsync -avz pkg/mac/build/horizon-cli.crt root@$(APT_REPO_HOST):$(APT_REPO_DIR)/macos/testing/certs
-
-# This target promotes the last version you uploaded to staging, so assumes MAC_PKG_VERSION is still set to that version
-promote-mac-pkg:
-	@echo "Promoting horizon-cli.crt"
-	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/certs/horizon-cli.crt $(APT_REPO_DIR)/macos/certs'
-	@echo "Promoting horizon-cli-$(MAC_PKG_VERSION).pkg"
-	ssh root@$(APT_REPO_HOST) 'cp $(APT_REPO_DIR)/macos/testing/horizon-cli-$(MAC_PKG_VERSION).pkg $(APT_REPO_DIR)/macos'
-
 macinstall: $(MAC_PKG)
 	$(MAKE) -C pkg/mac macinstall
 
@@ -302,7 +284,7 @@ macpkginfo:
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" ]]; then \
 	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
@@ -335,7 +317,7 @@ agbot-push-only:
 	docker push $(AGBOT_IMAGE)
 	docker push $(AGBOT_IMAGE_STG)
 
-docker-push: docker-image docker-push-only agbot-image agbot-push-only
+docker-push: anax-image docker-push-only agbot-image agbot-push-only
 
 # you must set ANAX_IMAGE_VERSION to the correct version for promotion to production
 promote-anax:
@@ -363,8 +345,6 @@ promote-anax-k8s:
 	docker tag $(ANAX_K8S_IMAGE) $(ANAX_K8S_IMAGE_LATEST)
 	docker push $(ANAX_K8S_IMAGE_LATEST)
 
-promote-mac-pkg-and-docker: promote-mac-pkg promote-anax promote-agbot promote-css promote-anax-k8s
-
 anax-package: anax-image
 	@echo "Packaging anax image"
 	if [[ $(shell tools/image-exists $(ANAX_REGISTRY) $(ANAX_IMAGE_BASE) $(ANAX_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
@@ -390,7 +370,9 @@ anax-k8s-image: anax-k8s-clean
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
-	cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi . && \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" ]]; then \
+		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
+	fi
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)
 
 anax-k8s-package: anax-k8s-image
@@ -405,9 +387,11 @@ anax-k8s-package: anax-k8s-image
 
 css-docker-image: css-clean
 	@echo "Producing CSS docker image $(CSS_IMAGE)"
-	cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR)
-	cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
+	if [[ $(arch) == "amd64" ]]; then \
+		cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR); \
+		cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
+		docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
+	else echo "Building the CSS docker image is not supported on $(arch)"; fi
 
 promote-css:
 	@echo "Promoting $(CSS_IMAGE)"
@@ -439,21 +423,22 @@ fss: ess-docker-image css-docker-image
 
 # This is a target that is ONLY called by the deb packager system. The ESS and CSS containers are built and published by that process
 # when new versions are created. Developers should not use this target.
+# Note that only ESS is supported by amd64 and ppc64el archs. CSS is amd64 only.
 fss-package: ess-docker-image css-docker-image
 	@echo "Packaging file sync service containers"
 	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
-		echo "Pushing ESS docker image $(ESS_IMAGE)"; \
+		echo "Pushing ESS Docker image $(ESS_IMAGE)"; \
 		docker push $(ESS_IMAGE); \
 		docker push $(ESS_IMAGE_STG); \
 	else \
 		echo "File sync service container $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
-		echo "Pushing CSS docker image $(CSS_IMAGE)"; \
-		docker push $(CSS_IMAGE); \
-		docker push $(CSS_IMAGE_STG); \
-	else \
-		echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
+	if [[ $(arch) == "amd64" ]]; then \
+		if [[ ($(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "") ]]; then \
+			echo "Pushing CSS Docker image $(CSS_IMAGE)"; \
+			docker push $(CSS_IMAGE); \
+			docker push $(CSS_IMAGE_STG); \
+		else echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; fi \
 	fi
 
 clean: mostlyclean 
@@ -605,11 +590,9 @@ check: lint test test-integration
 
 # build sequence diagrams
 diagrams:
-	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/horizonSequenceDiagram.txt
-	java -jar $(plantuml_path)/plantuml.jar ./citizenscientist/diagrams/protocolSequenceDiagram.txt
-	java -jar $(plantuml_path)/plantuml.jar ./messaging/diagrams/senderEncryption.txt
-	java -jar $(plantuml_path)/plantuml.jar ./messaging/diagrams/receiverEncryption.txt
+	java -jar $(plantuml_path)/plantuml.jar ./exchange/diagrams/senderEncryption.txt
+	java -jar $(plantuml_path)/plantuml.jar ./exchange/diagrams/receiverEncryption.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-mac-pkg-and-docker promote-mac-pkg promote-anax gen-mac-key install-mac-key css-docker-image ess-promote css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-anax gen-mac-key install-mac-key css-docker-image ess-promote

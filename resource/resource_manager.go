@@ -84,6 +84,13 @@ func (r ResourceManager) StartFileSyncService(am *AuthenticationManager) error {
 	} else if essCertKeyBytes, err := ioutil.ReadAll(essCertKey); err != nil {
 		return errors.New(fmt.Sprintf("unable to read ESS SSL Certificate Key file %v, error %v", r.config.GetESSSSLCertKeyPath(), err))
 	} else {
+		// create path for ListeningAddress if it does not exist
+		listenAddrPath := r.config.GetFileSyncServiceAPIUnixDomainSocketPath()
+		if listenAddrPath != "" {
+			if _, err := os.Stat(listenAddrPath); os.IsNotExist(err) {
+				os.MkdirAll(listenAddrPath, 0755)
+			}
+		}
 
 		// Configure the embedded ESS using configuration from the node.
 		common.Configuration.NodeType = "ESS"

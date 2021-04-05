@@ -40,7 +40,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			// Allow the main agbot thread to distribute protocol msgs and agreement handling to the worker pool.
-			Work: NewPrioritizedWorkQueue(cfg.GetAgbotAgreementQueueSize()),
+			Work: NewPrioritizedWorkQueue(cfg.GetAgbotAgreementQueueSize(), int(cfg.AgreementBot.NewContractIntervalS), cfg.GetAgbotQueueHistorySize()),
 		}
 	} else {
 		return nil
@@ -189,7 +189,6 @@ func (c *BasicProtocolHandler) CanCancelNow(ag *persistence.Agreement) bool {
 }
 
 func (c *BasicProtocolHandler) HandleDeferredCommands() {
-
 	cmds := c.GetDeferredCommands()
 	for _, cmd := range cmds {
 		switch cmd.Type() {

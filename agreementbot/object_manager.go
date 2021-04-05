@@ -213,6 +213,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 	}
 
 	var policyReplaced exchange.ObjectDestinationPolicy
+	foundService := false
 	for _, objPol := range *updatedPolicies {
 
 		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Updated policy received %v", objPol)))
@@ -223,14 +224,14 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 			for ix, pe := range peList {
 				if pe.Policy.OrgID == objPol.OrgID && pe.Policy.ObjectID == objPol.ObjectID && pe.Policy.ObjectType == objPol.ObjectType {
 					glog.V(5).Infof(mmsLogString(fmt.Sprintf("Obj %v found in %v map", objPol.ObjectID, service)))
-					found := false
 					for _, serviceID := range objPol.DestinationPolicy.Services {
 						if service == cutil.FormOrgSpecUrl(serviceID.ServiceName, serviceID.OrgID) {
-							found = true
+							foundService = true
 							break
 						}
 					}
-					if !found {
+					if !foundService {
+						policyReplaced = pe.Policy
 						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v/%v %v policy removed from %v cache.", objPol.OrgID, objPol.ObjectID, objPol.ObjectType, service)))
 						m.orgMap[objPol.OrgID][service] = append(m.orgMap[objPol.OrgID][service][:ix], m.orgMap[objPol.OrgID][service][ix+1:]...)
 
@@ -289,7 +290,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 
 		// Create an event to tell the other workers that a model policy has changed.
 		var ev events.Message
-		if policyReplaced.OrgID != "" {
+		if !foundService || policyReplaced.OrgID != "" {
 			ev = events.NewMMSObjectPolicyMessage(events.OBJECT_POLICY_CHANGED, objPol, policyReplaced)
 		} else {
 			ev = events.NewMMSObjectPolicyMessage(events.OBJECT_POLICY_NEW, objPol, nil)

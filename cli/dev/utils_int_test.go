@@ -45,7 +45,7 @@ func Test_nested_dependencies(t *testing.T) {
 		t.Errorf("unable to get service dependencies, %v", derr)
 	}
 
-	networks, perr := ProcessStartDependencies(horizonDir, deps, []common.GlobalSet{}, []policy.AbstractUserInput{}, cw)
+	networks, perr := ProcessStartDependencies(horizonDir, deps, []common.GlobalSet{}, []policy.AbstractUserInput{}, cw, "12345")
 	if perr != nil {
 		t.Errorf("unable to process dependencies, %v", perr)
 	}
@@ -126,7 +126,7 @@ func createSkeletalServiceDef(serviceName string) *common.ServiceFile {
 	res := new(common.ServiceFile)
 	res.Label = ""
 	res.Description = ""
-	res.Public = true
+	res.Public = false
 	res.URL = DEFAULT_SDEF_URL
 	res.Version = "1.0.0"
 	res.Arch = cutil.ArchString()

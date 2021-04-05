@@ -154,7 +154,7 @@ type Service struct {
 	Entrypoint       []string             `json:"entrypoint,omitempty"`
 	MaxMemoryMb      int64                `json:"max_memory_mb,omitempty"`
 	MaxCPUs          float32              `json:"max_cpus,omitempty"`
-	LogDriver        string               `json:"log_driver,omitempty"`     // Docker's log-driver. Syslog will be used as default driver
+	LogDriver        string               `json:"log_driver,omitempty"` // Docker's log-driver. Syslog will be used as default driver
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {

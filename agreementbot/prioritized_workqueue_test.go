@@ -15,7 +15,7 @@ func init() {
 }
 
 func Test_PrioritizedWorkQueue_serial(t *testing.T) {
-	nbc := NewPrioritizedWorkQueue(uint64(100))
+	nbc := NewPrioritizedWorkQueue(uint64(100), 2, 10)
 	if nbc == nil {
 		t.Errorf("constructor should return non-nil object")
 	}
@@ -26,14 +26,38 @@ func Test_PrioritizedWorkQueue_serial(t *testing.T) {
 	nbc.InboundLow() <- &wi1
 	nbc.InboundHigh() <- &wi2
 
+	// Pause for a moment for the concurrent routines to catch up
+	time.Sleep(100 * time.Millisecond)
+
+	if nbc.HighIsEmpty() {
+		t.Errorf("expected inbound high buffer to be non-empty")
+	} else if nbc.LowIsEmpty() {
+		t.Errorf("expected inbound low buffer to be non-empty")
+	} else if nbc.HighAtSize(2) {
+		t.Errorf("expected inbound high buffer to have less than 2 elements, has %v", nbc.HighPriorityBufferLen())
+	} else if nbc.LowAtSize(2) {
+		t.Errorf("expected inbound low buffer to have less than 2 elements, has %v", nbc.LowPriorityBufferLen())
+	}
+
 	rwi2 := *(<-nbc.Receive())
 	rwi1 := *(<-nbc.Receive())
+
+	// Pause for a moment for the concurrent routines to catch up
+	time.Sleep(100 * time.Millisecond)
 
 	// Make sure the work items were processed in the right order
 	if rwi1 == nil || rwi1.(CancelAgreement).Reason != 100 {
 		t.Errorf("expected %v but got %v", wi1, rwi1)
 	} else if rwi2 == nil || rwi2.(CancelAgreement).Reason != 101 {
 		t.Errorf("expected %v but got %v", wi2, rwi2)
+	} else if !nbc.HighIsEmpty() {
+		t.Errorf("expected inbound high buffer to be empty, but was not: %v", nbc.HighPriorityBufferLen())
+	} else if !nbc.LowIsEmpty() {
+		t.Errorf("expected inbound low buffer to be empty, but was not: %v", nbc.LowPriorityBufferLen())
+	} else if nbc.HighAtSize(1) {
+		t.Errorf("expected inbound high buffer to be empty, but was not: %v", nbc.HighPriorityBufferLen())
+	} else if nbc.LowAtSize(1) {
+		t.Errorf("expected inbound low buffer to be empty, but was not: %v", nbc.LowPriorityBufferLen())
 	}
 
 	// Close the sending channel
@@ -50,7 +74,7 @@ func Test_PrioritizedWorkQueue_concurrent_priority_mix(t *testing.T) {
 	const QSIZE = uint64(100)
 
 	// Make the internal buffer smaller to force the work queue-ing thread to give up control once in a while.
-	nbc := NewPrioritizedWorkQueue(10)
+	nbc := NewPrioritizedWorkQueue(10, 2, 10)
 	if nbc == nil {
 		t.Errorf("constructor should return non-nil object")
 	}
@@ -87,14 +111,24 @@ func Test_PrioritizedWorkQueue_concurrent_priority_mix(t *testing.T) {
 
 	}
 
-	// Pasue for a moment for the concurrent routines to catch up
+	// Pause for a moment for the concurrent routines to catch up
 	time.Sleep(1000 * time.Millisecond)
+
+	// Ensure the buffer queues are empty
+	if !nbc.HighIsEmpty() {
+		t.Errorf("expected inbound high buffer to be empty, but was not: %v", nbc.HighPriorityBufferLen())
+	} else if !nbc.LowIsEmpty() {
+		t.Errorf("expected inbound low buffer to be empty, but was not: %v", nbc.LowPriorityBufferLen())
+	}
 
 	// Close the sending channel
 	nbc.Close()
 
 	// Block briefly to give the channel function time to see the close and clean up
 	time.Sleep(10 * time.Millisecond)
+
+	// Log the queue statistics in case they are needed for debug
+	t.Log(nbc.queueHistory.report())
 
 	// Check that there are no intersections in the processed worklists
 	for _, v := range worklist1 {

@@ -4,7 +4,7 @@
 
 You can build them on a Linux or Mac host. From this directory run:
 
-```bashr
+```bash
 make -C horizon
 make -C horizon-cli
 ```

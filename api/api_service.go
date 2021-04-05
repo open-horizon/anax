@@ -187,13 +187,13 @@ func (a *API) service_configstate(w http.ResponseWriter, r *http.Request) {
 
 		getDevice := exchange.GetHTTPDeviceHandler(a)
 		postDeviceSCS := exchange.GetHTTPPostDeviceServicesConfigStateHandler(a)
-		errorHandled, suspended_services := ChangeServiceConfigState(&service_cs, service_configstate_error_handler, getDevice, postDeviceSCS, a.db)
+		errorHandled, changed_services := ChangeServiceConfigState(&service_cs, service_configstate_error_handler, getDevice, postDeviceSCS, a.db)
 		if errorHandled {
 			return
 		} else {
 			// fire event to handle the newly suspended services if any
-			if len(suspended_services) != 0 {
-				a.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_SUSPENDED, suspended_services)
+			if len(changed_services) != 0 {
+				a.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_CONFIG_STATE_CHANGED, changed_services)
 			}
 
 			LogServiceEvent(a.db, persistence.SEVERITY_INFO, persistence.NewMessageMeta(EL_API_COMPLETE_CHANGE_SVC_CONFIGSTATE, service_cs.ConfigState, s_string), persistence.EC_CHANGING_SERVICE_CONFIGSTATE_COMPLETE, NewService(service_cs.Url, service_cs.Org, "", cutil.ArchString(), ""))

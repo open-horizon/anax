@@ -411,8 +411,8 @@
       "translation": "unable to find docker credentials for {Domain}"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Pushing {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Pushing {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "unable to push docker image {Repository____tag}: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "could not find the image digest in the docker push output"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Pulling {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Pulling {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "unable to pull docker image {Repository____tag}: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Could not find the image digest in the docker output, retrieving image digest directly from the image."
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "could not inspect image {ImageName}: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "could not find digest for image {ImageName}."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -467,8 +475,8 @@
       "translation": "Error reading HTTP response, error {Err}"
     },
     {
-      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run 'systemctl status horizon' to check if the Horizon agent is running. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}"
+      "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
+      "translation": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -733,6 +741,38 @@
     {
       "id": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is.",
       "translation": "Warning: could not parse image path '{Image}'. Not pushing it to a docker registry, just including it in the 'deployment' field as-is."
+    },
+    {
+      "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
+      "translation": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}"
+    },
+    {
+      "id": "Error creating StdoutPipe for command: {Err}",
+      "translation": "Error creating StdoutPipe for command: {Err}"
+    },
+    {
+      "id": "Error starting command: {Err}",
+      "translation": "Error starting command: {Err}"
+    },
+    {
+      "id": "Error waiting for command: {Err}",
+      "translation": "Error waiting for command: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not be opened or does not exist: {Err}",
+      "translation": "{SysLogPath} could not be opened or does not exist: {Err}"
+    },
+    {
+      "id": "{SysLogPath} could not get stats: {Err}",
+      "translation": "{SysLogPath} could not get stats: {Err}"
+    },
+    {
+      "id": "Error reading from {SysLogPath}: {Err}",
+      "translation": "Error reading from {SysLogPath}: {Err}"
+    },
+    {
+      "id": "Unable to state {SysLogPath}: {Err}",
+      "translation": "Unable to state {SysLogPath}: {Err}"
     },
     {
       "id": "no service name",
@@ -1403,8 +1443,8 @@
       "translation": "Image loaded for service {Arg_1}/{Arg_2}."
     },
     {
-      "id": "Error loading image for {Arg_1}/{Arg_2}.",
-      "translation": "Error loading image for {Arg_1}/{Arg_2}."
+      "id": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}",
+      "translation": "Error loading image for {Arg_1}/{Arg_2}. Reason: {Arg_3}"
     },
     {
       "id": "Error loading image for service {Arg_1}/{Arg_2}.",
@@ -1725,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: Empty string is not a valid version."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

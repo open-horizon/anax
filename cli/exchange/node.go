@@ -39,6 +39,7 @@ type ExNodeStatusService struct {
 	Arch            string          `json:"arch"`
 	ContainerStatus []ContainerStat `json:"containerStatus"`
 	OperatorStatus  interface{}     `json:"operatorStatus,omitempty"`
+	ConfigState     string          `json:"configState"`
 }
 
 type ExchangeNodeStatus struct {
@@ -154,7 +155,7 @@ func NodeCreate(org, nodeIdTok, node, token, userPw, arch string, nodeName strin
 			nodeType = persistence.DEVICE_TYPE_DEVICE
 		}
 		putNodeReq := exchange.PutDeviceRequest{Token: nodeToken, Name: nodeName, NodeType: nodeType, SoftwareVersions: make(map[string]string), PublicKey: []byte(""), Arch: arch}
-		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq, &resp)
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrlBase, "orgs/"+org+"/nodes/"+nodeId+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, userPw), []int{201, 401, 403}, putNodeReq, &resp)
 	}
 
 	if httpCode == 401 {
@@ -435,7 +436,7 @@ func NodeAddPolicy(org string, credToUse string, node string, jsonFilePath strin
 	// add/replce node policy
 	msgPrinter.Printf("Updating Node policy and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.")
 	msgPrinter.Println()
-	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{201}, policyFile, nil)
 
 	msgPrinter.Printf("Node policy updated.")
 	msgPrinter.Println()
@@ -481,7 +482,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		newPolicy.Properties = newProp
 		msgPrinter.Printf("Updating Node %s policy properties in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
 		msgPrinter.Printf("Node %s policy properties updated in the horizon exchange.", node)
 		msgPrinter.Println()
 	} else if _, ok = findAttrType["constraints"]; ok {
@@ -498,7 +499,7 @@ func NodeUpdatePolicy(org, credToUse, node string, jsonfile string) {
 		newPolicy.Constraints = newConstr
 		msgPrinter.Printf("Updating Node %s policy constraints in the horizon exchange and re-evaluating all agreements based on this policy. Existing agreements might be cancelled and re-negotiated.", node)
 		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy", cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
+		cliutils.ExchangePutPost("Exchange", http.MethodPut, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/policy"+"?"+cliutils.NOHEARTBEAT_PARAM, cliutils.OrgAndCreds(org, credToUse), []int{200, 201}, newPolicy, nil)
 		msgPrinter.Printf("Node %s policy constraints updated in the horizon exchange.", node)
 		msgPrinter.Println()
 	} else {

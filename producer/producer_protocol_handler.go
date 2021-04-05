@@ -462,9 +462,26 @@ func (w *BaseProducerProtocolHandler) FindAgreementWithSameWorkload(ph abstractp
 func (w *BaseProducerProtocolHandler) PersistProposal(proposal abstractprotocol.Proposal, reply abstractprotocol.ProposalReply, tcPolicy *policy.Policy, protocolMsg string) {
 	if wi, err := persistence.NewWorkloadInfo(tcPolicy.Workloads[0].WorkloadURL, tcPolicy.Workloads[0].Org, tcPolicy.Workloads[0].Version, tcPolicy.Workloads[0].Arch); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error creating workload info object from %v, error: %v", tcPolicy.Workloads[0], err)))
-	} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), ConvertToServiceSpecs(tcPolicy.APISpecs), "", proposal.ConsumerId(), "", "", "", wi); err != nil {
+	} else if _, err := persistence.NewEstablishedAgreement(w.db, tcPolicy.Header.Name, proposal.AgreementId(), proposal.ConsumerId(), protocolMsg, w.Name(), proposal.Version(), ConvertToServiceSpecs(tcPolicy.APISpecs), "", proposal.ConsumerId(), "", "", "", wi, w.GetAgreementTimeout()); err != nil {
 		glog.Errorf(BPPHlogString(w.Name(), fmt.Sprintf("error persisting new agreement: %v, error: %v", proposal.AgreementId(), err)))
 	}
+}
+
+func (w *BaseProducerProtocolHandler) GetAgreementTimeout() uint64 {
+	exchDev, err := exchange.GetExchangeDevice(w.ec.GetHTTPFactory(), w.ec.GetExchangeId(), w.ec.GetExchangeId(), w.ec.GetExchangeToken(), w.ec.GetExchangeURL())
+	if err != nil {
+		glog.Errorf("Unable to get device from exchange: %v", err)
+	}
+	maxHb := exchDev.HeartbeatIntv.MaxInterval
+	if maxHb == 0 {
+		exchOrg, err := exchange.GetOrganization(w.ec.GetHTTPFactory(), exchange.GetOrg(w.ec.GetExchangeId()), w.ec.GetExchangeURL(), w.ec.GetExchangeId(), w.ec.GetExchangeToken())
+		if err != nil {
+			glog.Errorf("Unable to get org from exchange: %v", err)
+		}
+		maxHb = exchOrg.HeartbeatIntv.MaxInterval
+	}
+
+	return w.config.Edge.GetAgreementTimeout(maxHb)
 }
 
 func (w *BaseProducerProtocolHandler) TerminateAgreement(ag *persistence.EstablishedAgreement, reason uint, mt interface{}, pph ProducerProtocolHandler) {
