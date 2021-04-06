@@ -253,14 +253,15 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
-		groupName := cutil.GetHashFromString(agreementId)
-		group, err := user.LookupGroup(groupName)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to find group %v created for ess auth file %v", groupName, agreementId))
-		}
-
 		groupAdds := make([]string, 0)
-		groupAdds = append(groupAdds, group.Gid)
+		if !w.IsDevInstance() {
+			groupName := cutil.GetHashFromString(agreementId)
+			group, err := user.LookupGroup(groupName)
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("unable to find group %v created for ess auth file %v", groupName, agreementId))
+			}
+			groupAdds = append(groupAdds, group.Gid)
+		}
 
 		// Create the volume map based on the container paths being bound to the host.
 		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
@@ -1264,11 +1265,12 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	// Create the MMS authentication credentials for this container. The only time we need the service version to be
 	// part of authentication is when policy is in use.
+	// set secureCreds to false if current running is hzn dev
 	serviceVersion := ""
 	if b.pattern == "" {
 		serviceVersion = sVer
 	}
-	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion); err != nil {
+	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, !b.isDevInstance); err != nil {
 		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
 	}
 
@@ -1943,7 +1945,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		}
 
 	case *NodeUnconfigCommand:
-		if err := b.GetAuthenticationManager().RemoveAll(); err != nil {
+		if err := b.GetAuthenticationManager().RemoveAll(!b.isDevInstance); err != nil {
 			glog.Errorf("Error handling node unconfig command: %v", err)
 		}
 		b.Commands <- worker.NewTerminateCommand("shutdown")
@@ -2448,7 +2450,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		}
 
 		// Remove the File Sync Service API authentication credential file.
-		if err := b.GetAuthenticationManager().RemoveCredential(agreementId); err != nil {
+		if err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
 			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
 		}
 
