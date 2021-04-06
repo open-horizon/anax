@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
-	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"io/ioutil"
@@ -38,7 +37,7 @@ func (a *AuthenticationManager) GetCredentialPath(key string) string {
 
 // Create a new container authentication credential and write it into the Agent's host file system. The credential file
 // live in a directory named by the key input parameter.
-func (a *AuthenticationManager) CreateCredential(key string, id string, ver string) error {
+func (a *AuthenticationManager) CreateCredential(key string, id string, ver string, isDev bool) error {
 	cred, err := GenerateNewCredential(id, ver)
 	if err != nil {
 		return errors.New("unable to generate new authentication token")
@@ -57,7 +56,7 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 	var group *user.Group
 	var fileMode os.FileMode
 
-	if !cliutils.GetIsHznDevEnv() {
+	if !isDev {
 		currUser, err := user.Current()
 		if err != nil {
 			return errors.New("unable to get current OS user")
@@ -102,7 +101,7 @@ func (a *AuthenticationManager) CreateCredential(key string, id string, ver stri
 		return errors.New(fmt.Sprintf("unable to write authentication credential file %v, error: %v", fileName, err))
 	}
 
-	if !cliutils.GetIsHznDevEnv() {
+	if !isDev {
 		// change group owner of auth foler and file, and set the group in groupAdd for service docker container in container.go
 		if err = os.Chown(a.GetCredentialPath(key), currUserUidInt, groupIdInt); err != nil {
 			return errors.New(fmt.Sprintf("unable to change group to (group id: %v, group name:%v) for the authentication credential folder %v, error: %v", group.Gid, groupName, a.GetCredentialPath(key), err))
@@ -155,13 +154,13 @@ func (a *AuthenticationManager) Authenticate(authId string, appSecret string) (b
 }
 
 // Remove a container authentication credential from the Agent's host file system.
-func (a *AuthenticationManager) RemoveCredential(key string) error {
+func (a *AuthenticationManager) RemoveCredential(key string, isDev bool) error {
 	if err := os.RemoveAll(a.GetCredentialPath(key)); err != nil {
 		return errors.New(fmt.Sprintf("unable to remove authentication credential file %v, error: %v", path.Join(a.GetCredentialPath(key), config.HZN_FSS_AUTH_FILE), err))
 	}
 	glog.V(5).Infof(authLogString(fmt.Sprintf("Removed credential for service %v.", key)))
 
-	if !cliutils.GetIsHznDevEnv() {
+	if !isDev {
 		groupName := cutil.GetHashFromString(key)
 		if _, err := user.LookupGroup(groupName); err != nil {
 			switch err.(type) {
@@ -185,12 +184,12 @@ func (a *AuthenticationManager) RemoveCredential(key string) error {
 }
 
 // Remove all container authentication credentials from the Agent's host file system.
-func (a *AuthenticationManager) RemoveAll() error {
+func (a *AuthenticationManager) RemoveAll(isDev bool) error {
 	if dirs, err := ioutil.ReadDir(a.AuthPath); err != nil {
 		return errors.New(fmt.Sprintf("unable to remove all authentication credential files %v, error: %v", a.AuthPath, err))
 	} else {
 		for _, d := range dirs {
-			if err := a.RemoveCredential(d.Name()); err != nil {
+			if err := a.RemoveCredential(d.Name(), isDev); err != nil {
 				return err
 			}
 		}

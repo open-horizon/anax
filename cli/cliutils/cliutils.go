@@ -69,8 +69,6 @@ const (
 
 	// set on heartbeating api endpoints since cli calls are not coming from an agent
 	NOHEARTBEAT_PARAM = "noheartbeat=true"
-
-	IS_HZN_DEV_ENVIRONMENT = "IS_HZN_DEV_ENVIRONMENT"
 )
 
 // Holds the cmd line flags that were set so other pkgs can access
@@ -1829,11 +1827,4 @@ func (pr *progressReader) Read(p []byte) (n int, err error) {
 	n, err = pr.Reader.Read(p)
 	pr.Reporter(n)
 	return n, err
-}
-
-func GetIsHznDevEnv() bool {
-	if os.Getenv(IS_HZN_DEV_ENVIRONMENT) == "true" {
-		return true
-	}
-	return false
 }

@@ -254,7 +254,7 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
 		groupAdds := make([]string, 0)
-		if !cliutils.GetIsHznDevEnv() {
+		if !w.IsDevInstance() {
 			groupName := cutil.GetHashFromString(agreementId)
 			group, err := user.LookupGroup(groupName)
 			if err != nil {
@@ -1269,7 +1269,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	if b.pattern == "" {
 		serviceVersion = sVer
 	}
-	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion); err != nil {
+	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, b.isDevInstance); err != nil {
 		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
 	}
 
@@ -1944,7 +1944,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		}
 
 	case *NodeUnconfigCommand:
-		if err := b.GetAuthenticationManager().RemoveAll(); err != nil {
+		if err := b.GetAuthenticationManager().RemoveAll(b.isDevInstance); err != nil {
 			glog.Errorf("Error handling node unconfig command: %v", err)
 		}
 		b.Commands <- worker.NewTerminateCommand("shutdown")
@@ -2449,7 +2449,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		}
 
 		// Remove the File Sync Service API authentication credential file.
-		if err := b.GetAuthenticationManager().RemoveCredential(agreementId); err != nil {
+		if err := b.GetAuthenticationManager().RemoveCredential(agreementId, b.isDevInstance); err != nil {
 			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
 		}
 
