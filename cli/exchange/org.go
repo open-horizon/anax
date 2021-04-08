@@ -209,7 +209,7 @@ func OrgDel(org, userPwCreds, theOrg, agbot string, force bool) {
 	// "Are you sure?" prompt
 	cliutils.SetWhetherUsingApiKey(userPwCreds)
 	if !force {
-		cliutils.ConfirmRemove(msgPrinter.Sprintf("Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org %v from the Horizon Exchange and the MMS?", theOrg))	
+		cliutils.ConfirmRemove(msgPrinter.Sprintf("Warning: this will also delete all Exchange resources owned by this org (nodes, services, patterns, etc). Are you sure you want to remove org %v from the Horizon Exchange and the MMS?", theOrg))
 	}
 
 	if agbot == "" {

@@ -203,4 +203,3 @@ func (a *AuthenticationManager) RemoveAll(secureCreds bool) error {
 var authLogString = func(v interface{}) string {
 	return fmt.Sprintf("Container Authentication Manager: %v", v)
 }
-

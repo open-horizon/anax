@@ -7,7 +7,7 @@ import (
 	"github.com/open-horizon/anax/version"
 	"os"
 	"strings"
-	
+
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -126,8 +126,6 @@ Environment Variables:
 	cliutils.Opts.Verbose = app.Flag("verbose", msgPrinter.Sprintf("Verbose output.")).Short('v').Bool()
 	cliutils.Opts.IsDryRun = app.Flag("dry-run", msgPrinter.Sprintf("When calling the Horizon or Exchange API, do GETs, but don't do PUTs, POSTs, or DELETEs.")).Bool()
 
-	
-	
 	agbotCmd := app.Command("agbot", msgPrinter.Sprintf("List and manage Horizon agreement bot resources."))
 
 	agbotAgreementCmd := agbotCmd.Command("agreement", msgPrinter.Sprintf("List or manage the active or archived agreements this Horizon agreement bot has with edge nodes."))
@@ -137,7 +135,7 @@ Environment Variables:
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list", msgPrinter.Sprintf("List the active or archived agreements this Horizon agreement bot has with edge nodes."))
 	agbotlistArchivedAgreements := agbotAgreementListCmd.Flag("archived", msgPrinter.Sprintf("List archived agreements instead of the active agreements.")).Short('r').Bool()
 	agbotAgreement := agbotAgreementListCmd.Arg("agreement", msgPrinter.Sprintf("List just this one agreement.")).String()
-	
+
 	agbotCacheCmd := agbotCmd.Command("cache", msgPrinter.Sprintf("Manage cached agbot-serving organizations, patterns, and deployment policies."))
 	agbotCacheDeployPol := agbotCacheCmd.Command("deploymentpol", msgPrinter.Sprintf("List served deployment policies cached in the agbot."))
 	agbotCacheDeployPolList := agbotCacheDeployPol.Command("list", msgPrinter.Sprintf("Display served deployment policies cached in the agbot."))
@@ -151,7 +149,7 @@ Environment Variables:
 	agbotCachePatternListLong := agbotCachePatternList.Flag("long", msgPrinter.Sprintf("Display detailed info.")).Short('l').Bool()
 	agbotCacheServedOrg := agbotCacheCmd.Command("servedorg", msgPrinter.Sprintf("List served pattern orgs and deployment policy orgs."))
 	agbotCacheServedOrgList := agbotCacheServedOrg.Command("list", msgPrinter.Sprintf("Display served pattern orgs and deployment policy orgs."))
-	
+
 	agbotListCmd := agbotCmd.Command("list", msgPrinter.Sprintf("Display general information about this Horizon agbot node."))
 	agbotPolicyCmd := agbotCmd.Command("policy", msgPrinter.Sprintf("List the policies this Horizon agreement bot hosts."))
 	agbotPolicyListCmd := agbotPolicyCmd.Command("list", msgPrinter.Sprintf("List policies this Horizon agreement bot hosts."))
@@ -215,7 +213,7 @@ Environment Variables:
 	userinputCompSvcFile := userinputCompCmd.Flag("service", msgPrinter.Sprintf("(optional) The JSON input file name containing the service definition. If omitted, the service defined in the deployment policy or pattern will be retrieved from the Exchange. This flag can be repeated to specify different versions of the service.")).Strings()
 	userinputCompPatternId := userinputCompCmd.Flag("pattern-id", msgPrinter.Sprintf("The Horizon exchange pattern ID. Mutually exclusive with -P, -b and -B. If you don't prepend it with the organization id, it will automatically be prepended with the node's organization id.")).Short('p').String()
 	userinputCompPatternFile := userinputCompCmd.Flag("pattern", msgPrinter.Sprintf("The JSON input file name containing the pattern. Mutually exclusive with -p, -b and -B.")).Short('P').String()
-	
+
 	devCmd := app.Command("dev", msgPrinter.Sprintf("Development tools for creation of services."))
 	devHomeDirectory := devCmd.Flag("directory", msgPrinter.Sprintf("Directory containing Horizon project metadata. If omitted, a subdirectory called 'horizon' under current directory will be used.")).Short('d').String()
 
@@ -255,8 +253,7 @@ Environment Variables:
 	devServiceValidateCmd := devServiceCmd.Command("verify", msgPrinter.Sprintf("Validate the project for completeness and schema compliance."))
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", msgPrinter.Sprintf("File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.")).Short('f').String()
 	devServiceValidateCmdUserPw := devServiceValidateCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the Exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
-	
-	
+
 	envCmd := app.Command("env", msgPrinter.Sprintf("Show the Horizon Environment Variables."))
 
 	eventlogCmd := app.Command("eventlog", msgPrinter.Sprintf("List the event logs for the current or all registrations."))
@@ -299,7 +296,7 @@ Environment Variables:
 	exAgbotDPPatOrg := exAgbotDelPatCmd.Arg("patternorg", msgPrinter.Sprintf("The organization of the pattern to remove.")).Required().String()
 	exAgbotDPPat := exAgbotDelPatCmd.Arg("pattern", msgPrinter.Sprintf("The name of the pattern to remove.")).Required().String()
 	exAgbotDPNodeOrg := exAgbotDelPatCmd.Arg("nodeorg", msgPrinter.Sprintf("The organization of the nodes that should be searched. Defaults to patternorg.")).String()
-	
+
 	exCatalogCmd := exchangeCmd.Command("catalog", msgPrinter.Sprintf("List all public services/patterns in all orgs that have orgType: IBM."))
 	exCatalogPatternListCmd := exCatalogCmd.Command("patternlist", msgPrinter.Sprintf("Display all public patterns in all orgs that have orgType: IBM. "))
 	exCatalogPatternListShort := exCatalogPatternListCmd.Flag("short", msgPrinter.Sprintf("Only display org (IBM) and pattern names.")).Short('s').Bool()
@@ -307,7 +304,7 @@ Environment Variables:
 	exCatalogServiceListCmd := exCatalogCmd.Command("servicelist", msgPrinter.Sprintf("Display all public services in all orgs that have orgType: IBM."))
 	exCatalogServiceListShort := exCatalogServiceListCmd.Flag("short", msgPrinter.Sprintf("Only display org (IBM) and service names.")).Short('s').Bool()
 	exCatalogServiceListLong := exCatalogServiceListCmd.Flag("long", msgPrinter.Sprintf("Display detailed output about public services in all orgs that have orgType: IBM.")).Short('l').Bool()
-	
+
 	exBusinessCmd := exchangeCmd.Command("deployment", msgPrinter.Sprintf("List and manage deployment policies in the Horizon Exchange.")).Alias("business")
 	exBusinessAddPolicyCmd := exBusinessCmd.Command("addpolicy", msgPrinter.Sprintf("Add or replace a deployment policy in the Horizon Exchange. Use 'hzn exchange deployment new' for an empty deployment policy template."))
 	exBusinessAddPolicyIdTok := exBusinessAddPolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -327,7 +324,7 @@ Environment Variables:
 	exBusinessUpdatePolicyIdTok := exBusinessUpdatePolicyCmd.Flag("id-token", msgPrinter.Sprintf("The Horizon ID and password of the user.")).Short('n').PlaceHolder("ID:TOK").String()
 	exBusinessUpdatePolicyPolicy := exBusinessUpdatePolicyCmd.Arg("policy", msgPrinter.Sprintf("The name of the policy to be updated in the Horizon Exchange.")).Required().String()
 	exBusinessUpdatePolicyJsonFile := exBusinessUpdatePolicyCmd.Flag("json-file", msgPrinter.Sprintf("The path to the json file containing the updated deployment policy attribute to be changed in the Horizon Exchange. Specify -f- to read from stdin.")).Short('f').Required().String()
-	
+
 	exNodeCmd := exchangeCmd.Command("node", msgPrinter.Sprintf("List and manage nodes in the Horizon Exchange"))
 	exNodeAddPolicyCmd := exNodeCmd.Command("addpolicy", msgPrinter.Sprintf("Add or replace the node policy in the Horizon Exchange."))
 	exNodeAddPolicyIdTok := exNodeAddPolicyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -406,7 +403,7 @@ Environment Variables:
 	exOrgUpdateHBMax := exOrgUpdateCmd.Flag("heartbeatmax", msgPrinter.Sprintf("New maximum number of seconds between agent heartbeats to the Exchange. The default negative integer -1 means no change to this attribute.")).Default("-1").Int()
 	exOrgUpdateHBAdjust := exOrgUpdateCmd.Flag("heartbeatadjust", msgPrinter.Sprintf("New value for the number of seconds to increment the agent's heartbeat interval. The default negative integer -1 means no change to this attribute.")).Default("-1").Int()
 	exOrgUpdateMaxNodes := exOrgUpdateCmd.Flag("max-nodes", msgPrinter.Sprintf("The new maximum number of nodes this organization is allowed to have. The value cannot exceed the Exchange global limit. The default negative integer -1 means no change.")).Default("-1").Int()
-	
+
 	exPatternCmd := exchangeCmd.Command("pattern", msgPrinter.Sprintf("List and manage patterns in the Horizon Exchange"))
 	exPatternListCmd := exPatternCmd.Command("list", msgPrinter.Sprintf("Display the pattern resources from the Horizon Exchange."))
 	exPatternListNodeIdTok := exPatternListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
@@ -435,7 +432,7 @@ Environment Variables:
 	exVerPattern := exPatternVerifyCmd.Arg("pattern", msgPrinter.Sprintf("The pattern to verify.")).Required().String()
 	exPatternVerifyNodeIdTok := exPatternVerifyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exPatPubKeyFile := exPatternVerifyCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of a pem public key file to be used to verify the pattern. If not specified, the environment variable HZN_PUBLIC_KEY_FILE will be used. If none of them are set, ~/.hzn/keys/service.public.pem is the default.")).Short('k').String()
-	
+
 	exServiceCmd := exchangeCmd.Command("service", msgPrinter.Sprintf("List and manage services in the Horizon Exchange"))
 	exServiceAddPolicyCmd := exServiceCmd.Command("addpolicy", msgPrinter.Sprintf("Add or replace the service policy in the Horizon Exchange."))
 	exServiceAddPolicyIdTok := exServiceAddPolicyCmd.Flag("service-id-tok", msgPrinter.Sprintf("The Horizon Exchange ID and password of the user")).Short('n').PlaceHolder("ID:TOK").String()
@@ -508,7 +505,7 @@ Environment Variables:
 	exUserSetAdminUser := exUserSetAdminCmd.Arg("user", msgPrinter.Sprintf("The user to be modified.")).Required().String()
 	exUserSetAdminBool := exUserSetAdminCmd.Arg("isadmin", msgPrinter.Sprintf("True if they should be an admin user, otherwise false.")).Required().Bool()
 	exVersionCmd := exchangeCmd.Command("version", msgPrinter.Sprintf("Display the version of the Horizon Exchange."))
-	
+
 	keyCmd := app.Command("key", msgPrinter.Sprintf("List and manage keys for signing and verifying services."))
 	keyCreateCmd := keyCmd.Command("create", msgPrinter.Sprintf("Generate a signing key pair."))
 	keyX509Org := keyCreateCmd.Arg("x509-org", msgPrinter.Sprintf("x509 certificate Organization (O) field (preferably a company name or other organization's name).")).Required().String()
@@ -535,7 +532,7 @@ Environment Variables:
 	mmsCmd := app.Command("mms", msgPrinter.Sprintf("List and manage Horizon Model Management Service resources."))
 	mmsOrg := mmsCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
 	mmsUserPw := mmsCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon user credentials to query and create Model Management Service resources. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default. If you don't prepend it with the user's org, it will automatically be prepended with the -o value.")).Short('u').PlaceHolder("USER:PW").String()
-	
+
 	mmsObjectCmd := mmsCmd.Command("object", msgPrinter.Sprintf("List and manage objects in the Horizon Model Management Service."))
 	mmsObjectDeleteCmd := mmsObjectCmd.Command("delete", msgPrinter.Sprintf("Delete an object in the Horizon Model Management Service, making it unavailable for services deployed on nodes."))
 	mmsObjectDeleteType := mmsObjectDeleteCmd.Flag("type", msgPrinter.Sprintf("The type of the object to delete.")).Short('t').Required().String()
@@ -545,7 +542,7 @@ Environment Variables:
 	mmsObjectDownloadId := mmsObjectDownloadCmd.Flag("id", msgPrinter.Sprintf("The id of the object to download data. This flag must be used with -t.")).Short('i').Required().String()
 	mmsObjectDownloadFile := mmsObjectDownloadCmd.Flag("file", msgPrinter.Sprintf("The file that the data of downloaded object is written to. This flag must be used with -f. If omit, will use default file name in format of objectType_objectID and save in current directory")).Short('f').String()
 	mmsObjectDownloadOverwrite := mmsObjectDownloadCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing file if it exists in the file system.")).Short('O').Bool()
-	
+
 	mmsObjectListCmd := mmsObjectCmd.Command("list", msgPrinter.Sprintf("List objects in the Horizon Model Management Service."))
 	mmsObjectListType := mmsObjectListCmd.Flag("type", msgPrinter.Sprintf("The type of the object to list.")).Short('t').String()
 	mmsObjectListObjType := mmsObjectListCmd.Flag("objectType", "").Hidden().String()
@@ -561,7 +558,7 @@ Environment Variables:
 	mmsObjectListExpirationTime := mmsObjectListCmd.Flag("expirationTime", msgPrinter.Sprintf("List mms objects that expired before the given time. The time value is spefified in RFC3339 format: yyyy-MM-ddTHH:mm:ssZ. Specify now to show objects that are currently expired.")).Short('e').String()
 	mmsObjectListLong := mmsObjectListCmd.Flag("long", msgPrinter.Sprintf("Show detailed object metadata information")).Short('l').Bool()
 	mmsObjectListDetail := mmsObjectListCmd.Flag("detail", msgPrinter.Sprintf("Provides additional detail about the deployment of the object on edge nodes.")).Short('d').Bool()
-	
+
 	mmsObjectNewCmd := mmsObjectCmd.Command("new", msgPrinter.Sprintf("Display an empty object metadata template that can be filled in and passed as the -m option on the 'hzn mms object publish' command."))
 	mmsObjectPublishCmd := mmsObjectCmd.Command("publish", msgPrinter.Sprintf("Publish an object in the Horizon Model Management Service, making it available for services deployed on nodes."))
 	mmsObjectPublishType := mmsObjectPublishCmd.Flag("type", msgPrinter.Sprintf("The type of the object to publish. This flag must be used with -i. It is mutually exclusive with -m")).Short('t').String()
@@ -583,7 +580,7 @@ Environment Variables:
 	policyRemoveForce := policyRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	policyUpdateCmd := policyCmd.Command("update", msgPrinter.Sprintf("Create or replace the node's policy. The node's built-in properties cannot be modified or deleted by this command, with the exception of openhorizon.allowPrivileged."))
 	policyUpdateInputFile := policyUpdateCmd.Flag("input-file", msgPrinter.Sprintf("The JSON input file name containing the node policy. Specify -f- to read from stdin.")).Short('f').Required().String()
-	
+
 	regInputCmd := app.Command("reginput", msgPrinter.Sprintf("Create an input file template for this pattern that can be used for the 'hzn register' command (once filled in). This examines the services that the specified pattern uses, and determines the node owner input that is required for them."))
 	regInputNodeIdTok := regInputCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon exchange node ID and token (it must already exist).")).Short('n').PlaceHolder("ID:TOK").Required().String()
 	regInputInputFile := regInputCmd.Flag("input-file", msgPrinter.Sprintf("The JSON input template file name that should be created. This file will contain placeholders for you to fill in user input values.")).Short('f').Required().String()
@@ -596,7 +593,7 @@ Environment Variables:
 	nodeName := registerCmd.Flag("name", msgPrinter.Sprintf("The name of the node. If not specified, it will be the same as the node id.")).Short('m').String()
 	userPw := registerCmd.Flag("user-pw", msgPrinter.Sprintf("User credentials to create the node resource in the Horizon exchange if it does not already exist. If not specified, HZN_EXCHANGE_USER_AUTH will be used as a default.")).Short('u').PlaceHolder("USER:PW").String()
 	inputFile := registerCmd.Flag("input-file", msgPrinter.Sprintf("A JSON file that sets or overrides user input variables needed by the services that will be deployed to this node. See %v/user_input.json. Specify -f- to read from stdin.", sample_dir)).Short('f').String() // not using ExistingFile() because it can be - for stdin
-	
+
 	nodeOrgFlag := registerCmd.Flag("nodeorg", msgPrinter.Sprintf("The Horizon exchange organization ID that the node should be registered in. The default is the HZN_ORG_ID environment variable. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('o').String()
 	patternFlag := registerCmd.Flag("pattern", msgPrinter.Sprintf("The Horizon exchange pattern that describes what workloads that should be deployed to this node. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. Mutually exclusive with <nodeorg> and <pattern> arguments.")).Short('p').String()
 	nodepolicyFlag := registerCmd.Flag("policy", msgPrinter.Sprintf("A JSON file that sets or overrides the node policy for this node that will be used for policy based agreement negotiation.")).String()
@@ -623,7 +620,7 @@ Environment Variables:
 	logTail := serviceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	serviceListCmd := serviceCmd.Command("list", msgPrinter.Sprintf("List the services variable configuration that has been done on this Horizon edge node."))
 	serviceRegisteredCmd := serviceCmd.Command("registered", msgPrinter.Sprintf("List the services that are currently registered on this Horizon edge node."))
-	
+
 	statusCmd := app.Command("status", msgPrinter.Sprintf("Display the current horizon internal status for the node."))
 	statusLong := statusCmd.Flag("long", msgPrinter.Sprintf("Show detailed status")).Short('l').Bool()
 
@@ -642,7 +639,7 @@ Environment Variables:
 	userinputRemoveForce := userinputRemoveCmd.Flag("force", msgPrinter.Sprintf("Skip the 'Are you sure?' prompt.")).Short('f').Bool()
 	userinputUpdateCmd := userinputCmd.Command("update", msgPrinter.Sprintf("Update an existing user input object for this Horizon edge node."))
 	userinputUpdateFilePath := userinputUpdateCmd.Flag("file-path", msgPrinter.Sprintf("The file path to the json file with the updated user input object. Specify -f- to read from stdin.")).Short('f').Required().String()
-	
+
 	utilCmd := app.Command("util", msgPrinter.Sprintf("Utility commands."))
 	utilConfigConvCmd := utilCmd.Command("configconv", msgPrinter.Sprintf("Convert the configuration file from JSON format to a shell script."))
 	utilConfigConvFile := utilConfigConvCmd.Flag("config-file", msgPrinter.Sprintf("The path of a configuration file to be converted. ")).Short('f').Required().ExistingFile()
@@ -651,7 +648,7 @@ Environment Variables:
 	utilVerifyCmd := utilCmd.Command("verify", msgPrinter.Sprintf("Verify that the signature specified via -s is a valid signature for the text in stdin."))
 	utilVerifyPubKeyFile := utilVerifyCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.")).Short('K').Required().ExistingFile()
 	utilVerifySig := utilVerifyCmd.Flag("signature", msgPrinter.Sprintf("The supposed signature of stdin.")).Short('s').Required().String()
-	
+
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
 	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
@@ -671,7 +668,6 @@ Environment Variables:
 	voucherImportPolicy := voucherImportCmd.Flag("policy", msgPrinter.Sprintf("The node policy file to use for the edge device associated with this voucher. It is mutually exclusive with -e and -p.")).String()
 	voucherImportPattern := voucherImportCmd.Flag("pattern", msgPrinter.Sprintf("The deployment pattern name to use for the edge device associated with this voucher. If the pattern is from a different organization than the node, use the 'other_org/pattern' format. It is mutually exclusive with -e and --policy.")).Short('p').String()
 
-	
 	app.VersionFlag = nil
 
 	/* trying to override the base --version behavior does not work....
