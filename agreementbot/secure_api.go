@@ -142,6 +142,7 @@ func (a *SecureAPI) listen() {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 			w.Header().Add("Pragma", "no-cache, no-store")
+			w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
 			w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
 			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 			h.ServeHTTP(w, r)
