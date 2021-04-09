@@ -18,15 +18,17 @@ VERB_DEBUG=5
 
 # You can add to these lists of supported values by setting/exporting the corresponding <varname>_APPEND variable to a string of space-separated words.
 # This allows you to experiment with platforms or variations that are not yet officially tested/supported.
-SUPPORTED_OS=(macos linux $SUPPORTED_OS_APPEND)   # compared to what our get_os() returns
-SUPPORTED_LINUX_DISTRO=(ubuntu raspbian debian rhel centos $SUPPORTED_LINUX_DISTRO_APPEND)   # compared to what our detect_distro() sets DISTRO to
 SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 SUPPORTED_DEBIAN_VERSION=(focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel centos $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
-SUPPORTED_REDHAT_VERSION=(7.9 8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+# Note: version 8 is added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
+SUPPORTED_REDHAT_VERSION=(7.9 8.1 8.2 8.3 8 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
+
+SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
+SUPPORTED_LINUX_DISTRO=(${SUPPORTED_DEBIAN_VARIANTS[@]} ${SUPPORTED_REDHAT_VARIANTS[@]})   # compared to what our detect_distro() sets DISTRO to
 
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
@@ -84,14 +86,24 @@ Options/Flags:
     -D    Node type of agent being installed: device, cluster. Default: device. (This flag is equivalent to AGENT_DEPLOY_TYPE)
     -U    Internal url for edge cluster registry. If not specified, this script will auto-detect the value if it is a small, single-node cluster (e.g. k3s or microk8s). For OCP use: image-registry.openshift-image-registry.svc:5000. (This flag is equivalent to INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY)
     -l    Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (This flag is equivalent to AGENT_VERBOSITY)
-    -f    Install older version of agent (on macos) and/or overwrite node configuration without prompt. (This flag is equivalent to AGENT_OVERWRITE)
+    -f    Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
     -b    Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
+    -C    Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
     -h    This usage
 
 Additional Edge Device Variables (in environment or config file):
     NODE_ID_MAPPING_FILE: File to map hostname or IP to node id, for bulk install.  Default: node-id-mapping.csv
     AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
+
+Optional Edge Device Environment Variables For Testing New Distros - Not For Production Use
+    SUPPORTED_DEBIAN_VARIANTS_APPEND: a debian variant that should be added to the default list: ${SUPPORTED_DEBIAN_VARIANTS[*]}
+    SUPPORTED_DEBIAN_VERSION_APPEND: a debian version that should be added to the default list: ${SUPPORTED_DEBIAN_VERSION[*]}
+    SUPPORTED_DEBIAN_ARCH_APPEND: a debian architecture that should be added to the default list: ${SUPPORTED_DEBIAN_ARCH[*]}
+    SUPPORTED_REDHAT_VARIANTS_APPEND: a Red Hat variant that should be added to the default list: ${SUPPORTED_REDHAT_VARIANTS[*]}
+    SUPPORTED_REDHAT_VERSION_APPEND: a Red Hat version that should be added to the default list: ${SUPPORTED_REDHAT_VERSION[*]}
+    SUPPORTED_REDHAT_ARCH_APPEND: a Red Hat architecture that should be added to the default list: ${SUPPORTED_REDHAT_ARCH[*]}
+
 
 Additional Edge Cluster Variables (in environment or config file):
     IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
@@ -114,7 +126,7 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:C" opt; do
     case $opt in
     c)  ARG_AGENT_CERT_FILE="$OPTARG"
         ;;
@@ -157,6 +169,8 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:" opt; do
     f)  ARG_AGENT_OVERWRITE=true
         ;;
     b)  ARG_AGENT_SKIP_PROMPT=true
+        ;;
+    C)  ARG_AGENT_ONLY_CLI=true
         ;;
     h)  usage 0
         ;;
@@ -510,6 +524,7 @@ function get_all_variables() {
     get_variable AGENT_REGISTRATION_TIMEOUT
     get_variable AGENT_OVERWRITE 'false'
     get_variable AGENT_SKIP_PROMPT 'false'
+    get_variable AGENT_ONLY_CLI 'false'
     get_variable AGENT_INSTALL_ZIP 'agent-install-files.tar.gz'
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
@@ -636,6 +651,13 @@ function check_variables() {
     # if a node policy is non-empty, check if the file exists
     if [[ -n $HZN_NODE_POLICY && ! -f $HZN_NODE_POLICY ]]; then
         log_fatal 1 "HZN_NODE_POLICY file '$HZN_NODE_POLICY' does not exist"
+    fi
+
+    # several flags can't be set with AGENT_ONLY_CLI
+    if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+        if [[ -n $HZN_EXCHANGE_PATTERN || -n $HZN_NODE_POLICY || -n $ARG_AGENT_WAIT_FOR_SERVICE || -n $ARG_AGENT_REGISTRATION_TIMEOUT || -n $ARG_AGENT_WAIT_FOR_SERVICE_ORG ]]; then
+            log_fatal 1 "Since AGENT_ONLY_CLI=='$AGENT_ONLY_CLI', none of these can be set: HZN_EXCHANGE_PATTERN, HZN_NODE_POLICY, AGENT_WAIT_FOR_SERVICE, AGENT_REGISTRATION_TIMEOUT, AGENT_WAIT_FOR_SERVICE_ORG"
+        fi
     fi
 
     if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -1040,12 +1062,15 @@ function install_macos() {
             echo "Jq is required, installing it using brew, this could take a minute..."
             runCmdQuietly brew install jq
     fi
-    confirmCmds socat docker jq
 
-    check_existing_exch_node_is_correct_type "device"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        confirmCmds socat docker jq
 
-    if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
-        unregister
+        check_existing_exch_node_is_correct_type "device"
+
+        if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
+            unregister
+        fi
     fi
 
     get_certificate $INPUT_FILE_PATH
@@ -1056,9 +1081,12 @@ function install_macos() {
 
     mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
     install_mac_horizon-cli
-    start_device_agent_container   # even if it already running, it restarts it
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        start_device_agent_container   # even if it already running, it restarts it
+
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    fi
 
     log_debug "install_macos() end"
 }
@@ -1092,40 +1120,46 @@ function debian_device_install_prereqs() {
     log_debug "debian_device_install_prereqs() begin"
     log_info "Updating apt package index..."
     runCmdQuietly apt-get update -q
-    log_info "Installing prerequisites, this could take a minute..."
-    runCmdQuietly apt-get install -yqf curl jq software-properties-common
 
-    if ! isCmdInstalled docker; then
-        log_info "Docker is required, installing it..."
-        curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
-        add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
-        runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
+    log_info "Installing prerequisites, this could take a minute..."
+    if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+        runCmdQuietly apt-get install -yqf curl jq
+    else
+        runCmdQuietly apt-get install -yqf curl jq software-properties-common
+
+        if ! isCmdInstalled docker; then
+            log_info "Docker is required, installing it..."
+            curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
+            add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
+            runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
+        fi
     fi
     log_debug "debian_device_install_prereqs() end"
 }
 
-# Returns 0 (true) if the deb pkgs to be installed are newer than the pkgs already installed
-function is_newer_deb_pkgs() {
-    # Make the decision based on the horizon deb pkg, because that's the one we really care about (whether we have to restart the daemon), plus the horizon deb requires the horizon-cli deb be the same version.
+# Returns 0 (true) if the deb pkg to be installed is newer than the corresponding pkg already installed
+function is_newer_deb_pkg() {
+    local latest_deb_file=${1:?}   # make the decision based on the deb pkg they passed in
+
+    # latest_deb_file is something like /dir/horizon_2.28.0-338_amd64.deb
+    local deb_file_version=${latest_deb_file##*/}   # remove the beginning path
+    deb_file_version=${deb_file_version%_*.deb}   # remove the ending like _amd64.deb, now left with horizon_2.28.0-338
+    if [[ $deb_file_version == horizon-cli* ]]; then
+        deb_file_version=${deb_file_version#horizon-cli_}   # remove the pkg name to be left with only the version
+        pkg_name='horizon-cli'
+    else   # assume it is the horizon pkg
+        deb_file_version=${deb_file_version#horizon_}   # remove the pkg name to be left with only the version
+        pkg_name='horizon'
+    fi
 
     # Get version of installed horizon deb pkg
-    if [[ $(dpkg-query -s horizon 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
-        log_verbose "The horizon deb pkg is not installed (at least not completely)"
+    if [[ $(dpkg-query -s $pkg_name 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
+        log_verbose "The $pkg_name deb pkg is not installed (at least not completely)"
         return 0   # anything is newer than not installed
     fi
-    local installed_deb_version=$(dpkg-query -s horizon | grep -E '^Version:' | awk '{print $2}')
+    local installed_deb_version=$(dpkg-query -s $pkg_name | grep -E '^Version:' | awk '{print $2}')
 
-    # Get version of the deb pkg they gave us to install
-    local latest_deb_file=$(ls -1 $PACKAGES/horizon_*_${ARCH}.deb | sort -V | tail -n 1)
-    if [[ -z $latest_deb_file ]]; then
-        log_warning "No horizon deb packages found in $PACKAGES"
-        return 1
-    fi
-    # latest_deb_file is something like horizon_2.27.0-110_amd64.deb
-    local deb_file_version=${latest_deb_file##*/horizon_}   # remove the 1st part
-    deb_file_version=${deb_file_version%_*.deb}   # remove the ending part
-
-    log_info "Installed horizon deb package version: $installed_deb_version, Provided horizon deb file version: $deb_file_version"
+    log_info "Installed $pkg_name deb package version: $installed_deb_version, Provided $pkg_name deb file version: $deb_file_version"
     if version_gt $deb_file_version $installed_deb_version; then return 0
     else return 1; fi
 }
@@ -1143,20 +1177,51 @@ function install_debian_device_horizon_pkgs() {
         fi
         log_verbose "Adding $PKG_APT_REPO to /etc/apt/sources.list and installing horizon ..."
         add-apt-repository "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
-        runCmdQuietly apt-get install -yqf horizon
-        wait_until_agent_ready
-    else
-        if is_newer_deb_pkgs; then
-            # Install the horizon pkgs in the PACKAGES dir
-            if [[ ${PACKAGES:0:1} != '/' ]]; then
-                PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
-            fi
-            log_info "Installing the horizon packages in $PACKAGES ..."
-            # Note: we don't support downgraded the deb pkgs
-            #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
-            runCmdQuietly apt-get install -yqf ${PACKAGES}/horizon*_${ARCH}.deb
+        if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+            runCmdQuietly apt-get install -yqf horizon-cli
+        else
+            runCmdQuietly apt-get install -yqf horizon
             wait_until_agent_ready
-            AGENT_WAS_RESTARTED='true'
+        fi
+    else
+        # Install the horizon pkgs in the PACKAGES dir
+        if [[ ${PACKAGES:0:1} != '/' ]]; then
+            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
+        fi
+
+        # Get the latest version of the horizon pkg files they gave us to install. sort -V returns the list in ascending order (greatest is last)
+        local latest_horizon_cli_file latest_horizon_file latest_files new_pkg
+        latest_horizon_cli_file=$(ls -1 $PACKAGES/horizon-cli_*_${ARCH}.deb | sort -V | tail -n 1)
+        if [[ -z $latest_horizon_cli_file ]]; then
+            log_warning "No horizon-cli deb package found in $PACKAGES"
+            return 1
+        fi
+        latest_files=$latest_horizon_cli_file
+        new_pkg=$latest_horizon_cli_file
+        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            latest_horizon_file=$(ls -1 $PACKAGES/horizon_*_${ARCH}.deb | sort -V | tail -n 1)
+            if [[ -z $latest_horizon_file ]]; then
+                log_warning "No horizon deb package found in $PACKAGES"
+                return 1
+            fi
+            latest_files="$latest_files $latest_horizon_file"
+            new_pkg=$latest_horizon_file
+        fi
+
+        if is_newer_deb_pkg $new_pkg; then
+            log_info "Installing $latest_files ..."
+            runCmdQuietly apt-get install -yqf $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
+        elif [[ "$AGENT_OVERWRITE" == true ]]; then
+            log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
+            runCmdQuietly apt-get install -yqf --allow-downgrades $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
         else
             log_info "Not installing any horizon packages, because the system is already up to date."
         fi
@@ -1178,11 +1243,14 @@ function install_debian() {
     log_debug "install_debian() begin"
 
     debian_device_install_prereqs
-    check_and_set_anax_port   # sets ANAX_PORT
-    check_existing_exch_node_is_correct_type "device"
 
-    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-        unregister
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        check_and_set_anax_port   # sets ANAX_PORT
+        check_existing_exch_node_is_correct_type "device"
+
+        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+            unregister
+        fi
     fi
 
     get_certificate $INPUT_FILE_PATH
@@ -1192,11 +1260,14 @@ function install_debian() {
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_debian_device_horizon_pkgs
-    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
-        restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
-    fi
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+            restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
+        fi
+
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    fi
 
     log_debug "install_debian() end"
 }
@@ -1226,37 +1297,40 @@ function redhat_device_install_prereqs() {
 
     dnf install -yq curl jq
 
-    if ! isCmdInstalled docker; then
-        # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
-        log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if ! isCmdInstalled docker; then
+            # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
+            log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
+        fi
     fi
     log_debug "redhat_device_install_prereqs() end"
 }
 
-# Returns 0 (true) if the rpm pkgs to be installed are newer than the pkgs already installed
-function is_newer_rpm_pkgs() {
-    # Make the decision based on the horizon rpm pkg, because that's the one we really care about (whether we have to restart the daemon), plus the horizon rpm requires the horizon-cli rpm be the same version.
+# Returns 0 (true) if the rpm pkg to be installed is newer than the corresponding pkg already installed
+function is_newer_rpm_pkg() {
+    local latest_rpm_file=${1:?}   # make the decision based on the rpm pkg they passed in
+
+    # latest_rpm_file is something like /dir/horizon-2.28.0-338.x86_64.rpm
+    local rpm_file_version=${latest_rpm_file##*/}   # remove the beginning path
+    rpm_file_version=${rpm_file_version%.*.rpm}   # remove the ending like .x86_64.rpm, now left with horizon-2.28.0-338
+    if [[ $rpm_file_version == horizon-cli* ]]; then
+        rpm_file_version=${rpm_file_version#horizon-cli-}   # remove the pkg name to be left with only the version
+        pkg_name='horizon-cli'
+    else   # assume it is the horizon pkg
+        rpm_file_version=${rpm_file_version#horizon-}   # remove the pkg name to be left with only the version
+        pkg_name='horizon'
+    fi
 
     # Get version of installed horizon rpm pkg
-    if ! rpm -q horizon >/dev/null 2>&1; then
-        log_verbose "The horizon rpm pkg is not installed"
+    if ! rpm -q $pkg_name >/dev/null 2>&1; then
+        log_verbose "The $pkg_name rpm pkg is not installed"
         return 0   # anything is newer than not installed
     fi
-    local installed_rpm_version=$(rpm -q horizon 2>/dev/null)  # will return like: horizon-2.27.0-110.x86_64
-    installed_rpm_version=${installed_rpm_version#horizon-}   # remove the beginning
-    installed_rpm_version=${installed_rpm_version%.*}   # remove the ending
+    local installed_rpm_version=$(rpm -q $pkg_name 2>/dev/null)  # will return like: horizon-2.28.0-338.x86_64
+    installed_rpm_version=${installed_rpm_version#${pkg_name}-}   # remove the pkg name
+    installed_rpm_version=${installed_rpm_version%.*}   # remove the arch, so left with only the version
 
-    # Get version of the rpm pkg they gave us to install
-    local latest_rpm_file=$(ls -1 $PACKAGES/horizon-*.${ARCH}.rpm | grep -v 'horizon-cli' | sort -V | tail -n 1)
-    if [[ -z $latest_rpm_file ]]; then
-        log_warning "No horizon rpm packages found in $PACKAGES"
-        return 1
-    fi
-    # latest_rpm_file is something like horizon-2.27.0-110.x86_64.rpm
-    local rpm_file_version=${latest_rpm_file##*/horizon-}   # remove the beginning
-    rpm_file_version=${rpm_file_version%.*.rpm}   # remove the ending
-
-    log_info "Installed horizon rpm package version: $installed_rpm_version, Provided horizon rpm file version: $rpm_file_version"
+    log_info "Installed $pkg_name rpm package version: $installed_rpm_version, Provided $pkg_name rpm file version: $rpm_file_version"
     if version_gt $rpm_file_version $installed_rpm_version; then return 0
     else return 1; fi
 }
@@ -1270,16 +1344,45 @@ function install_redhat_device_horizon_pkgs() {
         log_fatal 1 "Installing horizon RPMs via repository $PKG_APT_REPO is not supported at this time"
         #future: support this
     else
-        if is_newer_rpm_pkgs; then
-            # Install the horizon pkgs in the PACKAGES dir
-            if [[ ${PACKAGES:0:1} != '/' ]]; then
-                PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
+        # Install the horizon pkgs in the PACKAGES dir
+        if [[ ${PACKAGES:0:1} != '/' ]]; then
+            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
+        fi
+
+        # Get the latest version of the horizon pkg files they gave us to install. sort -V returns the list in ascending order (greatest is last)
+        local latest_horizon_cli_file latest_horizon_file latest_files new_pkg
+        latest_horizon_cli_file=$(ls -1 $PACKAGES/horizon-cli-*.${ARCH}.rpm | sort -V | tail -n 1)
+        if [[ -z $latest_horizon_cli_file ]]; then
+            log_warning "No horizon-cli rpm package found in $PACKAGES"
+            return 1
+        fi
+        latest_files=$latest_horizon_cli_file
+        new_pkg=$latest_horizon_cli_file
+        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            latest_horizon_file=$(ls -1 $PACKAGES/horizon-*.${ARCH}.rpm | grep -v "$PACKAGES/horizon-cli" | sort -V | tail -n 1)
+            if [[ -z $latest_horizon_file ]]; then
+                log_warning "No horizon rpm package found in $PACKAGES"
+                return 1
             fi
-            log_info "Installing the horizon packages in $PACKAGES ..."
-            # Note: we don't support downgraded the deb pkgs
-            #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
-            dnf install -yq ${PACKAGES}/horizon*.${ARCH}.rpm
-            AGENT_WAS_RESTARTED='true'
+            latest_files="$latest_files $latest_horizon_file"
+            new_pkg=$latest_horizon_file
+        fi
+    
+        if is_newer_rpm_pkg $new_pkg; then
+            log_info "Installing $latest_files ..."
+            dnf install -yq $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
+        elif [[ "$AGENT_OVERWRITE" == true ]]; then
+            log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
+            # Note: dnf automatically detects the specified pkg files are a lower version and downgrades them. If we need to switch to yum, we'll have to use yum downgrade ...
+            dnf install -yq $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
         else
             log_info "Not installing any horizon packages, because the system is already up to date."
         fi
@@ -1294,11 +1397,14 @@ function install_redhat() {
     log_info "Installing prerequisites, this could take a minute..."
     install_dnf
     redhat_device_install_prereqs
-    check_and_set_anax_port   # sets ANAX_PORT
-    check_existing_exch_node_is_correct_type "device"
 
-    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-        unregister
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        check_and_set_anax_port   # sets ANAX_PORT
+        check_existing_exch_node_is_correct_type "device"
+
+        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+            unregister
+        fi
     fi
 
     get_certificate $INPUT_FILE_PATH
@@ -1308,11 +1414,14 @@ function install_redhat() {
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_redhat_device_horizon_pkgs
-    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
-        restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
-    fi
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+            restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
+        fi
+
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    fi
 
     log_debug "install_redhat() end"
 }
@@ -1351,7 +1460,7 @@ function install_mac_horizon-cli() {
         else
             log_verbose "The given pkg file version is older than or equal to the installed hzn"
             if [[ "$AGENT_OVERWRITE" == true ]]; then
-                log_info "Installing older horizon-cli package ${pkg_file_version}..."
+                log_info "Installing older horizon-cli package ${pkg_file_version} because AGENT_OVERWRITE is set to true ..."
                 sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
             else
                 log_info "The installed horizon-cli package is already up to date ($installed_version)"
