@@ -5,9 +5,13 @@ USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
 PREFIX="Agbot API Test:"
 
-
 echo ""
 echo -e "${PREFIX} Start testing compatibility"
+
+if [ -z ${AGBOT_SAPI_URL} ]; then
+  echo -e "\n${PREFIX} Envvar AGBOT_SAPI_URL is empty. Skip test\n"
+  exit 0
+fi
 
 COMP_RESULT=""
 
@@ -42,7 +46,7 @@ function results {
   if [ ! -z "$3" ]; then
     res=$(echo "$1" | grep "$3")
     if [ $? -ne 0 ]; then
-      echo -e "Error: the response should have contained \"$3\", but did not. "
+      echo -e "Error: the response should have contained \"$3\", but did not. \n"
       exit 2
     fi
   fi
@@ -69,7 +73,7 @@ function check_comp_results {
   if [ ! -z "$2" ]; then
     res=$(echo "$reason" | grep "$2")
     if [ $? -ne 0 ]; then
-      echo -e "Error: the reason should have contained \"$2\", but not. "
+      echo -e "Error: the reason should have contained \"$2\", but not. \n"
       exit 2
     fi
   fi
@@ -94,6 +98,7 @@ else
   # agbot is remote
   CERT_FILE="/certs/agbotapi.crt"
 fi
+
 echo -e "${PREFIX} the cert file name is $CERT_FILE"
 echo -e "${PREFIX} the agbot secure api url is $AGBOT_SAPI_URL"
 
@@ -107,17 +112,22 @@ do
   RES=$($CMD)
   results "$RES" "401" "Failed to authenticate"
 
-  echo -e "\n${PREFIX} test /${api} without cert"
-  CMD="curl -LX GET -w %{http_code} -u myorg/me:passwd ${AGBOT_SAPI_URL}/${api}"
-  echo "$CMD"
-  RES=$($CMD 2>&1)
-  echo "$RES" | grep "SSL certificate problem"
-  if [ $? -ne 0 ]; then
-    echo -e "${PREFIX} the output should contain 'CRLfile: none', but not\n"
-    exit 2
+
+  if [ -z "${AGBOT_SAPI_URL##https://*}" ]; then
+    echo -e "\n${PREFIX} test /${api} without cert"
+    CMD="curl -LX GET -w %{http_code} -u myorg/me:passwd ${AGBOT_SAPI_URL}/${api}"
+    echo "$CMD"
+    RES=$($CMD 2>&1)
+    echo "$RES" | grep "SSL certificate problem"
+    if [ $? -ne 0 ]; then
+      echo -e "${PREFIX} the output should contain 'CRLfile: none', but not\n"
+      exit 2
+    else
+      echo -e "Result expected\n"
+    fi
   else
-    echo -e "Result expected\n"
-  fi
+    echo -e "\n${PREFIX} Skip test without cert because of http protocol in envvar AGBOT_SAPI_URL: ${AGBOT_SAPI_URL}"
+  fi	  
 
   echo -e "\n${PREFIX} test /${api} without input."
   CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${E2EDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
@@ -242,7 +252,7 @@ read -d '' comp_input <<EOF
     "service": {
       "name": "https://bluehorizon.network/services/gpstest",
       "org": "e2edev@somecomp.com",
-      "arch": "amd64",
+      "arch": "${ARCH}",
       "serviceVersions": [
         {
           "version": "1.0.0",
@@ -295,7 +305,7 @@ read -d '' node_ui_bad <<EOF
   {
     "serviceOrgid": "e2edev@somecomp.com",
     "serviceUrl": "https://bluehorizon.network/services/locgps",
-    "serviceArch": "amd64",
+    "serviceArch": "${ARCH}",
     "serviceVersionRange": "2.0.3",
     "inputs": [
       {
@@ -439,7 +449,7 @@ read -d '' comp_input <<EOF
   "node_user_input":  $node_ui,
   "pattern":          $pattern_sloc,
   "service":          [$service_location],
-  "node_arch":        "amd64"
+  "node_arch":        "${ARCH}"
  }
 EOF
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""

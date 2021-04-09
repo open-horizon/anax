@@ -1,11 +1,11 @@
 {
-  "label": "GPSTest for x86_64",
+  "label": "GPSTest for __ARCH__",
   "description": "GPS Test service",
   "documentation": "",
   "public": true,
   "url": "https://bluehorizon.network/services/gpstest",
   "version": "1.0.0",
-  "arch": "amd64",
+  "arch": "__ARCH__",
   "sharable": "multiple",
   "matchHardware": {},
   "requiredServices": [
@@ -14,14 +14,14 @@
       "org": "IBM",
       "version": "1.0.0",
       "versionRange": "1.0.0",
-      "arch": "amd64"
+      "arch": "__ARCH__"
     }
   ],
   "userInput": [],
   "deployment": {
     "services": {
       "gpstest": {
-        "image": "openhorizon/amd64_cpu:1.2.2"
+        "image": "openhorizon/__ARCH___cpu:1.2.2"
       }
     }
   }

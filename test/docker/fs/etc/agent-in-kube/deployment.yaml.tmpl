@@ -25,7 +25,7 @@ spec:
           secretName: agent-secret-cert
       containers:
       - name: anax
-        image: openhorizon/amd64_anax_k8s:testing
+        image: openhorizon/${ARCH}_anax_k8s:testing
         imagePullPolicy: Never
         volumeMounts:
         - mountPath: /var/horizon

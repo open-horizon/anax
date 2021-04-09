@@ -111,6 +111,10 @@ if [ "$E2EDEV_LOCATION_AG_ID" == "" ]; then
   exit 2
 fi
 
+# Sleeping to allow existing agreements to renew if needed
+echo -e "${PREFIX} wait for 30 seconds..."
+sleep 30
+
 saved_ns_ag=$E2EDEV_NETSPEED_AG_ID
 saved_loc_ag=$E2EDEV_LOCATION_AG_ID
 

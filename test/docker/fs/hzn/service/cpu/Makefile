@@ -1,4 +1,5 @@
-DOCKER_NAME = amd64_cpu
+ARCH = $(ARCH)
+DOCKER_NAME = $(ARCH)_cpu
 DOCKER_TAG = 1.0
 
 DOCKER_HUB_ID = localhost:443

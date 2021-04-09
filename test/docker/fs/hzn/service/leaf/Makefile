@@ -1,4 +1,5 @@
-DOCKER_NAME = amd64_leaf
+ARCH = $(ARCH)
+DOCKER_NAME = $(ARCH)_leaf
 DOCKER_TAG = 1.0
 
 DOCKER_HUB_ID = localhost:443

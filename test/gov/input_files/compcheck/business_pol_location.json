@@ -4,7 +4,7 @@
     "service": {
       "name": "https://bluehorizon.network/services/location",
       "org": "e2edev@somecomp.com",
-      "arch": "amd64",
+      "arch": "__ARCH__",
       "serviceVersions": [
         {
           "version": "2.0.6",

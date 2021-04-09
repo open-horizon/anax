@@ -28,7 +28,9 @@ IBM_ADMIN_AUTH="IBM/ibmadmin:ibmadminpw"
 E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
-
+export ARCH=${ARCH}
+CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
@@ -124,6 +126,26 @@ echo -e "Register arm test service:"
 
 results "$RES"
 
+# test service ppc64le
+read -d '' sdef <<EOF
+{
+  "label":"Test service",
+  "description":"Test service",
+  "public":false,
+  "url":"https://bluehorizon.network/services/no-such-service",
+  "version":"1.0.0",
+  "arch":"ppc64le",
+  "sharable":"multiple",
+  "matchHardware":{},
+  "userInput":[],
+  "deployment":"",
+  "deploymentSignature":""
+}
+EOF
+echo -e "Register ppc64le test service:"
+
+  RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR -H "Content-Type: application/json" -H "Accept: application/json" -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services" | jq -r '.')
+
 # Helm service
 # VERS="1.0.0"
 # echo -e "Register Helm service $VERS:"
@@ -143,7 +165,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -156,7 +178,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/example_ms_x86_cpu:1.2.2",
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}",
         "binds":["/tmp:/hosttmp"]
       }
     }
@@ -181,7 +203,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -194,7 +216,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -215,12 +237,12 @@ fi
 VERS="1.5.0"
 read -d '' sdef <<EOF
 {
-  "label":"Network for x86_64",
+  "label":"Network for ${ARCH}",
   "description":"Network service",
   "public":true,
   "url":"https://bluehorizon.network/services/network",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[],
@@ -244,12 +266,12 @@ results "$RES"
 VERS="1.5.0"
 read -d '' sdef <<EOF
 {
-  "label":"Network for x86_64",
+  "label":"Network for ${ARCH}",
   "description":"Network service",
   "public":true,
   "url":"https://bluehorizon.network/services/network2",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[],
@@ -274,12 +296,12 @@ results "$RES"
 VERS="2.0.3"
 cat <<EOF >$KEY_TEST_DIR/svc_gps.json
 {
-  "label":"GPS for x86_64",
+  "label":"GPS for ${ARCH}",
   "description":"GPS service",
   "public":true,
   "url":"https://bluehorizon.network/service-gps",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"multiple",
   "matchHardware":{
     "usbDeviceIds":"1546:01a7",
@@ -294,7 +316,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps.json
   "deployment":{
     "services":{
       "gps":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -312,12 +334,12 @@ fi
 VERS="2.0.4"
 cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
 {
-  "label":"GPS for x86_64",
+  "label":"GPS for ${ARCH}",
   "description":"GPS service",
   "public":true,
   "url":"https://bluehorizon.network/service-gps",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"multiple",
   "matchHardware":{
     "usbDeviceIds":"1546:01a7",
@@ -332,7 +354,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_gps2.json
   "deployment":{
     "services":{
       "gps2":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -352,12 +374,12 @@ fi
 VERS="2.0.3"
 cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
 {
-  "label":"GPS for Location for x86_64",
+  "label":"GPS for Location for ${ARCH}",
   "description":"GPS service for loc service",
   "public":false,
   "url":"https://bluehorizon.network/services/locgps",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"single",
   "matchHardware":{
     "usbDeviceIds":"1546:01a7",
@@ -374,7 +396,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps.json
   "deployment":{
     "services":{
       "locgps":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -397,16 +419,16 @@ fi
 VERS="2.0.4"
 cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
 {
-  "label":"GPS for Location for x86_64",
+  "label":"GPS for Location for ${ARCH}",
   "description":"GPS service for loc service",
   "public":false,
   "url":"https://bluehorizon.network/services/locgps",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"single",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"},
-    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"${ARCH}","org":"IBM"},
+    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"${ARCH}","org":"IBM"}
   ],
   "matchHardware":{
     "usbDeviceIds":"1546:01a7",
@@ -423,7 +445,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_locgps2.json
   "deployment":{
     "services":{
       "locgps2":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -453,17 +475,17 @@ fi
 VERS="2.3.0"
 cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
 {
-  "label":"Netspeed for x86_64",
+  "label":"Netspeed for ${ARCH}",
   "description":"Netspeed service",
   "sharable":"multiple",
   "public":true,
   "url":"https://bluehorizon.network/services/netspeed",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"amd64","org":"IBM"},
-    {"url":"https://bluehorizon.network/services/network2","versionRange":"1.0.0","arch":"amd64","org":"IBM"},
-    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"},
+    {"url":"https://bluehorizon.network/services/network2","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"},
+    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"}
   ],
   "userInput":[
     {
@@ -502,7 +524,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "deployment":{
     "services":{
       "netspeed":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -523,18 +545,18 @@ fi
 
 cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
 {
-  "label":"Netspeed for x86_64",
+  "label":"Netspeed for ${ARCH}",
   "description":"Netspeed service",
   "sharable":"multiple",
   "public":true,
   "url":"https://bluehorizon.network/services/netspeed",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"${ARCH}","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"${ARCH}","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"${ARCH}","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"}
   ],
   "userInput":[
     {
@@ -573,7 +595,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
   "deployment":{
     "services":{
       "netspeed":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -596,21 +618,21 @@ fi
 VERS="1.0.0"
 cat <<EOF >$KEY_TEST_DIR/svc_gpstest.json
 {
-  "label":"GPSTest for x86_64",
+  "label":"GPSTest for ~${ARCH}",
   "description":"GPS Test service",
   "public":false,
   "sharable":"multiple",
   "url":"https://bluehorizon.network/services/gpstest",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/service-gps","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/service-gps","version":"1.0.0","arch":"${ARCH}","org":"IBM"}
   ],
   "userInput":[],
   "deployment":{
     "services":{
       "gpstest":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -635,22 +657,22 @@ fi
 VERS="2.0.6"
 cat <<EOF >$KEY_TEST_DIR/svc_location.json
 {
-  "label":"Location for x86_64",
+  "label":"Location for ${ARCH}",
   "description":"Location service",
   "public":false,
   "sharable":"multiple",
   "url":"https://bluehorizon.network/services/location",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/locgps","versionRange":"2.0.3","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/locgps","versionRange":"2.0.3","arch":"${ARCH}","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"}
   ],
   "userInput":[],
   "deployment":{
     "services":{
       "location":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -672,22 +694,22 @@ fi
 VERS="2.0.7"
 cat <<EOF >$KEY_TEST_DIR/svc_location2.json
 {
-  "label":"Location for x86_64",
+  "label":"Location for ${ARCH}",
   "description":"Location service",
   "public":false,
   "sharable":"multiple",
   "url":"https://bluehorizon.network/services/location",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[
-    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.4","arch":"amd64","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"amd64","org":"IBM"}
+    {"url":"https://bluehorizon.network/services/locgps","version":"2.0.4","arch":"${ARCH}","org":"e2edev@somecomp.com"},
+    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"${ARCH}","org":"IBM"}
   ],
   "userInput":[],
   "deployment":{
     "services":{
       "location2":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -710,13 +732,13 @@ fi
 VERS="1.5.0"
 cat <<EOF >$KEY_TEST_DIR/svc_weather.json
 {
-  "label":"Weather for x86_64",
+  "label":"Weather for ${ARCH}",
   "description":"PWS service",
   "public":false,
   "sharable":"multiple",
   "url":"https://bluehorizon.network/services/weather",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[],
   "userInput":[
     {"name":"HZN_WUGNAME","label":"","type":"string"},
@@ -732,7 +754,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_weather.json
 "deployment":{
   "services":{
     "weather":{
-      "image":"openhorizon/amd64_cpu:1.2.2"
+      "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
     }
   }
 },
@@ -754,13 +776,13 @@ fi
 VERS="1.0.0"
 cat <<EOF >$KEY_TEST_DIR/svc_k8s1.json
 {
-  "label":"Cluster service test for x86_64",
+  "label":"Cluster service test for ${ARCH}",
   "description":"Cluster Service Test service1",
   "public":true,
   "sharable":"multiple",
   "url":"k8s-service1",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "requiredServices":[
   ],
   "userInput": [
@@ -822,7 +844,7 @@ read -d '' pdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/netspeed",
       "serviceOrgid":"IBM",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$VERS",
@@ -930,7 +952,7 @@ read -d '' sdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/gpstest",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$VERS",
@@ -979,7 +1001,7 @@ results "$RES"
 #     {
 #       "serviceUrl":"http://my.company.com/services/helm-service",
 #       "serviceOrgid":"IBM",
-#       "serviceArch":"amd64",
+#       "serviceArch":"${ARCH}",
 #       "serviceVersions":[
 #         {
 #           "version":"$VERS",
@@ -1028,7 +1050,7 @@ read -d '' sdef <<EOF
     {
       "serviceUrl":"my.company.com.services.usehello2",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$VERS",
@@ -1085,7 +1107,7 @@ read -d '' sdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/location",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$LOCVERS1",
@@ -1121,7 +1143,7 @@ read -d '' sdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/locgps",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "agreementLess": true,
       "serviceVersions":[
         {
@@ -1197,7 +1219,7 @@ read -d '' sdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/weather",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$VERS",
@@ -1275,7 +1297,7 @@ read -d '' sdef <<EOF
     {
       "serviceUrl":"k8s-service1",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$K8SVERS",
@@ -1335,7 +1357,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/weather",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$PWSVERS",
@@ -1371,7 +1393,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/netspeed",
       "serviceOrgid":"IBM",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$NSVERS",
@@ -1406,7 +1428,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/netspeed",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$NSVERS",
@@ -1441,7 +1463,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/location",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$LOCVERS1",
@@ -1477,7 +1499,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/locgps",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "agreementLess": true,
       "serviceVersions":[
         {
@@ -1494,7 +1516,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"my.company.com.services.usehello2",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"1.0.0",
@@ -1510,7 +1532,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"https://bluehorizon.network/services/gpstest",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$GPSVERS",
@@ -1529,7 +1551,7 @@ read -d '' msdef <<EOF
     {
       "serviceUrl":"k8s-service1",
       "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"amd64",
+      "serviceArch":"${ARCH}",
       "serviceVersions":[
         {
           "version":"$K8SVERS",
@@ -1819,7 +1841,7 @@ read -d '' bpgpstestdef <<EOF
   "service": {
     "name": "https://bluehorizon.network/services/gpstest",
     "org": "e2edev@somecomp.com",
-    "arch": "amd64",
+    "arch": "${ARCH}",
     "serviceVersions": [
       {
         "version": "1.0.0"
@@ -1862,7 +1884,7 @@ read -d '' bplocdef <<EOF
   "service": {
     "name": "https://bluehorizon.network/services/location",
     "org": "e2edev@somecomp.com",
-    "arch": "amd64",
+    "arch": "${ARCH}",
     "serviceVersions": [
         {
           "version":"2.0.6",
@@ -1952,7 +1974,7 @@ read -d '' bppwsdef <<EOF
   "service": {
     "name": "https://bluehorizon.network/services/weather",
     "org": "e2edev@somecomp.com",
-    "arch": "amd64",
+    "arch": "${ARCH}",
     "serviceVersions": [
         {
           "version":"1.5.0",
@@ -2042,7 +2064,7 @@ read -d '' bphellodef <<EOF
   "service": {
     "name": "my.company.com.services.usehello2",
     "org": "e2edev@somecomp.com",
-    "arch": "amd64",
+    "arch": "${ARCH}",
     "serviceVersions": [
         {
           "version":"1.0.0",
@@ -2087,7 +2109,7 @@ read -d '' bpk8ssvc1def <<EOF
   "service": {
     "name": "k8s-service1",
     "org": "e2edev@somecomp.com",
-    "arch": "amd64",
+    "arch": "${ARCH}",
     "serviceVersions": [
         {
           "version":"$K8SVERS",
@@ -2138,7 +2160,7 @@ read -d '' nspoldef <<EOF
 EOF
 echo -e "Register service policy for netspeed:"
 
-  RES=$(echo "$nspoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_amd64/policy" | jq -r '.')
+  RES=$(echo "$nspoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-netspeed_2.3.0_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 
@@ -2161,7 +2183,7 @@ read -d '' gpstestpoldef <<EOF
 EOF
 echo -e "Register service policy for gpstest:"
 
-  RES=$(echo "$gpstestpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_amd64/policy" | jq -r '.')
+  RES=$(echo "$gpstestpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-gpstest_1.0.0_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 
@@ -2184,7 +2206,7 @@ read -d '' locpoldef <<EOF
 EOF
 echo -e "Register service policy for location:"
 
-  RES=$(echo "$locpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_amd64/policy" | jq -r '.')
+  RES=$(echo "$locpoldef" | curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/services/bluehorizon.network-services-location_2.0.6_${ARCH}/policy" | jq -r '.')
 
 results "$RES"
 

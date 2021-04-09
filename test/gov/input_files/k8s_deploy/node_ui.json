@@ -2,7 +2,7 @@
   {
     "serviceOrgid": "e2edev@somecomp.com",
     "serviceUrl": "k8s-service1",
-    "serviceArch": "amd64",
+    "serviceArch": "${ARCH}",
     "serviceVersionRange": "[1.0.0,INFINITY)",
     "inputs": [
       {
