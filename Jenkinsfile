@@ -1,11 +1,17 @@
 pipeline {
-    agent any
+    agent {
+    	node {
+        	label 'ubuntu2204-builder-aws-1c-2g'
+    	}
+    }
     stages {
 	stage('Install Dependencies'){
 	    steps{
 		sh 'echo "Installing dependencies"'
 		sh '''
 			#!/usr/bin/env bash
+			sudo usermod -aG sudo $USER
+		        sudo su - $USER
                         apt-get update -qq && apt-get install -y \
                             wget \
                             gnupg2 \
@@ -26,6 +32,8 @@ pipeline {
                 sh 'echo "Building anax binaries"'
 		sh '''
 			#!/usr/bin/env bash
+			sudo usermod -aG sudo $USER
+		        sudo su - $USER
 			make 
 		'''
             }
