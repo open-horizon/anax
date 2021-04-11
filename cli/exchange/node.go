@@ -12,6 +12,7 @@ import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/exchange"
+	exch "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
 	"github.com/open-horizon/anax/i18n"
@@ -629,6 +630,19 @@ func NodeServiceConfigStateList(org string, credToUse string, node string) {
 	nodeKey := fmt.Sprintf("%s/%s", org, node)
 	output := cliutils.MarshalIndent(nodes.Nodes[nodeKey].RegisteredServices, "exchange node list")
 	fmt.Println(output)
+}
+
+func NodeServiceConfigStateChange(org string, credToUse string, node string, serviceName string, state string) {
+	var resp struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+	}
+	putServiceConfigState := exch.ServiceConfigState{Org: org, Url: serviceName, ConfigState: state}
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+node+"/services_configstate", cliutils.OrgAndCreds(org, credToUse), []int{201, 401, 403}, putServiceConfigState, &resp)
+	if httpCode == 400 {
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", node, org))
+	}
+	fmt.Println(resp.Msg)
 }
 
 // Verify the node user input for the pattern case. Make sure that the given

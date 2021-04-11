@@ -35,6 +35,7 @@ import (
 	"github.com/open-horizon/anax/cli/userinput"
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
+	exch "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
@@ -369,6 +370,11 @@ Environment Variables:
 	exNodeServiceConfigStateListCmd := exNodeServiceConfigStateCmd.Command("list", "service config state list")
 	exNodeServiceConfigStateListNode := exNodeServiceConfigStateListCmd.Arg("node", "service config state list node").Required().String()
 	exNodeServiceConfigStateListIdTok := exNodeServiceConfigStateListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+	exNodeServiceConfigStateSuspendCmd := exNodeServiceConfigStateCmd.Command("suspend", "service config state suspend")
+	exNodeServiceConfigStateSuspendNode := exNodeServiceConfigStateSuspendCmd.Arg("node", "service config state list node").Required().String()
+	exNodeServiceConfigStateSuspendService := exNodeServiceConfigStateSuspendCmd.Arg("service", "service config state list node").Required().String()
+	exNodeServiceConfigStateSuspendIdTok := exNodeServiceConfigStateSuspendCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
+
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", msgPrinter.Sprintf("Change the token of a node resource in the Horizon Exchange."))
 	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", msgPrinter.Sprintf("The node to be changed.")).Required().String()
 	exNodeSetTokToken := exNodeSetTokCmd.Arg("token", msgPrinter.Sprintf("The new token for the node.")).Required().String()
@@ -737,6 +743,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
 		case "node serviceconfigstate list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeServiceConfigStateListIdTok)
+		case "node serviceconfigstate suspend":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeServiceConfigStateSuspendIdTok)
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
@@ -928,6 +936,8 @@ Environment Variables:
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
 	case exNodeServiceConfigStateListCmd.FullCommand():
 		exchange.NodeServiceConfigStateList(*exOrg, credToUse, *exNodeServiceConfigStateListNode)
+	case exNodeServiceConfigStateSuspendCmd.FullCommand():
+		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateSuspendNode, *exNodeServiceConfigStateSuspendService, exch.SERVICE_CONFIGSTATE_SUSPENDED)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()
