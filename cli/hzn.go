@@ -367,6 +367,8 @@ Environment Variables:
 	exNodeRemovePolicyForce := exNodeRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	exNodeServiceConfigStateCmd := exNodeCmd.Command("serviceconfigstate", "service config state")
 	exNodeServiceConfigStateListCmd := exNodeServiceConfigStateCmd.Command("list", "service config state list")
+	exNodeServiceConfigStateListNode := exNodeServiceConfigStateListCmd.Arg("node", "service config state list node").Required().String()
+	exNodeServiceConfigStateListIdTok := exNodeServiceConfigStateListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", msgPrinter.Sprintf("Change the token of a node resource in the Horizon Exchange."))
 	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", msgPrinter.Sprintf("The node to be changed.")).Required().String()
 	exNodeSetTokToken := exNodeSetTokCmd.Arg("token", msgPrinter.Sprintf("The new token for the node.")).Required().String()
@@ -733,6 +735,8 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok)
 		case "node liststatus":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
+		case "node serviceconfigstate list":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeServiceConfigStateListIdTok)
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
@@ -923,7 +927,7 @@ Environment Variables:
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
 	case exNodeServiceConfigStateListCmd.FullCommand():
-		exchange.NodeServiceConfigStateList(*exOrg, credToUse, *exNodeStatusListNode)
+		exchange.NodeServiceConfigStateList(*exOrg, credToUse, *exNodeServiceConfigStateListNode)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()

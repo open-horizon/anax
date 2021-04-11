@@ -620,7 +620,15 @@ func NodeListStatus(org string, credToUse string, node string) {
 }
 
 func NodeServiceConfigStateList(org string, credToUse string, node string) {
-	fmt.Println("::::: NodeServiceConfigStateList ::::: ")
+	nodeOrg, node := cliutils.TrimOrg(org, node)
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 && node != "" {
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s' not found in org %s", node, nodeOrg))
+	}
+	nodeKey := fmt.Sprintf("%s/%s", org, node)
+	output := cliutils.MarshalIndent(nodes.Nodes[nodeKey].RegisteredServices, "exchange node list")
+	fmt.Println(output)
 }
 
 // Verify the node user input for the pattern case. Make sure that the given
