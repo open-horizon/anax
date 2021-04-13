@@ -620,6 +620,7 @@ func NodeListStatus(org string, credToUse string, node string) {
 
 }
 
+// NodeServiceConfigStateList list of service config state of a node.
 func NodeServiceConfigStateList(org string, credToUse string, node string) {
 	nodeOrg, node := cliutils.TrimOrg(org, node)
 	var nodes ExchangeNodes
@@ -632,6 +633,7 @@ func NodeServiceConfigStateList(org string, credToUse string, node string) {
 	fmt.Println(output)
 }
 
+// NodeServiceConfigStateChange change the service config state of service of a node.
 func NodeServiceConfigStateChange(org string, credToUse string, node string, serviceName string, state string) {
 	var resp struct {
 		Code string `json:"code"`
