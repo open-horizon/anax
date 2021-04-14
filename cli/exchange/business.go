@@ -100,7 +100,7 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	if httpCode == 403 {
 		//try to update the existing policy
 		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile, nil)
-		if httpCode == 200 {
+		if httpCode == 201 {
 			msgPrinter.Printf("Deployment policy: %v/%v updated in the Horizon Exchange", polOrg, policy)
 			msgPrinter.Println()
 		} else if httpCode == 404 {
