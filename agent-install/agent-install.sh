@@ -537,12 +537,12 @@ function get_all_variables() {
     elif is_cluster; then
         # check kubectl is available
         KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
-        if command -v "$KUBECTL" >/dev/null 2>&1; then
-            : # nothing more to do
+        if command -v k3s kubectl; then
+            KUBECTL="k3s kubectl"
         elif command -v microk8s.kubectl >/dev/null 2>&1; then
             KUBECTL=microk8s.kubectl
-        elif command -v k3s kubectl; then
-            KUBECTL="k3s kubectl"
+        elif command -v "$KUBECTL" >/dev/null 2>&1; then
+            : # nothing more to do
         else
             log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH"
         fi
