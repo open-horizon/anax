@@ -10,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/cli/dev"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/container"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/resource"
 	"io/ioutil"
@@ -148,12 +149,8 @@ func getImage(imageName string, tagName string, dc *docker.Client) error {
 
 	// If the image was not found locally, pull it from docker.
 	if !skipPull {
-		opts := docker.PullImageOptions{
-			Repository: imageName,
-			Tag:        tagName,
-		}
-
-		if err := dc.PullImage(opts, docker.AuthConfiguration{}); err != nil {
+		domain, imagePath, _, _ := cutil.ParseDockerImagePath(imageName)
+		if _, err := cliutils.PullDockerImage(dc, domain, imagePath, tagName); err != nil {
 			return errors.New(msgPrinter.Sprintf("unable to pull CSS container using image %v, error %v. Set environment variable %v to use a different image tag.", getFSSFullImageName(), err, dev.DEVTOOL_HZN_FSS_IMAGE_TAG))
 		} else {
 			cliutils.Verbose(msgPrinter.Sprintf("Pulled docker image %v.", name))
