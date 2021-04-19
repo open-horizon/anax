@@ -229,7 +229,7 @@ function getAgentK8sImageTarFile() {
         chk $? "pulling $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
 
         echo "Saving $AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG to $AGENT_K8S_IMAGE_TAR_FILE ..."
-        docker save $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG > $AGENT_K8S_IMAGE_TAR_FILE
+        docker save $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG | gzip > $AGENT_K8S_IMAGE_TAR_FILE
         chk $? "saving $PULL_REGISTRY/$AGENT_K8S_IMAGE:$AGENT_IMAGE_TAG"
     fi
 
@@ -392,7 +392,7 @@ function getHorizonPackageFiles() {
             chk $? "pulling $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
 
             echo "Saving $AGENT_IMAGE:$AGENT_IMAGE_TAG to $AGENT_IMAGE_TAR_FILE ..."
-            docker save $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG > $AGENT_IMAGE_TAR_FILE
+            docker save $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG | gzip > $AGENT_IMAGE_TAR_FILE
             chk $? "saving $PULL_REGISTRY/$AGENT_IMAGE:$AGENT_IMAGE_TAG"
         fi
 

@@ -25,7 +25,6 @@ And depending on which PATTERN is chosen, a series of workload containers
   - `export PATH=$PATH:/usr/local/go/bin` (and modify your ~/.bashrc file with the same)
 - GOPATH cannot be set to the same path as GOROOT
   - `export GOPATH=</your/go/path>` (typically $HOME/go)
-  - `export ANAX_SOURCE=</path/to/anax>`
 - Set up a single node k8s for testing, follow the instructions here:
   - https://microk8s.io/docs/
   - make sure you install from the 1.18 channel: `sudo snap install microk8s --classic --channel=1.18/stable`
@@ -55,7 +54,7 @@ There are several env vars that you can specify on the make run-combined command
 A common way to run the environment during development is:
 
 ```
-make test TEST_VARS="NOLOOP=1 PATTERN=sloc"
+make test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sloc"
 ```
 
 Light Test:
@@ -68,7 +67,7 @@ Here is a full description of all the variables you can use to setup the test th
 - NOLOOP=1 - turns off the loop that cancels agreements on the device and agbot (alternating), every 10 mins. Usually you want to specify NOLOOP=1 when actively iterating code.
 - NOCANCEL=1 - when set with NOLOOP=1, skips the single round of cancellation tests for less log clutter and time when just interested in agreement formation.
 - UNCONFIG=1 - turns on the unconfig/reconfig loop tests.
-- PATTERN=name - specify the name of a configured pattern that you want the device to use. Builtin patterns are spws, sns, sloc, sgps, sall, cpu2msghub etc. If you specify PATTERN, but turn off one of the dependent services that the top service needs, the system will not work correctly. If you dont specify a PATTERN, the manually managed policy files will be used to run the workloads (unless you turn them off).
+- TEST_PATTERNS=name - specify the name of a configured pattern that you want the device to use. Builtin patterns are spws, sns, sloc, sgps, sall, cpu2msghub etc. If you specify TEST_PATTERNS, but turn off one of the dependent services that the top service needs, the system will not work correctly. If you dont specify a TEST_PATTERNS, the manually managed policy files will be used to run the workloads (unless you turn them off).
 - NOHZNREG=1 - turns off the tests for registering/unregistering nodes with `hzn` commands.
 - NORETRY=1 - turns off the service retry test.
 - NOSVC_CONFIGSTATE=1 - turns off the service config state test.
