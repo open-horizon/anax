@@ -529,6 +529,11 @@ function get_all_variables() {
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
+    OS=$(get_os)
+    detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
+    ARCH=$(get_arch)
+    log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
+    
     if is_device; then
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
@@ -557,8 +562,9 @@ function get_all_variables() {
             if [[ $KUBECTL == "microk8s.kubectl" ]]; then
                 default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_anax_k8s"
             elif [[ $KUBECTL == "k3s kubectl" ]]; then
+                local image_arch=$(get_image_arch)
                 local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
-                default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
+                default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
             else
                 # ocp - image registry should be enabled/exposed and created in $AGENT_NAMESPACE before running agent install script
                 local default_image_registry_on_edge_cluster=$($KUBECTL get is amd64_anax_k8s -n $AGENT_NAMESPACE -o json | jq -r .status.publicDockerImageRepository)
@@ -575,11 +581,6 @@ function get_all_variables() {
     fi
 
     # Adjust some of the variable values or add related variables
-    OS=$(get_os)
-    detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
-    ARCH=$(get_arch)
-    log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
-
     # The edge node id can be specified 4 different ways: -d (HZN_NODE_ID), the first part of -a (HZN_EXCHANGE_NODE_AUTH), NODE_ID(deprecated) or HZN_DEVICE_ID. Need to reconcile all of them.
     local node_id   # just used in this section of code to sort out this mess
     # find the 1st occurrence of the user specifying node it
