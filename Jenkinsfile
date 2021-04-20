@@ -1,12 +1,16 @@
 pipeline {
-    agent any
+    agent {
+    	node {
+        	label 'ubuntu2204-builder-aws-1c-2g'
+    	}
+    }
     stages {
 	stage('Install Dependencies'){
 	    steps{
 		sh 'echo "Installing dependencies"'
 		sh '''
 			#!/usr/bin/env bash
-                        apt-get update -qq && apt-get install -y \
+                        sudo apt-get update -qq && apt-get install -y \
                             wget \
                             gnupg2 \
                             software-properties-common
