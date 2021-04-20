@@ -10,9 +10,7 @@ pipeline {
 		sh 'echo "Installing dependencies"'
 		sh '''
 			#!/usr/bin/env bash
-			sudo usermod -aG sudo $USER
-		        sudo su - $USER
-                        apt-get update -qq && apt-get install -y \
+                        sudo apt-get update -qq && apt-get install -y \
                             wget \
                             gnupg2 \
                             software-properties-common
@@ -32,8 +30,6 @@ pipeline {
                 sh 'echo "Building anax binaries"'
 		sh '''
 			#!/usr/bin/env bash
-			sudo usermod -aG sudo $USER
-		        sudo su - $USER
 			make 
 		'''
             }
