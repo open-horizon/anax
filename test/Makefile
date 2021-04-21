@@ -168,6 +168,7 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "DOCKER_CPU_TAG=$(DOCKER_CPU_TAG)" \
 		-e "ARCH=$(arch)" \
 		-e "HZN_VAULT"="$(HZN_VAULT)" \
+		-e "HZN_VAULT_ADDR"="$(VAULT_ADDR)" \
 		-e "VAULT_TOKEN"="$(VAULT_DEV_ROOT_TOKEN_ID)" \
 		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-t $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG)
@@ -339,8 +340,8 @@ agbot-docker-prereqs: get-anax
 	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
 	rm -r $(AGBOT_TEMPFS)/etc/vault
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(AGBOT_TEMPFS)/root
-	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(AGBOT_TEMPFS)/root/.colonus/.
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(AGBOT_TEMPFS)/root/.colonus/.
 
