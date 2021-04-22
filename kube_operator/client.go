@@ -90,8 +90,8 @@ func NewDynamicKubeClient() (dynamic.Interface, error) {
 }
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
-func (c KubeClient) Install(tar string, envVars map[string]string, agId string) error {
-	apiObjMap, namespace, err := processDeployment(tar, envVars, agId)
+func (c KubeClient) Install(tar string, envVars map[string]string, agId string, crInstallTimeout int64) error {
+	apiObjMap, namespace, err := processDeployment(tar, envVars, agId, crInstallTimeout)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func (c KubeClient) Install(tar string, envVars map[string]string, agId string) 
 
 // Install creates the objects specified in the operator deployment in the cluster and creates the custom resource to start the operator
 func (c KubeClient) Uninstall(tar string, agId string) error {
-	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId)
+	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId, 0)
 	if err != nil {
 		return err
 	}
@@ -182,7 +182,7 @@ func (c KubeClient) Uninstall(tar string, agId string) error {
 	return nil
 }
 func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error) {
-	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId)
+	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (c KubeClient) OperatorStatus(tar string, agId string) (interface{}, error)
 	return status, nil
 }
 func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
-	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId)
+	apiObjMap, namespace, err := processDeployment(tar, map[string]string{}, agId, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,7 @@ func (c KubeClient) Status(tar string, agId string) ([]ContainerStatus, error) {
 }
 
 // processDeployment takes the deployment string and converts it to a map with the k8s objects, the namespace to be used, and an error if one occurs
-func processDeployment(tar string, envVars map[string]string, agId string) (map[string][]APIObjectInterface, string, error) {
+func processDeployment(tar string, envVars map[string]string, agId string, crInstallTimeout int64) (map[string][]APIObjectInterface, string, error) {
 	// Read the yaml files from the commpressed tar files
 	yamls, err := getYamlFromTarGz(tar)
 	if err != nil {
@@ -262,7 +262,7 @@ func processDeployment(tar string, envVars map[string]string, agId string) (map[
 	}
 
 	// Sort the k8s api objects by kind
-	return sortAPIObjects(k8sObjs, unstructCr, envVars, agId)
+	return sortAPIObjects(k8sObjs, unstructCr, envVars, agId, crInstallTimeout)
 }
 
 // CreateConfigMap will create a config map with the provided environment variable map

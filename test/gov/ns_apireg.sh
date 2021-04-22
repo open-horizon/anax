@@ -19,6 +19,7 @@ then
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
+  "arch": "${ARCH}",
   "versionRange": "[2.2.0,INFINITY)",
   "organization": "IBM",
   "attributes": [
@@ -48,6 +49,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
+  "arch": "${ARCH}",
   "versionRange": "2.2.0",
   "organization": "e2edev@somecomp.com",
   "attributes": [
@@ -77,6 +79,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network",
+  "arch": "${ARCH}",
   "versionRange": "1.0.0",
   "organization": "IBM",
   "attributes": []
@@ -94,6 +97,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network",
+  "arch": "${ARCH}",
   "versionRange": "1.0.0",
   "organization": "e2edev@somecomp.com",
   "attributes": []
@@ -112,6 +116,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network2",
+  "arch": "${ARCH}",
   "versionRange": "1.0.0",
   "organization": "IBM",
   "attributes": []
@@ -131,6 +136,7 @@ EOF
         read -d '' networkservice <<EOF
 {
   "url": "https://bluehorizon.network/services/network2",
+  "arch": "${ARCH}",
   "versionRange": "1.0.0",
   "organization": "e2edev@somecomp.com",
   "attributes": []
@@ -150,6 +156,7 @@ EOF
         read -d '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
+    "arch": "${ARCH}",
     "name": "cpu",
     "organization": "IBM",
     "attributes": [
@@ -179,6 +186,7 @@ EOF
         read -d '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
+    "arch": "${ARCH}",
     "name": "cpu",
     "organization": "e2edev@somecomp.com",
     "versionRange": "1.0.0",
@@ -213,6 +221,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
+  "arch": "${ARCH}",
   "versionRange": "[2.2.0,INFINITY)",
   "organization": "IBM",
   "attributes": [
@@ -243,6 +252,7 @@ EOF
         read -d '' snsconfig <<EOF
 {
   "url": "https://bluehorizon.network/services/netspeed",
+  "arch": "${ARCH}",
   "versionRange": "2.2.0",
   "organization": "e2edev@somecomp.com",
   "attributes": [
@@ -273,6 +283,7 @@ EOF
         read -d '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
+    "arch": "${ARCH}",
     "name": "cpu",
     "organization": "IBM",
     "attributes": [
@@ -302,6 +313,7 @@ EOF
         read -d '' slocservice <<EOF
 {
     "url": "https://bluehorizon.network/service-cpu",
+    "arch": "${ARCH}",
     "name": "cpu",
     "organization": "e2edev@somecomp.com",
     "versionRange": "1.0.0",

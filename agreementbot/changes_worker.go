@@ -133,6 +133,8 @@ func (w *ChangesWorker) findAndProcessChanges() {
 	// the agbot worker.
 	batchedEvents := make(map[events.EventId]bool)
 
+	agbotMessages := 0
+
 	// Loop through each change to identify resources that we are interested in, and then send out event messages
 	// to notify the other workers that they have some work to do.
 	for _, change := range changes.Changes {
@@ -140,6 +142,11 @@ func (w *ChangesWorker) findAndProcessChanges() {
 		glog.V(5).Infof(chglog(fmt.Sprintf("Change: %v", change)))
 
 		if change.IsAgbotMessage(w.GetExchangeId()) {
+
+			if change.Operation == "created" {
+				agbotMessages += len(change.ResourceChanges)
+			}
+
 			batchedEvents[events.CHANGE_AGBOT_MESSAGE_TYPE] = true
 
 		} else if change.IsAgbotServedPolicy(w.GetExchangeId()) || change.IsAgbotServedPattern(w.GetExchangeId()) {
@@ -172,13 +179,16 @@ func (w *ChangesWorker) findAndProcessChanges() {
 		} else if change.IsNodeAgreement("") {
 			batchedEvents[events.CHANGE_NODE_AGREEMENT_TYPE] = true
 
+		} else if change.IsNodeServiceConfigState("") {
+			batchedEvents[events.CHANGE_NODE_CONFIGSTATE_TYPE] = true
+
 		} else {
 			glog.V(5).Infof(chglog(fmt.Sprintf("Unhandled change: %v %v/%v", change.Resource, change.OrgID, change.ID)))
 		}
 	}
 
 	// Publish any batched events
-	w.emitChangeMessages(batchedEvents)
+	w.emitChangeMessages(batchedEvents, agbotMessages)
 
 	// Record the most recent change id.
 	w.postProcessChanges(changes)
@@ -225,9 +235,15 @@ func (w *ChangesWorker) getChangeId() error {
 }
 
 // Send change message for each change type in the map that is set to true.
-func (w *ChangesWorker) emitChangeMessages(resChanges map[events.EventId]bool) {
+func (w *ChangesWorker) emitChangeMessages(resChanges map[events.EventId]bool, agbotMessages int) {
 	for changeType, _ := range resChanges {
-		w.Messages() <- events.NewExchangeChangeMessage(changeType)
+		if changeType == events.CHANGE_AGBOT_MESSAGE_TYPE {
+			ev := events.NewExchangeChangeMessage(changeType)
+			ev.SetChange(events.MessageCount{Count: agbotMessages})
+			w.Messages() <- ev
+		} else {
+			w.Messages() <- events.NewExchangeChangeMessage(changeType)
+		}
 	}
 }
 

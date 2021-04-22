@@ -1,3 +1,5 @@
+CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 echo "Testing node error surfacing to exchange"
 
@@ -28,7 +30,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -41,7 +43,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2",
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}",
         "binds":["/tmp:/hosttmp",""]
       }
     }
@@ -82,7 +84,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -95,7 +97,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },

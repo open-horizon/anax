@@ -23,9 +23,11 @@ type PrioritizedWorkQueue struct {
 	bufferLock sync.Mutex          // A lock that protects access to the work queue buffers.
 
 	bufferSize uint64 // The (rough) maximum queue depth that should not be exceeded without blocking. This is immutable once constructed.
+
+	queueHistory *PrioritizedWorkQueueHistory // Stats records from the recent past.
 }
 
-func NewPrioritizedWorkQueue(bufferSize uint64) *PrioritizedWorkQueue {
+func NewPrioritizedWorkQueue(bufferSize uint64, statInterval int, maxRecords int) *PrioritizedWorkQueue {
 	n := &PrioritizedWorkQueue{
 		inboundHigh:         make(chan *AgreementWork, bufferSize),
 		workQueueBufferHigh: make([]*AgreementWork, 0, bufferSize*2),
@@ -33,6 +35,7 @@ func NewPrioritizedWorkQueue(bufferSize uint64) *PrioritizedWorkQueue {
 		workQueueBufferLow:  make([]*AgreementWork, 0, bufferSize*2),
 		recv:                make(chan *AgreementWork),
 		bufferSize:          bufferSize,
+		queueHistory:        NewPrioritizedWorkQueueHistory(statInterval, maxRecords),
 	}
 
 	go n.run()
@@ -58,8 +61,24 @@ func (n *PrioritizedWorkQueue) HighAtDepth() bool {
 	return uint64(n.HighPriorityBufferLen()) > n.bufferSize
 }
 
+func (n *PrioritizedWorkQueue) HighIsEmpty() bool {
+	return n.HighPriorityBufferLen() == 0
+}
+
+func (n *PrioritizedWorkQueue) HighAtSize(threshold int) bool {
+	return n.HighPriorityBufferLen() >= threshold
+}
+
 func (n *PrioritizedWorkQueue) LowAtDepth() bool {
 	return uint64(n.LowPriorityBufferLen()) > n.bufferSize
+}
+
+func (n *PrioritizedWorkQueue) LowIsEmpty() bool {
+	return n.LowPriorityBufferLen() == 0
+}
+
+func (n *PrioritizedWorkQueue) LowAtSize(threshold int) bool {
+	return n.LowPriorityBufferLen() >= threshold
 }
 
 func (n *PrioritizedWorkQueue) blockHighAtDepth() {
@@ -155,8 +174,12 @@ func (n *PrioritizedWorkQueue) run() {
 
 	whichInbound := ""
 
+	// Create the statistics object to hold stats of what is happening inside the work queue.
+	stats := NewPrioritizedWorkQueueStats()
+
 	for {
 		if n.inboundHigh == nil && n.HighPriorityBufferLen() == 0 {
+			n.queueHistory.Collect(stats, true)
 			glog.V(3).Infof(pwqString("Closing receive channel"))
 			close(n.recv)
 			break
@@ -165,7 +188,7 @@ func (n *PrioritizedWorkQueue) run() {
 		// Assume that the select should ONLY block on the inbound channels.
 		recvChan = nil
 
-		// However, if there is bufferd work, the select will use the channel that worker threads are blocked on. This
+		// However, if there is buffered work, the select will use the channel that worker threads are blocked on. This
 		// will allow work to be passed to a worker.
 		whichInbound = BOTH_PRIORITY
 		if n.HighPriorityBufferLen() > 0 {
@@ -194,7 +217,9 @@ func (n *PrioritizedWorkQueue) run() {
 		case i, ok := <-n.inboundHigh:
 			if ok {
 				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound high: %v", (*i).ShortString())))
+				stats = n.queueHistory.Collect(stats, false)
 				n.AddToHighPriorityBuffer(i)
+				stats.consumedInboundHigh()
 			} else {
 				// The channel must be closed now.
 				glog.V(3).Infof(pwqString("closing inbound high"))
@@ -203,7 +228,9 @@ func (n *PrioritizedWorkQueue) run() {
 		case i, ok := <-inLowChan:
 			if ok {
 				glog.V(3).Infof(pwqString(fmt.Sprintf("queueing inbound low: %v", (*i).ShortString())))
+				stats = n.queueHistory.Collect(stats, false)
 				n.AddToLowPriorityBuffer(i)
+				stats.consumedInboundLow()
 			} else {
 				// The channel must be closed now.
 				glog.V(3).Infof(pwqString("closing inbound low"))
@@ -213,9 +240,12 @@ func (n *PrioritizedWorkQueue) run() {
 			glog.V(5).Infof(pwqString(fmt.Sprintf("receiving %v", *recvVal)))
 			if whichInbound == HIGH_PRIORITY {
 				n.RemoveHighPriorityBufferHead()
+				stats.consumedHighBuffered()
 			} else if whichInbound == LOW_PRIORITY {
 				n.RemoveLowPriorityBufferHead()
+				stats.consumedLowBuffered()
 			}
+			stats = n.queueHistory.Collect(stats, false)
 		}
 	}
 }

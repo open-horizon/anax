@@ -165,20 +165,24 @@ start() {
 	# this is container name specific, like "horizon1" for example. 
 	fssHostSharePath=${fssBasePath}/${DOCKER_NAME}
 
-    # clean up everything under the container name directory
-	# just incase there are left over files by other user
-	# especially the ones that are not readable by the login user 
-	if [ -d $fssHostSharePath ]; then
-		rm -Rf $fssHostSharePath 2>/dev/null 
-		if [ $? -ne 0 ]; then
-			echo "sudo rm -Rf $fssHostSharePath"
-			sudo rm -Rf $fssHostSharePath
+    	if [[ "$2" != "updating" ]]; then
+		# clean up everything under the container name directory
+		# just incase there are left over files by other user
+		# especially the ones that are not readable by the login user 
+		if [ -d $fssHostSharePath ]; then
+			rm -Rf $fssHostSharePath 2>/dev/null 
+			if [ $? -ne 0 ]; then
+				echo "sudo rm -Rf $fssHostSharePath"
+				sudo rm -Rf $fssHostSharePath
+			fi
 		fi
-	fi
 
-	# create fss domain socket path and ess auth path
-	mkdir -p ${fssHostSharePath}/fss-domain-socket
-	mkdir -p ${fssHostSharePath}/ess-auth
+		# create fss domain socket path and ess auth path
+		mkdir -p ${fssHostSharePath}/fss-domain-socket
+		mkdir -p ${fssHostSharePath}/ess-auth
+	else
+		# updating will keep files inside $fssHostSharePath
+	fi
 
 	# for mac, docker container has the filesystem privilge of the login user instead of root
 	# even if the `docker run` command was run by a root user.
@@ -210,7 +214,14 @@ start() {
 	# Get the horizon image. The image version is the same as the hzn CLI version unless it is
 	# overwitten by $HC_DOCKER_IMAGE and $HC_DOCKER_TAG.
 	# $HC_DOCKER_IMAGE and $HC_DOCKER_TAG are intentionally undocumented env vars that allow us to test the staging version of the docker image
-	dockerImage='openhorizon/amd64_anax'
+
+	# get the architecture from hzn
+        arch=$(LANG=en_US hzn architecture)
+        if [ $? -ne 0 ]; then
+                arch="amd64"
+        fi
+
+	dockerImage='openhorizon/'$arch'_anax'
 	dockerTag='latest'
 	if [[ -n "$HC_DOCKER_IMAGE" ]]; then
 		dockerImage="$HC_DOCKER_IMAGE"
@@ -219,7 +230,7 @@ start() {
 		dockerTag="$HC_DOCKER_TAG"
 	else
 		# get the image tag from the hzn version
-		local hzn_version=$(LANG=en_US hzn version | grep "^Horizon CLI")
+		local hzn_version=$(LANG=en_US HZN_LANG=en_US hzn version | grep "^Horizon CLI")
 		if [ $? -eq 0 ]; then 
         	dockerTag=${hzn_version##* }   # remove all of the space-separated words, except the last one
         fi

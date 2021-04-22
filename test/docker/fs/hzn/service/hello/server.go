@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 type CPU struct {
@@ -13,8 +14,16 @@ type CPU struct {
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
+	arch := os.Getenv("HZN_ARCH")
+	if arch == "" {
+		io.WriteString(w, "Cannot detect arch: variable HZN_ARCH is not set")
+		return
+	}
+	// io.WriteString(w, fmt.Printf("Runtime arch is %s\n", arch))
+	url := fmt.Sprintf("http://%s_cpu:8347/v1/cpu", arch)
+
 	httpClient := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, "http://amd64_cpu:8347/v1/cpu", nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		io.WriteString(w, fmt.Sprintf("Error creating HTTP request: %v", err))
 		return

@@ -27,4 +27,5 @@ echo "$CR8C1ORG"
 
 echo "Creating Customer2 organization in CSS..."
 CR8C2ORG=$(curl -sLX PUT -w "%{http_code}" $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"orgID":"Customer2"}' "${CSS_URL}/api/v1/organizations/Customer2")
+
 echo "$CR8C2ORG"

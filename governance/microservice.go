@@ -14,6 +14,7 @@ import (
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/producer"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -744,13 +745,13 @@ func (w *GovernanceWorker) handleMicroserviceExecFailure(msdef *persistence.Micr
 		current_retry := msi.CurrentRetryCount + 1
 		// start the retry
 		eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_INFO,
-			persistence.NewMessageMeta(EL_GOV_START_SVC_RETRY, string(current_retry), msdef.SpecRef, msdef.Version),
+			persistence.NewMessageMeta(EL_GOV_START_SVC_RETRY, strconv.Itoa(int(current_retry)), msdef.SpecRef, msdef.Version),
 			persistence.EC_START_RETRY_DEPENDENT_SERVICE,
 			msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 
 		if err := w.RetryMicroservice(msi); err != nil {
 			eventlog.LogServiceEvent2(w.db, persistence.SEVERITY_ERROR,
-				persistence.NewMessageMeta(EL_GOV_FAILED_SVC_RETRY, string(current_retry), msdef.SpecRef, msdef.Version),
+				persistence.NewMessageMeta(EL_GOV_FAILED_SVC_RETRY, strconv.Itoa(int(current_retry)), msdef.SpecRef, msdef.Version),
 				persistence.EC_ERROR_START_RETRY_DEPENDENT_SERVICE,
 				msinst_key, msdef.SpecRef, msdef.Org, msdef.Version, msdef.Arch, []string{})
 			glog.Errorf(logString(fmt.Sprintf("error retrying number %v for failed dependent service %v.", msinst_key, err)))
@@ -838,6 +839,17 @@ func (w *GovernanceWorker) handleServiceSuspended(service_cs []events.ServiceCon
 		// nothing to handle
 		return nil
 	}
+
+	svcsToSuspend := make([]events.ServiceConfigState, 0)
+	for _, svc := range service_cs {
+		if svc.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
+			svcsToSuspend = append(svcsToSuspend, svc)
+		}
+	}
+	if len(svcsToSuspend) == 0 {
+		return nil
+	}
+	service_cs = svcsToSuspend
 
 	glog.V(3).Infof(logString(fmt.Sprintf("handle service suspension for %v", service_cs)))
 

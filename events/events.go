@@ -91,7 +91,7 @@ const (
 	MESSAGE_STOP                 EventId = "MESSAGE_STOP"
 
 	// Service related
-	SERVICE_SUSPENDED EventId = "SERVICE_SUSPENDED"
+	SERVICE_CONFIG_STATE_CHANGED EventId = "SERVICE_CONFIG_STATE_CHANGED"
 
 	// Object Policy related
 	OBJECT_POLICY_NEW       EventId = "OBJECT_POLICY_NEW"
@@ -106,6 +106,7 @@ const (
 	CHANGE_NODE_POLICY_TYPE       EventId = "EXCHANGE_CHANGE_NODE_POLICY"
 	CHANGE_NODE_AGREEMENT_TYPE    EventId = "EXCHANGE_CHANGE_NODE_AGREEMENT"
 	CHANGE_NODE_ERROR_TYPE        EventId = "EXCHANGE_CHANGE_NODE_ERROR"
+	CHANGE_NODE_CONFIGSTATE_TYPE  EventId = "EXCHANGE_CHANGE_NODE_CONFIGSTATE"
 	CHANGE_SERVICE_TYPE           EventId = "EXCHANGE_CHANGE_SERVICE"
 	CHANGE_DEPLOYMENT_POLICY_TYPE EventId = "EXCHANGE_CHANGE_DEPLOYMENT_POLICY"
 	CHANGE_SERVICE_POLICY_TYPE    EventId = "EXCHANGE_CHANGE_SERVICE_POLICY"
@@ -1852,17 +1853,21 @@ func NewNodeHeartbeatStateChangeMessage(id EventId, node_org string, node_id str
 type ServiceConfigState struct {
 	Url         string `json:"url"`
 	Org         string `json:"org"`
+	Version     string `json:"version"`
+	Arch        string `json:"arch"`
 	ConfigState string `json:"configState"`
 }
 
 func (s *ServiceConfigState) String() string {
-	return fmt.Sprintf("Url: %v, Org: %v, ConfigState: %v", s.Url, s.Org, s.ConfigState)
+	return fmt.Sprintf("Url: %v, Org: %v, Version: %v, Arch: %v, ConfigState: %v", s.Url, s.Org, s.Version, s.Arch, s.ConfigState)
 }
 
-func NewServiceConfigState(url, org, state string) *ServiceConfigState {
+func NewServiceConfigState(url, org, version, arch, state string) *ServiceConfigState {
 	return &ServiceConfigState{
 		Url:         url,
 		Org:         org,
+		Version:     version,
+		Arch:        arch,
 		ConfigState: state,
 	}
 }
@@ -1978,6 +1983,10 @@ func NewExchangeChangeMessage(id EventId) *ExchangeChangeMessage {
 			Id: id,
 		},
 	}
+}
+
+type MessageCount struct {
+	Count int
 }
 
 type ProposalAcceptedMessage struct {

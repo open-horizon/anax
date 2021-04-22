@@ -12,9 +12,10 @@ function verify {
 # If the container is running in the Horizon environment, then the Horizon platform env vars should all be there.
 # Otherwise, assume it is running outside Horizon and running in a non-Horizon environment.
 
-if [ "$HZN_ARCH" != "" ]
+if [ "$HZN_HARDWAREID" != "" ]
 then
     verify "HZN_RAM" $HZN_RAM
+    verify "HZN_ARCH" $HZN_ARCH
     verify "HZN_CPUS" $HZN_CPUS
     verify "HZN_DEVICE_ID" $HZN_DEVICE_ID
     verify "HZN_ORGANIZATION" $HZN_ORGANIZATION

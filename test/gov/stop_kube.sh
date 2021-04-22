@@ -57,7 +57,7 @@ $cprefix microk8s.kubectl delete namespace ${NAME_SPACE}
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting agent namespace ${NAME_SPACE}: $RC"; fi
 
-$cprefix microk8s.ctr --namespace k8s.io image remove docker.io/openhorizon/amd64_anax_k8s:testing
+$cprefix microk8s.ctr --namespace k8s.io image remove docker.io/openhorizon/${ARCH}_anax_k8s:testing
 RC=$?
 if [ $RC -ne 0 ]; then echo "Error deleting agent container from container registry: $RC"; fi
 

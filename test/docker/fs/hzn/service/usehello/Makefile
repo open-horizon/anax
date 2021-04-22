@@ -1,8 +1,9 @@
 # Makefile for usehello service container
 
+ARCH = $(ARCH)
 VER = 1.0
 BASE = localhost:443
-IMAGE = amd64_usehello
+IMAGE = $(ARCH)_usehello
 
 default: build run check
 
@@ -17,7 +18,7 @@ horizonstop:
 	hzn -v dev service stop
 
 run:
-	docker run --name $(IMAGE) -e MY_VAR1='outside' -d -t $(BASE)/$(IMAGE):$(VER)
+	docker run --name $(IMAGE) -e MY_VAR1='outside' -e HZN_ARCH=$(ARCH) -d -t $(BASE)/$(IMAGE):$(VER)
 
 check:
 	docker logs $(IMAGE)

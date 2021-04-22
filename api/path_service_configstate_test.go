@@ -40,15 +40,15 @@ func Test_ChangeServiceConfigState(t *testing.T) {
 		Org:         "myorg1",
 		ConfigState: "suspended",
 	}
-	errHandled, suspended_services := ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
+	errHandled, changed_services := ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
 	if errHandled {
 		t.Errorf("ChangeServiceConfigState should have returned false for error_handled but got true.")
-	} else if suspended_services == nil {
+	} else if changed_services == nil {
 		t.Errorf("returned suspended services should not be nil")
-	} else if len(suspended_services) != 1 {
-		t.Errorf("returned suspended services should have 1 element, but got %v", len(suspended_services))
-	} else if suspended_services[0].Url != "netspeed" || suspended_services[0].Org != "myorg1" {
-		t.Errorf("ChangeServiceConfigState returned wrong suspended service: %v", suspended_services[0])
+	} else if len(changed_services) != 1 {
+		t.Errorf("returned suspended services should have 1 element, but got %v", len(changed_services))
+	} else if changed_services[0].Url != "netspeed" || changed_services[0].Org != "myorg1" {
+		t.Errorf("ChangeServiceConfigState returned wrong suspended service: %v", changed_services[0])
 	}
 
 	// turn all to suspended
@@ -57,13 +57,13 @@ func Test_ChangeServiceConfigState(t *testing.T) {
 		Org:         "",
 		ConfigState: "suspended",
 	}
-	errHandled, suspended_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
+	errHandled, changed_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
 	if errHandled {
 		t.Errorf("ChangeServiceConfigState should have returned false for error_handled but got true.")
-	} else if suspended_services == nil {
+	} else if changed_services == nil {
 		t.Errorf("returned suspended services should not be nil")
-	} else if len(suspended_services) != 4 {
-		t.Errorf("returned suspended services should have 4 element, but got %v", len(suspended_services))
+	} else if len(changed_services) != 4 {
+		t.Errorf("returned suspended services should have 4 element, but got %v", len(changed_services))
 	}
 
 	// turn all in myorg1 to suspended
@@ -72,13 +72,13 @@ func Test_ChangeServiceConfigState(t *testing.T) {
 		Org:         "myorg1",
 		ConfigState: "suspended",
 	}
-	errHandled, suspended_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
+	errHandled, changed_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
 	if errHandled {
 		t.Errorf("ChangeServiceConfigState should have returned false for error_handled but got true.")
-	} else if suspended_services == nil {
+	} else if changed_services == nil {
 		t.Errorf("returned suspended services should not be nil")
-	} else if len(suspended_services) != 2 {
-		t.Errorf("returned suspended services should have 2 element, but got %v", len(suspended_services))
+	} else if len(changed_services) != 2 {
+		t.Errorf("returned suspended services should have 2 element, but got %v", len(changed_services))
 	}
 
 	// do nothing for already suspended
@@ -87,13 +87,13 @@ func Test_ChangeServiceConfigState(t *testing.T) {
 		Org:         "myorg2",
 		ConfigState: "suspended",
 	}
-	errHandled, suspended_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
+	errHandled, changed_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
 	if errHandled {
 		t.Errorf("ChangeServiceConfigState should have returned false for error_handled but got true.")
-	} else if suspended_services == nil {
+	} else if changed_services == nil {
 		t.Errorf("returned suspended services should not be nil")
-	} else if len(suspended_services) != 0 {
-		t.Errorf("returned suspended services should have 0 element, but got %v", len(suspended_services))
+	} else if len(changed_services) != 0 {
+		t.Errorf("returned suspended services should have 0 element, but got %v", len(changed_services))
 	}
 
 	// turn all to active
@@ -102,13 +102,13 @@ func Test_ChangeServiceConfigState(t *testing.T) {
 		Org:         "",
 		ConfigState: "active",
 	}
-	errHandled, suspended_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
+	errHandled, changed_services = ChangeServiceConfigState(&service_cs, errorhandler, deviceHandler, postSCS, db)
 	if errHandled {
 		t.Errorf("ChangeServiceConfigState should have returned false for error_handled but got true.")
-	} else if suspended_services == nil {
+	} else if changed_services == nil {
 		t.Errorf("returned suspended services should not be nil")
-	} else if len(suspended_services) != 0 {
-		t.Errorf("returned suspended services should have 0 element, but got %v", len(suspended_services))
+	} else if len(changed_services) != 1 {
+		t.Errorf("returned services should have 1 element, but got %v", len(changed_services))
 	}
 
 }

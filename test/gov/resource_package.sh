@@ -37,6 +37,15 @@ for dir in */; do
 			exit -1
 		fi
 	else
+		# Create policy files from templates by passing current ARCH to them
+		for in_file in /root/objects/*.policy
+		do
+			sed -i -e "s#__ARCH__#${ARCH}#g" $in_file
+			if [ $? -ne 0 ]
+			then
+				exit -1
+			fi
+		done
 
 		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
 		if [ $? -ne 0 ]

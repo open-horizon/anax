@@ -42,9 +42,7 @@ Parameters:
     -b          Get the agent images from the horizon content tar file.
 
 Required Environment Variables:
-    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number>
-    CLUSTER_USER: Your cluster admin user
-    CLUSTER_PW: Your cluster admin password
+    CLUSTER_URL: for example: https://<cluster_CA_domain>:<port-number> 
 
 Optional Environment Variables:
     PACKAGE_NAME: The base name of the horizon content tar file (can include a path). Default: $PACKAGE_NAME
@@ -136,11 +134,6 @@ fi
 
 function checkPrereqsAndInput () {
     echo "Checking system requirements..."
-    if ! command -v cloudctl >/dev/null 2>&1; then
-        fatal 2 "cloudctl is not installed."
-    fi
-    echo " - cloudctl installed"
-
     if ! command -v oc >/dev/null 2>&1; then
         fatal 2 "oc is not installed."
     fi
@@ -178,26 +171,9 @@ function checkPrereqsAndInput () {
 
     echo "Checking environment variables..."
     if [[ -z $CLUSTER_URL ]]; then
-        fatal 1 "CLUSTER_URL environment variable is not set. Can not run 'cloudctl login ...'"
-    elif [[ -z $CLUSTER_USER ]]; then
-        fatal 1 "CLUSTER_USER environment variable is not set. Can not run 'cloudctl login ...'"
-    elif [[ -z $CLUSTER_PW ]]; then
-        fatal 1 "ERROR: CLUSTER_PW environment variable is not set. Can not run 'cloudctl login ...'"
+        fatal 1 "CLUSTER_URL environment variable is not set.'"
     fi
     echo " - CLUSTER_URL: $CLUSTER_URL"
-    echo " - CLUSTER_USER: $CLUSTER_USER"
-    echo " - CLUSTER_PW set"
-    echo ""
-
-}
-
-function cloudLogin () {
-    echo "Logging into the cluster..."
-    echo "cloudctl login -a $CLUSTER_URL -u $CLUSTER_USER -p ******** -n ibm-edge --skip-ssl-validation"
-    cloudctl login -a $CLUSTER_URL -u $CLUSTER_USER -p $CLUSTER_PW -n ibm-edge --skip-ssl-validation
-    if [[ $? -ne 0 ]]; then
-        fatal 2 "ERROR: 'cloudctl login' failed. Check if CLUSTER_URL, CLUSTER_USER, and CLUSTER_PW environment variables are set correctly."
-    fi
     echo ""
 }
 
@@ -246,11 +222,12 @@ function getAgentK8sImageTarFile() {
 # Put 1 file into CSS in the IBM org as a public object.
 function putOneFileInCss() {
     local filename=${1:?} version=$2
+    local resourcename=$(oc get eamhub --no-headers |awk '{printf $1}')
 
     # First get exchange root creds, if necessary
     if [[ -z $HZN_EXCHANGE_USER_AUTH ]]; then
         echo "Getting exchange root credentials to use to publish to CSS..."
-        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc -n ibm-edge get secret ibm-edge-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
+        export HZN_EXCHANGE_USER_AUTH="root/root:$(oc get secret $resourcename-auth -o jsonpath="{.data.exchange-root-pass}" | base64 --decode)"
         chk $? 'getting exchange root creds'
     fi
 
@@ -315,7 +292,7 @@ EndOfContent
 # Get the management hub self-signed certificate
 function getClusterCert () {
     echo "Getting the management hub self-signed certificate agent-install.crt..."
-    oc get secret -n ibm-edge management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
+    oc get secret management-ingress-ibmcloud-cluster-ca-cert -o jsonpath="{.data['ca\.crt']}" | base64 --decode > agent-install.crt
     chk $? 'getting the management hub self-signed certificate'
 
     if [[ $PUT_FILES_IN_CSS == 'true' ]]; then
@@ -528,8 +505,6 @@ function createTarFile () {
 all_main() {
     checkPrereqsAndInput
 
-    cloudLogin
-
     if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
@@ -559,8 +534,6 @@ all_main() {
 cluster_main() {
     checkPrereqsAndInput
 
-    cloudLogin
-
     if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 
     cleanUpPreviousFiles
@@ -587,8 +560,6 @@ cluster_main() {
 
 device_main() {
     checkPrereqsAndInput
-
-    cloudLogin
 
     if [[ -n $DIR ]]; then pushd $DIR; fi   # if they want the files somewhere else, make that our current dir
 

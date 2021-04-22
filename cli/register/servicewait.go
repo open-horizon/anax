@@ -47,24 +47,25 @@ type WaitingStatus int
 const (
 	Failed WaitingStatus = iota - 1
 	NoAgreements
-	AgreementFormed
+	AgreementProposalReceived
 	AgreementAccepted
+	AgreementFinalized
 	ServiceCreated
 	ExecutionStarted
 	Success
 )
 
 func DisplayServiceStatus(servSpecArr []serviceSpec, displayStarOrg bool) {
-	statusDetails := []string{
-		"Failed",
-		"Waiting: no agreements formed yet",
-		"Waiting: agreement is formed",
-		"Waiting: agreement is accepted",
-		"Waiting: service is created",
-		"Waiting: execution is started",
-		"Success"}
-
 	msgPrinter := i18n.GetMessagePrinter()
+	statusDetails := []string{
+		msgPrinter.Sprintf("Failed"),
+		msgPrinter.Sprintf("Progress so far: no agreements formed yet"),
+		msgPrinter.Sprintf("Progress so far: agreement proposal has been received"),
+		msgPrinter.Sprintf("Progress so far: agreement is accepted"),
+		msgPrinter.Sprintf("Progress so far: agreement is finalized"),
+		msgPrinter.Sprintf("Progress so far: service is created"),
+		msgPrinter.Sprintf("Progress so far: execution is started"),
+		msgPrinter.Sprintf("Success")}
 
 	msgPrinter.Printf("Status of the services you are watching:")
 	msgPrinter.Println()
@@ -165,9 +166,11 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 			for _, ag := range ags {
 				if ag.RunningWorkload.URL == ss.name && (ag.RunningWorkload.Org == ss.org || ss.org == "*") {
 					if ag.AgreementAcceptedTime == 0 {
-						serviceStatus = AgreementFormed
-					} else {
+						serviceStatus = AgreementProposalReceived
+					} else if ag.AgreementFinalizedTime == 0 {
 						serviceStatus = AgreementAccepted
+					} else {
+						serviceStatus = AgreementFinalized
 					}
 				}
 			}

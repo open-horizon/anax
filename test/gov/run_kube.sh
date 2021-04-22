@@ -99,6 +99,9 @@ fi
 EX_IP=${EX_IP} CSS_IP=${CSS_IP} envsubst < "${AGBOT_TEMPFS}/etc/agent-in-kube/horizon.env" > "${AGBOT_TEMPFS}/etc/agent-in-kube/horizon"
 if [ $? -ne 0 ]; then echo "Failure configuring agent env var file"; exit 1; fi
 
+ARCH=${ARCH} envsubst < "${AGBOT_TEMPFS}/etc/agent-in-kube/deployment.yaml.tmpl" > "${AGBOT_TEMPFS}/etc/agent-in-kube/deployment.yaml"
+if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi
+
 echo "Enable kube dns"
 $cprefix microk8s.enable dns
 RC=$?
@@ -121,7 +124,7 @@ fi
 # Copy the agent container into the local kube container registry so that kube knows where to find it.
 #
 echo "Move agent container into microk8s container registry"
-docker save openhorizon/amd64_anax_k8s:testing > /tmp/agent-in-kube.tar
+docker save openhorizon/${ARCH}_anax_k8s:testing > /tmp/agent-in-kube.tar
 if [ $? -ne 0 ]; then echo "Failure tar-ing agent container to file"; exit 1; fi
 
 #
@@ -245,7 +248,6 @@ fi
 $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node.policy.json ${NAME_SPACE}/${POD}:/home/agentuser/.
 $cprefix microk8s.kubectl cp $PWD/gov/input_files/k8s_deploy/node_ui.json ${NAME_SPACE}/${POD}:/home/agentuser/.
 
-#$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -f /home/agentuser/node_ui.json --policy /home/agentuser/node.policy.json -u root/root:${EXCH_ROOTPW}
-$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- /usr/bin/hzn register -f /home/agentuser/node_ui.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
+$cprefix microk8s.kubectl exec ${POD} -it -n ${NAME_SPACE} -- env ARCH=${ARCH} /usr/bin/hzn register -f /home/agentuser/node_ui.json -p e2edev@somecomp.com/sk8s -u root/root:${EXCH_ROOTPW}
 
 echo "Configured agent for policy, waiting for the agbot to start."

@@ -91,12 +91,21 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."))
 	}
 
+	var resp struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+	}
 	//add/overwrite business policy file
-	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 403}, policyFile, nil)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 403}, policyFile, &resp)
 	if httpCode == 403 {
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile, nil)
-		msgPrinter.Printf("Deployment policy: %v/%v updated in the Horizon Exchange", polOrg, policy)
-		msgPrinter.Println()
+		//try to update the existing policy
+		httpCode = cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policy), cliutils.OrgAndCreds(org, credToUse), []int{201, 404}, policyFile, nil)
+		if httpCode == 201 {
+			msgPrinter.Printf("Deployment policy: %v/%v updated in the Horizon Exchange", polOrg, policy)
+			msgPrinter.Println()
+		} else if httpCode == 404 {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot create deployment policy %v/%v: %v", polOrg, policy, resp.Msg))
+		}
 	} else {
 		msgPrinter.Printf("Deployment policy: %v/%v added in the Horizon Exchange", polOrg, policy)
 		msgPrinter.Println()

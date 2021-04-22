@@ -253,14 +253,15 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		service.Binds = append(service.Binds, fmt.Sprintf("%v:%v:ro", w.Config.GetESSSSLClientCertPath(), config.HZN_FSS_CERT_MOUNT))
 
 		// Get the group id that owns the service ess auth folder/file. Add this group id in the GroupAdd fields in docker.HostConfig. So that service account in service container can read ess auth folder/file (750)
-		groupName := cutil.GetHashFromString(agreementId)
-		group, err := user.LookupGroup(groupName)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("unable to find group %v created for ess auth file %v", groupName, agreementId))
-		}
-
 		groupAdds := make([]string, 0)
-		groupAdds = append(groupAdds, group.Gid)
+		if !w.IsDevInstance() {
+			groupName := cutil.GetHashFromString(agreementId)
+			group, err := user.LookupGroup(groupName)
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("unable to find group %v created for ess auth file %v", groupName, agreementId))
+			}
+			groupAdds = append(groupAdds, group.Gid)
+		}
 
 		// Create the volume map based on the container paths being bound to the host.
 		// The bind string looks like this: <host-path>:<container-path>:<ro> where ro means readonly and is optional.
@@ -470,9 +471,9 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 				pic = sp[1]
 			} else if len(sp) == 2 {
 				pic = sp[1]
-			}else if len(sp) == 1{
+			} else if len(sp) == 1 {
 				pic = sp[0]
-			} else if len(sp) <= 0 || len(sp) >3{
+			} else if len(sp) <= 0 || len(sp) > 3 {
 				return nil, fmt.Errorf("Illegal device specified in deployment description: %v", givenDevice)
 			}
 
@@ -740,11 +741,16 @@ func (w *ContainerWorker) NewEvent(incoming events.Message) {
 	return
 }
 
-func MakeBridge(client *docker.Client, name string, infrastructure bool, sharedPattern bool) (*docker.Network, error) {
+func MakeBridge(client *docker.Client, name string, infrastructure, sharedPattern, isDev bool) (*docker.Network, error) {
 
 	// Labels on the docker network indicate attributes about the network.
 	labels := make(map[string]string)
-	labels[LABEL_PREFIX+".network"] = ""
+
+	if isDev {
+		labels[LABEL_PREFIX+".dev_network"] = "true"
+	} else {
+		labels[LABEL_PREFIX+".network"] = ""
+	}
 	if infrastructure {
 		labels[LABEL_PREFIX+".infrastructure"] = ""
 	}
@@ -1259,11 +1265,12 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 
 	// Create the MMS authentication credentials for this container. The only time we need the service version to be
 	// part of authentication is when policy is in use.
+	// set secureCreds to false if current running is hzn dev
 	serviceVersion := ""
 	if b.pattern == "" {
 		serviceVersion = sVer
 	}
-	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion); err != nil {
+	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, !b.isDevInstance); err != nil {
 		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
 	}
 
@@ -1362,7 +1369,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 		}
 
 		if existingNetwork == nil {
-			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true)
+			existingNetwork, err = MakeBridge(b.client, bridgeName, deployment.Infrastructure, true, b.isDevInstance)
 			glog.V(2).Infof("Created new network for shared container: %v. Network: %v", containerName, existingNetwork)
 			if err != nil {
 				return nil, fail(nil, containerName, fmt.Errorf("Unable to create bridge for shared container. Original error: %v", err))
@@ -1405,7 +1412,7 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 			}
 			if agBridge == nil {
 				glog.V(5).Infof("Making network %v", agreementId)
-				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false)
+				newBridge, err := MakeBridge(b.client, agreementId, deployment.Infrastructure, false, b.isDevInstance)
 				if err != nil {
 					return nil, err
 				}
@@ -1938,7 +1945,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		}
 
 	case *NodeUnconfigCommand:
-		if err := b.GetAuthenticationManager().RemoveAll(); err != nil {
+		if err := b.GetAuthenticationManager().RemoveAll(!b.isDevInstance); err != nil {
 			glog.Errorf("Error handling node unconfig command: %v", err)
 		}
 		b.Commands <- worker.NewTerminateCommand("shutdown")
@@ -2026,7 +2033,11 @@ func (b *ContainerWorker) syncupResources() {
 			// Look for orphaned containers.
 			for _, container := range containers {
 				glog.V(5).Infof("ContainerWorker working on container %v", container)
-
+				if val, exists := container.Labels[LABEL_PREFIX+".dev_service"]; exists && val == "true" {
+					//skip dev containers
+					glog.V(4).Infof("Skipping non-leftover dev container: %v", container.ID)
+					continue
+				}
 				// Containers that are part of our horizon infrastructure or are shared or without an agreement id label will be ignored.
 				if _, infraLabel := container.Labels[LABEL_PREFIX+".infrastructure"]; infraLabel {
 					continue
@@ -2050,6 +2061,9 @@ func (b *ContainerWorker) syncupResources() {
 			for _, net := range networks {
 				glog.V(5).Infof("ContainerWorker working on network %v", net)
 				if _, anaxNet := net.Labels[LABEL_PREFIX+".network"]; !anaxNet {
+					continue
+				} else if val, exists := net.Labels[LABEL_PREFIX+".dev_network"]; exists && val == "true" {
+					//skip dev networks
 					continue
 				} else if val, exists := net.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 
@@ -2164,7 +2178,7 @@ func (b *ContainerWorker) GatherAndCreateDependencyNetworks(dependencyContainers
 			glog.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 			continue
 		} else if len(nws) == 0 {
-			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false, b.isDevInstance); err != nil {
 				glog.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
 				continue
 			} else {
@@ -2271,7 +2285,7 @@ func (b *ContainerWorker) restoreDependencyServiceNetworks(networkName string, p
 		if nws, err := b.client.FilteredListNetworks(docker.NetworkFilterOpts{"name": {nwForParentSvc: true}}); err != nil {
 			return fmt.Errorf("failure listing network %v, error %v", nwForParentSvc, err)
 		} else if len(nws) == 0 {
-			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false); err != nil {
+			if newNetwork, err := MakeBridge(b.client, nwForParentSvc, true, false, b.isDevInstance); err != nil {
 				return fmt.Errorf("Could not create parent specific network %v for service: %v", nwForParentSvc, err)
 			} else {
 				parentSpecificNetwork = newNetwork
@@ -2329,6 +2343,11 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 
 	freeNets := make([]docker.Network, 0)
 	destroy := func(container *docker.APIContainers, agreementId string) error {
+		if !serviceAndWorkerTypeMatches(b.isDevInstance, container) {
+			// skip dev containers is it's non-dev instance and vice versa
+			glog.V(4).Infof("Skipping dev container: %v", container.ID)
+			return nil
+		}
 		if val, exists := container.Labels[LABEL_PREFIX+".service_pattern.shared"]; exists && val == "singleton" {
 			// must investigate bridge to see if other containers are still using this shared service
 
@@ -2431,7 +2450,7 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		}
 
 		// Remove the File Sync Service API authentication credential file.
-		if err := b.GetAuthenticationManager().RemoveCredential(agreementId); err != nil {
+		if err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
 			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
 		}
 
@@ -2882,8 +2901,10 @@ func (b *ContainerWorker) createDockerVolumesForContainer(serviceName string, ag
 
 					// same the volume in local db so that it can be cleaned up at unregistration time
 					// Ling todo - only save the ones that are specified by the user in binds.
-					if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
-						return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+					if b.db != nil {
+						if persistence.SaveContainerVolumeByName(b.db, vol_name); err != nil {
+							return fmt.Errorf("Failed to get save the docker volume name %v into the local db. %v", vol_name, err)
+						}
 					}
 				}
 			}
@@ -2975,4 +2996,19 @@ func DeleteLeftoverDockerVolumes(db *bolt.DB, config *config.HorizonConfig) erro
 		}
 	}
 	return nil
+}
+
+// serviceAndWorkerTypeMatches returns true if the container type matches the ContainerWorker instance type
+// (for dev and non-dev containers)
+func serviceAndWorkerTypeMatches(isDevInstance bool, container *docker.APIContainers) bool {
+	isDevContainer := false
+	if val, exists := container.Labels[LABEL_PREFIX+".dev_service"]; exists && val == "true" {
+		isDevContainer = true
+	}
+
+	if isDevInstance == isDevContainer {
+		return true
+	}
+
+	return false
 }

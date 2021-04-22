@@ -14,7 +14,7 @@ SHELL := /bin/bash
 # DO NOT set this variable to the branch in which you are doing development work.
 BRANCH_NAME ?= ""
 
-export VERSION ?= 2.28.0
+export VERSION ?= 2.29.0
 # BUILD_NUMBER will be added to the version if set. It can be a simple number or something like a numeric timestamp or jenkins hash.
 # It can NOT contain dashes, but can contain: plus, period, and tilde.
 export BUILD_NUMBER
@@ -87,7 +87,7 @@ AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 # The CSS and its production container. This container is NOT used by hzn dev.
 CSS_EXECUTABLE := css/cloud-sync-service
 CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.5.3$(BRANCH_NAME)
+CSS_IMAGE_VERSION ?= 1.6.1$(BRANCH_NAME)
 CSS_IMAGE_BASE = image/cloud-sync-service
 CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
 CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
@@ -100,7 +100,7 @@ CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
-ESS_IMAGE_VERSION ?= 1.5.3$(BRANCH_NAME)
+ESS_IMAGE_VERSION ?= 1.6.1$(BRANCH_NAME)
 ESS_IMAGE_BASE = image/edge-sync-service
 ESS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_edge-sync-service
 ESS_IMAGE = $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION)
@@ -284,7 +284,7 @@ macpkginfo:
 
 anax-image:
 	@echo "Producing anax docker image $(ANAX_IMAGE)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "s390x" || $(arch) == "arm64" ]]; then \
 	  rm -rf $(ANAX_CONTAINER_DIR)/anax; \
 	  rm -rf $(ANAX_CONTAINER_DIR)/hzn; \
 	  cp $(EXECUTABLE) $(ANAX_CONTAINER_DIR); \
@@ -370,7 +370,7 @@ anax-k8s-image: anax-k8s-clean
 	cp $(CLI_EXECUTABLE) $(ANAX_K8S_CONTAINER_DIR)
 	cp -f $(LICENSE_FILE) $(ANAX_K8S_CONTAINER_DIR)
 	@echo "Producing ANAX K8S docker image $(ANAX_K8S_IMAGE_STG)"
-	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" ]]; then \
+	if [[ $(arch) == "amd64" || $(arch) == "ppc64el" || $(arch) == "arm64" ]]; then \
 		cd $(ANAX_K8S_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(ANAX_K8S_IMAGE_LABELS) -t $(ANAX_K8S_IMAGE_STG) -f Dockerfile.ubi.$(arch) .; \
 	fi
 	docker tag $(ANAX_K8S_IMAGE_STG) $(ANAX_K8S_IMAGE_BASE):$(ANAX_K8S_IMAGE_VERSION)

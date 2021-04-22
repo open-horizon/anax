@@ -1,12 +1,12 @@
 {
   "org": "e2edev@somecomp.com",
-  "label": "GPS for Location for x86_64",
+  "label": "GPS for Location for __ARCH__",
   "description": "GPS service for loc service",
   "documentation": "",
   "public": true,
   "url": "https://bluehorizon.network/services/locgps",
   "version": "2.0.4",
-  "arch": "amd64",
+  "arch": "__ARCH__",
   "sharable": "single",
   "matchHardware": {
     "devFiles": "/dev/ttyUSB*,/dev/ttyACM*",
@@ -18,14 +18,14 @@
       "org": "IBM",
       "version": "1.0.0",
       "versionRange": "1.0.0",
-      "arch": "amd64"
+      "arch": "__ARCH__"
     },
     {
       "url": "https://bluehorizon.network/services/network2",
       "org": "IBM",
       "version": "1.0.0",
       "versionRange": "1.0.0",
-      "arch": "amd64"
+      "arch": "__ARCH__"
     }
   ],
   "userInput": [
@@ -69,7 +69,7 @@
   "deployment": {
     "services": {
       "locgps2": {
-        "image": "openhorizon/amd64_cpu:1.2.2"
+        "image": "openhorizon/__ARCH___cpu:1.2.2"
       }
     }
   }
