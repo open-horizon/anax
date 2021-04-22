@@ -5,6 +5,23 @@ PREFIX="Service config state test:"
 E2EDEV_NETSPEED_AG_ID=""
 E2EDEV_LOCATION_AG_ID=""
 
+EXCH_URL="${EXCH_APP_HOST}"
+USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
+
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/css.crt"
+else
+  CERT_VAR=""
+fi
+
+# check the result of http call
+function results {
+  if [ "$(echo "$1" | jq -r '.code')" != "ok" ]
+  then
+    echo -e "Error: $(echo "$1" | jq -r '.msg')"
+    exit 2
+  fi
+}
 
 # get the agreements ids for e2edev@somecomp.com/netspeed and e2edev@somecomp.com/location services.
 function getNetspeedLocationAgreements {
@@ -133,22 +150,20 @@ if [ $? -ne 0 ]; then
 	echo -e "${PREFIX} error suspending e2edev@somecomp.com/netspeed: $out"
     exit 2
 fi
-echo -e "${PREFIX} suspending the e2edev@somecomp.com/location service..."
-out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/location -f)
-if [ $? -ne 0 ]; then
-	echo -e "${PREFIX} error suspending e2edev@somecomp.com/location: $out"
-    exit 2
-fi
 
-# make sure the service configstate is suspended
-echo -e "${PREFIX} checking service config state..."
-location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev@somecomp.com") |.configState')
-if [ "$location_configstate" != "\"suspended\"" ]; then
-  echo -e "${PREFIX} error: the e2edev@somecomp.com/location service is still in the 'active' state."
-  exit 2
-else
-  echo -e "${PREFIX} e2edev@somecomp.com/location service: suspended"
-fi
+echo -e "${PREFIX} suspending the e2edev@somecomp.com/location service..."
+read -d '' sconfig <<EOF
+{
+   "url":         "https://bluehorizon.network/services/location",
+   "org":          "e2edev@somecomp.com",
+   "configState": "suspended"
+}
+EOF
+out=$(echo "$sconfig" | curl -sLX POST $CERT_VAR -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
+results "$out"
+
+# make sure the service configstate for netspeed is suspended
+echo -e "${PREFIX} checking service config state for netspeed service..."
 netspeed_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/netspeed") | select(.org == "e2edev@somecomp.com") |.configState')
 if [ "$netspeed_configstate" != "\"suspended\"" ]; then
   echo -e "${PREFIX} error: the e2edev@somecomp.com/netspeed service is still in the 'active' state."
@@ -203,6 +218,16 @@ if [ $test_good_togo -ne 1 ]; then
 	exit 2
 fi
 
+# make sure the configstate for location service is suspended
+echo -e "${PREFIX} checking service config state for location service..."
+location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev@somecomp.com") |.configState')
+if [ "$location_configstate" != "\"suspended\"" ]; then
+  echo -e "${PREFIX} error: the e2edev@somecomp.com/location service is still in the 'active' state."
+  exit 2
+else
+  echo -e "${PREFIX} e2edev@somecomp.com/location service: suspended"
+fi
+
 echo -e "${PREFIX} wait for 10 seconds..."
 sleep 10
 
@@ -214,21 +239,18 @@ if [ $? -ne 0 ]; then
     exit 2
 fi
 echo -e "${PREFIX} resuming e2edev@somecomp.com/location service..."
-out=$(hzn service configstate resume e2edev@somecomp.com https://bluehorizon.network/services/location)
-if [ $? -ne 0 ]; then
-	echo -e "${PREFIX} error resuming e2edev@somecomp.com/location: $out"
-    exit 2
-fi
+read -d '' sconfig <<EOF
+{
+   "url":         "https://bluehorizon.network/services/location",
+   "org":          "e2edev@somecomp.com",
+   "configState": "active"
+}
+EOF
+out=$(echo "$sconfig" | curl -sLX POST $CERT_VAR -u $USERDEV_ADMIN_AUTH -H "Content-Type: application/json" -H "Accept: application/json" --data @- ${EXCH_URL}/orgs/userdev/nodes/an12345/services_configstate | jq -r '.')
+results "$out"
 
-# make sure the new configstate is set
-echo -e "${PREFIX} checking service config state..."
-location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev@somecomp.com") |.configState')
-if [ "$location_configstate" != "\"active\"" ]; then
-  echo -e "${PREFIX} error: the e2edev@somecomp.com/location service is still in the 'suspended' state."
-  exit 2
-else
-  echo -e "${PREFIX} e2edev@somecomp.com/location service: active"
-fi
+# make sure the new configstate is set for netspeed
+echo -e "${PREFIX} checking service config state for netspeed service..."
 netspeed_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/netspeed") | select(.org == "e2edev@somecomp.com") |.configState')
 if [ "$netspeed_configstate" != "\"active\"" ]; then
   echo -e "${PREFIX} error: the e2edev@somecomp.com/netspeed service is still in the 'suspended' state."
@@ -273,4 +295,14 @@ done
 
 if [ $ag_formed -ne 1 ]; then
 	exit 2
+fi
+
+# make sure the new configstate is set for location service
+echo -e "${PREFIX} checking service config state for location service..."
+location_configstate=$(hzn service configstate list | jq '.configstates[] | select(.url == "https://bluehorizon.network/services/location") | select(.org == "e2edev@somecomp.com") |.configState')
+if [ "$location_configstate" != "\"active\"" ]; then
+  echo -e "${PREFIX} error: the e2edev@somecomp.com/location service is still in the 'suspended' state."
+  exit 2
+else
+  echo -e "${PREFIX} e2edev@somecomp.com/location service: active"
 fi
