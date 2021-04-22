@@ -104,6 +104,14 @@ func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) exch
 	return exchange.NewCustomExchangeContext(userId, passwd, a.Config.AgreementBot.ExchangeURL, a.Config.GetAgbotCSSURL(), newHTTPClientFactory())
 }
 
+func (a *SecureAPI)	setCommonHeaders(w http.ResponseWriter) http.ResponseWriter {
+	w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Add("Pragma", "no-cache, no-store")
+	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
+	w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+	return w
+}
+
 // This function sets up the agbot secure http server
 func (a *SecureAPI) listen() {
 	glog.Info("Starting AgreementBot SecureAPI server")
@@ -138,10 +146,7 @@ func (a *SecureAPI) listen() {
 
 		nocache = func(h http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
-				w.Header().Add("Pragma", "no-cache, no-store")
-				w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
-				w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+				w = a.setCommonHeaders(w)
 				h.ServeHTTP(w, r)
 			})
 		}
@@ -150,11 +155,8 @@ func (a *SecureAPI) listen() {
 
 		nocache = func(h http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
-				w.Header().Add("Pragma", "no-cache, no-store")
+				w = a.setCommonHeaders(w)
 				w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
-				w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
-				w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
 				h.ServeHTTP(w, r)
 			})
 		}
