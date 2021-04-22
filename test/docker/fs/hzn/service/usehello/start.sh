@@ -130,9 +130,9 @@ do
     echo -e "Service usehello running."
     if [ "$MY_VAR1" != "outside" ]
     then
-        co=$(curl -sS 'http://${HZN_ARCH}_helloservice:8000')
+        co=$(curl -sS http://${HZN_ARCH}_helloservice:8000)
         echo -e "Hello service: $co"
-        cpuo=$(curl -sS 'http://${HZN_ARCH}_cpu:8347')
+        cpuo=$(curl -sS http://${HZN_ARCH}_cpu:8347)
         echo -e "CPU Usage: $cpuo"
     fi
 
