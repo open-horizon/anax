@@ -65,7 +65,7 @@ make test TEST_VARS="NOLOOP=1 PATTERN=sloc"
 Light Test:
 
 ```sh
-make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOUPGRADE=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1"
+make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOUPGRADE=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1 NOVAULT=1"
 ```
 
 Here is a full description of all the variables you can use to setup the test the way you want it:
@@ -94,6 +94,7 @@ Here is a full description of all the variables you can use to setup the test th
 - OLDAGBOT=1 - run the agbot based on the current commit in github, i.e. the agbot before you made your changes. This is helpfiul for compatibility testing of new device with previous agbot.
 - MULTIAGBOT=1 - run two instances of agbot for testing pursposes.
 - NOKUBE=1 - Don't use Kubernetes cluster mode in testing.
+- NOVAULT=1 - the hashicorp vault tests are not executed.
 
 ### Debugging
 
