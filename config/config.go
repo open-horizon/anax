@@ -11,6 +11,7 @@ import (
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
 const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
+const VaultURLEnvvarName = "HZN_VAULT_ADDR"
 const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
 const OldMgmtHubCertPath = "HZN_ICP_CA_CERT_PATH"
 const ManagementHubCertPath = "HZN_MGMT_HUB_CERT_PATH"
@@ -122,6 +123,12 @@ type AGConfig struct {
 	MaxExchangeChanges            int              // The maximum number of exchange changes to request on a given call the exchange /changes API.
 	RetryLookBackWindow           uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
 	PolicySearchOrder             bool             // When true, search policies from most recently changed to least recently changed.
+	Vault                         VaultConfig      // The hashicorp vault config to connect to and fetch secrets from.
+}
+
+// Contains the hashicorp vault configuration used within AGConfig.
+type VaultConfig struct {
+	VaultURL   string       // The URL used for accessing the hashicorp vault.
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -152,12 +159,20 @@ func (c *HorizonConfig) GetPartitionStale() uint64 {
 	}
 }
 
+func (c *HorizonConfig) IsVaultConfigured() bool {
+	return c.AgreementBot.Vault != VaultConfig{}
+}
+
 func (c *HorizonConfig) GetAgbotCSSURL() string {
 	return strings.TrimRight(c.AgreementBot.CSSURL, "/")
 }
 
 func (c *HorizonConfig) GetAgbotCSSCert() string {
 	return c.AgreementBot.CSSSSLCert
+}
+
+func (c* HorizonConfig) GetAgbotVaultURL() string {
+	return strings.TrimRight(c.AgreementBot.Vault.VaultURL, "/")
 }
 
 func (c *HorizonConfig) GetAgbotAgreementBatchSize() uint64 {
@@ -270,6 +285,10 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 
 	if fssCSSURL := os.Getenv(FileSyncServiceCSSURLEnvvarName); fssCSSURL != "" {
 		config.Edge.FileSyncService.CSSURL = fssCSSURL
+	}
+
+	if vaultURL := os.Getenv(VaultURLEnvvarName); vaultURL != "" {
+		config.AgreementBot.Vault.VaultURL = vaultURL
 	}
 
 	if noDynamicPoll := os.Getenv(ExchangeMessageNoDynamicPollEnvvarName); noDynamicPoll != "" {
@@ -509,7 +528,8 @@ func (agc *AGConfig) String() string {
 		", FullRescanS: %v"+
 		", MaxExchangeChanges: %v"+
 		", RetryLookBackWindow: %v"+
-		", PolicySearchOrder: %v",
+		", PolicySearchOrder: %v"+
+		", Vault: {%v}",
 		agc.TxLostDelayTolerationSeconds, agc.AgreementWorkers, agc.DBPath, agc.Postgresql.String(),
 		agc.PartitionStale, agc.ProtocolTimeoutS, agc.AgreementTimeoutS, agc.NoDataIntervalS, agc.ActiveAgreementsURL,
 		agc.ActiveAgreementsUser, mask, agc.PolicyPath, agc.NewContractIntervalS, agc.ProcessGovernanceIntervalS,
@@ -518,5 +538,9 @@ func (agc *AGConfig) String() string {
 		agc.SecureAPIListenHost, agc.SecureAPIListenPort, agc.SecureAPIServerCert, agc.SecureAPIServerKey,
 		agc.PurgeArchivedAgreementHours, agc.CheckUpdatedPolicyS, agc.CSSURL, agc.CSSSSLCert, agc.AgreementBatchSize,
 		agc.AgreementQueueSize, agc.MessageQueueScale, agc.QueueHistorySize, agc.FullRescanS, agc.MaxExchangeChanges,
-		agc.RetryLookBackWindow, agc.PolicySearchOrder)
+		agc.RetryLookBackWindow, agc.PolicySearchOrder, agc.Vault)
+}
+
+func (c *VaultConfig) String() string {
+	return fmt.Sprintf("VaultURL: %v,", c.VaultURL)
 }
