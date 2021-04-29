@@ -654,12 +654,12 @@ func NodeServiceConfigStateChange(org string, credToUse string, node string, ser
 		Msg  string `json:"msg"`
 	}
 	putServiceConfigState := exchange.ServiceConfigState{Org: nodeOrg, Url: serviceName, ConfigState: state}
-	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/services_configstate", cliutils.OrgAndCreds(nodeOrg, credToUse), []int{201, 401, 403}, putServiceConfigState, &resp)
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/services_configstate", cliutils.OrgAndCreds(nodeOrg, credToUse), []int{201, 404, 400}, putServiceConfigState, &resp)
 	if httpCode == 400 {
-		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("registeredServices %s not found in '%s/%s'.", serviceName, nodeOrg, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s/%s' not found.", nodeOrg, node))
 	}
 	if httpCode == 404 {
-		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s/%s' not found.", nodeOrg, node))
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("registeredServices %s not found in '%s/%s'.", serviceName, nodeOrg, node))
 	}
 	fmt.Println(resp.Msg)
 }
