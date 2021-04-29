@@ -367,18 +367,15 @@ Environment Variables:
 	exNodeRemovePolicyNode := exNodeRemovePolicyCmd.Arg("node", msgPrinter.Sprintf("Remove policy for this node.")).Required().String()
 	exNodeRemovePolicyForce := exNodeRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	exNodeServiceConfigStateCmd := exNodeCmd.Command("serviceconfigstate", "List and manage service config state in open horizon exchange.")
-	exNodeServiceConfigStateListCmd := exNodeServiceConfigStateCmd.Command("list", "Shows list service config states of node in open horizon exchange.")
+	exNodeServiceConfigStateListCmd := exNodeServiceConfigStateCmd.Command("list", "Shows the configstate of services on a node.")
 	exNodeServiceConfigStateListNode := exNodeServiceConfigStateListCmd.Arg("node", "Service config state list of this node.").Required().String()
-	exNodeServiceConfigStateListIdTok := exNodeServiceConfigStateListCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeServiceConfigStateSuspendCmd := exNodeServiceConfigStateCmd.Command("suspend", "Changes the state service config to suspended")
 	exNodeServiceConfigStateSuspendNode := exNodeServiceConfigStateSuspendCmd.Arg("node", "The node id on which state of service config will be changed to suspended").Required().String()
 	exNodeServiceConfigStateSuspendService := exNodeServiceConfigStateSuspendCmd.Arg("service", "The service name on which state of service config will be changed to suspended").Required().String()
-	exNodeServiceConfigStateSuspendIdTok := exNodeServiceConfigStateSuspendCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 
 	exNodeServiceConfigStateResumeCmd := exNodeServiceConfigStateCmd.Command("resume", "Changes the state service config to active")
 	exNodeServiceConfigStateResumeNode := exNodeServiceConfigStateResumeCmd.Arg("node", "The node id on which state of service config will be changed to active").Required().String()
 	exNodeServiceConfigStateResumeService := exNodeServiceConfigStateResumeCmd.Arg("service", "The service name on which state of service config will be changed to active").Required().String()
-	exNodeServiceConfigStateResumeIdTok := exNodeServiceConfigStateResumeCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", msgPrinter.Sprintf("Change the token of a node resource in the Horizon Exchange."))
 	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", msgPrinter.Sprintf("The node to be changed.")).Required().String()
@@ -747,11 +744,11 @@ Environment Variables:
 		case "node liststatus":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
 		case "node serviceconfigstate list":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeServiceConfigStateListIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "")
 		case "node serviceconfigstate suspend":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeServiceConfigStateSuspendIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "")
 		case "node serviceconfigstate resume":
-			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeServiceConfigStateResumeIdTok)
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "")
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
