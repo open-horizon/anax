@@ -212,8 +212,8 @@ func GetDockerAuth(domain string) (auth dockerclient.AuthConfiguration, err erro
 	}
 
 	for domainName, creds := range auths.Configs {
-		Verbose(i18n.GetMessagePrinter().Sprintf("docker auth domainName: %v", domainName))
 		if (domainName == domain) || (domain == "" && strings.Contains(domainName, "docker.io")) {
+			Verbose(i18n.GetMessagePrinter().Sprintf("docker auth domainName: %v", domainName))
 			auth = creds
 			return
 		}
@@ -262,7 +262,7 @@ func PushDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 
 //PullDockerImage pulls the image from the docker registry. Progress is written to stdout. Function returns the image digest.
 //If an error occurs the error is printed then the function exits.
-func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (digest string) {
+func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (digest string, err error) {
 	var repository string // for PullImageOptions later on
 	if domain == "" {
 		repository = path
@@ -282,18 +282,19 @@ func PullDockerImage(client *dockerclient.Client, domain, path, tag string) (dig
 	opts := dockerclient.PullImageOptions{Repository: repository, Tag: tag, OutputStream: multiWriter}
 
 	var auth dockerclient.AuthConfiguration
-	var err error
 	loggedIn := true
 	if auth, err = GetDockerAuth(domain); err != nil {
+		Verbose(i18n.GetMessagePrinter().Sprintf("unable to get docker auth for docker.io or %s domain: %v", domain, err))
 		loggedIn = false
 	}
 
 	//Pull the image
 	if err = client.PullImage(opts, auth); err != nil {
 		if !loggedIn {
-			Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("unable to pull docker image %v. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: %v", repository+":"+tag, err))
+			err = errors.New(msgPrinter.Sprintf("unable to pull docker image %v. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: %v", repository+":"+tag, err))
 		}
-		Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("unable to pull docker image %v: %v", repository+":"+tag, err))
+		err = errors.New(msgPrinter.Sprintf("unable to pull docker image %v: %v", repository+":"+tag, err))
+		Verbose(err.Error())
 	}
 
 	// Get the digest value from the docker output or the image itself.
@@ -1775,8 +1776,11 @@ func GetNewDockerImageName(image string, dontTouchImage bool, pullImage bool) st
 			// Push it, get the repo digest, and modify the imagePath to use the digest.
 			client := NewDockerClient()
 			digest := ""
+			var err error
 			if pullImage {
-				digest = PullDockerImage(client, domain, path, tag) // this will error out if pull fails
+				if digest, err = PullDockerImage(client, domain, path, tag); err != nil {
+					Fatal(CLI_GENERAL_ERROR, msgPrinter.Sprintf("Docker pull failure: %v", err))
+				}
 			} else {
 				digest = PushDockerImage(client, domain, path, tag) // this will error out if the push fails or can't get the digest
 			}
