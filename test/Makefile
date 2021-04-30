@@ -30,8 +30,10 @@ MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB
 
 BRANCH_NAME ?= ""
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
+VAULT_EXCH_PLUGIN_SOURCE ?= ../../vault-exchange-auth/docker/bin
 AGBOT_TEMPFS := $(CURDIR)/docker/tempfs/agbot
 EXCH_TEMPFS := $(CURDIR)/docker/tempfs/exchange
+VAULT_TEMPFS := $(CURDIR)/docker/tempfs/vault
 CSS_CONFIG := $(CURDIR)/docker/fs/etc/edge-sync-service/
 VAULT_CONFIG := $(CURDIR)/docker/fs/etc/vault/config.json
 UDS := /var/run/horizon/
@@ -235,8 +237,21 @@ run-exchange-db: test-network
 		-e POSTGRES_HOST_AUTH_METHOD=trust \
 		-t $(DOCKER_EXCHDB_INAME):$(DOCKER_EXCHDB_TAG)
 
-run-vault: test-network 
+run-vault: test-network
 	if [[ "$(HZN_VAULT)" == "true" ]]; then \
+		echo "Populating the vault config and auth plugin"; \
+		mkdir -p $(VAULT_TEMPFS)/plugins; \
+		mkdir -p $(AGBOT_TEMPFS)/root/vault; \
+		# Place the vault plugin in the filesystem where it will be mounted to the vault \
+		cp $(VAULT_EXCH_PLUGIN_SOURCE)/hznvaultauth $(VAULT_TEMPFS)/plugins/.; \
+		# Put all the vault definitions we need into the e2edev container to boostrap the vault \
+		cp -R $(CURDIR)/docker/fs/vault $(AGBOT_TEMPFS)/root; \
+		# Place the vault plugin in the e2edev container \
+		cp $(VAULT_EXCH_PLUGIN_SOURCE)/hznvaultauth $(AGBOT_TEMPFS)/root/vault/.; \
+		# Place the vault config file in the filesystem where it will be mounted to the vault \
+		mkdir -p $(VAULT_TEMPFS)/config; \
+		cp $(CURDIR)/docker/fs/etc/vault/config.hcl $(VAULT_TEMPFS)/config/.; \
+		# Start the vault container \
 		echo "Handling $(DOCKER_HASHICORP_VAULT_CNAME)"; \
 		docker/docker_run.bash "$(DOCKER_HASHICORP_VAULT_CNAME)" \
 			docker run -d \
@@ -246,6 +261,9 @@ run-vault: test-network
 			-e VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
 			-e VAULT_DEV_ROOT_TOKEN_ID=$(VAULT_DEV_ROOT_TOKEN_ID) \
 			-e VAULT_LOG_LEVEL=$(shell jq ".VAULT_LOG_LEVEL" $(VAULT_CONFIG)) \
+			-v $(VAULT_TEMPFS)/plugins:/vault/plugins \
+			-v $(VAULT_TEMPFS)/config:/vault/config \
+			-v $(AGBOT_TEMPFS)/certs/:/openhorizon/certs/ \
 			-t $(DOCKER_HASHICORP_VAULT_INAME):$(DOCKER_HASHICORP_VAULT_TAG); \
 	else \
 		echo "Skipping vault container $(DOCKER_HASHICORP_VAULT_CNAME)"; \
@@ -338,7 +356,6 @@ agbot-docker-prereqs: get-anax
 	mkdir -p $(AGBOT_TEMPFS)/usr/local/bin $(AGBOT_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
-	rm -r $(AGBOT_TEMPFS)/etc/vault
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(AGBOT_TEMPFS)/root
 	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
@@ -371,6 +388,8 @@ hashicorp-vault-image:
 test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-vault run-agbot
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
+	@echo -e  "\nTesting and bootstrapping the vault"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_vault.sh"
 	@echo -e  "\nSetting up agent in kube"
 	$(TEST_VARS) ARCH=$(arch) gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW)
 	@echo -e  "\nStarting tests"
