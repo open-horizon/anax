@@ -3,10 +3,6 @@ package main
 
 import (
 	"flag"
-	"github.com/open-horizon/anax/cli/sdo"
-	"github.com/open-horizon/anax/version"
-	"os"
-	"strings"
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -24,6 +20,7 @@ import (
 	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/cli/sdo"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/sync_service"
@@ -33,9 +30,12 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	exch "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
+	"os"
 	"runtime"
+	"strings"
 )
 
 func main() {
