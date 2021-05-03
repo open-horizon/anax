@@ -31,32 +31,6 @@ else
   CERT_VAR=""
 fi
 
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  # Clean up the exchange DB to make sure we start out clean
-  echo "Drop and recreate the exchange DB."
-
-  # loop until DBTOK contains a string value
-  while :
-  do
-    DBTOK=$(curl -sLX GET -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/admin/dropdb/token" | jq -r '.token')
-    if test -z "$DBTOK"
-    then
-      sleep 5
-    else
-      break
-    fi
-  done
-
-  DROPDB=$(curl -sLX POST -u "root/root:"$DBTOK "${EXCH_URL}/admin/dropdb" | jq -r '.msg')
-  echo "Exchange DB Drop Response: $DROPDB"
-
-  INITDB=$(curl -sLX POST -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/admin/initdb" | jq -r '.msg')
-  echo "Exchange DB Init Response: $INITDB"
-
-  cd /root
-
-else
-
   cd /root
 
   echo "Delete e2edev@somecomp.com..."
@@ -118,7 +92,6 @@ else
   echo "$DL8PATTERNSNS"
 
   sleep 30
-fi
 
 # Create the organizations we need
 echo "Creating e2edev@somecomp.com organization..."
@@ -130,12 +103,6 @@ echo "Creating userdev organization..."
 CR8UORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"UserDev","description":"UserDevTest"}' "${EXCH_URL}/orgs/userdev" | jq -r '.msg')
 echo "$CR8UORG"
 
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  echo "Creating IBM organization..."
-  CR8IORG=$(curl -sLX POST --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"IBMorg","description":"IBM"}' "${EXCH_URL}/orgs/IBM" | jq -r '.msg')
-  echo "$CR8IORG"
-fi
-
 echo "Creating Customer1 organization..."
 CR8C1ORG=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"label":"Customer1","description":"The Customer1 org"}' "${EXCH_URL}/orgs/Customer1" | jq -r '.msg')
 echo "$CR8C1ORG"
@@ -146,7 +113,7 @@ echo "$CR8C2ORG"
 
 # Register a hub admin user in the exchange
 echo "Creating a hub admin user in the exchange"
-CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"hubadminpw","email":"me%40gmail.com","hubAdmin":true}' "${EXCH_URL}/orgs/root/users/hubadmin" | jq -r '.msg')
+CR8EADM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d "{\"password\":\"${EXCHANGE_HUB_ADMIN_PW}\",\"email\":\"me%40gmail.com\",\"hubAdmin\":true}" "${EXCH_URL}/orgs/root/users/hubadmin" | jq -r '.msg')
 echo "$CR8EADM"
 
 # Register an e2edev@somecomp.com admin user in the exchange
@@ -171,7 +138,7 @@ echo "$CR82ICPADM"
 
 # Register an IBM admin user in the exchange
 echo "Creating an admin user for IBM org..."
-CR8IBM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d '{"password":"ibmadminpw","email":"ibmadmin%40ibm.com","admin":true}' "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
+CR8IBM=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" -d "{\"password\":\"${EXCHANGE_SYSTEM_ADMIN_PW}\",\"email\":\"ibmadmin%40ibm.com\",\"admin\":true}" "${EXCH_URL}/orgs/IBM/users/ibmadmin" | jq -r '.msg')
 echo "$CR8IBM"
 
 # Register agreement bot user in the exchange
@@ -210,7 +177,7 @@ REGANAX1C=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --
 echo "$REGANAX1C"
 
 DEVICE_NUM=6
-NUM_AGENTS=$((${MUL_AGENTS}+$DEVICE_NUM))
+NUM_AGENTS=$((${MULTIAGENTS}+$DEVICE_NUM))
 while [ ${DEVICE_NUM} -lt ${NUM_AGENTS} ]; do
   echo "Registering Anax device${DEVICE_NUM}..."
   REGANAXMUL=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "e2edev@somecomp.com/anax1:anax1pw" -d '{"token":"abcdefg","name":"anaxdev","registeredServices":[],"msgEndPoint":"","softwareVersions":{},"publicKey":"","pattern":"","arch":"${ARCH}"}' "${EXCH_URL}/orgs/e2edev@somecomp.com/nodes/anaxdevice${DEVICE_NUM}" | jq -r '.msg')
@@ -228,18 +195,8 @@ done
 # Register agreement bot in the exchange
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-    AGBOT_AUTH="IBM/agbot1:agbot1pw"
-  else
-    AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
-  fi
+  AGBOT_AUTH="root/root:${EXCH_ROOTPW}"
   ORG="IBM"
-
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-    echo "Registering Agbot instance1..."
-    REGAGBOT1=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}" | jq -r '.msg')
-    echo "$REGAGBOT1"
-  fi
 
   # register all patterns and business policies for e2edev@somecomp.com org to agbot1
   REGAGBOTE2EDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"*", "nodeOrgid": "e2edev@somecomp.com"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns" | jq -r '.msg')
@@ -256,12 +213,6 @@ then
   echo "$REGAGBOTUSERDEV"
 
 
-  if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-    echo "Registering Agbot instance2..."
-    REGAGBOT2=$(curl -sLX PUT --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"token":"abcdefg","name":"agbotdev","msgEndPoint":"","publicKey":""}' "${EXCH_URL}/orgs/$ORG/agbots/ag54321" | jq -r '.msg')
-    echo "$REGAGBOT2"
-  fi
-
   # register msghub patterns to agbot1
   if [ "${TEST_MSGHUB}" = "1" ]; then
     REGAGBOTCPU2MSGHUB=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_cpu2msghub" | jq -r '.msg')
@@ -271,10 +222,6 @@ then
   sleep 30
 fi
 
-# Clean up CSS
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
-  ./clean_css.sh
-fi
 
 # Create Orgs in CSS
  ./init_sync_service.sh

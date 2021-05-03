@@ -85,21 +85,19 @@ function run_and_check {
   local api="$1"
   local comp_input="$2"
   echo "$comp_input" | jq -r '.'
-  CMD="curl -LX GET -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} --data @- ${AGBOT_SAPI_URL}/${api}"
+  CMD="curl -LX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} --data @- ${AGBOT_SAPI_URL}/${api}"
   echo "$CMD"
-  RES=$(echo "$comp_input" | curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} --data @- ${AGBOT_SAPI_URL}/${api})
+  RES=$(echo "$comp_input" | curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} --data @- ${AGBOT_SAPI_URL}/${api})
   results "$RES" "$3" "$4"
 }
 
 # get the cert file
-if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  CERT_FILE="/home/agbotuser/keys/agbotapi.crt"
+if [ ${CERT_LOC} -eq "1" ]; then
+  CERT_VAR="--cacert /certs/agbotapi.crt"
 else
-  # agbot is remote
-  CERT_FILE="/certs/agbotapi.crt"
+  CERT_VAR=""
 fi
 
-echo -e "${PREFIX} the cert file name is $CERT_FILE"
 echo -e "${PREFIX} the agbot secure api url is $AGBOT_SAPI_URL"
 
 for api in "deploycheck/policycompatible" "deploycheck/userinputcompatible" "deploycheck/deploycompatible"
@@ -107,7 +105,7 @@ do
   echo ${api}
 
   echo -e "\n${PREFIX} test /${api} with unauthorized user."
-  CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u myorg/me:passwd ${AGBOT_SAPI_URL}/${api}"
+  CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u myorg/me:passwd ${AGBOT_SAPI_URL}/${api}"
   echo "$CMD"
   RES=$($CMD)
   results "$RES" "401" "Failed to authenticate"
@@ -130,7 +128,7 @@ do
   fi	  
 
   echo -e "\n${PREFIX} test /${api} without input."
-  CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${E2EDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+  CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${E2EDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
   echo "$CMD"
   RES=$($CMD)
   results "$RES" "400" "No input found"

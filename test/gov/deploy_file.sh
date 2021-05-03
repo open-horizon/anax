@@ -95,6 +95,7 @@ else
         admin_pw="e2edevadminpw"
     fi
 
+echo -e "echo \"$resmeta\" | curl -sLX PUT -w \"%{http_code}\" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} \"${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}\" --data @-"
   ADDM=$(echo "$resmeta" | curl -sLX PUT -w "%{http_code}" $CERT_VAR -u ${3}/${admin_user}:${admin_pw} "${CSS_URL}/api/v1/objects/${3}/${4}/${FILENAME}" --data @-)
 
   if [ "$ADDM" != "204" ]

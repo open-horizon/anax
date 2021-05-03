@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: openhorizon-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      volumes:
+      - name: agent-pvc-vol
+        persistentVolumeClaim:
+          claimName: agent-pvc-horizon
+      - name: agent-etc-vol
+        configMap:
+          name: agent-configmap-horizon
+      containers:
+      - name: anax
+        image: openhorizon/${ARCH}_anax_k8s:testing
+        imagePullPolicy: Never
+        volumeMounts:
+        - mountPath: /var/horizon
+          name: agent-pvc-vol
+        - mountPath: /etc/horizon/policy.d
+          name: agent-pvc-vol
+        - mountPath: /etc/default/horizon
+          subPath: horizon
+          name: agent-etc-vol
+        ports:
+        - containerPort: 8510
+        securityContext:
+          allowPrivilegeEscalation: true
+        env:
+        - name: DOCKER_NAME
+          value: "horizon1"
+        - name: HZN_ORG_ID
+          value: "userdev"
+        - name: HZN_EXCHANGE_USER_AUTH
+          value: "userdev/userdevadmin:userdevadminpw"
+        - name: HZN_SSL_SKIP_VERIFY
+          value: "1"
+        - name: ANAX_LOG_LEVEL
+          value: "5"

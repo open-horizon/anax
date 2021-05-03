@@ -799,13 +799,13 @@ verifyUserAccessForPublicObject $USER_ORG $NODE_ID $NODE_TOKEN $PUBLIC_OBJ_ORG $
 # root/hubadmin should be able to create object in IBM org
 USER_ORG="root"
 USER_REG_USERNAME="hubadmin"
-USER_REG_USERPWD="hubadminpw"
+USER_REG_USERPWD="${EXCHANGE_HUB_ADMIN_PW}"
 verifyAdminUserCanCreatePublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG
 
 # ibm org admin should be able to create object in IBM org
 USER_ORG="IBM"
 USER_REG_USERNAME="ibmadmin"
-USER_REG_USERPWD="ibmadminpw"
+USER_REG_USERPWD="${EXCHANGE_SYSTEM_ADMIN_PW}"
 verifyAdminUserCanCreatePublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG
 
 # set back to the value before sync service testing
