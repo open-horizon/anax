@@ -1579,7 +1579,7 @@
     {
       "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
       "message": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
-      "translation": "Seu endereço de e-mail que deve ser associado a esta conta do usuário ao criá-la no Horizon Exchange. This argument is optional",
+      "translation": "Seu endereço de e-mail que deve ser associado a esta conta do usuário ao criá-la no Horizon Exchange. Este argumento é opcional",
       "fuzzy": true
     },
     {

@@ -16,6 +16,7 @@ type WorkloadStatus struct {
 	Arch           string            `json:"arch,omitempty"`
 	Containers     []ContainerStatus `json:"containerStatus"`
 	OperatorStatus interface{}       `json:"operatorStatus,omitempty"`
+	ConfigState    string            `json:"configState,omitempty"`
 }
 
 type ContainerStatus struct {

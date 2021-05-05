@@ -394,6 +394,8 @@ func DeleteCacheResourceFromChange(change ExchangeChange, nodeId string) {
 		DeleteCacheResource(SVC_POL_TYPE_CACHE, ServicePolicyCacheMapKey(change.OrgID, id, arch, vers))
 	} else if change.IsOrg() && (change.Operation == CHANGE_OPERATION_CREATED || change.Operation == CHANGE_OPERATION_DELETED) {
 		DeleteOrgCachedResources(change.OrgID)
+	} else if change.IsOrg() {
+		DeleteCacheResource(ORG_DEF_TYPE_CACHE, change.OrgID)
 	}
 }
 

@@ -18,15 +18,18 @@ VERB_DEBUG=5
 
 # You can add to these lists of supported values by setting/exporting the corresponding <varname>_APPEND variable to a string of space-separated words.
 # This allows you to experiment with platforms or variations that are not yet officially tested/supported.
-SUPPORTED_OS=(macos linux $SUPPORTED_OS_APPEND)   # compared to what our get_os() returns
-SUPPORTED_LINUX_DISTRO=(ubuntu raspbian debian rhel centos $SUPPORTED_LINUX_DISTRO_APPEND)   # compared to what our detect_distro() sets DISTRO to
 SUPPORTED_DEBIAN_VARIANTS=(ubuntu raspbian debian $SUPPORTED_DEBIAN_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 SUPPORTED_DEBIAN_VERSION=(focal bionic buster xenial stretch $SUPPORTED_DEBIAN_VERSION_APPEND)   # compared to what our detect_distro() sets CODENAME to
 SUPPORTED_DEBIAN_ARCH=(amd64 arm64 armhf $SUPPORTED_DEBIAN_ARCH_APPEND)   # compared to dpkg --print-architecture
 SUPPORTED_REDHAT_VARIANTS=(rhel centos $SUPPORTED_REDHAT_VARIANTS_APPEND)   # compared to what our detect_distro() sets DISTRO to
 # Note: RHEL 8.3 is not officially supported yet, but is enabled only for testing and tech preview purposes
-SUPPORTED_REDHAT_VERSION=(7.9 8.1 8.2 8.3 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
+
+# Note: version 8 is added because that is what /etc/os-release returns for DISTRO_VERSION_NUM on centos
+SUPPORTED_REDHAT_VERSION=(7.9 8.1 8.2 8.3 8 $SUPPORTED_REDHAT_VERSION_APPEND)   # compared to what our detect_distro() sets DISTRO_VERSION_NUM to. For fedora versions see https://fedoraproject.org/wiki/Releases,
 SUPPORTED_REDHAT_ARCH=(x86_64 aarch64 ppc64le $SUPPORTED_REDHAT_ARCH_APPEND)   # compared to uname -m
+
+SUPPORTED_OS=(macos linux)   # compared to what our get_os() returns
+SUPPORTED_LINUX_DISTRO=(${SUPPORTED_DEBIAN_VARIANTS[@]} ${SUPPORTED_REDHAT_VARIANTS[@]})   # compared to what our detect_distro() sets DISTRO to
 
 HOSTNAME=$(hostname -s)
 MAC_PACKAGE_CERT="horizon-cli.crt"
@@ -66,8 +69,8 @@ Required Input Variables (via flag, environment, or config file):
 
 Options/Flags:
     -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT . (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. All other variables can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
-    -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
+    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. (If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added.) All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
+    -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
     -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
     -j    File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
     -t    Branch to use in the APT repo specified with -i. Default is 'updates' (This flag is equivalent to APT_REPO_BRANCH)
@@ -84,14 +87,24 @@ Options/Flags:
     -D    Node type of agent being installed: device, cluster. Default: device. (This flag is equivalent to AGENT_DEPLOY_TYPE)
     -U    Internal url for edge cluster registry. If not specified, this script will auto-detect the value if it is a small, single-node cluster (e.g. k3s or microk8s). For OCP use: image-registry.openshift-image-registry.svc:5000. (This flag is equivalent to INTERNAL_URL_FOR_EDGE_CLUSTER_REGISTRY)
     -l    Logging verbosity level. Display messages at this level and lower: 1: error, 2: warning, 3: info (default), 4: verbose, 5: debug. Default is 3, info. (This flag is equivalent to AGENT_VERBOSITY)
-    -f    Install older version of agent (on macos) and/or overwrite node configuration without prompt. (This flag is equivalent to AGENT_OVERWRITE)
+    -f    Install older version of the horizon agent and CLI packages. (This flag is equivalent to AGENT_OVERWRITE)
     -b    Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
+    -C    Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
     -h    This usage
 
 Additional Edge Device Variables (in environment or config file):
     NODE_ID_MAPPING_FILE: File to map hostname or IP to node id, for bulk install.  Default: node-id-mapping.csv
     AGENT_IMAGE_TAR_FILE: the file name of the device agent docker image in tar.gz format. Default: $DEFAULT_AGENT_IMAGE_TAR_FILE
     AGENT_WAIT_MAX_SECONDS: Maximum seconds to wait for the Horizon agent to start or stop. Default: 30
+
+Optional Edge Device Environment Variables For Testing New Distros - Not For Production Use
+    SUPPORTED_DEBIAN_VARIANTS_APPEND: a debian variant that should be added to the default list: ${SUPPORTED_DEBIAN_VARIANTS[*]}
+    SUPPORTED_DEBIAN_VERSION_APPEND: a debian version that should be added to the default list: ${SUPPORTED_DEBIAN_VERSION[*]}
+    SUPPORTED_DEBIAN_ARCH_APPEND: a debian architecture that should be added to the default list: ${SUPPORTED_DEBIAN_ARCH[*]}
+    SUPPORTED_REDHAT_VARIANTS_APPEND: a Red Hat variant that should be added to the default list: ${SUPPORTED_REDHAT_VARIANTS[*]}
+    SUPPORTED_REDHAT_VERSION_APPEND: a Red Hat version that should be added to the default list: ${SUPPORTED_REDHAT_VERSION[*]}
+    SUPPORTED_REDHAT_ARCH_APPEND: a Red Hat architecture that should be added to the default list: ${SUPPORTED_REDHAT_ARCH[*]}
+
 
 Additional Edge Cluster Variables (in environment or config file):
     IMAGE_ON_EDGE_CLUSTER_REGISTRY: override the agent image path (without tag) if you want it to be different from what this script will default it to
@@ -114,7 +127,7 @@ function now() {
 # Note: could not put this in a function, because getopts would only process the function args
 AGENT_VERBOSITY=3   # default until we get it from all of the possible places
 if [[ $AGENT_VERBOSITY -ge $VERB_DEBUG ]]; then echo $(now) "getopts begin"; fi
-while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:" opt; do
+while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:C" opt; do
     case $opt in
     c)  ARG_AGENT_CERT_FILE="$OPTARG"
         ;;
@@ -157,6 +170,8 @@ while getopts "c:i:j:p:k:u:d:z:hl:n:sfbw:o:O:T:t:D:a:U:" opt; do
     f)  ARG_AGENT_OVERWRITE=true
         ;;
     b)  ARG_AGENT_SKIP_PROMPT=true
+        ;;
+    C)  ARG_AGENT_ONLY_CLI=true
         ;;
     h)  usage 0
         ;;
@@ -265,6 +280,8 @@ function adjust_input_file_path() {
     INPUT_FILE_PATH="${INPUT_FILE_PATH%/}"   # remove trailing / if there
     if [[ $INPUT_FILE_PATH == 'css:' ]]; then
         INPUT_FILE_PATH="$INPUT_FILE_PATH$CSS_OBJ_PATH_DEFAULT"
+    elif [[ $INPUT_FILE_PATH == 'anax:' ]]; then
+        INPUT_FILE_PATH='https://github.com/open-horizon/anax/releases/latest/download'
     elif [[ $INPUT_FILE_PATH == https://github.com/open-horizon/anax/releases* ]]; then
         if [[ $INPUT_FILE_PATH == 'https://github.com/open-horizon/anax/releases' ]]; then
             INPUT_FILE_PATH="$INPUT_FILE_PATH/latest/download"   # default to the latest release
@@ -318,6 +335,22 @@ function get_anax_release_version() {
     #else return empty string, meaning we couldn't find it (so they should probably just use latest)
 }
 
+# Download the certificate file from CSS if not present
+function get_certificate() {
+    log_debug "get_certificate() begin"
+
+    local input_file_path=$1   # normally the value of INPUT_FILE_PATH
+    if [[ $input_file_path == css:* ]]; then
+            if [[ -n $AGENT_CERT_FILE && ! -f $AGENT_CERT_FILE ]]; then
+		    download_css_file "$input_file_path/$AGENT_CERT_FILE_DEFAULT"
+	    fi
+    fi
+
+    #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
+
+    log_debug "get_certificate() end"
+}
+
 # Download a file from the specified CSS path
 function download_css_file() {
     log_debug "download_css_file() begin"
@@ -354,7 +387,7 @@ function download_css_file() {
             cert_flag="--cacert $AGENT_CERT_FILE"   # we got it
         fi
     fi
-    if [[ -z $cert_flag ]]; then
+    if [[ -z $cert_flag && $HZN_FSS_CSSURL == https:* ]]; then   #todo: this check still doesn't account for a CA-trusted cert
         # Still didn't find a valid cert. Get the cert from CSS by disabling cert checking
         rm -f "$AGENT_CERT_FILE"   # this probably has the error msg from the previous curl in it
         log_info "Downloading file $remote_cert_path using --insecure ..."
@@ -366,7 +399,6 @@ function download_css_file() {
             log_fatal 3 "could not download $remote_cert_path: $err_msg"
         fi
         cert_flag="--cacert $AGENT_CERT_FILE"   # we got it
-        #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
     fi
 
     # Get the file they asked for
@@ -391,7 +423,7 @@ function download_anax_release_file() {
 # If necessary, download the cfg file from a remote location.
 function download_config_file() {
     log_debug "download_config_file() begin"
-    local input_file_path=$1   # normally the value of INPUT_FILE_PATH
+    local input_file_path=$1   # normally the value of INPUT_FILE_PATH or AGENT_CFG_FILE
     if [[ $input_file_path == css:* ]]; then
         download_css_file "$input_file_path/$AGENT_CFG_FILE_DEFAULT"
     # the cfg is specific to the instance of the cluster, so not available from anax/release
@@ -410,10 +442,14 @@ function read_config_file() {
     if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]]; then
         :   # just fall thru this if-else to read the config file
     elif using_remote_input_files 'cfg'; then
-        if [[ -n $AGENT_CFG_FILE && $AGENT_CFG_FILE != $AGENT_CFG_FILE_DEFAULT ]]; then
-            log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
+        if [[ $AGENT_CFG_FILE == css:*  ]]; then
+            download_config_file "$AGENT_CFG_FILE"
+        else
+            if [[ -n $AGENT_CFG_FILE && $AGENT_CFG_FILE != $AGENT_CFG_FILE_DEFAULT ]]; then
+                log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
+            fi
+            download_config_file "$INPUT_FILE_PATH"
         fi
-        download_config_file "$INPUT_FILE_PATH"
         AGENT_CFG_FILE=$AGENT_CFG_FILE_DEFAULT   # this is where download_config_file() will put it
     elif [[ -z $AGENT_CFG_FILE ]]; then
         if [[ -f $AGENT_CFG_FILE_DEFAULT ]]; then
@@ -460,6 +496,9 @@ function get_all_variables() {
     get_variable INPUT_FILE_PATH '.'
     adjust_input_file_path
     get_variable AGENT_CFG_FILE "$(get_cfg_file_default)"
+    if [[ $AGENT_CFG_FILE == 'css:' ]]; then
+        AGENT_CFG_FILE="$AGENT_CFG_FILE$CSS_OBJ_PATH_DEFAULT"   # expand the shorthand syntax
+    fi
     if [[ -n $AGENT_CFG_FILE && -f $AGENT_CFG_FILE ]] || ! using_remote_input_files 'cfg'; then
         # Read this as soon as possible, so things like HZN_ORG_ID can be specified in the cfg file
         read_config_file
@@ -494,10 +533,16 @@ function get_all_variables() {
     get_variable AGENT_REGISTRATION_TIMEOUT
     get_variable AGENT_OVERWRITE 'false'
     get_variable AGENT_SKIP_PROMPT 'false'
+    get_variable AGENT_ONLY_CLI 'false'
     get_variable AGENT_INSTALL_ZIP 'agent-install-files.tar.gz'
     get_variable AGENT_DEPLOY_TYPE 'device'
     get_variable AGENT_WAIT_MAX_SECONDS '30'
 
+    OS=$(get_os)
+    detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
+    ARCH=$(get_arch)
+    log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
+    
     if is_device; then
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
@@ -506,12 +551,12 @@ function get_all_variables() {
     elif is_cluster; then
         # check kubectl is available
         KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
-        if command -v "$KUBECTL" >/dev/null 2>&1; then
-            : # nothing more to do
+        if command -v k3s kubectl; then
+            KUBECTL="k3s kubectl"
         elif command -v microk8s.kubectl >/dev/null 2>&1; then
             KUBECTL=microk8s.kubectl
-        elif command -v k3s kubectl; then
-            KUBECTL="k3s kubectl"
+        elif command -v "$KUBECTL" >/dev/null 2>&1; then
+            : # nothing more to do
         else
             log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH"
         fi
@@ -526,8 +571,9 @@ function get_all_variables() {
             if [[ $KUBECTL == "microk8s.kubectl" ]]; then
                 default_image_registry_on_edge_cluster="localhost:32000/$AGENT_NAMESPACE/amd64_anax_k8s"
             elif [[ $KUBECTL == "k3s kubectl" ]]; then
+                local image_arch=$(get_image_arch)
                 local k3s_registry_endpoint=$($KUBECTL get service docker-registry-service | grep docker-registry-service | awk '{print $3;}'):5000
-                default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/amd64_anax_k8s"
+                default_image_registry_on_edge_cluster="$k3s_registry_endpoint/$AGENT_NAMESPACE/${image_arch}_anax_k8s"
             else
                 # ocp - image registry should be enabled/exposed and created in $AGENT_NAMESPACE before running agent install script
                 local default_image_registry_on_edge_cluster=$($KUBECTL get is amd64_anax_k8s -n $AGENT_NAMESPACE -o json | jq -r .status.publicDockerImageRepository)
@@ -544,24 +590,19 @@ function get_all_variables() {
     fi
 
     # Adjust some of the variable values or add related variables
-    OS=$(get_os)
-    detect_distro   # if linux, sets: DISTRO, DISTRO_VERSION_NUM, CODENAME
-    ARCH=$(get_arch)
-    log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
-
     # The edge node id can be specified 4 different ways: -d (HZN_NODE_ID), the first part of -a (HZN_EXCHANGE_NODE_AUTH), NODE_ID(deprecated) or HZN_DEVICE_ID. Need to reconcile all of them.
     local node_id   # just used in this section of code to sort out this mess
     # find the 1st occurrence of the user specifying node it
-    if [[ -n ${HZN_EXCHANGE_NODE_AUTH%%:*} ]]; then 
+    if [[ -n ${HZN_EXCHANGE_NODE_AUTH%%:*} ]]; then
         node_id=${HZN_EXCHANGE_NODE_AUTH%%:*}
         log_info "Using node id from HZN_EXCHANGE_NODE_AUTH"
-    elif [[ -n $HZN_NODE_ID ]]; then 
+    elif [[ -n $HZN_NODE_ID ]]; then
         node_id=$HZN_NODE_ID
         log_info "Using node id from HZN_NODE_ID"
-    elif [[ -n $NODE_ID ]]; then 
+    elif [[ -n $NODE_ID ]]; then
         node_id=$NODE_ID
         log_warning "Using node id from NODE_ID. NODE_ID is deprecated, please use HZN_NODE_ID in the future."
-    elif [[ -n $HZN_DEVICE_ID ]]; then 
+    elif [[ -n $HZN_DEVICE_ID ]]; then
         node_id=$HZN_DEVICE_ID
         log_warning "Using node id from HZN_DEVICE_ID"
     else   # not specified, default it
@@ -620,6 +661,13 @@ function check_variables() {
     # if a node policy is non-empty, check if the file exists
     if [[ -n $HZN_NODE_POLICY && ! -f $HZN_NODE_POLICY ]]; then
         log_fatal 1 "HZN_NODE_POLICY file '$HZN_NODE_POLICY' does not exist"
+    fi
+
+    # several flags can't be set with AGENT_ONLY_CLI
+    if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+        if [[ -n $HZN_EXCHANGE_PATTERN || -n $HZN_NODE_POLICY || -n $ARG_AGENT_WAIT_FOR_SERVICE || -n $ARG_AGENT_REGISTRATION_TIMEOUT || -n $ARG_AGENT_WAIT_FOR_SERVICE_ORG ]]; then
+            log_fatal 1 "Since AGENT_ONLY_CLI=='$AGENT_ONLY_CLI', none of these can be set: HZN_EXCHANGE_PATTERN, HZN_NODE_POLICY, AGENT_WAIT_FOR_SERVICE, AGENT_REGISTRATION_TIMEOUT, AGENT_WAIT_FOR_SERVICE_ORG"
+        fi
     fi
 
     if is_cluster && [[ "$USE_EDGE_CLUSTER_REGISTRY" == "true" ]]; then
@@ -773,9 +821,14 @@ function version_gt() {
 # Return 0 (true) if we are getting this input file from a remote location
 function using_remote_input_files() {
     local whichFile=${1:-pkg}   # (optional) Can be: pkg, crt, cfg, yml, uninstall
-    if [[ $whichFile =~ ^(crt|cfg)$ ]]; then
-        # These files are specific to the instance of the cluster, so only available in CSS
+    if [[ $whichFile == 'crt' ]]; then
+        # This file is specific to the instance of the cluster, so only available in CSS
         if [[ $INPUT_FILE_PATH == css:* ]]; then
+            return 0
+        fi
+    elif [[ $whichFile == 'cfg' ]]; then
+        # This file is specific to the instance of the cluster, so only available in CSS
+        if [[ $INPUT_FILE_PATH == css:* || $AGENT_CFG_FILE == css:* ]]; then
             return 0
         fi
     else   # the other files (pkg, yml, uninstall) are available from either
@@ -970,7 +1023,7 @@ function create_or_update_horizon_defaults() {
     log_debug "create_or_update_horizon_defaults() begin"
     local anax_port=$1   # optional
     local abs_certificate=$(store_cert_file_permanently "$AGENT_CERT_FILE")   # can return empty string
-    log_verbose "Permament localtion of certificate file: $abs_certificate"
+    log_verbose "Permanent location of certificate file: $abs_certificate"
 
     if [[ ! -f /etc/default/horizon ]]; then
         log_info "Creating /etc/default/horizon ..."
@@ -1024,22 +1077,31 @@ function install_macos() {
             echo "Jq is required, installing it using brew, this could take a minute..."
             runCmdQuietly brew install jq
     fi
-    confirmCmds socat docker jq
 
-    check_existing_exch_node_is_correct_type "device"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        confirmCmds socat docker jq
 
-    if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
-        unregister
+        check_existing_exch_node_is_correct_type "device"
+
+        if is_agent_registered && (! is_horizon_defaults_correct || ! is_registration_correct); then
+            unregister
+        fi
     fi
+
+    get_certificate $INPUT_FILE_PATH
 
     create_or_update_horizon_defaults
 
     get_pkgs
+
     mac_trust_certs "${PACKAGES}/${MAC_PACKAGE_CERT}" "$AGENT_CERT_FILE"
     install_mac_horizon-cli
-    start_device_agent_container   # even if it already running, it restarts it
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        start_device_agent_container   # even if it already running, it restarts it
+
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    fi
 
     log_debug "install_macos() end"
 }
@@ -1073,40 +1135,46 @@ function debian_device_install_prereqs() {
     log_debug "debian_device_install_prereqs() begin"
     log_info "Updating apt package index..."
     runCmdQuietly apt-get update -q
-    log_info "Installing prerequisites, this could take a minute..."
-    runCmdQuietly apt-get install -yqf curl jq software-properties-common
 
-    if ! isCmdInstalled docker; then
-        log_info "Docker is required, installing it..."
-        curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
-        add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
-        runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
+    log_info "Installing prerequisites, this could take a minute..."
+    if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+        runCmdQuietly apt-get install -yqf curl jq
+    else
+        runCmdQuietly apt-get install -yqf curl jq software-properties-common
+
+        if ! isCmdInstalled docker; then
+            log_info "Docker is required, installing it..."
+            curl -fsSL https://download.docker.com/linux/$DISTRO/gpg | apt-key add -
+            add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/$DISTRO $(lsb_release -cs) stable"
+            runCmdQuietly apt-get install -yqf docker-ce docker-ce-cli containerd.io
+        fi
     fi
     log_debug "debian_device_install_prereqs() end"
 }
 
-# Returns 0 (true) if the deb pkgs to be installed are newer than the pkgs already installed
-function is_newer_deb_pkgs() {
-    # Make the decision based on the horizon deb pkg, because that's the one we really care about (whether we have to restart the daemon), plus the horizon deb requires the horizon-cli deb be the same version.
+# Returns 0 (true) if the deb pkg to be installed is newer than the corresponding pkg already installed
+function is_newer_deb_pkg() {
+    local latest_deb_file=${1:?}   # make the decision based on the deb pkg they passed in
+
+    # latest_deb_file is something like /dir/horizon_2.28.0-338_amd64.deb
+    local deb_file_version=${latest_deb_file##*/}   # remove the beginning path
+    deb_file_version=${deb_file_version%_*.deb}   # remove the ending like _amd64.deb, now left with horizon_2.28.0-338
+    if [[ $deb_file_version == horizon-cli* ]]; then
+        deb_file_version=${deb_file_version#horizon-cli_}   # remove the pkg name to be left with only the version
+        pkg_name='horizon-cli'
+    else   # assume it is the horizon pkg
+        deb_file_version=${deb_file_version#horizon_}   # remove the pkg name to be left with only the version
+        pkg_name='horizon'
+    fi
 
     # Get version of installed horizon deb pkg
-    if [[ $(dpkg-query -s horizon 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
-        log_verbose "The horizon deb pkg is not installed (at least not completely)"
+    if [[ $(dpkg-query -s $pkg_name 2>/dev/null | grep -E '^Status:' | awk '{print $4}') != 'installed' ]]; then
+        log_verbose "The $pkg_name deb pkg is not installed (at least not completely)"
         return 0   # anything is newer than not installed
     fi
-    local installed_deb_version=$(dpkg-query -s horizon | grep -E '^Version:' | awk '{print $2}')
+    local installed_deb_version=$(dpkg-query -s $pkg_name | grep -E '^Version:' | awk '{print $2}')
 
-    # Get version of the deb pkg they gave us to install
-    local latest_deb_file=$(ls -1 $PACKAGES/horizon_*_${ARCH}.deb | sort -V | tail -n 1)
-    if [[ -z $latest_deb_file ]]; then
-        log_warning "No horizon deb packages found in $PACKAGES"
-        return 1
-    fi
-    # latest_deb_file is something like horizon_2.27.0-110_amd64.deb
-    local deb_file_version=${latest_deb_file##*/horizon_}   # remove the 1st part
-    deb_file_version=${deb_file_version%_*.deb}   # remove the ending part
-
-    log_info "Installed horizon deb package version: $installed_deb_version, Provided horizon deb file version: $deb_file_version"
+    log_info "Installed $pkg_name deb package version: $installed_deb_version, Provided $pkg_name deb file version: $deb_file_version"
     if version_gt $deb_file_version $installed_deb_version; then return 0
     else return 1; fi
 }
@@ -1124,20 +1192,51 @@ function install_debian_device_horizon_pkgs() {
         fi
         log_verbose "Adding $PKG_APT_REPO to /etc/apt/sources.list and installing horizon ..."
         add-apt-repository "deb [arch=$(dpkg --print-architecture)] $PKG_APT_REPO $(lsb_release -cs)-$APT_REPO_BRANCH main"
-        runCmdQuietly apt-get install -yqf horizon
-        wait_until_agent_ready
-    else
-        if is_newer_deb_pkgs; then
-            # Install the horizon pkgs in the PACKAGES dir
-            if [[ ${PACKAGES:0:1} != '/' ]]; then
-                PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
-            fi
-            log_info "Installing the horizon packages in $PACKAGES ..."
-            # Note: we don't support downgraded the deb pkgs
-            #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
-            runCmdQuietly apt-get install -yqf ${PACKAGES}/horizon*_${ARCH}.deb
+        if [[ $AGENT_ONLY_CLI == 'true' ]]; then
+            runCmdQuietly apt-get install -yqf horizon-cli
+        else
+            runCmdQuietly apt-get install -yqf horizon
             wait_until_agent_ready
-            AGENT_WAS_RESTARTED='true'
+        fi
+    else
+        # Install the horizon pkgs in the PACKAGES dir
+        if [[ ${PACKAGES:0:1} != '/' ]]; then
+            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with apt-get install, they must be absolute paths
+        fi
+
+        # Get the latest version of the horizon pkg files they gave us to install. sort -V returns the list in ascending order (greatest is last)
+        local latest_horizon_cli_file latest_horizon_file latest_files new_pkg
+        latest_horizon_cli_file=$(ls -1 $PACKAGES/horizon-cli_*_${ARCH}.deb | sort -V | tail -n 1)
+        if [[ -z $latest_horizon_cli_file ]]; then
+            log_warning "No horizon-cli deb package found in $PACKAGES"
+            return 1
+        fi
+        latest_files=$latest_horizon_cli_file
+        new_pkg=$latest_horizon_cli_file
+        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            latest_horizon_file=$(ls -1 $PACKAGES/horizon_*_${ARCH}.deb | sort -V | tail -n 1)
+            if [[ -z $latest_horizon_file ]]; then
+                log_warning "No horizon deb package found in $PACKAGES"
+                return 1
+            fi
+            latest_files="$latest_files $latest_horizon_file"
+            new_pkg=$latest_horizon_file
+        fi
+
+        if is_newer_deb_pkg $new_pkg; then
+            log_info "Installing $latest_files ..."
+            runCmdQuietly apt-get install -yqf $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
+        elif [[ "$AGENT_OVERWRITE" == true ]]; then
+            log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
+            runCmdQuietly apt-get install -yqf --allow-downgrades $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
         else
             log_info "Not installing any horizon packages, because the system is already up to date."
         fi
@@ -1159,23 +1258,31 @@ function install_debian() {
     log_debug "install_debian() begin"
 
     debian_device_install_prereqs
-    check_and_set_anax_port   # sets ANAX_PORT
-    check_existing_exch_node_is_correct_type "device"
 
-    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-        unregister
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        check_and_set_anax_port   # sets ANAX_PORT
+        check_existing_exch_node_is_correct_type "device"
+
+        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+            unregister
+        fi
     fi
+
+    get_certificate $INPUT_FILE_PATH
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_debian_device_horizon_pkgs
-    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
-        restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
-    fi
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+            restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
+        fi
+
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    fi
 
     log_debug "install_debian() end"
 }
@@ -1197,7 +1304,7 @@ function install_dnf() {
 # Ensure the software prereqs for a redhat variant device are installed
 function redhat_device_install_prereqs() {
     log_debug "redhat_device_install_prereqs() begin"
-    
+
     # Need EPEL for at least jq
     if [[ -z "$(dnf repolist -q epel)" ]]; then
         dnf install -yq https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
@@ -1205,37 +1312,40 @@ function redhat_device_install_prereqs() {
 
     dnf install -yq curl jq
 
-    if ! isCmdInstalled docker; then
-        # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
-        log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if ! isCmdInstalled docker; then
+            # Can't install docker for them on red hat, because they make it difficult. See: https://linuxconfig.org/how-to-install-docker-in-rhel-8
+            log_fatal 2 "Docker is required, but not installed. Install it and rerun this script."
+        fi
     fi
     log_debug "redhat_device_install_prereqs() end"
 }
 
-# Returns 0 (true) if the rpm pkgs to be installed are newer than the pkgs already installed
-function is_newer_rpm_pkgs() {
-    # Make the decision based on the horizon rpm pkg, because that's the one we really care about (whether we have to restart the daemon), plus the horizon rpm requires the horizon-cli rpm be the same version.
+# Returns 0 (true) if the rpm pkg to be installed is newer than the corresponding pkg already installed
+function is_newer_rpm_pkg() {
+    local latest_rpm_file=${1:?}   # make the decision based on the rpm pkg they passed in
+
+    # latest_rpm_file is something like /dir/horizon-2.28.0-338.x86_64.rpm
+    local rpm_file_version=${latest_rpm_file##*/}   # remove the beginning path
+    rpm_file_version=${rpm_file_version%.*.rpm}   # remove the ending like .x86_64.rpm, now left with horizon-2.28.0-338
+    if [[ $rpm_file_version == horizon-cli* ]]; then
+        rpm_file_version=${rpm_file_version#horizon-cli-}   # remove the pkg name to be left with only the version
+        pkg_name='horizon-cli'
+    else   # assume it is the horizon pkg
+        rpm_file_version=${rpm_file_version#horizon-}   # remove the pkg name to be left with only the version
+        pkg_name='horizon'
+    fi
 
     # Get version of installed horizon rpm pkg
-    if ! rpm -q horizon >/dev/null 2>&1; then
-        log_verbose "The horizon rpm pkg is not installed"
+    if ! rpm -q $pkg_name >/dev/null 2>&1; then
+        log_verbose "The $pkg_name rpm pkg is not installed"
         return 0   # anything is newer than not installed
     fi
-    local installed_rpm_version=$(rpm -q horizon 2>/dev/null)  # will return like: horizon-2.27.0-110.x86_64
-    installed_rpm_version=${installed_rpm_version#horizon-}   # remove the beginning
-    installed_rpm_version=${installed_rpm_version%.*}   # remove the ending
+    local installed_rpm_version=$(rpm -q $pkg_name 2>/dev/null)  # will return like: horizon-2.28.0-338.x86_64
+    installed_rpm_version=${installed_rpm_version#${pkg_name}-}   # remove the pkg name
+    installed_rpm_version=${installed_rpm_version%.*}   # remove the arch, so left with only the version
 
-    # Get version of the rpm pkg they gave us to install
-    local latest_rpm_file=$(ls -1 $PACKAGES/horizon-*.${ARCH}.rpm | grep -v 'horizon-cli' | sort -V | tail -n 1)
-    if [[ -z $latest_rpm_file ]]; then
-        log_warning "No horizon rpm packages found in $PACKAGES"
-        return 1
-    fi
-    # latest_rpm_file is something like horizon-2.27.0-110.x86_64.rpm
-    local rpm_file_version=${latest_rpm_file##*/horizon-}   # remove the beginning
-    rpm_file_version=${rpm_file_version%.*.rpm}   # remove the ending
-
-    log_info "Installed horizon rpm package version: $installed_rpm_version, Provided horizon rpm file version: $rpm_file_version"
+    log_info "Installed $pkg_name rpm package version: $installed_rpm_version, Provided $pkg_name rpm file version: $rpm_file_version"
     if version_gt $rpm_file_version $installed_rpm_version; then return 0
     else return 1; fi
 }
@@ -1249,16 +1359,45 @@ function install_redhat_device_horizon_pkgs() {
         log_fatal 1 "Installing horizon RPMs via repository $PKG_APT_REPO is not supported at this time"
         #future: support this
     else
-        if is_newer_rpm_pkgs; then
-            # Install the horizon pkgs in the PACKAGES dir
-            if [[ ${PACKAGES:0:1} != '/' ]]; then
-                PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
+        # Install the horizon pkgs in the PACKAGES dir
+        if [[ ${PACKAGES:0:1} != '/' ]]; then
+            PACKAGES="$PWD/$PACKAGES"   # to install local pkg files with dnf install, they must be absolute paths
+        fi
+
+        # Get the latest version of the horizon pkg files they gave us to install. sort -V returns the list in ascending order (greatest is last)
+        local latest_horizon_cli_file latest_horizon_file latest_files new_pkg
+        latest_horizon_cli_file=$(ls -1 $PACKAGES/horizon-cli-*.${ARCH}.rpm | sort -V | tail -n 1)
+        if [[ -z $latest_horizon_cli_file ]]; then
+            log_warning "No horizon-cli rpm package found in $PACKAGES"
+            return 1
+        fi
+        latest_files=$latest_horizon_cli_file
+        new_pkg=$latest_horizon_cli_file
+        if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+            latest_horizon_file=$(ls -1 $PACKAGES/horizon-*.${ARCH}.rpm | grep -v "$PACKAGES/horizon-cli" | sort -V | tail -n 1)
+            if [[ -z $latest_horizon_file ]]; then
+                log_warning "No horizon rpm package found in $PACKAGES"
+                return 1
             fi
-            log_info "Installing the horizon packages in $PACKAGES ..."
-            # Note: we don't support downgraded the deb pkgs
-            #todo: handle multiple versions of the pkgs in the same dir. Use sort -V to get the latest.
-            dnf install -yq ${PACKAGES}/horizon*.${ARCH}.rpm
-            AGENT_WAS_RESTARTED='true'
+            latest_files="$latest_files $latest_horizon_file"
+            new_pkg=$latest_horizon_file
+        fi
+    
+        if is_newer_rpm_pkg $new_pkg; then
+            log_info "Installing $latest_files ..."
+            dnf install -yq $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
+        elif [[ "$AGENT_OVERWRITE" == true ]]; then
+            log_info "Downgrading to $latest_files because AGENT_OVERWRITE==$AGENT_OVERWRITE ..."
+            # Note: dnf automatically detects the specified pkg files are a lower version and downgrades them. If we need to switch to yum, we'll have to use yum downgrade ...
+            dnf install -yq $latest_files
+            if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+                wait_until_agent_ready
+                AGENT_WAS_RESTARTED='true'
+            fi
         else
             log_info "Not installing any horizon packages, because the system is already up to date."
         fi
@@ -1273,23 +1412,31 @@ function install_redhat() {
     log_info "Installing prerequisites, this could take a minute..."
     install_dnf
     redhat_device_install_prereqs
-    check_and_set_anax_port   # sets ANAX_PORT
-    check_existing_exch_node_is_correct_type "device"
 
-    if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
-        unregister
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        check_and_set_anax_port   # sets ANAX_PORT
+        check_existing_exch_node_is_correct_type "device"
+
+        if is_agent_registered && (! is_horizon_defaults_correct "$ANAX_PORT" || ! is_registration_correct); then
+            unregister
+        fi
     fi
+
+    get_certificate $INPUT_FILE_PATH
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
     get_pkgs
     # Note: the horizon pkg will only write /etc/default/horizon if it doesn't exist, so it won't overwrite what we created/modified above
     install_redhat_device_horizon_pkgs
-    if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
-        restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
-    fi
 
-    registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    if [[ $AGENT_ONLY_CLI != 'true' ]]; then
+        if [[ $HORIZON_DEFAULTS_CHANGED == 'true' && $AGENT_WAS_RESTARTED == 'false' ]]; then
+            restart_device_agent   # because the new pkgs were not installed, so that didn't restart the agent
+        fi
+
+        registration "$AGENT_SKIP_REGISTRATION" "$HZN_EXCHANGE_PATTERN" "$HZN_NODE_POLICY"
+    fi
 
     log_debug "install_redhat() end"
 }
@@ -1328,7 +1475,7 @@ function install_mac_horizon-cli() {
         else
             log_verbose "The given pkg file version is older than or equal to the installed hzn"
             if [[ "$AGENT_OVERWRITE" == true ]]; then
-                log_info "Installing older horizon-cli package ${pkg_file_version}..."
+                log_info "Installing older horizon-cli package ${pkg_file_version} because AGENT_OVERWRITE is set to true ..."
                 sudo installer -pkg ${PACKAGES}/$pkg_file_name -target /
             else
                 log_info "The installed horizon-cli package is already up to date ($installed_version)"
@@ -1508,10 +1655,11 @@ function is_registration_correct() {
     if [[ $AGENT_SKIP_REGISTRATION == 'true' ]]; then return 0; fi   # the user doesn't care, so they are correct
     local hzn_node_list=$(agent_exec 'hzn node list' 2>/dev/null || true)   # if hzn not installed, hzn_node_list will be empty
     local reg_node_id=$(jq -r .id 2>/dev/null <<< $hzn_node_list || true)
+    local reg_hzn_org_id=$(jq -r .organization 2>/dev/null <<< $hzn_node_list || true)
     local node_state=$(jq -r .configstate.state 2>/dev/null <<< $hzn_node_list || true)
     local reg_pattern=$(jq -r .pattern 2>/dev/null <<< $hzn_node_list || true)
-    if [[ $node_state == 'configured' && -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # pattern case
-    elif [[ $node_state == 'configured' && -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) ]]; then return 0   # policy case (registration() will apply any new policy)
+    if [[ $node_state == 'configured' && -n $HZN_EXCHANGE_PATTERN && $reg_pattern == $HZN_EXCHANGE_PATTERN && (-z $NODE_ID || $reg_node_id == $NODE_ID) && $reg_hzn_org_id == $HZN_ORG_ID ]]; then return 0   # pattern case
+    elif [[ $node_state == 'configured' && -z $HZN_EXCHANGE_PATTERN && -z $reg_pattern && (-z $NODE_ID || $reg_node_id == $NODE_ID) && $reg_hzn_org_id == $HZN_ORG_ID ]]; then return 0   # policy case (registration() will apply any new policy)
     else return 1; fi
     log_debug "is_registration_correct() end"
 }
@@ -1710,9 +1858,9 @@ function is_redhat_variant() {
 
 # Returns the extension used for pkgs in this distro
 function get_pkg_type() {
-    if is_debian_variant; then echo 'deb'
+    if is_macos; then echo 'pkg'  # Test macos first since DISTRO is not set for macos and results in an error if debian or redhat is checked first 
+    elif is_debian_variant; then echo 'deb'
     elif is_redhat_variant; then echo 'rpm'
-    elif is_macos; then echo 'pkg'
     fi
 }
 
@@ -1825,7 +1973,7 @@ function check_existing_exch_node_is_correct_type() {
     else exch_creds="$HZN_ORG_ID/$HZN_EXCHANGE_NODE_AUTH"   # input checking requires either user creds or node creds
     fi
 
-    if [[ -n $AGENT_CERT_FILE ]]; then
+    if [[ -n $AGENT_CERT_FILE && -f $AGENT_CERT_FILE ]]; then
         cert_flag="--cacert $AGENT_CERT_FILE"
     fi
     local exch_output=$(curl -fsS $cert_flag $HZN_EXCHANGE_URL/orgs/$HZN_ORG_ID/nodes/$NODE_ID -u "$exch_creds" 2>/dev/null) || true
@@ -2130,7 +2278,7 @@ function create_service_account() {
     fi
 
     log_verbose "checking if clusterrolebinding exist..."
-    
+
     if ! $KUBECTL get clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} 2>/dev/null; then
         log_verbose "Binding ${SERVICE_ACCOUNT_NAME} to cluster admin..."
         $KUBECTL create clusterrolebinding ${CLUSTER_ROLE_BINDING_NAME} --serviceaccount=${AGENT_NAMESPACE}:${SERVICE_ACCOUNT_NAME} --clusterrole=cluster-admin
@@ -2147,7 +2295,7 @@ function create_secret() {
     log_debug "create_secrets() begin"
 
     log_verbose "checking if secret ${SECRET_NAME} exist..."
-    
+
     if ! $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "creating secret for cert file..."
         $KUBECTL create secret generic ${SECRET_NAME} --from-file=${AGENT_CERT_FILE} -n ${AGENT_NAMESPACE}
@@ -2163,7 +2311,7 @@ function create_secret() {
 # Cluster only: to update secret
 function update_secret() {
     log_debug "update_secret() begin"
-    
+
     if $KUBECTL get secret ${SECRET_NAME} -n ${AGENT_NAMESPACE} >/dev/null 2>&1; then
         # secret exists, delete it
         log_verbose "Find secret ${SECRET_NAME} in ${AGENT_NAMESPACE} namespace, deleting the old secret..."
@@ -2182,7 +2330,7 @@ function create_configmap() {
     log_debug "create_configmap() begin"
 
     log_verbose "checking if configmap ${CONFIGMAP_NAME} exist..."
-    
+
     if ! $KUBECTL get configmap ${CONFIGMAP_NAME} -n ${AGENT_NAMESPACE} 2>/dev/null; then
         log_verbose "create configmap from ${HZN_ENV_FILE}..."
         create_horizon_env
@@ -2201,7 +2349,7 @@ function create_configmap() {
 # Cluster only: to update configmap based on /tmp/agent-install-horizon-env for agent deployment
 function update_configmap() {
     log_debug "update_configmap() begin"
-    
+
     if [[ "$IS_HORIZON_DEFAULTS_CORRECT" == "true" ]]; then
         log_verbose "Values in configmap are same, will skip updating configmap"
     else
@@ -2288,7 +2436,7 @@ function update_deployment() {
             if wait_for '! ( $KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID >/dev/null 2>&1 || [[ $? -ge 2 ]] )' 'Horizon agent terminated' $AGENT_WAIT_MAX_SECONDS; then
                 log_verbose "Horizon agent pod terminated successfully"
             else
-                AGENT_POD_STATUS=$($KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID 2>/dev/null | grep -E '^agent-' | cut -d " " -f3)
+                AGENT_POD_STATUS=$($KUBECTL -n $AGENT_NAMESPACE get pod $POD_ID 2>/dev/null | grep -E '^agent-' | awk '{print $3;}')
                 if [[ $AGENT_POD_STATUS == "Terminating" ]]; then
                     if [[ $AGENT_SKIP_PROMPT == 'false' ]]; then
                         echo "Agent pod ${POD_ID} is still in Terminating, force delete pod?[y/N]:"

@@ -280,6 +280,8 @@ func (w *ChangesWorker) findAndProcessChanges() {
 			resourceTypes[events.CHANGE_NODE_POLICY_TYPE] = true
 		} else if change.IsNodeError(w.GetExchangeId()) {
 			resourceTypes[events.CHANGE_NODE_ERROR_TYPE] = true
+		} else if change.IsNodeServiceConfigState(w.GetExchangeId()) {
+			resourceTypes[events.CHANGE_SERVICE_CONFIGSTATE_TYPE] = true
 		} else if change.IsOrg() {
 			if updated := w.getHeartbeatIntervals(); updated {
 				w.updatePollingInterval(UPDATE_TYPE_NEW_CONFIG)
@@ -309,6 +311,7 @@ func (w *ChangesWorker) createSupportedResourceTypes(initialValue bool) map[even
 	resourceTypes[events.CHANGE_NODE_TYPE] = initialValue
 	resourceTypes[events.CHANGE_NODE_POLICY_TYPE] = initialValue
 	resourceTypes[events.CHANGE_NODE_ERROR_TYPE] = initialValue
+	resourceTypes[events.CHANGE_SERVICE_CONFIGSTATE_TYPE] = initialValue
 	resourceTypes[events.CHANGE_SERVICE_TYPE] = initialValue
 	return resourceTypes
 }

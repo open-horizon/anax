@@ -1,8 +1,9 @@
 # Makefile for hello service container
 
+ARCH = $(ARCH)
 VER = 1.0
 BASE = localhost:443
-IMAGE = amd64_helloservice
+IMAGE = $(ARCH)_helloservice
 
 default: build run check
 
@@ -20,7 +21,7 @@ horizonstop:
 	hzn -v dev service stop
 
 run: stop build
-	docker run --name $(IMAGE) -e MY_S_VAR1='outside' -p 8000:8000 -d -t $(BASE)/$(IMAGE):$(VER)
+	docker run --name $(IMAGE) -e MY_S_VAR1='outside' -e HZN_ARCH=$(ARCH) -p 8000:8000 -d -t $(BASE)/$(IMAGE):$(VER)
 	sleep 3
 
 check:

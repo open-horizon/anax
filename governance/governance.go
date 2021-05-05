@@ -137,7 +137,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		}
 
-		cmd := w.NewReportDeviceStatusCommand()
+		cmd := w.NewReportDeviceStatusCommand(nil)
 		w.Commands <- cmd
 
 	case *events.ImageFetchMessage:
@@ -281,7 +281,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 				w.Commands <- cmd
 			}
 
-			cmd := w.NewReportDeviceStatusCommand()
+			cmd := w.NewReportDeviceStatusCommand(nil)
 			w.Commands <- cmd
 		}
 	case *events.MicroserviceContainersDestroyedMessage:
@@ -293,7 +293,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 			w.Commands <- cmd
 		}
 
-		cmd := w.NewReportDeviceStatusCommand()
+		cmd := w.NewReportDeviceStatusCommand(nil)
 		w.Commands <- cmd
 
 	case *events.NodeShutdownMessage:
@@ -318,7 +318,7 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 
 			// Make sure device status is up to date since heartbeating is now restored. It means connectivity to
 			// the exchange has been out but is now working again.
-			w.Commands <- w.NewReportDeviceStatusCommand()
+			w.Commands <- w.NewReportDeviceStatusCommand(nil)
 
 			// Now that heartbeating is restored, fire the functions to check on exchange state changes. If the node
 			// was offline long enough, the exchange might have pruned changes we needed to see, which means we will
@@ -331,9 +331,9 @@ func (w *GovernanceWorker) NewEvent(incoming events.Message) {
 	case *events.ServiceConfigStateChangeMessage:
 		msg, _ := incoming.(*events.ServiceConfigStateChangeMessage)
 		switch msg.Event().Id {
-		case events.SERVICE_SUSPENDED:
-			cmd := w.NewServiceSuspendedCommand(msg.ServiceConfigState)
-			w.Commands <- cmd
+		case events.SERVICE_CONFIG_STATE_CHANGED:
+			w.Commands <- w.NewServiceSuspendedCommand(msg.ServiceConfigState)
+			w.Commands <- w.NewReportDeviceStatusCommand(msg.ServiceConfigState)
 		}
 
 	case *events.UpdatePolicyMessage:
@@ -1301,7 +1301,7 @@ func (w *GovernanceWorker) CommandHandler(command worker.Command) bool {
 
 		glog.V(5).Infof(logString(fmt.Sprintf("Report device status command %v", cmd)))
 		if !w.IsWorkerShuttingDown() {
-			w.ReportDeviceStatus()
+			w.reportDeviceStatus(cmd.configStates)
 		}
 
 	case *NodeShutdownCommand:

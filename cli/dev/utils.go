@@ -854,7 +854,7 @@ func CreateNetwork(client *docker.Client, name string) (*docker.Network, error) 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	bridge, err := container.MakeBridge(client, name, true, false)
+	bridge, err := container.MakeBridge(client, name, true, false, true)
 	if err != nil {
 		return nil, err
 	}

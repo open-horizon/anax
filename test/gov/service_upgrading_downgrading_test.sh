@@ -1,3 +1,5 @@
+CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 echo "Testing service upgrading"
 
@@ -13,21 +15,28 @@ function WaitForService() {
   TIMEOUT=0
   while [[ $TIMEOUT -le 25 ]]
   do
+    if [ "${3}" == "" ]; then
+        echo -e "Waiting for service $2/$1 with any version."
+    else
+        echo -e "Waiting for service $2/$1 with version $3."
+    fi
     svc_inst=$(curl -s $ANAX_API/service | jq -r ".instances.active[] | select (.ref_url == \"$1\") | select (.organization == \"$2\")")
     if [ $? -ne 0 ]; then
         echo -e "${PREFIX} failed to get $1 service instace. ${svc_inst}"
         exit 2
     fi
+
     current_svc_version=$(echo "$svc_inst" | jq -r '.version')
 
     if [ "$current_svc_version" == "" ] || ([ "$3" != "" ] && [ "$current_svc_version" != "$3" ]); then
         sleep 5s
         ((TIMEOUT++))
     else
+        echo -e "Found service $2/$1 with version $3."
         break
     fi
 
-    if [[ $TIMEOUT == 26 ]]; then echo -e "Timeout for waiting to $1 service to start"; exit 2; fi
+    if [[ $TIMEOUT == 26 ]]; then echo -e "Timeout waiting for service $1 to start"; exit 2; fi
   done
 }
 
@@ -56,7 +65,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"$CPU_URL",
   "version":"$CPU_VERS_NEW",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -69,7 +78,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
       }
     }
   },
@@ -88,19 +97,21 @@ fi
 hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
 
 # Ensure service is upgrading
-echo "Waiting for new cpu version to be started..."
+echo "Waiting for new cpu version ${CPU_VERS_NEW} to be started..."
 WaitForService $CPU_URL $CPU_ORG $CPU_VERS_NEW
-if [ $? -ne 0 ]; then exit $?; fi
+if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
 
 # Check upgrading logs were produced
 ret=$(hzn eventlog list | grep "Start upgrading service $CPU_ORG/$CPU_URL from version $old_cpu_version to version $CPU_VERS_NEW.")
 if [ $? -ne 0 ]; then
     echo -e "'Start upgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 ret=$(hzn eventlog list | grep "Complete upgrading service $CPU_ORG/$CPU_URL from version $old_cpu_version to version $CPU_VERS_NEW.")
 if [ $? -ne 0 ]; then
     echo -e "'Complete upgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 
@@ -117,7 +128,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"$CPU_URL",
   "version":"$CPU_VERS_ERR",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -130,7 +141,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2",
+        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}",
         "binds":["/tmp:/hosttmp", ""]
       }
     }
@@ -149,18 +160,25 @@ fi
 # Stop agreements in order to start the service upgrading and downgrading because of error
 hzn agreement list | jq ' .[] | .current_agreement_id' | sed 's/"//g' | while read word ; do hzn agreement cancel $word ; done
 
-# Wait 10 seconds to let the old version of cpu service to be stopped
-sleep 10
+# Wait for the old version of the cpu service to stop
+sleep 5
+
+echo "Display agreement status, there should be none:"
+hzn agreement list
 
 # Ensure service is upgrading/downgrading
 echo "Waiting for cpu service to be upgraded and downgraded because of an error..."
+WaitForService $CPU_URL $CPU_ORG $CPU_VERS_ERR
+if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
+
 WaitForService $CPU_URL $CPU_ORG $CPU_VERS_NEW
-if [ $? -ne 0 ]; then exit $?; fi
+if [ $? -ne 0 ]; then hzn eventlog list; exit $?; fi
 
 # Check upgrading logs were produced
 ret=$(hzn eventlog list | grep "Start upgrading service $CPU_ORG/$CPU_URL from version $CPU_VERS_NEW to version $CPU_VERS_ERR.")
 if [ $? -ne 0 ]; then
     echo -e "'Start upgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 
@@ -168,11 +186,12 @@ fi
 ret=$(hzn eventlog list | grep "Start downgrading service $CPU_ORG/$CPU_URL version $CPU_VERS_ERR")
 if [ $? -ne 0 ]; then
     echo -e "'Start downgrading service' logs has not been found"
+    hzn eventlog list
     exit 2
 fi
 
 # Remove service with deployment error
-hzn exchange service remove -u $ADMIN_AUTH -o e2edev@somecomp.com -f $CPU_ORG/bluehorizon.network-service-cpu_${CPU_VERS_ERR}_amd64
+hzn exchange service remove -u $ADMIN_AUTH -o e2edev@somecomp.com -f $CPU_ORG/bluehorizon.network-service-cpu_${CPU_VERS_ERR}_${ARCH}
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service remove failed for $CPU_ORG/cpu with deployment error"

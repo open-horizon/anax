@@ -40,7 +40,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			// Allow the main agbot thread to distribute protocol msgs and agreement handling to the worker pool.
-			Work: NewPrioritizedWorkQueue(cfg.GetAgbotAgreementQueueSize()),
+			Work: NewPrioritizedWorkQueue(cfg.GetAgbotAgreementQueueSize(), int(cfg.AgreementBot.NewContractIntervalS), cfg.GetAgbotQueueHistorySize()),
 		}
 	} else {
 		return nil

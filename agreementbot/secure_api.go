@@ -104,6 +104,14 @@ func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) exch
 	return exchange.NewCustomExchangeContext(userId, passwd, a.Config.AgreementBot.ExchangeURL, a.Config.GetAgbotCSSURL(), newHTTPClientFactory())
 }
 
+func (a *SecureAPI)	setCommonHeaders(w http.ResponseWriter) http.ResponseWriter {
+	w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Add("Pragma", "no-cache, no-store")
+	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
+	w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+	return w
+}
+
 // This function sets up the agbot secure http server
 func (a *SecureAPI) listen() {
 	glog.Info("Starting AgreementBot SecureAPI server")
@@ -131,21 +139,27 @@ func (a *SecureAPI) listen() {
 	}
 
 	bSecure := true
+	var nocache func(h http.Handler) http.Handler
 	if certFile == "" || keyFile == "" {
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("Starting AgreementBot Remote API server in non TLS mode with address: %v:%v. The server cert file or key file is not specified in the configuration file.", apiListenHost, apiListenPort)))
 		bSecure = false
+
+		nocache = func(h http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w = a.setCommonHeaders(w)
+				h.ServeHTTP(w, r)
+			})
+		}
 	} else {
 		glog.V(3).Infof(APIlogString(fmt.Sprintf("Starting AgreementBot Remote API server in secure (TLS) mode with address: %v:%v, cert file: %v, key file: %v", apiListenHost, apiListenPort, certFile, keyFile)))
-	}
 
-	nocache := func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
-			w.Header().Add("Pragma", "no-cache, no-store")
-			w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
-			w.Header().Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
-			h.ServeHTTP(w, r)
-		})
+		nocache = func(h http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w = a.setCommonHeaders(w)
+				w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+				h.ServeHTTP(w, r)
+			})
+		}
 	}
 
 	// This routine does not need to be a subworker because it will terminate on its own when the main

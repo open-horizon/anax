@@ -2,6 +2,8 @@
 
 TEST_DIFF_ORG=${TEST_DIFF_ORG:-1}
 
+export ARCH=${ARCH}
+
 function set_exports {
   if [ "$NOANAX" != "1" ]
   then
@@ -32,10 +34,10 @@ function run_delete_loops {
   echo -e "No loop setting is $NOLOOP"
 
   # get the admin auth for verify_agreements.sh
-  local admin_auth="e2edevadmin:e2edevadminpw"
-  if [ "$DEVICE_ORG" == "userdev" ]; then
-    admin_auth="userdevadmin:userdevadminpw"
-  fi
+   local admin_auth="e2edevadmin:e2edevadminpw"
+   if [ "$DEVICE_ORG" == "userdev" ]; then
+     admin_auth="userdevadmin:userdevadminpw"
+   fi
 
   if [ "$NOLOOP" != "1" ] && [ "$NOAGBOT" != "1" ]
   then
@@ -287,6 +289,18 @@ then
 else
   echo -e "Agbot is disabled"
 fi
+
+# Setup real ARCH value in all policies, patterns & service definition files for tests
+for in_file in /root/input_files/compcheck/*.json
+do
+  sed -i -e "s#__ARCH__#${ARCH}#g" $in_file
+  if [ $? -ne 0 ]
+  then
+    echo "Providing real architecture value failure."
+    TESTFAIL="1"
+    exit 1
+  fi
+done
 
 echo "TEST_PATTERNS=${TEST_PATTERNS}"
 
@@ -543,15 +557,15 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   echo "$DL8AGBOT"
 
   echo "Delete network_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_amd64")
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network_1.5.0_${ARCH}")
   echo "$DL150"
 
   echo "Delete network2_1.5.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_amd64")
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/bluehorizon.network-services-network2_1.5.0_${ARCH}")
   echo "$DL2150"
 
   echo "Delete helm-service_1.0.0 ..."
-  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_amd64")
+  DLHELM100=$(curl -X DELETE $CERT_VAR  --header 'Content-Type: application/json' --header 'Accept: application/json' -u "root/root:${EXCH_ROOTPW}" "${EXCH_URL}/orgs/IBM/services/my.company.com-services-helm-service_1.0.0_${ARCH}")
   echo "$DLHELM100"
 
   echo "Delete Userdev Org Definition ..."

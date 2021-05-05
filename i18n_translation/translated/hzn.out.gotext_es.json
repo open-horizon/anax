@@ -472,11 +472,11 @@
     },
     {
       "id": "Your password for this user account when creating it in the Horizon exchange.",
-      "translation": "La contraseña de esta cuenta de usuario cuando se crea en Exchange de usuario Horizon."
+      "translation": "La contraseña de esta cuenta de usuario cuando se crea en Horizon Exchange."
     },
     {
       "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
-      "translation": "La dirección de correo electrónico que se debe asociar a esta cuenta de usuario cuando se crea en Exchange de usuario Horizon. Este argumento es opcional"
+      "translation": "La dirección de correo electrónico que se debe asociar a esta cuenta de usuario cuando se crea en Horizon Exchange. Este argumento es opcional"
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",

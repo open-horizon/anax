@@ -86,9 +86,6 @@ func (w *AgreementWorker) checkNodeChanges() {
 	// check the pattern changes
 	w.checkNodePatternChanges(exchNode)
 
-	// check the service configstate changes
-	w.checkServiceConfigStateChanges(exchNode)
-
 	return
 }
 
@@ -174,15 +171,47 @@ func (w *AgreementWorker) checkNodeUserInputChanges(pDevice *persistence.Exchang
 
 // get the service configuration state from the exchange, check if any of them are suspended.
 // if a service is suspended, cancel the agreements and remove the containers associated with it.
-func (w *AgreementWorker) checkServiceConfigStateChanges(exchDevice *exchange.Device) {
-	glog.V(4).Infof(logString(fmt.Sprintf("Check the service configuration state")))
+func (w *AgreementWorker) checkServiceConfigStateChanges() {
+	glog.V(3).Infof(logString(fmt.Sprintf("Check the service configuration state")))
+
+	// get the node
+	pDevice, err := persistence.FindExchangeDevice(w.db)
+	if err != nil {
+		glog.Errorf(logString(fmt.Sprintf("Unable to read node object from the local database. %v", err)))
+		eventlog.LogDatabaseEvent(w.db, persistence.SEVERITY_ERROR,
+			persistence.NewMessageMeta(EL_AG_UNABLE_READ_NODE_FROM_DB, err.Error()),
+			persistence.EC_DATABASE_ERROR)
+		return
+	} else if pDevice == nil {
+		glog.Errorf(logString(fmt.Sprintf("No device is found from the local database.")))
+		return
+	}
+
+	// save a local copy of the exchange node
+	exchDevice, err := exchangesync.SyncNodeWithExchange(w.db, pDevice, exchange.GetHTTPDeviceHandler(w.limitedRetryEC))
+	if err != nil {
+		if !w.hznOffline {
+			glog.Errorf(logString(fmt.Sprintf("Unable to sync the node with the exchange copy. Error: %v", err)))
+			eventlog.LogNodeEvent(w.db, persistence.SEVERITY_ERROR,
+				persistence.NewMessageMeta(EL_AG_UNABLE_SYNC_NODE_WITH_EXCH, err.Error()),
+				persistence.EC_ERROR_NODE_SYNC,
+				exchange.GetOrg(w.GetExchangeId()),
+				exchange.GetId(w.GetExchangeId()),
+				w.devicePattern, "")
+			w.isOffline()
+			return
+		}
+	} else {
+		w.hznOffline = false
+	}
 
 	if exchDevice == nil {
 		return
 	}
 
-	// get the service configuration states from the node
-	service_cs := []exchange.ServiceConfigState{}
+	// get the services that has been changed
+	var changed_services []events.ServiceConfigState
+
 	for _, service := range exchDevice.RegisteredServices {
 		// service.Url is in the form of org/url
 		org, url := cutil.SplitOrgSpecUrl(service.Url)
@@ -193,30 +222,31 @@ func (w *AgreementWorker) checkServiceConfigStateChanges(exchDevice *exchange.De
 			config_state = exchange.SERVICE_CONFIGSTATE_ACTIVE
 		}
 
-		mcs := exchange.NewServiceConfigState(url, org, config_state)
-		service_cs = append(service_cs, *mcs)
-	}
-
-	// get the services that has been changed to suspended state
-	suspended_services := []events.ServiceConfigState{}
-
-	if service_cs != nil {
-		for _, scs_exchange := range service_cs {
-			// all suspended services will be handled even the ones that was in the suspended state from last check.
-			// this will make sure there is no leak between the checking intervals, for example the un-arrived agreements
-			// from last check.
-			if scs_exchange.ConfigState == exchange.SERVICE_CONFIGSTATE_SUSPENDED {
-				suspended_services = append(suspended_services, *(events.NewServiceConfigState(scs_exchange.Url, scs_exchange.Org, scs_exchange.ConfigState)))
+		var version, arch string
+		pol, err := policy.DemarshalPolicy(service.Policy)
+		if err != nil {
+			glog.Errorf(logString(fmt.Sprintf("Error unmarshaling service policy: %v", err)))
+		} else {
+			for _, spec := range pol.APISpecs {
+				if spec.SpecRef == url && spec.Org == org {
+					version = spec.Version
+					arch = spec.Arch
+				}
 			}
 		}
+
+		// all services will be handled even the ones that wasn't changed from last check.
+		// this will make sure there is no leak between the checking intervals, for example the un-arrived agreements
+		// from last check.
+		changed_services = append(changed_services,
+			*(events.NewServiceConfigState(url, org, version, arch, config_state)))
 	}
 
-	glog.V(5).Infof(logString(fmt.Sprintf("Suspended services to handle are %v", suspended_services)))
+	glog.V(5).Infof(logString(fmt.Sprintf("Suspended services to handle are %v", changed_services)))
 
 	// fire event to handle the suspended services if any
-	if len(suspended_services) != 0 {
-		// we only handle the suspended services for the configstate change now
-		w.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_SUSPENDED, suspended_services)
+	if len(changed_services) != 0 {
+		w.Messages() <- events.NewServiceConfigStateChangeMessage(events.SERVICE_CONFIG_STATE_CHANGED, changed_services)
 	}
 }
 

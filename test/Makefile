@@ -1,8 +1,15 @@
 # Makefile for e2e execution
 SHELL := /bin/bash
 
+# Get Arch for tag and hardware (Golang style) to run test
+arch_tag ?= $(shell ../tools/arch-tag)
+arch ?= $(arch_tag)
+ifeq ($(arch),ppc64el)
+	arch := ppc64le
+endif
+
 #Versioning
-DOCKER_EXCH_TAG := latest
+DOCKER_EXCH_TAG := testing
 
 # user configurable variables
 # The TEST_PATTERNS is a comma separated list of following patterns.
@@ -23,30 +30,50 @@ MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB
 
 BRANCH_NAME ?= ""
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
+VAULT_EXCH_PLUGIN_SOURCE ?= ../../vault-exchange-auth/docker/bin
 AGBOT_TEMPFS := $(CURDIR)/docker/tempfs/agbot
 EXCH_TEMPFS := $(CURDIR)/docker/tempfs/exchange
+VAULT_TEMPFS := $(CURDIR)/docker/tempfs/vault
 CSS_CONFIG := $(CURDIR)/docker/fs/etc/edge-sync-service/
+VAULT_CONFIG := $(CURDIR)/docker/fs/etc/vault/config.json
 UDS := /var/run/horizon/
 EXCHDB_USER := admin
 EXCHDB_PORT := 5432
 EXCHDB_NAME := exchange
 EXCH_ROOTPW ?= Horizon-Rul3s
 AGBOT_NAME ?= ag12345
+VAULT_DEV_ROOT_TOKEN_ID := $(shell jq ".VAULT_DEV_ROOT_TOKEN_ID" $(VAULT_CONFIG))
+VAULT_DEV_LISTEN_ADDRESS := $(shell jq ".VAULT_DEV_LISTEN_ADDRESS" $(VAULT_CONFIG))
 DOCKER_TEST_NETWORK := e2edev_test_network
 DOCKER_AGBOT_INAME := openhorizon/e2edev-agbot
-DOCKER_EXCH_INAME := openhorizon/amd64_exchange-api
+DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
 DOCKER_DEV_TAG := latest
-DOCKER_EXCHDB_INAME := postgres
-DOCKER_EXCHDB_TAG := 9
-DOCKER_REG_INAME := registry
-DOCKER_REG_TAG := sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
-DOCKER_CSSDB_INAME := mongo
-DOCKER_CSSDB_TAG := 4.0.6
-DOCKER_CSS_INAME := openhorizon/amd64_cloud-sync-service
+DOCKER_EXCHDB_INAME ?= postgres
+ifeq ($(arch),ppc64le)
+# ppc64le settings (new)
+	DOCKER_EXCHDB_TAG ?= 13.2
+	DOCKER_REG_INAME ?= ibmcom/registry-ppc64le
+	DOCKER_REG_TAG ?= sha256:b95d9a4abc64bef338b71836ac6876d59281f34f0f03be1023673d52ba1f40e0
+	DOCKER_CSSDB_INAME ?= ppc64le/mongodb
+	DOCKER_CSSDB_TAG ?= 2.6.10
+	DOCKER_CPU_INAME ?= openhorizon/example_ms_$(arch)_cpu
+else
+# amd64 settings (default)
+	DOCKER_EXCHDB_TAG ?= 9
+	DOCKER_REG_INAME ?= registry
+	DOCKER_REG_TAG ?= sha256:7d081088e4bfd632a88e3f3bcd9e007ef44a796fddfe3261407a3f9f04abe1e7
+	DOCKER_CSSDB_INAME ?= mongo
+	DOCKER_CSSDB_TAG ?= 4.0.6
+	DOCKER_CPU_INAME ?= openhorizon/example_ms_x86_cpu
+endif
+DOCKER_CPU_TAG := 1.2.2
+DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
 DOCKER_CSS_TAG := testing$(BRANCH_NAME)
-DOCKER_ANAX_K8S_INAME := openhorizon/amd64_anax_k8s:testing
-DOCKER_ANAX_INAME := openhorizon/amd64_anax:testing
-DOCKER_DEV_OPTS :=  --rm --no-cache
+DOCKER_HASHICORP_VAULT_INAME := hashicorp/vault
+DOCKER_HASHICORP_VAULT_TAG := latest
+DOCKER_ANAX_K8S_INAME := openhorizon/$(arch)_anax_k8s:testing
+DOCKER_DEV_OPTS :=  --rm --no-cache --build-arg ARCH=$(arch)
+DOCKER_ANAX_INAME := openhorizon/$(arch)_anax:testing
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 AGBOT_SAPI_URL ?= https://localhost:8083
 ICP_HOST_IP ?= 0
@@ -66,7 +93,7 @@ endif
 all: default
 default: build
 stop: clean
-build: agbot-image exchange-db-image exchange-image css-mongo-db-image
+build: agbot-image exchange-db-image exchange-image css-mongo-db-image hashicorp-vault-image
 build-remote: agbot-image
 run: test
 distclean: realclean
@@ -74,6 +101,7 @@ distclean: realclean
 DOCKER_AGBOT_CNAME := agbot
 DOCKER_EXCH ?= http://exchange-api:8080/v1
 CSS_URL ?= https://css-api:9443
+VAULT_ADDR = http://vault:8200
 API_KEY ?= 0
 CERT_LOC ?= 1
 DOCKER_EXCH_CNAME = exchange-api
@@ -84,6 +112,7 @@ DOCKER_REG_USER := testuser
 DOCKER_REG_PW := testpassword
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSSDB_CNAME := css-db
+DOCKER_HASHICORP_VAULT_CNAME := vault
 MUL_AGENTS ?= 0
 
 run-agbot: agbot-docker-prereqs test-network
@@ -137,6 +166,13 @@ run-agbot: agbot-docker-prereqs test-network
 		-e "HZN_DEV_HOST_IP=$(E2EDEV_HOST_IP)" \
 		-e "HZN_DEV_FSS_IMAGE_TAG"="testing$(BRANCH_NAME)" \
 		-e "HZN_MGMT_HUB_CERT_PATH"="/certs/css.crt" \
+		-e "DOCKER_CPU_INAME=$(DOCKER_CPU_INAME)" \
+		-e "DOCKER_CPU_TAG=$(DOCKER_CPU_TAG)" \
+		-e "ARCH=$(arch)" \
+		-e "HZN_VAULT"="$(HZN_VAULT)" \
+		-e "HZN_VAULT_ADDR"="$(VAULT_ADDR)" \
+		-e "VAULT_TOKEN"="$(VAULT_DEV_ROOT_TOKEN_ID)" \
+		-e "VAULT_ADDR"="$(VAULT_ADDR)" \
 		-t $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG)
 	docker cp $(AGBOT_TEMPFS)/. $(DOCKER_AGBOT_CNAME):/
 
@@ -182,7 +218,7 @@ run-exchange: run-exchange-db test-network $(EXCH_TEMPFS)/exchange-api.tmpl
 		--name "$(DOCKER_EXCH_CNAME)" \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v $(EXCH_TEMPFS)/exchange-api.tmpl:/etc/horizon/exchange/exchange-api.tmpl:ro \
-		-t openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG)
+		-t $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
 $(EXCH_TEMPFS)/exchange-api.tmpl:
 	@echo "Populating the exchange configuration"
@@ -201,10 +237,42 @@ run-exchange-db: test-network
 		-e POSTGRES_HOST_AUTH_METHOD=trust \
 		-t $(DOCKER_EXCHDB_INAME):$(DOCKER_EXCHDB_TAG)
 
+run-vault: test-network
+	if [[ "$(HZN_VAULT)" == "true" ]]; then \
+		echo "Populating the vault config and auth plugin"; \
+		mkdir -p $(VAULT_TEMPFS)/plugins; \
+		mkdir -p $(AGBOT_TEMPFS)/root/vault; \
+		# Place the vault plugin in the filesystem where it will be mounted to the vault \
+		cp $(VAULT_EXCH_PLUGIN_SOURCE)/hznvaultauth $(VAULT_TEMPFS)/plugins/.; \
+		# Put all the vault definitions we need into the e2edev container to boostrap the vault \
+		cp -R $(CURDIR)/docker/fs/vault $(AGBOT_TEMPFS)/root; \
+		# Place the vault plugin in the e2edev container \
+		cp $(VAULT_EXCH_PLUGIN_SOURCE)/hznvaultauth $(AGBOT_TEMPFS)/root/vault/.; \
+		# Place the vault config file in the filesystem where it will be mounted to the vault \
+		mkdir -p $(VAULT_TEMPFS)/config; \
+		cp $(CURDIR)/docker/fs/etc/vault/config.hcl $(VAULT_TEMPFS)/config/.; \
+		# Start the vault container \
+		echo "Handling $(DOCKER_HASHICORP_VAULT_CNAME)"; \
+		docker/docker_run.bash "$(DOCKER_HASHICORP_VAULT_CNAME)" \
+			docker run -d \
+			--name "$(DOCKER_HASHICORP_VAULT_CNAME)" \
+			--network "$(DOCKER_TEST_NETWORK)" \
+			-p 127.0.0.1:8200:8200 \
+			-e VAULT_DEV_LISTEN_ADDRESS=$(VAULT_DEV_LISTEN_ADDRESS) \
+			-e VAULT_DEV_ROOT_TOKEN_ID=$(VAULT_DEV_ROOT_TOKEN_ID) \
+			-e VAULT_LOG_LEVEL=$(shell jq ".VAULT_LOG_LEVEL" $(VAULT_CONFIG)) \
+			-v $(VAULT_TEMPFS)/plugins:/vault/plugins \
+			-v $(VAULT_TEMPFS)/config:/vault/config \
+			-v $(AGBOT_TEMPFS)/certs/:/openhorizon/certs/ \
+			-t $(DOCKER_HASHICORP_VAULT_INAME):$(DOCKER_HASHICORP_VAULT_TAG); \
+	else \
+		echo "Skipping vault container $(DOCKER_HASHICORP_VAULT_CNAME)"; \
+	fi
+
 clean:
 	@echo -e "\nStarting cleanup"
 	@echo "Clean up kube environment"
-	gov/stop_kube.sh
+	ARCH=$(arch) gov/stop_kube.sh
 	@echo "Shutdown anax cleanly"
 	-@curl -sSLX DELETE http://localhost:8510/node 2>/dev/null || true
 	@echo "Removing agbot container"
@@ -220,7 +288,7 @@ clean:
 	@echo "Removing unused images"
 	-@docker rmi $$(docker images -qf "dangling=true") 2>/dev/null || true
 	@echo "Removing any leftover images generated by e2edev"
-	-@docker rmi $$(docker images | egrep "openhorizon/|wiotp-|localhost" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|amd64_anax_k8s|REPOSITORY" | awk '{print $$3}') 2>/dev/null || true
+	-@docker rmi $$(docker images | egrep "openhorizon/|wiotp-|localhost" | egrep -v "e2edev-agbot|$(arch)_exchange-api|$(arch)_cloud-sync-service|$(arch)_edge-sync-service|$(arch)_anax_k8s|REPOSITORY" | awk '{print $$3}') 2>/dev/null || true
 	@echo "Removing the $(DOCKER_EXCH_CNAME) container"
 	-@docker rm -f "$(DOCKER_EXCH_CNAME)" 2>/dev/null || true
 	@echo "Removing the $(DOCKER_EXCHDB_CNAME) container"
@@ -231,9 +299,11 @@ clean:
 	-@docker rm -v -f "$(DOCKER_CSSDB_CNAME)" 2>/dev/null || true
 	@echo "Removing the $(DOCKER_CSS_CNAME) container"
 	-@docker rm -f "$(DOCKER_CSS_CNAME)" 2>/dev/null || true
+	@echo "Removing the $(DOCKER_HASHICORP_VAULT_CNAME) container"
+	-@docker rm -f "$(DOCKER_HASHICORP_VAULT_CNAME)" 2>/dev/null || true
 	@echo "Cleaning up any left over workloads"
-	-@docker stop $(docker ps -a | egrep "openhorizon/|wiotp-|localhost" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|REPOSITORY" | awk '{print $$1}') 2>/dev/null || true
-	-@docker rm $(docker ps -a | egrep "openhorizon/|wiotp-|localhost" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|REPOSITORY" | awk '{print $$1}') 2>/dev/null || true
+	-@docker stop $(docker ps -a | egrep "openhorizon/|wiotp-|localhost|hashicorp/" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|vault|REPOSITORY" | awk '{print $$1}') 2>/dev/null || true
+	-@docker rm $(docker ps -a | egrep "openhorizon/|wiotp-|localhost|hashicorp/" | egrep -v "e2edev-agbot|amd64_exchange-api|amd64_cloud-sync-service|amd64_edge-sync-service|vault|REPOSITORY" | awk '{print $$1}') 2>/dev/null || true
 	@echo "Removing working directories"
 	-@rm -rf $(CURDIR)/docker/tempfs 2>/dev/null || true
 	-@sudo rm -fr $(UDS) 2>/dev/null || true
@@ -245,8 +315,9 @@ mostlyclean: clean
 realclean: mostlyclean
 	-@docker rm -f "$(DOCKER_EXCHDB_CNAME)" "$(DOCKER_EXCH_CNAME)" 2>/dev/null || true
 	-@docker rmi $(DOCKER_AGBOT_INAME):$(DOCKER_DEV_TAG) $(DOCKER_AGBOT_INAME):latest 2>/dev/null || true
-	-@docker rmi openhorizon/amd64_exchange-api:$(DOCKER_EXCH_TAG) 2>/dev/null || true
+	-@docker rmi $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG) 2>/dev/null || true
 	-@docker rmi $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG) 2>/dev/null || true
+	-@docker rmi $(DOCKER_HASHICORP_VAULT_INAME):$(DOCKER_HASHICORP_VAULT_TAG) 2>/dev/null || true
 	-@docker network rm $(DOCKER_TEST_NETWORK) 2>/dev/null || true
 	-@docker rmi $$(docker images -qf "dangling=true") 2>/dev/null || true
 
@@ -286,8 +357,8 @@ agbot-docker-prereqs: get-anax
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(AGBOT_TEMPFS)/usr/local/bin
 	cp -r $(CURDIR)/docker/fs/etc $(AGBOT_TEMPFS)
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(AGBOT_TEMPFS)/root
-	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(AGBOT_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(AGBOT_TEMPFS)/root/.colonus/.
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(AGBOT_TEMPFS)/root/.colonus/.
 
@@ -306,11 +377,21 @@ exchange-db-image:
 exchange-image:
 	docker pull $(DOCKER_EXCH_INAME):$(DOCKER_EXCH_TAG)
 
-test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-agbot
+hashicorp-vault-image:
+	if [[ "$(HZN_VAULT)" == "true" ]]; then \
+		echo "\nPulling hashicorp vault image $(DOCKER_HASHICORP_VAULT_INAME)"; \
+		docker pull $(DOCKER_HASHICORP_VAULT_INAME):$(DOCKER_HASHICORP_VAULT_TAG); \
+	else \
+		echo "Skipping vault image $(DOCKER_HASHICORP_VAULT_INAME)"; \
+	fi
+
+test: clean $(ANAX_SOURCE)/anax run-dockerreg run-exchange run-css run-vault run-agbot
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
+	@echo -e  "\nTesting and bootstrapping the vault"
+	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); /root/init_vault.sh"
 	@echo -e  "\nSetting up agent in kube"
-	$(TEST_VARS) gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW)
+	$(TEST_VARS) ARCH=$(arch) gov/run_kube.sh $(AGBOT_TEMPFS) $(ANAX_SOURCE) $(EXCH_ROOTPW)
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_AGBOT_CNAME) bash -c "export $(TEST_VARS); export $(MSGHUB_VARS); /root/gov-combined.sh"
 
@@ -364,5 +445,5 @@ run-css: run-mongo-db
 		-v $(AGBOT_TEMPFS)/certs/:/certs/ \
 		-t $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)
 
-.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs agbot-image exchange-db-image exchange-image css-mongo-db-image run-mongo-db run-css copy-cert
+.PHONY: all default stop build run distclean clean mostlyclean realclean run-agbot run-dockerreg run-exchange run-exchange-db test-network test agbot-docker-prereqs agbot-image exchange-db-image exchange-image css-mongo-db-image run-mongo-db run-css copy-cert run-vault hashicorp-vault-image
 #.SILENT: clean

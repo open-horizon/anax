@@ -34,7 +34,7 @@ then
 fi
 
 hzn exchange node remove -f -n "$HZN_EXCHANGE_NODE_AUTH" -o "$ORG_ID" -u "$MAIN_AUTH" "$NODE_NAME"
-hzn exchange service remove -u $MAIN_AUTH -o $ORG_ID -f $ORG_ID/bluehorizon.network-service-cpu_1.0_amd64
+hzn exchange service remove -u $MAIN_AUTH -o $ORG_ID -f $ORG_ID/bluehorizon.network-service-cpu_1.0_${ARCH}
 
 hzn exchange node create -n "$HZN_EXCHANGE_NODE_AUTH" -m "$NODE_NAME" -o "$ORG_ID" -u "$MAIN_AUTH"
 if [ $? -ne 0 ]
@@ -71,7 +71,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "public":true,
   "url":"https://bluehorizon.network/service-cpu",
   "version":"$VERS",
-  "arch":"amd64",
+  "arch":"${ARCH}",
   "sharable":"singleton",
   "matchHardware":{},
   "userInput":[
@@ -84,7 +84,7 @@ cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
   "deployment":{
     "services":{
       "cpu":{
-        "image":"openhorizon/amd64_cpu:1.2.2"
+        "image":"openhorizon/${ARCH}_cpu:1.2.2"
       }
     }
   },
@@ -117,7 +117,7 @@ then
 fi
 
 echo -e "Delete $ORG_ID/cpu service $VERS:"
-hzn exchange service remove -u $MAIN_AUTH -o $ORG_ID -f $ORG_ID/bluehorizon.network-service-cpu_1.0_amd64
+hzn exchange service remove -u $MAIN_AUTH -o $ORG_ID -f $ORG_ID/bluehorizon.network-service-cpu_1.0_${ARCH}
 if [ $? -ne 0 ]
 then
     echo -e "hzn exchange service publish failed for $ORG_ID/cpu."
