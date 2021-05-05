@@ -411,8 +411,8 @@
       "translation": "Impossible de trouver les données d'identification Docker pour {Domain}"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Push vers {Repository} :{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Envoi en cours : {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "Impossible d'envoyer par commande push l'image Docker {Repository____tag} : {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "Impossible de trouver le digest dans la sortie push Docker"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Pull {Repository} :{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Extraction en cours : {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "Impossible d'extraire par commande pull l'image Docker {Repository____tag} : {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Historique de l'image introuvable dans la sortie Docker, extraction de l'historique directement depuis l'image."
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "Impossible d'inspecter l'image {ImageName} : {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "Historique introuvable pour l'image {ImageName}."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -1757,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "Impossible de fermer le fichier de la clé privée du certificat d'API MMS {ServerKey}. Erreur {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression : Une chaîne vide n'est pas une version valide."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

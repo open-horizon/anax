@@ -411,8 +411,8 @@
       "translation": "找不到 {Domain} 的 Docker 凭证"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "正在推送 {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -423,12 +423,8 @@
       "translation": "无法推送 Docker 映像 {Repository____tag}：{Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送输出中找不到映像摘要"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在拉取 {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "正在拉取 {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -437,6 +433,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "无法拉取 Docker 映像 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "在 Docker 输出中找不到映像摘要，将直接从映像中检索映像摘要。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "无法检查映像 {ImageName}：{Err}。"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "找不到映像 {ImageName} 的摘要。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -468,7 +476,7 @@
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Run '{StatusCommand}' to check if the Horizon agent is running. Or run '{StatusURL}' to check the Horizon agent status. Or set HORIZON_URL to connect to another local port that is connected to a remote Horizon agent via a ssh tunnel. Specific error is: {Err}",
-      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。或运行“{StatusURL}”以检查 Horizon 代理程序状态。或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 特定的错误为：{Err}"
+      "translation": "无法连接至 Horizon REST API 以运行 {ApiMethod}。 运行“{StatusCommand}”以检查 Horizon 代理程序是否正在运行。 或运行“{StatusURL}”以检查 Horizon 代理程序状态。 或者，设置 HORIZON_URL，以连接至通过 SSH 隧道来连接至远程 Horizon 代理程序的其他本地端口。 特定的错误为：{Err}"
     },
     {
       "id": "Can't connect to the Horizon REST API to run {ApiMethod}. Maybe the ssh tunnel associated with that port is down? Or maybe the remote Horizon agent at the other end of that tunnel is down. Specific error is: {Err}",
@@ -736,7 +744,7 @@
     },
     {
       "id": "Provided log-driver ({LogDriver}) does not support logs viewing. Logs are only available on the following drivers: {DockerDriversWithLoggingSupport}",
-      "translation": "所提供的日志驱动程序 ({LogDriver}) 不支持日志查看。日志仅在以下驱动程序上可用：{DockerDriversWithLoggingSupport}"
+      "translation": "所提供的日志驱动程序 ({LogDriver}) 不支持日志查看。 日志仅在以下驱动程序上可用：{DockerDriversWithLoggingSupport}"
     },
     {
       "id": "Error creating StdoutPipe for command: {Err}",
@@ -848,7 +856,7 @@
     },
     {
       "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "translation": "未在标识为 {NodeId} 的给定节点中指定组织。"
     },
     {
       "id": "Error getting node {NodeId} from the Exchange. {Err}",
@@ -1757,6 +1765,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression：空字符串不是有效的版本。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

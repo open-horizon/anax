@@ -475,8 +475,8 @@
       "translation": "此使用者帳戶的密碼（當您在 Horizon Exchange 中建立帳戶時）。"
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "應該與此使用者帳戶相關聯的電子郵件位址（當您在 Horizon Exchange 中建立帳戶時）。 如果使用者名稱是電子郵件位址，則可以省略此引數。"
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "應該與此使用者帳戶相關聯的電子郵件位址（當您在 Horizon Exchange 中建立帳戶時）。 此引數是選用項目"
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -497,14 +497,6 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "如果他們應該為管理使用者，則為 True，否則為 False。"
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "將現有使用者變更為中心管理者或讓使用者不再成為中心管理者。中心管理者可以建立、修改及刪除管理中心的組織。"
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "如果此使用者應該為中心管理者，則為 True，否則為 false。"
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -2283,8 +2275,8 @@
       "translation": "找不到 {Domain} 的 Docker 認證"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "正在推送 {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2295,12 +2287,8 @@
       "translation": "無法推送 Docker 映像檔 {Repository____tag}：{Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送輸出中找不到映像檔摘要"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在擷取 {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "正在取回 {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2309,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "無法擷取 Docker 映像檔 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "在 Docker 輸出中找不到映像檔摘要，正在直接從映像檔中擷取映像檔摘要。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "無法檢查映像檔 {ImageName}：{Err}。"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "找不到映像檔 {ImageName} 的摘要。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -3303,20 +3303,20 @@
       "translation": "無法列出現有儲存器：{Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "找到服務 {Nwname} 的主要網路：{ContainerNetwork}"
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "找到服務 {AgreementId} 的主要網路：{ContainerNetwork}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "相依關係 {URL} 的 '{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "無法擷取相依關係 meta 資料：{Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法列出現有儲存器：{Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "無法啟動相依關係：{Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "服務 {Org}/{URL} 的儲存器位於網路 {NetName} 中"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3325,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "無法產生實例 ID：{Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "正在服務 {SId} 上運作"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "無法擷取相依關係 meta 資料：{Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "無法啟動相依關係：{Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3377,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "無法取得容器映像檔，錯誤為：{Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "已建立網路 {Name}"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4187,24 +4203,24 @@
       "translation": "無法配置 'exchange user list' 輸出：{Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "如果使用者名稱不是電子郵件位址，則必須透過 -e 來指定電子郵件。"
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "無法檢查交換版本，錯誤：{Err}"
     },
     {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "只有 root 組織中的 Exchange 使用者可以成為中心管理者。"
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "因為 Exchange API 版本低於 {USEREMAILOPTIONALEXCHANGEVERSION}，所以必須指定電子郵件。"
     },
     {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "在從 Exchange 傳回的清單中找不到使用者 '{ExchUser}'"
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "只有 root 組織中的使用者才能成為中心管理者。"
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "只有中心管理者使用者和 Exchange root 使用者可以建立中心管理者。"
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "root 組織中的使用者必須是中心管理者。省略 -H 選項。"
     },
     {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "無法設定中心管理者狀態，因為 root 組織中不存在使用者 {User}。"
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "root 組織中的使用者不能是組織管理者。"
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4375,12 +4391,12 @@
       "translation": "正在啟動相依關係。"
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動服務相依關係，錯誤為：{Perr}"
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法產生測試合約 ID，錯誤為：{Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 無法啟動服務相依關係，錯誤為：{Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -5411,24 +5427,16 @@
       "translation": "無法將檔案 {Metadata} 放置在 CSS 中，HTTP 代碼為：{StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "已建立網路 {Name}"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "無法列出 Docker 網路，錯誤為：{Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "無法移除 Docker 網路 {Name}，錯誤為：{Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "無法建立取得 CSS 狀態要求，錯誤為 {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "在等待 {Timeout} 秒之後，CSS 狀態不是備妥，逾時"
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "在等待 {Timeout__checkLimit} 秒之後，CSS 狀態不是備妥，逾時"
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "CSS 狀態不是備妥，正在終止服務啟動要求。"
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -6253,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "無法關閉 MMS API 憑證私密金鑰檔 {ServerKey}，錯誤為：{Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression：空字串不是有效的版本。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

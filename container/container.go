@@ -36,6 +36,13 @@ import (
 const LABEL_PREFIX = "openhorizon.anax"
 const IPT_COLONUS_ISOLATED_CHAIN = "OPENHORIZON-ANAX-ISOLATION"
 
+const (
+	API_SERVER_TYPE_DOCKER = "docker"
+	API_SERVER_TYPE_PODMAN = "podman"
+	LOG_DRIVER_SYSLOG      = "syslog"
+	LOG_DRIVER_JOURNALD    = "journald"
+)
+
 // messages for event logs
 const (
 	EL_CONT_DEPLOYCONF_UNSUPPORT_CAP_FOR_WL   = "Deployment config %v contains unsupported capability for a workload"
@@ -276,8 +283,14 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 
 		var logConfig docker.LogConfig
 
-		// Use syslog log driver by default
-		logDriver := "syslog"
+		// Use -log-driver defined in the deployment string of the service.
+		// If -log-driver is not defined
+		// Use syslog log driver by default.
+		// Use journald log driver by default if podman is running
+		logDriver := LOG_DRIVER_SYSLOG
+		if w.apiServerType == API_SERVER_TYPE_PODMAN {
+			logDriver = LOG_DRIVER_JOURNALD
+		}
 		if service.LogDriver != "" {
 			logDriver = service.LogDriver
 		}
@@ -449,17 +462,23 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 		// the cgoup permission can be omitted. It defaults to "rwm" when omitted.
 		for _, givenDevice := range service.Devices {
 			cgp := "rwm"
+			pic := ""
 			sp := strings.Split(givenDevice, ":")
 			if len(sp) == 3 {
 				// the cgroup permission
 				cgp = sp[2]
-			} else if len(sp) < 2 || len(sp) > 3 {
+				pic = sp[1]
+			} else if len(sp) == 2 {
+				pic = sp[1]
+			}else if len(sp) == 1{
+				pic = sp[0]
+			} else if len(sp) <= 0 || len(sp) >3{
 				return nil, fmt.Errorf("Illegal device specified in deployment description: %v", givenDevice)
 			}
 
 			serviceConfig.HostConfig.Devices = append(serviceConfig.HostConfig.Devices, docker.Device{
 				PathOnHost:        sp[0],
-				PathInContainer:   sp[1],
+				PathInContainer:   pic,
 				CgroupPermissions: cgp,
 			})
 		}
@@ -473,6 +492,38 @@ func (w *ContainerWorker) finalizeDeployment(agreementId string, deployment *con
 	return services, nil
 }
 
+// Check if the client is talking with docker or podman
+// The /version api returns something like:
+// {
+//   "Components": [{"Name": "Podman Engine","Version": "3.1.0-dev",...]
+//   ...
+// }
+func GetServerEnginType(client *docker.Client) (string, error) {
+	svType := API_SERVER_TYPE_DOCKER
+
+	if client == nil {
+		return svType, fmt.Errorf("Invalid client pointer: nil.")
+	}
+
+	versionInfo, err := client.Version()
+	if err != nil {
+		return svType, fmt.Errorf("Failed to get the container HTTP server version info. %v", err)
+	}
+	glog.V(5).Infof("API version info: %v", versionInfo)
+
+	if versionInfo != nil {
+		for _, info := range *versionInfo {
+			if strings.Contains(strings.ToLower(info), "podman") {
+				glog.V(3).Infof("podman endpoint is detected.")
+				svType = API_SERVER_TYPE_PODMAN
+				break
+			}
+		}
+	}
+
+	return svType, nil
+}
+
 type ContainerWorker struct {
 	worker.BaseWorker // embedded field
 	db                *bolt.DB
@@ -481,6 +532,7 @@ type ContainerWorker struct {
 	authMgr           *resource.AuthenticationManager
 	pattern           string
 	isDevInstance     bool
+	apiServerType     string
 }
 
 func (cw *ContainerWorker) GetClient() *docker.Client {
@@ -502,6 +554,11 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		return nil, derr
 	}
 
+	svType, err := GetServerEnginType(client)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ContainerWorker{
 		BaseWorker:    worker.NewBaseWorker("mock", config, nil),
 		db:            nil,
@@ -510,6 +567,7 @@ func CreateCLIContainerWorker(config *config.HorizonConfig) (*ContainerWorker, e
 		authMgr:       resource.NewAuthenticationManager(config.GetFileSyncServiceAuthPath()),
 		pattern:       "",
 		isDevInstance: true,
+		apiServerType: svType,
 	}, nil
 }
 
@@ -561,18 +619,24 @@ func NewContainerWorker(name string, config *config.HorizonConfig, db *bolt.DB, 
 		}
 	}
 
+	svType, err := GetServerEnginType(client)
+	if err != nil {
+		glog.Errorf(fmt.Sprintf("Failed to get the docker API server engine type. %v", err))
+	}
+
 	pattern := ""
 	if dev != nil {
 		pattern = dev.Pattern
 	}
 
 	worker := &ContainerWorker{
-		BaseWorker: worker.NewBaseWorker(name, config, nil),
-		db:         db,
-		client:     client,
-		iptables:   ipt,
-		authMgr:    am,
-		pattern:    pattern,
+		BaseWorker:    worker.NewBaseWorker(name, config, nil),
+		db:            db,
+		client:        client,
+		iptables:      ipt,
+		authMgr:       am,
+		pattern:       pattern,
+		apiServerType: svType,
 	}
 	worker.SetDeferredDelay(15)
 
@@ -722,7 +786,7 @@ func serviceStart(client *docker.Client,
 	sharedEndpoints map[string]*docker.EndpointConfig,
 	postCreateContainers *[]interface{},
 	fail func(container *docker.Container, name string, err error) error,
-	useSyslog bool) error {
+	isFirstTry bool) error {
 
 	var namePrefix string
 	if shareLabel != "" {
@@ -741,7 +805,7 @@ func serviceStart(client *docker.Client,
 	}
 
 	// this for the retry after log driver using syslog failed.
-	if !useSyslog {
+	if !isFirstTry {
 		containerOpts.HostConfig.LogConfig = docker.LogConfig{}
 	}
 
@@ -757,16 +821,17 @@ func serviceStart(client *docker.Client,
 	}
 
 	// second arg just a backwards compat feature, will go away someday
+	logDriverName := serviceConfig.HostConfig.LogConfig.Type
 	err := client.StartContainer(container.ID, nil)
 	if err != nil {
-		if strings.Contains(err.Error(), "logging driver") && strings.Contains(err.Error(), "syslog") {
+		if strings.Contains(err.Error(), "logging driver") && (strings.Contains(err.Error(), LOG_DRIVER_SYSLOG) || strings.Contains(err.Error(), LOG_DRIVER_JOURNALD)) {
 			// prevent infinit loop, just in case
-			if !useSyslog {
+			if !isFirstTry {
 				return fail(container, serviceName, err)
 			}
 
-			// if the error is related to syslog, use the default for logconfig and retry
-			glog.V(3).Infof("StartContainer logconfig cannot use syslog: %v. Switching to default. You can use 'docker logs -f <container_name> to view the logs.", err)
+			// if the error is related to syslog or journald, use the default for logconfig and retry
+			glog.V(3).Infof("StartContainer logconfig cannot use %v: %v. Switching to default. You can use 'docker logs -f <container_name> to view the logs.", logDriverName, err)
 
 			if err_r := client.RemoveContainer(docker.RemoveContainerOptions{ID: container.ID, RemoveVolumes: false, Force: true}); err_r != nil {
 				return fail(container, serviceName, err_r)
@@ -2375,7 +2440,8 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 	// gather agreement networks to free
 	for _, net := range networks {
 		for _, agreementId := range agreements {
-			if strings.HasPrefix(net.Name, agreementId) {
+
+			if strings.HasPrefix(net.Name, agreementId) || strings.Contains(net.Name, agreementId) {
 				// disconnect the network from the containers if they are still connected to it.
 				if netInfo, err := b.client.NetworkInfo(net.ID); err != nil {
 					glog.Errorf("Failure getting network info for %v. Error: %v", net.Name, err)

@@ -475,8 +475,8 @@
       "translation": "Your password for this user account when creating it in the Horizon exchange."
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted."
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional"
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -497,14 +497,6 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "True if they should be an admin user, otherwise false."
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub."
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "True if this user should be a hub admin user, otherwise false."
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -2283,8 +2275,8 @@
       "translation": "unable to find docker credentials for {Domain}"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "Pushing {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "Pushing {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2295,12 +2287,8 @@
       "translation": "unable to push docker image {Repository____tag}: {Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "could not find the image digest in the docker push output"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "Pulling {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "Pulling {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2309,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "unable to pull docker image {Repository____tag}: {Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "Could not find the image digest in the docker output, retrieving image digest directly from the image."
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "could not inspect image {ImageName}: {Err}."
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "could not find digest for image {ImageName}."
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -3303,20 +3303,20 @@
       "translation": "unable to list existing containers: {Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "Found main network for service {Nwname}, {ContainerNetwork}"
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "Found main network for service {AgreementId}, {ContainerNetwork}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "unable to retrieve dependency metadata: {Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "unable to start dependencies: {Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "Containers for service {Org}/{URL} are in network {NetName}"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3325,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "unable to generate instance ID: {Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "Working on service {SId}"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "unable to retrieve dependency metadata: {Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "unable to start dependencies: {Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3377,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "failed to get container images, error: {Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "Created network {Name}"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4187,24 +4203,24 @@
       "translation": "failed to marshal 'exchange user list' output: {Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "the email must be specified via -e if the username is not an email address."
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "failed to check exchange version, error: {Err}"
     },
     {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "Only exchange users in the root org can be hubadmins."
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}."
     },
     {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "user '{ExchUser}' not found in list returned from exchange"
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "Only users in the root org can be hubadmins."
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "Only hubadmin users and the exchange root user can create hubadmins."
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "Users in the root org must be hubadmins. Omit the -H option."
     },
     {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "Hubadmin status cannot be set because the user {User} does not exist in the root org."
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "A user in the root org cannot be an org admin."
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4375,12 +4391,12 @@
       "translation": "Starting dependencies."
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}"
-    },
-    {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}"
+    },
+    {
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -5411,24 +5427,16 @@
       "translation": "unable to PUT file {Metadata} into CSS, HTTP code {StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "Created network {Name}"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "unable to list docker networks, error {Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "unable to remove docker network {Name}, error {Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "unable to create get CSS status request, error {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "CSS status is not ready after waiting {Timeout} seconds, timeout"
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout"
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "CSS status is not ready, terminating service start request."
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -6253,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "unable to close MMS API certificate private key file {ServerKey}, error {Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression: Empty string is not a valid version."
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

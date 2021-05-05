@@ -7,6 +7,7 @@ agreementbot/build/docker-exec
 agreementbot/build/docker/fs/root/.ssh/id*
 anax/doc/*.png
 **/*.apib
+ci-management/
 /cli/hzn
 /cli/hzn.json
 /cli/hzn.tmp

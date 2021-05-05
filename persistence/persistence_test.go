@@ -160,14 +160,14 @@ func Test_Backward_Compitibility_EstablishedAgreement(t *testing.T) {
 	wi_new1, _ := NewWorkloadInfo("myurl_new1", "myorg_new1", "myversion_new1", "")
 	sp3 := ServiceSpec{Url: "url3", Org: "myorg3"}
 	sp4 := ServiceSpec{Url: "url4", Org: "myorg4"}
-	_, err = NewEstablishedAgreement(testDb, "New agreement structure 1", "543211", "agbot2", "proposal2", "Basic2", 1, []ServiceSpec{sp3, sp4}, "signature2", "address2", "bcType2", "bcName2", "bcOrg2", wi_new1)
+	_, err = NewEstablishedAgreement(testDb, "New agreement structure 1", "543211", "agbot2", "proposal2", "Basic2", 1, []ServiceSpec{sp3, sp4}, "signature2", "address2", "bcType2", "bcName2", "bcOrg2", wi_new1, 180)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// save an agreement with new structure with empty DependentServices
 	wi_new2, _ := NewWorkloadInfo("myurl_new2", "myorg_new2", "myversion_new2", "")
-	_, err = NewEstablishedAgreement(testDb, "New agreement structure 2", "543212", "agbot2", "proposal2", "Basic2", 1, []ServiceSpec{}, "signature2", "address2", "bcType2", "bcName2", "bcOrg2", wi_new2)
+	_, err = NewEstablishedAgreement(testDb, "New agreement structure 2", "543212", "agbot2", "proposal2", "Basic2", 1, []ServiceSpec{}, "signature2", "address2", "bcType2", "bcName2", "bcOrg2", wi_new2, 180)
 	if err != nil {
 		t.Error(err)
 	}

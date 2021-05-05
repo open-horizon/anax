@@ -475,8 +475,8 @@
       "translation": "在 Horizon Exchange 中创建此用户帐户时，此帐户的密码。"
     },
     {
-      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. If your username is an email address, this argument can be omitted.",
-      "translation": "在 Horizon Exchange 中创建此用户帐户时，应该与此帐户关联的电子邮件地址。 如果用户名是电子邮件地址，那么可以省略此自变量。"
+      "id": "Your email address that should be associated with this user account when creating it in the Horizon exchange. This argument is optional",
+      "translation": "在 Horizon Exchange 中创建此用户帐户时，应该与此帐户关联的电子邮件地址。 此自变量是可选的"
     },
     {
       "id": "This user should be an administrator, capable of managing all resources in this org of the Exchange.",
@@ -497,14 +497,6 @@
     {
       "id": "True if they should be an admin user, otherwise false.",
       "translation": "如果他们应该是管理员用户，请设置为 true，否则设置为 false。"
-    },
-    {
-      "id": "Change an existing user to be a hub admin or make a user no longer a hub admin. A hub admin can create, modify, and delete orgs in the management hub.",
-      "translation": "将现有用户更改为中心管理员或使用户不再是中心管理员。中心管理员可以在管理中心中创建、修改和删除组织。"
-    },
-    {
-      "id": "True if this user should be a hub admin user, otherwise false.",
-      "translation": "如果此用户应该是中心管理员用户，则为 true，否则为 false。"
     },
     {
       "id": "Remove a user resource from the Horizon Exchange. Warning: this will cause all exchange resources owned by this user to also be deleted (nodes, services, patterns, etc).",
@@ -1520,7 +1512,7 @@
     },
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .",
-      "translation": "应显示日志记录的服务名称。服务名称与服务定义的 URL 字段相同。 显示日志记录类似于 tail 行为并返回。"
+      "translation": "应显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。 显示日志记录类似于 tail 行为并返回。"
     },
     {
       "id": "Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.",
@@ -1716,7 +1708,7 @@
     },
     {
       "id": "The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.",
-      "translation": "应显示日志记录的服务名称。服务名称与服务定义的 URL 字段相同。"
+      "translation": "应显示日志记录的服务名称。 服务名称与服务定义的 URL 字段相同。"
     },
     {
       "id": "For working with project dependencies.",
@@ -2283,8 +2275,8 @@
       "translation": "找不到 {Domain} 的 Docker 凭证"
     },
     {
-      "id": "Pushing {Repository}:{Tag}...",
-      "translation": "正在推送 {Repository}:{Tag}..."
+      "id": "Pushing {ImageName}...",
+      "translation": "正在推送 {ImageName}..."
     },
     {
       "id": "could not get docker credentials from ~/.docker/config.json: {Err}. Maybe you need to run 'docker login ...' to provide credentials for the image registry.",
@@ -2295,12 +2287,8 @@
       "translation": "无法推送 Docker 映像 {Repository____tag}：{Err}"
     },
     {
-      "id": "could not find the image digest in the docker push output",
-      "translation": "在 Docker 推送输出中找不到映像摘要"
-    },
-    {
-      "id": "Pulling {Repository}:{Tag}...",
-      "translation": "正在拉取 {Repository}:{Tag}..."
+      "id": "Pulling {ImageName}...",
+      "translation": "正在拉取 {ImageName}..."
     },
     {
       "id": "unable to pull docker image {Repository____tag}. Docker credentials were not found. Maybe you need to run 'docker login ...' if the image registry is private. Error: {Err}",
@@ -2309,6 +2297,18 @@
     {
       "id": "unable to pull docker image {Repository____tag}: {Err}",
       "translation": "无法拉取 Docker 映像 {Repository____tag}：{Err}"
+    },
+    {
+      "id": "Could not find the image digest in the docker output, retrieving image digest directly from the image.",
+      "translation": "在 Docker 输出中找不到映像摘要，将直接从映像中检索映像摘要。"
+    },
+    {
+      "id": "could not inspect image {ImageName}: {Err}.",
+      "translation": "无法检查映像 {ImageName}：{Err}。"
+    },
+    {
+      "id": "could not find digest for image {ImageName}.",
+      "translation": "找不到映像 {ImageName} 的摘要。"
     },
     {
       "id": "the id can not contain more than 1 '/'",
@@ -3303,20 +3303,20 @@
       "translation": "无法列示现有容器：{Err}"
     },
     {
-      "id": "Found main network for service {Nwname}, {ContainerNetwork}",
-      "translation": "找到用于服务 {Nwname} 的主网络 {ContainerNetwork}"
+      "id": "Found main network for service {AgreementId}, {ContainerNetwork}",
+      "translation": "找到用于服务 {AgreementId} 的主网络 {ContainerNetwork}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' {StartErr} for dependency {URL}",
       "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}'：针对依赖关系 {URL}，发生 {StartErr}"
     },
     {
-      "id": "unable to retrieve dependency metadata: {Err}",
-      "translation": "无法检索依赖关系元数据：{Err}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to list existing containers: {Err}",
+      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法列出现有容器：{Err}"
     },
     {
-      "id": "unable to start dependencies: {Err}",
-      "translation": "无法启动依赖关系：{Err}"
+      "id": "Containers for service {Org}/{URL} are in network {NetName}",
+      "translation": "服务 {Org}/{URL} 的容器在网络 {NetName} 中"
     },
     {
       "id": "Skipping service because it has no deployment configuration: {DepConfig}",
@@ -3325,6 +3325,18 @@
     {
       "id": "unable to generate instance ID: {Err}",
       "translation": "无法生成实例标识：{Err}"
+    },
+    {
+      "id": "Working on service {SId}",
+      "translation": "正在处理服务 {SId}"
+    },
+    {
+      "id": "unable to retrieve dependency metadata: {Err}",
+      "translation": "无法检索依赖关系元数据：{Err}"
+    },
+    {
+      "id": "unable to start dependencies: {Err}",
+      "translation": "无法启动依赖关系：{Err}"
     },
     {
       "id": "unable to create environment variables",
@@ -3377,6 +3389,10 @@
     {
       "id": "failed to get container images, error: {Err}",
       "translation": "获取容器映像失败，错误：{Err}"
+    },
+    {
+      "id": "Created network {Name}",
+      "translation": "已创建网络 {Name}"
     },
     {
       "id": "invalid image format: {Image}",
@@ -4187,24 +4203,24 @@
       "translation": "对“exchange user list”输出进行序列化失败：{Err}"
     },
     {
-      "id": "the email must be specified via -e if the username is not an email address.",
-      "translation": "如果用户名不是电子邮件地址，那么必须通过 -e 指定电子邮件地址。"
+      "id": "failed to check exchange version, error: {Err}",
+      "translation": "未能检查 Exchange 版本，错误：{Err}"
     },
     {
-      "id": "Only exchange users in the root org can be hubadmins.",
-      "translation": "仅根组织中的 Exchange 用户才能是中心管理员。"
+      "id": "an email must be specified because the Exchange API version is less than {USEREMAILOPTIONALEXCHANGEVERSION}.",
+      "translation": "必须指定电子邮件，因为 Exchange API 版本低于 {USEREMAILOPTIONALEXCHANGEVERSION}。"
     },
     {
-      "id": "user '{ExchUser}' not found in list returned from exchange",
-      "translation": "在从 Exchange 返回的列表中找不到用户“{ExchUser}”"
+      "id": "Only users in the root org can be hubadmins.",
+      "translation": "仅根组织中的用户才能是中心管理员。"
     },
     {
-      "id": "Only hubadmin users and the exchange root user can create hubadmins.",
-      "translation": "仅中心管理员用户和 Exchange root 用户才能创建中心管理员。"
+      "id": "Users in the root org must be hubadmins. Omit the -H option.",
+      "translation": "根组织中的用户必须是中心管理员。请省略 -H 选项。"
     },
     {
-      "id": "Hubadmin status cannot be set because the user {User} does not exist in the root org.",
-      "translation": "无法设置中心管理员状态，因为用户 {User} 不存在于根组织中。"
+      "id": "A user in the root org cannot be an org admin.",
+      "translation": "根组织中的用户不能是组织管理员。"
     },
     {
       "id": "Warning: this will also delete all Exchange resources owned by this user (nodes, services, patterns, etc). Are you sure you want to remove user {Org}/{User} from the Horizon Exchange?",
@@ -4375,12 +4391,12 @@
       "translation": "正在启动依赖关系。"
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法启动服务依赖关系，{Perr}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
+      "translation": "“{SERVICECOMMAND} {SERVICESTARTCOMMAND}”无法生成测试协议标识，{Aerr}"
     },
     {
-      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to generate test agreementId, {Aerr}",
-      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法生成测试协议标识，{Aerr}"
+      "id": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' unable to start service dependencies, {Perr}",
+      "translation": "'{SERVICECOMMAND} {SERVICESTARTCOMMAND}' 无法启动服务依赖关系，{Perr}"
     },
     {
       "id": "'{SERVICECOMMAND} {SERVICESTOPCOMMAND}' unable to stop service dependencies, {Err}",
@@ -4528,7 +4544,7 @@
     },
     {
       "id": "Using node ID '{NodeId}' from the Horizon agent",
-      "translation": "正在使用来自 Horizon 代理程序的节点标识 '{NodeId}'"
+      "translation": "正在使用来自 Horizon 代理程序的节点标识“{NodeId}”"
     },
     {
       "id": "could not create a random token",
@@ -5411,24 +5427,16 @@
       "translation": "无法将文件 {Metadata} 放置 (PUT) 到 CSS 中，HTTP 代码：{StatusCode}"
     },
     {
-      "id": "Created network {Name}",
-      "translation": "已创建网络 {Name}"
-    },
-    {
-      "id": "unable to list docker networks, error {Err}",
-      "translation": "无法列示 Docker 网络，错误：{Err}"
-    },
-    {
-      "id": "unable to remove docker network {Name}, error {Err}",
-      "translation": "无法移除 Docker 网络 {Name}，错误：{Err}"
-    },
-    {
       "id": "unable to create get CSS status request, error {Err}",
       "translation": "无法创建 get CSS 状态请求，错误 {Err}"
     },
     {
-      "id": "CSS status is not ready after waiting {Timeout} seconds, timeout",
-      "translation": "等待 {Timeout} 秒之后 CSS 状态未准备就绪，超时"
+      "id": "CSS status is not ready after waiting {Timeout__checkLimit} seconds, timeout",
+      "translation": "等待 {Timeout__checkLimit} 秒之后 CSS 状态未准备就绪，超时"
+    },
+    {
+      "id": "CSS status is not ready, terminating service start request.",
+      "translation": "CSS 状态未准备就绪，将终止服务启动请求。"
     },
     {
       "id": "Are you sure you want to unregister this Horizon node?",
@@ -5684,7 +5692,7 @@
     },
     {
       "id": "Organization is not specified in the given node id: {NodeId}.",
-      "translation": "未在标识为 {NodeId} 的节点中指定组织。"
+      "translation": "未在标识为 {NodeId} 的给定节点中指定组织。"
     },
     {
       "id": "Error getting node {NodeId} from the Exchange. {Err}",
@@ -6253,6 +6261,10 @@
     {
       "id": "unable to close MMS API certificate private key file {ServerKey}, error {Err}",
       "translation": "无法关闭 MMS API 证书专用密钥文件 {ServerKey}，错误：{Err}"
+    },
+    {
+      "id": "Version_Expression: Empty string is not a valid version.",
+      "translation": "Version_Expression：空字符串不是有效的版本。"
     },
     {
       "id": "Version_Expression: Whitespace is not permitted in {Expr}.",

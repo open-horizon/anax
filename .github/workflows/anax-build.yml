@@ -1,0 +1,48 @@
+# This pipeline is to build anax binaries
+
+name: anax-e2e-test
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the anax-build branch
+on:
+  pull_request:
+    branches:
+      - master
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
+    env:
+      GOPATH: /home/runner/work/anax/anax/go
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+           path: go/src/github.com/${{github.repository}}
+      
+      # prepare the environment
+      - name: Set up golang 1.14.1
+        uses: actions/setup-go@v2
+        with:
+           go-version: '1.14.1'
+
+      # build anax binaries
+      - name: Build anax binaries
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
+
+      # build the e2edev docker images 
+      - name: Build the e2edev docker images
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+
+      # E2E development test
+      - name: E2E dev-test
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
+ 

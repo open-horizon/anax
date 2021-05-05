@@ -122,7 +122,7 @@ if [ $? -ne 0 ]; then
 	exit 2
 fi
 
-# suspending the two servicess: e2edev@somecomp.com/netspeed, e2edev@somecomp.com/location
+# suspending the two services: e2edev@somecomp.com/netspeed, e2edev@somecomp.com/location
 echo -e "${PREFIX} suspending the e2edev@somecomp.com/netspeed service..."
 out=$(hzn service configstate suspend e2edev@somecomp.com https://bluehorizon.network/services/netspeed -f)
 if [ $? -ne 0 ]; then

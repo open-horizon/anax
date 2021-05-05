@@ -108,7 +108,7 @@ fi
 if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   FILE_SIZE=128
 else
-  FILE_SIZE=512
+  FILE_SIZE=1024
 fi
 
 echo "test hzn mms cli with user:"
@@ -144,7 +144,7 @@ fi
 
 # Now, shorten the HTTP request timeout so that the upload fails. Internally, the CLI will retry
 # before giving up with the appropriate HTTP Client timeout error.
-export HZN_HTTP_TIMEOUT="2"
+export HZN_HTTP_TIMEOUT="1"
 
 hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
 RC=$?
