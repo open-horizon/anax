@@ -32,6 +32,7 @@ BRANCH_NAME ?= ""
 ANAX_SOURCE ?= $(shell dirname $(CURDIR))
 DOCKER_DEV_OPTS :=  --rm --no-cache --build-arg ARCH=$(arch)
 E2EDEVTEST_TEMPFS := $(CURDIR)/docker/tempfs/e2edevtest
+CERT_LOC ?= 1
 
 # msghub
 MSGHUB_VARS := MSGHUB_BROKER_URL='$(MSGHUB_BROKER_URL)' MSGHUB_API_KEY='$(MSGHUB_API_KEY)'
@@ -49,7 +50,6 @@ DOCKER_TEST_ADD_HOST ?= "localhost:127.0.0.1"
 E2EDEV_HOST_IP := $(shell hostname -I | awk '{print $$1}')
 UDS := /var/run/horizon/
 API_KEY ?= 0
-CERT_LOC ?= 0
 DOCKER_CPU_TAG := 1.2.2
 ICP_HOST_IP ?= 0
 ORG_ID ?= ""
@@ -70,7 +70,7 @@ ifneq ($(old_agbot),)
 endif
 AGBOT_API ?= http://agbot:8080
 AGBOT2_API ?= http://agbot2:8080
-AGBOT_SAPI_URL ?= http://agbot:8083
+AGBOT_SAPI_URL ?= https://agbot:8083
 AGBOT_NAME ?= agbot
 AGBOT_TOKEN ?= abcdefg
 
@@ -112,7 +112,7 @@ DOCKER_REG_PW := testpassword
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
 DOCKER_CSS_TAG := testing$(BRANCH_NAME)
-CSS_URL ?= http://css-api:8080
+CSS_URL ?= https://css-api:8080
 
 #css DB
 DOCKER_CSSDB_CNAME := mongo
@@ -442,7 +442,10 @@ run-mgmthub: get-agbot-image
 	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
 	export POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) POSTGRES_USER=$(EXCHDB_USER); \
+	export HZN_TRANSPORT=https; \
 	$(TEST_VARS) $(ANAX_SOURCE)/test/gov/start_mgmt_hub.sh
+	cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt
+	cp /etc/horizon/keys/horizonMgmtHub.crt $(E2EDEVTEST_TEMPFS)/certs/agbotapi.crt
 
 .PHONY: all default stop build run distclean clean mostlyclean realclean run-test run-dockerreg test-network test e2edevtest-docker-prereqs test-image copy-cert run-vault hashicorp-vault-image
 #.SILENT: clean
