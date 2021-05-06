@@ -455,5 +455,41 @@ EOF
 run_and_check "deploycheck/deploycompatible" "$comp_input" "200" ""
 check_comp_results "false" "User Input Incompatible"
 
+echo ""
+echo -e "${PREFIX} Start testing for vault secrets API"
+
+if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ]; then
+  echo -e "\n${PREFIX} Skipping agbot API tests for vault\n"
+  exit 0
+fi
+
+# Later export these from /root/init_vault
+TEST_VAULT_SECRET_ORG="userdev"
+TEST_VAULT_SECRET_NAME="test_secret_name"
+api="org/${TEST_VAULT_SECRET_ORG}/secrets/${TEST_VAULT_SECRET_NAME}"
+
+echo -e "\n${PREFIX} test ${api} GET with invalid credentials"
+CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH}_wrong ${AGBOT_SAPI_URL}/${api}"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "401" "Failed to authenticate"
+
+echo -e "\n${PREFIX} test ${api} GET with valid secret and secret org"
+CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" ""
+
+echo -e "\n${PREFIX} test ${api} POST with valid secret and secret org"
+CMD="curl -sLX POST -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "201" ""
+
+echo -e "\n${PREFIX} test ${api} DELETE with valid secret and secret org"
+CMD="curl -sLX DELETE -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "204" ""
 
 echo -e "\n${PREFIX} complete test\n"
