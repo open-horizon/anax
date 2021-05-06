@@ -456,7 +456,7 @@ check_comp_results "false" "User Input Incompatible"
 echo ""
 echo -e "${PREFIX} Start testing for vault secrets API"
 
-if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ]; then
+if [ "$HZN_VAULT" != "true" ] || [ "$NOVAULT" != "1" ]; then
   echo -e "\n${PREFIX} Skipping agbot API tests for vault\n"
   exit 0
 fi

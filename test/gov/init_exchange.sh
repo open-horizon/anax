@@ -212,13 +212,6 @@ then
   REGAGBOTUSERDEV=$(curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"businessPolOrgid":"userdev","businessPol":"*", "nodeOrgid": "userdev"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/businesspols" | jq -r '.msg')
   echo "$REGAGBOTUSERDEV"
 
-
-  # register msghub patterns to agbot1
-  if [ "${TEST_MSGHUB}" = "1" ]; then
-    REGAGBOTCPU2MSGHUB=$(curl -sLX PUT $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$AGBOT_AUTH" -d '{"patternOrgid":"e2edev@somecomp.com","pattern":"cpu2msghub"}' "${EXCH_URL}/orgs/$ORG/agbots/${AGBOT_NAME}/patterns/e2edev@somecomp.com_cpu2msghub" | jq -r '.msg')
-    echo "$REGAGBOTCPU2MSGHUB"
-  fi
-
   sleep 30
 fi
 

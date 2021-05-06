@@ -110,6 +110,7 @@ else
 
 	depl_file="${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment_nocert.yaml.tmpl"
 fi
+
 # create deployment.yaml file
 ARCH=${ARCH} envsubst < ${depl_file} > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/deployment.yaml"
 if [ $? -ne 0 ]; then echo "Failure configuring k8s agent deployment template file"; exit 1; fi

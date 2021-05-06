@@ -56,7 +56,7 @@ function run_delete_loops {
   else
     echo -e "Deletion loop tests set to only run once."
 
-    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ] || [ "${PATTERN}" == "shelm" ]; then
+    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
       if [ "$NOLOOP" == "1" ]; then
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
@@ -157,29 +157,6 @@ if [ $? -ne 0 ]
 then
   echo -e "Model management sync service test failure."
   exit -1
-fi
-
-TEST_MSGHUB=0
-for pat in $(echo $TEST_PATTERNS | tr "," " "); do
-  if [ "$pat" == "cpu2msghub" ]; then
-    TEST_MSGHUB=1
-  fi
-done
-
-# Register msghub services and patterns
-if [ "$TESTFAIL" != "1" ]; then
-  if [ "${TEST_MSGHUB}" = "1" ]; then
-    echo "Register services and patterns for msghub test"
-
-    ./msghub_rsrcreg.sh
-    if [ $? -ne 0 ]
-    then
-      echo -e "Service registration failure for msghub."
-      TESTFAIL="1"
-    else
-      echo "Register services for msghub SUCCESSFUL"
-    fi
-  fi
 fi
 
 # Setup to use the anax registration APIs
