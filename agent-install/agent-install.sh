@@ -67,8 +67,8 @@ Required Input Variables (via flag, environment, or config file):
     HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
 
 Options/Flags:
-    -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT . (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
-    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. (If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added.) All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
+    -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
+    -k    Path to a configuration file. Default: ./$AGENT_CFG_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. All other variables for this script can be specified in the config file, except for INPUT_FILE_PATH (and HZN_ORG_ID if -i css: is specified). (This flag is equivalent to AGENT_CFG_FILE)
     -i    Installation packages/files location (default: current directory). If the argument is the URL of an anax git repo release (e.g. https://github.com/open-horizon/anax/releases/download/v1.2.3) it will download the appropriate packages/files from there. If it is anax: or https://github.com/open-horizon/anax/releases , it will default to the latest release. Otherwise, if the argument begins with 'http' or 'https', it will be used as an APT repository (for debian hosts). If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the appropriate files/packages from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to INPUT_FILE_PATH)
     -z    The name of your agent installation tar file. Default: ./agent-install-files.tar.gz (This flag is equivalent to AGENT_INSTALL_ZIP)
     -j    File location for the public key for an APT repository specified with '-i' (This flag is equivalent to PKG_APT_KEY)
@@ -338,11 +338,12 @@ function get_anax_release_version() {
 function get_certificate() {
     log_debug "get_certificate() begin"
 
-    local input_file_path=$1   # normally the value of INPUT_FILE_PATH
-    if [[ $input_file_path == css:* ]]; then
-            if [[ -n $AGENT_CERT_FILE && ! -f $AGENT_CERT_FILE ]]; then
-		    download_css_file "$input_file_path/$AGENT_CERT_FILE_DEFAULT"
-	    fi
+    if [[ $AGENT_CERT_FILE_CSS == css:* ]]; then
+        download_css_file "$AGENT_CERT_FILE_CSS/$AGENT_CERT_FILE_DEFAULT"   # AGENT_CERT_FILE is already set to where it will end up in this case
+    elif [[ $INPUT_FILE_PATH == css:* ]]; then
+        if [[ -n $AGENT_CERT_FILE && ! -f $AGENT_CERT_FILE ]]; then
+            download_css_file "$INPUT_FILE_PATH/$AGENT_CERT_FILE_DEFAULT"
+        fi
     fi
 
     #todo: support the case in which the mgmt hub is using a CA-trusted cert, so we don't need to use a cert at all
@@ -419,7 +420,7 @@ function download_anax_release_file() {
     log_debug "download_anax_release_file() end"
 }
 
-# If necessary, download the cfg file from a remote location.
+# If necessary, download the cfg file from CSS.
 function download_config_file() {
     log_debug "download_config_file() begin"
     local input_file_path=$1   # normally the value of INPUT_FILE_PATH or AGENT_CFG_FILE
@@ -442,7 +443,7 @@ function read_config_file() {
         :   # just fall thru this if-else to read the config file
     elif using_remote_input_files 'cfg'; then
         if [[ $AGENT_CFG_FILE == css:*  ]]; then
-            download_config_file "$AGENT_CFG_FILE"
+            download_config_file "$AGENT_CFG_FILE"   # in this case AGENT_CFG_FILE is the css object path NOT including the last part (agent-install.cfg)
         else
             if [[ -n $AGENT_CFG_FILE && $AGENT_CFG_FILE != $AGENT_CFG_FILE_DEFAULT ]]; then
                 log_fatal 1 "Can not specify both -k (AGENT_CFG_FILE) and -i (INPUT_FILE_PATH)"
@@ -511,6 +512,15 @@ function get_all_variables() {
     get_variable HZN_ORG_ID '' 'true'
     get_variable HZN_MGMT_HUB_CERT_PATH
     get_variable AGENT_CERT_FILE "${HZN_MGMT_HUB_CERT_PATH:-$AGENT_CERT_FILE_DEFAULT}"   # use the default value even if the file doesn't exist yet, because '-i css:'' might create it
+    if [[ $AGENT_CERT_FILE == 'css:' ]]; then
+        AGENT_CERT_FILE="$AGENT_CERT_FILE$CSS_OBJ_PATH_DEFAULT"   # expand the shorthand syntax
+    fi
+    if [[ $AGENT_CERT_FILE == css:* ]]; then
+        # Store the css path for the cert file, so we can change AGENT_CERT_FILE to where it will end up locally
+        AGENT_CERT_FILE_CSS=$AGENT_CERT_FILE
+        AGENT_CERT_FILE=$AGENT_CERT_FILE_DEFAULT
+        rm -f $AGENT_CERT_FILE   # they told us to download it, so don't use the file already there
+    fi
     get_variable HZN_FSS_CSSURL '' 'true'
     get_variable HZN_EXCHANGE_USER_AUTH
     get_variable HZN_EXCHANGE_NODE_AUTH
@@ -1087,7 +1097,7 @@ function install_macos() {
         fi
     fi
 
-    get_certificate $INPUT_FILE_PATH
+    get_certificate
 
     create_or_update_horizon_defaults
 
@@ -1267,7 +1277,7 @@ function install_debian() {
         fi
     fi
 
-    get_certificate $INPUT_FILE_PATH
+    get_certificate
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
@@ -1421,7 +1431,7 @@ function install_redhat() {
         fi
     fi
 
-    get_certificate $INPUT_FILE_PATH
+    get_certificate
 
     create_or_update_horizon_defaults "$ANAX_PORT"
 
