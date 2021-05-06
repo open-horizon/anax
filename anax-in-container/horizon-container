@@ -181,7 +181,7 @@ start() {
 		mkdir -p ${fssHostSharePath}/fss-domain-socket
 		mkdir -p ${fssHostSharePath}/ess-auth
 	else
-		# updating will keep files inside $fssHostSharePath
+		: # updating will keep files inside $fssHostSharePath
 	fi
 
 	# for mac, docker container has the filesystem privilge of the login user instead of root
