@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
@@ -56,9 +57,10 @@ type AgreementBotWorker struct {
 	noworkDispatch       int64       // The last time the NoWorkHandler was dispatched.
 	newMessagesToProcess bool        // True when the agbot has been notified (through the exchange /changes API) that there are messages to process.
 	nodeSearch           *NodeSearch // The object that controls node searches and the state of search sessions.
+	secrets              secrets.AgbotSecrets
 }
 
-func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase) *AgreementBotWorker {
+func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, s secrets.AgbotSecrets) *AgreementBotWorker {
 
 	ec := worker.NewExchangeContext(cfg.AgreementBot.ExchangeId, cfg.AgreementBot.ExchangeToken, cfg.AgreementBot.ExchangeURL, cfg.AgreementBot.CSSURL, cfg.Collaborators.HTTPClientFactory)
 
@@ -75,6 +77,7 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 		noworkDispatch:       time.Now().Unix(),
 		newMessagesToProcess: false,
 		nodeSearch:           NewNodeSearch(),
+		secrets:              s,
 	}
 
 	patternManager = NewPatternManager()

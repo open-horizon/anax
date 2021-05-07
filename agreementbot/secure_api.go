@@ -12,6 +12,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
@@ -35,9 +36,10 @@ type SecureAPI struct {
 	httpClient     *http.Client // a shared HTTP client instance for this worker
 	em             *events.EventStateManager
 	shutdownError  string
+	secrets        secrets.AgbotSecrets
 }
 
-func NewSecureAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string) *SecureAPI {
+func NewSecureAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, s secrets.AgbotSecrets) *SecureAPI {
 	messages := make(chan events.Message)
 
 	listener := &SecureAPI{
@@ -49,6 +51,7 @@ func NewSecureAPIListener(name string, config *config.HorizonConfig, db persiste
 		name:       name,
 		db:         db,
 		em:         events.NewEventStateManager(),
+		secrets:    s,
 	}
 
 	listener.listen()
