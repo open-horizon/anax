@@ -10,6 +10,8 @@ import (
 	agbotPersistence "github.com/open-horizon/anax/agreementbot/persistence"
 	_ "github.com/open-horizon/anax/agreementbot/persistence/bolt"
 	_ "github.com/open-horizon/anax/agreementbot/persistence/postgresql"
+	agbotSecretsImpl "github.com/open-horizon/anax/agreementbot/secrets"
+	_ "github.com/open-horizon/anax/agreementbot/secrets/vault"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/changes"
 	"github.com/open-horizon/anax/config"
@@ -92,6 +94,16 @@ func main() {
 		glog.Warningf("Unable to initialize Agreement Bot database on this node: %v", dberr)
 	}
 
+	// Initialize the secrets implementation
+	var agbotSecrets agbotSecretsImpl.AgbotSecrets
+	as, aserr := agbotSecretsImpl.InitSecrets(cfg)
+	// If the agbot is configured, then there must be a secrets implementation plugged in
+	if agbotDB != nil && aserr != nil {
+		panic(fmt.Sprintf("Unable to initialize Agreement Bot Secrets implementation: %v", aserr))
+	} else {
+		agbotSecrets = as
+	}
+
 	// start control signal handler
 	control := make(chan os.Signal, 1)
 	signal.Notify(control, os.Interrupt)
@@ -150,12 +162,12 @@ func main() {
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
-	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotDB))
+	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotDB, agbotSecrets))
 	if cfg.AgreementBot.APIListen != "" {
 		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotDB, *configFile))
 	}
 	if cfg.AgreementBot.SecureAPIListenHost != "" {
-		workers.Add(agreementbot.NewSecureAPIListener("AgBot Secure API", cfg, agbotDB, *configFile))
+		workers.Add(agreementbot.NewSecureAPIListener("AgBot Secure API", cfg, agbotDB, agbotSecrets))
 	}
 	if agbotDB != nil {
 		workers.Add(agreementbot.NewChangesWorker("AgBot ExchangeChanges", cfg))
