@@ -173,6 +173,7 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/policycompatible", a.policy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/{vault-secret-name}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 
@@ -535,6 +536,142 @@ func (a *SecureAPI) writeCompCheckResponse(w http.ResponseWriter, output interfa
 				}
 			}
 		}
+	}
+}
+
+// Handles secret fetch, updates and delete from the vault API
+// org - This url sub-path dictates where the secret exists within the vault
+// vault-secret-name - The actual secret name used in the secret bindings
+func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
+	// get message printer with the language passed in from the header
+	lan := r.Header.Get("Accept-Language")
+	if lan == "" {
+		lan = i18n.DEFAULT_LANGUAGE
+	}
+	msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
+
+	// Check if vault is configured in the management hub
+	if a.Config.AgreementBot.Vault.VaultURL == "" {
+		glog.Errorf(APIlogString("There is no vault component in the management hub."))
+		writeResponse(w, msgPrinter.Sprintf("There is no vault component in the management hub. %v", a.Config.IsVaultConfigured()), http.StatusServiceUnavailable)
+		return
+	}
+
+	pathVars := mux.Vars(r)
+	org := pathVars["org"]
+	vaultSecretName := pathVars["vault-secret-name"]
+	glog.V(5).Infof(APIlogString(fmt.Sprintf("/org/%v/secrets/%v called.", org, vaultSecretName)))
+
+	// handle secret API options
+	switch r.Method {
+	case "GET":
+		if vaultToken, ok := a.processVaultUserCred(fmt.Sprintf("/org/%v/secrets/%v", org, vaultSecretName), msgPrinter, w, r); ok {
+			targetURL := fmt.Sprintf("%v/org/%v/secrets/%v", a.Config.GetAgbotVaultURL(), org, vaultSecretName)
+			// Replace with a call to invoke the vault API at targetURL with the vaultToken generated from authentication. Returns response body & code
+			if _, respCode, err := fmt.Sprintf("Dummy response - Token:%v, url:%v", vaultToken, targetURL), http.StatusOK, error(nil); err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("Vault invocation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err)))
+				writeResponse(w, msgPrinter.Sprintf("Vault invovation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err), http.StatusServiceUnavailable)
+			} else if respCode == http.StatusNotFound {
+				glog.Infof(APIlogString("Secret does not exist."))
+				writeResponse(w, msgPrinter.Sprintf("Secret does not exist."), http.StatusNotFound)
+			} else if respCode == http.StatusOK {
+				glog.Infof(APIlogString("Secret exists."))
+				writeResponse(w, map[string]bool{"exists": true}, http.StatusOK)
+			}
+		}
+	case "PUT":
+		fallthrough
+	case "POST":
+		if vaultToken, ok := a.processVaultUserCred(fmt.Sprintf("/org/%v/secrets/%v", org, vaultSecretName), msgPrinter, w, r); ok {
+			targetURL := fmt.Sprintf("%v/org/%v/secrets/%v", a.Config.GetAgbotVaultURL(), org, vaultSecretName)
+			// Replace with a call to invoke the vault API at targetURL with the vault token generated from authentication
+			if _, respCode, err := fmt.Sprintf("Token:%v, url:%v", vaultToken, targetURL), http.StatusCreated, error(nil); err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("Vault invocation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err)))
+				writeResponse(w, msgPrinter.Sprintf("Vault invovation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err), http.StatusServiceUnavailable)
+			} else if respCode == http.StatusCreated {
+				// POST application logic goes here
+				glog.Infof(APIlogString("Secret created/updated."))
+				writeResponse(w, map[string]string{"name": "secret-name", "secret": "secret"}, http.StatusCreated)
+			}
+		}
+	case "DELETE":
+		if vaultToken, ok := a.processVaultUserCred(fmt.Sprintf("/org/%v/secrets/%v", org, vaultSecretName), msgPrinter, w, r); ok {
+			targetURL := fmt.Sprintf("%v/org/%v/secrets/%v", a.Config.GetAgbotVaultURL(), org, vaultSecretName)
+			// Replace with a call to invoke the vault API at targetURL with the vaultToken generated from authentication
+			if _, respCode, err := fmt.Sprintf("Token:%v, url:%v", vaultToken, targetURL), http.StatusNoContent, error(nil); err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("Vault invocation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err)))
+				writeResponse(w, msgPrinter.Sprintf("Vault invovation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err), http.StatusServiceUnavailable)
+			} else if respCode == http.StatusNotFound {
+				glog.Infof(APIlogString("Secret does not exist."))
+				writeResponse(w, msgPrinter.Sprintf("Secret does not exist."), http.StatusNotFound)
+			} else if respCode == http.StatusNoContent {
+				// DELETE application logic goes here
+				glog.Infof(APIlogString("Secret is deleted."))
+				writeResponse(w, "Secret is deleted.", http.StatusNoContent)
+			}
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "GET, PUT, POST, DELETE, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func (a *SecureAPI) processVaultUserCred(resource string, msgPrinter *message.Printer, w http.ResponseWriter, r *http.Request) (string, bool) {
+	// check caller user credentials
+	userID, userPasswd, ok := r.BasicAuth()
+
+	// extract user org and secret org from API path
+	userOrg, _ := cutil.SplitOrgSpecUrl(userID)
+	pathVars := mux.Vars(r)
+	secretOrg := pathVars["org"]
+
+	if !ok {
+		glog.Errorf(APIlogString(fmt.Sprintf("%v is called without vault authentication.", resource)))
+		writeResponse(w, msgPrinter.Sprintf("Unauthorized. No vault user id is supplied."), http.StatusUnauthorized)
+		return "", false
+	} else if _, err := a.authenticateWithExchange(userID, userPasswd, msgPrinter); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the Exchange. %v", userID, err)))
+		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the Exchange. %v", err), http.StatusUnauthorized)
+		return "", false
+	} else if tokenID, err := a.authenticateWithVault(userID, userPasswd, msgPrinter); err != nil && userOrg != secretOrg {
+		// The vault api returns same respCode for invalid credentials and forbidden access to resources
+		// Hence upon failed authentication unmatching user orgs and secret orgs is a possible casue for failure
+		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the vault. User not in org specified on secret API path.", userID)))
+		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the vault. User not in org specified on secret API path."), http.StatusForbidden)
+		return "", false
+	} else if err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Failed to authenticate user %v with the vault. %v", userID, err)))
+		writeResponse(w, msgPrinter.Sprintf("Failed to authenticate the user with the vault. %v", err), http.StatusUnauthorized)
+		return "", false
+	} else {
+		return tokenID, true
+	}
+}
+
+// Possibly replace token returned as a part of a vault context
+func (a *SecureAPI) authenticateWithVault(user string, userPasswd string, msgPrinter *message.Printer) (string, error) {
+	glog.V(5).Infof(APIlogString(fmt.Sprintf("authenticateWithVault called with user %v", user)))
+
+	orgID, userID := cutil.SplitOrgSpecUrl(user)
+	if userID == "" {
+		return "", fmt.Errorf(msgPrinter.Sprintf("No vault user id is supplied."))
+	} else if orgID == "" {
+		return "", fmt.Errorf(msgPrinter.Sprintf("No vault user org id is supplied."))
+	} else if userPasswd == "" {
+		return "", fmt.Errorf(msgPrinter.Sprintf("No vault user password is supplied."))
+	}
+
+	// Make the API call to authentication plugin for vault
+	targetURL := fmt.Sprintf("%v/auth/openhorizon/login", a.Config.AgreementBot.Vault.VaultURL)
+	if _, respCode, err := fmt.Sprintf("URL:%v", targetURL), http.StatusOK, error(nil); err != nil {
+		return "", fmt.Errorf(msgPrinter.Sprintf("Vault invocation failure. %v"), err)
+	} else if respCode == http.StatusOK {
+		// extract token from response body
+		return "tokenID", nil
+	} else {
+		return "", nil
 	}
 }
 
