@@ -36,7 +36,7 @@ type SecureAPI struct {
 	httpClient     *http.Client // a shared HTTP client instance for this worker
 	em             *events.EventStateManager
 	shutdownError  string
-	secrets        secrets.AgbotSecrets
+	secretProvider secrets.AgbotSecrets
 }
 
 func NewSecureAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, s secrets.AgbotSecrets) *SecureAPI {
@@ -51,7 +51,7 @@ func NewSecureAPIListener(name string, config *config.HorizonConfig, db persiste
 		name:       name,
 		db:         db,
 		em:         events.NewEventStateManager(),
-		secrets:    s,
+		secretProvider:    s,
 	}
 
 	listener.listen()
