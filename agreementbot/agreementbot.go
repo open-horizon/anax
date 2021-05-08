@@ -57,7 +57,7 @@ type AgreementBotWorker struct {
 	noworkDispatch       int64       // The last time the NoWorkHandler was dispatched.
 	newMessagesToProcess bool        // True when the agbot has been notified (through the exchange /changes API) that there are messages to process.
 	nodeSearch           *NodeSearch // The object that controls node searches and the state of search sessions.
-	secrets              secrets.AgbotSecrets
+	secretProvider       secrets.AgbotSecrets
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, s secrets.AgbotSecrets) *AgreementBotWorker {
@@ -77,7 +77,7 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 		noworkDispatch:       time.Now().Unix(),
 		newMessagesToProcess: false,
 		nodeSearch:           NewNodeSearch(),
-		secrets:              s,
+		secretProvider:       s,
 	}
 
 	patternManager = NewPatternManager()
