@@ -17,7 +17,9 @@ function set_exports {
     export HZN_AGENT_PORT=8510
     export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
     export EXCH="${EXCH_APP_HOST}"
-    export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
+    if [ ${CERT_LOC} -eq "1" ]; then
+      export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
+    fi
 
     if [[ $TEST_DIFF_ORG -eq 1 ]]; then
       export USER=useranax1
@@ -54,7 +56,7 @@ function run_delete_loops {
   else
     echo -e "Deletion loop tests set to only run once."
 
-    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "cpu2msghub" ] || [ "${PATTERN}" == "shelm" ]; then
+    if [ "${PATTERN}" == "sall" ] || [ "${PATTERN}" == "sloc" ] || [ "${PATTERN}" == "sns" ] || [ "${PATTERN}" == "sgps" ] || [ "${PATTERN}" == "spws" ] || [ "${PATTERN}" == "susehello" ] || [ "${PATTERN}" == "shelm" ]; then
       echo -e "Starting service pattern verification scripts"
       if [ "$NOLOOP" == "1" ]; then
         ORG_ID=${DEVICE_ORG} ADMIN_AUTH=${admin_auth} ./verify_agreements.sh
@@ -121,23 +123,14 @@ then
   echo "$ICP_HOST_IP $HOST_NAME_ICP $HOST_NAME" >> /etc/hosts
 fi
 
+cd /root
+
 # Build an old anax if we need it
-if [ "$OLDANAX" == "1" ] || [ "$OLDAGBOT" == "1" ]
-then
-  echo "Building old anax."
-  chown -R root:root /root/.ssh
-  mkdir -p /tmp/oldanax/anax-gopath/src/github.com/open-horizon
-  mkdir -p /tmp/oldanax/anax-gopath/bin
-  export GOPATH="/tmp/oldanax/anax-gopath"
-  export TMPDIR="/tmp/oldanax/"
-  cd /tmp/oldanax/anax-gopath/src/github.com/open-horizon
-  git clone git@github.com:open-horizon/anax.git
-  cd /tmp/oldanax/anax-gopath/src/github.com/open-horizon/anax
-  make
-  cp anax /usr/bin/old-anax
-  export GOPATH="/tmp"
-  unset TMPDIR
-  cd /tmp
+if [ "$OLDANAX" == "1" ]; then
+  ./build_old_anax.sh
+  if [ $? -ne 0 ]; then
+    exit -1
+  fi
 fi
 
 #--cacert /certs/css.crt
@@ -146,8 +139,6 @@ if [ ${CERT_LOC} -eq "1" ]; then
 else
   CERT_VAR=""
 fi
-
-cd /root
 
 # Start the API Key tests if it has been set
 #if [ ${API_KEY} != "0" ]; then
@@ -168,29 +159,6 @@ then
   exit -1
 fi
 
-TEST_MSGHUB=0
-for pat in $(echo $TEST_PATTERNS | tr "," " "); do
-  if [ "$pat" == "cpu2msghub" ]; then
-    TEST_MSGHUB=1
-  fi
-done
-
-# Register msghub services and patterns
-if [ "$TESTFAIL" != "1" ]; then
-  if [ "${TEST_MSGHUB}" = "1" ]; then
-    echo "Register services and patterns for msghub test"
-
-    ./msghub_rsrcreg.sh
-    if [ $? -ne 0 ]
-    then
-      echo -e "Service registration failure for msghub."
-      TESTFAIL="1"
-    else
-      echo "Register services for msghub SUCCESSFUL"
-    fi
-  fi
-fi
-
 # Setup to use the anax registration APIs
 if [ "$TESTFAIL" != "1" ]
 then
@@ -203,7 +171,11 @@ then
   export ANAX_API="http://localhost:${HZN_AGENT_PORT}"
   export EXCH="${EXCH_APP_HOST}"
   export TOKEN="abcdefg"
-  export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
+
+  if [ ${CERT_LOC} -eq "1" ]; then
+    export HZN_MGMT_HUB_CERT_PATH="/certs/css.crt"
+  fi
+
   if [[ $TEST_DIFF_ORG -eq 1 ]]; then
     export USER=useranax1
     export PASS=useranax1pw
@@ -238,49 +210,20 @@ then
 fi
 
 echo -e "No agbot setting is $NOAGBOT"
+HZN_AGBOT_API=${AGBOT_API}
 if [ "$NOAGBOT" != "1" ] && [ "$TESTFAIL" != "1" ]
 then
   if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-    # Start the agbot
-    su - agbotuser -c "mkdir -p /home/agbotuser/policy.d"
-    su - agbotuser -c "mkdir -p /home/agbotuser/policy2.d"
-    su - agbotuser -c "mkdir -p /home/agbotuser/.colonus"
-    su - agbotuser -c "mkdir -p /home/agbotuser/keys"
-    export HZN_VAR_BASE=/home/agbotuser
-
-    # create cert and key for the local agbot secure api
-    openssl req -newkey rsa:4096 -nodes -sha256 -x509 -keyout /home/agbotuser/keys/agbotapi.key -days 365 \
-      -out /home/agbotuser/keys/agbotapi.crt \
-      -subj "/C=US/ST=NY/L=New York/O=e2edev@somecomp.com/CN=localhost"
-    chmod +r /home/agbotuser/keys/agbotapi.key
-
-    if [ "$OLDAGBOT" == "1" ]
-    then
-      echo "Starting the OLD Agreement Bot 1."
-      su agbotuser -c "/usr/bin/old-anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
-    else
-      echo "Starting Agreement Bot 1."
-      su agbotuser -c "/usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot.config >/tmp/agbot.log 2>&1 &"
-
-      if [ "$MULTIAGBOT" == "1" ]; then
-        sleep 5
-        echo "Starting Agreement Bot 2."
-        su agbotuser -c "/usr/local/bin/anax -v=5 -alsologtostderr=true -config /etc/agbot/agbot2.config >/tmp/agbot2.log 2>&1 &"
-      fi
-    fi
-
-    sleep 5
-
     # Check that the agbot is still alive
-    if ! curl -sSL http://localhost:8082/agreement > /dev/null; then
-      echo "Agreement Bot 1 startup failure."
+    if ! curl -sSL ${AGBOT_API}/agreement > /dev/null; then
+      echo "Agreement Bot 1 verification failure."
       TESTFAIL="1"
       exit 1
     fi
 
     if [ "$MULTIAGBOT" == "1" ]; then
-      if ! curl -sSL http://localhost:8084/agreement > /dev/null; then
-        echo "Agreement Bot 2 startup failure."
+      if ! curl -sSL ${AGBOT2_API}/agreement > /dev/null; then
+        echo "Agreement Bot 2 verification failure."
         TESTFAIL="1"
         exit 1
       fi
@@ -370,11 +313,12 @@ elif [ "$TESTFAIL" != "1" ]; then
 
     # start multiple agents
     source ./multiple_agents.sh
-    if [ ${MUL_AGENTS} -ne 0 ]; then
+    if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Starting multiple agents with pattern ${ma_pattern} ..."
       PATTERN=${ma_pattern} startMultiAgents
       if [ $? -ne 0 ]; then
         echo "Multiple agent startup failure."
+        TESTFAIL="1"
         break
       fi
     fi
@@ -387,11 +331,12 @@ elif [ "$TESTFAIL" != "1" ]; then
       break
     fi
 
-    if [ ${MUL_AGENTS} -ne 0 ]; then
+    if [ -n "$MULTIAGENTS" ] && [ "$MULTIAGENTS" != "0" ]; then
       echo "Checking multiple agents..."
       PATTERN=${ma_pattern} verifyMultiAgentsAgreements
       if [ $? -ne 0 ]; then
         echo "Multiple agent agreement varification failure."
+        TESTFAIL="1"
         break
       fi
     fi

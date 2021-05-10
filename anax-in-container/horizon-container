@@ -165,7 +165,7 @@ start() {
 	# this is container name specific, like "horizon1" for example. 
 	fssHostSharePath=${fssBasePath}/${DOCKER_NAME}
 
-    	if [[ "$2" != "updating" ]]; then
+    if [[ "$2" != "updating" ]]; then
 		# clean up everything under the container name directory
 		# just incase there are left over files by other user
 		# especially the ones that are not readable by the login user 

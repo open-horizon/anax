@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check agbot agreements, looking for k8s agreements.
-AGSR=$(curl -sSL http://localhost:8082/agreement | jq -r '.agreements.archived')
+AGSR=$(curl -sSL ${AGBOT_API}/agreement | jq -r '.agreements.archived')
 NUM_AGS=$(echo ${AGSR} | jq -r '. | length')
 if [ "${NUM_AGS}" != "0" ]; then
   echo -e "Looking for kube service in archived agreements: ${NUM_AGS}"
@@ -19,7 +19,7 @@ fi
 LOOPCOUNT=0
 while [ ${LOOPCOUNT} -le 10 ]
 do
-  AGSA=$(curl -sSL http://localhost:8082/agreement | jq -r '.agreements.active')
+  AGSA=$(curl -sSL ${AGBOT_API}/agreement | jq -r '.agreements.active')
   NUM_AGS=$(echo ${AGSA} | jq -r '. | length')
   if [ "${NUM_AGS}" != "0" ]; then
     echo -e "Looking for kube service in active agreements: ${NUM_AGS}"

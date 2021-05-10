@@ -16,37 +16,52 @@ function startMultiAgents {
   echo -e "${PREFIX} userinput is: $ui"
   echo "$ui" > $UIFILE
 
-  EX_IP_GATEWAY=$(docker inspect exchange-api | jq -r '.[].NetworkSettings.Networks.e2edev_test_network.Gateway')
-  CSS_IP_GATEWAY=$(docker inspect css-api | jq -r '.[].NetworkSettings.Networks.e2edev_test_network.Gateway')
-  EX_HOST_PORT=$(docker inspect exchange-api | jq -r '.[].NetworkSettings.Ports."8080/tcp"[].HostPort')
-  CSS_HOST_PORT=$(docker inspect css-api | jq -r '.[].NetworkSettings.Ports."9443/tcp"[].HostPort')
-
   # set css certs for the agent container
-  cat /certs/css.crt > /tmp/css.crt
+  if [ ${CERT_LOC} -eq "1" ]; then
+    cat /certs/css.crt > /tmp/e2edevtest/css.crt
+  fi
 
   counter=0
-  while [ ${counter} -lt ${MUL_AGENTS} ]; do
+  while [ ${counter} -lt ${MULTIAGENTS} ]; do
     agent_port=$((8512 + ${counter}))
     device_num=$((6 + ${counter}))
 
     # set config for the agent container
-    echo "HZN_EXCHANGE_URL=http://$EX_IP_GATEWAY:$EX_HOST_PORT/v1" > /tmp/horizon
-    echo "HZN_FSS_CSSURL=${CSS_URL}" >> /tmp/horizon
-    echo "HZN_DEVICE_ID=anaxdevice${device_num}" >> /tmp/horizon
-    echo "HZN_MGMT_HUB_CERT_PATH=/tmp/css.crt" >> /tmp/horizon
-    echo "HZN_AGENT_PORT=${agent_port}" >> /tmp/horizon
-    echo "E2E_NETWORK=e2edev_test_network" >> /tmp/horizon
+    configfile="/tmp/e2edevtest/horizon.multi_agents"
+    echo -e "HZN_EXCHANGE_URL=${EXCH_APP_HOST}" > $configfile
+    echo -e "HZN_FSS_CSSURL=${CSS_URL}" >> $configfile
+    echo -e "HZN_DEVICE_ID=anaxdevice${device_num}" >> $configfile
+    echo -e "HZN_AGENT_PORT=${agent_port}" >> $configfile
+    if [ ${CERT_LOC} -eq "1" ]; then
+      echo "HZN_MGMT_HUB_CERT_PATH=/tmp/e2edevtest/css.crt" >> $configfile
+    fi
 
     # start agent container
     echo "${PREFIX} Start agent container horizon${horizon_num} ..."
     export HC_DONT_PULL=1;
     export HC_DOCKER_TAG=testing
     horizon_num=${device_num};
-    /tmp/anax-in-container/horizon-container start ${horizon_num} /tmp/horizon
+    /tmp/anax-in-container/horizon-container start ${horizon_num} $configfile
+    if [ $? -ne 0 ]; then
+      echo -e "${PREFIX} Failed to start agent horizon${horizon_num}."
+      exit 1
+    fi 
+
+    # connect the hzn_horizonnet network to the container so that it 
+    # can use the local exchange-api and css-api through this network
+    docker network connect ${DOCKER_TEST_NETWORK} horizon${horizon_num}
+    if [ $? -ne 0 ]; then
+      echo -e "${PREFIX} Failed to connect agent container horizon${horizon_num} to network ${DOCKER_TEST_NETWORK}."
+      exit 1
+    fi 
     sleep 10
 
     # copy the userinput file to agent container
     docker cp $UIFILE horizon${horizon_num}:$UIFILE
+    if [ $? -ne 0 ]; then
+      echo -e "${PREFIX} Failed to copy file $UIFILE to agent container horizon${horizon_num}."
+      exit 1
+    fi 
 
     # register the agent
     regcmd="hzn register -f $UIFILE -p $PATTERN -o e2edev@somecomp.com -u e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
@@ -65,7 +80,7 @@ function verifyMultiAgentsAgreements {
   echo -e "${PREFIX} Verifying agreements"
 
   counter=0
-  while [ ${counter} -lt ${MUL_AGENTS} ]; do
+  while [ ${counter} -lt ${MULTIAGENTS} ]; do
     agent_port=$((8512 + ${counter}))
     device_num=$((6 + ${counter}))
 
@@ -92,7 +107,7 @@ function stopMultiAgents {
   echo -e "${PREFIX} Stopping agents"
 
   counter=0
-  while [ ${counter} -lt ${MUL_AGENTS} ]; do
+  while [ ${counter} -lt ${MULTIAGENTS} ]; do
     agent_port=$((8512 + ${counter}))
     device_num=$((6 + ${counter}))
 
