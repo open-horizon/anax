@@ -97,12 +97,11 @@ func main() {
 	// Initialize the secrets implementation
 	var agbotSecrets agbotSecretsImpl.AgbotSecrets
 	as, aserr := agbotSecretsImpl.InitSecrets(cfg)
-	// If the agbot is configured, then there must be a secrets implementation plugged in
+	// If the agbot is configured, then check if there is a secrets plugin. If not, just issue a warning message.
 	if agbotDB != nil && aserr != nil {
-		panic(fmt.Sprintf("Unable to initialize Agreement Bot Secrets implementation: %v", aserr))
-	} else {
-		agbotSecrets = as
+		glog.Warningf("Unable to initialize secrets plugin, continuing without secret support: %v", aserr)
 	}
+	agbotSecrets = as
 
 	// start control signal handler
 	control := make(chan os.Signal, 1)
