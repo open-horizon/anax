@@ -1,19 +1,15 @@
 pipeline {
-    agent any
+    agent {
+    	node {
+        	label 'ubuntu2004-docker-aws-1c-2g'
+    	}
+    }
     stages {
 	stage('Install Dependencies'){
 	    steps{
 		sh 'echo "Installing dependencies"'
 		sh '''
 			#!/usr/bin/env bash
-                        apt-get update -qq && apt-get install -y \
-                            wget \
-                            gnupg2 \
-                            software-properties-common
-                        # install golang
-                        export GO_VERSION=1.14.1
-                        wget https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz
-                        tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
                         mkdir -p $HOME/go/src/github.com/open-horizon/anax
                         export GOPATH=$HOME/go
                         export PATH=$PATH:/usr/local/go/bin
