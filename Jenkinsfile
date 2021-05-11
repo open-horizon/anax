@@ -10,10 +10,10 @@ pipeline {
 		sh 'echo "Installing dependencies"'
 		sh '''
 			#!/usr/bin/env bash
-                        mkdir -p $HOME/go/src/github.com/open-horizon/anax
-                        export GOPATH=$HOME/go
-                        export PATH=$PATH:/usr/local/go/bin
-                        ln -fs $WORKSPACE $GOPATH/src/github.com/open-horizon/anax
+      mkdir -p $HOME/go/src/github.com/open-horizon/anax
+      export GOPATH=$HOME/go
+      export PATH=$PATH:/usr/local/go/bin
+      ln -fs $WORKSPACE $GOPATH/src/github.com/open-horizon/anax
 		'''
 	    }
 	}
