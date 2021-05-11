@@ -51,6 +51,7 @@ By default it will look for a configuration file called `agent-install.cfg` in t
 ```bash
 HZN_EXCHANGE_URL="https://<ICP_IP>:8443/ec-exchange/v1/"
 HZN_FSS_CSSURL="https://<ICP_IP>:8443/ec-css/"
+HZN_AGBOT_URL="https://<ICP_IP>:8443/ec-agbot/"
 HZN_ORG_ID="<your_ICP_cluster>"
 CERTIFICATE="/etc/horizon/agent-install.crt"
 HZN_EXCHANGE_USER_AUTH="iamapikey:<api key>"

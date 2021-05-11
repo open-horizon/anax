@@ -96,6 +96,7 @@ The default agent configuration file is `/etc/default/horizon` on the host. In t
 HZN_EXCHANGE_URL=
 HZN_EXCHANGE_USER_AUTH=
 HZN_FSS_CSSURL=
+HZN_AGBOT_URL=
 HZN_ORG_ID=
 HZN_NODE_ID=<optional name for your node>
 HZN_MGMT_HUB_CERT_PATH=

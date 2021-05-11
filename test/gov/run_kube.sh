@@ -90,16 +90,18 @@ fi
 echo "Generate the /etc/default/horizon file based on local network configuration"
 EX_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "exchange-api") | .value.IPv4Address')
 CSS_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "css-api") | .value.IPv4Address')
+AGBOT_IP_MASK=$(docker network inspect ${DOCKER_TEST_NETWORK} | jq -r '.[].Containers | to_entries[] | select (.value.Name == "agbot") | .value.IPv4Address')
 EX_IP="$(cut -d'/' -f1 <<<${EX_IP_MASK})"
 CSS_IP="$(cut -d'/' -f1 <<<${CSS_IP_MASK})"
+AGBOT_IP="$(cut -d'/' -f1 <<<${AGBOT_IP_MASK})"
 
-if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ]
+if [ "${EX_IP}" == "" ] || [ "${CSS_IP}" == "" ] || [ "${AGBOT_IP}" == "" ]
 then
-	echo "Failure obtaining host IP addresses for exchange and CSS"
+	echo "Failure obtaining host IP addresses for exchange, CSS and agbot"
 	exit 1
 fi
 
-EX_IP=${EX_IP} CSS_IP=${CSS_IP} envsubst < "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"
+EX_IP=${EX_IP} CSS_IP=${CSS_IP} AGBOT_IP=${AGBOT_IP} envsubst < "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon.env" > "${E2EDEVTEST_TEMPFS}/etc/agent-in-kube/horizon"
 if [ $? -ne 0 ]; then echo "Failure configuring agent env var file"; exit 1; fi
 
 if [ ${CERT_LOC} -eq "1" ]; then

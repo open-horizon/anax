@@ -11,6 +11,7 @@ import (
 
 const ExchangeURLEnvvarName = "HZN_EXCHANGE_URL"
 const FileSyncServiceCSSURLEnvvarName = "HZN_FSS_CSSURL"
+const AgbotURLEnvvarName = "HZN_AGBOT_URL"
 const VaultURLEnvvarName = "HZN_VAULT_ADDR"
 const ExchangeMessageNoDynamicPollEnvvarName = "HZN_NO_DYNAMIC_POLL"
 const OldMgmtHubCertPath = "HZN_ICP_CA_CERT_PATH"
@@ -69,6 +70,7 @@ type Config struct {
 	InitialPollingBuffer             int       // the number of seconds to wait before increasing the polling interval while there is no agreement on the node.
 	MaxAgreementPrelaunchTimeM       int64     // The maximum numbers of minutes to wait for workload to start in an agreement
 	K8sCRInstallTimeoutS             int64     // The number of seconds to wait for the custom resouce to install successfully before it is considered a failure
+	AgbotURL                         string    // The URL of the agbot secure api.
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -172,7 +174,7 @@ func (c *HorizonConfig) GetAgbotCSSCert() string {
 	return c.AgreementBot.CSSSSLCert
 }
 
-func (c* HorizonConfig) GetAgbotVaultURL() string {
+func (c *HorizonConfig) GetAgbotVaultURL() string {
 	return strings.TrimRight(c.AgreementBot.Vault.VaultURL, "/")
 }
 
@@ -290,6 +292,10 @@ func enrichFromEnvvars(config *HorizonConfig) error {
 
 	if fssCSSURL := os.Getenv(FileSyncServiceCSSURLEnvvarName); fssCSSURL != "" {
 		config.Edge.FileSyncService.CSSURL = fssCSSURL
+	}
+
+	if agbotURL := os.Getenv(AgbotURLEnvvarName); agbotURL != "" {
+		config.Edge.AgbotURL = agbotURL
 	}
 
 	if vaultURL := os.Getenv(VaultURLEnvvarName); vaultURL != "" {
@@ -410,6 +416,11 @@ func Read(file string) (*HorizonConfig, error) {
 			config.AgreementBot.ExchangeURL = strings.TrimRight(config.AgreementBot.ExchangeURL, "/") + "/"
 		}
 
+		// add a slash at the back of the AgbotURL
+		if config.Edge.AgbotURL != "" {
+			config.Edge.AgbotURL = strings.TrimRight(config.Edge.AgbotURL, "/") + "/"
+		}
+
 		// add a slash at the back of the PolicyPath
 		if config.Edge.PolicyPath != "" {
 			config.Edge.PolicyPath = strings.TrimRight(config.Edge.PolicyPath, "/") + "/"
@@ -479,6 +490,7 @@ func (con *Config) String() string {
 		", NodeCheckIntervalS: %v"+
 		", FileSyncService: {%v}"+
 		", InitialPollingBuffer: {%v}"+
+		", AgbotURL: {%v}"+
 		", BlockchainAccountId: %v"+
 		", BlockchainDirectoryAddress %v",
 		con.ServiceStorage, con.APIListen, con.DBPath, con.DockerEndpoint, con.DockerCredFilePath, con.DefaultCPUSet,
@@ -488,7 +500,7 @@ func (con *Config) String() string {
 		con.ExchangeMessagePollMaxInterval, con.ExchangeMessagePollIncrement, con.UserPublicKeyPath, con.ReportDeviceStatus,
 		con.TrustCertUpdatesFromOrg, con.TrustDockerAuthFromOrg, con.ServiceUpgradeCheckIntervalS, con.MultipleAnaxInstances,
 		con.DefaultServiceRetryCount, con.DefaultServiceRetryDuration, con.NodeCheckIntervalS, con.FileSyncService.String(),
-		con.InitialPollingBuffer, con.BlockchainAccountId, con.BlockchainDirectoryAddress)
+		con.InitialPollingBuffer, con.AgbotURL, con.BlockchainAccountId, con.BlockchainDirectoryAddress)
 }
 
 func (agc *AGConfig) String() string {
