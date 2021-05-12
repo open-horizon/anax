@@ -308,27 +308,7 @@ $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
 	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
 
-get-anax:
-
-ifeq ($(MAKECMDGOALS),test-remote-prebuilt)
-get-anax: prereq-download-anax
-else
-get-anax: prereq-build-anax
-endif
-
-prereq-build-anax: $(ANAX_SOURCE)/anax
-	@echo "Configuring e2edevtest prerequisites"
-	if [[ "$(shell docker images -q $(DOCKER_ANAX_K8S_INAME) 2>/dev/null)" == "" ]]; then \
-		cd $(ANAX_SOURCE) && make anax-k8s-image; \
-	fi
-	if [[ "$(shell docker images -q $(DOCKER_ANAX_INAME) 2>/dev/null)" == "" ]]; then \
-		cd $(ANAX_SOURCE) && make anax-image; \
-	fi
-
-prereq-download-anax:
-	gov/setup_agbot.sh
-
-e2edevtest-docker-prereqs: get-anax
+e2edevtest-docker-prereqs: 
 	mkdir -p /tmp/ess-store/ /tmp/ess-auth/ /tmp/service_storage/ /tmp/hzndev/
 	mkdir -p $(E2EDEVTEST_TEMPFS)/usr/local/bin $(E2EDEVTEST_TEMPFS)/root/.colonus
 	cp $(ANAX_SOURCE)/anax $(ANAX_SOURCE)/cli/hzn $(E2EDEVTEST_TEMPFS)/usr/local/bin
@@ -373,7 +353,7 @@ test-remote: clean $(ANAX_SOURCE)/anax run-dockerreg run-test copy-cert
 	@echo -e  "\nStarting tests"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/gov-combined.sh"
 
-test-remote-prebuilt: clean run-dockerreg run-test copy-cert
+test-remote-prebuilt: clean run-dockerreg download-agbot-image run-test copy-cert
 	@echo -e  "\nBootstrapping the exchange"
 	docker exec $(DOCKER_TEST_CNAME) bash -c "export $(TEST_VARS); /root/init_exchange.sh"
 	@echo -e  "\nStarting tests"
@@ -382,6 +362,30 @@ test-remote-prebuilt: clean run-dockerreg run-test copy-cert
 copy-cert:
 	cp css.crt $(E2EDEVTEST_TEMPFS)/certs/css.crt
 	cp agbotapi.crt $(E2EDEVTEST_TEMPFS)/certs/agbotapi.crt
+
+download-agbot-image:
+	@echo -e "\nLogging into Docker registry $(PREBUILT_DOCKER_REG_URL)"
+	docker login -u=$(PREBUILT_DOCKER_REG_USER) -p=$(PREBUILT_DOCKER_REG_PW) $(PREBUILT_DOCKER_REG_URL)
+	@echo -e  "\nPulling latest Agbot Image"
+	docker pull $(PREBUILT_DOCKER_REG_URL)/amd64_agbot:$(PREBUILT_ANAX_VERSION) 
+	docker pull $(PREBUILT_DOCKER_REG_URL)/amd64_edge-sync-service:$(PREBUILT_ESS_VERSION)
+	docker tag $(PREBUILT_DOCKER_REG_URL)/amd64_edge-sync-service:$(PREBUILT_ESS_VERSION) openhorizon/amd64_edge-sync-service:testing
+	@echo -e "\nCreating (but not starting/running) anax container..."
+	docker create --name="agbot_temp" $(PREBUILT_DOCKER_REG_URL)/amd64_agbot:$(PREBUILT_ANAX_VERSION)
+	@echo -e "\nCopying out anax and hzn binaries"
+	docker cp agbot_temp:/usr/bin/hzn $(ANAX_SOURCE)/cli/.
+	docker cp agbot_temp:/usr/horizon/bin/anax $(ANAX_SOURCE)/.
+	@echo -e "\nRemoving agbot container"
+	docker rm -f agbot_temp
+
+get-anax-images:
+	@echo "Configuring agbot prerequisites"
+	if [[ "$(shell docker images -q $(DOCKER_ANAX_K8S_INAME) 2>/dev/null)" == "" ]]; then \
+		cd $(ANAX_SOURCE) && make anax-k8s-image; \
+	fi
+	if [[ "$(shell docker images -q $(DOCKER_ANAX_INAME) 2>/dev/null)" == "" ]]; then \
+		cd $(ANAX_SOURCE) && make anax-image; \
+	fi
 
 get-agbot-image:
 	if [[ "$(AGBOT_IMAGE_TAG)" == "e2edev" ]]; then \
@@ -403,7 +407,7 @@ get-agbot-image:
 	    fi \
 	fi
 
-run-mgmthub: get-agbot-image
+run-mgmthub: get-agbot-image get-anax-images
 	@echo "Starting all-in-one management hub"
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
