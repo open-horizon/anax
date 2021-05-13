@@ -47,3 +47,10 @@ rm -f $DESTDIR/share/man/*/man1/hzn.1
 echo "Removing $SRCDIR/horizon-cli ..."
 rm -rf $SRCDIR/horizon-cli
 
+# remove hzn_bash_autocomplete.sh that agent-install.sh put in .bashrc and .bash_profile
+if [ -f "${HOME}/.bash_profile" ]; then
+	sed -i "" "/hzn_bash_autocomplete\.sh/d" ~/.bash_profile
+fi
+if [ -f "${HOME}/.bashrc" ]; then
+	sed -i "" "/hzn_bash_autocomplete\.sh/d" ~/.bashrc
+fi
