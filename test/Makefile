@@ -306,7 +306,7 @@ test-network:
 
 $(ANAX_SOURCE)/anax:
 	@echo "Building anax"
-	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image && make css-docker-image
+	cd $(ANAX_SOURCE) && make clean && make && make ess-docker-image
 
 e2edevtest-docker-prereqs: 
 	mkdir -p /tmp/ess-store/ /tmp/ess-auth/ /tmp/service_storage/ /tmp/hzndev/

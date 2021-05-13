@@ -773,6 +773,7 @@ func GetOrganization(httpClientFactory *config.HTTPClientFactory, org string, ex
 type UserDefinition struct {
 	Password    string `json:"password"`
 	Admin       bool   `json:"admin"`
+	HubAdmin    bool   `json:"hubAdmin"`
 	Email       string `json:"email"`
 	LastUpdated string `json:"lastUpdated,omitempty"`
 }

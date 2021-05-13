@@ -84,19 +84,6 @@ FSS_REGISTRY ?= $(DOCKER_REGISTRY)
 ANAX_REGISTRY ?= $(DOCKER_REGISTRY)
 AGBOT_REGISTRY ?= $(DOCKER_REGISTRY)
 
-# The CSS and its production container. This container is NOT used by hzn dev.
-CSS_EXECUTABLE := css/cloud-sync-service
-CSS_CONTAINER_DIR := css
-CSS_IMAGE_VERSION ?= 1.6.1$(BRANCH_NAME)
-CSS_IMAGE_BASE = image/cloud-sync-service
-CSS_IMAGE_NAME = $(IMAGE_REPO)/$(arch)_cloud-sync-service
-CSS_IMAGE = $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION)
-CSS_IMAGE_STG = $(CSS_IMAGE_NAME):testing$(BRANCH_NAME)
-CSS_IMAGE_PROD = $(CSS_IMAGE_NAME):stable$(BRANCH_NAME)
-# the latest tag is the same as stable
-CSS_IMAGE_LATEST = $(CSS_IMAGE_NAME):latest$(BRANCH_NAME)
-CSS_IMAGE_LABELS ?= --label "name=$(arch)_cloud-sync-service" --label "version=$(CSS_IMAGE_VERSION)" --label "release=$(shell git rev-parse --short HEAD)"
-
 # The hzn dev ESS/CSS and its container.
 ESS_EXECUTABLE := ess/edge-sync-service
 ESS_CONTAINER_DIR := ess
@@ -183,7 +170,7 @@ ifndef verbose
 .SILENT:
 endif
 
-all: gopathlinks deps $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE)
+all: gopathlinks deps $(EXECUTABLE) $(CLI_EXECUTABLE) $(ESS_EXECUTABLE)
 
 deps: gofolders
 
@@ -220,12 +207,6 @@ $(CLI_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 			done && \
 	  		rm $(CLI_TEMP_EXECUTABLE); \
 	fi
-
-$(CSS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
-	@echo "Producing $(CSS_EXECUTABLE) given arch: $(arch)"
-	cd $(PKGPATH) && \
-	  export GOPATH=$(TMPGOPATH); \
-	    $(COMPILE_ARGS) go build $(GO_BUILD_LDFLAGS) -o $(CSS_EXECUTABLE) css/cmd/cloud-sync-service/main.go;
 
 $(ESS_EXECUTABLE): $(shell find . -name '*.go') gopathlinks
 	@echo "Producing $(ESS_EXECUTABLE) given arch: $(arch)"
@@ -385,22 +366,6 @@ anax-k8s-package: anax-k8s-image
 		echo "anax-k8s container $(ANAX_K8S_IMAGE_STG):$(ANAX_K8S_IMAGE_VERSION) already present in $(IMAGE_REPO)"; \
 	fi
 
-css-docker-image: css-clean
-	@echo "Producing CSS docker image $(CSS_IMAGE)"
-	if [[ $(arch) == "amd64" ]]; then \
-		cp -f $(LICENSE_FILE) $(CSS_CONTAINER_DIR); \
-		cd $(CSS_CONTAINER_DIR) && docker build $(DOCKER_MAYBE_CACHE) $(CSS_IMAGE_LABELS) -t $(CSS_IMAGE) -f ./$(CSS_IMAGE_BASE)-$(arch)/Dockerfile.ubi . && \
-		docker tag $(CSS_IMAGE) $(CSS_IMAGE_STG); \
-	else echo "Building the CSS docker image is not supported on $(arch)"; fi
-
-promote-css:
-	@echo "Promoting $(CSS_IMAGE)"
-	docker pull $(CSS_IMAGE)
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_PROD)
-	docker push $(CSS_IMAGE_PROD)
-	docker tag $(CSS_IMAGE) $(CSS_IMAGE_LATEST)
-	docker push $(CSS_IMAGE_LATEST)
-
 ess-docker-image: ess-clean
 	@echo "Producing ESS docker image $(ESS_IMAGE)"
 	cp -f $(LICENSE_FILE) $(ESS_CONTAINER_DIR)
@@ -415,16 +380,10 @@ ess-promote:
 	docker tag $(ESS_IMAGE) $(ESS_IMAGE_LATEST)
 	docker push $(ESS_IMAGE_LATEST)
 
-# This target should be used by developers working on anax, to build the ESS and CSS containers for the anax test environment.
-# These containers only need to be rebuilt when either the authentication plugin changes or when anax rebases on a new level/tag
-# of the edge-sync-service.
-fss: ess-docker-image css-docker-image
-	@echo "Built file sync service containers"
-
 # This is a target that is ONLY called by the deb packager system. The ESS and CSS containers are built and published by that process
 # when new versions are created. Developers should not use this target.
 # Note that only ESS is supported by amd64 and ppc64el archs. CSS is amd64 only.
-fss-package: ess-docker-image css-docker-image
+fss-package: ess-docker-image
 	@echo "Packaging file sync service containers"
 	if [[ $(shell tools/image-exists $(FSS_REGISTRY) $(ESS_IMAGE_NAME) $(ESS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "" ]]; then \
 		echo "Pushing ESS Docker image $(ESS_IMAGE)"; \
@@ -433,15 +392,8 @@ fss-package: ess-docker-image css-docker-image
 	else \
 		echo "File sync service container $(ESS_IMAGE_NAME):$(ESS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; \
 	fi
-	if [[ $(arch) == "amd64" ]]; then \
-		if [[ ($(shell tools/image-exists $(FSS_REGISTRY) $(CSS_IMAGE_NAME) $(CSS_IMAGE_VERSION) 2> /dev/null) == "0" || $(IMAGE_OVERRIDE) != "") ]]; then \
-			echo "Pushing CSS Docker image $(CSS_IMAGE)"; \
-			docker push $(CSS_IMAGE); \
-			docker push $(CSS_IMAGE_STG); \
-		else echo "File sync service container $(CSS_IMAGE_NAME):$(CSS_IMAGE_VERSION) already present in $(FSS_REGISTRY)"; fi \
-	fi
 
-clean: mostlyclean 
+clean: mostlyclean
 	@echo "Clean"
 	rm -f ./go.sum
 ifneq ($(TMPGOPATH),$(GOPATH))
@@ -451,19 +403,14 @@ endif
 
 realclean: i18n-clean clean
 
-mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean css-clean ess-clean 
+mostlyclean: anax-container-clean agbot-container-clean anax-k8s-clean ess-clean
 	@echo "Mostlyclean"
-	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(CSS_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
+	rm -f $(EXECUTABLE) $(CLI_EXECUTABLE) $(ESS_EXECUTABLE) $(CLI_CONFIG_FILE)
 	rm -Rf vendor
 
 i18n-clean:
 	@echo "i18n-clean"
 	rm -f $(I18N_OUT_GOTEXT_FILES) cli/$(I18N_OUT_GOTEXT_FILES) $(I18N_CATALOG_FILE) cli/$(I18N_CATALOG_FILE)
-
-css-clean:
-	rm -f $(CSS_CONTAINER_DIR)/$(LICENSE_FILE)
-	-docker rmi $(CSS_IMAGE) 2> /dev/null || :
-	-docker rmi $(CSS_IMAGE_STG) 2> /dev/null || :
 
 ess-clean:
 	rm -f $(ESS_CONTAINER_DIR)/$(LICENSE_FILE)
@@ -595,4 +542,4 @@ diagrams:
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/protocolSequenceDiagram.txt
 	java -jar $(plantuml_path)/plantuml.jar ./basicprotocol/diagrams/horizonSequenceDiagram.txt
 
-.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-anax gen-mac-key install-mac-key css-docker-image ess-promote
+.PHONY: check clean deps format gopathlinks install lint mostlyclean realclean pull i18n-catalog i18n-translation test test-integration docker-image docker-push promote-anax gen-mac-key install-mac-key ess-promote
