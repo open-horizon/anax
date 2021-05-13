@@ -222,10 +222,11 @@ run-dockerreg: test-network
 		--name $(DOCKER_REG_CNAME) \
 		--network "$(DOCKER_TEST_NETWORK)" \
 		-v $(E2EDEVTEST_TEMPFS)/certs:/certs \
+		-v $(E2EDEVTEST_TEMPFS)/auth:/auth \
+		-v ~/.docker:/root/.docker \
 		-e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
 		-e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
 		-e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
-		-v $(E2EDEVTEST_TEMPFS)/auth:/auth \
 		-e REGISTRY_AUTH=htpasswd \
 		-e REGISTRY_AUTH_HTPASSWD_REALM=RegistryRealm \
 		-e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
