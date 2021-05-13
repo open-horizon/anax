@@ -1,13 +1,24 @@
 package sync_service
 
 import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/edge-sync-service/common"
+	"hash"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -270,7 +281,7 @@ func ObjectNew(org string) {
 
 // Upload an object to the MMS. The user can provide a copy of the object's metadata in a file, or they can simply provide
 // object id and type.
-func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string) {
+func ObjectPublish(org string, userPw string, objType string, objId string, objPattern string, objMetadataFile string, objFile string, skipDigitalSig bool, dsHashAlgo string, dsHash string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -289,6 +300,12 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("must specify either --type and --id or --def"))
 	} else if objPattern != "" && objMetadataFile != "" {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("cannot specify --pattern with --def"))
+	} else if skipDigitalSig && dsHash != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("cannot specify --skipDigitalSig with --hash"))
+	} else if skipDigitalSig && dsHashAlgo != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("cannot specify --skipDigitalSig with --hashAlgo"))
+	} else if dsHashAlgo != "" && dsHashAlgo != common.Sha1 && dsHashAlgo != common.Sha256 {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("invalid value for --hashAlgo, please use SHA1 or SHA256"))
 	}
 
 	// If we were given a full metadata file, read it in and use it to create the object. Otherwise, construct a minimal
@@ -307,9 +324,28 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	}
 
 	// If there is no data to upload, set the metaonly flag to indicate that we are only updating the object's metadata. This ensures
-	// that the MSS (CSS) correctly interpets the PUT.
+	// that the MMS (CSS) correctly interpets the PUT.
 	if objFile == "" {
 		objectMeta.MetaOnly = true
+	} else if !skipDigitalSig {
+
+		hashAlgorithm := common.Sha1
+		if dsHashAlgo == common.Sha256 {
+			hashAlgorithm = common.Sha256
+		}
+
+		msgPrinter.Printf("Digital sign with %s will be performed for data integrity. It will delay the MMS object publish.\n", hashAlgorithm)
+
+		// Create public key. Sign data. Set "hashAlgorithm", "publicKey" and "signature" field
+		if publicKey, signature, err := signObjData(objFile, hashAlgorithm, dsHash); err != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("failed to digital sign the file %v, Error: %v", objFile, err))
+		} else {
+			objectMeta.HashAlgorithm = hashAlgorithm
+			objectMeta.PublicKey = publicKey
+			objectMeta.Signature = signature
+		}
+
+		msgPrinter.Println("Digital sign finished.")
 	}
 
 	type ObjectWrapper struct {
@@ -326,7 +362,6 @@ func ObjectPublish(org string, userPw string, objType string, objId string, objP
 	// The object's data might be quite large, so upload it in a second call that will stream the file contents
 	// to the MSS (CSS).
 	if objFile != "" {
-
 		file, err := os.Open(objFile)
 		if err != nil {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("unable to open object file %v: %v", objFile, err))
@@ -415,4 +450,87 @@ func timeIsValid(timestamp string) (bool, string) {
 		}
 	}
 	return true, ""
+}
+
+func signObjData(objFile string, dsHashAlgo string, dsHash string) (string, string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	var fileHash hash.Hash
+	var fileHashSum []byte
+	var privateKey *rsa.PrivateKey
+	var err error
+
+	if dsHash != "" {
+		//parse dsHash
+		if fileHashSum, err = hex.DecodeString(dsHash); err != nil {
+			return "", "", err
+		}
+		msgPrinter.Printf("Hash value is loaded.")
+		msgPrinter.Println()
+	} else {
+		file, err := os.Open(objFile)
+		if err != nil {
+			return "", "", err
+		}
+		defer file.Close()
+
+		msgPrinter.Printf("Start hashing the file...")
+		msgPrinter.Println()
+
+		if fileHash, err = GetHash(dsHashAlgo); err != nil {
+			return "", "", err
+		} else if _, err = io.Copy(fileHash, file); err != nil {
+			return "", "", err
+		}
+		fileHashSum = fileHash.Sum(nil)
+
+		msgPrinter.Printf("Data hash is generated. Start digital signing with the data hash...")
+		msgPrinter.Println()
+	}
+
+	if privateKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
+		return "", "", err
+	} else {
+		// get public key
+		if publicKeyBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey); err != nil {
+			return "", "", err
+		} else if cryptoHash, err := GetCryptoHashType(dsHashAlgo); err != nil {
+			return "", "", err
+		} else if signature, err := rsa.SignPSS(rand.Reader, privateKey, cryptoHash, fileHashSum, nil); err != nil {
+			return "", "", err
+		} else {
+			publicKeyString := base64.StdEncoding.EncodeToString(publicKeyBytes)
+			signatureString := base64.StdEncoding.EncodeToString(signature)
+			return publicKeyString, signatureString, nil
+		}
+	}
+
+}
+
+func GetHash(hashAlgo string) (hash.Hash, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if hashAlgo == common.Sha1 {
+		return sha1.New(), nil
+	} else if hashAlgo == common.Sha256 {
+		return sha256.New(), nil
+	} else {
+		return nil, errors.New(msgPrinter.Sprintf("Hash algorithm %s is not supported", hashAlgo))
+	}
+
+}
+
+func GetCryptoHashType(hashAlgo string) (crypto.Hash, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if hashAlgo == common.Sha1 {
+		return crypto.SHA1, nil
+	} else if hashAlgo == common.Sha256 {
+		return crypto.SHA256, nil
+	} else {
+		return 0, errors.New(msgPrinter.Sprintf("Hash algorithm %s is not supported", hashAlgo))
+	}
 }

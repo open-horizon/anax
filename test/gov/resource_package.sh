@@ -25,13 +25,13 @@ for dir in */; do
 
 	if [ "${TEST_PATTERNS}" != "" ]
 	then
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none none false
+		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none none false
 		if [ $? -ne 0 ]
 		then
 			exit -1
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none none false
+		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none none false
 		if [ $? -ne 0 ]
 		then
 			exit -1
@@ -47,13 +47,13 @@ for dir in */; do
 			fi
 		done
 
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
+		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG1} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
 		if [ $? -ne 0 ]
 		then
 			exit -1
 		fi
 
-		$EXEC_DIR/deploy_file.sh /root/resources/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
+		$EXEC_DIR/deploy_file.sh /root/resources/private/${dir}${justDirName}.tgz 1.0.0 ${RESOURCE_ORG2} ${RESOURCE_TYPE} none none "$(cat /root/objects/${justDirName}.policy)" false
 		if [ $? -ne 0 ]
 		then
 			exit -1

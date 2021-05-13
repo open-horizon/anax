@@ -1,16 +1,24 @@
 package sync_service
 
 import (
+	"bytes"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/edge-sync-service/common"
+	"io"
 	"os"
 	"path"
 	"strings"
 )
 
 // ObjectDownLoad is to download data to a file named ${objectType}_${objectId}
-func ObjectDownLoad(org string, userPw string, objType string, objId string, filePath string, overwrite bool) {
+func ObjectDownLoad(org string, userPw string, objType string, objId string, filePath string, overwrite bool, skipDigitalSigVerify bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -22,12 +30,46 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	// Set the API key env var if that's what we're using.
 	cliutils.SetWhetherUsingApiKey(userPw)
 
+	// Establish the HTTP request override because the download could take some time.
+	setHTTPOverride := false
+	if os.Getenv(config.HTTPRequestTimeoutOverride) == "" {
+		setHTTPOverride = true
+		os.Setenv(config.HTTPRequestTimeoutOverride, "0")
+	}
+
 	// Call the MMS service over HTTP to download the object data.
 	var data []byte
 	urlPath := path.Join("api/v1/objects/", org, objType, objId, "/data")
 	httpCode := cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &data)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object '%s' of type '%s' not found in org %s", objId, objType, org))
+	}
+
+	// Restore HTTP request override if necessary.
+	if setHTTPOverride {
+		os.Setenv(config.HTTPRequestTimeoutOverride, "")
+	}
+
+	// Verify digital signature
+	if !skipDigitalSigVerify {
+		// Call the MMS service over HTTP to get object metadata
+		var objectMeta common.MetaData
+		urlPath = path.Join("api/v1/objects/", org, objType, objId)
+		httpCode = cliutils.ExchangeGet("Model Management Service", cliutils.GetMMSUrl(), urlPath, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &objectMeta)
+		if httpCode == 404 {
+			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("object metadata '%s' of type '%s' not found in org %s", objId, objType, org))
+		}
+
+		if objectMeta.HashAlgorithm != "" && objectMeta.PublicKey != "" && objectMeta.Signature != "" {
+			// verify data
+			dataReader := bytes.NewReader(data)
+			msgPrinter.Println("Verifying data with digital signature....")
+			if verified, err := VerifyDataSig(dataReader, objectMeta.PublicKey, objectMeta.Signature, objectMeta.HashAlgorithm); !verified {
+				cliutils.Fatal(cliutils.INTERNAL_ERROR, msgPrinter.Sprintf("Failed to verify data: %s", err.Error()))
+			}
+			msgPrinter.Println("Verifying digital signature is done.")
+
+		}
 	}
 
 	var fileName string
@@ -81,4 +123,41 @@ func ObjectDownLoad(org string, userPw string, objType string, objId string, fil
 	msgPrinter.Printf("Data of object %v saved to file %v", objId, fileName)
 	msgPrinter.Println()
 
+}
+
+func VerifyDataSig(dataReader io.Reader, publicKey string, signature string, hashAlgo string) (bool, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	if hashAlgo == "" {
+		return false, errors.New(msgPrinter.Sprintln("Failed to verify digital signature because the hashAlgorithm is empty"))
+	} else if publicKey == "" {
+		return false, errors.New(msgPrinter.Sprintln("Failed to verify digital signature because the publicKey string is empty"))
+	} else if signature == "" {
+		return false, errors.New(msgPrinter.Sprintln("Failed to verify digital signature because the signature string is empty"))
+	}
+
+	if publicKeyBytes, err := base64.StdEncoding.DecodeString(publicKey); err != nil {
+		return false, err
+	} else if signatureBytes, err := base64.StdEncoding.DecodeString(signature); err != nil {
+		return false, err
+	} else {
+		if dataHash, err := GetHash(hashAlgo); err != nil {
+			return false, err
+		} else if _, err := io.Copy(dataHash, dataReader); err != nil {
+			return false, err
+		} else if pubKey, err := x509.ParsePKIXPublicKey(publicKeyBytes); err != nil {
+			return false, err
+		} else {
+			dataHashSum := dataHash.Sum(nil)
+			pubKeyToUse := pubKey.(*rsa.PublicKey)
+			if cryptoHashType, err := GetCryptoHashType(hashAlgo); err != nil {
+				return false, err
+			} else if err = rsa.VerifyPSS(pubKeyToUse, cryptoHashType, dataHashSum, signatureBytes, nil); err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}
+	}
 }

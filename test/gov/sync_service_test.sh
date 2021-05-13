@@ -114,8 +114,11 @@ fi
 echo "test hzn mms cli with user:"
 hzn exchange user list
 
+echo "Start testing hzn mms object publish"
+
 #Test timeout support for upload of large files to the CSS
 dd if=/dev/zero of=/tmp/data.txt count=$FILE_SIZE bs=1048576
+dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
 
 RESOURCE_ORG1=e2edev@somecomp.com
 RESOURCE_TYPE=test
@@ -134,11 +137,18 @@ EOF
 
 echo "$resmeta" > /tmp/meta.json
 
-hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
+# Test object publish
+hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
   echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
+  exit -1
+fi
+# object has values in "publicKey" and "signature" fields
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ]; then
+  echo -e "publicKey or signature should be set by default"
   exit -1
 fi
 
@@ -146,7 +156,7 @@ fi
 # before giving up with the appropriate HTTP Client timeout error.
 export HZN_HTTP_TIMEOUT="1"
 
-hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
+hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
 RC=$?
 if [ $RC -eq 5 ] || [ $RC -eq 0 ]
 then
@@ -158,6 +168,62 @@ fi
 
 # Reset the HTTP timeout env var to the default for the CLI.
 unset HZN_HTTP_TIMEOUT
+
+# Test object publish with --noIntegrity
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --noIntegrity >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
+  exit -1
+fi
+# object has empty value in "hashAlgorithm", "publicKey" and"signature" fields
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" != "" ]; then
+  echo -e "publicKey or signature should not be set if publish with --noIntegrity flag"
+  exit -1
+fi
+
+# Test object publish with --hash and -a
+SHA1_HASH=$(sha1sum /tmp/data-small.txt | awk '{print $1;}')
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
+  exit -1
+fi
+# object has values in "hashAlgorithm", "publicKey" and "signature" fields
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm') == "" ]; then
+  echo -e "publicKey or signature should be set if publish with --hash flag"
+  exit -1
+fi
+
+# Test object publish signing with SHA256
+SHA256_HASH=$(sha256sum /tmp/data-small.txt | awk '{print $1;}')
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA256_HASH -a SHA256 >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
+  exit -1
+fi
+# object has values in "hashAlgorithm", "publicKey" and "signature" fields
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm') == "" ]; then
+  echo -e "publicKey or signature should be set if publish with -s and -a flag"
+  exit -1
+fi
+
+# Object publish should fail if --hash (hash value) is inconsistent with -a (hash algorithm) 
+hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH -a SHA256 >/dev/null
+RC=$?
+if [ $RC -eq 0 ]
+then
+  echo -e "Eexpect error uploading model object with inconsistent value of -a and --hash, but receive: $RC"
+  exit -1
+fi
 
 # Test object list with flags
 echo "Start testing hzn mms object list"
@@ -616,7 +682,7 @@ function testUserHaveAccessToALLObjects {
 EOF
 
     echo "$resmeta" > /tmp/meta.json
-    hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt
+    hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
     RC=$?
     if [ $RC -ne 0 ]
     then
@@ -767,7 +833,7 @@ read -d '' resmeta <<EOF
 EOF
 
     echo "$resmeta" > /tmp/meta.json
-    hzn mms object publish -o ${4} -m /tmp/meta.json -f /tmp/data.txt
+    hzn mms object publish -o ${4} -m /tmp/meta.json -f /tmp/data.txt >/dev/null
     RC=$?
     if [ $RC -ne 0 ]
     then
