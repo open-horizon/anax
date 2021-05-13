@@ -309,6 +309,10 @@ func NodeUpdate(org string, credToUse string, node string, filePath string) {
 	}
 }
 
+type NodeExchangePatchName struct {
+	Name string `json:"name"`
+}
+
 type NodeExchangePatchToken struct {
 	Token string `json:"token"`
 }

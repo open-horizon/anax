@@ -193,6 +193,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 	exchangePattern := ""
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrlBase, "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), nil, &devicesResp)
 
+	var existingNodeName string
 	if httpCode != 200 {
 		if userPw == "" {
 			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("node '%s/%s' does not exist in the Exchange with the specified token, and the -u flag was not specified to provide exchange user credentials to create/update it.", org, nodeId))
@@ -219,6 +220,7 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 				if nodeType != n.GetNodeType() {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the Exchange node %v.", nodeType, n.GetNodeType(), nId))
 				}
+				existingNodeName = n.Name
 				break
 			}
 		}
@@ -232,8 +234,16 @@ func DoIt(org, pattern, nodeIdTok, userPw, inputFile string, nodeOrgFromFlag str
 			if nodeType != n.GetNodeType() {
 				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Node type mismatch. The node type '%v' does not match the node type '%v' of the Exchange node %v.", nodeType, n.GetNodeType(), nId))
 			}
+			existingNodeName = n.Name
 			break
 		}
+	}
+
+	if existingNodeName != "" && existingNodeName != nodeName {
+		msgPrinter.Printf("Updating node name...")
+		msgPrinter.Println()
+		patchNodeReq := cliexchange.NodeExchangePatchName{Name: nodeName}
+		cliutils.ExchangePutPost("Exchange", http.MethodPatch, cliutils.GetExchangeUrl(), "orgs/"+org+"/nodes/"+nodeId, cliutils.OrgAndCreds(org, nodeIdTok), []int{200, 201}, patchNodeReq, nil)
 	}
 
 	checkPattern := false
