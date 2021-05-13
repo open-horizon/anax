@@ -1,7 +1,7 @@
 pipeline {
     agent {
     	node {
-        	label 'ubuntu2004-docker-aws-1c-2g'
+        	label 'ubuntu18.04-docker-8c-8g'
     	}
     }
     stages {
