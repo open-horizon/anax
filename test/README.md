@@ -55,16 +55,27 @@ NOTE: This test is not supported for ppc64le architecture so far. See [Remote En
 ### Development Iterations - Advanced
 There are several env vars that you can specify on the make run-combined command to condition what happens in the e2edev environment.
 
-A common way to run the environment during development is:
+A common way to run all the tests in the environment once your code is complete:
 
 ```sh
 make test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sloc"
+```
+
+OR, to run with deployment policies
+
+```sh
+make test TEST_VARS="NOLOOP=1"
 ```
 
 Light Test:
 
 ```sh
 make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOUPGRADE=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1 NOVAULT=1"
+```
+
+To bring up just the environment with minimal tests:
+```sh
+make test TEST_VARS="NOLOOP=1 NOCANCEL=1 NOHZNREG=1 NORETRY=1 NOSVC_CONFIGSTATE=1 NOSURFERR=1 NOPATTERNCHANGE=1 NOCOMPCHECK=1 NONS=1 NOPWS=1 NOLOC=1 NOHELLO=1 NOGPS=1 NOHZNDEV=1 NOKUBE=1"
 ```
 
 Here is a full description of all the variables you can use to setup the test the way you want it:
@@ -74,6 +85,7 @@ Here is a full description of all the variables you can use to setup the test th
 - UNCONFIG=1 - turns on the unconfig/reconfig loop tests.
 - TEST_PATTERNS=name - specify the name of a configured pattern that you want the device to use. Builtin patterns are spws, sns, sloc, sgps, sall, cpu2msghub etc. If you specify TEST_PATTERNS, but turn off one of the dependent services that the top service needs, the system will not work correctly. If you dont specify a TEST_PATTERNS, the manually managed policy files will be used to run the workloads (unless you turn them off).
 - NOHZNREG=1 - turns off the tests for registering/unregistering nodes with `hzn` commands.
+- NOHZNDEV=1 - turns off the hzn dev service start and stop tests. It also turns off publishing the Usehello workload, so NOHELLO=1 must also be set for this flag to take effect. Also, TEST_PATTERNS=susehello and TEST_PATTERNS=sall cannot be used when NOHZNDEV=1.
 - NORETRY=1 - turns off the service retry test.
 - NOSVC_CONFIGSTATE=1 - turns off the service config state test.
 - NOSURFERR=1 - turns off the node surface error test.
@@ -98,16 +110,17 @@ Here is a full description of all the variables you can use to setup the test th
 
 ### Debugging
 
-- `docker exec -it agbot /bin/bash`
-- All log files are in the container at /tmp; /tmp/anax.log for the device and /tmp/agbot.log for the agbot
-- Important data files and scripts are in /root/ and /root/.colonus and /root/eth
+- `docker exec -it e2edevtest /bin/bash`
+- The agent log files are in the container at /tmp; /tmp/anax.log
+- The agbot log files are obtained via `docker logs agbot`
+- Important data files and scripts that runs the tests are in /root/
 - Config files are in /etc
-- From the outside the container, on your development machine you can do the following
+- From outside the container, on your development machine you can do the following
 - `curl http://localhost/agreement | jq -r '.agreements'`
   - Will show you all current and archived agreements from the device's perspective
-- `curl http://localhost:81/agreement | jq -r '.agreements'`
+- `curl http://localhost:3110/agreement | jq -r '.agreements'`
   - Will show you all current and archived agreements from the agbot's perspective
-- Access the exchange API documentation at http://localhost:8080/v1
+- Access the exchange API documentation at http://localhost:3090/v1
 
 ### Clean options/developer flow
 

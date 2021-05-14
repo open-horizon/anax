@@ -7,5 +7,5 @@ if [ -z "$ANAX_LOG_LEVEL" ]; then
 fi
 
 /usr/bin/envsubst < /etc/horizon/anax.json.tmpl > /etc/horizon/anax.json
-/usr/horizon/bin/anax -v $ANAX_LOG_LEVEL -logtostderr -config /etc/horizon/anax.json
+/usr/horizon/bin/anax -v 5 -logtostderr -config /etc/horizon/anax.json
 

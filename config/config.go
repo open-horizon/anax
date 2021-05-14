@@ -128,7 +128,8 @@ type AGConfig struct {
 
 // Contains the hashicorp vault configuration used within AGConfig.
 type VaultConfig struct {
-	VaultURL   string       // The URL used for accessing the hashicorp vault.
+	VaultURL    string // The URL used for accessing the vault.
+	SSLCertPath string // The SSL certificate for the vault
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -173,6 +174,10 @@ func (c *HorizonConfig) GetAgbotCSSCert() string {
 
 func (c* HorizonConfig) GetAgbotVaultURL() string {
 	return strings.TrimRight(c.AgreementBot.Vault.VaultURL, "/")
+}
+
+func (c* HorizonConfig) GetVaultCertPath() string {
+	return strings.TrimRight(c.AgreementBot.Vault.SSLCertPath, "/")
 }
 
 func (c *HorizonConfig) GetAgbotAgreementBatchSize() uint64 {
