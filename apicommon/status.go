@@ -17,6 +17,7 @@ type Configuration struct {
 	MinExchVersion  string `json:"required_minimum_exchange_version"`
 	PrefExchVersion string `json:"preferred_exchange_version"`
 	MMSAPI          string `json:"mms_api"`
+	AgbotAPI        string `json:"agbot_api,omitempty"`
 	Arch            string `json:"architecture"`
 	HorizonVersion  string `json:"horizon_version"`
 }
@@ -32,7 +33,7 @@ type Info struct {
 	LiveHealth    *HealthTimestamps `json:"liveHealth"`
 }
 
-func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token string) *Info {
+func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token, agbotUrl string) *Info {
 
 	customHTTPClientFactory := &config.HTTPClientFactory{
 		NewHTTPClient: httpClientFactory.NewHTTPClient,
@@ -52,6 +53,7 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 			MinExchVersion:  version.MINIMUM_EXCHANGE_VERSION,
 			PrefExchVersion: version.PREFERRED_EXCHANGE_VERSION,
 			MMSAPI:          mmsUrl,
+			AgbotAPI:        agbotUrl,
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
 		},

@@ -107,7 +107,7 @@ func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) exch
 	return exchange.NewCustomExchangeContext(userId, passwd, a.Config.AgreementBot.ExchangeURL, a.Config.GetAgbotCSSURL(), newHTTPClientFactory())
 }
 
-func (a *SecureAPI)	setCommonHeaders(w http.ResponseWriter) http.ResponseWriter {
+func (a *SecureAPI) setCommonHeaders(w http.ResponseWriter) http.ResponseWriter {
 	w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 	w.Header().Add("Pragma", "no-cache, no-store")
 	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")

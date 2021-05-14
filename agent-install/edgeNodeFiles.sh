@@ -257,6 +257,7 @@ function createAgentInstallConfig () {
         cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
+HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
 AGENT_NAMESPACE=$AGENT_NAMESPACE
 EndOfContent
 
@@ -272,6 +273,7 @@ EndOfContent
         cat << EndOfContent > agent-install.cfg
 HZN_EXCHANGE_URL=$CLUSTER_URL/edge-exchange/v1
 HZN_FSS_CSSURL=$CLUSTER_URL/edge-css/
+HZN_AGBOT_URL=$CLUSTER_URL/edge-agbot/
 EndOfContent
 
         if [[ -n $ORG_ID ]]; then
