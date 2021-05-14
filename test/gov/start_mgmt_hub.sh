@@ -56,7 +56,7 @@ if [ $? -ne 0 ]; then
 fi
 chmod +x /tmp/deploy-mgmt-hub.sh
 
-# run the management hub deployment cript
+# run the management hub deployment script
 sudo -sE /tmp/deploy-mgmt-hub.sh -A
 if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed deploy."

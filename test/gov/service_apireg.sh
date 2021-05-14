@@ -1031,6 +1031,10 @@ results "$RES"
 
 # results "$RES"
 
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+    echo -e "Skipping use hello pattern creation"
+else
+
 # susehello test pattern
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   MHI=90
@@ -1079,6 +1083,8 @@ echo -e "Register usehello service pattern $VERS:"
   RES=$(echo "$sdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/susehello" | jq -r '.')
 
 results "$RES"
+
+fi
 
 #
 # sloc pattern
@@ -1324,6 +1330,11 @@ results "$RES"
 
 
 # the sall pattern
+
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ]; then
+    echo -e "Skipping sall pattern creation"
+else
+
 PWSVERS="1.5.0"
 NSVERS="2.3.0"
 LOCVERS1="2.0.6"
@@ -1717,6 +1728,7 @@ echo -e "Register service based all pattern:"
 
 results "$RES"
 
+fi
 
 # ======================= Business Policies that use top level services ======================
 read -d '' bpnsdef <<EOF
@@ -2057,6 +2069,10 @@ echo -e "Register business policy for pws:"
 
 results "$RES"
 
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+    echo -e "Skipping usehello policy creation"
+else
+
 read -d '' bphellodef <<EOF
 {
   "label": "business policy for usehello",
@@ -2101,6 +2117,8 @@ echo -e "Register business policy for usehelllo:"
   RES=$(echo "$bphellodef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_usehello" | jq -r '.')
 
 results "$RES"
+
+fi
 
 read -d '' bpk8ssvc1def <<EOF
 {
