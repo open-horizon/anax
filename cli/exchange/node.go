@@ -646,13 +646,17 @@ func NodeServiceConfigStateList(org string, credToUse string, node string) {
 }
 
 // NodeServiceConfigStateChange change the service config state of service of a node.
-func NodeServiceConfigStateChange(org string, credToUse string, node string, serviceName string, state string) {
+func NodeServiceConfigStateChange(org string, credToUse string, node string, serviceName string, state string, serviceOrg string) {
 	nodeOrg, node := cliutils.TrimOrg(org, node)
 	var resp struct {
 		Code string `json:"code"`
 		Msg  string `json:"msg"`
 	}
-	putServiceConfigState := exchange.ServiceConfigState{Org: nodeOrg, Url: serviceName, ConfigState: state}
+
+	if serviceOrg == "" {
+		serviceOrg = nodeOrg
+	}
+	putServiceConfigState := exchange.ServiceConfigState{Org: serviceOrg, Url: serviceName, ConfigState: state}
 	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/services_configstate", cliutils.OrgAndCreds(nodeOrg, credToUse), []int{201, 404, 400}, putServiceConfigState, &resp)
 	if httpCode == 400 {
 		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s/%s' not found.", nodeOrg, node))

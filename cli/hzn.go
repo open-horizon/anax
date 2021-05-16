@@ -366,13 +366,15 @@ Environment Variables:
 	exNodeServiceConfigStateCmd := exNodeCmd.Command("serviceconfigstate", "List and manage service config state in open horizon exchange.")
 	exNodeServiceConfigStateListCmd := exNodeServiceConfigStateCmd.Command("list", "Shows the configstate of services on a node.")
 	exNodeServiceConfigStateListNode := exNodeServiceConfigStateListCmd.Arg("node", "Service config state list of this node.").Required().String()
-	exNodeServiceConfigStateSuspendCmd := exNodeServiceConfigStateCmd.Command("suspend", "Changes the state service config to suspended")
+	exNodeServiceConfigStateSuspendCmd := exNodeServiceConfigStateCmd.Command("suspend", "Changes the service config state to suspended")
 	exNodeServiceConfigStateSuspendNode := exNodeServiceConfigStateSuspendCmd.Arg("node", "The node id on which state of service config will be changed to suspended").Required().String()
 	exNodeServiceConfigStateSuspendService := exNodeServiceConfigStateSuspendCmd.Arg("service", "The service name on which state of service config will be changed to suspended").Required().String()
+	exNodeServiceConfigStateSuspendServiceOrg := exNodeServiceConfigStateSuspendCmd.Flag("service-org", "The service's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.").String()
 
-	exNodeServiceConfigStateResumeCmd := exNodeServiceConfigStateCmd.Command("resume", "Changes the state service config to active")
+	exNodeServiceConfigStateResumeCmd := exNodeServiceConfigStateCmd.Command("resume", "Changes the service config state to active")
 	exNodeServiceConfigStateResumeNode := exNodeServiceConfigStateResumeCmd.Arg("node", "The node id on which state of service config will be changed to active").Required().String()
 	exNodeServiceConfigStateResumeService := exNodeServiceConfigStateResumeCmd.Arg("service", "The service name on which state of service config will be changed to active").Required().String()
+	exNodeServiceConfigStateResumeServiceOrg := exNodeServiceConfigStateResumeCmd.Flag("service-org", "The service's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.").String()
 
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", msgPrinter.Sprintf("Change the token of a node resource in the Horizon Exchange."))
 	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", msgPrinter.Sprintf("The node to be changed.")).Required().String()
@@ -938,9 +940,9 @@ Environment Variables:
 	case exNodeServiceConfigStateListCmd.FullCommand():
 		exchange.NodeServiceConfigStateList(*exOrg, credToUse, *exNodeServiceConfigStateListNode)
 	case exNodeServiceConfigStateSuspendCmd.FullCommand():
-		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateSuspendNode, *exNodeServiceConfigStateSuspendService, exch.SERVICE_CONFIGSTATE_SUSPENDED)
+		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateSuspendNode, *exNodeServiceConfigStateSuspendService, exch.SERVICE_CONFIGSTATE_SUSPENDED, *exNodeServiceConfigStateSuspendServiceOrg)
 	case exNodeServiceConfigStateResumeCmd.FullCommand():
-		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateResumeNode, *exNodeServiceConfigStateResumeService, exch.SERVICE_CONFIGSTATE_ACTIVE)
+		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateResumeNode, *exNodeServiceConfigStateResumeService, exch.SERVICE_CONFIGSTATE_ACTIVE, *exNodeServiceConfigStateResumeServiceOrg)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()
