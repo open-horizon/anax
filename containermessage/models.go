@@ -35,7 +35,15 @@ import (
  *           "HostPort":"5200:6414/tcp",
  *           "HostIP": "0.0.0.0"
  *         }
- *       ]
+ *       ],
+ *     	 "secrets": {
+ *       	"cloudsqlservice": {
+ *          	"description": "The token for cloud SQL service."
+ *          },
+ *       	"cloudAIservice": {
+ *          	"description": "The token for cloud AI service."
+ *          }
+ *       }
  *     },
  *     "service_b": {
  *       "image": "...",
@@ -63,6 +71,10 @@ import (
  *   }
  * }
  */
+
+type Secret struct {
+	Description  string `json:"description"`	
+}
 
 type DeploymentDescription struct {
 	Services       map[string]*Service `json:"services"`
@@ -155,6 +167,7 @@ type Service struct {
 	MaxMemoryMb      int64                `json:"max_memory_mb,omitempty"`
 	MaxCPUs          float32              `json:"max_cpus,omitempty"`
 	LogDriver        string               `json:"log_driver,omitempty"` // Docker's log-driver. Syslog will be used as default driver
+	Secrets          map[string]Secret    `json:"secrets,omitempty"`
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {
