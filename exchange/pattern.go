@@ -18,17 +18,21 @@ type Pattern struct {
 	Services           []ServiceReference  `json:"services"`
 	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
 	UserInput          []policy.UserInput  `json:"userInput,omitempty"`
+	SecretBinding      []SecretBinding     `json:"secretBinding,omitempty"`  // The secret binding from service secret names to vault secret names.
+	LastUpdated        string              `json:"lastUpdated,omitempty"`
 }
 
 func (w Pattern) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v, UserInput: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v, UserInput: %v, SecretBinding: %v, LastUpdated: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
 		w.Services,
 		w.AgreementProtocols,
-		w.UserInput)
+		w.UserInput,
+		w.SecretBinding,
+		w.LastUpdated)
 }
 
 func (w Pattern) ShortString() string {
@@ -178,6 +182,30 @@ type AgreementProtocol struct {
 	Name            string         `json:"name,omitempty"`            // The name of the agreement protocol to be used
 	ProtocolVersion int            `json:"protocolVersion,omitempty"` // The max protocol version supported
 	Blockchains     BlockchainList `json:"blockchains,omitempty"`     // The blockchain to be used if the protocol requires one.
+}
+
+// a binding that maps a secret name to a vault secret name.
+type VaultBinding struct {
+	Value       string  `json:"value"`
+	VaultSecret string  `json:"vaultSecret"`
+}
+
+// The secret binding that maps service secret names to vault secret names
+type SecretBinding struct {
+	ServiceOrgid        string  `json:"serviceOrgid"`
+	ServiceUrl          string  `json:"serviceUrl"`
+	ServiceArch         string  `json:"serviceArch,omitempty"`         // empty string means it applies to all arches
+	ServiceVersionRange string  `json:"serviceVersionRange,omitempty"` // version range such as [0.0.0,INFINITY). empty string means it applies to all versions
+	Secrets             []VaultBinding `json:"secrets"`    // maps a service secret name to a vault secret name
+}
+
+func (w SecretBinding) String() string {
+	return fmt.Sprintf("ServiceUrl: %v, ServiceOrgid: %v, ServiceArch: %v, ServiceVersionRange: %v, DataVerify: %v, Secrets: %v",
+		w.ServiceUrl,
+		w.ServiceOrgid,
+		w.ServiceArch,
+		w.ServiceVersionRange,
+		w.Secrets)
 }
 
 type GetPatternResponse struct {

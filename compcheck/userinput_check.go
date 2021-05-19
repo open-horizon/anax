@@ -100,6 +100,10 @@ func (p *Pattern) GetUserInputs() []policy.UserInput {
 	return p.UserInput
 }
 
+func (p *Pattern) GetSecretBinding() []exchange.SecretBinding {
+	return p.SecretBinding
+}
+
 type ServiceSpec struct {
 	ServiceOrgid        string `json:"serviceOrgid"`
 	ServiceUrl          string `json:"serviceUrl"`

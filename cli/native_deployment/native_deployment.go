@@ -77,13 +77,15 @@ func (p *NativeDeploymentConfigPlugin) Sign(dep map[string]interface{}, keyFileP
 }
 
 func (p *NativeDeploymentConfigPlugin) GetContainerImages(dep interface{}) (bool, []string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	var imageList []string
 	if owned, err := p.Validate(dep, nil); !owned || err != nil {
 		return owned, imageList, err
 	}
 
-	depConfig, err := common.ConvertToDeploymentConfig(dep)
+	depConfig, err := common.ConvertToDeploymentConfig(dep, msgPrinter)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
 	}
@@ -127,6 +129,8 @@ func (p *NativeDeploymentConfigPlugin) DefaultClusterConfig() interface{} {
 }
 
 func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{}) (bool, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
 
 	if dc, ok := dep.(map[string]interface{}); !ok {
 		return false, nil
@@ -135,7 +139,7 @@ func (p *NativeDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{
 	} else if services, ok := s.(map[string]interface{}); !ok {
 		return false, nil
 	} else {
-		depConfig, err1 := common.ConvertToDeploymentConfig(dep)
+		depConfig, err1 := common.ConvertToDeploymentConfig(dep, msgPrinter)
 		if err1 != nil {
 			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err1.Error())
 		}
@@ -331,7 +335,7 @@ func (p *NativeDeploymentConfigPlugin) StartTest(homeDirectory string, userInput
 	}
 
 	// Get the service's deployment description from the deployment config in the definition.
-	dc, deployment, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	dc, deployment, cerr := serviceDef.ConvertToDeploymentDescription(true, msgPrinter)
 	if cerr != nil {
 		if !noFSS {
 			sync_service.Stop(cw.GetClient())
@@ -372,7 +376,7 @@ func (p *NativeDeploymentConfigPlugin) StopTest(homeDirectory string) bool {
 
 	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
 	// if it is managed by an agreement.
-	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true, msgPrinter)
 	if cerr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", dev.SERVICE_COMMAND, dev.SERVICE_STOP_COMMAND, cerr)
 	}

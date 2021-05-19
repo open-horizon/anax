@@ -19,23 +19,6 @@ import (
 	"strings"
 )
 
-//todo: only using these instead of exchange.GetPatternResponse because exchange.Pattern is missing the LastUpdated field
-type ExchangePatterns struct {
-	Patterns  map[string]PatternOutput `json:"patterns"`
-	LastIndex int                      `json:"lastIndex"`
-}
-
-type PatternOutput struct {
-	Owner              string                       `json:"owner"`
-	Label              string                       `json:"label"`
-	Description        string                       `json:"description"`
-	Public             bool                         `json:"public"`
-	Services           []ServiceReference           `json:"services"`
-	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols"`
-	UserInput          []policy.UserInput           `json:"userInput,omitempty"`
-	LastUpdated        string                       `json:"lastUpdated,omitempty"`
-}
-
 // These 5 structs are used when reading json file the user gives us as input to create the pattern struct
 type ServiceOverrides struct {
 	Environment []string `json:"environment,omitempty"`
@@ -44,19 +27,12 @@ type DeploymentOverrides struct {
 	Services map[string]ServiceOverrides `json:"services"`
 }
 
-type ServiceChoice struct {
-	Version                      string                    `json:"version"`            // the version of the service
-	Priority                     exchange.WorkloadPriority `json:"priority,omitempty"` // the highest priority service is tried first for an agreement, if it fails, the next priority is tried. Priority 1 is the highest, priority 2 is next, etc.
-	Upgrade                      exchange.UpgradePolicy    `json:"upgradePolicy,omitempty"`
-	DeploymentOverrides          string                    `json:"deployment_overrides,omitempty"`           // env var overrides for the service
-	DeploymentOverridesSignature string                    `json:"deployment_overrides_signature,omitempty"` // signature of env var overrides
-}
 type ServiceReference struct {
 	ServiceURL      string                    `json:"serviceUrl"`                 // refers to a service definition in the exchange
 	ServiceOrg      string                    `json:"serviceOrgid"`               // the org holding the service definition
 	ServiceArch     string                    `json:"serviceArch"`                // the hardware architecture of the service definition
 	AgreementLess   bool                      `json:"agreementLess,omitempty"`    // a special case where this service will also be required by others
-	ServiceVersions []ServiceChoice           `json:"serviceVersions,omitempty"`  // a list of service version for rollback
+	ServiceVersions []exchange.WorkloadChoice          `json:"serviceVersions,omitempty"`  // a list of service version for rollback
 	DataVerify      exchange.DataVerification `json:"dataVerification,omitempty"` // policy for verifying that the node is sending data
 	NodeH           *exchange.NodeHealth      `json:"nodeHealth,omitempty"`       // this needs to be a ptr so it will be omitted if not specified, so exchange will default it
 }
@@ -67,6 +43,7 @@ type PatternInput struct {
 	Services           []ServiceReference           `json:"services,omitempty"`
 	AgreementProtocols []exchange.AgreementProtocol `json:"agreementProtocols,omitempty"`
 	UserInput          []policy.UserInput           `json:"userInput,omitempty"`
+	SecretBinding      []exchange.SecretBinding     `json:"secretBinding,omitempty"`  // The secret binding from service secret names to vault secret names.
 }
 
 // List the pattern resources for the given org.
@@ -86,7 +63,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 	}
 	if namesOnly && pattern == "" {
 		// Only display the names
-		var resp ExchangePatterns
+		var resp exchange.GetPatternResponse
 		cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &resp)
 		patterns := []string{} // this is important (instead of leaving it nil) so json marshaling displays it as [] instead of null
 		for p := range resp.Patterns {
@@ -99,7 +76,7 @@ func PatternList(org string, userPw string, pattern string, namesOnly bool) {
 		fmt.Printf("%s\n", jsonBytes)
 	} else {
 		// Display the full resources
-		var patterns ExchangePatterns
+		var patterns exchange.GetPatternResponse
 		httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &patterns)
 		if httpCode == 404 && pattern != "" {
 			cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s' not found in org %s", pattern, patOrg))
@@ -129,7 +106,7 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 	attribute := cliconfig.ReadJsonFileWithLocalConfig(filePath)
 
 	//verify that the pattern exists
-	var exchPatterns ExchangePatterns
+	var exchPatterns exchange.GetPatternResponse
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patOrg+"/patterns"+cliutils.AddSlash(pattern), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &exchPatterns)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("Pattern %s not found in org %s", pattern, patOrg))
@@ -146,6 +123,9 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 		err = json.Unmarshal([]byte(attribute), &patch)
 	} else if _, ok := findPatchType["userInput"]; ok {
 		patch = make(map[string][]policy.UserInput)
+		err = json.Unmarshal([]byte(attribute), &patch)
+	} else if _, ok := findPatchType["secretBinding"]; ok {
+		patch = make(map[string][]exchange.SecretBinding)
 		err = json.Unmarshal([]byte(attribute), &patch)
 	} else {
 		_, ok := findPatchType["label"]
@@ -225,11 +205,17 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	if patFile.Org == "" {
 		patFile.Org = org
 	}
-	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput}
+	patInput := PatternInput{Label: patFile.Label, Description: patFile.Description, Public: patFile.Public, AgreementProtocols: patFile.AgreementProtocols, UserInput: patFile.UserInput, SecretBinding: patFile.SecretBinding}
 
 	//issue 924: Patterns with no services are not allowed
 	if patFile.Services == nil || len(patFile.Services) == 0 {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("the pattern definition (%s) must contain services, unable to proceed", patFile.Services))
+	}
+
+	// verify the secret binding
+	ec := cliutils.GetUserExchangeContext(org, userPw)
+	if err := patFile.VerifySecretBinding(exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err.Error())
 	}
 
 	keyVerified := false
@@ -241,7 +227,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 			patInput.Services[i].ServiceOrg = patFile.Services[i].ServiceOrg
 			patInput.Services[i].ServiceArch = patFile.Services[i].ServiceArch
 			patInput.Services[i].AgreementLess = patFile.Services[i].AgreementLess
-			patInput.Services[i].ServiceVersions = make([]ServiceChoice, len(patFile.Services[i].ServiceVersions))
+			patInput.Services[i].ServiceVersions = make([]exchange.WorkloadChoice, len(patFile.Services[i].ServiceVersions))
 			if patFile.Services[i].DataVerify != nil {
 				patInput.Services[i].DataVerify = *patFile.Services[i].DataVerify
 			}
@@ -343,7 +329,7 @@ func PatternVerify(org, userPw, pattern, keyFilePath string) {
 	var patorg string
 	patorg, pattern = cliutils.TrimOrg(org, pattern)
 	// Get pattern resource from exchange
-	var output ExchangePatterns
+	var output exchange.GetPatternResponse
 	httpCode := cliutils.ExchangeGet("Exchange", exchUrl, "orgs/"+patorg+"/patterns/"+pattern, cliutils.OrgAndCreds(org, userPw), []int{200, 404}, &output)
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, msgPrinter.Sprintf("pattern '%s' not found in org %s", pattern, org))

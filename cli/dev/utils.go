@@ -120,12 +120,15 @@ func GetFile(directory string, fileName string, obj interface{}) error {
 
 // This function takes one of the project json objects and writes it to a file in the project.
 func CreateFile(directory string, fileName string, obj interface{}) error {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	// Convert the object to JSON and write it.
 	filePath := path.Join(directory, fileName)
 	if jsonBytes, err := json.MarshalIndent(obj, "", "    "); err != nil {
-		return errors.New(i18n.GetMessagePrinter().Sprintf("failed to create json object for %v, error: %v", fileName, err))
+		return errors.New(msgPrinter.Sprintf("failed to create json object for %v, error: %v", fileName, err))
 	} else if err := ioutil.WriteFile(filePath, jsonBytes, 0664); err != nil {
-		return errors.New(i18n.GetMessagePrinter().Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
+		return errors.New(msgPrinter.Sprintf("unable to write json object for %v to file %v, error: %v", fileName, filePath, err))
 	} else {
 		return nil
 	}
@@ -497,18 +500,21 @@ func findContainers(serviceName string, instancePrefix string, cw *container.Con
 }
 
 func getContainerNetworks(depConfig *common.DeploymentConfig, instancePrefix string, cw *container.ContainerWorker) (map[string]string, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
 	containerNetworks := make(map[string]string)
 	for serviceName, _ := range depConfig.Services {
 		containers, err := findContainers(serviceName, instancePrefix, cw)
 		if err != nil {
-			return nil, errors.New(i18n.GetMessagePrinter().Sprintf("unable to list existing containers: %v", err))
+			return nil, errors.New(msgPrinter.Sprintf("unable to list existing containers: %v", err))
 		}
 
 		for _, msc := range containers {
 			if agreementId, ok := msc.Labels[container.LABEL_PREFIX+".agreement_id"]; ok {
 				if nw, ok := msc.Networks.Networks[agreementId]; ok {
 					containerNetworks[agreementId] = nw.NetworkID
-					cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Found main network for service %v, %v", agreementId, nw))
+					cliutils.Verbose(msgPrinter.Sprintf("Found main network for service %v, %v", agreementId, nw))
 				}
 			}
 		}
@@ -517,6 +523,7 @@ func getContainerNetworks(depConfig *common.DeploymentConfig, instancePrefix str
 }
 
 func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []common.GlobalSet, configUserInputs []policy.AbstractUserInput, cw *container.ContainerWorker, serviceInstance string) (map[string]string, error) {
+	msgPrinter := i18n.GetMessagePrinter()
 
 	// Collect all the service networks that have to be connected to the caller's container.
 	ms_networks := make(map[string]string)
@@ -531,7 +538,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 			// Stop any services that might already be started.
 			ServiceStopTest(dir)
 
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' %v for dependency %v", SERVICE_COMMAND, SERVICE_START_COMMAND, startErr, depDef.URL))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' %v for dependency %v", SERVICE_COMMAND, SERVICE_START_COMMAND, startErr, depDef.URL))
 
 		} else {
 
@@ -553,7 +560,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 				}
 			} else {
 
-				depConfig, _, derr := depDef.ConvertToDeploymentDescription(false)
+				depConfig, _, derr := depDef.ConvertToDeploymentDescription(false, msgPrinter)
 				if derr != nil {
 					return nil, derr
 				}
@@ -561,7 +568,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 				for serviceName, _ := range depConfig.Services {
 					serviceContainers, err := findContainers(serviceName, cutil.MakeMSInstanceKey(depDef.URL, depDef.Org, depDef.Version, ""), cw)
 					if err != nil {
-						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("'%v %v' unable to list existing containers: %v", SERVICE_COMMAND, SERVICE_START_COMMAND, err))
+						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' unable to list existing containers: %v", SERVICE_COMMAND, SERVICE_START_COMMAND, err))
 					}
 					containers = append(containers, serviceContainers...)
 				}
@@ -572,7 +579,7 @@ func ProcessStartDependencies(dir string, deps []*common.ServiceFile, globals []
 
 			// Add the dependency's new networks to the map of networks to be connected to the input service.
 			for netName, net := range newDependencyNetworks {
-				cliutils.Verbose(i18n.GetMessagePrinter().Sprintf("Containers for service %v/%v are in network %v", depDef.Org, depDef.URL, netName))
+				cliutils.Verbose(msgPrinter.Sprintf("Containers for service %v/%v are in network %v", depDef.Org, depDef.URL, netName))
 				ms_networks[netName] = net
 			}
 
@@ -597,7 +604,7 @@ func startDependent(dir string,
 	msNetworks := make(map[string]string)
 
 	// Convert the deployment config into a full DeploymentDescription.
-	depConfig, deployment, derr := serviceDef.ConvertToDeploymentDescription(false)
+	depConfig, deployment, derr := serviceDef.ConvertToDeploymentDescription(false, msgPrinter)
 	if derr != nil {
 		return nil, derr
 	}
@@ -739,7 +746,7 @@ func stopDependent(dir string, serviceDef *common.ServiceFile, cw *container.Con
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// Convert the deployment config into a full DeploymentDescription.
-	depConfig, _, derr := serviceDef.ConvertToDeploymentDescription(false)
+	depConfig, _, derr := serviceDef.ConvertToDeploymentDescription(false, msgPrinter)
 	if derr != nil {
 		return derr
 	}
