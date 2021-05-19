@@ -47,10 +47,10 @@ func NewSecureAPIListener(name string, config *config.HorizonConfig, db persiste
 			Config:   config,
 			Messages: messages,
 		},
-		httpClient: newHTTPClientFactory().NewHTTPClient(nil),
-		name:       name,
-		db:         db,
-		em:         events.NewEventStateManager(),
+		httpClient:     newHTTPClientFactory().NewHTTPClient(nil),
+		name:           name,
+		db:             db,
+		em:             events.NewEventStateManager(),
 		secretProvider: s,
 	}
 

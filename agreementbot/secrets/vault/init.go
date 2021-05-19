@@ -39,7 +39,7 @@ func (vs *AgbotVaultSecrets) Login() (err error) {
 	url := fmt.Sprintf("%s/v1/auth/openhorizon/login", vs.cfg.GetAgbotVaultURL())
 
 	body := LoginBody{
-		Id: vs.cfg.AgreementBot.ExchangeId,
+		Id:    vs.cfg.AgreementBot.ExchangeId,
 		Token: vs.cfg.AgreementBot.ExchangeToken,
 	}
 

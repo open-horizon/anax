@@ -305,8 +305,10 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// Start the go thread that heartbeats to the database.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
 
-	// Start the go thread that heartbeats to the database.
-	w.DispatchSubworker(SECRETS_PROVIDER, w.secretsProviderMaintenance, 60, false)
+	// Start the go thread that ensures the secrets provider remains logged in.
+	if w.secretProvider != nil {
+		w.DispatchSubworker(SECRETS_PROVIDER, w.secretsProviderMaintenance, 60, false)
+	}
 
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.

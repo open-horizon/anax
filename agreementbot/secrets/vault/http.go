@@ -18,7 +18,6 @@ import (
 	"time"
 )
 
-
 // Retry intervals when connecting to the vault
 const EX_MAX_RETRY = 10
 const EX_RETRY_INTERVAL = 2
@@ -29,23 +28,23 @@ type LoginBody struct {
 }
 
 type LoginAuthResponse struct {
-	ClientToken string `json:"client_token"`
-	Accessor string `json:"accessor"`
-	Policies []string `json:"policies"`
-	TokenPolicies []string `json:"token_policies"`
-	Metadata map[string]string `json:"metadata"`
-	LeaseDuration int `json:"lease_duration"`
-	Renewable bool `json:"renewable"`
-	EntityId string `json:"entity_id"`
-	TokenType string `json:"token_type"`
-	Orphan bool `json:"orphan"`
+	ClientToken   string            `json:"client_token"`
+	Accessor      string            `json:"accessor"`
+	Policies      []string          `json:"policies"`
+	TokenPolicies []string          `json:"token_policies"`
+	Metadata      map[string]string `json:"metadata"`
+	LeaseDuration int               `json:"lease_duration"`
+	Renewable     bool              `json:"renewable"`
+	EntityId      string            `json:"entity_id"`
+	TokenType     string            `json:"token_type"`
+	Orphan        bool              `json:"orphan"`
 }
 
 type LoginResponse struct {
-	ReqId string `json:"request_id"`
-	LeaseId string `json:"lease_id"`
-	Renewable bool `json:"renewable"`
-	Auth LoginAuthResponse `json:"auth"`
+	ReqId     string            `json:"request_id"`
+	LeaseId   string            `json:"lease_id"`
+	Renewable bool              `json:"renewable"`
+	Auth      LoginAuthResponse `json:"auth"`
 }
 
 type RenewBody struct {
@@ -57,11 +56,11 @@ type RenewResponse struct {
 }
 
 type RenewAuthResponse struct {
-	ClientToken string `json:"client_token"`
-	Policies []string `json:"policies"`
-	Metadata map[string]string `json:"metadata"`
-	LeaseDuration int `json:"lease_duration"`
-	Renewable bool `json:"renewable"`
+	ClientToken   string            `json:"client_token"`
+	Policies      []string          `json:"policies"`
+	Metadata      map[string]string `json:"metadata"`
+	LeaseDuration int               `json:"lease_duration"`
+	Renewable     bool              `json:"renewable"`
 }
 
 type KeyData struct {
