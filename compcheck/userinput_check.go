@@ -6,6 +6,7 @@ import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -98,6 +99,10 @@ func (p *Pattern) GetServices() []exchange.ServiceReference {
 
 func (p *Pattern) GetUserInputs() []policy.UserInput {
 	return p.UserInput
+}
+
+func (p *Pattern) GetSecretBinding() []exchangecommon.SecretBinding {
+	return p.SecretBinding
 }
 
 type ServiceSpec struct {

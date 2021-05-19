@@ -5,30 +5,35 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"strings"
 	"time"
 )
 
 type Pattern struct {
-	Owner              string              `json:"owner"`
-	Label              string              `json:"label"`
-	Description        string              `json:"description"`
-	Public             bool                `json:"public"`
-	Services           []ServiceReference  `json:"services"`
-	AgreementProtocols []AgreementProtocol `json:"agreementProtocols"`
-	UserInput          []policy.UserInput  `json:"userInput,omitempty"`
+	Owner              string                         `json:"owner"`
+	Label              string                         `json:"label"`
+	Description        string                         `json:"description"`
+	Public             bool                           `json:"public"`
+	Services           []ServiceReference             `json:"services"`
+	AgreementProtocols []AgreementProtocol            `json:"agreementProtocols"`
+	UserInput          []policy.UserInput             `json:"userInput,omitempty"`
+	SecretBinding      []exchangecommon.SecretBinding `json:"secretBinding,omitempty"` // The secret binding from service secret names to vault secret names.
+	LastUpdated        string                         `json:"lastUpdated,omitempty"`
 }
 
 func (w Pattern) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v, UserInput: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Public: %v, Services: %v, AgreementProtocols: %v, UserInput: %v, SecretBinding: %v, LastUpdated: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Public,
 		w.Services,
 		w.AgreementProtocols,
-		w.UserInput)
+		w.UserInput,
+		w.SecretBinding,
+		w.LastUpdated)
 }
 
 func (w Pattern) ShortString() string {

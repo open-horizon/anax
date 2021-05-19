@@ -73,7 +73,7 @@ import (
  */
 
 type Secret struct {
-	Description  string `json:"description"`	
+	Description string `json:"description"`
 }
 
 type DeploymentDescription struct {
