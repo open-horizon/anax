@@ -108,7 +108,7 @@ DOCKER_REG_PW := testpassword
 # css
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := testing$(BRANCH_NAME)
+DOCKER_CSS_TAG := e2edev
 CSS_URL ?= https://css-api:8080
 
 #css DB
@@ -409,7 +409,17 @@ get-agbot-image:
 	    fi \
 	fi
 
-run-mgmthub: get-agbot-image get-anax-images
+get-css-image:
+	if [[ "$(DOCKER_CSS_TAG)" == "e2edev" ]]; then \
+		if [[ "$(shell docker images -q $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG) 2>/dev/null)" == "" ]]; then \
+	    	echo -e "Building css image $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)"; \
+			cd $(ANAX_SOURCE) && make css-docker-image; \
+			docker tag $(DOCKER_CSS_INAME):testing $(DOCKER_CSS_INAME):e2edev; \
+	    fi \
+	fi
+
+
+run-mgmthub: get-agbot-image get-css-image get-anax-images
 	@echo "Starting all-in-one management hub"
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
