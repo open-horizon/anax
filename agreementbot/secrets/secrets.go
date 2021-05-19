@@ -18,5 +18,4 @@ type AgbotSecrets interface {
 
 	ListOrgSecret(user, token, org, name string) ([]string, error)
 	ListOrgSecrets(user, token, org string) ([]string, error)
-	
 }

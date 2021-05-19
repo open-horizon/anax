@@ -178,7 +178,7 @@ func (c *HorizonConfig) GetAgbotVaultURL() string {
 	return strings.TrimRight(c.AgreementBot.Vault.VaultURL, "/")
 }
 
-func (c* HorizonConfig) GetVaultCertPath() string {
+func (c *HorizonConfig) GetVaultCertPath() string {
 	return strings.TrimRight(c.AgreementBot.Vault.SSLCertPath, "/")
 }
 

@@ -19,9 +19,9 @@ func init() {
 
 // The fields in this object are initialized in the Initialize method in this package.
 type AgbotVaultSecrets struct {
-	token string   // The identity of this agbot in the vault
+	token      string       // The identity of this agbot in the vault
 	httpClient *http.Client // A cached http client to use for invoking the vault
-	cfg *config.HorizonConfig
+	cfg        *config.HorizonConfig
 }
 
 func (vs *AgbotVaultSecrets) String() string {
@@ -71,7 +71,7 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 	respMsg := ListSecretsResponse{}
 	err = json.Unmarshal(respBytes, &respMsg)
 	if err != nil {
-	 	return nil, errors.New(fmt.Sprintf("unable to parse response %v", string(respBytes)))
+		return nil, errors.New(fmt.Sprintf("unable to parse response %v", string(respBytes)))
 	}
 
 	glog.V(3).Infof(vaultPluginLogString("done listing secrets."))
@@ -87,7 +87,7 @@ func (vs *AgbotVaultSecrets) loginUser(user, password, org string) (string, erro
 	url := fmt.Sprintf("%s/v1/auth/openhorizon/login", vs.cfg.GetAgbotVaultURL())
 
 	body := LoginBody{
-		Id: user,
+		Id:    user,
 		Token: password,
 	}
 
