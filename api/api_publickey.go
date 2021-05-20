@@ -89,7 +89,9 @@ func (a *API) publickey(w http.ResponseWriter, r *http.Request) {
 func returnFileBytes(filename string, w http.ResponseWriter) error {
 	// Open the file so that we can read any header info that might be there.
 	file, err := os.Open(filename)
-	defer file.Close()
+	if file != nil {
+		defer file.Close()
+	}
 
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to open requested key file %v, error: %v", filename, err))

@@ -44,11 +44,12 @@ func (vs *AgbotVaultSecrets) Login() (err error) {
 	}
 
 	resp, err := vs.invokeVaultWithRetry("", url, http.MethodPost, body)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return errors.New(fmt.Sprintf("agbot unable to login, error: %v", err))
 	}
-
-	defer resp.Body.Close()
 
 	httpCode := resp.StatusCode
 	if httpCode != http.StatusOK && httpCode != http.StatusCreated {
@@ -89,11 +90,12 @@ func (vs *AgbotVaultSecrets) Renew() (err error) {
 	}
 
 	resp, err := vs.invokeVaultWithRetry(vs.token, url, http.MethodPost, body)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return errors.New(fmt.Sprintf("agbot unable to renew token, error: %v", err))
 	}
-
-	defer resp.Body.Close()
 
 	httpCode := resp.StatusCode
 	if httpCode != http.StatusOK && httpCode != http.StatusCreated {

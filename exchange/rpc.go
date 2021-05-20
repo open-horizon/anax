@@ -1007,6 +1007,9 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 
 		// If the exchange is down, this call will return an error.
 		httpResp, err := httpClient.Do(req)
+		if httpResp != nil && httpResp.Body != nil {
+			defer httpResp.Body.Close()
+		}
 		if IsTransportError(httpResp, err) {
 			status := ""
 			if httpResp != nil {
@@ -1016,8 +1019,6 @@ func InvokeExchange(httpClient *http.Client, method string, urlPath string, user
 		} else if err != nil {
 			return errors.New(fmt.Sprintf("Invocation of %v at %v with %v failed invoking HTTP request, error: %v", method, urlPath, requestBody, err)), nil
 		} else {
-			defer httpResp.Body.Close()
-
 			var outBytes []byte
 			var readErr error
 			if httpResp.Body != nil {

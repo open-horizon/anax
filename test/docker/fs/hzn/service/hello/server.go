@@ -30,11 +30,13 @@ func hello(w http.ResponseWriter, r *http.Request) {
 	}
 	req.Header.Add("Accept", "application/json")
 	resp, err := httpClient.Do(req)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		io.WriteString(w, fmt.Sprintf("Error executing HTTP request: %v", err))
 		return
 	}
-	defer resp.Body.Close()
 	httpCode := resp.StatusCode
 	if httpCode != http.StatusOK {
 		io.WriteString(w, fmt.Sprintf("Error received HTTP code %v", httpCode))
