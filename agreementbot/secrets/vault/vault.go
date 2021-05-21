@@ -46,11 +46,12 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 	url := fmt.Sprintf("%s/v1/openhorizon/%s?list=true", vs.cfg.GetAgbotVaultURL(), org)
 
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodGet, nil)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to list %s secrets, error: %v", org, err))
 	}
-
-	defer resp.Body.Close()
 
 	httpCode := resp.StatusCode
 	if httpCode == http.StatusNotFound {
@@ -92,11 +93,12 @@ func (vs *AgbotVaultSecrets) loginUser(user, password, org string) (string, erro
 	}
 
 	resp, err := vs.invokeVaultWithRetry("", url, http.MethodPost, body)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("agbot unable to login user %s, error: %v", user, err))
 	}
-
-	defer resp.Body.Close()
 
 	httpCode := resp.StatusCode
 	if httpCode != http.StatusOK && httpCode != http.StatusCreated {

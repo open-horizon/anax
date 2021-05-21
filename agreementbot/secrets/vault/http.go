@@ -143,6 +143,9 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 
 		// If the invocation resulted in a retyable network error, log it and retry the exchange invocation.
 		if isTransportError(resp, err) {
+			if resp != nil && resp.Body != nil {
+				resp.Body.Close()
+			}
 			// Log the transport error and retry
 			glog.Warningf(vaultPluginLogString("received transport error, retry..."))
 
@@ -154,6 +157,9 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 	}
 
 	if currRetry == 0 {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
 		return resp, errors.New(fmt.Sprintf("unable to invoke %v %v in the vault, exceeded %v retries", url, method, EX_MAX_RETRY))
 	}
 

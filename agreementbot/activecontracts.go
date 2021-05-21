@@ -122,6 +122,9 @@ func Invoke_rest(client *http.Client, method string, url string, user string, pw
 	req.Close = true // work around to ensure that Go doesn't get connections confused. Supposed to be fixed in Go 1.6.
 
 	rawresp, err := client.Do(req)
+	if rawresp != nil && rawresp.Body != nil {
+		defer rawresp.Body.Close()
+	}
 	if err != nil {
 		return err
 	} else if method == "GET" && rawresp.StatusCode != 200 {
@@ -129,9 +132,6 @@ func Invoke_rest(client *http.Client, method string, url string, user string, pw
 	} else if (method == "POST" || method == "PUT") && rawresp.StatusCode != 201 {
 		return errors.New(fmt.Sprintf("Error response from REST %v %v call: %v", method, url, rawresp.Status))
 	}
-
-	defer rawresp.Body.Close()
-	// glog.Infof("Raw Response: %v", rawresp.Body)
 
 	if outstruct != nil {
 		if err = json.NewDecoder(rawresp.Body).Decode(&outstruct); err != nil {
