@@ -122,6 +122,7 @@ export PATH := $(TMPGOPATH)/bin:$(PATH)
 
 export EXCHANGE_URL ?=
 export FSS_CSS_URL ?=
+export AGBOT_URL ?=
 
 # we use a script that will give us the debian arch version since that's what the packaging system inputs
 arch ?= $(shell tools/arch-tag)

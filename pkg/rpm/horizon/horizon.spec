@@ -59,7 +59,7 @@ cp -a fs/* $RPM_BUILD_ROOT/
 if [[ ! -f /etc/default/horizon ]]; then
     # Only create an empty/template file if they do not already have a real one
     mkdir -p /etc/default
-    echo -e "HZN_EXCHANGE_URL=\nHZN_FSS_CSSURL=\nHZN_MGMT_HUB_CERT_PATH=\nHZN_DEVICE_ID=\nHZN_AGENT_PORT=8510" > /etc/default/horizon
+    echo -e "HZN_EXCHANGE_URL=\nHZN_FSS_CSSURL=\nHZN_AGBOT_URL=\nHZN_MGMT_HUB_CERT_PATH=\nHZN_DEVICE_ID=\nHZN_AGENT_PORT=8510" > /etc/default/horizon
     # Note: postun deletes this file in the complete removal case
 fi
 

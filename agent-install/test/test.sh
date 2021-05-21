@@ -323,7 +323,7 @@ testAgentMissedReqParams() {
     prepareCert "$CERT_DEFAULT"
     # setup
 
-    for VAR in HZN_EXCHANGE_URL HZN_FSS_CSSURL HZN_ORG_ID HZN_EXCHANGE_USER_AUTH;
+    for VAR in HZN_EXCHANGE_URL HZN_FSS_CSSURL HZN_AGBOT_URL HZN_ORG_ID HZN_EXCHANGE_USER_AUTH;
     do
         prepareConfig "$CONFIG_DEFAULT"
         removeVariableFromConfig "$VAR" "$CONFIG_DEFAULT"
@@ -362,6 +362,7 @@ testAgentEnvVarsOverrideConfig() {
     
     export HZN_EXCHANGE_URL="HZN_EXCHANGE_URL-TEST-ENV"
     export HZN_FSS_CSSURL="HZN_FSS_CSSURL-TEST-ENV"
+    export HZN_AGBOT_URL="HZN_AGBOT_URL-TEST-ENV"
     export HZN_ORG_ID="HZN_ORG_ID-TEST-ENV"
     export HZN_EXCHANGE_USER_AUTH="HZN_EXCHANGE_USER_AUTH-TEST-ENV:test"
     export HZN_EXCHANGE_PATTERN="HZN_EXCHANGE_PATTERN-TEST-ENV"
@@ -370,6 +371,7 @@ testAgentEnvVarsOverrideConfig() {
     CLEAN=${CMD//[$'\t\r\n']}
     assertContains "HZN_EXCHANGE_URL env variable hasn't overridden the HZN_EXCHANGE_URL config value" "${CLEAN}" "HZN_EXCHANGE_URL: ${HZN_EXCHANGE_URL}"
     assertContains "HZN_FSS_CSSURL env variable hasn't overridden the HZN_FSS_CSSURL config value" "${CLEAN}" "HZN_FSS_CSSURL: ${HZN_FSS_CSSURL}"
+    assertContains "HZN_AGBOT_URL env variable hasn't overridden the HZN_AGBOT_URL config value" "${CLEAN}" "HZN_AGBOT_URL: ${HZN_AGBOT_URL}"
     assertContains "HZN_ORG_ID env variable hasn't overridden the HZN_ORG_ID config value" "${CLEAN}" "HZN_ORG_ID: ${HZN_ORG_ID}"
   
     # teardown
@@ -387,6 +389,7 @@ testAgentCLArgsOverrideEnvVars() {
 
     export HZN_EXCHANGE_URL="HZN_EXCHANGE_URL-TEST-ENV"
     export HZN_FSS_CSSURL="HZN_FSS_CSSURL-TEST-ENV"
+    export HZN_AGBOT_URL="HZN_AGBOT_URL-TEST-ENV"
     export HZN_ORG_ID="HZN_ORG_ID-TEST-ENV"
     export HZN_EXCHANGE_USER_AUTH="HZN_EXCHANGE_USER_AUTH-TEST-ENV:test"
     export HZN_EXCHANGE_PATTERN="HZN_EXCHANGE_PATTERN-TEST-ENV"
@@ -401,6 +404,7 @@ testAgentCLArgsOverrideEnvVars() {
     # teardown
     unset HZN_EXCHANGE_URL
     unset HZN_FSS_CSSURL
+    unset HZN_AGBOT_URL
     unset HZN_ORG_ID
     unset HZN_EXCHANGE_USER_AUTH
     unset HZN_EXCHANGE_PATTERN
@@ -420,6 +424,7 @@ testAgentEnvVarsNoConfig() {
     mv "$CONFIG_DEFAULT" "${CONFIG_DEFAULT}-test"
     export HZN_EXCHANGE_URL="HZN_EXCHANGE_URL-TEST-ENV"
     export HZN_FSS_CSSURL="HZN_FSS_CSSURL-TEST-ENV"
+    export HZN_AGBOT_URL="HZN_AGBOT_URL-TEST-ENV"
     export HZN_ORG_ID="HZN_ORG_ID-TEST-ENV"
     export HZN_EXCHANGE_USER_AUTH="HZN_EXCHANGE_USER_AUTH-TEST-ENV"
     export HZN_EXCHANGE_PATTERN="HZN_EXCHANGE_PATTERN-TEST-ENV"
@@ -434,6 +439,11 @@ testAgentEnvVarsNoConfig() {
     assertFalse "Script successfully executed" "${ret}"
     export HZN_FSS_CSSURL="HZN_FSS_CSSURL-TEST-ENV"
     
+    unset HZN_AGBOT_URL
+    CMD=$(.././agent-install.sh -i $AGENT_VERSION); ret=$?
+    assertFalse "Script successfully executed" "${ret}"
+    export HZN_AGBOT_URL="HZN_AGBOT_URL-TEST-ENV"
+
     unset HZN_ORG_ID
     CMD=$(.././agent-install.sh -i $AGENT_VERSION); ret=$?
     assertFalse "Script successfully executed" "${ret}"
@@ -447,6 +457,7 @@ testAgentEnvVarsNoConfig() {
     # teardown
     unset HZN_EXCHANGE_URL
     unset HZN_FSS_CSSURL
+    unset HZN_AGBOT_URL
     unset HZN_ORG_ID
     unset HZN_EXCHANGE_USER_AUTH
     unset HZN_EXCHANGE_PATTERN
@@ -464,7 +475,7 @@ testAgentAllVarsWithEnvNoConfig() {
     echo " config file is: ($cat $CONFIG_DEFAULT)"
     eval export $(cat "$CONFIG_DEFAULT")
     rm -f "$CONFIG_DEFAULT"
-    echo "Config Params are: ExchURL($HZN_EXCHANGE_URL) ORG ID ($HZN_ORG_ID) USER_AUTH ($HZN_EXCHANGE_USER_AUTH) EXCHANGE_PATTERN ($HZN_EXCHANGE_PATTERN) CSS ($HZN_FSS_CSSURL)"
+    echo "Config Params are: ExchURL($HZN_EXCHANGE_URL) ORG ID ($HZN_ORG_ID) USER_AUTH ($HZN_EXCHANGE_USER_AUTH) EXCHANGE_PATTERN ($HZN_EXCHANGE_PATTERN) CSS ($HZN_FSS_CSSURL) AGBOT ($$HZN_AGBOT_URL)"
 
     CMD=$(.././agent-install.sh -i $AGENT_VERSION)
     CLEAN=${CMD//[$'\t\r\n']}
@@ -477,6 +488,7 @@ testAgentAllVarsWithEnvNoConfig() {
     # teardown
     unset HZN_EXCHANGE_URL
     unset HZN_FSS_CSSURL
+    unset HZN_AGBOT_URL
     unset HZN_ORG_ID
     unset HZN_EXCHANGE_USER_AUTH
     unset HZN_EXCHANGE_PATTERN
@@ -516,11 +528,13 @@ testAgentSwitchEnv() {
     CURRENT_ORG=$(grep "^HZN_ORG_ID=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
     CURRENT_EXCHANGE=$(grep "^HZN_EXCHANGE_URL=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
     CURRENT_MMS=$(grep "^HZN_FSS_CSSURL=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
+    CURRENT_AGBOT=$(grep "^HZN_AGBOT_URL=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
 
     echo "=========================================="
     echo "Current org: ${CURRENT_ORG}"
     echo "Current exch: ${CURRENT_EXCHANGE}"
     echo "Current mms: ${CURRENT_MMS}"
+    echo "Current agbot: ${CURRENT_AGBOT}"
     echo "=========================================="
 
     .././agent-install.sh -i $AGENT_VERSION
@@ -542,11 +556,13 @@ testAgentSwitchEnv() {
     CURRENT_ORG=$(grep "^HZN_ORG_ID=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
     CURRENT_EXCHANGE=$(grep "^HZN_EXCHANGE_URL=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
     CURRENT_MMS=$(grep "^HZN_FSS_CSSURL=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
+    CURRENT_AGBOT=$(grep "^HZN_AGBOT_URL=" "$CONFIG_DEFAULT" | cut -d'=' -f2)
     
     echo "=========================================="
     echo "Current org: ${CURRENT_ORG}"
     echo "Current exch: ${CURRENT_EXCHANGE}"
     echo "Current mms: ${CURRENT_MMS}"
+    echo "Current agbot: ${CURRENT_AGBOT}"
     echo "=========================================="
 
     .././agent-install.sh -i $AGENT_VERSION << EOF

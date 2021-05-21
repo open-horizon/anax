@@ -10,55 +10,62 @@ export ARCH=${ARCH}
 # ==================================================================
 # Begin testing publish presigned service
 
-echo "Start Testing Publishing Presigned Services"
-
-result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_${ARCH} | jq ".\"e2edev@somecomp.com/my.company.com.services.hello2_1.0.0_${ARCH}\"" | jq 'del(.owner, .lastUpdated)')
-if [ $? -ne 0 ]; then
-    echo "Failed to get service: $result"
-    exit 1
-fi
-echo "$result"
-
-result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
-if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_${ARCH} successfully published"
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+    echo -e "Skipping Publishing Presigned Services tests"
+    exit 0
 else
-    echo "Failed to publish service: $result2"
-    exit 1
-fi
 
-result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_${ARCH} -f)
-if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_${ARCH} successfully removed"
-else
-    echo "Failed to remove service: $result3"
-    exit 1
-fi
+  echo "Start Testing Publishing Presigned Services"
 
-result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH k8s-service1_1.0.0_${ARCH} | jq ".\"e2edev@somecomp.com/k8s-service1_1.0.0_${ARCH}\"" | jq 'del(.owner, .lastUpdated)')
-if [ $? -ne 0 ]; then
-    echo "Failed to get service: $result"
-    exit 1
-fi
-echo "$result"
+  result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_${ARCH} | jq ".\"e2edev@somecomp.com/my.company.com.services.hello2_1.0.0_${ARCH}\"" | jq 'del(.owner, .lastUpdated)')
+  if [ $? -ne 0 ]; then
+      echo "Failed to get service: $result"
+      exit 1
+  fi
+  echo "$result"
 
-result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
-if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/k8s-service1_1.0.0_${ARCH} successfully published"
-else
-    echo "Failed to publish service: $result2"
-    exit 1
-fi
+  result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
+  if [ $? -eq 0 ]; then
+      echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_${ARCH} successfully published"
+  else
+      echo "Failed to publish service: $result2"
+      exit 1
+  fi
 
-result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH k8s-service1_1.0.0_${ARCH} -f)
-if [ $? -eq 0 ]; then
-    echo "Presigned service userdev/k8s-service1_1.0.0_${ARCH} successfully removed"
-else
-    echo "Failed to remove service: $result3"
-    exit 1
-fi
+  result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH my.company.com.services.hello2_1.0.0_${ARCH} -f)
+  if [ $? -eq 0 ]; then
+      echo "Presigned service userdev/my.company.com.services.hello2_1.0.0_${ARCH} successfully removed"
+  else
+      echo "Failed to remove service: $result3"
+      exit 1
+  fi
 
-echo "End Testing Publishing Presigned Services"
+  result=$(hzn exchange service list -o e2edev@somecomp.com -u $E2EDEV_ADMIN_AUTH k8s-service1_1.0.0_${ARCH} | jq ".\"e2edev@somecomp.com/k8s-service1_1.0.0_${ARCH}\"" | jq 'del(.owner, .lastUpdated)')
+  if [ $? -ne 0 ]; then
+      echo "Failed to get service: $result"
+      exit 1
+  fi
+  echo "$result"
+
+  result2=$(echo $result | hzn exchange service publish -f- -o userdev -u $USERDEV_ADMIN_AUTH)
+  if [ $? -eq 0 ]; then
+      echo "Presigned service userdev/k8s-service1_1.0.0_${ARCH} successfully published"
+  else
+      echo "Failed to publish service: $result2"
+      exit 1
+  fi
+
+  result3=$(hzn exchange service remove -o userdev -u $USERDEV_ADMIN_AUTH k8s-service1_1.0.0_${ARCH} -f)
+  if [ $? -eq 0 ]; then
+      echo "Presigned service userdev/k8s-service1_1.0.0_${ARCH} successfully removed"
+  else
+      echo "Failed to remove service: $result3"
+      exit 1
+  fi
+
+  echo "End Testing Publishing Presigned Services"
+
+fi
 
 # Begin testing service config API
 

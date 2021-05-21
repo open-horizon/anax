@@ -499,11 +499,13 @@ func putFile(url string, org string, metadata *cssFileMeta, file []byte) error {
 	req.SetBasicAuth(org+"/hzndev", "password")
 
 	resp, err := httpClient.Do(req)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return errors.New(msgPrinter.Sprintf("unable to send CSS file PUT request to CSS for %v, error %v", *metadata, err))
 	}
 
-	defer resp.Body.Close()
 	cliutils.Verbose(msgPrinter.Sprintf("Received HTTP code: %d", resp.StatusCode))
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -554,6 +556,9 @@ func checkCSSStatus(org string, timeout int) error {
 		respCode := 0
 		if resp != nil {
 			respCode = resp.StatusCode
+			if resp.Body != nil {
+				resp.Body.Close()
+			}
 		}
 		c <- fmt.Sprintf("%d", respCode)
 	}()

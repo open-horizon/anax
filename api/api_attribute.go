@@ -37,7 +37,9 @@ func (a *API) attribute(w http.ResponseWriter, r *http.Request) {
 
 	// shared logic between payload-handling update functions
 	handlePayload := func(permitPartial bool, doModifications func(permitPartial bool, attr persistence.Attribute, msgQueue chan events.Message), msgQueue chan events.Message) {
-		defer r.Body.Close()
+		if r.Body != nil {
+			defer r.Body.Close()
+		}
 
 		if attrs, inputErr, err := payloadToAttributes(errorhandler, r.Body, permitPartial, existingDevice); err != nil {
 			glog.Error(apiLogString(fmt.Sprintf("Error processing incoming attributes %v", err)))

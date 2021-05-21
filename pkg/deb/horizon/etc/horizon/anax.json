@@ -21,6 +21,7 @@
     "TrustDockerAuthFromOrg": true,
     "ServiceUpgradeCheckIntervalS": 300,
     "MultipleAnaxInstances": false,
+    "AgbotURL": "",
     "FileSyncService": {
         "CSSURL": ""
     }

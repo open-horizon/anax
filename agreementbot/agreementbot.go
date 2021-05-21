@@ -26,6 +26,7 @@ import (
 const DATABASE_HEARTBEAT = "AgbotDatabaseHeartBeat"
 const GOVERN_AGREEMENTS = "AgBotGovernAgreements"
 const GOVERN_ARCHIVED_AGREEMENTS = "AgBotGovernArchivedAgreements"
+const SECRETS_PROVIDER = "AgbotSecretsProvider"
 
 //const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
@@ -303,6 +304,11 @@ func (w *AgreementBotWorker) Initialize() bool {
 
 	// Start the go thread that heartbeats to the database.
 	w.DispatchSubworker(DATABASE_HEARTBEAT, w.databaseHeartBeat, int(w.BaseWorker.Manager.Config.GetPartitionStale()/3), false)
+
+	// Start the go thread that ensures the secrets provider remains logged in.
+	if w.secretProvider != nil {
+		w.DispatchSubworker(SECRETS_PROVIDER, w.secretsProviderMaintenance, 60, false)
+	}
 
 	// Give the policy manager a chance to read in all the policies. The agbot worker will not proceed past this point
 	// until it has some policies to work with.
@@ -1454,6 +1460,22 @@ func (w *AgreementBotWorker) messageKeyCheck() int {
 		}
 	}
 
+}
+
+// This function is called by the secrets provider sub worker to ensure that the secrets provider remains logged in.
+func (w *AgreementBotWorker) secretsProviderMaintenance() int {
+
+	if !w.secretProvider.IsReady() {
+		if err := w.secretProvider.Login(); err != nil {
+			glog.Errorf(AWlogString(fmt.Sprintf("Error logging in to the secrets provider, error: %v", err)))
+		}
+	} else {
+		if err := w.secretProvider.Renew(); err != nil {
+			glog.Errorf(AWlogString(fmt.Sprintf("Error renewing secret provider token, error: %v", err)))
+		}
+	}
+
+	return 0
 }
 
 // ==========================================================================================================

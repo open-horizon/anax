@@ -11,9 +11,11 @@ type AgbotSecrets interface {
 
 	// Database related functions
 	Initialize(cfg *config.HorizonConfig) error
+	Login() error
+	Renew() error
 	Close()
+	IsReady() bool
 
-	ListSecrets(org string) ([]string, error)
-	ListUserSecrets(org string, user string) ([]string, error)
-
+	ListOrgSecret(user, token, org, name string) ([]string, error)
+	ListOrgSecrets(user, token, org string) ([]string, error)
 }

@@ -598,6 +598,9 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 	req.Header.Add("Accept-Language", localeTag.String())
 
 	resp, err := httpClient.Do(req)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
@@ -615,7 +618,6 @@ func HorizonGet(urlSuffix string, goodHttpCodes []int, structure interface{}, qu
 			printHorizonRestError(apiMsg, err)
 		}
 	}
-	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 	if !isGoodCode(httpCode, goodHttpCodes) {
@@ -682,6 +684,9 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 	req.Close = true
 
 	resp, err := httpClient.Do(req)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		if quiet {
 			if os.Getenv("HORIZON_URL") == "" {
@@ -699,7 +704,6 @@ func HorizonDelete(urlSuffix string, goodHttpCodes []int, expectedHttpErrorCodes
 			printHorizonRestError(apiMsg, err)
 		}
 	}
-	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 	if isGoodCode(httpCode, goodHttpCodes) {
@@ -772,6 +776,9 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 		req.Header.Add("Content-Type", "application/json")
 	}
 	resp, err := httpClient.Do(req)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil && exitOnErr {
 		printHorizonRestError(apiMsg, err)
 	} else if err != nil {
@@ -779,7 +786,6 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	}
 
 	// Process the response
-	defer resp.Body.Close()
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 
@@ -1204,6 +1210,9 @@ func InvokeRestApi(httpClient *http.Client, method string, urlPath string, crede
 			http_status := ""
 			if resp != nil {
 				http_status = resp.Status
+				if resp.Body != nil {
+					resp.Body.Close()
+				}
 			}
 			if retryCount <= maxRetries {
 				Verbose(msgPrinter.Sprintf("Encountered HTTP error: %v calling %v REST API %v. HTTP status: %v. Will retry.", err, service, apiMsg, http_status))
@@ -1235,7 +1244,9 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
 	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
-	defer resp.Body.Close()
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	respBody := io.Reader(resp.Body)
 	if resp.Header.Get("Content-type") == "application/octet-stream" {
@@ -1311,7 +1322,9 @@ func ExchangePutPost(service string, method string, urlBase string, urlSuffix st
 
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 	resp := InvokeRestApi(httpClient, method, url, credentials, body, service, apiMsg)
-	defer resp.Body.Close()
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
 	httpCode = resp.StatusCode
 	Verbose(msgPrinter.Sprintf("HTTP code: %d", httpCode))
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -1371,7 +1384,9 @@ func ExchangeDelete(service string, urlBase string, urlSuffix string, credential
 	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
 
 	resp := InvokeRestApi(httpClient, http.MethodDelete, url, credentials, nil, service, apiMsg)
-	defer resp.Body.Close()
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	// delete never returns a body
 	httpCode = resp.StatusCode

@@ -108,7 +108,7 @@ DOCKER_REG_PW := testpassword
 # css
 DOCKER_CSS_CNAME := css-api
 DOCKER_CSS_INAME := openhorizon/$(arch)_cloud-sync-service
-DOCKER_CSS_TAG := testing$(BRANCH_NAME)
+DOCKER_CSS_TAG := e2edev
 CSS_URL ?= https://css-api:8080
 
 #css DB
@@ -125,7 +125,9 @@ endif
 DOCKER_VAULT_CNAME := vault
 DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
 DOCKER_VAULT_TAG := 1.0.0
-VAULT_ADDR = http://vault:8200
+ifeq ($(HZN_VAULT),true)
+	VAULT_ADDR = http://vault:8200
+endif
 VAULT_CONFIG := $(CURDIR)/docker/fs/etc/vault/config.json
 VAULT_DEV_ROOT_TOKEN_ID := $(shell jq ".VAULT_DEV_ROOT_TOKEN_ID" $(VAULT_CONFIG))
 VAULT_DEV_LISTEN_ADDRESS := $(shell jq ".VAULT_DEV_LISTEN_ADDRESS" $(VAULT_CONFIG))
@@ -317,7 +319,7 @@ e2edevtest-docker-prereqs:
 	rm -r $(E2EDEVTEST_TEMPFS)/etc/vault
 	cp -r $(CURDIR)/docker/fs/hzn $(CURDIR)/gov/* $(CURDIR)/docker/fs/helm $(CURDIR)/docker/fs/resources $(CURDIR)/docker/fs/objects $(E2EDEVTEST_TEMPFS)/root
 	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/agbot/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
-	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
+	for f in $$(find $(E2EDEVTEST_TEMPFS)/etc/colonus/ -maxdepth 1 -name '*.tmpl'); do EXCH_APP_HOST=$(DOCKER_EXCH) CSS_URL=$(CSS_URL) AGBOT_SAPI_URL=$(AGBOT_SAPI_URL) VAULT_ADDR=${VAULT_ADDR} envsubst < $$f > "$$(echo $$f | sed 's/.tmpl//')"; done
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/horizon.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
 	cp $(ANAX_SOURCE)/pkg/deb/horizon/etc/horizon/trust/mtn-publicKey.pem $(E2EDEVTEST_TEMPFS)/root/.colonus/.
 
@@ -408,11 +410,21 @@ get-agbot-image:
 	    fi \
 	fi
 
-run-mgmthub: get-agbot-image get-anax-images
+get-css-image:
+	if [[ "$(DOCKER_CSS_TAG)" == "e2edev" ]]; then \
+		if [[ "$(shell docker images -q $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG) 2>/dev/null)" == "" ]]; then \
+	    	echo -e "Building css image $(DOCKER_CSS_INAME):$(DOCKER_CSS_TAG)"; \
+			cd $(ANAX_SOURCE) && make css-docker-image; \
+			docker tag $(DOCKER_CSS_INAME):testing $(DOCKER_CSS_INAME):e2edev; \
+	    fi \
+	fi
+
+
+run-mgmthub: get-agbot-image get-css-image get-anax-images
 	@echo "Starting all-in-one management hub"
 	export EXCHANGE_ROOT_PW=$(EXCH_ROOTPW) EXCHANGE_IMAGE_TAG=$(DOCKER_EXCH_TAG) EXCHANGE_DATABASE=$(EXCHDB_NAME); \
 	export EXCHANGE_HUB_ADMIN_PW=$(EXCHANGE_HUB_ADMIN_PW) EXCHANGE_SYSTEM_ADMIN_PW=$(EXCHANGE_SYSTEM_ADMIN_PW); \
-	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG); \
+	export AGBOT_ID=$(AGBOT_NAME) AGBOT_TOKEN=$(AGBOT_TOKEN) AGBOT_IMAGE_TAG=$(AGBOT_IMAGE_TAG) HZN_VAULT_URL=$(VAULT_ADDR); \
 	export CSS_IMAGE_TAG=$(DOCKER_CSS_TAG); \
 	export MONGO_IMAGE_TAG=$(DOCKER_CSSDB_TAG); \
 	export POSTGRES_IMAGE_TAG=$(DOCKER_EXCHDB_TAG) POSTGRES_USER=$(EXCHDB_USER); \

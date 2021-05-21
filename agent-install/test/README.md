@@ -38,6 +38,7 @@ The config file should contain:
 ```bash
 HZN_EXCHANGE_URL="https://<MGMT_HUB>:8443/ec-exchange/v1/"
 HZN_FSS_CSSURL="https://<MGMT_HUB>:8443/ec-css/"
+HZN_AGBOT_URL="https://<MGMT_HUB>:8443/ec-agbot/"
 HZN_ORG_ID="<your_MGMT_HUB_cluster>"
 HZN_EXCHANGE_USER_AUTH="iamapikey:<your_MGMT_HUB_API_key>"
 HZN_EXCHANGE_PATTERN="IBM/pattern-ibm.helloworld"

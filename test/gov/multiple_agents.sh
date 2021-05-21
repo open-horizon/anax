@@ -30,6 +30,7 @@ function startMultiAgents {
     configfile="/tmp/e2edevtest/horizon.multi_agents"
     echo -e "HZN_EXCHANGE_URL=${EXCH_APP_HOST}" > $configfile
     echo -e "HZN_FSS_CSSURL=${CSS_URL}" >> $configfile
+    echo -e "HZN_AGBOT_URL=${AGBOT_SAPI_URL}" >> $configfile
     echo -e "HZN_DEVICE_ID=anaxdevice${device_num}" >> $configfile
     echo -e "HZN_AGENT_PORT=${agent_port}" >> $configfile
     if [ ${CERT_LOC} -eq "1" ]; then

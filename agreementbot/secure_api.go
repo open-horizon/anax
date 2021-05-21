@@ -47,11 +47,11 @@ func NewSecureAPIListener(name string, config *config.HorizonConfig, db persiste
 			Config:   config,
 			Messages: messages,
 		},
-		httpClient: newHTTPClientFactory().NewHTTPClient(nil),
-		name:       name,
-		db:         db,
-		em:         events.NewEventStateManager(),
-		secretProvider:    s,
+		httpClient:     newHTTPClientFactory().NewHTTPClient(nil),
+		name:           name,
+		db:             db,
+		em:             events.NewEventStateManager(),
+		secretProvider: s,
 	}
 
 	listener.listen()
@@ -107,7 +107,7 @@ func (a *SecureAPI) createUserExchangeContext(userId string, passwd string) exch
 	return exchange.NewCustomExchangeContext(userId, passwd, a.Config.AgreementBot.ExchangeURL, a.Config.GetAgbotCSSURL(), newHTTPClientFactory())
 }
 
-func (a *SecureAPI)	setCommonHeaders(w http.ResponseWriter) http.ResponseWriter {
+func (a *SecureAPI) setCommonHeaders(w http.ResponseWriter) http.ResponseWriter {
 	w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 	w.Header().Add("Pragma", "no-cache, no-store")
 	w.Header().Add("Access-Control-Allow-Headers", "X-Requested-With, content-type, Authorization")
@@ -173,7 +173,8 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/policycompatible", a.policy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets/{vault-secret-name}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets", a.secrets).Methods("GET", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/{secret}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 
@@ -543,42 +544,86 @@ func (a *SecureAPI) writeCompCheckResponse(w http.ResponseWriter, output interfa
 // org - This url sub-path dictates where the secret exists within the vault
 // vault-secret-name - The actual secret name used in the secret bindings
 func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
-	// get message printer with the language passed in from the header
-	lan := r.Header.Get("Accept-Language")
-	if lan == "" {
-		lan = i18n.DEFAULT_LANGUAGE
-	}
-	msgPrinter := i18n.GetMessagePrinterWithLocale(lan)
 
-	// Check if vault is configured in the management hub
-	if a.Config.AgreementBot.Vault.VaultURL == "" {
-		glog.Errorf(APIlogString("There is no vault component in the management hub."))
-		writeResponse(w, msgPrinter.Sprintf("There is no vault component in the management hub. %v", a.Config.IsVaultConfigured()), http.StatusServiceUnavailable)
+	ec, msgPrinter, userAuthenticated := a.processUserCred("/org/{org}/secrets/{secret}", w, r)
+	if !userAuthenticated {
 		return
 	}
 
+	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
+	if a.secretProvider == nil {
+		glog.Errorf(APIlogString("There is no secrets provider configured, secrets are unavailable."))
+		writeResponse(w, msgPrinter.Sprintf("There is no secrets provider configured, secrets are unavailable."), http.StatusServiceUnavailable)
+		return
+	}
+
+	if !a.secretProvider.IsReady() {
+		unavailMsg := "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+		glog.Errorf(APIlogString(unavailMsg))
+		writeResponse(w, msgPrinter.Sprintf(unavailMsg), http.StatusServiceUnavailable)
+	}
+
+	// Process in the inputs and verify that they are consistent with the logged in user.
 	pathVars := mux.Vars(r)
 	org := pathVars["org"]
-	vaultSecretName := pathVars["vault-secret-name"]
-	glog.V(5).Infof(APIlogString(fmt.Sprintf("/org/%v/secrets/%v called.", org, vaultSecretName)))
+	vaultSecretName := pathVars["secret"]
 
-	// handle secret API options
+	glog.V(5).Infof(APIlogString(fmt.Sprintf("%v /org/%v/secrets/%v called.", r.Method, org, vaultSecretName)))
+
+	if org == "" {
+		glog.Errorf(APIlogString(fmt.Sprintf("org must be specified in the API path")))
+		writeResponse(w, msgPrinter.Sprintf("org must be specified in the API path"), http.StatusBadRequest)
+		return
+	}
+
+	// The user could be authenticated but might be trying to access secrets in another org.
+	if exchange.GetOrg(ec.GetExchangeId()) != org {
+		glog.Errorf(APIlogString(fmt.Sprintf("user %s cannot access secrets in org %s.", exchange.GetOrg(ec.GetExchangeId()), org)))
+		writeResponse(w, msgPrinter.Sprintf("Unauthorized. User %s cannot access secrets in org %s.", ec.GetExchangeId(), org), http.StatusUnauthorized)
+		return
+	}
+
+	// Handle secret API options
 	switch r.Method {
 	case "GET":
-		if vaultToken, ok := a.processVaultUserCred(fmt.Sprintf("/org/%v/secrets/%v", org, vaultSecretName), msgPrinter, w, r); ok {
-			targetURL := fmt.Sprintf("%v/org/%v/secrets/%v", a.Config.GetAgbotVaultURL(), org, vaultSecretName)
-			// Replace with a call to invoke the vault API at targetURL with the vaultToken generated from authentication. Returns response body & code
-			if _, respCode, err := fmt.Sprintf("Dummy response - Token:%v, url:%v", vaultToken, targetURL), http.StatusOK, error(nil); err != nil {
-				glog.Errorf(APIlogString(fmt.Sprintf("Vault invocation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err)))
-				writeResponse(w, msgPrinter.Sprintf("Vault invovation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err), http.StatusServiceUnavailable)
-			} else if respCode == http.StatusNotFound {
-				glog.Infof(APIlogString("Secret does not exist."))
-				writeResponse(w, msgPrinter.Sprintf("Secret does not exist."), http.StatusNotFound)
-			} else if respCode == http.StatusOK {
-				glog.Infof(APIlogString("Secret exists."))
-				writeResponse(w, map[string]bool{"exists": true}, http.StatusOK)
+
+		// Call the plugged in secrets provider to list the secret(s) for the input org.
+		if vaultSecretName == "" {
+			secretNames, err := a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org)
+
+			if err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("unable to access secrets provider, error: %v.", err)))
+				writeResponse(w, msgPrinter.Sprintf("unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
+				return
 			}
+			writeResponse(w, secretNames, http.StatusOK)
+			return
+
+		} else {
+			secretName, err := a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+
+			if err != nil {
+				glog.Errorf(APIlogString(fmt.Sprintf("unable to access secrets provider, error: %v.", err)))
+				writeResponse(w, msgPrinter.Sprintf("unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
+				return
+			}
+			writeResponse(w, secretName, http.StatusOK)
+			return
 		}
+
+		// if vaultToken, ok := a.processVaultUserCred(fmt.Sprintf("/org/%v/secrets/%v", org, vaultSecretName), msgPrinter, w, r); ok {
+		// 	targetURL := fmt.Sprintf("%v/org/%v/secrets/%v", a.Config.GetAgbotVaultURL(), org, vaultSecretName)
+		// 	if _, respCode, err := fmt.Sprintf("Dummy response - Token:%v, url:%v", vaultToken, targetURL), http.StatusOK, error(nil); err != nil {
+		// 		glog.Errorf(APIlogString(fmt.Sprintf("Vault invocation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err)))
+		// 		writeResponse(w, msgPrinter.Sprintf("Vault invovation failure. The caller should retry this API call a small number of times with a short delay between calls to ensure that the vault is really not there. %v.", err), http.StatusServiceUnavailable)
+		// 	} else if respCode == http.StatusNotFound {
+		// 		glog.Infof(APIlogString("Secret does not exist."))
+		// 		writeResponse(w, msgPrinter.Sprintf("Secret does not exist."), http.StatusNotFound)
+		// 	} else if respCode == http.StatusOK {
+		// 		glog.Infof(APIlogString("Secret exists."))
+		// 		writeResponse(w, map[string]bool{"exists": true}, http.StatusOK)
+		// 	}
+		// }
 	case "PUT":
 		fallthrough
 	case "POST":

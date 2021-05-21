@@ -270,14 +270,14 @@ func (auth *HorizonAuthenticate) verifyUserIdentity(id string, orgId string, app
 	// Invoke the exchange API to verify the user.
 	user := fmt.Sprintf("%v/%v", orgId, id)
 	resp, err := auth.invokeExchangeWithRetry(url, user, appSecret)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	// If there was an error invoking the HTTP API, return it.
 	if err != nil {
 		return "", "", err
 	}
-
-	// Make sure the response reader is closed if we exit quickly.
-	defer resp.Body.Close()
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
@@ -350,14 +350,14 @@ func (auth *HorizonAuthenticate) verifyAgbotIdentity(id string, orgId string, ap
 	// Invoke the exchange API to verify the user.
 	agbot := fmt.Sprintf("%v/%v", orgId, id)
 	resp, err := auth.invokeExchangeWithRetry(url, agbot, appSecret)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	// If there was an error invoking the HTTP API, return it.
 	if err != nil {
 		return err
 	}
-
-	// Make sure the response reader is closed if we exit quickly.
-	defer resp.Body.Close()
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {
@@ -406,14 +406,14 @@ func (auth *HorizonAuthenticate) verifyNodeIdentity(id string, orgId string, app
 	// Invoke the exchange API to verify the node.
 	node := fmt.Sprintf("%v/%v", orgId, id)
 	resp, err := auth.invokeExchangeWithRetry(url, node, appSecret)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	// If there was an error invoking the HTTP API, return it.
 	if err != nil {
 		return err
 	}
-
-	// Make sure the response reader is closed if we exit quickly.
-	defer resp.Body.Close()
 
 	// Log the HTTP response code.
 	if trace.IsLogging(logger.TRACE) {

@@ -169,6 +169,12 @@ function checkMemoryAndCpus {
 
 # ============= Main =================================================
 #
+
+if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" != "sall" ] && [ "${TEST_PATTERNS}" != "susehello" ]; then
+    echo -e "Skipping hzn dev tests"
+    exit 0
+fi
+
 echo -e "Begin hzn dev service testing."
 
 export HZN_ORG_ID="e2edev@somecomp.com"
