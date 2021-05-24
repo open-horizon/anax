@@ -42,14 +42,18 @@ function results {
     exit 2
   fi
 
-  # check if error text
-  if [ ! -z "$3" ]; then
-    res=$(echo "$1" | grep "$3")
-    if [ $? -ne 0 ]; then
-      echo -e "Error: the response should have contained \"$3\", but did not. \n"
-      exit 2
+  # check if error text contains all of the test text snippets
+  for (( i=3; i<=$#; i++))
+  {
+    eval TEST_ARG='$'$i
+    if [ ! -z "$TEST_ARG" ]; then
+      res=$(echo "$1" | grep "$TEST_ARG")
+      if [ $? -ne 0 ]; then
+        echo -e "Error: the response should have contained \"$TEST_ARG\", but did not. \n"
+        exit 2
+      fi
     fi
-  fi
+  }
 
   #statements
   echo -e "Result expected."
@@ -456,38 +460,92 @@ check_comp_results "false" "User Input Incompatible"
 echo ""
 echo -e "${PREFIX} Start testing for vault secrets API"
 
-if [ "$HZN_VAULT" != "true" ] || [ "$NOVAULT" != "1" ]; then
+if [ "$HZN_VAULT" != "true" ] || [ "$NOVAULT" == "1" ]; then
   echo -e "\n${PREFIX} Skipping agbot API tests for vault\n"
   exit 0
 fi
 
 # Later export these from /root/init_vault
 TEST_VAULT_SECRET_ORG="userdev"
-TEST_VAULT_SECRET_NAME="test_secret_name"
-api="org/${TEST_VAULT_SECRET_ORG}/secrets/${TEST_VAULT_SECRET_NAME}"
+TEST_VAULT_SECRET_NAME="secret"
+TEST_VAULT_SECRET_VALUE="${TEST_VAULT_SECRET_NAME}"
 
-echo -e "\n${PREFIX} test ${api} GET with invalid credentials"
-CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH}_wrong ${AGBOT_SAPI_URL}/${api}"
+read -d '' create_secret <<EOF
+{
+  \"name\":\"test\",
+  \"secret\":\"value\"
+}
+EOF
+
+LIST_ORG_SECRET="org/${TEST_VAULT_SECRET_ORG}/secrets/${TEST_VAULT_SECRET_NAME}"
+LIST_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets"
+CREATE_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets/secret1"
+DELETE_ORG_SECRETS="org/${TEST_VAULT_SECRET_ORG}/secrets/secret1"
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" "${TEST_VAULT_SECRET_VALUE}"
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRETS} GET"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRETS}"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" "${TEST_VAULT_SECRET_NAME}"
+
+echo -e "\n${PREFIX} test ${CREATE_ORG_SECRETS} POST"
+CMD="curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d ${create_secret} ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRETS}"
+echo "$CMD"
+RES=$(curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d "${create_secret}" ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRETS})
+results "$RES" "201" ""
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" "test" "value"
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with novalue=1"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}?novalue=1"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" "true"
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong?novalue=1"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" "false"
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid credentials"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH}_wrong ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "401" "Failed to authenticate"
 
-echo -e "\n${PREFIX} test ${api} GET with valid secret and secret org"
-CMD="curl -sLX GET -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid secret and secret org"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
 echo "$CMD"
 RES=$($CMD)
-results "$RES" "200" ""
+results "$RES" "404" ""
 
-echo -e "\n${PREFIX} test ${api} POST with valid secret and secret org"
-CMD="curl -sLX POST -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid org"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/org/${TEST_VAULT_SECRET_ORG}_wrong/secrets"
 echo "$CMD"
 RES=$($CMD)
-results "$RES" "201" ""
+results "$RES" "403" ""
 
-echo -e "\n${PREFIX} test ${api} DELETE with valid secret and secret org"
-CMD="curl -sLX DELETE -w %{http_code} --cacert ${CERT_FILE} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${api}"
+echo -e "\n${PREFIX} test ${DELETE_ORG_SECRETS} DELETE with valid secret and secret org"
+CMD="curl -sLX DELETE -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${DELETE_ORG_SECRETS}"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "204" ""
+
+echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with deleted secret"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "404" ""
 
 echo -e "\n${PREFIX} complete test\n"

@@ -67,6 +67,10 @@ type KeyData struct {
 	Keys []string `json:"keys"`
 }
 
+type ListSecretResponse struct {
+	Data map[string]string `json:"data"`
+}
+
 type ListSecretsResponse struct {
 	Data KeyData `json:"data"`
 }
@@ -120,7 +124,7 @@ func (vs *AgbotVaultSecrets) newHTTPClient(cfg *config.HorizonConfig) (*http.Cli
 
 }
 
-// Common function to invoke the Exchange API with builtin retry logic.
+// Common function to invoke the Vault API with builtin retry logic.
 func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, method string, body interface{}) (*http.Response, error) {
 	var currRetry int
 	var resp *http.Response

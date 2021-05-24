@@ -28,10 +28,49 @@ func (vs *AgbotVaultSecrets) String() string {
 	return fmt.Sprintf("Token: %v", vs.token)
 }
 
-func (vs *AgbotVaultSecrets) ListOrgSecret(user, password, org, name string) ([]string, error) {
-	return []string{}, nil
+// This utility will be available to any users within the org.
+func (vs *AgbotVaultSecrets) ListOrgSecret(user, password, org, name string) (map[string]string, error) {
+
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v for org %v", name, org)))
+
+	// Login the user to ensure that the vault ACLs can take effect
+	userVaultToken, err := vs.loginUser(user, password, org)
+	if err != nil {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error: %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
+	}
+
+	url := fmt.Sprintf("%s/v1/openhorizon/%s/%s", vs.cfg.GetAgbotVaultURL(), org, name)
+
+	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodGet, nil)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to list %s secret %s, error: %v", org, name, err), Details: "", RespCode: http.StatusServiceUnavailable}
+	}
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to read secret %s from %s, error: %v", name, org, err), Details: "", RespCode: http.StatusInternalServerError}
+	} else if httpCode := resp.StatusCode; httpCode == http.StatusNotFound {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Secret does not exist. Vault response %s", string(respBytes)), Details: "", RespCode: http.StatusNotFound}
+	} else if httpCode == http.StatusForbidden {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Secret not available with the specified credentials. Vault response %s", string(respBytes)), Details: "", RespCode: http.StatusForbidden}
+	} else if httpCode != http.StatusOK {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to find secret %s for org %s, HTTP status code: %v", name, org, httpCode), Details: "", RespCode: httpCode}
+	}
+
+	respMsg := ListSecretResponse{}
+	if err := json.Unmarshal(respBytes, &respMsg); err != nil {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response body %v", err), Details: "", RespCode: http.StatusInternalServerError}
+	}
+
+	glog.V(3).Infof(vaultPluginLogString("Done reading secret value."))
+
+	return respMsg.Data, nil
 }
 
+// This utility will be available to only admin users within the org.
 func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]string, error) {
 
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in %v", org)))
@@ -39,7 +78,7 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 	// Login the user to ensure that the vault ACLs can take effect
 	userVaultToken, err := vs.loginUser(user, password, org)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to login user %s, error: %v", user, err))
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error: %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
 	}
 
 	// Query the vault using the user's credentials
@@ -50,35 +89,88 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 		defer resp.Body.Close()
 	}
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to list %s secrets, error: %v", org, err))
-	}
-
-	httpCode := resp.StatusCode
-	if httpCode == http.StatusNotFound {
-		return []string{}, nil
-	}
-
-	if httpCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("unable to list %s secrets, HTTP status code: %v", org, httpCode))
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to list %s secrets, error: %v", org, err), Details: "", RespCode: http.StatusServiceUnavailable}
 	}
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to read list %s secrets response, error: %v", org, err))
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to read list %s secrets response, error: %v", org, err), Details: "", RespCode: http.StatusInternalServerError}
+	} else if httpCode := resp.StatusCode; httpCode == http.StatusNotFound {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to list secrets for %s. Vault response %s ", org, string(respBytes)), Details: string(respBytes), RespCode: http.StatusNotFound}
+	} else if httpCode == http.StatusForbidden {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to list secrets for %s. Vault response %s ", org, string(respBytes)), Details: string(respBytes), RespCode: http.StatusForbidden}
+	} else if httpCode != http.StatusOK {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to list secrets for %s, HTTP status code: %v", org, httpCode), Details: "", RespCode: httpCode}
 	}
 
 	glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("list %s secrets response: %v", org, string(respBytes))))
 
 	respMsg := ListSecretsResponse{}
-	err = json.Unmarshal(respBytes, &respMsg)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("unable to parse response %v", string(respBytes)))
+	if err := json.Unmarshal(respBytes, &respMsg); err != nil {
+		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response %v", string(respBytes)), Details: "", RespCode: http.StatusInternalServerError}
 	}
 
-	glog.V(3).Infof(vaultPluginLogString("done listing secrets."))
+	glog.V(3).Infof(vaultPluginLogString("Done listing secrets."))
 
 	return respMsg.Data.Keys, nil
+}
 
+// This utility will be used to create secrets.
+func (vs *AgbotVaultSecrets) CreateOrgSecret(user, password, org, vaultSecretName string, data secrets.CreateSecretRequest) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("create secret %s for org %s", vaultSecretName, org)))
+
+	userVaultToken, err := vs.loginUser(user, password, org)
+	if err != nil {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
+	}
+
+	url := fmt.Sprintf("%s/v1/openhorizon/%s/%s", vs.cfg.GetAgbotVaultURL(), org, vaultSecretName)
+	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodPost, map[string]string{data.SecretName: data.SecretValue})
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to create secret, error %v", err), Details: "", RespCode: http.StatusServiceUnavailable}
+	}
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to read response, error: %v", err), Details: "", RespCode: http.StatusInternalServerError}
+	} else if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to create secret for %s, error %v", org, string(respBytes)), Details: "", RespCode: resp.StatusCode}
+	}
+	glog.V(3).Infof(vaultPluginLogString("Done creating secret in vault."))
+
+	return nil
+}
+
+// This utility will be used to delete secrets.
+func (vs *AgbotVaultSecrets) DeleteOrgSecret(user, password, org, name string) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s for org %s", name, org)))
+
+	userVaultToken, err := vs.loginUser(user, password, org)
+	if err != nil {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
+	}
+
+	url := fmt.Sprintf("%s/v1/openhorizon/%s/%s", vs.cfg.GetAgbotVaultURL(), org, name)
+	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodDelete, nil)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to delete secret, error %v", err), Details: "", RespCode: http.StatusServiceUnavailable}
+	}
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to read response, error: %v", err), Details: "", RespCode: http.StatusInternalServerError}
+	} else if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
+		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to delete secret for %s, error %v", org, string(respBytes)), Details: "", RespCode: resp.StatusCode}
+	}
+	glog.V(3).Infof(vaultPluginLogString("Done deleting secret in vault."))
+
+	return nil
 }
 
 func (vs *AgbotVaultSecrets) loginUser(user, password, org string) (string, error) {

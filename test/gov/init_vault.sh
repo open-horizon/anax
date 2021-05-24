@@ -8,6 +8,8 @@ fi
 
 USERDEV_ADMIN="userdev/userdevadmin"
 USERDEV_ADMIN_PW="userdevadminpw"
+USER_ORG="userdev"
+TEST_SECRET="secret"
 
 #Starting vault tests and bootstrap in the dev environment.
 if [ "$HZN_VAULT" == "true" ] && [ "$NOVAULT" != "1" ]
@@ -29,6 +31,10 @@ then
   # Login the userdevadmin user, as a test.
   echo -e "\nvault write auth/openhorizon/login id=${USERDEV_ADMIN} token=${USERDEV_ADMIN_PW}"
   vault write auth/openhorizon/login id=${USERDEV_ADMIN} token=${USERDEV_ADMIN_PW}
+  
+  # Write a sample secret to the userdev org
+  echo -e "\nvault kv put openhorizon/${USER_ORG}/${TEST_SECRET} ${TEST_SECRET}=${TEST_SECRET}"
+  vault kv put openhorizon/${USER_ORG}/${TEST_SECRET} ${TEST_SECRET}=${TEST_SECRET}
 
 else
   echo -e "Vault reachability tests were skipped."
