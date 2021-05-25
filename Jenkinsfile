@@ -10,6 +10,7 @@ pipeline {
 		sh 'echo "Installing dependencies"'
 		sh '''
 			#!/usr/bin/env bash
+			go version
 		        mkdir -p $HOME/go/src/github.com/open-horizon/anax
 			export GOPATH=$HOME/go
       			export PATH=$PATH:/usr/local/go/bin
