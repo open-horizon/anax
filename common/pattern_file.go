@@ -81,7 +81,7 @@ func (p *PatternFile) GetSecretBinding() []exchangecommon.SecretBinding {
 }
 
 // make sure that all service secrets have vault bindings
-func (p *PatternFile) VerifySecretBinding(serviceDefResolverHandler exchange.ServiceDefResolverHandler, msgPrinter *message.Printer) error {
+func (p *PatternFile) ValidateSecretBinding(serviceDefResolverHandler exchange.ServiceDefResolverHandler, msgPrinter *message.Printer) error {
 	// no need to verify if both are empty
 	if p.Services == nil || len(p.Services) == 0 {
 		if p.SecretBinding == nil || len(p.SecretBinding) == 0 {
@@ -89,7 +89,7 @@ func (p *PatternFile) VerifySecretBinding(serviceDefResolverHandler exchange.Ser
 		}
 	}
 
-	return VerifySecretBindingForServices(p.SecretBinding, p.GetServices(), serviceDefResolverHandler, msgPrinter)
+	return ValidateSecretBindingForServices(p.SecretBinding, p.GetServices(), serviceDefResolverHandler, msgPrinter)
 }
 
 type ServiceReferenceFile struct {

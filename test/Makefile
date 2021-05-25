@@ -74,7 +74,7 @@ AGBOT_TOKEN ?= abcdefg
 # exchange
 DOCKER_EXCH_CNAME = exchange-api
 DOCKER_EXCH_INAME := openhorizon/$(arch)_exchange-api
-DOCKER_EXCH_TAG := 2.73.0
+DOCKER_EXCH_TAG := testing
 DOCKER_EXCH ?= http://exchange-api:8080/v1
 EXCH_ROOTPW ?= Horizon-Rul3s
 EXCHANGE_HUB_ADMIN_PW ?= hubadminpw
@@ -124,7 +124,7 @@ endif
 #vault
 DOCKER_VAULT_CNAME := vault
 DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
-DOCKER_VAULT_TAG := 1.0.0
+DOCKER_VAULT_TAG := testing
 ifeq ($(HZN_VAULT),true)
 	VAULT_ADDR = http://vault:8200
 endif

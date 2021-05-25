@@ -131,10 +131,10 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 		patch = sb
 
 		if err == nil {
-			// varify the secret bindings
+			// validate the secret bindings
 			for _, exchPat := range exchPatterns.Patterns {
 				ec := cliutils.GetUserExchangeContext(org, credToUse)
-				if err1 := common.VerifySecretBindingForServices(sb["secretBinding"], exchPat.Services,
+				if err1 := common.ValidateSecretBindingForServices(sb["secretBinding"], exchPat.Services,
 					exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err1 != nil {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err1.Error())
 				}
@@ -149,7 +149,7 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 			patch = make(map[string]string)
 			err = json.Unmarshal([]byte(attribute), &patch)
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, and userInput."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Pattern attribute to be updated is not found in the input file. Supported attributes are: label, description, services, userInput and secretBinding."))
 		}
 	}
 
@@ -230,7 +230,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 
 	// verify the secret binding
 	ec := cliutils.GetUserExchangeContext(org, userPw)
-	if err := patFile.VerifySecretBinding(exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err != nil {
+	if err := patFile.ValidateSecretBinding(exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err != nil {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err.Error())
 	}
 
