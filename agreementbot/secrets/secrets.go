@@ -20,11 +20,15 @@ type AgbotSecrets interface {
 	ListOrgSecrets(user, token, org string) ([]string, error)
 	CreateOrgSecret(user, token, org, vaultSecretName string, data CreateSecretRequest) error
 	DeleteOrgSecret(user, token, org, name string) error
+
+	ListOrgUserSecret(user, token, org, name string) (map[string]string, error)
+	CreateOrgUserSecret(user, token, org, vaultSecretName string, data CreateSecretRequest) error
+	DeleteOrgUserSecret(user, token, org, name string) error
 }
 
 type CreateSecretRequest struct {
-	SecretName  string `json:"name"`
-	SecretValue string `json:"secret"`
+	Key    string     `json:"key"`
+	Value  string     `json:"value"`
 }
 
 type ErrorResponse struct {
