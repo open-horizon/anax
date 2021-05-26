@@ -64,7 +64,7 @@ ${0##*/} <options>
 Install the Horizon agent on an edge device or edge cluster.
 
 Required Input Variables (via flag, environment, or config file):
-    HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
+    HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_ORG_ID, either HZN_EXCHANGE_USER_AUTH or HZN_EXCHANGE_NODE_AUTH
 
 Options/Flags:
     -c    Path to a certificate file. Default: ./$AGENT_CERT_FILE_DEFAULT, if present. If the argument begins with 'css:' (e.g. css:$CSS_OBJ_PATH_DEFAULT), it will download the config file from the MMS. If only 'css:' is specified, the default path $CSS_OBJ_PATH_DEFAULT will be added. (This flag is equivalent to AGENT_CERT_FILE or HZN_MGMT_HUB_CERT_PATH)
@@ -90,6 +90,10 @@ Options/Flags:
     -b    Skip any prompts for user input (This flag is equivalent to AGENT_SKIP_PROMPT)
     -C    Install only the horizon-cli package, not the full agent (This flag is equivalent to AGENT_ONLY_CLI)
     -h    This usage
+
+Additional Variables (in environment or config file):
+    HZN_AGBOT_URL: The URL that is used for the 'hzn agbot ...' commands.
+    HZN_SDO_SVC_URL: The URL that is used for the 'hzn voucher ...' and 'hzn sdo ...' commands.
 
 Additional Edge Device Variables (in environment or config file):
     NODE_ID_MAPPING_FILE: File to map hostname or IP to node id, for bulk install.  Default: node-id-mapping.csv
@@ -532,7 +536,8 @@ function get_all_variables() {
     # Now that we have the values from cmd line and config file, we can get all of the variables
     get_variable AGENT_SKIP_REGISTRATION 'false'
     get_variable HZN_EXCHANGE_URL '' 'true'
-    get_variable HZN_AGBOT_URL '' 'true'
+    get_variable HZN_AGBOT_URL   # for now it is optional, since not every other component in the field supports it yet
+    get_variable HZN_SDO_SVC_URL   # for now it is optional, since not every other component in the field supports it yet
     get_variable NODE_ID   # deprecated
     get_variable HZN_DEVICE_ID
     get_variable HZN_NODE_ID
@@ -970,7 +975,7 @@ function is_horizon_defaults_correct() {
     fi
 
     local horizon_defaults_value
-    # FYI, these variables are currently supported in the defaults file: HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, HZN_DEVICE_ID, HZN_MGMT_HUB_CERT_PATH, HZN_AGENT_PORT, HZN_VAR_BASE, HZN_NO_DYNAMIC_POLL, HZN_MGMT_HUB_CERT_PATH, HZN_ICP_CA_CERT_PATH (deprecated), CMTN_SERVICEOVERRIDE
+    # FYI, these variables are currently supported in the defaults file: HZN_EXCHANGE_URL, HZN_FSS_CSSURL, HZN_AGBOT_URL, HZN_SDO_SVC_URL, HZN_DEVICE_ID, HZN_MGMT_HUB_CERT_PATH, HZN_AGENT_PORT, HZN_VAR_BASE, HZN_NO_DYNAMIC_POLL, HZN_MGMT_HUB_CERT_PATH, HZN_ICP_CA_CERT_PATH (deprecated), CMTN_SERVICEOVERRIDE
 
     # Note: the '|| true' is so not finding the strings won't cause set -e to exit the script
     horizon_defaults_value=$(grep -E '^HZN_EXCHANGE_URL=' $defaults_file || true)
@@ -981,9 +986,15 @@ function is_horizon_defaults_correct() {
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if [[ $horizon_defaults_value != $HZN_FSS_CSSURL ]]; then return 1; fi
 
+    # even if HZN_AGBOT_URL is empty in this script, still verify the defaults file is the same
     horizon_defaults_value=$(grep -E '^HZN_AGBOT_URL=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if [[ $horizon_defaults_value != $HZN_AGBOT_URL ]]; then return 1; fi
+
+    # even if HZN_SDO_SVC_URL is empty in this script, still verify the defaults file is the same
+    horizon_defaults_value=$(grep -E '^HZN_SDO_SVC_URL=' $defaults_file || true)
+    horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
+    if [[ $horizon_defaults_value != $HZN_SDO_SVC_URL ]]; then return 1; fi
 
     horizon_defaults_value=$(grep -E '^HZN_DEVICE_ID=' $defaults_file || true)
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
@@ -1040,7 +1051,13 @@ function create_or_update_horizon_defaults() {
 
     if [[ ! -f /etc/default/horizon ]]; then
         log_info "Creating /etc/default/horizon ..."
-        sudo bash -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_AGBOT_URL=${HZN_AGBOT_URL}\nHZN_DEVICE_ID=${NODE_ID}' > /etc/default/horizon"
+        sudo bash -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}' > /etc/default/horizon"
+        if [[ -n $HZN_AGBOT_URL ]]; then
+            sudo sh -c "echo 'HZN_AGBOT_URL=$HZN_AGBOT_URL' >> /etc/default/horizon"
+        fi
+        if [[ -n $HZN_SDO_SVC_URL ]]; then
+            sudo sh -c "echo 'HZN_SDO_SVC_URL=$HZN_SDO_SVC_URL' >> /etc/default/horizon"
+        fi
         if [[ -n $abs_certificate ]]; then
             sudo sh -c "echo 'HZN_MGMT_HUB_CERT_PATH=$abs_certificate' >> /etc/default/horizon"
         fi
@@ -1056,7 +1073,12 @@ function create_or_update_horizon_defaults() {
         log_info "Updating /etc/default/horizon ..."
         add_to_or_update_horizon_defaults 'HZN_EXCHANGE_URL' "$HZN_EXCHANGE_URL" /etc/default/horizon
         add_to_or_update_horizon_defaults 'HZN_FSS_CSSURL' "$HZN_FSS_CSSURL" /etc/default/horizon
-        add_to_or_update_horizon_defaults 'HZN_AGBOT_URL' "$HZN_AGBOT_URL" /etc/default/horizon
+        if [[ -n $HZN_AGBOT_URL ]]; then
+            add_to_or_update_horizon_defaults 'HZN_AGBOT_URL' "$HZN_AGBOT_URL" /etc/default/horizon
+        fi
+        if [[ -n $HZN_SDO_SVC_URL ]]; then
+            add_to_or_update_horizon_defaults 'HZN_SDO_SVC_URL' "$HZN_SDO_SVC_URL" /etc/default/horizon
+        fi
         add_to_or_update_horizon_defaults 'HZN_DEVICE_ID' "$NODE_ID" /etc/default/horizon
         if [[ -n $abs_certificate ]]; then
             add_to_or_update_horizon_defaults 'HZN_MGMT_HUB_CERT_PATH' "$abs_certificate" /etc/default/horizon
@@ -2176,7 +2198,12 @@ function create_horizon_env() {
     local cert_name=$(basename ${AGENT_CERT_FILE})
     echo "HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}" >>$HZN_ENV_FILE
     echo "HZN_FSS_CSSURL=${HZN_FSS_CSSURL}" >>$HZN_ENV_FILE
-    echo "HZN_AGBOT_URL=${HZN_AGBOT_URL}" >>$HZN_ENV_FILE
+    if [[ -n $HZN_AGBOT_URL ]]; then
+        echo "HZN_AGBOT_URL=${HZN_AGBOT_URL}" >>$HZN_ENV_FILE
+    fi
+    if [[ -n $HZN_SDO_SVC_URL ]]; then
+        echo "HZN_SDO_SVC_URL=${HZN_SDO_SVC_URL}" >>$HZN_ENV_FILE
+    fi
     echo "HZN_DEVICE_ID=${NODE_ID}" >>$HZN_ENV_FILE
     echo "HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
