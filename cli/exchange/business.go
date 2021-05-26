@@ -89,7 +89,8 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 	}
 
 	// validate and verify the secret bindings
-	verifySecretBindingForBPolicy(&policyFile, policyFile.SecretBinding, org, credToUse)
+	ec := cliutils.GetUserExchangeContext(org, credToUse)
+	verifySecretBindingForPolicy(&policyFile, polOrg, ec)
 
 	// if the --no-constraints flag is not specified and the given policy has no constraints, alert the user.
 	if (!noConstraints) && policyFile.HasNoConstraints() {
@@ -184,7 +185,10 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 			// varify the secret bindings
 			for _, exchPol := range exchangePolicy.BusinessPolicy {
 				pol := exchPol.GetBusinessPolicy()
-				verifySecretBindingForBPolicy(&pol, sb["secretBinding"], org, credToUse)
+				pol.SecretBinding = sb["secretBinding"]
+				ec := cliutils.GetUserExchangeContext(org, credToUse)
+				verifySecretBindingForPolicy(&pol, polOrg, ec)
+
 				break
 			}
 		}
@@ -235,25 +239,43 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 	}
 }
 
-// Verify the given secret bindings for the given deployment policy
-func verifySecretBindingForBPolicy(policy *businesspolicy.BusinessPolicy, secretBinding []exchangecommon.SecretBinding, org string, credToUse string) {
+// Validate and verify the secret binding defined in the given deployment policy.
+// It will output warning messages if the vault secret does not exist or error
+// accessing vault.
+func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg string, ec exchange.ExchangeContext) {
+
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
-	// validate secret bindings for all service versions defined
-	svc := policy.Service
-	ec := cliutils.GetUserExchangeContext(org, credToUse)
-	for _, wl := range svc.ServiceVersions {
-		if index_map, err1 := common.ValidateSecretBindingForSvcAndDep(secretBinding, svc.Org, svc.Name, wl.Version, svc.Arch,
-			exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err1 != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err1.Error())
-		} else {
-			// find redundant secret bindings
-			for index, sb := range secretBinding {
-				if _, ok := index_map[index]; !ok {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The following secret binding is redundant: %v.", sb))
-				}
-			}
+	// make sure the all the service secrets have bindings.
+	neededSB, redundantSB, err := common.ValidateSecretBindingForDeplPolicy(policy, ec, true, msgPrinter)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to validate the secret binding. %v", err))
+	} else if redundantSB != nil && len(redundantSB) > 0 {
+		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this deployment policy:")
+		msgPrinter.Println()
+		for _, sb := range redundantSB {
+			fmt.Printf("  %v", sb)
+			msgPrinter.Println()
+		}
+	}
+
+	if neededSB == nil || len(neededSB) == 0 {
+		return
+	}
+
+	// make sure the vault secret exists
+	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
+	vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
+	msgMap, err := common.VerifyVaultSecrets(neededSB, polOrg, agbotUrl, vaultSecretExists, msgPrinter)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the vault secret. %v", err))
+	} else if msgMap != nil && len(msgMap) > 0 {
+		msgPrinter.Printf("Warning: The following vault secrets cannot be verified:")
+		msgPrinter.Println()
+		for vsn, msg := range msgMap {
+			fmt.Printf("  %v: %v", vsn, msg)
+			msgPrinter.Println()
 		}
 	}
 }

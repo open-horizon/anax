@@ -12,6 +12,7 @@ type AbstractPatternFile interface {
 	GetServices() []exchange.ServiceReference
 	GetUserInputs() []policy.UserInput
 	GetSecretBinding() []exchangecommon.SecretBinding
+	IsPublic() bool
 }
 
 // An implementation of AbstractPatternFile.
@@ -30,6 +31,10 @@ type PatternFile struct {
 
 func (p *PatternFile) GetOrg() string {
 	return p.Org
+}
+
+func (p *PatternFile) IsPublic() bool {
+	return p.Public
 }
 
 // convert the []ServiceReferenceFile to []exchange.ServiceReference
@@ -80,16 +85,18 @@ func (p *PatternFile) GetSecretBinding() []exchangecommon.SecretBinding {
 	return p.SecretBinding
 }
 
-// make sure that all service secrets have vault bindings
-func (p *PatternFile) ValidateSecretBinding(serviceDefResolverHandler exchange.ServiceDefResolverHandler, msgPrinter *message.Printer) error {
+// make sure that all service secrets have vault bindings.
+// it does not verify that the vault secrets exist.
+func (p *PatternFile) ValidateSecretBinding(ec exchange.ExchangeContext,
+	msgPrinter *message.Printer) ([]exchangecommon.SecretBinding, []exchangecommon.SecretBinding, error) {
 	// no need to verify if both are empty
 	if p.Services == nil || len(p.Services) == 0 {
 		if p.SecretBinding == nil || len(p.SecretBinding) == 0 {
-			return nil
+			return nil, nil, nil
 		}
 	}
 
-	return ValidateSecretBindingForServices(p.SecretBinding, p.GetServices(), serviceDefResolverHandler, msgPrinter)
+	return ValidateSecretBinding(p.SecretBinding, p.GetServices(), ec, true, msgPrinter)
 }
 
 type ServiceReferenceFile struct {

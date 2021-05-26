@@ -197,7 +197,7 @@ func (vs *AgbotVaultSecrets) deleteSecret(user, password, org, name, url string)
 	if err != nil {
 		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
 	}
-	
+
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodDelete, nil)
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()

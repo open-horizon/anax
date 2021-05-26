@@ -27,8 +27,8 @@ type AgbotSecrets interface {
 }
 
 type CreateSecretRequest struct {
-	Key    string     `json:"key"`
-	Value  string     `json:"value"`
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 type ErrorResponse struct {

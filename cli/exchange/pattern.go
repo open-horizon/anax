@@ -132,12 +132,9 @@ func PatternUpdate(org string, credToUse string, pattern string, filePath string
 
 		if err == nil {
 			// validate the secret bindings
+			ec := cliutils.GetUserExchangeContext(org, credToUse)
 			for _, exchPat := range exchPatterns.Patterns {
-				ec := cliutils.GetUserExchangeContext(org, credToUse)
-				if err1 := common.ValidateSecretBindingForServices(sb["secretBinding"], exchPat.Services,
-					exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err1 != nil {
-					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err1.Error())
-				}
+				verifySecretBindingForPattern(sb["secretBinding"], exchPat.Services, patOrg, ec, exchPat.Public)
 				// there is only one item in the map
 				break
 			}
@@ -230,9 +227,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 
 	// verify the secret binding
 	ec := cliutils.GetUserExchangeContext(org, userPw)
-	if err := patFile.ValidateSecretBinding(exchange.GetHTTPServiceDefResolverHandler(ec), msgPrinter); err != nil {
-		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, err.Error())
-	}
+	verifySecretBindingForPattern(patFile.GetSecretBinding(), patFile.GetServices(), patFile.GetOrg(), ec, patFile.IsPublic())
 
 	keyVerified := false
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
@@ -444,5 +439,59 @@ func PatternRemoveKey(org, userPw, pattern, keyName string) {
 	httpCode := cliutils.ExchangeDelete("Exchange", exchUrl, "orgs/"+patorg+"/patterns/"+pattern+"/keys/"+keyName, cliutils.OrgAndCreds(org, userPw), []int{204, 404})
 	if httpCode == 404 {
 		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("key '%s' not found", keyName))
+	}
+}
+
+// Validate and verify the secret binding defined in the pattern.
+// It will output verbose messages if the vault secret does not exist or error
+// accessing vault.
+func verifySecretBindingForPattern(secretBinding []exchangecommon.SecretBinding,
+	sRef []exchange.ServiceReference, patOrg string, ec exchange.ExchangeContext, isPublic bool) {
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure the all the service secrets have bindings.
+	neededSB, redundantSB, err := common.ValidateSecretBinding(secretBinding, sRef, ec, true, msgPrinter)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to validate the secret binding. %v", err))
+	} else if redundantSB != nil && len(redundantSB) > 0 {
+		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this pattern: %v.", redundantSB)
+		msgPrinter.Println()
+		for _, sb := range redundantSB {
+			fmt.Printf("  %v", sb)
+			msgPrinter.Println()
+		}
+	}
+
+	if neededSB == nil || len(neededSB) == 0 {
+		return
+	}
+
+	// The fully qualified vault secret name is openhorizon/<nodeorg>/<secret_binding_name>
+	if isPublic {
+		// for the public pattern, the node org may not be the same as the pattern org.
+		// we cannot verify the vault secret here.
+		msgPrinter.Printf("Note: The fully qualified vault secret name is 'openhorizon/<node_org>/<secret_binding_name>'." +
+			" The vault secret cannot be verified because this is a public pattern and " +
+			"the node organization can be different from the pattern organization.")
+		msgPrinter.Println()
+	} else {
+		// for the private pattern, the node org is the pattern org,
+		// so we can verify the vault secret.
+		// make sure the vault secret exists.
+		agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
+		vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
+		msgMap, err := common.VerifyVaultSecrets(neededSB, patOrg, agbotUrl, vaultSecretExists, msgPrinter)
+		if err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the vault secret. %v", err))
+		} else if msgMap != nil && len(msgMap) > 0 {
+			msgPrinter.Printf("Warning: The following vault secrets cannot be verified:")
+			msgPrinter.Println()
+			for vsn, msg := range msgMap {
+				fmt.Printf("  %v: %v", vsn, msg)
+				msgPrinter.Println()
+			}
+		}
 	}
 }

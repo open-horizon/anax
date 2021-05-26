@@ -5,9 +5,14 @@ import (
 )
 
 // a binding that maps a secret name to a vault secret name.
-type VaultBinding struct {
-	Value       string `json:"value"`
-	VaultSecret string `json:"vaultSecret"`
+type VaultBinding map[string]string
+
+// return both service secret name and vault secret name
+func (w VaultBinding) GetBinding() (string, string) {
+	for k, v := range w {
+		return k, v
+	}
+	return "", ""
 }
 
 // The secret binding that maps service secret names to vault secret names
