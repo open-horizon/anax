@@ -4,29 +4,45 @@ pipeline {
         	label 'ubuntu2004-docker-aws-1c-2g'
     	}
     }
+	
     stages {
-	stage('Install Dependencies'){
-	    steps{
-		sh 'echo "Installing dependencies"'
-		sh '''
-			#!/usr/bin/env bash
-			go version
-		        mkdir -p $HOME/go/src/github.com/open-horizon/anax
-			export GOPATH=$HOME/go
-      			export PATH=$PATH:/usr/local/go/bin
-      			ln -fs $WORKSPACE $GOPATH/src/github.com/open-horizon/anax
-		'''
-	    }
-	}
-        stage('Build Anax'){
-            steps {
-                sh 'echo "Building anax binaries"'
-		sh '''
-			#!/usr/bin/env bash
-			make 
-		'''
-            }
-        }
-    }
+		stage('Prepare environment'){
+	    		steps{
+				sh '''
+		       		#!/usr/bin/env bash
+		       		export PATH=$PATH:/usr/local/go/bin
+				mkdir -p $HOME/go/src/github.com/open-horizon/anax
+		       		export GOPATH=$HOME/go
+		       		ln -fs $WORKSPACE $GOPATH/src/github.com/open-horizon/anax
+				'''
+	    		}
+		}
+        	stage('Build anax'){
+			matrix {
+				axes {
+					axis {
+						name "tests"
+						values "NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sloc"
+					}
+				}
+				stages {
+					stage('Conduct e2e-dev-test') {
+						steps {
+							sh 'echo "Building anax binaries"'
+							sh '''
+							#!/usr/bin/env bash
+							export GOPATH=$HOME/go
+							export PATH=$PATH:/usr/local/go/bin
+							make
+							make -C test build-remote
+							make -C test clean 
+							make -C test test TEST_VARS=${tests}
+							'''
+            					}
+					}
+				}
+			}
+        	}
+    	}
 }
 
