@@ -28,7 +28,6 @@ pipeline {
 				stages {
 					stage('Conduct e2e-dev-test') {
 						steps {
-							sh 'echo "Building anax binaries"'
 							sh '''
 							#!/usr/bin/env bash
 							export GOPATH=$HOME/go
