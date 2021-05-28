@@ -14,6 +14,7 @@ pipeline {
 				mkdir -p $HOME/go/src/github.com/open-horizon/anax
 		       		export GOPATH=$HOME/go
 		       		ln -fs $WORKSPACE $GOPATH/src/github.com/open-horizon/anax
+				go version
 				'''
 	    		}
 		}
@@ -32,6 +33,7 @@ pipeline {
 							#!/usr/bin/env bash
 							export GOPATH=$HOME/go
 							export PATH=$PATH:/usr/local/go/bin
+							go version
 							make
 							make -C test build-remote
 							make -C test clean 
