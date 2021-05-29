@@ -33,7 +33,6 @@ pipeline {
 							#!/usr/bin/env bash
 							export GOPATH=$HOME/go
 							export PATH=$PATH:/usr/local/go/bin
-							go version
 							make
 							make -C test build-remote
 							make -C test clean 
