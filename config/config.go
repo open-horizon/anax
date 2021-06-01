@@ -69,6 +69,7 @@ type Config struct {
 	InitialPollingBuffer             int       // the number of seconds to wait before increasing the polling interval while there is no agreement on the node.
 	MaxAgreementPrelaunchTimeM       int64     // The maximum numbers of minutes to wait for workload to start in an agreement
 	K8sCRInstallTimeoutS             int64     // The number of seconds to wait for the custom resouce to install successfully before it is considered a failure
+	SecretsManagerFilePath           string    // The filepath for the secrets manager to store secrets in the agent filesystem
 
 	// these Ids could be provided in config or discovered after startup by the system
 	BlockchainAccountId        string
@@ -129,7 +130,11 @@ type AGConfig struct {
 // Contains the hashicorp vault configuration used within AGConfig.
 type VaultConfig struct {
 	VaultURL    string // The URL used for accessing the vault.
-	SSLCertPath string // The SSL certificate for the vault
+	SSLCertPath string // The SSL certificate for the vault.
+}
+
+func (c *HorizonConfig) GetSecretsMount() string {
+	return HZN_SECRETS_MOUNT
 }
 
 func (c *HorizonConfig) UserPublicKeyPath() string {
@@ -162,6 +167,15 @@ func (c *HorizonConfig) GetPartitionStale() uint64 {
 
 func (c *HorizonConfig) IsVaultConfigured() bool {
 	return c.AgreementBot.Vault != VaultConfig{}
+}
+
+func (c *HorizonConfig) GetSecretsManagerFilePath() string {
+	secPath := c.Edge.SecretsManagerFilePath
+	if secPath == "" {
+		secPath = "/secrets"
+		secPath = path.Join(getDefaultRunBase(), secPath)
+	}
+	return secPath
 }
 
 func (c *HorizonConfig) GetAgbotCSSURL() string {
@@ -278,6 +292,14 @@ func getDefaultBase() string {
 		basePath = HZN_VAR_BASE_DEFAULT
 	}
 	return basePath
+}
+
+func getDefaultRunBase() string {
+	runBasePath := os.Getenv("HZN_VAR_RUN_BASE")
+	if runBasePath == "" {
+		runBasePath = HZN_VAR_RUN_BASE_DEFAULT
+	}
+	return runBasePath
 }
 
 // some configuration is provided by envvars; in this case we populate this config object from expected envvars

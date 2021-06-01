@@ -301,11 +301,17 @@ func (vs *AgbotVaultSecrets) GetSecretDetails(org, secretUser, secretName string
 		return
 	}
 
-	if uerr := json.Unmarshal(respBytes, &res); uerr != nil {
+	out := ListSecretResponse{}
+	if uerr := json.Unmarshal(respBytes, &out); uerr != nil {
 		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response body %v", uerr), Details: "", RespCode: http.StatusInternalServerError}
 		return
 	}
 
+	// Convert the details to the output structure in the plugin interface.
+	for k, v := range out.Data {
+		res.Key = k
+		res.Value = v
+	}
 	glog.V(3).Infof(vaultPluginLogString("done extracting secret details"))
 
 	return
