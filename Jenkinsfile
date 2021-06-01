@@ -14,7 +14,6 @@ pipeline {
 				mkdir -p $HOME/go/src/github.com/open-horizon/anax
 		       		export GOPATH=$HOME/go
 		       		ln -fs $WORKSPACE $GOPATH/src/github.com/open-horizon/anax
-				go version
 				'''
 	    		}
 		}
