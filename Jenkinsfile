@@ -26,7 +26,7 @@ pipeline {
 					make
 					make -C test build-remote
 					make -C test clean 
-					make -C test test TEST_VARS="NOLOOP=1 TEST_PATTERNS=sloc"
+					make -C test test TEST_VARS="NOLOOP=1"
 					'''
 				}
 			}
