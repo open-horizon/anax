@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -205,24 +206,59 @@ func DeepClean() error {
 		cliutils.RunCmd(nil, "pkill", "-f", "/usr/horizon/bin/anax")
 
 	} else {
-		cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
-		cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
+		if runtime.GOOS == "darwin" {
+			containerIdx, err := cliutils.GetHorizonContainerIndex()
+			containerName := fmt.Sprintf("horizon%d", containerIdx)
+			if err != nil {
+				return fmt.Errorf(msgPrinter.Sprintf("Error resolving horizon container name: %v", err))
+			}
 
-		msgPrinter.Printf("Deleting local horizon DB...")
-		msgPrinter.Println()
-		cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
-		cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
+			cliutils.Verbose(msgPrinter.Sprintf("Looking for horizon container by name: %s", containerName))
+			outBytes, errBytes := cliutils.RunCmd(nil, "/bin/sh", "-c",
+				fmt.Sprintf("docker ps | grep %s", containerName))
+			if errBytes != nil && len(errBytes) > 0 {
+				return fmt.Errorf(msgPrinter.Sprintf("Error during checking if anax container is running: %s", errBytes))
+			}
+			if outBytes != nil && len(outBytes) > 0 {
+				cliutils.Verbose(msgPrinter.Sprintf("Restarting horizon container..."))
+				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+					fmt.Sprintf("docker exec %s rm -f /var/horizon/*.db", containerName))
+				if errBytes != nil && len(errBytes) > 0 {
+					return fmt.Errorf(msgPrinter.Sprintf("Error during removing horizon db files from horizon container: %s", errBytes))
+				}
+				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+					fmt.Sprintf("docker exec %s rm -Rf /etc/horizon/policy.d/*", containerName))
+				if errBytes != nil && len(errBytes) > 0 {
+					return fmt.Errorf(msgPrinter.Sprintf("Error during removing policy files from horizon container: %s", errBytes))
+				}
+				outBytes, errBytes = cliutils.RunCmd(nil, "/bin/sh", "-c",
+					fmt.Sprintf("/usr/local/bin/horizon-container update %d", containerIdx))
+				if errBytes != nil && len(errBytes) > 0 {
+					return fmt.Errorf(msgPrinter.Sprintf("Error during restarting the anax container: %s", errBytes))
+				}
+				fmt.Println(string(outBytes))
+			} else {
+				return fmt.Errorf(msgPrinter.Sprintf("Could not find anax container by %s name", containerName))
+			}
+		} else {
+			cliutils.Verbose(msgPrinter.Sprintf("Stopping horizon..."))
+			cliutils.RunCmd(nil, "systemctl", "stop", "horizon.service")
 
-		msgPrinter.Printf("Deleting service containers...")
-		msgPrinter.Println()
-		if err := RemoveServiceContainers(); err != nil {
-			fmt.Printf(err.Error())
+			msgPrinter.Printf("Deleting local horizon DB...")
+			msgPrinter.Println()
+			cliutils.RunCmd(nil, "bash", "-c", "rm -f /var/horizon/*.db")
+			cliutils.RunCmd(nil, "bash", "-c", "rm -Rf /etc/horizon/policy.d/*")
+
+			msgPrinter.Printf("Deleting service containers...")
+			msgPrinter.Println()
+			if err := RemoveServiceContainers(); err != nil {
+				fmt.Printf(err.Error())
+			}
+
+			msgPrinter.Printf("Starting horizon...")
+			msgPrinter.Println()
+			cliutils.RunCmd(nil, "systemctl", "start", "horizon.service")
 		}
-
-		msgPrinter.Printf("Starting horizon...")
-		msgPrinter.Println()
-		cliutils.RunCmd(nil, "systemctl", "start", "horizon.service")
-
 	}
 
 	return nil
