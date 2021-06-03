@@ -609,7 +609,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
 				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
 			} else if novalue == "1" {
-				writeResponse(w, map[string]bool{"exists" : (serr.RespCode != http.StatusNotFound)}, http.StatusOK)
+				writeResponse(w, map[string]bool{"exists": (serr.RespCode != http.StatusNotFound)}, http.StatusOK)
 			} else {
 				writeResponse(w, secretName, http.StatusOK)
 			}
@@ -631,7 +631,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 			writeResponse(w, msgPrinter.Sprintf("Request body parse error, %v", uerr), http.StatusBadRequest)
 			return
 		}
-		
+
 		err := a.secretProvider.CreateOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName, input)
 		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))

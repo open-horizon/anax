@@ -33,7 +33,7 @@ type Info struct {
 	LiveHealth    *HealthTimestamps `json:"liveHealth"`
 }
 
-func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token, agbotUrl string) *Info {
+func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mmsUrl string, id string, token string) *Info {
 
 	customHTTPClientFactory := &config.HTTPClientFactory{
 		NewHTTPClient: httpClientFactory.NewHTTPClient,
@@ -53,7 +53,6 @@ func NewInfo(httpClientFactory *config.HTTPClientFactory, exchangeUrl string, mm
 			MinExchVersion:  version.MINIMUM_EXCHANGE_VERSION,
 			PrefExchVersion: version.PREFERRED_EXCHANGE_VERSION,
 			MMSAPI:          mmsUrl,
-			AgbotAPI:        agbotUrl,
 			Arch:            runtime.GOARCH,
 			HorizonVersion:  version.HORIZON_VERSION,
 		},

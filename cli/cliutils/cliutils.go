@@ -517,7 +517,7 @@ func GetHorizonUrlBase() string {
 	}
 }
 
-// Returns the agbot url. If HZN_AGBOT_API not set, use HORIZON_URL
+// Returns the agbot native url. If HZN_AGBOT_API not set, use HORIZON_URL
 func GetAgbotUrlBase() string {
 	envVar := os.Getenv("HZN_AGBOT_API")
 	if envVar != "" {
@@ -525,6 +525,18 @@ func GetAgbotUrlBase() string {
 	}
 
 	return GetHorizonUrlBase()
+}
+
+// Returns the url for the agbot secure API.
+// It first gets it from the HZN_AGBOT_URL env variable.
+// The HZN_AGBOT_URL is available if it is in /etc/default/horizon file.
+func GetAgbotSecureAPIUrlBase() string {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	envVar := os.Getenv("HZN_AGBOT_URL")
+	Verbose(msgPrinter.Sprintf("The agbot url: %v", envVar))
+	return envVar
 }
 
 // GetRespBodyAsString converts an http response body to a string
