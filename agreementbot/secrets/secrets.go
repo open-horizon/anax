@@ -23,14 +23,14 @@ type AgbotSecrets interface {
 }
 
 type CreateSecretRequest struct {
-	SecretName   string     `json:"name"`
-	SecretValue  string     `json:"secret"`
+	SecretName  string `json:"name"`
+	SecretValue string `json:"secret"`
 }
 
 type ErrorResponse struct {
-	Msg                string  // the error message which shall be logged and added to response body
-	Details            string  // optional log message
-	RespCode           int     // response type from the agbot API
+	Msg      string // the error message which shall be logged and added to response body
+	Details  string // optional log message
+	RespCode int    // response type from the agbot API
 }
 
 func (e ErrorResponse) Error() string {

@@ -114,7 +114,7 @@ func Architecture() {
 	fmt.Printf("%s\n", cutil.ArchString())
 }
 
-func Env(org, userPw, exchUrl, cssUrl string) {
+func Env(org, userPw, exchUrl, cssUrl, agbotUrl string) {
 	// Show hzn Environment Variables
 	mask := "******"
 	msgPrinter := i18n.GetMessagePrinter()
@@ -133,5 +133,7 @@ func Env(org, userPw, exchUrl, cssUrl string) {
 	msgPrinter.Printf("HZN_EXCHANGE_URL: %s", exchUrl)
 	msgPrinter.Println()
 	msgPrinter.Printf("HZN_FSS_CSSURL: %s", cssUrl)
+	msgPrinter.Println()
+	msgPrinter.Printf("HZN_AGBOT_URL: %s", agbotUrl)
 	msgPrinter.Println()
 }

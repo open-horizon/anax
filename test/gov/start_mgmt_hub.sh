@@ -17,23 +17,22 @@ PREFIX="All-in-one management hub deployment:"
 #  TEST_VARS
 #  ANAX_SOURCE
 
-
 # copy the agbot, css and exchange config template files
 tempHorizonDir="/tmp/horizon-all-in-1"
 mkdir -p ${tempHorizonDir}
 cp -f ${ANAX_SOURCE}/test/docker/fs/etc/agbot/agbot-tmpl.json ${tempHorizonDir}
 if [ $? -ne 0 ]; then
-  echo -e "${PREFIX} Failed copy the agbot config template file to ${tempHorizonDir}."
+  echo -e "${PREFIX} Failed to copy the agbot config template file to ${tempHorizonDir}."
   exit 1
 fi
 cp -f ${ANAX_SOURCE}/test/docker/fs/etc/edge-sync-service/css-tmpl.conf ${tempHorizonDir}
 if [ $? -ne 0 ]; then
-  echo -e "${PREFIX} Failed copy the css config template file to ${tempHorizonDir}."
+  echo -e "${PREFIX} Failed to copy the css config template file to ${tempHorizonDir}."
   exit 1
 fi
 cp -f ${ANAX_SOURCE}/test/docker/fs/etc/exchange/exchange-tmpl.json ${tempHorizonDir}
 if [ $? -ne 0 ]; then
-  echo -e "${PREFIX} Failed copy the exchange config template file to ${tempHorizonDir}."
+  echo -e "${PREFIX} Failed to copy the exchange config template file to ${tempHorizonDir}."
   exit 1
 fi
 export OH_DONT_DOWNLOAD='agbot-tmpl.json css-tmpl.conf exchange-tmpl.json'

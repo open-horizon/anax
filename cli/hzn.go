@@ -867,7 +867,8 @@ Environment Variables:
 		envUserPw := os.Getenv("HZN_EXCHANGE_USER_AUTH")
 		envExchUrl := cliutils.GetExchangeUrl()
 		envCcsUrl := cliutils.GetMMSUrl()
-		node.Env(envOrg, envUserPw, envExchUrl, envCcsUrl)
+		envAgbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
+		node.Env(envOrg, envUserPw, envExchUrl, envCcsUrl, envAgbotUrl)
 	case versionCmd.FullCommand():
 		node.Version()
 	case archCmd.FullCommand():
