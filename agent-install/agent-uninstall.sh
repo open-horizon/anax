@@ -121,15 +121,23 @@ function validate_args(){
     log_info "Checking script requirements..."
 
     # check kubectl is available
-    KUBECTL=${KUBECTL:-kubectl}   # the default is kubectl, or what they set in the env var
-    if command -v "$KUBECTL" >/dev/null 2>&1; then
-	    :   # nothing more to do
-    elif command -v microk8s.kubectl >/dev/null 2>&1; then
-	    KUBECTL=microk8s.kubectl
-    elif command -v k3s kubectl; then
-            KUBECTL="k3s kubectl"
+    if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
+                if command -v $KUBECTL > /dev/null 2>&1; then
+                        : # nothing more to do
+                else
+                        log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
+                fi
     else
-	    log_info "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
+                # Nothing specified. Attempt to detect what should be used.
+                if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
+                        KUBECTL="k3s kubectl"
+                elif command -v microk8s.kubectl >/dev/null 2>&1; then
+                        KUBECTL=microk8s.kubectl
+                elif command -v kubectl >/dev/null 2>&1; then
+                        KUBECTL=kubectl
+                else
+                        log_fatal 2 "kubectl is not available, please install kubectl and ensure that it is found on your \$PATH for edge cluster agent uninstall. Uninstall agent in device is unsupported currently. Exiting..."
+                fi
     fi
 
     # check jq is available
