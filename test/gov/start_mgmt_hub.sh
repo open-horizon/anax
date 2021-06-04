@@ -19,7 +19,7 @@ PREFIX="All-in-one management hub deployment:"
 
 
 # copy the agbot, css and exchange config template files
-tempHorizonDir="/tmp/horizon"
+tempHorizonDir="/tmp/horizon-all-in-1"
 mkdir -p ${tempHorizonDir}
 cp -f ${ANAX_SOURCE}/test/docker/fs/etc/agbot/agbot-tmpl.json ${tempHorizonDir}
 if [ $? -ne 0 ]; then
@@ -57,7 +57,7 @@ fi
 chmod +x /tmp/deploy-mgmt-hub.sh
 
 # run the management hub deployment script
-sudo -sE /tmp/deploy-mgmt-hub.sh -A
+sudo -sE /tmp/deploy-mgmt-hub.sh -A -E
 if [ $? -ne 0 ]; then
   echo -e "${PREFIX} Failed deploy."
   exit 1
