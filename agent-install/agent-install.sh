@@ -558,24 +558,34 @@ function get_all_variables() {
     ARCH=$(get_arch)
     log_info "OS: $OS, Distro: $DISTRO, Distro Release: $DISTRO_VERSION_NUM, Distro Code Name: $CODENAME, Architecture: $ARCH"
     
+    if is_cluster; then
+        # check kubectl is available
+	if [ "${KUBECTL}" != "" ]; then   # If user set KUBECTL env variable, check that it exists
+		if command -v $KUBECTL > /dev/null 2>&1; then
+			: # nothing more to do
+		else
+			log_fatal 2 "$KUBECTL is not available. Please install $KUBECTL and ensure that it is found on your \$PATH"
+		fi
+	else 
+		# Nothing specified. Attempt to detect what should be used.
+		if command -v k3s > /dev/null 2>&1; then    # k3s needs to be checked before kubectl since k3s creates a symbolic link to kubectl
+			KUBECTL="k3s kubectl" 
+		elif command -v microk8s.kubectl >/dev/null 2>&1; then 
+			KUBECTL=microk8s.kubectl 
+		elif command -v kubectl >/dev/null 2>&1; then 
+			KUBECTL=kubectl 
+		else 
+			log_fatal 2 "kubectl is not available. Please install kubectl and ensure that it is found on your \$PATH" 
+		fi
+	fi
+    fi
+
     if is_device; then
         get_variable NODE_ID_MAPPING_FILE 'node-id-mapping.csv'
         get_variable PKG_APT_KEY
         get_variable APT_REPO_BRANCH 'updates'
         get_variable AGENT_IMAGE_TAR_FILE "$DEFAULT_AGENT_IMAGE_TAR_FILE"
     elif is_cluster; then
-        # check kubectl is available
-        KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
-        if command -v k3s kubectl; then
-            KUBECTL="k3s kubectl"
-        elif command -v microk8s.kubectl >/dev/null 2>&1; then
-            KUBECTL=microk8s.kubectl
-        elif command -v "$KUBECTL" >/dev/null 2>&1; then
-            : # nothing more to do
-        else
-            log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH"
-        fi
-
         get_variable EDGE_CLUSTER_STORAGE_CLASS 'gp2'
         get_variable AGENT_NAMESPACE 'openhorizon-agent'
         USE_EDGE_CLUSTER_REGISTRY='true'   #get_variable USE_EDGE_CLUSTER_REGISTRY 'true'  # currently true is the only supported value
@@ -641,19 +651,6 @@ function get_all_variables() {
         HZN_EXCHANGE_NODE_AUTH="${node_id}:"   # detault it, hzn register will fill in the token
     fi
 
-    if is_cluster; then
-        # check kubectl is available
-        KUBECTL=${KUBECTL:-kubectl} # the default is kubectl, or what they set in the env var
-        if command -v "$KUBECTL" >/dev/null 2>&1; then
-            : # nothing more to do
-        elif command -v microk8s.kubectl >/dev/null 2>&1; then
-            KUBECTL=microk8s.kubectl
-        elif command -v k3s kubectl; then
-            KUBECTL="k3s kubectl"
-        else
-            log_fatal 2 "$KUBECTL is not available, please install $KUBECTL and ensure that it is found on your \$PATH"
-        fi
-    fi
     log_debug "get_all_variables() end"
 }
 
@@ -2077,7 +2074,7 @@ function pushImageToEdgeClusterRegistry() {
 
     # split $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY by "/"
     EDGE_CLUSTER_REGISTRY_HOST=$(echo $IMAGE_FULL_PATH_ON_EDGE_CLUSTER_REGISTRY | awk -F'/' '{print $1}')
-    log_info "Edge cluster registy host: $EDGE_CLUSTER_REGISTRY_HOST"
+    log_info "Edge cluster registry host: $EDGE_CLUSTER_REGISTRY_HOST"
 
     if [[ -z $EDGE_CLUSTER_REGISTRY_USERNAME && -z $EDGE_CLUSTER_REGISTRY_TOKEN ]]; then
         : # even for a registry in the insecure-registries list, if we don't specify user/pw it will prompt for it
@@ -2489,7 +2486,7 @@ function update_deployment() {
                             chk $? 'deleting the Terminating pod for agent update on cluster'
                             pkill -f anax.service
                         else
-                            log_fatal 3 "Agent pod is not force deleted. Please mannually delete the agent pod and run agent-install.sh again"
+                            log_fatal 3 "Agent pod is not force deleted. Please manually delete the agent pod and run agent-install.sh again"
                         fi
                     else
                         log_verbose "Agent pod ${POD_ID} is still in Terminating, force deleting..."
