@@ -6,7 +6,7 @@ PREFIX="All-in-one management hub deployment:"
 #  ANAX_SOURCE
 
 # copy the agbot, css and exchange config template files incase they are deleted
-tempHorizonDir="/tmp/horizon"
+tempHorizonDir="/tmp/horizon-all-in-1"
 mkdir -p ${tempHorizonDir}
 cp -f ${ANAX_SOURCE}/test/docker/fs/etc/agbot/agbot-tmpl.json ${tempHorizonDir}
 if [ $? -ne 0 ]; then
