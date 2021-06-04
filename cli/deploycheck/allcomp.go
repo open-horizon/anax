@@ -119,7 +119,6 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	// compcheck.Compatible function calls the exchange package that calls glog.
 	// set the glog stderrthreshold to 3 (fatal) in order for glog error messages not showing up in the output
 	flag.Set("stderrthreshold", "3")
-	flag.Parse()
 
 	// now we can call the real code to check if the policies are compatible.
 	// the policy validation are done wthin the calling function.
