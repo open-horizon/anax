@@ -486,7 +486,7 @@ echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
 CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}"
 echo "$CMD"
 RES=$($CMD)
-results "$RES" "200" "${TEST_VAULT_SECRET_VALUE}"
+results "$RES" "200" "exists" "true"
 
 echo -e "\n${PREFIX} test ${LIST_ORG_SECRETS} GET"
 CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRETS}"
@@ -504,16 +504,10 @@ echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
 CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
 echo "$CMD"
 RES=$($CMD)
-results "$RES" "200" "test" "value"
-
-echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with novalue=1"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}?novalue=1"
-echo "$CMD"
-RES=$($CMD)
-results "$RES" "200" "true"
+results "$RES" "200" "exists" "true"
 
 echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET"
-CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong?novalue=1"
+CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
 echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "false"
@@ -528,7 +522,7 @@ echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid secret and secret 
 CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}_wrong"
 echo "$CMD"
 RES=$($CMD)
-results "$RES" "404" ""
+results "$RES" "200" "exists" "false"
 
 echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with invalid org"
 CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/org/${TEST_VAULT_SECRET_ORG}_wrong/secrets"
@@ -546,6 +540,6 @@ echo -e "\n${PREFIX} test ${LIST_ORG_SECRET} GET with deleted secret"
 CMD="curl -sLX GET -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} ${AGBOT_SAPI_URL}/${LIST_ORG_SECRET}1"
 echo "$CMD"
 RES=$($CMD)
-results "$RES" "404" ""
+results "$RES" "200" "exists" "false"
 
 echo -e "\n${PREFIX} complete test\n"

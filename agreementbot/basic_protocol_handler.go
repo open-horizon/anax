@@ -228,8 +228,17 @@ func (b *BasicProtocolHandler) HandleExtensionMessage(cmd *NewProtocolMessageCom
 		b.WorkQueue().InboundHigh() <- &agreementWork
 		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement verify reply message")))
 
+	} else if update, perr := b.agreementPH.ValidateUpdate(string(cmd.Message)); perr == nil {
+		agreementWork := NewBAgreementUpdate(update, cmd.From, cmd.PubKey, cmd.MessageId)
+		b.WorkQueue().InboundHigh() <- &agreementWork
+		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued agreement update message")))
+	} else if updater, perr := b.agreementPH.ValidateUpdateReply(string(cmd.Message)); perr == nil {
+		agreementWork := NewBAgreementUpdateReply(updater, cmd.From, cmd.PubKey, cmd.MessageId)
+		b.WorkQueue().InboundHigh() <- &agreementWork
+		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("queued areement update reply message")))
+
 	} else {
-		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("ignoring  message: %v because it is an unknown type", string(cmd.Message))))
+		glog.V(5).Infof(BsCPHlogString(fmt.Sprintf("ignoring message: %v because it is an unknown type", string(cmd.Message))))
 		return errors.New(BsCPHlogString(fmt.Sprintf("unknown protocol msg %s", cmd.Message)))
 	}
 	return nil

@@ -1,15 +1,18 @@
 package dev
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"runtime"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
-	"os"
-	"runtime"
 )
 
 // These constants define the hzn dev subcommands supported by this module.
@@ -239,7 +242,37 @@ func ServiceValidate(homeDirectory string, userInputFile string, configFiles []s
 	return absFiles
 }
 
-func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
+// Recursively searches dependencies of a service for a particular service URL
+func searchDependencies(dir string, serviceDef *common.ServiceFile, targetService string) (*common.ServiceFile, error) {
+
+	// check the current service
+	if serviceDef.URL == targetService {
+		return serviceDef, nil
+	}
+
+	// generate dependencies
+	serviceDeps, derr := GetServiceDependencies(dir, serviceDef.RequiredServices)
+	if derr != nil {
+		return nil, derr
+	}
+
+	// search dependencies (depth first search)
+	for _, dep := range serviceDeps {
+		res, rerr := searchDependencies(dir, dep, targetService)
+		if rerr != nil {
+			return nil, rerr
+		}
+		if res != nil {
+			return res, nil
+		}
+	}
+
+	// unsuccessful search
+	return nil, nil
+
+}
+
+func ServiceLog(homeDirectory string, serviceName string, containerName string, tailing bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -252,25 +285,31 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, wderr)
 	}
 
+	// Search for the specified service URL
+	targetServiceDef, sderr := searchDependencies(dir, serviceDef, serviceName)
+	if sderr != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, sderr)
+	}
+
+	// Service URL not found
+	if targetServiceDef == nil {
+		err := errors.New(i18n.GetMessagePrinter().Sprintf("failed to find the service %v in the current project. If this is a new dependent "+
+			"service, please update the dependency list with the 'hzn dev dependency fetch' command.", serviceName))
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, err)
+	}
+
 	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
 	// if it is managed by an agreement.
-	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true, msgPrinter)
 	if cerr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, cerr)
 	}
 
+	// Search for the specified container's log driver 
 	logDriver := "syslog"
-	if serviceName == "" {
-		if len(dc.Services) > 1 {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one service has been found for deployment. Please specify the service name by -s flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND))
-		}
-
-		// Apply service name
-		for name, svc := range dc.Services {
-			serviceName = name
-			if svc.LogDriver != "" {
-				logDriver = svc.LogDriver
-			}
+	for name, svc := range dc.Services {
+		if name == containerName && svc.LogDriver != "" {
+			logDriver = svc.LogDriver
 		}
 	}
 

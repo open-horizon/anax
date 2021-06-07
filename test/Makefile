@@ -124,7 +124,7 @@ endif
 #vault
 DOCKER_VAULT_CNAME := vault
 DOCKER_VAULT_INAME := openhorizon/$(arch)_vault
-DOCKER_VAULT_TAG := 1.0.0
+DOCKER_VAULT_TAG := testing
 ifeq ($(HZN_VAULT),true)
 	VAULT_ADDR = http://vault:8200
 endif

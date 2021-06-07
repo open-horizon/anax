@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/i18n"
+	"golang.org/x/text/message"
 )
 
 type DeploymentConfig struct {
@@ -69,9 +70,11 @@ func (dc DeploymentConfig) CanStartStop() error {
 
 // Take the deployment field, which we have told the json unmarshaller was unknown type (so we can handle both escaped string and struct)
 // and turn it into the DeploymentConfig struct we really want.
-func ConvertToDeploymentConfig(deployment interface{}) (*DeploymentConfig, error) {
+func ConvertToDeploymentConfig(deployment interface{}, msgPrinter *message.Printer) (*DeploymentConfig, error) {
 	// get default message printer if nil
-	msgPrinter := i18n.GetMessagePrinter()
+	if msgPrinter == nil {
+		msgPrinter = i18n.GetMessagePrinter()
+	}
 
 	var jsonBytes []byte
 	var err error

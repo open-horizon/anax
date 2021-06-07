@@ -3,10 +3,14 @@ package main
 
 import (
 	"flag"
-	"github.com/open-horizon/anax/cli/sdo"
-	"github.com/open-horizon/anax/version"
+
 	"os"
 	"strings"
+
+	"github.com/open-horizon/anax/cli/sdo"
+	"github.com/open-horizon/anax/version"
+
+	"runtime"
 
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
@@ -35,7 +39,6 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
-	"runtime"
 )
 
 func main() {
@@ -232,7 +235,8 @@ Environment Variables:
 
 	devServiceCmd := devCmd.Command("service", msgPrinter.Sprintf("For working with a service project."))
 	devServiceLogCmd := devServiceCmd.Command("log", msgPrinter.Sprintf("Show the container/system logs for a service."))
-	devServiceLogCmdServiceName := devServiceLogCmd.Flag("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.")).Short('s').String()
+	devServiceLogCmdServiceName := devServiceLogCmd.Arg("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.")).Required().String()
+	devServiceLogCmdContainerName := devServiceLogCmd.Flag("container", msgPrinter.Sprintf("The name of the container whose log records should be displayed.")).Short('s').String()
 	devServiceLogCmdTail := devServiceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	devServiceNewCmd := devServiceCmd.Command("new", msgPrinter.Sprintf("Create a new service project."))
 	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", msgPrinter.Sprintf("The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.")).Short('o').String()
@@ -1076,7 +1080,7 @@ Environment Variables:
 	case devServiceValidateCmd.FullCommand():
 		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "", *devServiceValidateCmdUserPw)
 	case devServiceLogCmd.FullCommand():
-		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdServiceName, *devServiceLogCmdTail)
+		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdServiceName, *devServiceLogCmdContainerName, *devServiceLogCmdTail)
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():
