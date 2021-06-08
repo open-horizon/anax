@@ -17,7 +17,7 @@ then
     verify "HZN_RAM" $HZN_RAM
     verify "HZN_ARCH" $HZN_ARCH
     verify "HZN_CPUS" $HZN_CPUS
-    verify "HZN_DEVICE_ID" $HZN_DEVICE_ID
+    verify "HZN_NODE_ID" $HZN_NODE_ID
     verify "HZN_ORGANIZATION" $HZN_ORGANIZATION
     verify "HZN_EXCHANGE_URL" $HZN_EXCHANGE_URL
     echo -e "All Horizon platform env vars verified."

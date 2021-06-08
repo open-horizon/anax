@@ -5,6 +5,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/open-horizon/anax/api"
 	"github.com/open-horizon/anax/cli/cliutils"
@@ -21,20 +28,15 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/semanticversion"
-	"github.com/satori/go.uuid"
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
-	"strconv"
-	"strings"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Constants that hold the name of env vars used with the context of the hzn dev commands.
 const DEVTOOL_HZN_ORG = "HZN_ORG_ID"
 const DEVTOOL_HZN_USER = "HZN_EXCHANGE_USER_AUTH"
 const DEVTOOL_HZN_EXCHANGE_URL = "HZN_EXCHANGE_URL"
-const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID"
+const DEVTOOL_HZN_NODE_ID = "HZN_NODE_ID"
+const DEVTOOL_HZN_DEVICE_ID = "HZN_DEVICE_ID" // deprecated
 const DEVTOOL_HZN_PATTERN = "HZN_PATTERN"
 
 const DEVTOOL_HZN_FSS_IMAGE_TAG = "HZN_DEV_FSS_IMAGE_TAG"
@@ -892,10 +894,14 @@ func RemoveNetwork(client *docker.Client, name string) error {
 }
 
 func GetNodeId() string {
-	// Allow device id override if the env var is set.
+	// Allow device or node id override if the env var is set.
 	testDeviceId, _ := os.Hostname()
-	if os.Getenv(DEVTOOL_HZN_DEVICE_ID) != "" {
+	if os.Getenv(DEVTOOL_HZN_NODE_ID) != "" {
+		testDeviceId = os.Getenv(DEVTOOL_HZN_NODE_ID)
+	} else if os.Getenv(DEVTOOL_HZN_DEVICE_ID) != "" {
 		testDeviceId = os.Getenv(DEVTOOL_HZN_DEVICE_ID)
+	} else if deviceId := cliutils.GetDeviceId(); deviceId != "" {
+		testDeviceId = deviceId
 	}
 	return testDeviceId
 }

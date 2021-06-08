@@ -9,14 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	dockerclient "github.com/fsouza/go-dockerclient"
-	"github.com/open-horizon/anax/config"
-	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
-	"github.com/open-horizon/anax/i18n"
-	"github.com/open-horizon/rsapss-tool/sign"
-	"github.com/open-horizon/rsapss-tool/verify"
-	"golang.org/x/text/language"
 	"io"
 	"io/ioutil"
 	"net"
@@ -30,6 +22,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	dockerclient "github.com/fsouza/go-dockerclient"
+	"github.com/open-horizon/anax/config"
+	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/rsapss-tool/sign"
+	"github.com/open-horizon/rsapss-tool/verify"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -1869,4 +1870,15 @@ func (pr *progressReader) Read(p []byte) (n int, err error) {
 	n, err = pr.Reader.Read(p)
 	pr.Reporter(n)
 	return n, err
+}
+
+// Returns HZN_DEVICE_ID or HZN_NODE_ID env variables depending on which is defined
+func GetDeviceId() string {
+	deviceId := ""
+	if nodeId := os.Getenv("HZN_NODE_ID"); nodeId != "" {
+		deviceId = nodeId
+	} else if deviceIdEnv := os.Getenv("HZN_DEVICE_ID"); deviceIdEnv != "" {
+		deviceId = deviceIdEnv
+	}
+	return deviceId
 }

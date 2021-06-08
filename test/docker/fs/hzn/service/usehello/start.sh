@@ -18,7 +18,7 @@ then
     verify "HZN_RAM" $HZN_RAM
     verify "HZN_CPUS" $HZN_CPUS
     verify "HZN_ARCH" $HZN_ARCH
-    verify "HZN_DEVICE_ID" $HZN_DEVICE_ID
+    verify "HZN_NODE_ID" $HZN_NODE_ID
     verify "HZN_ORGANIZATION" $HZN_ORGANIZATION
 #    verify "HZN_HASH" $HZN_HASH - Delete
     verify "HZN_EXCHANGE_URL" $HZN_EXCHANGE_URL
@@ -29,7 +29,7 @@ then
     verify "HZN_ESS_CERT" $HZN_ESS_CERT
     echo -e "All Horizon platform env vars verified."
 
-    echo -e "Service is running on node $HZN_DEVICE_ID in org $HZN_ORGANIZATION"
+    echo -e "Service is running on node $HZN_NODE_ID in org $HZN_ORGANIZATION"
 
     if [ "${HZN_PATTERN}" == "" ]
     then

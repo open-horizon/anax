@@ -4,8 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/i18n"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +11,9 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 )
 
 const DEFAULT_CONFIG_FILE = "hzn.json"
@@ -64,6 +65,7 @@ type HorizonCliConfig struct {
 
 	// the following are only used by 'hzn dev' commands
 	HZN_DEVICE_ID           string `json:"HZN_DEVICE_ID,omitempty"`
+	HZN_NODE_ID             string `json:"HZN_NODE_ID,omitempty"`
 	HZN_PATTERN             string `json:"HZN_PATTERN,omitempty"`
 	HZN_DEV_FSS_IMAGE_REPO  string `json:"HZN_DEV_FSS_IMAGE_REPO,omitempty"`
 	HZN_DEV_FSS_IMAGE_TAG   string `json:"HZN_DEV_FSS_IMAGE_TAG,omitempty"`

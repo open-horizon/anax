@@ -17,8 +17,9 @@ Before starting the container, create a config file for the agent. This should i
  * HZN_AGBOT_URL=\<agbot api address\>
 
 Optional:
- * HZN_DEVICE_ID=\<a name for your node\>
+ * HZN_NODE_ID=\<a name for your node\>
 	* If this isn't included, the node will be assigned a random alphanumeric identifier.
+ * (DEPRECATED) HZN_DEVICE_ID=\<a name for your node\>
  * HZN_MGMT_HUB_CERT_PATH=\<path to the ssl cert file on the host machine\>
 
 

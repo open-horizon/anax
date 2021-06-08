@@ -3,16 +3,17 @@ package api
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/boltdb/bolt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/eventlog"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/version"
-	"os"
-	"time"
 )
 
 // Global "static" field to remember that unconfig is in progress. We can't tell from the configstate in the node
@@ -61,7 +62,8 @@ func FindHorizonDeviceForOutput(db *bolt.DB) (*HorizonDevice, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to read node object, error %v", err))
 	} else if pDevice == nil {
-		device_id := os.Getenv("HZN_DEVICE_ID")
+		device_id := cliutils.GetDeviceId()
+
 		state := persistence.CONFIGSTATE_UNCONFIGURED
 		if Unconfiguring {
 			state = persistence.CONFIGSTATE_UNCONFIGURING
@@ -116,12 +118,12 @@ func CreateHorizonDevice(device *HorizonDevice,
 
 	// There is no existing device registration in the database, so proceed to verifying the input device object.
 	if device.Id == nil || *device.Id == "" {
-		device_id := os.Getenv("HZN_DEVICE_ID")
+		device_id := cliutils.GetDeviceId()
 		if device_id == "" {
-			return errorhandler(NewAPIUserInputError("Either setup HZN_DEVICE_ID environmental variable or specify device.id.", "device.id")), nil, nil
+			return errorhandler(NewAPIUserInputError("Either setup HZN_NODE_ID environmental variable or specify device.id.", "device.id")), nil, nil
 		}
 
-		glog.V(3).Infof(apiLogString(fmt.Sprintf("using HZN_DEVICE_ID=%v as node ID.", device_id)))
+		glog.V(3).Infof(apiLogString(fmt.Sprintf("using HZN_NODE_ID=%v as node ID.", device_id)))
 		device.Id = &device_id
 	}
 
