@@ -431,6 +431,7 @@ fi
 # deployment configuration
 # service definition
 # register version 2.3.0 for execution purposes
+
 if [ "${HZN_VAULT}" == "true" ]; then
   NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
   NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
@@ -1169,10 +1170,9 @@ cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_netspeed.json
 
 echo -e "Register business policy for netspeed:"
 
-  RES=$(cat $KEY_TEST_DIR/policy_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+RES=$(cat $KEY_TEST_DIR/policy_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
 
 results "$RES"
-
 
 # gpstest policy
 read -d '' bpgpstestdef <<EOF

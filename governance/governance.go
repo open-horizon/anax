@@ -1578,7 +1578,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId string) error {
 	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for policy: %v", agId)))
 
-	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretBinding, tcPolicy.SecretDetails, agId)
+	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretDetails, agId)
 
 	for _, secToSave := range allSecrets {
 		if msDef, err := microservice.FindOrCreateMicroserviceDef(w.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, exchange.GetHTTPServiceHandler(w)); err != nil {

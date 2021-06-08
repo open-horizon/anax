@@ -113,3 +113,6 @@ const AgbotProtocolTimeoutScaleFactor_DEFAULT = 2
 
 // Time to allow a kube agent to attempt to install a custom resource before timing out
 const K8sCRInstallTimeoutS_DEFAULT = 180
+
+// Time between secret update checks
+const SecretsUpdateCheck_DEFAULT = 60

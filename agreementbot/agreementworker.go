@@ -15,6 +15,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
@@ -812,15 +813,19 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 		return err
 	}
 
+	newBindings := make([]exchangecommon.SecretBinding, 0)
+
 	// Add the bound secrets with details into the consumer policy for transport to the agent in the proposal.
 	for _, binding := range neededSB {
+
+		// The secret details are transported within the proposal in the SecretBinding section where the secret provider secret name is
+		// replaced with the secret details.
+		sb := binding.MakeCopy()
+		sb.Secrets = make([]exchangecommon.BoundSecret, 0)
+
 		for _, boundSecret := range binding.Secrets {
 
-			// The secret details are transported within the proposal in their own section of the internal policy, called SecretDetails.
-			// The schema of the secret details is the same as the schema of the bound secrets (map[string]string), except that the secret
-			// manager secret name is replaced with the actual secret details. This is why we are making a copy of the bound secret, so that
-			// the copy can be appended into the secret details section of the internal policy with the secret details inside of it.
-			bs := boundSecret.MakeCopy()
+			newBS := boundSecret.MakeCopy()
 
 			// Iterate the bound secrets, extracting the details for each secret.
 			for serviceSecretName, secretName := range boundSecret {
@@ -848,11 +853,16 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 					return err
 				}
 
-				bs[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
-				consumerPolicy.SecretDetails = append(consumerPolicy.SecretDetails, bs)
+				newBS[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
 			}
+			sb.Secrets = append(sb.Secrets, newBS)
+
 		}
+		newBindings = append(newBindings, sb)
+
 	}
+	consumerPolicy.SecretDetails = newBindings
+
 	return nil
 
 }

@@ -125,6 +125,7 @@ type AGConfig struct {
 	RetryLookBackWindow           uint64           // The time window (in seconds) used by the agbot to look backward in time for node changes when node agreements are retried.
 	PolicySearchOrder             bool             // When true, search policies from most recently changed to least recently changed.
 	Vault                         VaultConfig      // The hashicorp vault config to connect to and fetch secrets from.
+	SecretsUpdateCheck            int              // The number of seconds between checks for updated secrets.
 }
 
 // Contains the hashicorp vault configuration used within AGConfig.
@@ -176,6 +177,10 @@ func (c *HorizonConfig) GetSecretsManagerFilePath() string {
 		secPath = path.Join(getDefaultRunBase(), secPath)
 	}
 	return secPath
+}
+
+func (c *HorizonConfig) GetSecretsUpdateCheck() int {
+	return c.AgreementBot.SecretsUpdateCheck
 }
 
 func (c *HorizonConfig) GetAgbotCSSURL() string {
@@ -374,6 +379,7 @@ func Read(file string) (*HorizonConfig, error) {
 				MaxExchangeChanges:  AgbotMaxChanges_DEFAULT,
 				RetryLookBackWindow: AgbotRetryLookBackWindow_DEFAULT,
 				PolicySearchOrder:   AgbotPolicySearchOrder_DEFAULT,
+				SecretsUpdateCheck: SecretsUpdateCheck_DEFAULT,
 			},
 		}
 

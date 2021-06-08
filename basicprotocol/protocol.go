@@ -81,8 +81,8 @@ const MsgUpdateTypeSecret = "basicagreementupdatesecret"
 
 type BAgreementUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
-	Updatetype string                 `json:"updateType"`
-	Metadata   map[string]interface{} `json:"metadata,omitempty"`
+	Updatetype string        `json:"updateType"`
+	Metadata   interface{} `json:"metadata,omitempty"`
 }
 
 func (b *BAgreementUpdate) String() string {
@@ -108,7 +108,7 @@ func (b *BAgreementUpdate) UpdateType() string {
 	return b.Updatetype
 }
 
-func NewBAgreementUpdate(bp *abstractprotocol.BaseProtocolMessage, updateType string, metadata map[string]interface{}) *BAgreementUpdate {
+func NewBAgreementUpdate(bp *abstractprotocol.BaseProtocolMessage, updateType string, metadata interface{}) *BAgreementUpdate {
 	return &BAgreementUpdate{
 		BaseProtocolMessage: bp,
 		Updatetype:          updateType,
@@ -264,7 +264,7 @@ func (p *ProtocolHandler) SendAgreementVerificationReply(
 func (p *ProtocolHandler) SendAgreementUpdate(
 	agreementId string,
 	updateType string,
-	metadata map[string]interface{},
+	metadata interface{},
 	messageTarget interface{},
 	sendMessage func(mt interface{}, pay []byte) error) error {
 
@@ -484,6 +484,21 @@ func (p *ProtocolHandler) VerifyAgreement(agreementId string,
 	}
 
 	return true, nil
+}
+
+func (p *ProtocolHandler) UpdateAgreement(agreementId string,
+	updateType string,
+	metadata interface{},
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
+
+	if messageTarget != nil {
+		if err := p.SendAgreementUpdate(agreementId, updateType, metadata, messageTarget, sendMessage); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (p *ProtocolHandler) RecordMeter(agreementId string, mn *metering.MeteringNotification) error {

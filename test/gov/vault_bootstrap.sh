@@ -5,8 +5,8 @@
 echo -e "vault login $VAULT_TOKEN"
 vault login ${VAULT_TOKEN}
 
-echo -e "\nvault secrets enable -version=1 -path=openhorizon kv"
-vault secrets enable -version=1 -path=openhorizon kv
+echo -e "\nvault secrets enable -version=2 -path=openhorizon kv"
+vault secrets enable -version=2 -path=openhorizon kv
 
 echo -e "\nsetup exchange auth plugin"
 
