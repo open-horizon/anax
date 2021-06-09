@@ -633,12 +633,18 @@ function get_all_variables() {
     else   # not specified, default it
         #future: we should let 'hzn register' default the node id, but i think there are other parts of this script that depend on it being set
         # Try to get it from a previous installation
-        node_id=$(grep HZN_DEVICE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
+        node_id=$(grep HZN_NODE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
         if [[ -n $node_id ]]; then
-            log_info "Using node id from HZN_DEVICE_ID in /etc/default/horizon: $node_id"
+            log_info "Using node id from HZN_NODE_ID in /etc/default/horizon: $node_id"
         else
-            node_id=${HOSTNAME}   # default
-            log_info "use hostname as node id"
+            # if HZN_NODE_ID is not set, look for HZN_DEVICE_ID
+            node_id=$(grep HZN_DEVICE_ID /etc/default/horizon 2>/dev/null | cut -d'=' -f2)
+            if [[ -n $node_id ]]; then 
+                log_info "Using node id from HZN_DEVICE_ID in /etc/default/horizon: $node_id"
+            else 
+                node_id=${HOSTNAME}   # default
+                log_info "use hostname as node id"
+            fi
         fi
     fi
     # check if they gave us conflicting values
@@ -997,6 +1003,10 @@ function is_horizon_defaults_correct() {
     horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
     if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
 
+    horizon_defaults_value=$(grep -E '^HZN_NODE_ID=' $defaults_file || true)
+    horizon_defaults_value=$(trim_variable "${horizon_defaults_value#*=}")
+    if [[ $horizon_defaults_value != $NODE_ID ]]; then return 1; fi
+
     if [[ -n $cert_file ]]; then
         # TODO: we need to compare the content of the value in cert with previous version and this version
         horizon_defaults_value=$(grep -E '^HZN_MGMT_HUB_CERT_PATH=' $defaults_file || true)
@@ -1048,7 +1058,7 @@ function create_or_update_horizon_defaults() {
 
     if [[ ! -f /etc/default/horizon ]]; then
         log_info "Creating /etc/default/horizon ..."
-        sudo bash -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}' > /etc/default/horizon"
+        sudo bash -c "echo -e 'HZN_EXCHANGE_URL=${HZN_EXCHANGE_URL}\nHZN_FSS_CSSURL=${HZN_FSS_CSSURL}\nHZN_DEVICE_ID=${NODE_ID}\nHZN_NODE_ID=${NODE_ID}' > /etc/default/horizon"
         if [[ -n $HZN_AGBOT_URL ]]; then
             sudo sh -c "echo 'HZN_AGBOT_URL=$HZN_AGBOT_URL' >> /etc/default/horizon"
         fi
@@ -1077,6 +1087,7 @@ function create_or_update_horizon_defaults() {
             add_to_or_update_horizon_defaults 'HZN_SDO_SVC_URL' "$HZN_SDO_SVC_URL" /etc/default/horizon
         fi
         add_to_or_update_horizon_defaults 'HZN_DEVICE_ID' "$NODE_ID" /etc/default/horizon
+        add_to_or_update_horizon_defaults 'HZN_NODE_ID' "$NODE_ID" /etc/default/horizon
         if [[ -n $abs_certificate ]]; then
             add_to_or_update_horizon_defaults 'HZN_MGMT_HUB_CERT_PATH' "$abs_certificate" /etc/default/horizon
         fi
@@ -2202,6 +2213,7 @@ function create_horizon_env() {
         echo "HZN_SDO_SVC_URL=${HZN_SDO_SVC_URL}" >>$HZN_ENV_FILE
     fi
     echo "HZN_DEVICE_ID=${NODE_ID}" >>$HZN_ENV_FILE
+    echo "HZN_NODE_ID=${NODE_ID}" >> $HZN_ENV_FILE
     echo "HZN_MGMT_HUB_CERT_PATH=/etc/default/cert/$cert_name" >>$HZN_ENV_FILE
     echo "HZN_AGENT_PORT=8510" >>$HZN_ENV_FILE
     log_debug "create_horizon_env() end"
