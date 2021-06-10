@@ -21,6 +21,8 @@ const PROTOCOL_CURRENT_VERSION = 1
 // Extended message types
 const MsgTypeVerifyAgreement = "basicagreementverification"
 const MsgTypeVerifyAgreementReply = "basicagreementverificationreply"
+const MsgTypeUpdateAgreement = "basicagreementupdate"
+const MsgTypeUpdateAgreementReply = "basicagreementupdatereply"
 
 // This message enables a producer to ask the consumer to verify that a specific agreement still exists. If the
 // consumer replies with NO (false), the producer can cancel the agreement.
@@ -68,6 +70,88 @@ func NewBAgreementVerifyReply(bp *abstractprotocol.BaseProtocolMessage, exists b
 	return &BAgreementVerifyReply{
 		BaseProtocolMessage: bp,
 		Exists:              exists,
+	}
+}
+
+// This message enables a consumer or producer to propose an update to an existing agreement. Usually, changing an aspect
+// of the agreement requires the entire agreement to be re-negotiated. Either party might reject the update. Rejection does NOT
+// imply that the rejecting party is cancelling the agreement. However, the sending party is free to cancel the agreement upon
+// receipt of a rejection.
+const MsgUpdateTypeSecret = "basicagreementupdatesecret"
+
+type BAgreementUpdate struct {
+	*abstractprotocol.BaseProtocolMessage
+	Updatetype string                 `json:"updateType"`
+	Metadata   map[string]interface{} `json:"metadata,omitempty`
+}
+
+func (b *BAgreementUpdate) String() string {
+	return b.BaseProtocolMessage.String() + fmt.Sprintf(", Updatetype: %v, Metadata: %v", b.UpdateType, b.Metadata)
+}
+
+func (b *BAgreementUpdate) ShortString() string {
+	return b.BaseProtocolMessage.ShortString() + fmt.Sprintf(", Updatetype: %v", b.UpdateType)
+}
+
+// UpdateType is not checked here because it should be checked by the caller when deciding whether or not
+// to accept the update. A caller that does not know how to handle a given UpdateType type should reject
+// the update, instead of treating the update as invalid.
+func (b *BAgreementUpdate) IsValid() bool {
+	return b.BaseProtocolMessage.IsValid() && b.MsgType == MsgTypeUpdateAgreement
+}
+
+func (b* BAgreementUpdate) IsSecretUpdate() bool {
+	return b.Updatetype == MsgUpdateTypeSecret
+}
+
+func (b* BAgreementUpdate) UpdateType() string {
+	return b.Updatetype
+}
+
+func NewBAgreementUpdate(bp *abstractprotocol.BaseProtocolMessage, updateType string, metadata map[string]interface{}) *BAgreementUpdate {
+	return &BAgreementUpdate{
+		BaseProtocolMessage: bp,
+		Updatetype: updateType,
+		Metadata: metadata,
+	}
+}
+
+// This message is the reply from the agreement update, accepting or rejecting the update.
+type BAgreementUpdateReply struct {
+	*abstractprotocol.BaseProtocolMessage
+	Updatetype string `json:"updateType"`
+	Accepted   bool   `json:"accepted"` // whether or not the agreement update is accepted.
+}
+
+func (b *BAgreementUpdateReply) String() string {
+	return b.BaseProtocolMessage.String() + fmt.Sprintf(", UpdateType: %v, Accepted: %v", b.Updatetype, b.Accepted)
+}
+
+func (b *BAgreementUpdateReply) ShortString() string {
+	return b.BaseProtocolMessage.ShortString() + fmt.Sprintf(", UpdateType: %v, Accepted: %v", b.Updatetype, b.Accepted)
+}
+
+func (b *BAgreementUpdateReply) IsValid() bool {
+	return b.BaseProtocolMessage.IsValid() && b.MsgType == MsgTypeUpdateAgreementReply
+}
+
+func (b* BAgreementUpdateReply) IsSecretUpdate() bool {
+	return b.Updatetype == MsgUpdateTypeSecret
+}
+
+func (b* BAgreementUpdateReply) IsAccepted() bool {
+	return b.Accepted
+}
+
+func (b* BAgreementUpdateReply) UpdateType() string {
+	return b.Updatetype
+}
+
+func NewBAgreementUpdateReply(bp *abstractprotocol.BaseProtocolMessage, updateType string, accepted bool) *BAgreementUpdateReply {
+	return &BAgreementUpdateReply{
+		BaseProtocolMessage: bp,
+		Updatetype:          updateType,
+		Accepted:            accepted,
 	}
 }
 
@@ -177,6 +261,54 @@ func (p *ProtocolHandler) SendAgreementVerificationReply(
 
 }
 
+func (p *ProtocolHandler) SendAgreementUpdate(
+	agreementId string,
+	updateType string,
+	metadata map[string]interface{},
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
+
+	update := NewBAgreementUpdate(&abstractprotocol.BaseProtocolMessage{
+		MsgType:   MsgTypeUpdateAgreement,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	},
+		updateType,
+		metadata)
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, update, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending agreement update request %v, %v", p.Name(), update, err))
+	}
+	return nil
+
+}
+
+func (p *ProtocolHandler) SendAgreementUpdateReply(
+	agreementId string,
+	updateType string,
+	accepted bool,
+	messageTarget interface{},
+	sendMessage func(mt interface{}, pay []byte) error) error {
+
+	reply := NewBAgreementUpdateReply(&abstractprotocol.BaseProtocolMessage{
+		MsgType:   MsgTypeUpdateAgreementReply,
+		AProtocol: p.Name(),
+		AVersion:  PROTOCOL_CURRENT_VERSION,
+		AgreeId:   agreementId,
+	},
+		updateType,
+		accepted)
+
+	// Send the message
+	if err := abstractprotocol.SendProtocolMessage(messageTarget, reply, sendMessage); err != nil {
+		return errors.New(fmt.Sprintf("Protocol %v error sending agreement update reply %v, %v", p.Name(), reply, err))
+	}
+	return nil
+
+}
+
 // The following methods dont implement any extensions to the base agreement protocol.
 func (p *ProtocolHandler) Confirm(replyValid bool,
 	agreementId string,
@@ -259,6 +391,36 @@ func (p *ProtocolHandler) ValidateAgreementVerifyReply(verify string) (*BAgreeme
 		return nil, errors.New(fmt.Sprintf("Error deserializing agreement verification reply: %s, error: %v", verify, err))
 	} else if !vObj.IsValid() {
 		return nil, errors.New(fmt.Sprintf("Message is not an agreement verification reply."))
+	} else {
+		return vObj, nil
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateUpdate(update string) (*BAgreementUpdate, error) {
+
+	// attempt deserialization of message
+	vObj := new(BAgreementUpdate)
+
+	if err := json.Unmarshal([]byte(update), vObj); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing agreement update: %s, error: %v", update, err))
+	} else if !vObj.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not an agreement update."))
+	} else {
+		return vObj, nil
+	}
+
+}
+
+func (p *ProtocolHandler) ValidateUpdateReply(reply string) (*BAgreementUpdateReply, error) {
+
+	// attempt deserialization of message
+	vObj := new(BAgreementUpdateReply)
+
+	if err := json.Unmarshal([]byte(reply), vObj); err != nil {
+		return nil, errors.New(fmt.Sprintf("Error deserializing agreement update reply: %s, error: %v", reply, err))
+	} else if !vObj.IsValid() {
+		return nil, errors.New(fmt.Sprintf("Message is not an agreement update reply."))
 	} else {
 		return vObj, nil
 	}
