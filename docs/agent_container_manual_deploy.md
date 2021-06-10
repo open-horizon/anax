@@ -84,7 +84,7 @@ The docker run command uses the following arguments. Here is what they are for:
 To register the agent with a policy, run `hzn policy new > node_pol.json`, then edit this to match the deployment policy for the service you want to deploy.
 ```bash
 source $CONFIG_FILE
-hzn register -policy node_pol.json
+hzn register --policy node_pol.json
 ```
 
 To register the agent with a pattern
