@@ -49,7 +49,8 @@ func (c *CustomExchangeContext) GetHTTPFactory() *config.HTTPClientFactory {
 	return c.httpFactory
 }
 
-func NewCustomExchangeContext(userId string, passwd string, exchangeURL string, cssURL string, httpFactory *config.HTTPClientFactory) *CustomExchangeContext {
+func NewCustomExchangeContext(userId string, passwd string, exchangeURL string, cssURL string,
+	httpFactory *config.HTTPClientFactory) *CustomExchangeContext {
 	return &CustomExchangeContext{
 		userId:      userId,
 		password:    passwd,
@@ -460,5 +461,14 @@ type AgbotPatternNodeSearchHandler func(req *SearchExchangePatternRequest, polic
 func GetHTTPAgbotPatternNodeSearchHandler(ec ExchangeContext) AgbotPatternNodeSearchHandler {
 	return func(req *SearchExchangePatternRequest, policyOrg string, patternId string) (*[]SearchResultDevice, error) {
 		return GetPatternNodes(ec, policyOrg, patternId, req)
+	}
+}
+
+// A handler for checking if a vault secret exists.
+type VaultSecretExistsHandler func(agbotURL string, org string, userName string, secretName string) (bool, error)
+
+func GetHTTPVaultSecretExistsHandler(ec ExchangeContext) VaultSecretExistsHandler {
+	return func(agbotURL string, org string, userName string, secretName string) (bool, error) {
+		return VaultSecretExists(ec, agbotURL, org, userName, secretName)
 	}
 }

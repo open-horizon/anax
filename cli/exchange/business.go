@@ -7,7 +7,9 @@ import (
 	"github.com/open-horizon/anax/businesspolicy"
 	"github.com/open-horizon/anax/cli/cliconfig"
 	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
@@ -86,6 +88,10 @@ func BusinessAddPolicy(org string, credToUse string, policy string, jsonFilePath
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Incorrect deployment policy format in file %s: %v", jsonFilePath, err))
 	}
 
+	// validate and verify the secret bindings
+	ec := cliutils.GetUserExchangeContext(org, credToUse)
+	verifySecretBindingForPolicy(&policyFile, polOrg, ec)
+
 	// if the --no-constraints flag is not specified and the given policy has no constraints, alert the user.
 	if (!noConstraints) && policyFile.HasNoConstraints() {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The deployment policy has no constraints which might result in the service being deployed to all nodes. Please specify --no-constraints to confirm that this is acceptable."))
@@ -137,83 +143,74 @@ func BusinessUpdatePolicy(org string, credToUse string, policyName string, fileP
 
 	findPatchType := make(map[string]interface{})
 
-	json.Unmarshal([]byte(attribute), &findPatchType)
+	if err := json.Unmarshal([]byte(attribute), &findPatchType); err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal json input file %s: %v", filePath, err))
+	}
 
+	var patch interface{}
+	var err error
 	if _, ok := findPatchType["service"]; ok {
-		patch := make(map[string]businesspolicy.ServiceRef)
-		err := json.Unmarshal([]byte(attribute), &patch)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
-		}
-		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
-		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
-		msgPrinter.Println()
+		patch = make(map[string]businesspolicy.ServiceRef)
+		err = json.Unmarshal([]byte(attribute), &patch)
 	} else if _, ok := findPatchType["properties"]; ok {
-		var newValue externalpolicy.PropertyList
-		patch := make(map[string]externalpolicy.PropertyList)
-		err := json.Unmarshal([]byte(attribute), &patch)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+		props := make(map[string]externalpolicy.PropertyList)
+		err = json.Unmarshal([]byte(attribute), &props)
+		patch = props
+		if err == nil {
+			newValue := props["properties"]
+			err1 := newValue.Validate()
+			if err1 != nil {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for properties: %v", err1))
+			}
 		}
-		newValue = patch["properties"]
-		err = newValue.Validate()
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for properties: %v", err))
-		}
-		patch["properties"] = newValue
-		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
-		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
-		msgPrinter.Println()
 	} else if _, ok := findPatchType["constraints"]; ok {
-		var newValue externalpolicy.ConstraintExpression
-		patch := make(map[string]externalpolicy.ConstraintExpression)
-		err := json.Unmarshal([]byte(attribute), &patch)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+		constraints := make(map[string]externalpolicy.ConstraintExpression)
+		err = json.Unmarshal([]byte(attribute), &constraints)
+		patch = constraints
+		if err == nil {
+			newValue := constraints["constraints"]
+			_, err1 := newValue.Validate()
+			if err1 != nil {
+				cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for constraints: %v", err1))
+			}
 		}
-		_, err = newValue.Validate()
-		if err != nil {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Invalid format for constraints: %v", err))
-		}
-		newValue = patch["constraints"]
-		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
-		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
-		msgPrinter.Println()
 	} else if _, ok := findPatchType["userInput"]; ok {
-		patch := make(map[string][]policy.UserInput)
-		err := json.Unmarshal([]byte(attribute), &patch)
-		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+		patch = make(map[string][]policy.UserInput)
+		err = json.Unmarshal([]byte(attribute), &patch)
+	} else if _, ok := findPatchType["secretBinding"]; ok {
+		sb := make(map[string][]exchangecommon.SecretBinding)
+		err = json.Unmarshal([]byte(attribute), &sb)
+		patch = sb
+		if err == nil {
+			// varify the secret bindings
+			for _, exchPol := range exchangePolicy.BusinessPolicy {
+				pol := exchPol.GetBusinessPolicy()
+				pol.SecretBinding = sb["secretBinding"]
+				ec := cliutils.GetUserExchangeContext(org, credToUse)
+				verifySecretBindingForPolicy(&pol, polOrg, ec)
+
+				break
+			}
 		}
-		cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
-		msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
-		msgPrinter.Println()
-		msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
-		msgPrinter.Println()
 	} else {
 		_, ok := findPatchType["label"]
 		_, ok2 := findPatchType["description"]
 		if ok || ok2 {
-			patch := make(map[string]string)
-			err := json.Unmarshal([]byte(attribute), &patch)
-			if err != nil {
-				cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
-			}
-			msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
-			msgPrinter.Println()
-			cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
-			msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
-			msgPrinter.Println()
+			patch = make(map[string]string)
+			err = json.Unmarshal([]byte(attribute), &patch)
 		} else {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, and userInput."))
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Deployment policy attribute to be updated is not found in the input file. Supported attributes are: label, description, service, properties, constraints, userInput and secretBinding."))
 		}
 	}
+
+	if err != nil {
+		cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to unmarshal attribute input %s: %v", attribute, err))
+	}
+	msgPrinter.Printf("Updating Policy %v/%v in the Horizon Exchange and re-evaluating all agreements based on this deployment policy. Existing agreements might be cancelled and re-negotiated.", polOrg, policyName)
+	msgPrinter.Println()
+	cliutils.ExchangePutPost("Exchange", http.MethodPatch, exchUrl, "orgs/"+polOrg+"/business/policies"+cliutils.AddSlash(policyName), cliutils.OrgAndCreds(org, credToUse), []int{201}, patch, nil)
+	msgPrinter.Printf("Policy %v/%v updated in the Horizon Exchange", polOrg, policyName)
+	msgPrinter.Println()
 }
 
 //BusinessRemovePolicy will remove an existing business policy in the Horizon Exchange
@@ -239,6 +236,47 @@ func BusinessRemovePolicy(org string, credToUse string, policy string, force boo
 		msgPrinter.Println()
 		msgPrinter.Printf("Deployment policy %v/%v removed", polOrg, policy)
 		msgPrinter.Println()
+	}
+}
+
+// Validate and verify the secret binding defined in the given deployment policy.
+// It will output warning messages if the vault secret does not exist or error
+// accessing vault.
+func verifySecretBindingForPolicy(policy *businesspolicy.BusinessPolicy, polOrg string, ec exchange.ExchangeContext) {
+
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// make sure the all the service secrets have bindings.
+	neededSB, redundantSB, err := common.ValidateSecretBindingForDeplPolicy(policy, ec, true, msgPrinter)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to validate the secret binding. %v", err))
+	} else if redundantSB != nil && len(redundantSB) > 0 {
+		msgPrinter.Printf("Note: The following secret bindings are not required by any services for this deployment policy:")
+		msgPrinter.Println()
+		for _, sb := range redundantSB {
+			fmt.Printf("  %v", sb)
+			msgPrinter.Println()
+		}
+	}
+
+	if neededSB == nil || len(neededSB) == 0 {
+		return
+	}
+
+	// make sure the vault secret exists
+	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
+	vaultSecretExists := exchange.GetHTTPVaultSecretExistsHandler(ec)
+	msgMap, err := common.VerifyVaultSecrets(neededSB, polOrg, agbotUrl, vaultSecretExists, msgPrinter)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Failed to verify the vault secret. %v", err))
+	} else if msgMap != nil && len(msgMap) > 0 {
+		msgPrinter.Printf("Warning: The following vault secrets cannot be verified:")
+		msgPrinter.Println()
+		for vsn, msg := range msgMap {
+			fmt.Printf("  %v: %v", vsn, msg)
+			msgPrinter.Println()
+		}
 	}
 }
 

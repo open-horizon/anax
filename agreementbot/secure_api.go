@@ -623,7 +623,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var err error
 			if user != "" {
- 				_, err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+				_, err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
 			} else {
 				_, err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
 			}
@@ -634,7 +634,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
 				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
 			} else {
-				writeResponse(w, map[string]bool{"exists" : (serr.RespCode != http.StatusNotFound)}, http.StatusOK)
+				writeResponse(w, map[string]bool{"exists": (serr.RespCode != http.StatusNotFound)}, http.StatusOK)
 			}
 		}
 	case "PUT":

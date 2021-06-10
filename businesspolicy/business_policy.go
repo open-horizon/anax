@@ -3,6 +3,7 @@ package businesspolicy
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
@@ -13,24 +14,26 @@ const DEFAULT_MAX_AGREEMENT = 0
 
 // the business policy
 type BusinessPolicy struct {
-	Owner       string                              `json:"owner,omitempty"`
-	Label       string                              `json:"label"`
-	Description string                              `json:"description"`
-	Service     ServiceRef                          `json:"service"`
-	Properties  externalpolicy.PropertyList         `json:"properties,omitempty"`
-	Constraints externalpolicy.ConstraintExpression `json:"constraints,omitempty"`
-	UserInput   []policy.UserInput                  `json:"userInput,omitempty"`
+	Owner         string                              `json:"owner,omitempty"`
+	Label         string                              `json:"label"`
+	Description   string                              `json:"description"`
+	Service       ServiceRef                          `json:"service"`
+	Properties    externalpolicy.PropertyList         `json:"properties,omitempty"`
+	Constraints   externalpolicy.ConstraintExpression `json:"constraints,omitempty"`
+	UserInput     []policy.UserInput                  `json:"userInput,omitempty"`
+	SecretBinding []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"` // The secret binding from service secret names to vault secret names.
 }
 
 func (w BusinessPolicy) String() string {
-	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Service: %v, Properties: %v, Constraints: %v, UserInput: %v",
+	return fmt.Sprintf("Owner: %v, Label: %v, Description: %v, Service: %v, Properties: %v, Constraints: %v, UserInput: %v, SecretBinding: %v",
 		w.Owner,
 		w.Label,
 		w.Description,
 		w.Service,
 		w.Properties,
 		w.Constraints,
-		w.UserInput)
+		w.UserInput,
+		w.SecretBinding)
 }
 
 type ServiceRef struct {

@@ -190,7 +190,7 @@ type BAgreementUpdateReply struct {
 func NewBAgreementUpdateReply(reply *basicprotocol.BAgreementUpdateReply, from string, senderPubKey []byte, messageId int) AgreementWork {
 	return BAgreementUpdateReply{
 		workType:     AGREEMENT_UPDATE,
-		Reply:       *reply,
+		Reply:        *reply,
 		SenderId:     from,
 		SenderPubKey: senderPubKey,
 		MessageId:    messageId,
@@ -382,7 +382,6 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 				}
 			}
 
-
 		} else if workItem.Type() == AGREEMENT_UPDATE_REPLY {
 			wi := workItem.(BAgreementUpdateReply)
 
@@ -407,7 +406,6 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
 				}
 			}
-
 
 		} else {
 			glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("received unknown work request: %v", workItem)))

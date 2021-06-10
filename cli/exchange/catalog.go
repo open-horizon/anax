@@ -79,7 +79,7 @@ func CatalogPatternList(credOrg string, userPw string, displayShort bool, displa
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Flags -s and -l are mutually exclusive."))
 	}
 
-	var resp ExchangePatterns
+	var resp exchange.GetPatternResponse
 	cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "catalog/patterns?orgtype="+orgType, cliutils.OrgAndCreds(credOrg, userPw), []int{200}, &resp)
 
 	if displayLong {

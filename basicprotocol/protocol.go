@@ -100,19 +100,19 @@ func (b *BAgreementUpdate) IsValid() bool {
 	return b.BaseProtocolMessage.IsValid() && b.MsgType == MsgTypeUpdateAgreement
 }
 
-func (b* BAgreementUpdate) IsSecretUpdate() bool {
+func (b *BAgreementUpdate) IsSecretUpdate() bool {
 	return b.Updatetype == MsgUpdateTypeSecret
 }
 
-func (b* BAgreementUpdate) UpdateType() string {
+func (b *BAgreementUpdate) UpdateType() string {
 	return b.Updatetype
 }
 
 func NewBAgreementUpdate(bp *abstractprotocol.BaseProtocolMessage, updateType string, metadata map[string]interface{}) *BAgreementUpdate {
 	return &BAgreementUpdate{
 		BaseProtocolMessage: bp,
-		Updatetype: updateType,
-		Metadata: metadata,
+		Updatetype:          updateType,
+		Metadata:            metadata,
 	}
 }
 
@@ -135,15 +135,15 @@ func (b *BAgreementUpdateReply) IsValid() bool {
 	return b.BaseProtocolMessage.IsValid() && b.MsgType == MsgTypeUpdateAgreementReply
 }
 
-func (b* BAgreementUpdateReply) IsSecretUpdate() bool {
+func (b *BAgreementUpdateReply) IsSecretUpdate() bool {
 	return b.Updatetype == MsgUpdateTypeSecret
 }
 
-func (b* BAgreementUpdateReply) IsAccepted() bool {
+func (b *BAgreementUpdateReply) IsAccepted() bool {
 	return b.Accepted
 }
 
-func (b* BAgreementUpdateReply) UpdateType() string {
+func (b *BAgreementUpdateReply) UpdateType() string {
 	return b.Updatetype
 }
 

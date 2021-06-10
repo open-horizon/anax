@@ -254,7 +254,7 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 
 	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
 	// if it is managed by an agreement.
-	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true)
+	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true, msgPrinter)
 	if cerr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, cerr)
 	}
