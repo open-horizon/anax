@@ -137,6 +137,34 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 
 		return true, false, verify.AgreementId(), nil
 
+	} else if update, err := c.agreementPH.ValidateUpdate(msg.ProtocolMessage()); err == nil {
+		glog.Errorf(BPHlogString(fmt.Sprintf("unable to handle updates for agreement", update.AgreementId())))
+
+		// If there are no errors and the update type is accepted, send a positive reply.
+		acceptedUpdate := true
+
+		if update.IsSecretUpdate() {
+			// Call Max's API to store the updated secret.
+		} else {
+			// The update type is unexpected so simply reject it.
+			acceptedUpdate = false
+		}
+
+		// Send a reply that the secret update was received.
+		if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(msg.AgbotId()); err != nil {
+			glog.Errorf(BPHlogString(fmt.Sprintf("error getting agbot message target: %v", err)))
+		} else if mt, err := exchange.CreateMessageTarget(msg.AgbotId(), nil, pubkey, ""); err != nil {
+			glog.Errorf(BPHlogString(fmt.Sprintf("error creating message target: %v", err)))
+		} else if err := c.agreementPH.SendAgreementUpdateReply(update.AgreementId(), update.UpdateType(), acceptedUpdate, mt, c.GetSendMessage()); err != nil {
+			glog.Errorf(BPHlogString(fmt.Sprintf("error sending secret update reply for agreement %v, error %v", verify.AgreementId(), err)))
+		}
+
+		return true, false, update.AgreementId(), nil
+
+	} else if reply, err := c.agreementPH.ValidateUpdateReply(msg.ProtocolMessage()); err == nil {
+		glog.Infof(BPHlogString(fmt.Sprintf("nothing to do for update reply %v", reply)))
+		return true, false, update.AgreementId(), nil
+
 	} else {
 
 		// Not a known protocol extension message. The only protocol message that is not handled in this code path is the proposal

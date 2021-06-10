@@ -131,6 +131,94 @@ func (b BAgreementVerificationReply) ShortString() string {
 	return b.String()
 }
 
+// These are work items that represent extensions to the protocol.
+const AGREEMENT_UPDATE = "AGREEMENT_UPDATE"
+
+type BAgreementUpdate struct {
+	workType     string
+	Update       basicprotocol.BAgreementUpdate
+	From         string // deprecated whisper address
+	SenderId     string // exchange Id of sender
+	SenderPubKey []byte
+	MessageId    int
+}
+
+func NewBAgreementUpdate(update *basicprotocol.BAgreementUpdate, from string, senderPubKey []byte, messageId int) AgreementWork {
+	return BAgreementUpdate{
+		workType:     AGREEMENT_UPDATE,
+		Update:       *update,
+		SenderId:     from,
+		SenderPubKey: senderPubKey,
+		MessageId:    messageId,
+	}
+}
+
+func (b BAgreementUpdate) Type() string {
+	return b.workType
+}
+
+func (b BAgreementUpdate) String() string {
+	pkey := "not set"
+	if len(b.SenderPubKey) != 0 {
+		pkey = "set"
+	}
+	return fmt.Sprintf("WorkType: %v, "+
+		"Update: %v, "+
+		"MsgEndpoint: %v, "+
+		"SenderId: %v, "+
+		"SenderPubKey: %v, "+
+		"MessageId: %v",
+		b.workType, b.Update, b.From, b.SenderId, pkey, b.MessageId)
+}
+
+func (b BAgreementUpdate) ShortString() string {
+	return b.String()
+}
+
+// These are work items that represent extensions to the protocol.
+const AGREEMENT_UPDATE_REPLY = "AGREEMENT_UPDATE_REPLY"
+
+type BAgreementUpdateReply struct {
+	workType     string
+	Reply        basicprotocol.BAgreementUpdateReply
+	From         string // deprecated whisper address
+	SenderId     string // exchange Id of sender
+	SenderPubKey []byte
+	MessageId    int
+}
+
+func NewBAgreementUpdateReply(reply *basicprotocol.BAgreementUpdateReply, from string, senderPubKey []byte, messageId int) AgreementWork {
+	return BAgreementUpdateReply{
+		workType:     AGREEMENT_UPDATE,
+		Reply:       *reply,
+		SenderId:     from,
+		SenderPubKey: senderPubKey,
+		MessageId:    messageId,
+	}
+}
+
+func (b BAgreementUpdateReply) Type() string {
+	return b.workType
+}
+
+func (b BAgreementUpdateReply) String() string {
+	pkey := "not set"
+	if len(b.SenderPubKey) != 0 {
+		pkey = "set"
+	}
+	return fmt.Sprintf("WorkType: %v, "+
+		"Reply: %v, "+
+		"MsgEndpoint: %v, "+
+		"SenderId: %v, "+
+		"SenderPubKey: %v, "+
+		"MessageId: %v",
+		b.workType, b.Reply, b.From, b.SenderId, pkey, b.MessageId)
+}
+
+func (b BAgreementUpdateReply) ShortString() string {
+	return b.String()
+}
+
 // This function receives an event to "make a new agreement" from the Process function, and then synchronously calls a function
 // to actually work through the agreement protocol.
 
@@ -267,6 +355,59 @@ func (a *BasicAgreementWorker) start(work *PrioritizedWorkQueue, random *rand.Ra
 		} else if workItem.Type() == STOP {
 			// At this point, we assume that the parent agreement bot worker has already decided that it's ok to terminate.
 			break
+
+		} else if workItem.Type() == AGREEMENT_UPDATE {
+			wi := workItem.(BAgreementUpdate)
+
+			// Assume the original message is always deleted.
+			deleteMessage := true
+
+			// Agreement update request received from an agent.
+			glog.V(3).Infof(bwlogstring(a.workerID, fmt.Sprintf("no support for agreement update %v from an agent, replying with rejection.", wi.Update.ShortString())))
+
+			// Always reply not accepted.
+			accepted := false
+			if mt, err := exchange.CreateMessageTarget(wi.SenderId, nil, wi.SenderPubKey, wi.From); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error creating message target: %v", err)))
+			} else if aph, ok := a.protocolHandler.AgreementProtocolHandler("", "", "").(*basicprotocol.ProtocolHandler); !ok {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error casting to basic protocol handler (%T): %v", a.protocolHandler.AgreementProtocolHandler("", "", ""), err)))
+			} else if err := aph.SendAgreementUpdateReply(wi.Update.AgreementId(), wi.Update.UpdateType(), accepted, mt, a.protocolHandler.GetSendMessage()); err != nil {
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error trying to send agreement update reply for %v to %v, error: %v", wi.Update.ShortString(), mt, err)))
+			}
+
+			// Get rid of the original agreement update message.
+			if wi.MessageId != 0 && deleteMessage {
+				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
+				}
+			}
+
+
+		} else if workItem.Type() == AGREEMENT_UPDATE_REPLY {
+			wi := workItem.(BAgreementUpdateReply)
+
+			// Assume the original message is always deleted
+			deleteMessage := true
+
+			if wi.Reply.IsAccepted() {
+				if wi.Reply.IsSecretUpdate() {
+					// update the system to indicate that the secret update is complete.
+					glog.V(5).Infof(bwlogstring(a.workerID, fmt.Sprintf("secret update accepted %v", wi.Reply.ShortString())))
+				}
+
+			} else {
+				// Log the reject and then update the state of the system to prevent further updates for this change.
+				glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("agent rejected update %v", wi.Reply.ShortString())))
+
+			}
+
+			// Get rid of the original agreement update reply message.
+			if wi.MessageId != 0 && deleteMessage {
+				if err := a.protocolHandler.DeleteMessage(wi.MessageId); err != nil {
+					glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("error deleting message %v from exchange", wi.MessageId)))
+				}
+			}
+
 
 		} else {
 			glog.Errorf(bwlogstring(a.workerID, fmt.Sprintf("received unknown work request: %v", workItem)))
