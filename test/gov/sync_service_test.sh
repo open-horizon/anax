@@ -105,124 +105,184 @@ then
   exit -1
 fi
 
-if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
-  FILE_SIZE=128
-else
-  FILE_SIZE=1024
-fi
-
 echo "test hzn mms cli with user:"
 hzn exchange user list
 
 echo "Start testing hzn mms object publish"
 
-#Test timeout support for upload of large files to the CSS
-dd if=/dev/zero of=/tmp/data.txt count=$FILE_SIZE bs=1048576
-dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
-
-RESOURCE_ORG1=e2edev@somecomp.com
-RESOURCE_TYPE=test
-
-export HZN_FSS_CSSURL=${CSS_URL}
-
+#setup metadata files
 read -d '' resmeta <<EOF
 {
   "objectID": "test1",
   "objectType": "test",
   "destinationType": "test",
   "version": "1.0.0",
-  "description": "a file"
+  "description": "a small file"
 }
 EOF
-
 echo "$resmeta" > /tmp/meta.json
 
-# Test object publish
-hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
+read -d '' resmeta <<EOF
+{
+  "objectID": "test-medium1",
+  "objectType": "test",
+  "destinationType": "test",
+  "version": "1.0.0",
+  "description": "a medium file"
+}
+EOF
+echo "$resmeta" > /tmp/meta-medium.json
+
+read -d '' resmeta <<EOF
+{
+  "objectID": "test-large1",
+  "objectType": "test",
+  "destinationType": "test",
+  "version": "1.0.0",
+  "description": "a large file"
+}
+EOF
+echo "$resmeta" > /tmp/meta-large.json
+
+#Setup files to use in uploads
+dd if=/dev/zero of=/tmp/data.txt count=128 bs=1048576
+dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
+dd if=/dev/zero of=/tmp/data-large.txt count=1024 bs=1048576
+
+RESOURCE_ORG1=e2edev@somecomp.com
+RESOURCE_TYPE=test
+
+export HZN_FSS_CSSURL=${CSS_URL}
+
+# Test medium object publish
+echo "Testing 128MB object publish"
+hzn mms object publish -m /tmp/meta-medium.json -f /tmp/data.txt >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
-  exit -1
+  echo -e "Got unexpected error uploading 128MB model object: $RC"
+  exit 1
+else
+  echo "Completed"
 fi
+
+# Test large object publish
+echo "Testing large object publish (1GB)"
+hzn mms object publish -m /tmp/meta-large.json -f /tmp/data-large.txt >/dev/null
+RC=$?
+if [ $RC -ne 0 ]
+then
+  echo -e "Got unexpected error uploading 1GB model object: $RC"
+  exit 1
+else
+  echo "Completed"
+fi
+
 # object has values in "publicKey" and "signature" fields
-OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+echo "Testing object has values in publicKey and signature fields"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-medium1 -l | awk '{if(NR>1)print}')
 if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ]; then
   echo -e "publicKey or signature should be set by default"
-  exit -1
+  exit 1
+else
+  echo "Completed"
 fi
 
 # Now, shorten the HTTP request timeout so that the upload fails. Internally, the CLI will retry
 # before giving up with the appropriate HTTP Client timeout error.
 export HZN_HTTP_TIMEOUT="1"
-
-hzn mms object publish -m /tmp/meta.json -f /tmp/data.txt >/dev/null
+echo "Testing shortening the HTTP request timeout to induce upload failure"
+hzn mms object publish -m /tmp/meta-large.json -f /tmp/data-large.txt >/dev/null
 RC=$?
 if [ $RC -eq 5 ] || [ $RC -eq 0 ]
 then
-  echo -e "Got expected error/return code with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
+  echo -e "Complete. Got expected error/return code with 1GB object upload using short HTTP request timeout: $RC"
 else
-  echo -e "Got unexpected error with 512MB/128MB (Local/Remote) object upload using short HTTP request timeout: $RC"
-  exit -1
+  echo -e "Got unexpected error with 1GB object upload using short HTTP request timeout: $RC"
+  exit 1
 fi
 
 # Reset the HTTP timeout env var to the default for the CLI.
 unset HZN_HTTP_TIMEOUT
 
 # Test object publish with --noIntegrity
+echo "Testing object publish with --noIntegrity flag"
 hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --noIntegrity >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
-  exit -1
+  echo -e "Got unexpected error uploading 32MB model object with --noIntegrity flag: $RC"
+  exit 1
+else
+  echo "Completed"
 fi
-# object has empty value in "hashAlgorithm", "publicKey" and"signature" fields
-OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
+
+# object has empty value in "hashAlgorithm", "publicKey" and "signature" fields
+echo "Testing object has empty values for hashAlgorithm, publicKey and signature fields"
+OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test-small1 -l | awk '{if(NR>1)print}')
 if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" != "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" != "" ]; then
   echo -e "publicKey or signature should not be set if publish with --noIntegrity flag"
-  exit -1
+  exit 1
+else
+  echo "Completed"
 fi
 
 # Test object publish with --hash and -a
+echo "Testing object publish with --hash and -a flags"
 SHA1_HASH=$(sha1sum /tmp/data-small.txt | awk '{print $1;}')
 hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
-  exit -1
+  echo -e "Got unexpected error uploading 32MB model object with --hash and -a flags: $RC"
+  exit 1
+else
+  echo "Completed"
 fi
+
 # object has values in "hashAlgorithm", "publicKey" and "signature" fields
+echo "Testing object has values in hashAlgorithm, publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm') == "" ]; then
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" == "" ]; then
   echo -e "publicKey or signature should be set if publish with --hash flag"
-  exit -1
+  exit 1
+else
+  echo "Completed"
 fi
 
 # Test object publish signing with SHA256
+echo "Testing object publish signing with SHA256"
 SHA256_HASH=$(sha256sum /tmp/data-small.txt | awk '{print $1;}')
 hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA256_HASH -a SHA256 >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error uploading 512MB/128MB (Local/Remote) model object: $RC"
-  exit -1
+  echo -e "Got unexpected error uploading 32MB model object with SHA256 hash: $RC"
+  exit 1
+else
+  echo "Completed"
 fi
+
 # object has values in "hashAlgorithm", "publicKey" and "signature" fields
+echo "Testing object has values in hashAlgorithm, publicKey and signature fields"
 OBJS_CMD=$(hzn mms object list --objectType=test --objectId=test1 -l | awk '{if(NR>1)print}')
-if [ $(echo ${OBJS_CMD} | jq -r '.[0].publicKey') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].signature') == "" ] || [ $(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm') == "" ]; then
+if [ "$(echo ${OBJS_CMD} | jq -r '.[0].publicKey')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].signature')" == "" ] || [ "$(echo ${OBJS_CMD} | jq -r '.[0].hashAlgorithm')" == "" ]; then
   echo -e "publicKey or signature should be set if publish with -s and -a flag"
-  exit -1
+  exit 1
+else
+  echo "Completed"
 fi
 
 # Object publish should fail if --hash (hash value) is inconsistent with -a (hash algorithm) 
+echo "Testing object publish should fail if --hash (hash value) is inconsistent with -a (hash algorithm) "
 hzn mms object publish -m /tmp/meta.json -f /tmp/data-small.txt --hash $SHA1_HASH -a SHA256 >/dev/null
 RC=$?
 if [ $RC -eq 0 ]
 then
-  echo -e "Eexpect error uploading model object with inconsistent value of -a and --hash, but receive: $RC"
-  exit -1
+  echo -e "Expect error uploading model object with inconsistent value of -a and --hash, but receive: $RC"
+  exit 1
+else
+  echo "Completed"
 fi
 
 # Test object list with flags
@@ -271,7 +331,7 @@ RC=$?
 if [ $RC -ne 0 ]
 then
   echo -e "Failed to publish mms object: $RC"
-  exit -1
+  exit 1
 fi
 
 # adding an object with data for MMS access testing
@@ -295,62 +355,64 @@ RC=$?
 if [ $RC -ne 0 ]
 then
   echo -e "Failed to publish mms object: $RC"
-  exit -1
+  exit 1
 fi
 
 echo "Start testing hzn mms object list for user "
 
 # When apply no flag, should get all 6 results
-TARGET_NUM_OBJS=6
+TARGET_NUM_OBJS=8
 OBJS_CMD=$(hzn mms object list | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
-  echo -e "Got unexpected number of objects when listing all objects"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list returned ${NUM_OBJS} objects"
+  exit 1
+else
+  echo "Completed"
 fi
 
 for (( ix=0; ix<$NUM_OBJS; ix++ ))
 do
   if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].instanceID') != null ]; then
     echo -e "Got unexpected field listing without -l"
-    exit -1
+    exit 1
   fi
 done
 
 # -l
-TARGET_NUM_OBJS=6
+TARGET_NUM_OBJS=8
 OBJS_CMD=$(hzn mms object list -l | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
-  echo -e "Got unexpected number of objects listing all objects with -l"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list -l returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 for (( ix=0; ix<$NUM_OBJS; ix++ ))
 do
   if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].instanceID') == null ]; then
     echo -e "Got unexpected field listing with -l"
-    exit -1
+    exit 1
   fi
 done
 
 # -d
-TARGET_NUM_OBJS=6
+TARGET_NUM_OBJS=8
 OBJS_CMD=$(hzn mms object list -d | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
-  echo -e "Got unexpected number of objects listing all objects with -d"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list -d returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 for (( ix=0; ix<$NUM_OBJS; ix++ ))
 do
   if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].objectStatus') == null ]; then
     echo -e "Got unexpected field listing with -l"
-    exit -1
+    exit 1
   fi
 done
 
@@ -370,8 +432,8 @@ OBJS_CMD=$(hzn mms object list --objectType=${OBJECT_TYPE} | awk '{if(NR>1)print
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]
 then
-  echo -e "Got unexpected number of objects with --objectType"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list --objectType=${OBJECT_TYPE} returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 # --objectType --objectId
@@ -379,13 +441,13 @@ TARGET_NUM_OBJS=1
 OBJS_CMD=$(hzn mms object list --objectType=${OBJECT_TYPE} --objectId=${OBJECT_ID} | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
-  echo -e "Got unexpected number of objects using with --objectType and --objectId"
-  exit -1
+  echo "Expected ${TARGET_NUM_OBJS} objects but object list --objectType=${OBJECT_TYPE} --objectId=${OBJECT_ID} returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 if [ $(echo ${OBJS_CMD} | jq -r '.[0].objectID') != ${OBJECT_ID} ] && [ $(echo ${OBJS_CMD} | jq -r '.[0].objectType') != ${OBJECT_TYPE} ]; then
-  echo -e "Got unexpected objects listing with --objectType and --objectId"
-  exit -1
+  echo "Got unexpected objects listing with --objectType and --objectId"
+  exit 1
 fi
 
 # list with wrong objectId
@@ -393,7 +455,7 @@ hzn mms object list --objectType=${OBJECT_TYPE} --objectId=${WRONG_OBJECT_ID}
 RC=$?
 if [ $RC -eq 0 ]; then
   echo -e "Should return error message when list with wrong objectId"
-  exit -1
+  exit 1
 fi
 
 if [ "${TEST_PATTERNS}" != "" ]
@@ -405,12 +467,12 @@ then
   WRONG_DEST_TYPE=wrongDestType
   WRONG_DEST_ID=wrongDestId
 
-  TARGET_NUM_OBJS=3
+  TARGET_NUM_OBJS=5
   OBJS_CMD=$(hzn mms object list --destinationType=${DEST_TYPE} | awk '{if(NR>1)print}')
   NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
   if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
-    echo -e "Got unexpected number of objects listing with --destinationType"
-    exit -1
+    echo -e "Expected ${TARGET_NUM_OBJS} objects but object list  --destinationType=${DEST_TYPE} returned ${NUM_OBJS} objects"
+    exit 1
   fi
 
   # --destinationType --destinationId
@@ -418,36 +480,36 @@ then
   OBJS_CMD=$(hzn mms object list --destinationType=${DEST_TYPE} --destinationId=${DEST_ID} | awk '{if(NR>1)print}')
   NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
   if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
-    echo -e "Got unexpected number of objects listing with --destinationType and --destinationId"
-    exit -1
+    echo -e "Expected ${TARGET_NUM_OBJS} objects but object list  --destinationType=${DEST_TYPE} --destinationId=${DEST_ID} returned ${NUM_OBJS} objects"
+    exit 1
   fi
 
   # list with wrong destinationType
   hzn mms object list --destinationType=${WRONG_DEST_TYPE}
   if [ $? -eq 0 ]; then
     echo -e "Should return error message when list with wrong destinationType"
-    exit -1
+    exit 1
   fi
 
   # list destinationId only
   hzn mms object list --destinationId=${DEST_ID}
   if [ $? -eq 0 ]; then
     echo -e "Should return error message when list with destinationId only"
-    exit -1
+    exit 1
   fi
 
   # list with wrong destinationId
   hzn mms object list --destinationType=${DEST_TYPE} --destinationId=${WRONG_DEST_ID}
   if [ $? -eq 0 ]; then
     echo -e "Should return error message when list with wrong destinationId"
-    exit -1
+    exit 1
   fi
 
   # hzn mms object list --policy should not return any objects
   hzn mms object list --policy=true
   if [ $? -eq 0 ]; then
     echo -e "Should return error message when list with --policy when TEST_PATTERN is not empty"
-    exit -1
+    exit 1
   fi
 
 else
@@ -566,30 +628,30 @@ OBJS_CMD=$(hzn mms object list --data=false | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 RESULT_OBJ_ID="test3"
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
-  echo -e "Got unexpected number of objects listing with --data=false"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list --data=false returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
   echo -e "Got unexpected objects listing with --data=false"
-  exit -1
+  exit 1
 fi
 
 # --data=true
-TARGET_NUM_OBJS=5
+TARGET_NUM_OBJS=7
 OBJS_CMD=$(hzn mms object list --data=true | awk '{if(NR>1)print}')
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 RESULT_OBJ_ID="test3"
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
-  echo -e "Got unexpected number of objects listing with --data=true"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list --data=true returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 for (( ix=0; ix<$NUM_OBJS; ix++ ))
 do
   if [ $(echo $OBJS_CMD | jq -r '.['${ix}'].objectID') == ${RESULT_OBJ_ID} ]; then
     echo -e "Got unexpected object listing with --data=true"
-    exit -1
+    exit 1
   fi
 done
 
@@ -600,20 +662,20 @@ OBJS_CMD=$(hzn mms object list --expirationTime=${EXP_TIME_BEFORE} | awk '{if(NR
 NUM_OBJS=$(echo $OBJS_CMD | jq '. | length')
 RESULT_OBJ_ID="test2"
 if [ "${TARGET_NUM_OBJS}" != "${NUM_OBJS}" ]; then
-  echo -e "Got unexpected number of objects listing with --expirationTime"
-  exit -1
+  echo -e "Expected ${TARGET_NUM_OBJS} objects but object list --expirationTime returned ${NUM_OBJS} objects"
+  exit 1
 fi
 
 if [ $(echo $OBJS_CMD | jq -r '.[0].objectID') != ${RESULT_OBJ_ID} ]; then
   echo -e "Got unexpected objects listing with --expirationTime"
-  exit -1
+  exit 1
 fi
 
 WRONGFMT_EXP_TIME_BEFORE="20251002T150000Z"
 hzn mms object list --expirationTime=${WRONGFMT_EXP_TIME_BEFORE}
 if [ $? -eq 0 ]; then
     echo -e "Should return error message when list with --expirationTime in wrong format"
-    exit -1
+    exit 1
 fi
 
 echo "Testing MMS ACL object access"
@@ -653,10 +715,10 @@ function testUserHaveAccessToALLObjects {
     if [ -f "$DOWNLOADED_FILE" ]; then
         echo "$DOWNLOADED_FILE already exists. Deleted before downloading..."
         rm -f $DOWNLOADED_FILE
-	if [ $? -ne 0 ]; then
-	    echo -e "Failed to remove $DOWNLOADED_FILE"
-	    exit -1
-	fi
+        if [ $? -ne 0 ]; then
+            echo -e "Failed to remove $DOWNLOADED_FILE"
+            exit -1
+        fi
     fi
 
     resp=$(hzn mms object download -t ${5} -i ${6} 2>&1)
@@ -851,7 +913,7 @@ PUBLIC_OBJ_ID="public.tgz"
 USER_ORG="e2edev@somecomp.com"
 USER_REG_USERNAME="anax1"
 USER_REG_USERPWD="anax1pw"
-TARGET_NUM_OBJS=6
+TARGET_NUM_OBJS=8
 testUserHaveAccessToALLObjects $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $TARGET_NUM_OBJS $OBJECT_TYPE $OBJECT_ID "test" "test_user_access"
 verifyUserAccessForPublicObject $USER_ORG $USER_REG_USERNAME $USER_REG_USERPWD $PUBLIC_OBJ_ORG $PUBLIC_OBJ_TYPE $PUBLIC_OBJ_ID
 
