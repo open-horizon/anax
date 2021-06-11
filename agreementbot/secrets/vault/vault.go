@@ -7,6 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"io/ioutil"
+	"net/http"
+
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/config"
