@@ -1,42 +1,6 @@
 #!/bin/bash
 # First create the secret that the service will need
 
-# check the the result to see if it matches the expected http code and error
-function results {
-
-  rc="${1: -3}"
-  output="${1::-3}"
-
-  echo "$1" | jq -r '.'
-
-  if [ "$rc" == "200" ]; then
-    COMP_RESULT=$output
-  fi
-
-  # check http code
-  if [ "$rc" != "$2" ]
-  then
-    echo -e "Error: $(echo "$output" | jq -r '.')\n"
-    exit 2
-  fi
-
-  # check if error text contains all of the test text snippets
-  for (( i=3; i<=$#; i++))
-  {
-    eval TEST_ARG='$'$i
-    if [ ! -z "$TEST_ARG" ]; then
-      res=$(echo "$1" | grep "$TEST_ARG")
-      if [ $? -ne 0 ]; then
-        echo -e "Error: the response should have contained \"$TEST_ARG\", but did not. \n"
-        exit 2
-      fi
-    fi
-  }
-
-  #statements
-  echo -e "Result expected."
-}
-
 if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
   exit 0
 fi
@@ -60,26 +24,40 @@ if [ -z ${AGBOT_SAPI_URL} ]; then
   exit 1
 fi
 
+USERDEV_ORG="userdev"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
-CREATE_ORG_SECRET1="org/userdev/secrets/netspeed-secret1"
-CREATE_ORG_SECRET2="org/userdev/secrets/netspeed-secret2"
+CREATE_ORG_SECRET1="netspeed-secret1"
+CREATE_ORG_SECRET2="netspeed-secret2"
 
-read -d '' create_secret <<EOF
-{
-  \"key\":\"test\",
-  \"value\":\"netspeed-password\"
-}
-EOF
+ORG_SECRET_KEY="test"
+ORG_SECRET_VALUE="netspeed-password"
+
+# set HZN_AGBOT_URL for the cli
+export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
 
 echo -e "Create netspeed secret1"
-CMD="curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d ${create_secret} ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRET1}"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET1}"
 echo "$CMD"
-RES=$(curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d "${create_secret}" ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRET1})
-results "$RES"
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET1})
+
+# check for erroneous return 
+if [ $? -ne 0 ]; then 
+  echo -e "Error: the creation command resulted in an error when it should not have: \n"
+  exit 2
+fi
+# otherwise, print the usual results
+echo "$RES"
 
 echo -e "Create netspeed secret2"
-CMD="curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d ${create_secret} ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRET2}"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET2}"
 echo "$CMD"
-RES=$(curl -sLX POST -w %{http_code} ${CERT_VAR} -u ${USERDEV_ADMIN_AUTH} -d "${create_secret}" ${AGBOT_SAPI_URL}/${CREATE_ORG_SECRET2})
-results "$RES"
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET2})
+
+# check for erroneous return 
+if [ $? -ne 0 ]; then 
+  echo -e "Error: the creation command resulted in an error when it should not have: \n"
+  exit 2
+fi
+# otherwise, print the usual results
+echo "$RES"

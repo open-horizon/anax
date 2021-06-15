@@ -4,12 +4,8 @@ package main
 import (
 	"flag"
 	"os"
-	"strings"
-
-	"github.com/open-horizon/anax/cli/sdo"
-	"github.com/open-horizon/anax/version"
-
 	"runtime"
+	"strings"
 
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
@@ -28,6 +24,8 @@ import (
 	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/cli/sdo"
+	secret_manager "github.com/open-horizon/anax/cli/secrets_manager"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/sync_service"
@@ -36,6 +34,7 @@ import (
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
 )
@@ -658,6 +657,21 @@ Environment Variables:
 	utilVerifyPubKeyFile := utilVerifyCmd.Flag("public-key-file", msgPrinter.Sprintf("The path of public key file (that corresponds to the private key that was used to sign) to verify the signature of stdin.")).Short('K').Required().ExistingFile()
 	utilVerifySig := utilVerifyCmd.Flag("signature", msgPrinter.Sprintf("The supposed signature of stdin.")).Short('s').Required().String()
 
+	smCmd := app.Command("secretsmanager | sm", msgPrinter.Sprintf("List and manage secrets in the secrets manager. NOTE: You must authenticate as an administrator to list secrets available to the entire organization. This CLI does not read and pull secret details; to do so, you must authenticate as an administrator and use the secrets manager CLI.")).Alias("sm").Alias("secretsmanager")
+	smOrg := smCmd.Flag("org", msgPrinter.Sprintf("The Horizon organization ID. If not specified, HZN_ORG_ID will be used as a default.")).Short('o').String()
+	smUserPw := smCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange credentials to query secrets manager resources. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+	smSecretCmd := smCmd.Command("secret", msgPrinter.Sprintf("List and manage secrets in the secrets manager."))
+	smSecretListCmd := smSecretCmd.Command("list | ls", msgPrinter.Sprintf("Display the names of the secrets in the secrets manager.")).Alias("ls").Alias("list")
+	smSecretListName := smSecretListCmd.Arg("secretName", msgPrinter.Sprintf("List just this one secret. Returns a boolean indicating the existence of the secret. This is the name of the secret used in the secrets manager.")).String()
+	smSecretAddCmd := smSecretCmd.Command("add", msgPrinter.Sprintf("Add a secret to the secrets manager."))
+	smSecretAddName := smSecretAddCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret. It must be unique within your organization. This name is used in deployment policies and patterns to bind this secret to a secret name in a service definition.")).Required().String()
+	smSecretAddFile := smSecretAddCmd.Flag("secretFile", msgPrinter.Sprintf("Filepath to a file containing the secret details. Mutually exclusive with --secretDetail. Specify -f- to read from stdin.")).Short('f').String()
+	smSecretAddKey := smSecretAddCmd.Flag("secretKey", msgPrinter.Sprintf("A key for the secret.")).Required().String()
+	smSecretAddDetail := smSecretAddCmd.Flag("secretDetail", msgPrinter.Sprintf("The secret details as a string. Secret details are the actual secret itself, not the name of the secret. For example, a password, a private key, etc. are examples of secret details. Mutually exclusive with --secretFile.")).Short('d').String()
+	smSecretAddOverwrite := smSecretAddCmd.Flag("overwrite", msgPrinter.Sprintf("Overwrite the existing secret if it exists in the secrets manager. It will skip the 'do you want to overwrite' prompt.")).Short('O').Bool()
+	smSecretRemoveCmd := smSecretCmd.Command("remove | rm", msgPrinter.Sprintf("Remove a secret in the secrets manager.")).Alias("rm").Alias("remove")
+	smSecretRemoveName := smSecretRemoveCmd.Arg("secretName", msgPrinter.Sprintf("The name of the secret to be removed from the secrets manager.")).Required().String()
+
 	versionCmd := app.Command("version", msgPrinter.Sprintf("Show the Horizon version.")) // using a cmd for this instead of --version flag, because kingpin takes over the latter and can't get version only when it is needed
 
 	voucherCmd := app.Command("voucher", msgPrinter.Sprintf("List and manage Horizon SDO ownership vouchers."))
@@ -849,6 +863,12 @@ Environment Variables:
 	if strings.HasPrefix(fullCmd, "voucher list") {
 		voucherOrg = cliutils.RequiredWithDefaultEnvVar(voucherOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
 		voucherUserPw = cliutils.RequiredWithDefaultEnvVar(voucherUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
+	}
+
+	// For the secret manager command family, make sure that org is specified in some way.
+	if strings.HasPrefix(fullCmd, "secretsmanager") {
+		smOrg = cliutils.RequiredWithDefaultEnvVar(smOrg, "HZN_ORG_ID", msgPrinter.Sprintf("organization ID must be specified with either the -o flag or HZN_ORG_ID"))
+		smUserPw = cliutils.RequiredWithDefaultEnvVar(smUserPw, "HZN_EXCHANGE_USER_AUTH", msgPrinter.Sprintf("exchange user authentication must be specified with either the -u flag or HZN_EXCHANGE_USER_AUTH"))
 	}
 
 	// key file defaults
@@ -1122,5 +1142,11 @@ Environment Variables:
 		sdo.VoucherImport(*voucherOrg, *voucherUserPw, *voucherImportFile, *voucherImportExample, *voucherImportPolicy, *voucherImportPattern)
 	case voucherListCmd.FullCommand():
 		sdo.VoucherList(*voucherOrg, *voucherUserPw, *voucherToList, !*voucherListLong)
+	case smSecretListCmd.FullCommand():
+		secret_manager.SecretList(*smOrg, *smUserPw, *smSecretListName)
+	case smSecretAddCmd.FullCommand():
+		secret_manager.SecretAdd(*smOrg, *smUserPw, *smSecretAddName, *smSecretAddFile, *smSecretAddKey, *smSecretAddDetail, *smSecretAddOverwrite)
+	case smSecretRemoveCmd.FullCommand():
+		secret_manager.SecretRemove(*smOrg, *smUserPw, *smSecretRemoveName)
 	}
 }
