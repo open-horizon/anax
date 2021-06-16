@@ -232,7 +232,8 @@ Environment Variables:
 
 	devServiceCmd := devCmd.Command("service", msgPrinter.Sprintf("For working with a service project."))
 	devServiceLogCmd := devServiceCmd.Command("log", msgPrinter.Sprintf("Show the container/system logs for a service."))
-	devServiceLogCmdServiceName := devServiceLogCmd.Flag("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.")).Short('s').String()
+	devServiceLogCmdServiceName := devServiceLogCmd.Flag("service", msgPrinter.Sprintf("(DEPRECATED) This flag is deprecated and is replaced by -c.")).Short('s').String()
+	devServiceLogCmdContainerName := devServiceLogCmd.Flag("container", msgPrinter.Sprintf("The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.")).Default(*devServiceLogCmdServiceName).Short('c').String()
 	devServiceLogCmdTail := devServiceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	devServiceNewCmd := devServiceCmd.Command("new", msgPrinter.Sprintf("Create a new service project."))
 	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", msgPrinter.Sprintf("The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.")).Short('o').String()
@@ -621,6 +622,7 @@ Environment Variables:
 	forceSuspendService := serviceConfigStateSuspendCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	serviceLogCmd := serviceCmd.Command("log", msgPrinter.Sprintf("Show the container logs for a service."))
 	logServiceName := serviceLogCmd.Arg("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .")).Required().String()
+	logServiceContainerName := serviceLogCmd.Flag("container", msgPrinter.Sprintf("The name of the container within the service whose log records should be displayed.")).Short('c').String()
 	logTail := serviceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	serviceListCmd := serviceCmd.Command("list", msgPrinter.Sprintf("List the services variable configuration that has been done on this Horizon edge node."))
 	serviceRegisteredCmd := serviceCmd.Command("registered", msgPrinter.Sprintf("List the services that are currently registered on this Horizon edge node."))
@@ -1050,7 +1052,7 @@ Environment Variables:
 	case serviceListCmd.FullCommand():
 		service.List()
 	case serviceLogCmd.FullCommand():
-		service.Log(*logServiceName, *logTail)
+		service.Log(*logServiceName, *logServiceContainerName, *logTail)
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
 	case serviceConfigStateListCmd.FullCommand():
@@ -1076,7 +1078,7 @@ Environment Variables:
 	case devServiceValidateCmd.FullCommand():
 		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "", *devServiceValidateCmdUserPw)
 	case devServiceLogCmd.FullCommand():
-		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdServiceName, *devServiceLogCmdTail)
+		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdContainerName, *devServiceLogCmdTail)
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():

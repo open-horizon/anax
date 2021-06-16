@@ -80,7 +80,7 @@ func List() {
 	fmt.Printf("%s\n", jsonBytes)
 }
 
-func Log(serviceName string, tailing bool) {
+func Log(serviceName string, containerName string, tailing bool) {
 	msgPrinter := i18n.GetMessagePrinter()
 
 	// if node is not registered
@@ -106,12 +106,8 @@ func Log(serviceName string, tailing bool) {
 		if (serviceInstance.SpecRef == name && serviceInstance.Org == org) || strings.Contains(serviceInstance.SpecRef, refUrl) {
 			instanceId = serviceInstance.InstanceId
 			serviceFound = true
-			msgPrinter.Printf("Displaying log messages for service %v with service id %v.", serviceInstance.SpecRef, instanceId)
+			msgPrinter.Printf("Found service %v with service id %v.", serviceInstance.SpecRef, instanceId)
 			msgPrinter.Println()
-			if tailing {
-				msgPrinter.Printf("Use ctrl-C to terminate this command.")
-				msgPrinter.Println()
-			}
 			break
 		}
 	}
@@ -120,6 +116,7 @@ func Log(serviceName string, tailing bool) {
 	}
 
 	// Check service's log-driver to read logs from correct place
+	containerFound := false
 	var nonDefaultLogDriverUsed bool
 	for _, v := range runningServices.Definitions["active"] {
 		def := &persistence.MicroserviceDefinition{}
@@ -135,15 +132,34 @@ func Log(serviceName string, tailing bool) {
 					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Deployment unmarshalling error: %v", err))
 				}
 
-				for _, service := range deployment.Services {
-					var err error
-					if nonDefaultLogDriverUsed, err = cliutils.ChekServiceLogPossibility(service.LogDriver); err != nil {
-						cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Service logs are unavailable: %v", err))
+				if len(deployment.Services) > 1 && containerName == "" {
+					cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Service definition %v consists of more than one container. Please specify the container name using the -c flag.", serviceName))
+				}
+				for deployedContainerName, service := range deployment.Services {
+					if containerName == deployedContainerName || (containerName == "" && len(deployment.Services) == 1) {
+						var err error
+						if nonDefaultLogDriverUsed, err = cliutils.ChekServiceLogPossibility(service.LogDriver); err != nil {
+							cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("Service logs are unavailable: %v", err))
+						}
+						containerName = deployedContainerName
+						containerFound = true
+						break
 					}
-					break
 				}
 			}
 			break
+		}
+	}
+	if !containerFound && containerName != "" {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Container %v is not running as part of service %v.", containerName, serviceName))
+	} else if !containerFound {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Could not find service %v running on the node.", serviceName))
+	} else {
+		msgPrinter.Printf("Displaying log messages of container %v for service %v with service id %v.", containerName, name, instanceId)
+		msgPrinter.Println()
+		if tailing {
+			msgPrinter.Printf("Use ctrl-C to terminate this command.")
+			msgPrinter.Println()
 		}
 	}
 
