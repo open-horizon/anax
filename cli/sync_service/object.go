@@ -490,12 +490,15 @@ func signObjData(objFile string, dsHashAlgo string, dsHash string, privKeyFilePa
 		msgPrinter.Println()
 	}
 
-	// use given key pair, if given
+	// use given key pair, if given, otherwise try to fetch default key file
+	privKeyFilePath_tmp := cliutils.WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
+	privKeyFilePath = cliutils.WithDefaultKeyFile(*privKeyFilePath_tmp, false)
 	if privKeyFilePath != "" {
 		if privateKey, err = sign.ReadPrivateKey(privKeyFilePath); err != nil {
 			return "", "", err
 		}
-	// otherwise, generate private and public key pair
+	// if there is no given private key or defualt value, generate private 
+	// and public key pair
 	} else if privateKey, err = rsa.GenerateKey(rand.Reader, 2048); err != nil {
 		return "", "", err
 	} 

@@ -8,6 +8,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
@@ -17,6 +19,7 @@ import (
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
+	"golang.org/x/text/message"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -279,6 +282,7 @@ type BaseAgreementWorker struct {
 	httpClient *http.Client
 	ec         *worker.BaseExchangeContext
 	mmsObjMgr  *MMSObjectPolicyManager
+	secretsMgr secrets.AgbotSecrets
 }
 
 // A local implementation of the ExchangeContext interface because Agbot agreement workers are not full featured workers.
@@ -613,7 +617,19 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 		}
 
-		if !policy_match || !userInput_match {
+		// Make sure the deployment policy or pattern has all the right secret bindings in place and extract the secret details for the agent.
+		secrets_match := true
+		if policy_match && userInput_match {
+
+			err := b.ValidateAndExtractSecrets(&wi.ConsumerPolicy, wi.Device.Id, workload.Org, workloadDetails, workerId, msgPrinter)
+			if err != nil {
+				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("Error processing secrets for policy %v, error: %v", wi.ConsumerPolicy.Header.Name, err)))
+				secrets_match = false
+			}
+		}
+
+		// All the error cases have been checked, now decide whether to propose this workload or try another version
+		if !policy_match || !userInput_match || !secrets_match {
 			if !workload.HasEmptyPriority() {
 				// If this is not the first time through the loop, update the workload usage record, otherwise create it.
 				if lastWorkload != nil {
@@ -750,6 +766,95 @@ func (b *BaseAgreementWorker) GetMergedProducerPolicyForPattern(deviceId string,
 		}
 	}
 	return mergedProducer, nil
+}
+
+// When deploying a service that is configured with secrets, the agbot needs to revalidate that all the necessary secrets have been bound to
+// secret manager secrets, and then extract those secrets and put them into the agreement proposal. This function returns true when
+// all the required secrets ave been validated and extracted, otherwise and error is returned.
+func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.Policy, deviceId string, workloadOrg string, workloadDetails *exchange.ServiceDefinition, workerId string, msgPrinter *message.Printer) error {
+
+	// When services and policies are published, the following validation is performed. Doing it here again in case something changed. The
+	// exchange does not maintain referential integrity for these aspects of the user's metadata.
+
+	// No need to check architectures of the services, we know the node's architecture at this point.
+	checkAllArches := false
+
+	glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("validating secret bindings for service %v/%v %v %v and dependencies, bindings: %v", workloadOrg, workloadDetails.URL, workloadDetails.Version, workloadDetails.Arch, consumerPolicy.SecretBinding)))
+
+	// Validate that the secret bindings are still correct.
+	resMap, err := common.ValidateSecretBindingForSvcAndDep(
+		consumerPolicy.SecretBinding,
+		workloadOrg,
+		workloadDetails.URL,
+		workloadDetails.Version,
+		workloadDetails.Arch,
+		checkAllArches,
+		exchange.GetHTTPServiceDefResolverHandler(b),
+		exchange.GetHTTPSelectedServicesHandler(b),
+		msgPrinter)
+
+	if err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error validating secret bindings for policy %v, service %v/%v %v, error: %v", consumerPolicy.Header.Name, workloadOrg, workloadDetails.URL, workloadDetails.Version, err)))
+		return err
+	}
+
+	if len(resMap) == 0 {
+		glog.V(3).Infof(BAWlogstring(workerId, fmt.Sprintf("no secrets for service %v/%v %v", workloadOrg, workloadDetails.URL, workloadDetails.Version)))
+	}
+
+	// Get the list of secret bindings that are needed so that we know which secrets to extract from the secret manager.
+	neededSB, _ := common.GroupSecretBindings(consumerPolicy.SecretBinding, resMap)
+
+	// If the agreement needs secrets, make sure the secrets manager is available.
+	if len(neededSB) != 0 && (b.secretsMgr == nil || !b.secretsMgr.IsReady()) {
+		err := errors.New(fmt.Sprintf("secrets required for %v but the secret manager is not available, terminating agreement attempt", consumerPolicy.Header.Name))
+		glog.Errorf(BAWlogstring(workerId, err))
+		return err
+	}
+
+	// Add the bound secrets with details into the consumer policy for transport to the agent in the proposal.
+	for _, binding := range neededSB {
+		for _, boundSecret := range binding.Secrets {
+
+			// The secret details are transported within the proposal in their own section of the internal policy, called SecretDetails.
+			// The schema of the secret details is the same as the schema of the bound secrets (map[string]string), except that the secret
+			// manager secret name is replaced with the actual secret details. This is why we are making a copy of the bound secret, so that
+			// the copy can be appended into the secret details section of the internal policy with the secret details inside of it.
+			bs := boundSecret.MakeCopy()
+
+			// Iterate the bound secrets, extracting the details for each secret.
+			for serviceSecretName, secretName := range boundSecret {
+
+				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("extracting secret details for %v:%v", serviceSecretName, secretName)))
+
+				// The secret name might be a user private or org wide secret. Parse the name to determine which it is.
+				secretUser, shortSecretName, err := common.ParseVaultSecretName(secretName, msgPrinter)
+				if err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error parsing secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
+					return err
+				}
+
+				// Call the secret manager plugin to get the secret details.
+				details, err := b.secretsMgr.GetSecretDetails(exchange.GetOrg(deviceId), secretUser, shortSecretName)
+
+				if err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error retrieving secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
+					return err
+				}
+
+				detailBytes, err := json.Marshal(details)
+				if err != nil {
+					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error marshalling secret details %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))
+					return err
+				}
+
+				bs[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
+				consumerPolicy.SecretDetails = append(consumerPolicy.SecretDetails, bs)
+			}
+		}
+	}
+	return nil
+
 }
 
 func (b *BaseAgreementWorker) HandleAgreementReply(cph ConsumerProtocolHandler, wi *HandleReply, workerId string) bool {

@@ -232,7 +232,8 @@ Environment Variables:
 
 	devServiceCmd := devCmd.Command("service", msgPrinter.Sprintf("For working with a service project."))
 	devServiceLogCmd := devServiceCmd.Command("log", msgPrinter.Sprintf("Show the container/system logs for a service."))
-	devServiceLogCmdServiceName := devServiceLogCmd.Flag("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition.")).Short('s').String()
+	devServiceLogCmdServiceName := devServiceLogCmd.Flag("service", msgPrinter.Sprintf("(DEPRECATED) This flag is deprecated and is replaced by -c.")).Short('s').String()
+	devServiceLogCmdContainerName := devServiceLogCmd.Flag("container", msgPrinter.Sprintf("The name of the service container whose log records should be displayed. Can be omitted if the service definition has only one container in its deployment config.")).Default(*devServiceLogCmdServiceName).Short('c').String()
 	devServiceLogCmdTail := devServiceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	devServiceNewCmd := devServiceCmd.Command("new", msgPrinter.Sprintf("Create a new service project."))
 	devServiceNewCmdOrg := devServiceNewCmd.Flag("org", msgPrinter.Sprintf("The Org id that the service is defined within. If this flag is omitted, the HZN_ORG_ID environment variable is used.")).Short('o').String()
@@ -570,7 +571,7 @@ Environment Variables:
 	mmsObjectPublishSkipIntegrityCheck := mmsObjectPublishCmd.Flag("noIntegrity", msgPrinter.Sprintf("The publish command will not perform a data integrity check on the uploaded object data. It is mutually exclusive with --hashAlgo and --hash")).Bool()
 	mmsObjectPublishDSHashAlgo := mmsObjectPublishCmd.Flag("hashAlgo", msgPrinter.Sprintf("The hash algorithm used to hash the object data before signing it, ensuring data integrity during upload and download. Supported hash algorithms are SHA1 or SHA256, the default is SHA1. It is mutually exclusive with the --noIntegrity flag")).Short('a').String()
 	mmsObjectPublishDSHash := mmsObjectPublishCmd.Flag("hash", msgPrinter.Sprintf("The hash of the object data being uploaded or downloaded. Use this flag if you want to provide the hash instead of allowing the command to automatically calculate the hash. The hash must be generated using either the SHA1 or SHA256 algorithm. The -a flag must be specified if the hash was generated using SHA256. This flag is mutually exclusive with --noIntegrity.")).String()
-	mmsObjectPublishPrivKeyFile := mmsObjectPublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the model.")).Short('k').ExistingFile()
+	mmsObjectPublishPrivKeyFile := mmsObjectPublishCmd.Flag("private-key-file", msgPrinter.Sprintf("The path of a private key file to be used to sign the object. The corresponding public key will be stored in the MMS to ensure integrity of the object. If not specified, the environment variable HZN_PRIVATE_KEY_FILE will be used to find a private key. If not set, ~/.hzn/keys/service.private.key will be used. If it does not exist, an RSA key pair is generated only for this publish operation and then the private key is discarded.")).Short('k').ExistingFile()
 	mmsStatusCmd := mmsCmd.Command("status", msgPrinter.Sprintf("Display the status of the Horizon Model Management Service."))
 
 	nodeCmd := app.Command("node", msgPrinter.Sprintf("List and manage general information about this Horizon edge node."))
@@ -622,6 +623,7 @@ Environment Variables:
 	forceSuspendService := serviceConfigStateSuspendCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
 	serviceLogCmd := serviceCmd.Command("log", msgPrinter.Sprintf("Show the container logs for a service."))
 	logServiceName := serviceLogCmd.Arg("service", msgPrinter.Sprintf("The name of the service whose log records should be displayed. The service name is the same as the url field of a service definition. Displays log records similar to tail behavior and returns .")).Required().String()
+	logServiceContainerName := serviceLogCmd.Flag("container", msgPrinter.Sprintf("The name of the container within the service whose log records should be displayed.")).Short('c').String()
 	logTail := serviceLogCmd.Flag("tail", msgPrinter.Sprintf("Continuously polls the service's logs to display the most recent records, similar to tail -F behavior.")).Short('f').Bool()
 	serviceListCmd := serviceCmd.Command("list", msgPrinter.Sprintf("List the services variable configuration that has been done on this Horizon edge node."))
 	serviceRegisteredCmd := serviceCmd.Command("registered", msgPrinter.Sprintf("List the services that are currently registered on this Horizon edge node."))
@@ -1051,7 +1053,7 @@ Environment Variables:
 	case serviceListCmd.FullCommand():
 		service.List()
 	case serviceLogCmd.FullCommand():
-		service.Log(*logServiceName, *logTail)
+		service.Log(*logServiceName, *logServiceContainerName, *logTail)
 	case serviceRegisteredCmd.FullCommand():
 		service.Registered()
 	case serviceConfigStateListCmd.FullCommand():
@@ -1077,7 +1079,7 @@ Environment Variables:
 	case devServiceValidateCmd.FullCommand():
 		dev.ServiceValidate(*devHomeDirectory, *devServiceVerifyUserInputFile, []string{}, "", *devServiceValidateCmdUserPw)
 	case devServiceLogCmd.FullCommand():
-		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdServiceName, *devServiceLogCmdTail)
+		dev.ServiceLog(*devHomeDirectory, *devServiceLogCmdContainerName, *devServiceLogCmdTail)
 	case devDependencyFetchCmd.FullCommand():
 		dev.DependencyFetch(*devHomeDirectory, *devDependencyFetchCmdProject, *devDependencyCmdSpecRef, *devDependencyCmdURL, *devDependencyCmdOrg, *devDependencyCmdVersion, *devDependencyCmdArch, *devDependencyFetchCmdUserPw, *devDependencyFetchCmdUserInputFile)
 	case devDependencyListCmd.FullCommand():

@@ -640,7 +640,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		fallthrough
 	case "POST":
-		var input secrets.CreateSecretRequest
+		var input secrets.SecretDetails
 		if body, err := ioutil.ReadAll(r.Body); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to read request body, error: %v.", err)))
 			writeResponse(w, msgPrinter.Sprintf("Unable to read request body, error: %v.", err), http.StatusInternalServerError)

@@ -18,15 +18,19 @@ type AgbotSecrets interface {
 
 	ListOrgSecret(user, token, org, name string) (map[string]string, error)
 	ListOrgSecrets(user, token, org string) ([]string, error)
-	CreateOrgSecret(user, token, org, vaultSecretName string, data CreateSecretRequest) error
+	CreateOrgSecret(user, token, org, vaultSecretName string, data SecretDetails) error
 	DeleteOrgSecret(user, token, org, name string) error
 
 	ListOrgUserSecret(user, token, org, name string) (map[string]string, error)
-	CreateOrgUserSecret(user, token, org, vaultSecretName string, data CreateSecretRequest) error
+	CreateOrgUserSecret(user, token, org, vaultSecretName string, data SecretDetails) error
 	DeleteOrgUserSecret(user, token, org, name string) error
+
+	// This function assumes that the plugin maintains an authentication to the secret manager that it can use
+	// when it doesnt need to call APIs with user creds. The creds used instead have the ability to READ secrets.
+	GetSecretDetails(org, secretUser, secretName string) (SecretDetails, error)
 }
 
-type CreateSecretRequest struct {
+type SecretDetails struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }

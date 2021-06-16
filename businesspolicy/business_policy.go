@@ -21,7 +21,7 @@ type BusinessPolicy struct {
 	Properties    externalpolicy.PropertyList         `json:"properties,omitempty"`
 	Constraints   externalpolicy.ConstraintExpression `json:"constraints,omitempty"`
 	UserInput     []policy.UserInput                  `json:"userInput,omitempty"`
-	SecretBinding []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"` // The secret binding from service secret names to vault secret names.
+	SecretBinding []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"` // The secret binding from service secret names to secret manager secret names.
 }
 
 func (w BusinessPolicy) String() string {
@@ -205,6 +205,13 @@ func (b *BusinessPolicy) GenPolicyFromBusinessPolicy(policyName string) (*policy
 	// make a copy of the user input
 	pol.UserInput = make([]policy.UserInput, len(b.UserInput))
 	copy(pol.UserInput, b.UserInput)
+
+	// make a copy of the secretBindings
+	pol.SecretBinding = make([]exchangecommon.SecretBinding, 0)
+	for _, sb := range b.SecretBinding {
+		newSB := sb.MakeCopy()
+		pol.SecretBinding = append(pol.SecretBinding, newSB)
+	}
 
 	glog.V(3).Infof("converted %v into policy %v.", service, policyName)
 

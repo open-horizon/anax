@@ -138,7 +138,7 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 		return true, false, verify.AgreementId(), nil
 
 	} else if update, err := c.agreementPH.ValidateUpdate(msg.ProtocolMessage()); err == nil {
-		glog.Errorf(BPHlogString(fmt.Sprintf("unable to handle updates for agreement", update.AgreementId())))
+		glog.Errorf(BPHlogString(fmt.Sprintf("unable to handle updates for agreement %v", update.AgreementId())))
 
 		// If there are no errors and the update type is accepted, send a positive reply.
 		acceptedUpdate := true

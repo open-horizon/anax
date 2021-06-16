@@ -6,8 +6,6 @@ if [ "${EXCH_APP_HOST}" != "http://exchange-api:8080/v1" ]; then
 	exit 0
 fi
 
-USERDEV_ADMIN="userdev/userdevadmin"
-USERDEV_ADMIN_PW="userdevadminpw"
 USER_ORG="userdev"
 TEST_SECRET="secret"
 
@@ -27,14 +25,22 @@ then
     echo -e "Failed vault bootstrap."
     exit 1
   fi
-
-  # Login the userdevadmin user, as a test.
-  echo -e "\nvault write auth/openhorizon/login id=${USERDEV_ADMIN} token=${USERDEV_ADMIN_PW}"
-  vault write auth/openhorizon/login id=${USERDEV_ADMIN} token=${USERDEV_ADMIN_PW}
   
   # Write a sample secret to the userdev org
   echo -e "\nvault kv put openhorizon/${USER_ORG}/${TEST_SECRET} ${TEST_SECRET}=${TEST_SECRET}"
   vault kv put openhorizon/${USER_ORG}/${TEST_SECRET} ${TEST_SECRET}=${TEST_SECRET}
+  if [ $? -ne 0 ]; then
+    echo -e "Failed put to kv store, vault bootstrap failed"
+    exit 1
+  fi
+
+  # Delete it
+  echo -e "\nvault kv delete openhorizon/${USER_ORG}/${TEST_SECRET}"
+  vault kv delete openhorizon/${USER_ORG}/${TEST_SECRET}
+  if [ $? -ne 0 ]; then
+    echo -e "Failed delete temp secret from kv store, vault bootstrap failed"
+    exit 1
+  fi
 
 else
   echo -e "Vault reachability tests were skipped."

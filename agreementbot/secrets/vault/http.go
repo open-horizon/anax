@@ -145,7 +145,7 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 			break
 		}
 
-		// If the invocation resulted in a retyable network error, log it and retry the exchange invocation.
+		// If the invocation resulted in a retryable network error, log it and retry the exchange invocation.
 		if isTransportError(resp, err) {
 			if resp != nil && resp.Body != nil {
 				resp.Body.Close()
@@ -155,6 +155,19 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 
 			currRetry--
 			time.Sleep(time.Duration(EX_RETRY_INTERVAL) * time.Second)
+		} else if token == "" && resp.StatusCode == http.StatusForbidden {
+			// The agbot failed to authenticate, something must have happened to the agbot's token, so login again to get a new token.
+			glog.Warningf(vaultPluginLogString("unexpected agbot token expiration, logging in again"))
+			err := vs.Login()
+			if err != nil {
+				glog.Warningf(vaultPluginLogString(fmt.Sprintf("error logging in trying to recover expired token: %v", err)))
+			}
+
+			// Decrement the retry count so that we dont accidentally loop forever.
+			currRetry--
+
+			// No need to delay the retry because this error was not a transport problem.
+
 		} else {
 			return resp, err
 		}
@@ -181,8 +194,6 @@ func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string
 		if err != nil {
 			return nil, errors.New(fmt.Sprintf("failed to marshal body %s for %s, error: %v", body, apiMsg, err))
 		}
-
-		glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("invoking with %v", string(jsonBytes))))
 		requestBody = bytes.NewBuffer(jsonBytes)
 	}
 
