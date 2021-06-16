@@ -494,7 +494,7 @@ func removeSpaces(value string) string {
 }
 func removeQuotes(value string) string {
 	quote := fmt.Sprint("\"")
-	if value[0:1] == quote && value[len(value)-1:len(value)] == quote {
+	if len(value) > 0 && value[0:1] == quote && value[len(value)-1:len(value)] == quote {
 		value = value[1 : len(value)-1]
 	}
 	return value
