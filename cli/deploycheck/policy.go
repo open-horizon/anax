@@ -52,7 +52,7 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 
 	if bUseLocalNode {
 		// get id from local node, check arch
-		policyCheckInput.NodeId, policyCheckInput.NodeArch = getLocalNodeInfo(nodeArch)
+		policyCheckInput.NodeId, policyCheckInput.NodeArch, policyCheckInput.NodeType, _ = getLocalNodeInfo(nodeArch, nodeType, "")
 
 		// get node policy from local node
 		var np externalpolicy.ExternalPolicy
@@ -107,7 +107,7 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 		// display the output
 		output, err := cliutils.DisplayAsJson(compOutput)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn policy compatible' output: %v", err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn deploycheck policy' output: %v", err))
 		}
 
 		fmt.Println(output)
@@ -117,7 +117,7 @@ func PolicyCompatible(org string, userPw string, nodeId string, nodeArch string,
 // make sure -n and --node-pol, -b and -B, pairs are mutually compatible.
 // get default credential, node id and org if they are not set.
 func verifyPolicyCompatibleParameters(org string, userPw string, nodeId string, nodeType string, nodePolFile string,
-	businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string) (string, string, string, bool, []common.ServiceFile) {
+	businessPolId string, businessPolFile string, servicePolFile string, svcDefFiles []string) (string, string, string, bool, []common.AbstractServiceFile) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 

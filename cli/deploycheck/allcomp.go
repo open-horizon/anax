@@ -20,7 +20,7 @@ import (
 )
 
 // check if the policies are compatible
-func AllCompatible(org string, userPw string, nodeId string, nodeArch string, nodeType string,
+func AllCompatible(org string, userPw string, nodeId string, nodeArch string, nodeType string, nodeOrg string,
 	nodePolFile string, nodeUIFile string, businessPolId string, businessPolFile string,
 	patternId string, patternFile string, servicePolFile string, svcDefFiles []string,
 	checkAllSvcs bool, showDetail bool) {
@@ -35,6 +35,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 	compCheckInput := compcheck.CompCheck{}
 	compCheckInput.NodeArch = nodeArch
 	compCheckInput.NodeType = nodeType
+	compCheckInput.NodeOrg = nodeOrg
 	compCheckInput.BusinessPolicy = bp
 	compCheckInput.PatternId = patternId
 	compCheckInput.Pattern = pattern
@@ -77,9 +78,6 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 		msgPrinter.Printf("Neither node id nor node policy is specified. Getting node policy from the local node.")
 		msgPrinter.Println()
 
-		// get id from local node, check arch
-		compCheckInput.NodeId, compCheckInput.NodeArch = getLocalNodeInfo(nodeArch)
-
 		// get node policy from local node
 		var np externalpolicy.ExternalPolicy
 		cliutils.HorizonGet("node/policy", []int{200}, &np, false)
@@ -93,6 +91,11 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 		var node_ui []policy.UserInput
 		cliutils.HorizonGet("node/userinput", []int{200}, &node_ui, false)
 		compCheckInput.NodeUserInput = node_ui
+	}
+
+	if bUseLocalNodeForPolicy || bUseLocalNodeForUI {
+		// get id from local node, check arch
+		compCheckInput.NodeId, compCheckInput.NodeArch, compCheckInput.NodeType, compCheckInput.NodeOrg = getLocalNodeInfo(nodeArch, nodeType, nodeOrg)
 	}
 
 	if nodeType == "" && compCheckInput.NodeId != "" {
@@ -115,6 +118,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 
 	// get exchange context
 	ec := cliutils.GetUserExchangeContext(userOrg, credToUse)
+	agbotUrl := cliutils.GetAgbotSecureAPIUrlBase()
 
 	// compcheck.Compatible function calls the exchange package that calls glog.
 	// set the glog stderrthreshold to 3 (fatal) in order for glog error messages not showing up in the output
@@ -122,7 +126,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 
 	// now we can call the real code to check if the policies are compatible.
 	// the policy validation are done wthin the calling function.
-	compOutput, err := compcheck.DeployCompatible(ec, &compCheckInput, checkAllSvcs, msgPrinter)
+	compOutput, err := compcheck.DeployCompatible(ec, agbotUrl, &compCheckInput, checkAllSvcs, msgPrinter)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, err.Error())
 	} else {
@@ -133,7 +137,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 		// display the output
 		output, err := cliutils.DisplayAsJson(compOutput)
 		if err != nil {
-			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn policy compatible' output: %v", err))
+			cliutils.Fatal(cliutils.JSON_PARSING_ERROR, msgPrinter.Sprintf("failed to marshal 'hzn deploycheck all' output: %v", err))
 		}
 
 		fmt.Println(output)
@@ -146,7 +150,7 @@ func AllCompatible(org string, userPw string, nodeId string, nodeArch string, no
 // Get default credential, node id and org if they are not set.
 func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeType string, nodePolFile string, nodeUIFile string,
 	businessPolId string, businessPolFile string, patternId string, patternFile string, servicePolFile string,
-	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, *common.PatternFile, []common.ServiceFile) {
+	svcDefFiles []string) (string, string, string, bool, *businesspolicy.BusinessPolicy, common.AbstractPatternFile, []common.AbstractServiceFile) {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
@@ -256,23 +260,25 @@ func verifyCompCheckParameters(org string, userPw string, nodeId string, nodeTyp
 		return orgToUse, *credToUse, nodeIdToUse, useNodeId, bp, nil, serviceDefs
 	} else {
 		// get pattern from file or exchange
-		pattern, pf := getPattern(orgToUse, *credToUse, patternId, patternFile)
+		pattern := getPattern(orgToUse, *credToUse, patternId, patternFile)
 
 		// check if the specified the services are the ones that the pattern needs.
 		// only check if the given services are valid or not.
 		// Not checking the missing ones becaused it will be checked by the compcheck package.
 		checkServiceDefsForPattern(pattern, serviceDefs, svcDefFiles)
 
-		return orgToUse, *credToUse, nodeIdToUse, useNodeId, nil, pf, serviceDefs
+		return orgToUse, *credToUse, nodeIdToUse, useNodeId, nil, pattern, serviceDefs
 	}
 }
 
-// get node info and check node arch against the input arch
-func getLocalNodeInfo(inputArch string) (string, string) {
+// get node info and check node arch and org against the input arch
+func getLocalNodeInfo(inputArch string, inputType string, inputOrg string) (string, string, string, string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
 	id := ""
+	nodeType := ""
+	nodeOrg := ""
 	arch := cutil.ArchString()
 
 	horDevice := api.HorizonDevice{}
@@ -283,19 +289,33 @@ func getLocalNodeInfo(inputArch string) (string, string) {
 		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Cannot use the local node because it is not registered."))
 	}
 
-	// get node id
-	if horDevice.Org != nil && horDevice.Id != nil {
-		id = cliutils.AddOrg(*horDevice.Org, *horDevice.Id)
+	// get node id, type and org
+	if horDevice.Org != nil {
+		nodeOrg = *horDevice.Org
+		if horDevice.Id != nil {
+			id = cliutils.AddOrg(*horDevice.Org, *horDevice.Id)
+		}
+	}
+	if horDevice.NodeType != nil {
+		nodeType = *horDevice.NodeType
+	}
+
+	// check node architecture
+	if inputArch != "" && inputArch != arch {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node architecture %v specified by -a does not match the architecture of the local node %v.", inputArch, arch))
 	}
 
 	// get/check node architecture
-	if inputArch != "" {
-		if inputArch != arch {
-			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node architecture %v specified by -a does not match the architecture of the local node %v.", inputArch, arch))
-		}
+	if inputType != "" && nodeType != "" && inputType != nodeType {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node type %v specified by -t does not match the type of the local node %v.", inputType, nodeType))
 	}
 
-	return id, arch
+	// check node organization
+	if inputOrg != "" && nodeOrg != "" && inputOrg != nodeOrg {
+		cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("The node organization %v specified by -O does not match the organization of the local node %v.", inputType, nodeOrg))
+	}
+
+	return id, arch, nodeType, nodeOrg
 }
 
 // get business policy from exchange or from file.

@@ -320,7 +320,7 @@ func WaitForService(org string, waitService string, waitTimeout int, pattern str
 		} else {
 			msgPrinter.Printf("Using the 'hzn deploycheck all -p' command to verify that node, service configuration and pattern is compatible.")
 			msgPrinter.Println()
-			deploycheck.AllCompatible(userOrg, userPw, "", nodeArch, nodeType, "", "",
+			deploycheck.AllCompatible(userOrg, userPw, "", nodeArch, nodeType, userOrg, "", "",
 				"", "", pattern, "", "", []string{}, false, false)
 		}
 	} else {

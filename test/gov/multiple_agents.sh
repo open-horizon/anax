@@ -93,7 +93,7 @@ function verifyMultiAgentsAgreements {
     docker cp /root/check_node_status.sh horizon${device_num}:/root/.
 
     docker exec -e ANAX_API=http://localhost:${agent_port} \
-        -e EXCH_APP_HOST=http://exchange-api:8080/v1 \
+        -e EXCH_APP_HOST=http://exchange-api:8081/v1 \
         -e ORG_ID=e2edev@somecomp.com \
         -e PATTERN=${PATTERN} \
         -e ADMIN_AUTH=e2edevadmin:e2edevadminpw \
