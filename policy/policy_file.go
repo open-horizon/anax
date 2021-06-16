@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"golang.org/x/text/message"
@@ -69,6 +70,8 @@ type Policy struct {
 	HAGroup            HighAvailabilityGroup               `json:"ha_group,omitempty"`         // Version 2.0
 	NodeH              NodeHealth                          `json:"nodeHealth,omitempty"`       // Version 2.0
 	UserInput          []UserInput                         `json:"userInput,omitempty"`
+	SecretBinding      []exchangecommon.SecretBinding      `json:"secretBinding,omitempty"`
+	SecretDetails      []exchangecommon.BoundSecret        `json:"secretDetails,omitempty"` // Filled in for agreement proposals, with secret details from the secret manager.
 }
 
 // These functions are used to create Policy objects. You can create the base object
@@ -116,6 +119,12 @@ func (self *Policy) DeepCopy() *Policy {
 		newUI.Inputs = make([]Input, len(ui.Inputs))
 		copy(newUI.Inputs, ui.Inputs)
 		newPolicy.UserInput = append(newPolicy.UserInput, newUI)
+	}
+
+	newPolicy.SecretBinding = make([]exchangecommon.SecretBinding, 0)
+	for _, sb := range self.SecretBinding {
+		newSB := sb.MakeCopy()
+		newPolicy.SecretBinding = append(newPolicy.SecretBinding, newSB)
 	}
 
 	return newPolicy
@@ -341,10 +350,26 @@ func Create_Terms_And_Conditions(producer_policy *Policy, consumer_policy *Polic
 		merged_pol.HAGroup = producer_policy.HAGroup
 		merged_pol.NodeH = consumer_policy.NodeH
 
-		// the user input is contained in pattern and business policy. they are consumer policies.
+		// the user input is contained in pattern and deployment policy. they are consumer policies.
 		if consumer_policy.UserInput != nil && len(consumer_policy.UserInput) != 0 {
 			merged_pol.UserInput = make([]UserInput, len(consumer_policy.UserInput))
 			copy(merged_pol.UserInput, consumer_policy.UserInput)
+		}
+
+		// the secret bindings are contained in pattern and deployment policy. they are consumer policies.
+		if consumer_policy.SecretBinding != nil && len(consumer_policy.SecretBinding) != 0 {
+			for _, sb := range consumer_policy.SecretBinding {
+				newSB := sb.MakeCopy()
+				merged_pol.SecretBinding = append(merged_pol.SecretBinding, newSB)
+			}
+		}
+
+		// the secret details are only contained within proposals (which is a merged policy document).
+		if consumer_policy.SecretDetails != nil && len(consumer_policy.SecretDetails) != 0 {
+			for _, bs := range consumer_policy.SecretDetails {
+				newBS := bs.MakeCopy()
+				merged_pol.SecretDetails = append(merged_pol.SecretDetails, newBS)
+			}
 		}
 
 		return merged_pol, nil
@@ -363,6 +388,14 @@ func MergePolicyWithExternalPolicy(pol *Policy, extPol *externalpolicy.ExternalP
 		if pol.UserInput != nil && len(pol.UserInput) != 0 {
 			merged_pol.UserInput = make([]UserInput, len(pol.UserInput))
 			copy(merged_pol.UserInput, pol.UserInput)
+		}
+
+		if pol.SecretBinding != nil && len(pol.SecretBinding) != 0 {
+			merged_pol.SecretBinding = make([]exchangecommon.SecretBinding, 0)
+			for _, sb := range pol.SecretBinding {
+				newSB := sb.MakeCopy()
+				merged_pol.SecretBinding = append(merged_pol.SecretBinding, newSB)
+			}
 		}
 
 		merged_pol.Properties.MergeWith(&(extPol.Properties), false)
@@ -481,6 +514,7 @@ func (self *Policy) String() string {
 	res += fmt.Sprintf("Constraints: %v\n", self.Constraints)
 	res += fmt.Sprintf("Data Verification: %v\n", self.DataVerify)
 	res += fmt.Sprintf("Node Health: %v\n", self.NodeH)
+	res += fmt.Sprintf("SecretBinding: %v\n", self.SecretBinding)
 
 	return res
 }

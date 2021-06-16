@@ -360,7 +360,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	// to initiate the protocol.
 	for protocolName, _ := range w.pm.GetAllAgreementProtocols() {
 		if policy.SupportedAgreementProtocol(protocolName) {
-			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM)
+			cph := CreateConsumerPH(protocolName, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM, w.secretProvider)
 			cph.Initialize()
 			w.consumerPH.Add(protocolName, cph)
 		} else {
@@ -454,7 +454,7 @@ func (w *AgreementBotWorker) CommandHandler(command worker.Command) bool {
 				// Update the protocol handler map and make sure there are workers available if the policy has a new protocol in it.
 				if !w.consumerPH.Has(agp.Name) {
 					glog.V(3).Infof("AgreementBotWorker creating worker pool for new agreement protocol %v", agp.Name)
-					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM)
+					cph := CreateConsumerPH(agp.Name, w.BaseWorker.Manager.Config, w.db, w.pm, w.BaseWorker.Manager.Messages, w.MMSObjectPM, w.secretProvider)
 					cph.Initialize()
 					w.consumerPH.Add(agp.Name, cph)
 				}

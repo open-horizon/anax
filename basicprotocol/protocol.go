@@ -82,15 +82,15 @@ const MsgUpdateTypeSecret = "basicagreementupdatesecret"
 type BAgreementUpdate struct {
 	*abstractprotocol.BaseProtocolMessage
 	Updatetype string                 `json:"updateType"`
-	Metadata   map[string]interface{} `json:"metadata,omitempty`
+	Metadata   map[string]interface{} `json:"metadata,omitempty"`
 }
 
 func (b *BAgreementUpdate) String() string {
-	return b.BaseProtocolMessage.String() + fmt.Sprintf(", Updatetype: %v, Metadata: %v", b.UpdateType, b.Metadata)
+	return b.BaseProtocolMessage.String() + fmt.Sprintf(", Updatetype: %v, Metadata: %v", b.UpdateType(), b.Metadata)
 }
 
 func (b *BAgreementUpdate) ShortString() string {
-	return b.BaseProtocolMessage.ShortString() + fmt.Sprintf(", Updatetype: %v", b.UpdateType)
+	return b.BaseProtocolMessage.ShortString() + fmt.Sprintf(", Updatetype: %v", b.UpdateType())
 }
 
 // UpdateType is not checked here because it should be checked by the caller when deciding whether or not

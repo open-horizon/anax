@@ -472,8 +472,8 @@ TEST_VAULT_SECRET_VALUE="${TEST_VAULT_SECRET_NAME}"
 
 read -d '' create_secret <<EOF
 {
-  \"name\":\"test\",
-  \"secret\":\"value\"
+  \"key\":\"test\",
+  \"value\":\"value\"
 }
 EOF
 

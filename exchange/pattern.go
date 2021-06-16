@@ -382,6 +382,13 @@ func ConvertCommon(p *Pattern, patternId string, dv DataVerification, nodeh Node
 	pol.UserInput = make([]policy.UserInput, len(p.UserInput))
 	copy(pol.UserInput, p.UserInput)
 
+	// make a copy of the secretBindings
+	pol.SecretBinding = make([]exchangecommon.SecretBinding, 0)
+	for _, sb := range p.SecretBinding {
+		newSB := sb.MakeCopy()
+		pol.SecretBinding = append(pol.SecretBinding, newSB)
+	}
+
 }
 
 // Structs and types for working with pattern based exchange searches

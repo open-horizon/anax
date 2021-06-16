@@ -119,7 +119,7 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 	}
 
 	// map: keyed by index of the secretBinding array, the value is a map of
-	// service secret names in the binding that are needed, i.e. not redundant.
+	// service secret names in the binding that are needed, i.e. not extraneous.
 	//    map[index]map[service_secret_names]bool
 	ret := map[int]map[string]bool{}
 
@@ -136,6 +136,7 @@ func ValidateSecretBindingForSvcAndDep(secretBinding []exchangecommon.SecretBind
 			}
 		} else {
 			// just include the service with current node arch
+			// BUG: This doesnt work in the agbot
 			arches = append(arches, runtime.GOARCH)
 		}
 	} else {
@@ -487,7 +488,7 @@ func combineIndexMap(indexMap map[int]map[string]bool, newIndexMap map[int]map[s
 }
 
 // given an array of secret bindings and an index map, group the
-// secret bindings into 2 groups: needed and redundant.
+// secret bindings into 2 groups: needed and extraneous.
 func GroupSecretBindings(secretBinding []exchangecommon.SecretBinding, indexMap map[int]map[string]bool) ([]exchangecommon.SecretBinding, []exchangecommon.SecretBinding) {
 	// group needed and redundant secret bindings
 	neededSB := []exchangecommon.SecretBinding{}
@@ -515,8 +516,8 @@ func GroupSecretBindings(secretBinding []exchangecommon.SecretBinding, indexMap 
 				// copy the structure, reset the Secrets to empty
 				sb_needed := secretBinding[index]
 				sb_redundant := secretBinding[index]
-				sb_needed.Secrets = []exchangecommon.VaultBinding{}
-				sb_redundant.Secrets = []exchangecommon.VaultBinding{}
+				sb_needed.Secrets = []exchangecommon.BoundSecret{}
+				sb_redundant.Secrets = []exchangecommon.BoundSecret{}
 				for _, s := range sb.Secrets {
 					k, _ := s.GetBinding()
 					if _, ok1 := indexMap[index][k]; !ok1 {
