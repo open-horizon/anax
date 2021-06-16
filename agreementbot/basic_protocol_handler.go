@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/basicprotocol"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
@@ -23,7 +24,7 @@ type BasicProtocolHandler struct {
 	Work        *PrioritizedWorkQueue
 }
 
-func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr *MMSObjectPolicyManager) *BasicProtocolHandler {
+func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, pm *policy.PolicyManager, messages chan events.Message, mmsObjMgr *MMSObjectPolicyManager, secretsMgr secrets.AgbotSecrets) *BasicProtocolHandler {
 	if name == basicprotocol.PROTOCOL_NAME {
 		return &BasicProtocolHandler{
 			BaseConsumerProtocolHandler: &BaseConsumerProtocolHandler{
@@ -37,6 +38,7 @@ func NewBasicProtocolHandler(name string, cfg *config.HorizonConfig, db persiste
 				deferredCommands: make([]AgreementWork, 0, 10),
 				messages:         messages,
 				mmsObjMgr:        mmsObjMgr,
+				secretsMgr:       secretsMgr,
 			},
 			agreementPH: basicprotocol.NewProtocolHandler(cfg.Collaborators.HTTPClientFactory.NewHTTPClient(nil), pm),
 			// Allow the main agbot thread to distribute protocol msgs and agreement handling to the worker pool.
@@ -66,7 +68,7 @@ func (c *BasicProtocolHandler) Initialize() {
 
 	// Set up agreement worker pool based on the current technical config.
 	for ix := 0; ix < c.config.AgreementBot.AgreementWorkers; ix++ {
-		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr)
+		agw := NewBasicAgreementWorker(c, c.config, c.db, c.pm, agreementLockMgr, c.mmsObjMgr, c.secretsMgr)
 		go agw.start(c.Work, random)
 	}
 

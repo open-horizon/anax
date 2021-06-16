@@ -62,8 +62,6 @@ func (vs *AgbotVaultSecrets) Login() (err error) {
 		return errors.New(fmt.Sprintf("unable to read login response, error: %v", err))
 	}
 
-	glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("login response: %v", string(respBytes))))
-
 	respMsg := LoginResponse{}
 	err = json.Unmarshal(respBytes, &respMsg)
 	if err != nil {
@@ -98,18 +96,26 @@ func (vs *AgbotVaultSecrets) Renew() (err error) {
 	}
 
 	httpCode := resp.StatusCode
-	if httpCode != http.StatusOK && httpCode != http.StatusCreated {
+	if httpCode == http.StatusForbidden {
+		// The token may have been revoked or expired, get a new one by logging in again.
+		glog.V(3).Infof(vaultPluginLogString("token not renewable, logging in again"))
+		err := vs.Login()
+		if err != nil {
+			return errors.New(fmt.Sprintf("agbot unable to login during renew, error: %v", err))
+		}
+		return nil
+
+	} else if httpCode != http.StatusOK && httpCode != http.StatusCreated {
 		return errors.New(fmt.Sprintf("agbot unable to renew token, HTTP status code: %v", httpCode))
 	}
 
 	// Save the token locally
 
-	respBytes, err := ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to read renew response, error: %v", err))
 	}
 
-	glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("renew response: %v", string(respBytes))))
 	glog.V(3).Infof(vaultPluginLogString("done renewing token"))
 
 	return nil

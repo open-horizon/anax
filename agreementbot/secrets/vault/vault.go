@@ -31,7 +31,7 @@ func (vs *AgbotVaultSecrets) String() string {
 
 // Available to all users within the org
 func (vs *AgbotVaultSecrets) ListOrgUserSecret(user, password, org, name string) (map[string]string, error) {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v for org %v user %v", name, org, user)))
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v as user %v", name, org, user)))
 
 	_, userId := cutil.SplitOrgSpecUrl(user)
 	url := fmt.Sprintf("%s/v1/openhorizon/%s/user/%s/%s", vs.cfg.GetAgbotVaultURL(), org, userId, name)
@@ -40,7 +40,7 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecret(user, password, org, name string)
 
 // Available to only org admin users
 func (vs *AgbotVaultSecrets) ListOrgSecret(user, password, org, name string) (map[string]string, error) {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v for org %v", name, org)))
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v", name, org)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/%s/%s", vs.cfg.GetAgbotVaultURL(), org, name)
 	return vs.listSecret(user, password, org, name, url)
@@ -55,6 +55,7 @@ func (vs *AgbotVaultSecrets) listSecret(user, password, org, name, url string) (
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error: %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
 	}
 
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secret %s in org %s as user %s", name, org, user)))
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodGet, nil)
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
@@ -79,7 +80,7 @@ func (vs *AgbotVaultSecrets) listSecret(user, password, org, name, url string) (
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response body %v", err), Details: "", RespCode: http.StatusInternalServerError}
 	}
 
-	glog.V(3).Infof(vaultPluginLogString("Done reading secret value."))
+	glog.V(3).Infof(vaultPluginLogString("done listing secrets."))
 
 	return respMsg.Data, nil
 }
@@ -87,7 +88,7 @@ func (vs *AgbotVaultSecrets) listSecret(user, password, org, name, url string) (
 // List all secrets at a specified path in vault. Available only to org admin users.
 func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]string, error) {
 
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in %v", org)))
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secrets in %v", org)))
 
 	// Login the user to ensure that the vault ACLs can take effect
 	userVaultToken, err := vs.loginUser(user, password, org)
@@ -98,6 +99,7 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 	// Query the vault using the user's credentials
 	url := fmt.Sprintf("%s/v1/openhorizon/%s?list=true", vs.cfg.GetAgbotVaultURL(), org)
 
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in org %s as %s", org, user)))
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodGet, nil)
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
@@ -117,21 +119,21 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to list secrets for %s, HTTP status code: %v", org, httpCode), Details: "", RespCode: httpCode}
 	}
 
-	glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("list %s secrets response: %v", org, string(respBytes))))
+	glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("listing %s secrets response: %v", org, string(respBytes))))
 
 	respMsg := ListSecretsResponse{}
 	if err := json.Unmarshal(respBytes, &respMsg); err != nil {
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response %v", string(respBytes)), Details: "", RespCode: http.StatusInternalServerError}
 	}
 
-	glog.V(3).Infof(vaultPluginLogString("Done listing secrets."))
+	glog.V(3).Infof(vaultPluginLogString("done listing secrets."))
 
 	return respMsg.Data.Keys, nil
 }
 
 // Available to all users within the org
-func (vs *AgbotVaultSecrets) CreateOrgUserSecret(user, password, org, vaultSecretName string, data secrets.CreateSecretRequest) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("create secret %s for org %s for user %s", vaultSecretName, org, user)))
+func (vs *AgbotVaultSecrets) CreateOrgUserSecret(user, password, org, vaultSecretName string, data secrets.SecretDetails) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("creating secret %s in org %s as user %s", vaultSecretName, org, user)))
 
 	_, userId := cutil.SplitOrgSpecUrl(user)
 	url := fmt.Sprintf("%s/v1/openhorizon/%s/user/%s/%s", vs.cfg.GetAgbotVaultURL(), org, userId, vaultSecretName)
@@ -139,21 +141,22 @@ func (vs *AgbotVaultSecrets) CreateOrgUserSecret(user, password, org, vaultSecre
 }
 
 // Available to only org admin users
-func (vs *AgbotVaultSecrets) CreateOrgSecret(user, password, org, vaultSecretName string, data secrets.CreateSecretRequest) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("create secret %s for org %s", vaultSecretName, org)))
+func (vs *AgbotVaultSecrets) CreateOrgSecret(user, password, org, vaultSecretName string, data secrets.SecretDetails) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("creating secret %s in org %s", vaultSecretName, org)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/%s/%s", vs.cfg.GetAgbotVaultURL(), org, vaultSecretName)
 	return vs.createSecret(user, password, org, vaultSecretName, url, data)
 }
 
 // This utility will be used to create secrets.
-func (vs *AgbotVaultSecrets) createSecret(user, password, org, vaultSecretName, url string, data secrets.CreateSecretRequest) error {
+func (vs *AgbotVaultSecrets) createSecret(user, password, org, vaultSecretName, url string, data secrets.SecretDetails) error {
 
 	userVaultToken, err := vs.loginUser(user, password, org)
 	if err != nil {
 		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
 	}
 
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("create secret %s in org %s as user %s", vaultSecretName, org, user)))
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodPost, map[string]string{data.Key: data.Value})
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
@@ -168,14 +171,14 @@ func (vs *AgbotVaultSecrets) createSecret(user, password, org, vaultSecretName, 
 	} else if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to create secret for %s, error %v", org, string(respBytes)), Details: "", RespCode: resp.StatusCode}
 	}
-	glog.V(3).Infof(vaultPluginLogString("Done creating secret in vault."))
+	glog.V(3).Infof(vaultPluginLogString("done creating secret in vault."))
 
 	return nil
 }
 
 // Available to all users within the org
 func (vs *AgbotVaultSecrets) DeleteOrgUserSecret(user, password, org, name string) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s for org %s for user %s", name, org, user)))
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s in org %s as user %s", name, org, user)))
 
 	_, userId := cutil.SplitOrgSpecUrl(user)
 	url := fmt.Sprintf("%s/v1/openhorizon/%s/user/%s/%s", vs.cfg.GetAgbotVaultURL(), org, userId, name)
@@ -184,7 +187,7 @@ func (vs *AgbotVaultSecrets) DeleteOrgUserSecret(user, password, org, name strin
 
 // Available to only org admin users
 func (vs *AgbotVaultSecrets) DeleteOrgSecret(user, password, org, name string) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s for org %s", name, org)))
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s in org %s", name, org)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/%s/%s", vs.cfg.GetAgbotVaultURL(), org, name)
 	return vs.deleteSecret(user, password, org, name, url)
@@ -198,6 +201,7 @@ func (vs *AgbotVaultSecrets) deleteSecret(user, password, org, name, url string)
 		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
 	}
 
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("deleting secret %s in org %s as user %s", name, org, user)))
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, http.MethodDelete, nil)
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
@@ -212,9 +216,69 @@ func (vs *AgbotVaultSecrets) deleteSecret(user, password, org, name, url string)
 	} else if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		return secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to delete secret for %s, error %v", org, string(respBytes)), Details: "", RespCode: resp.StatusCode}
 	}
-	glog.V(3).Infof(vaultPluginLogString("Done deleting secret in vault."))
+	glog.V(3).Infof(vaultPluginLogString("done deleting secret in vault."))
 
 	return nil
+}
+
+func (vs *AgbotVaultSecrets) GetSecretDetails(org, secretUser, secretName string) (res secrets.SecretDetails, err error) {
+
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("extract secret details for %s in org %s as user %s", secretName, org, secretUser)))
+
+	res = secrets.SecretDetails{}
+	err = nil
+
+	if org == "" {
+		err = secrets.ErrorResponse{Msg: "Organization name must not be an empty string", Details: "", RespCode: http.StatusBadRequest}
+		return
+	}
+
+	if secretName == "" {
+		err = secrets.ErrorResponse{Msg: "Secret name must not be an empty string", Details: "", RespCode: http.StatusBadRequest}
+		return
+	}
+
+	url := fmt.Sprintf("%s/v1/openhorizon/%s/", vs.cfg.GetAgbotVaultURL(), org)
+	if secretUser != "" {
+		url += fmt.Sprintf("user/%s/%s", secretUser, secretName)
+	} else {
+		url += secretName
+	}
+
+	resp, err := vs.invokeVaultWithRetry(vs.token, url, http.MethodGet, nil)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
+	if err != nil {
+		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to read %s secret %s, error: %v", org, secretName, err), Details: "", RespCode: http.StatusServiceUnavailable}
+		return
+	}
+
+	respBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to read secret %s from %s, error: %v", secretName, org, err), Details: "", RespCode: http.StatusInternalServerError}
+		return
+	} else if httpCode := resp.StatusCode; httpCode == http.StatusNotFound {
+		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Secret does not exist. Vault response %s", string(respBytes)), Details: "", RespCode: http.StatusNotFound}
+		return
+	} else if httpCode == http.StatusForbidden {
+		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Secret not available with the specified credentials. Vault response %s", string(respBytes)), Details: "", RespCode: http.StatusForbidden}
+		return
+	} else if httpCode != http.StatusOK {
+		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to find secret %s for org %s, HTTP status code: %v", secretName, org, httpCode), Details: "", RespCode: httpCode}
+		return
+	}
+
+	if uerr := json.Unmarshal(respBytes, &res); uerr != nil {
+		err = secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response body %v", uerr), Details: "", RespCode: http.StatusInternalServerError}
+		return
+	}
+
+	glog.V(3).Infof(vaultPluginLogString("done extracting secret details"))
+
+	return
+
 }
 
 func (vs *AgbotVaultSecrets) loginUser(user, password, org string) (string, error) {
@@ -246,8 +310,6 @@ func (vs *AgbotVaultSecrets) loginUser(user, password, org string) (string, erro
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("unable to read login response, error: %v", err))
 	}
-
-	glog.V(5).Infof(vaultPluginLogString(fmt.Sprintf("login response: %v", string(respBytes))))
 
 	respMsg := LoginResponse{}
 	err = json.Unmarshal(respBytes, &respMsg)

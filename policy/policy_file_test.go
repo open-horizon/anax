@@ -1091,7 +1091,7 @@ func Test_MergePolicyWithExternalPolicy(t *testing.T) {
 }
 
 func Test_DeepCopyPolicy(t *testing.T) {
-	pa := `{"header":{"name":"dep copy test","version": "2.0"},` +
+	pa := `{"header":{"name":"deep copy test","version": "2.0"},` +
 		`"patternId": "e2edev/pws1",` +
 		`"apiSpec":[{"specRef":"url.name","organization":"theOthg"}],` +
 		`"agreementProtocols":[{"name":"Basic","protocolVersion":1}],` +
@@ -1105,7 +1105,9 @@ func Test_DeepCopyPolicy(t *testing.T) {
 		`"properties":[{"name":"pname","value":"pvalue"}],` +
 		`"constraints":["con1","con2"],` +
 		`"nodeHealth":{},` +
-		`"userInput":[{"serviceOrgid":"org1","serviceUrl":"url1","serviceArch":"amd64","serviceVersionRange":"1.0.0","inputs":[{"name":"iname","value":"123"}]}]}`
+		`"userInput":[{"serviceOrgid":"org1","serviceUrl":"url1","serviceArch":"amd64","serviceVersionRange":"1.0.0","inputs":[{"name":"iname","value":"123"}]}],` +
+		`"secretBinding":[{"serviceOrgid":"org2","serviceUrl":"url2","serviceArch":"arm64","serviceVersionRange":"2.1.0","secrets":[{"secret1":"secret-manager-secret"}]}]` +
+		`}`
 
 	// Starting with a base policy, make a copy and then modify some of the deep inner fields
 	// and make sure those fields are not changed in the base.
@@ -1122,6 +1124,8 @@ func Test_DeepCopyPolicy(t *testing.T) {
 	copyPolicy.HAGroup.Partners[0] = "foobar"
 	copyPolicy.UserInput[0].ServiceOrgid = "foobar"
 	copyPolicy.UserInput[0].Inputs[0].Value = "foobar"
+	copyPolicy.SecretBinding[0].ServiceUrl = "foobar"
+	copyPolicy.SecretBinding[0].Secrets[0]["secret1"] = "foobar"
 
 	if copyPolicy.APISpecs[0].Org == basePolicy.APISpecs[0].Org {
 		t.Errorf("Error deep copy failed api spec test, base: %v, copy: %v\n", basePolicy, copyPolicy)
@@ -1141,6 +1145,16 @@ func Test_DeepCopyPolicy(t *testing.T) {
 		t.Errorf("Error deep copy failed userinput test 1, base: %v, copy: %v\n", basePolicy, copyPolicy)
 	} else if copyPolicy.UserInput[0].Inputs[0].Value == basePolicy.UserInput[0].Inputs[0].Value {
 		t.Errorf("Error deep copy failed userinput test 2, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.SecretBinding[0].Secrets[0]["secret1"] == basePolicy.SecretBinding[0].Secrets[0]["secret1"] {
+		t.Errorf("Error deep copy failed secret test 1, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.SecretBinding[0].Secrets[0]["secret1"] != "foobar" {
+		t.Errorf("Error deep copy failed secret test 2, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if basePolicy.SecretBinding[0].Secrets[0]["secret1"] != "secret-manager-secret" {
+		t.Errorf("Error deep copy failed secret test 3, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if copyPolicy.SecretBinding[0].ServiceUrl != "foobar" {
+		t.Errorf("Error deep copy failed secret test 4, base: %v, copy: %v\n", basePolicy, copyPolicy)
+	} else if basePolicy.SecretBinding[0].ServiceUrl != "url2" {
+		t.Errorf("Error deep copy failed secret test 5, base: %v, copy: %v\n", basePolicy, copyPolicy)
 	}
 
 }

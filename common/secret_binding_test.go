@@ -204,19 +204,19 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 		ServiceUrl:          top_url,
 		ServiceArch:         top_arch,
 		ServiceVersionRange: top_ver,
-		Secrets:             []exchangecommon.VaultBinding{},
+		Secrets:             []exchangecommon.BoundSecret{},
 	}
 	sb_dep := exchangecommon.SecretBinding{
 		ServiceOrgid:        dep_org,
 		ServiceUrl:          dep_url,
 		ServiceArch:         dep_arch,
 		ServiceVersionRange: dep_ver,
-		Secrets:             []exchangecommon.VaultBinding{},
+		Secrets:             []exchangecommon.BoundSecret{},
 	}
 
 	// good case
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings := []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err := ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -234,8 +234,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 
 	// good case, ServiceArch="*"
 	sb_top.ServiceArch = "*"
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -245,8 +245,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 
 	// good case, ServiceArch=""
 	sb_top.ServiceArch = "*"
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -264,8 +264,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 
 	// good case, arch="*", but checkAllArches is false
 	sb_top.ServiceArch = "amd64"
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, "*",
 		false, serviceDefResolver, selectedServices, nil)
@@ -283,8 +283,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 
 	// bad case, arch="*", checkAllArches is true
 	sb_top.ServiceArch = "amd64"
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, "*",
 		true, serviceDefResolver, selectedServices, nil)
@@ -305,7 +305,7 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 	}
 
 	// no secret bindings provided for the dependent service
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -318,7 +318,7 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 	}
 
 	// no secret bindings provided for the top level service
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -331,8 +331,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 	}
 
 	// missing one secret binding for the dependent service
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -345,8 +345,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 	}
 
 	// missing one secret binding for the top level service
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -360,8 +360,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 
 	// invalid vault secret name
 	vb_dep1x := map[string]string{secrets_dep[0]: "openhorizon/myorg/user/fred/sd1"}
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1x, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1x, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -374,8 +374,8 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 	}
 
 	// extra secret binding for top level service
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2, map[string]string{"mysecret_top3": "s3"}}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2, map[string]string{"mysecret_top3": "s3"}}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -399,10 +399,10 @@ func Test_ValidateSecretBindingForSvcAndDep(t *testing.T) {
 		ServiceUrl:          dep_url,
 		ServiceArch:         dep_arch,
 		ServiceVersionRange: dep_ver,
-		Secrets:             []exchangecommon.VaultBinding{map[string]string{"svc_secret": "vault_secret"}},
+		Secrets:             []exchangecommon.BoundSecret{map[string]string{"svc_secret": "vault_secret"}},
 	}
-	sb_top.Secrets = []exchangecommon.VaultBinding{vb_top1, vb_top2}
-	sb_dep.Secrets = []exchangecommon.VaultBinding{vb_dep1, vb_dep2}
+	sb_top.Secrets = []exchangecommon.BoundSecret{vb_top1, vb_top2}
+	sb_dep.Secrets = []exchangecommon.BoundSecret{vb_dep1, vb_dep2}
 	secretBindings = []exchangecommon.SecretBinding{sb_top, sb_dep, sb_extra}
 	index_map, err = ValidateSecretBindingForSvcAndDep(secretBindings, top_org, top_url, top_ver, top_arch,
 		true, serviceDefResolver, selectedServices, nil)
@@ -537,14 +537,14 @@ func Test_GroupSecretBindings(t *testing.T) {
 		ServiceUrl:          top_url,
 		ServiceArch:         top_arch,
 		ServiceVersionRange: top_ver,
-		Secrets:             []exchangecommon.VaultBinding{vb_top1, vb_top2},
+		Secrets:             []exchangecommon.BoundSecret{vb_top1, vb_top2},
 	}
 	sb_dep := exchangecommon.SecretBinding{
 		ServiceOrgid:        dep_org,
 		ServiceUrl:          dep_url,
 		ServiceArch:         dep_arch,
 		ServiceVersionRange: dep_ver,
-		Secrets:             []exchangecommon.VaultBinding{vb_dep1, vb_dep2},
+		Secrets:             []exchangecommon.BoundSecret{vb_dep1, vb_dep2},
 	}
 	secretBindings := []exchangecommon.SecretBinding{sb_top, sb_dep}
 
