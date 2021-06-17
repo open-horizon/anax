@@ -2,14 +2,19 @@ package dev
 
 import (
 	"fmt"
+	"os"
+	"runtime"
+	"strings"
+
+	"errors"
+
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/container"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
-	"os"
-	"runtime"
 )
 
 // These constants define the hzn dev subcommands supported by this module.
@@ -239,7 +244,36 @@ func ServiceValidate(homeDirectory string, userInputFile string, configFiles []s
 	return absFiles
 }
 
-func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
+func searchDependencies(dir string, serviceDef *common.ServiceFile, targetService string) (*common.ServiceFile, error) {
+
+	// check the current service
+	if serviceDef.URL == targetService {
+		return serviceDef, nil
+	}
+
+	// generate dependencies
+	serviceDeps, derr := GetServiceDependencies(dir, serviceDef.RequiredServices)
+	if derr != nil {
+		return nil, derr
+	}
+
+	// search dependencies (depth first search)
+	for _, dep := range serviceDeps {
+		res, rerr := searchDependencies(dir, dep, targetService)
+		if rerr != nil {
+			return nil, rerr
+		}
+		if res != nil {
+			return res, nil
+		}
+	}
+
+	// unsuccessful search
+	return nil, nil
+
+}
+
+func ServiceLog(homeDirectory string, serviceName string, containerName string, tailing bool) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
 
@@ -252,30 +286,67 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, wderr)
 	}
 
+	targetServiceDef := serviceDef
+	if serviceName != "" {
+		// Search for the specified service URL
+		foundServiceDef, sderr := searchDependencies(dir, serviceDef, serviceName)
+		if sderr != nil {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, sderr)
+		}
+
+		// Service URL not found
+		if foundServiceDef == nil {
+			err := errors.New(i18n.GetMessagePrinter().Sprintf("failed to find the service %v in the current project. If this is a new dependent "+
+				"service, please update the dependency list with the 'hzn dev dependency fetch' command.", serviceName))
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, err)
+		} else {
+			targetServiceDef = foundServiceDef
+		}
+	} else {
+		serviceName = serviceDef.URL
+	}
+
 	// Get the deployment config. This is a top-level service because it's the one being launched, so it is treated as
 	// if it is managed by an agreement.
-	dc, _, cerr := serviceDef.ConvertToDeploymentDescription(true, msgPrinter)
+	dc, _, cerr := targetServiceDef.ConvertToDeploymentDescription(true, msgPrinter)
 	if cerr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, cerr)
 	}
 
-	logDriver := "syslog"
-	if serviceName == "" {
-		if len(dc.Services) > 1 {
-			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one service has been found for deployment. Please specify the service name by -s flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND))
-		}
+	// find the log driver for the container (default syslog)
+	var logDriver string
+	if containerName == "" && len(dc.Services) > 1 {
 
-		// Apply service name
+		// collect the container names
+		var containerNames []string
+		for name, _ := range dc.Services {
+			containerNames = append(containerNames, name)
+		}
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' More than one container has been found for deployment: "+
+			strings.Join(containerNames, ", ")+". Please specify the service name by -c flag", SERVICE_COMMAND, SERVICE_LOG_COMMAND))
+	} else if containerName != "" {
+		found := false
 		for name, svc := range dc.Services {
-			serviceName = name
-			if svc.LogDriver != "" {
+			if name == containerName {
+				found = true
 				logDriver = svc.LogDriver
 			}
 		}
+		if !found {
+			cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v': container %v not found in service %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND, containerName, serviceName))
+		}
+	} else { // containerName == "" && len(dc.Services) == 1
+		for name, svc := range dc.Services {
+			containerName = name
+			logDriver = svc.LogDriver
+		}
+	}
+	if logDriver == "" {
+		logDriver = "syslog"
 	}
 
 	// Locate the dev container(s) and show logs
-	containers, err := findContainers(serviceName, "", cw)
+	containers, err := findContainers(containerName, "", cw)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, msgPrinter.Sprintf("'%v %v' Unable to list containers: %v", SERVICE_COMMAND, SERVICE_LOG_COMMAND), err)
 	}
@@ -298,9 +369,9 @@ func ServiceLog(homeDirectory string, serviceName string, tailing bool) {
 			}
 
 			if runtime.GOOS == "darwin" || nonDefaultLogDriverUsed {
-				cliutils.LogMac(msId, tailing)
+				cliutils.LogMac(msId+"_"+containerName, tailing)
 			} else {
-				cliutils.LogLinux(msId, tailing)
+				cliutils.LogLinux(msId+"_"+containerName, tailing)
 			}
 			return
 		}
