@@ -252,6 +252,7 @@ Environment Variables:
 	devServiceConfigType := devServiceStartTestCmd.Flag("type", msgPrinter.Sprintf("The type of file to be made available through the sync service APIs. All config files are presumed to be of the same type. This flag is required if any configFiles are specified.")).Short('t').String()
 	devServiceNoFSS := devServiceStartTestCmd.Flag("noFSS", msgPrinter.Sprintf("Do not bring up file sync service (FSS) containers. They are brought up by default.")).Short('S').Bool()
 	devServiceStartCmdUserPw := devServiceStartTestCmd.Flag("user-pw", msgPrinter.Sprintf("Horizon Exchange user credentials to query exchange resources. Specify it when you want to automatically fetch the missing dependent services from the Exchange. The default is HZN_EXCHANGE_USER_AUTH environment variable. If you don't prepend it with the user's org, it will automatically be prepended with the value of the HZN_ORG_ID environment variable.")).Short('u').PlaceHolder("USER:PW").String()
+	devServiceStartSecretsFiles := devServiceStartTestCmd.Flag("secret", msgPrinter.Sprintf("Filepath of a file containing a secret that is required by the service or one of its dependent services. The filename must match a secret name in the service definition. The file is encoded in JSON as an object containing two keys both typed as a string; \"key\" is used to indicate the kind of secret, and \"value\" is the string form of the secret. This flag can be repeated.")).Strings()
 	devServiceStopTestCmd := devServiceCmd.Command("stop", msgPrinter.Sprintf("Stop a service that is running in a mocked Horizon Agent environment. This command is not supported for services using the %v deployment configuration.", kube_deployment.KUBE_DEPLOYMENT_CONFIG_TYPE))
 	devServiceValidateCmd := devServiceCmd.Command("verify | vf", msgPrinter.Sprintf("Validate the project for completeness and schema compliance.")).Alias("vf").Alias("verify")
 	devServiceVerifyUserInputFile := devServiceValidateCmd.Flag("userInputFile", msgPrinter.Sprintf("File containing user input values for verification of a project. If omitted, the userinput file for the project will be used.")).Short('f').String()
@@ -1095,7 +1096,7 @@ Environment Variables:
 	case devServiceNewCmd.FullCommand():
 		dev.ServiceNew(*devHomeDirectory, *devServiceNewCmdOrg, *devServiceNewCmdName, *devServiceNewCmdVer, *devServiceNewCmdImage, *devServiceNewCmdNoImageGen, *devServiceNewCmdCfg, *devServiceNewCmdNoPattern, *devServiceNewCmdNoPolicy)
 	case devServiceStartTestCmd.FullCommand():
-		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS, *devServiceStartCmdUserPw)
+		dev.ServiceStartTest(*devHomeDirectory, *devServiceUserInputFile, *devServiceConfigFile, *devServiceConfigType, *devServiceNoFSS, *devServiceStartCmdUserPw, *devServiceStartSecretsFiles)
 	case devServiceStopTestCmd.FullCommand():
 		dev.ServiceStopTest(*devHomeDirectory)
 	case devServiceValidateCmd.FullCommand():
