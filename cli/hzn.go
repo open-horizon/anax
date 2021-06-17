@@ -3,11 +3,6 @@ package main
 
 import (
 	"flag"
-	"github.com/open-horizon/anax/cli/sdo"
-	"github.com/open-horizon/anax/version"
-	"os"
-	"strings"
-
 	"github.com/open-horizon/anax/cli/agreement"
 	"github.com/open-horizon/anax/cli/agreementbot"
 	"github.com/open-horizon/anax/cli/attribute"
@@ -25,6 +20,7 @@ import (
 	"github.com/open-horizon/anax/cli/node"
 	"github.com/open-horizon/anax/cli/policy"
 	"github.com/open-horizon/anax/cli/register"
+	"github.com/open-horizon/anax/cli/sdo"
 	"github.com/open-horizon/anax/cli/service"
 	"github.com/open-horizon/anax/cli/status"
 	"github.com/open-horizon/anax/cli/sync_service"
@@ -32,10 +28,14 @@ import (
 	"github.com/open-horizon/anax/cli/userinput"
 	"github.com/open-horizon/anax/cli/utilcmds"
 	"github.com/open-horizon/anax/cutil"
+	exch "github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/i18n"
+	"github.com/open-horizon/anax/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"k8s.io/client-go/rest"
+	"os"
 	"runtime"
+	"strings"
 )
 
 func main() {
@@ -364,6 +364,19 @@ Environment Variables:
 	exNodeRemovePolicyIdTok := exNodeRemovePolicyCmd.Flag("node-id-tok", msgPrinter.Sprintf("The Horizon Exchange node ID and token to be used as credentials to query and modify the node resources if -u flag is not specified. HZN_EXCHANGE_NODE_AUTH will be used as a default for -n. If you don't prepend it with the node's org, it will automatically be prepended with the -o value.")).Short('n').PlaceHolder("ID:TOK").String()
 	exNodeRemovePolicyNode := exNodeRemovePolicyCmd.Arg("node", msgPrinter.Sprintf("Remove policy for this node.")).Required().String()
 	exNodeRemovePolicyForce := exNodeRemovePolicyCmd.Flag("force", msgPrinter.Sprintf("Skip the 'are you sure?' prompt.")).Short('f').Bool()
+	exNodeServiceConfigStateCmd := exNodeCmd.Command("serviceconfigstate", "List and manage service config state in open horizon exchange.")
+	exNodeServiceConfigStateListCmd := exNodeServiceConfigStateCmd.Command("list", "Shows the configstate of services on a node.")
+	exNodeServiceConfigStateListNode := exNodeServiceConfigStateListCmd.Arg("node", "Service config state list of this node.").Required().String()
+	exNodeServiceConfigStateSuspendCmd := exNodeServiceConfigStateCmd.Command("suspend", "Changes the service config state to suspended")
+	exNodeServiceConfigStateSuspendNode := exNodeServiceConfigStateSuspendCmd.Arg("node", "The node id on which state of service config will be changed to suspended").Required().String()
+	exNodeServiceConfigStateSuspendService := exNodeServiceConfigStateSuspendCmd.Arg("service", "The service name on which state of service config will be changed to suspended").Required().String()
+	exNodeServiceConfigStateSuspendServiceOrg := exNodeServiceConfigStateSuspendCmd.Flag("service-org", "The service's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.").String()
+
+	exNodeServiceConfigStateResumeCmd := exNodeServiceConfigStateCmd.Command("resume", "Changes the service config state to active")
+	exNodeServiceConfigStateResumeNode := exNodeServiceConfigStateResumeCmd.Arg("node", "The node id on which state of service config will be changed to active").Required().String()
+	exNodeServiceConfigStateResumeService := exNodeServiceConfigStateResumeCmd.Arg("service", "The service name on which state of service config will be changed to active").Required().String()
+	exNodeServiceConfigStateResumeServiceOrg := exNodeServiceConfigStateResumeCmd.Flag("service-org", "The service's organization. If omitted, it will be same as the org specified by -o or HZN_ORG_ID.").String()
+
 	exNodeSetTokCmd := exNodeCmd.Command("settoken", msgPrinter.Sprintf("Change the token of a node resource in the Horizon Exchange."))
 	exNodeSetTokNode := exNodeSetTokCmd.Arg("node", msgPrinter.Sprintf("The node to be changed.")).Required().String()
 	exNodeSetTokToken := exNodeSetTokCmd.Arg("token", msgPrinter.Sprintf("The new token for the node.")).Required().String()
@@ -735,6 +748,12 @@ Environment Variables:
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeErrorsListIdTok)
 		case "node liststatus":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exNodeStatusIdTok)
+		case "node serviceconfigstate list":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "")
+		case "node serviceconfigstate suspend":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "")
+		case "node serviceconfigstate resume":
+			credToUse = cliutils.GetExchangeAuth(*exUserPw, "")
 		case "service list":
 			credToUse = cliutils.GetExchangeAuth(*exUserPw, *exServiceListNodeIdTok)
 		case "service verify":
@@ -925,6 +944,12 @@ Environment Variables:
 		exchange.NodeListErrors(*exOrg, credToUse, *exNodeErrorsListNode, *exNodeErrorsListLong)
 	case exNodeStatusList.FullCommand():
 		exchange.NodeListStatus(*exOrg, credToUse, *exNodeStatusListNode)
+	case exNodeServiceConfigStateListCmd.FullCommand():
+		exchange.NodeServiceConfigStateList(*exOrg, credToUse, *exNodeServiceConfigStateListNode)
+	case exNodeServiceConfigStateSuspendCmd.FullCommand():
+		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateSuspendNode, *exNodeServiceConfigStateSuspendService, exch.SERVICE_CONFIGSTATE_SUSPENDED, *exNodeServiceConfigStateSuspendServiceOrg)
+	case exNodeServiceConfigStateResumeCmd.FullCommand():
+		exchange.NodeServiceConfigStateChange(*exOrg, credToUse, *exNodeServiceConfigStateResumeNode, *exNodeServiceConfigStateResumeService, exch.SERVICE_CONFIGSTATE_ACTIVE, *exNodeServiceConfigStateResumeServiceOrg)
 
 	case agbotCacheServedOrgList.FullCommand():
 		agreementbot.GetServedOrgs()

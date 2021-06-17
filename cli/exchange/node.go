@@ -8,6 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/compcheck"
+	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/exchange"
 	"github.com/open-horizon/anax/externalpolicy"
 	_ "github.com/open-horizon/anax/externalpolicy/text_language"
@@ -620,6 +621,54 @@ func NodeListStatus(org string, credToUse string, node string) {
 	output := cliutils.MarshalIndent(nodeStatus, "exchange node liststatus")
 	fmt.Println(output)
 
+}
+
+// NodeServiceConfigStateList list of service config state of a node.
+func NodeServiceConfigStateList(org string, credToUse string, node string) {
+	nodeOrg, node := cliutils.TrimOrg(org, node)
+	var nodes ExchangeNodes
+	httpCode := cliutils.ExchangeGet("Exchange", cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes"+cliutils.AddSlash(node), cliutils.OrgAndCreds(org, credToUse), []int{200, 404}, &nodes)
+	if httpCode == 404 && node != "" {
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s/%s' not found.", nodeOrg, node))
+	}
+	nodeKey := fmt.Sprintf("%s/%s", nodeOrg, node)
+	registeredServices := nodes.Nodes[nodeKey].RegisteredServices
+	var serviceConfigStates []exchange.ServiceConfigState
+	for _, registeredService := range registeredServices {
+		org, url := cutil.SplitOrgSpecUrl(registeredService.Url)
+		serviceConfigState := exchange.ServiceConfigState{
+			Url:         url,
+			Org:         org,
+			ConfigState: registeredService.ConfigState,
+		}
+		serviceConfigStates = append(serviceConfigStates, serviceConfigState)
+	}
+	out := make(map[string][]exchange.ServiceConfigState)
+	out["configstates"] = serviceConfigStates
+	output := cliutils.MarshalIndent(out, "exchange node serviceconfigstate list")
+	fmt.Println(output)
+}
+
+// NodeServiceConfigStateChange change the service config state of service of a node.
+func NodeServiceConfigStateChange(org string, credToUse string, node string, serviceName string, state string, serviceOrg string) {
+	nodeOrg, node := cliutils.TrimOrg(org, node)
+	var resp struct {
+		Code string `json:"code"`
+		Msg  string `json:"msg"`
+	}
+
+	if serviceOrg == "" {
+		serviceOrg = nodeOrg
+	}
+	putServiceConfigState := exchange.ServiceConfigState{Org: serviceOrg, Url: serviceName, ConfigState: state}
+	httpCode := cliutils.ExchangePutPost("Exchange", http.MethodPost, cliutils.GetExchangeUrl(), "orgs/"+nodeOrg+"/nodes/"+node+"/services_configstate", cliutils.OrgAndCreds(nodeOrg, credToUse), []int{201, 404, 400}, putServiceConfigState, &resp)
+	if httpCode == 400 {
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("node '%s/%s' not found.", nodeOrg, node))
+	}
+	if httpCode == 404 {
+		cliutils.Fatal(cliutils.NOT_FOUND, i18n.GetMessagePrinter().Sprintf("registeredServices %s not found in '%s/%s'.", serviceName, nodeOrg, node))
+	}
+	fmt.Println(resp.Msg)
 }
 
 // Verify the node user input for the pattern case. Make sure that the given
