@@ -234,8 +234,11 @@ func SetPlatformEnvvars(envAdds map[string]string, prefix string, agreementId st
 		envAdds[prefix+"AGREEMENTID"] = agreementId
 	}
 
-	// The exchange id of the node that is running the container.
+	// The exchange id of the node that is running the container (deprecated).
 	envAdds[prefix+"DEVICE_ID"] = deviceId
+
+	// The exchange id of the node that is running the container.
+	envAdds[prefix+"NODE_ID"] = deviceId
 
 	// The exchange organization that the node belongs.
 	envAdds[prefix+"ORGANIZATION"] = org

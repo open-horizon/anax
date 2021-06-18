@@ -6,7 +6,8 @@ Horizon manages the lifecycle, connectivity, and other features of services it l
 
 Horizon sets these environment variables when starting a service container:
 
-* `HZN_DEVICE_ID`: The unique identifier for the edge node.
+* `HZN_NODE_ID`: The unique identifier for the edge node.
+* `HZN_DEVICE_ID` (DEPRECATED): The unique identifier for the edge node.
 * `HZN_ORGANIZATION`: The organization the edge node is part of.
 * `HZN_EXCHANGE_URL`: The Horizon Exchange being used by this edge node.
 * `HZN_HOST_IPS`: The IP addresses configured on this edge node host.
