@@ -517,6 +517,30 @@ func GetHorizonUrlBase() string {
 	}
 }
 
+// GetHorizonContainerIndex returns expected horizon container index based on the HORIZON_URL port binding
+// e.g. if horizon container is running on 8081 port it's index would be 1 and expected container name is horizon1
+func GetHorizonContainerIndex() (int, error) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	horizonUrl, err := url.Parse(GetHorizonUrlBase())
+	if err != nil {
+		return -1, fmt.Errorf(msgPrinter.Sprintf("Error parsing HORIZON_URL: %v", err))
+	}
+	_, port, err := net.SplitHostPort(horizonUrl.Host)
+	if err != nil {
+		return -1, fmt.Errorf(msgPrinter.Sprintf("Error parsing host of the HORIZON_URL: %v", err))
+	}
+	portInt, err := strconv.Atoi(port)
+	if err != nil {
+		return -1, fmt.Errorf(msgPrinter.Sprintf("Error parsing port of the HORIZON_URL: %v", err))
+	}
+	if portInt < 8080 {
+		return -1, fmt.Errorf(msgPrinter.Sprintf("Unexpected port of the HORIZON_URL: %v", portInt))
+	}
+	return portInt - 8080, nil
+}
+
 // Returns the agbot native url. If HZN_AGBOT_API not set, use HORIZON_URL
 func GetAgbotUrlBase() string {
 	envVar := os.Getenv("HZN_AGBOT_API")
