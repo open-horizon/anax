@@ -14,7 +14,7 @@ function results {
   fi
 
   # check http code
-  if [ "$rc" != $2 ]
+  if [ "$rc" != "$2" ]
   then
     echo -e "Error: $(echo "$output" | jq -r '.')\n"
     exit 2
