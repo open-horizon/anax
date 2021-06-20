@@ -213,6 +213,11 @@ func (vs *AgbotVaultSecrets) invokeVault(token string, url string, method string
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("unable to send HTTP request for %v, error %v", apiMsg, err))
 	} else {
+		// NOTE: 500, 502, 503 are the only server error status codes returned by the vault API
+		// https://www.vaultproject.io/api#http-status-codes
+		if resp.StatusCode < 500 {
+			vs.lastVaultInteraction = uint64(time.Now().Unix())
+		}
 		return resp, nil
 	}
 }

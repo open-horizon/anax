@@ -542,4 +542,11 @@ echo "$CMD"
 RES=$($CMD)
 results "$RES" "200" "exists" "false"
 
+# Check agbot <-> vault health status using AGBOT_API
+echo -e "\n${PREFIX} Check agbot-vault health status"
+CMD="curl -sLX GET -w %{http_code} ${AGBOT_API}/health"
+echo "$CMD"
+RES=$($CMD)
+results "$RES" "200" "lastVaultInteraction"
+
 echo -e "\n${PREFIX} complete test\n"

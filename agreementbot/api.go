@@ -6,6 +6,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/apicommon"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
@@ -30,9 +31,10 @@ type API struct {
 	em             *events.EventStateManager
 	shutdownError  string
 	configFile     string
+	secretProvider *secrets.AgbotSecrets
 }
 
-func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string, s *secrets.AgbotSecrets) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -46,6 +48,7 @@ func NewAPIListener(name string, config *config.HorizonConfig, db persistence.Ag
 		EC:         worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
 		em:         events.NewEventStateManager(),
 		configFile: configFile,
+		secretProvider: s,
 	}
 
 	listener.listen(config.AgreementBot.APIListen)
@@ -644,6 +647,9 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 		var err error
 		if health.LastDBHeartbeatTime, err = a.db.GetHeartbeat(); err != nil {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get DB heartbeat, error: %v", err)))
+		}
+		if a.secretProvider != nil {
+			health.LastVaultInteraction = (*a.secretProvider).GetLastVaultStatus()
 		}
 		info.LiveHealth = health
 
