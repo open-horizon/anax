@@ -3,6 +3,7 @@ package cliutils
 import (
 	"bufio"
 	"bytes"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -1555,28 +1556,60 @@ func VerifySigningKeyInput(keyFile string, isPublic bool) string {
 
 // get default keys if needed and verify them.
 // this function is used by `hzn exhcange pattern/service publish
-func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, string) {
+func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, []byte, string) {
 
-	// if the -k is specified but -K is not specified, then do not get public key default.
-	// the public key will not be stored with the resource.
-	defaultPublicKey := true
-	if privKeyFilePath != "" && pubKeyFilePath == "" {
-		defaultPublicKey = false
+	var err error
+	
+	// if -K is not specified, then the public key will be generated from the private key.
+	publicKeyGiven := true
+	if pubKeyFilePath == "" {
+		publicKeyGiven = false
 	}
 
-	// get default private key
+	// Get default private key if -k not specified
+	var privKey *rsa.PrivateKey
 	privKeyFilePath_tmp := WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
 	privKeyFilePath = VerifySigningKeyInput(*privKeyFilePath_tmp, false)
-
-	if privKeyFilePath != "" {
-		verifyPrivateKeyFormat(privKeyFilePath)
+	if privKey, err = sign.ReadPrivateKey(privKeyFilePath); err != nil {
+		Fatal(CLI_INPUT_ERROR, i18n.GetMessagePrinter().Sprintf("provided private key is not valid; error: %v", err))
 	}
 
+	// Load in public key, if given
+	var pubKeyBytes []byte
+	publicKeyName := "default.public.key"
 	// get default public key
-	if defaultPublicKey {
+	if publicKeyGiven {
+		publicKeyName = filepath.Base(pubKeyFilePath)
 		pubKeyFilePath = GetAndVerifyPublicKey(pubKeyFilePath)
+		pubKeyBytes = ReadFile(pubKeyFilePath)
+	} else {
+		// calculate public key from private key
+		pubKeyBytes, err = x509.MarshalPKIXPublicKey(&privKey.PublicKey)
+		if err != nil {
+			Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("%v. Public key could not be generated."))
+		}
+		// format public key
+		pubKeyBytes = FormatKeyByteSlice(pubKeyBytes, true)
 	}
-	return privKeyFilePath, pubKeyFilePath
+	return privKeyFilePath, pubKeyBytes, publicKeyName
+}
+
+// Formats private/public key byte slice to include newlines and header/footer in RSA format
+func FormatKeyByteSlice(key []byte, isPublic bool) []byte {
+	
+	// Format public key
+	keyByteString := base64.StdEncoding.EncodeToString(key)
+	for i := 64; i < len(keyByteString); i += 65 {
+		keyByteString = keyByteString[:i] + "\n" + keyByteString[i:]
+	}
+	if isPublic {
+		keyByteString = "-----BEGIN PUBLIC KEY-----\n" + keyByteString + "\n-----END PUBLIC KEY-----\n"
+	} else {
+		keyByteString = "-----BEGIN RSA PRIVATE KEY-----\n" + keyByteString + "\n-----END RSA PRIVATE KEY-----\n"
+	}
+
+	// Convert Public Key to byte slice
+	return []byte(keyByteString)
 }
 
 // Run a command with optional stdin and args, and return stdout, stderr
