@@ -229,6 +229,10 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 	ec := cliutils.GetUserExchangeContext(org, userPw)
 	verifySecretBindingForPattern(patFile.GetSecretBinding(), patFile.GetServices(), patFile.GetOrg(), ec, patFile.IsPublic())
 
+	// variables to store public key data
+	var newPubKeyToStore []byte
+	var newPubKeyName string
+
 	keyVerified := false
 	// Loop thru the services array and the servicesVersions array and sign the deployment_overrides fields
 	if patFile.Services != nil && len(patFile.Services) > 0 {
@@ -272,7 +276,7 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 					patInput.Services[i].ServiceVersions[j].DeploymentOverrides = string(deployment)
 					// We know we need to sign the overrides, so make sure a real key file was provided.
 					if !keyVerified {
-						keyFilePath, pubKeyFilePath = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
+						keyFilePath, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 						keyVerified = true
 					}
 
@@ -313,18 +317,13 @@ func PatternPublish(org, userPw, jsonFilePath, keyFilePath, pubKeyFilePath, patN
 		cliutils.ExchangePutPost("Exchange", http.MethodPost, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId, cliutils.OrgAndCreds(org, userPw), []int{201}, patInput, nil)
 	}
 
-	// Store the public key in the exchange, if they gave it to us
-	if pubKeyFilePath != "" {
-		// Note: already verified the file exists
-		if !keyVerified {
-			pubKeyFilePath = cliutils.GetAndVerifyPublicKey(pubKeyFilePath)
-		}
-		bodyBytes := cliutils.ReadFile(pubKeyFilePath)
-		baseName := filepath.Base(pubKeyFilePath)
-		msgPrinter.Printf("Storing %s with the pattern in the Exchange...", baseName)
-		msgPrinter.Println()
-		cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+baseName, cliutils.OrgAndCreds(org, userPw), []int{201}, bodyBytes, nil)
+	// Store the public key in the exchange
+	if !keyVerified {
+		_, newPubKeyToStore, newPubKeyName = cliutils.GetSigningKeys(keyFilePath, pubKeyFilePath)
 	}
+	msgPrinter.Printf("Storing %s with the pattern in the Exchange...", newPubKeyName)
+	msgPrinter.Println()
+	cliutils.ExchangePutPost("Exchange", http.MethodPut, exchUrl, "orgs/"+patFile.Org+"/patterns/"+exchId+"/keys/"+newPubKeyName, cliutils.OrgAndCreds(org, userPw), []int{201}, newPubKeyToStore, nil)
 }
 
 // Verify that the deployment_overrides_signature is valid for the given key.

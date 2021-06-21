@@ -3,10 +3,12 @@ package cliutils
 import (
 	"bufio"
 	"bytes"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io"
@@ -1506,14 +1508,18 @@ func GetAndVerifyPublicKey(pubKeyFilePath string) string {
 	return pubKeyFilePath
 }
 
-func verifyPrivateKeyFormat(keyFile string) {
+func getPrivateKeyFromFile(keyFile string) *rsa.PrivateKey {
 	msgPrinter := i18n.GetMessagePrinter()
 	msgPrinter.Printf("Checking private key file format ... ")
 	msgPrinter.Println()
 
-	if _, err := sign.ReadPrivateKey(keyFile); err != nil {
+	var privKey *rsa.PrivateKey
+	var err error
+	if privKey, err = sign.ReadPrivateKey(keyFile); err != nil {
 		Fatal(CLI_INPUT_ERROR, msgPrinter.Sprintf("provided private key is not valid; error: %v", err))
 	}
+
+	return privKey
 }
 
 // get the default private or public key file name
@@ -1555,28 +1561,39 @@ func VerifySigningKeyInput(keyFile string, isPublic bool) string {
 
 // get default keys if needed and verify them.
 // this function is used by `hzn exhcange pattern/service publish
-func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, string) {
+func GetSigningKeys(privKeyFilePath, pubKeyFilePath string) (string, []byte, string) {
 
-	// if the -k is specified but -K is not specified, then do not get public key default.
-	// the public key will not be stored with the resource.
-	defaultPublicKey := true
-	if privKeyFilePath != "" && pubKeyFilePath == "" {
-		defaultPublicKey = false
-	}
+	var err error
 
-	// get default private key
+	// Get default private key if -k not specified
+	var privKey *rsa.PrivateKey
 	privKeyFilePath_tmp := WithDefaultEnvVar(&privKeyFilePath, "HZN_PRIVATE_KEY_FILE")
 	privKeyFilePath = VerifySigningKeyInput(*privKeyFilePath_tmp, false)
+	privKey = getPrivateKeyFromFile(privKeyFilePath)
 
-	if privKeyFilePath != "" {
-		verifyPrivateKeyFormat(privKeyFilePath)
-	}
-
+	// Load in public key, if given
+	var pubKeyBytes []byte
+	publicKeyName := "default.public.key"
 	// get default public key
-	if defaultPublicKey {
+	if pubKeyFilePath != "" {
+		publicKeyName = filepath.Base(pubKeyFilePath)
 		pubKeyFilePath = GetAndVerifyPublicKey(pubKeyFilePath)
-	}
-	return privKeyFilePath, pubKeyFilePath
+		pubKeyBytes = ReadFile(pubKeyFilePath)
+	} else {
+		// calculate public key from private key
+		pubKeyBytes, err = x509.MarshalPKIXPublicKey(&privKey.PublicKey)
+		if err != nil {
+			Fatal(CLI_GENERAL_ERROR, i18n.GetMessagePrinter().Sprintf("%v. Public key could not be generated."))
+		}
+		// format public key
+		pubEnc := &pem.Block{
+			Type:    "PUBLIC KEY",
+			Headers: nil,
+			Bytes:   pubKeyBytes,
+		}
+		pubKeyBytes = pem.EncodeToMemory(pubEnc)
+		}
+	return privKeyFilePath, pubKeyBytes, publicKeyName
 }
 
 // Run a command with optional stdin and args, and return stdout, stderr
