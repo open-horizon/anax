@@ -24,7 +24,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
-	"golang.org/x/text/message"
 )
 
 // These structs are the event bodies that flow from the processor to the agreement workers
@@ -332,16 +331,16 @@ func (b *BaseAgreementWorker) AgreementLockManager() *AgreementLockManager {
 	return b.alm
 }
 
-
-
-func  checkPolicyCompatibility(workerId string, wi *InitiateAgreement, nodePolicy *policy.Policy, businessPolicy *policy.Policy, mergedServicePolicy *externalpolicy.ExternalPolicy, nodeArch string, msgPrinter *message.Printer) (bool, *policy.Policy, error) {
+func (b *BaseAgreementWorker) checkPolicyCompatibility(workerId string, wi *InitiateAgreement, nodePolicy *policy.Policy, businessPolicy *policy.Policy, mergedServicePolicy *externalpolicy.ExternalPolicy, nodeArch string, msgPrinter *message.Printer) (bool, *policy.Policy, error) {
 
 	if compatible, reason, _, consumPol, err := compcheck.CheckPolicyCompatiblility(nodePolicy, businessPolicy, mergedServicePolicy, "", msgPrinter); err != nil {
 		glog.Warning(BAWlogstring(workerId, fmt.Sprintf("error checking policy compatibility. %v.", err.Error())))
 		return false, nil, err
 	} else {
 		if compatible {
-			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
+			if glog.V(5) {
+				glog.Infof(BAWlogstring(workerId, fmt.Sprintf("Node %v is compatible", wi.Device.Id)))
+			}
 			return true, consumPol, nil
 		} else {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("failed matching node policy %v and %v, error: %v", wi.ProducerPolicy, wi.ConsumerPolicy, reason)))
@@ -357,39 +356,40 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	// get node policy
 	nodePolicyHandler := exchange.GetHTTPNodePolicyHandler(b)
 	_, nodePolicy, err := compcheck.GetNodePolicy(nodePolicyHandler, wi.Device.Id, msgPrinter)
+	if err != nil {
+		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
+		return
+	} else if nodePolicy == nil {
+		glog.Warning(BAWlogstring(workerId, fmt.Sprintf("Cannot find node policy for this node %v.", wi.Device.Id)))
+		return
+	} else {
+		if glog.V(5) {
+			glog.Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
+		}
+		wi.ProducerPolicy = *nodePolicy
+	}
 
 	// If a deployment policy is being used, set wi.ProducerPolicy to the node policy
 	if wi.ConsumerPolicy.PatternId == "" {
 		// non pattern case
 
-		if err != nil {
-			glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("%v", err)))
-			return
-		} else if nodePolicy == nil {
-			glog.Warning(BAWlogstring(workerId, fmt.Sprintf("Cannot find node policy for this node %v.", wi.Device.Id)))
-			return
-		} else {
-			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("retrieved node policy: %v", nodePolicy)))
-			wi.ProducerPolicy = *nodePolicy
-		}
-
-	        // If a deployment policy is being used and multiple service versions are possible, do an initial check of just the policy constraints of the deployment policy 
-		// with the node properties to see if those match before we get too far invested in checking matches of all the different service versions. 
-	        // In the case were have thousands of deployment policies, this can avoid lots of calls to check and create workload_usages in the DB if there isn't a match at this level
-	        //
-	        // If the node policy has constraints, we can't do the check without the service properties so we need to find the workload.
+		// If a deployment policy is being used and multiple service versions are possible, do an initial check of just the policy constraints of the deployment policy
+		// with the node properties to see if those match before we get too far invested in checking matches of all the different service versions.
+		// In the case were have thousands of deployment policies, this can avoid lots of calls to check and create workload_usages in the DB if there isn't a match at this level
+		//
+		// If the node policy has constraints, we can't do the check without the service properties so we need to find the workload.
 		// Also, if there is only 1 workload possibility, skip the check here and just do the check with the service included to avoid checking twice
 		// for the case where the node does match the policy
-	        if len(nodePolicy.Constraints) == 0 && len(wi.ConsumerPolicy.Workloads) > 1 { 
-			EmptySvcPolicy := externalpolicy.ExternalPolicy{ 
-				Properties:  []externalpolicy.Property{}, 
-				Constraints: []string{}, 
-			} 
+		if len(nodePolicy.Constraints) == 0 && len(wi.ConsumerPolicy.Workloads) > 1 {
+			EmptySvcPolicy := externalpolicy.ExternalPolicy{
+				Properties:  []externalpolicy.Property{},
+				Constraints: []string{},
+			}
 
-			compatible,_,_  := checkPolicyCompatibility(workerId, wi, nodePolicy, &wi.ConsumerPolicy, &EmptySvcPolicy, "", msgPrinter) 
-			if !compatible { 
+			compatible, _, _ := b.checkPolicyCompatibility(workerId, wi, nodePolicy, &wi.ConsumerPolicy, &EmptySvcPolicy, "", msgPrinter)
+			if !compatible {
 				// Not compatible with the constraints of the deployment policy so no need to continue checking with the service versions
-				return 
+				return
 			}
 		}
 	}
@@ -400,7 +400,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error generating agreement id %v", aerr)))
 		return
 	}
-	glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
+	if glog.V(5) {
+		glog.Infof(BAWlogstring(workerId, fmt.Sprintf("using AgreementId %v", agreementIdString)))
+	}
 
 	bcType, bcName, bcOrg := (&wi.ProducerPolicy).RequiresKnownBC(cph.Name())
 
@@ -439,15 +441,12 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 	svcIds := []string{} // stores the service ids for all the services, top level and dependent services
 	found := true        // if the service policy can be found from the businesspol_manager
 	var servicePol *externalpolicy.ExternalPolicy
-
 	var wlUsage *persistence.WorkloadUsage = nil
-        didCreateWorkloadUsage := false
 
 	for !foundWorkload {
 
 		//If number of workloads > 1, then we need to utilize the workload_usages to find the best workload
-                if len(wi.ConsumerPolicy.Workloads) > 1 {
-
+		if len(wi.ConsumerPolicy.Workloads) > 1 {
 			if wlUsage, err = b.db.FindSingleWorkloadUsageByDeviceAndPolicyName(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
 				glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error searching for persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 				return
@@ -467,13 +466,14 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 		if (lastWorkload == workload) || (lastWorkload != nil && workload != nil && lastWorkload.IsSame(*workload)) {
 			glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to find supported workload for %v within %v", wi.Device.Id, wi.ConsumerPolicy.Workloads)))
 
-		        if didCreateWorkloadUsage {
-                                // If we created a workload usage record during this process, get rid of it.
-                                if err := b.db.DeleteWorkloadUsage(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
-                                        glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to delete workload usage record for %v with %v because %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
-                                }
-                        }
-                        return
+			if workload != nil && !workload.HasEmptyPriority() {
+				// If we created a workload usage record during this process, get rid of it.
+				if err := b.db.DeleteWorkloadUsage(wi.Device.Id, wi.ConsumerPolicy.Header.Name); err != nil {
+					glog.Warningf(BAWlogstring(workerId, fmt.Sprintf("unable to delete workload usage record for %v with %v because %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
+				}
+			}
+			return
+
 		}
 
 		// If the service is suspended, then do not make an agreement.
@@ -604,7 +604,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 			}
 
 		} else {
-			// non patten case
+			// non pattern case
 
 			// get service policy
 			servicePolTemp, foundTemp := wi.ServicePolicies[sIdTop]
@@ -630,7 +630,7 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				return
 			}
 
-			if compatible, consumPol, err := checkPolicyCompatibility(workerId, wi, nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
+			if compatible, consumPol, err := b.checkPolicyCompatibility(workerId, wi, nodePolicy, &wi.ConsumerPolicy, mergedServicePol, "", msgPrinter); err != nil {
 				return
 			} else {
 				if compatible {
@@ -678,8 +678,6 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error creating persistent workload usage records for device %v with policy %v, error: %v", wi.Device.Id, wi.ConsumerPolicy.Header.Name, err)))
 					return
 				}
-
-				didCreateWorkloadUsage = true
 
 				// Artificially bump up the retry count so that the loop will choose the next workload
 				if _, err := b.db.UpdateRetryCount(wi.Device.Id, wi.ConsumerPolicy.Header.Name, workload.Priority.Retries+1, agreementIdString); err != nil {
@@ -730,7 +728,9 @@ func (b *BaseAgreementWorker) InitiateNewAgreement(cph ConsumerProtocolHandler, 
 				workload.DeploymentSignature = workloadDetails.GetDeploymentSignature()
 			}
 
-			glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+			if glog.V(5) {
+				glog.V(5).Infof(BAWlogstring(workerId, fmt.Sprintf("workload %v is supported by device %v", workload, wi.Device.Id)))
+			}
 		}
 
 		lastWorkload = workload
