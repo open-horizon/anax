@@ -98,7 +98,7 @@ Each property type has operators that can be used to evaluate property values:
 * `version` - supports `==, =, in` where `in` is used to indicate that a version is within a given range, e.g. any version 1 service is specified as: "[1.0.0,2.0.0)".
 * `list of strings` - supports `in` where the property has one of the values specified in the constraint.
 
-The JSON represenation of a constraint is:
+The JSON representation of a constraint is:
 ```
 [
 	"<constraint-expression-one>",

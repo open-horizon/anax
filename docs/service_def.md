@@ -5,7 +5,7 @@ Services are defined by a service definition, encoded in JSON. The attributes of
 
 ## Structure
 
-Service defintions come in 2 forms;
+Service definitions come in 2 forms;
 - `source`: A service definition file that is part of the source code in a service project, e.g. https://github.com/open-horizon/examples/blob/master/edge/services/helloworld/horizon/service.definition.json.
 In this case, the service definition is used to create or update a service definition in the OpenHorizon Exchange.
 - `display`: A service definition displayed by `hzn exchange service list`.

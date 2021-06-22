@@ -1,10 +1,10 @@
 # Model Object
 
 Model objects in OpenHorizon are the metadata representation of application metadata objects.
-Applications are often written such that external metadata can be injected into the applciation in order to alter the behavior of the logic.
+Applications are often written such that external metadata can be injected into the application in order to alter the behavior of the logic.
 This is notably true in the case of machine learning and AI inferencing, where the logic which analyzes a data stream is instructed via a machine learning model how to process the data to derive an analysis result.
 OpenHorizon allows application to be structured using this metadata driven approach, by supporting the ability to deploy the application's metadata on different lifecycle boundaries than the service (inferencing logic) which consumes the metadata.
-In OpenHorizon the application's metadata is called a model, and it is represented by a model objct with the JSON serialization shown below.
+In OpenHorizon the application's metadata is called a model, and it is represented by a model object with the JSON serialization shown below.
 
 One aspect of the model object is the policy expressions it contains. The OpenHorizon policy based, autonomous deployment capability is described [here](./policy.md).
 The key to understanding model policy is remember that models are associated with services, and thus follow those services in terms of where the services are deployed.
@@ -22,7 +22,7 @@ Following are the fields in the JSON representation of a model object:
 - `destinationPolicy`:
   - `properties`: Policy properties as described [here](./properties_and_constraints.md) which a node policy constraint can refer to.
   - `constraints`: Policy constraints as described [here](./properties_and_constraints.md) which refer to node policy properties.
-  - `services`: A list of services which can consume the associate dmodel object.
+  - `services`: A list of services which can consume the associated model object.
     - `serviceName`: The name of the service that will consume the model object. This is the same value as found in the `url` field [here](./service_def.md).
     - `orgID` : The organization in which the service in `serviceName` is defined.
     - `version`: A version range indicating the set of service versions with which this model object is associated.
