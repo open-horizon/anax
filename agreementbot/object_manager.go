@@ -195,14 +195,19 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 		glog.V(5).Infof(mmsLogString(fmt.Sprintf("Starting object policy garbage collection")))
 		for org, serviceMap := range m.orgMap {
 			for service, peList := range serviceMap {
-				for ix, pe := range peList {
+				// Since we can't modify the policy entry list while iterating over it, collect the entries that we want to keep and add them back into the object policy manager once the iteration is complete.
+				finalList := make([]MMSObjectPolicyEntry, 0)
+				for _, pe := range peList {
 					if obj, err := objQueryHandler(pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType); err != nil {
 						glog.Errorf(mmsLogString(fmt.Sprintf("error reading object %v %v %v, %v", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType, err)))
+						finalList = append(finalList, pe)
 					} else if obj == nil {
 						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v/%v %v has been deleted", pe.Policy.OrgID, pe.Policy.ObjectID, pe.Policy.ObjectType)))
-						m.orgMap[org][service] = append(m.orgMap[org][service][:ix], m.orgMap[org][service][ix+1:]...)
+					} else {
+						finalList = append(finalList, pe)
 					}
 				}
+				m.orgMap[org][service] = finalList
 			}
 		}
 	}
@@ -221,23 +226,27 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 		// Find services in the cache that are not referenced by a given object id any more. This can happen if the service
 		// reference in the object policy is changed.
 		for service, peList := range m.orgMap[objPol.OrgID] {
-			for ix, pe := range peList {
+			// Since we can't modify the policy entry list while iterating over it, collect the entries that we want to keep and add them back into the object policy manager once the iteration is complete.
+			finalList := make([]MMSObjectPolicyEntry, 0)
+			for _, pe := range peList {
 				if pe.Policy.OrgID == objPol.OrgID && pe.Policy.ObjectID == objPol.ObjectID && pe.Policy.ObjectType == objPol.ObjectType {
 					glog.V(5).Infof(mmsLogString(fmt.Sprintf("Obj %v found in %v map", objPol.ObjectID, service)))
 					for _, serviceID := range objPol.DestinationPolicy.Services {
 						if service == cutil.FormOrgSpecUrl(serviceID.ServiceName, serviceID.OrgID) {
 							foundService = true
+							finalList = append(finalList, pe)
 							break
 						}
 					}
 					if !foundService {
 						policyReplaced = pe.Policy
 						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v/%v %v policy removed from %v cache.", objPol.OrgID, objPol.ObjectID, objPol.ObjectType, service)))
-						m.orgMap[objPol.OrgID][service] = append(m.orgMap[objPol.OrgID][service][:ix], m.orgMap[objPol.OrgID][service][ix+1:]...)
-
 					}
+				} else { 
+					finalList = append(finalList, pe)
 				}
 			}
+			m.orgMap[objPol.OrgID][service] = finalList
 		}
 
 		// Now run through each service in the updated policy and figure out if there is a change or if it's new.
