@@ -20,9 +20,10 @@ func init() {
 
 // The fields in this object are initialized in the Initialize method in this package.
 type AgbotVaultSecrets struct {
-	token      string       // The identity of this agbot in the vault
-	httpClient *http.Client // A cached http client to use for invoking the vault
-	cfg        *config.HorizonConfig
+	token                 string       // The identity of this agbot in the vault
+	httpClient            *http.Client // A cached http client to use for invoking the vault
+	cfg                   *config.HorizonConfig
+	lastVaultInteraction  uint64
 }
 
 func (vs *AgbotVaultSecrets) String() string {

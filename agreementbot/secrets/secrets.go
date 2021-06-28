@@ -15,6 +15,7 @@ type AgbotSecrets interface {
 	Renew() error
 	Close()
 	IsReady() bool
+	GetLastVaultStatus() uint64
 
 	ListOrgSecret(user, token, org, name string) (map[string]string, error)
 	ListOrgSecrets(user, token, org string) ([]string, error)
