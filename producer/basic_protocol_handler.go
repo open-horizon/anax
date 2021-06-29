@@ -1,6 +1,7 @@
 package producer
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
@@ -10,6 +11,8 @@ import (
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
+	"github.com/open-horizon/anax/microservice"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"github.com/open-horizon/anax/worker"
@@ -138,25 +141,56 @@ func (c *BasicProtocolHandler) HandleExtensionMessages(msg *events.ExchangeDevic
 		return true, false, verify.AgreementId(), nil
 
 	} else if update, err := c.agreementPH.ValidateUpdate(msg.ProtocolMessage()); err == nil {
-		glog.Errorf(BPHlogString(fmt.Sprintf("unable to handle updates for agreement %v", update.AgreementId())))
 
 		// If there are no errors and the update type is accepted, send a positive reply.
 		acceptedUpdate := true
+		sendReply := true
 
 		if update.IsSecretUpdate() {
-			// Call Max's API to store the updated secret.
+
+			glog.V(5).Infof(BPHlogString(fmt.Sprintf("handling update for %v: %v", update.AgreementId(), update.Metadata)))
+
+			// Convert the agreement update into a typed list of secret binding updates.
+			var updatedSecrets []exchangecommon.SecretBinding
+			if bytes, err := json.Marshal(update.Metadata); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to marshal update, error: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else if err := json.Unmarshal(bytes, &updatedSecrets); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to unmarshal update, error: %v", update.AgreementId(), err)))
+				acceptedUpdate = false
+			} else {
+
+				// Store the secret updates in the agent DB.
+				allSecrets := persistence.PersistedSecretFromPolicySecret(updatedSecrets, update.AgreementId())
+
+				for _, secToSave := range allSecrets {
+					if msDef, err := microservice.FindOrCreateMicroserviceDef(c.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, exchange.GetHTTPServiceHandler(c.ec)); err != nil {
+						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to find microservices defs for secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
+						acceptedUpdate = false
+					} else if err = persistence.SaveSecret(c.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {
+						glog.Errorf(BPHlogString(fmt.Sprintf("agreement %v, unable to persist secret update %v, error: %v", update.AgreementId(), update.Metadata, err)))
+						acceptedUpdate = false
+					}
+				}
+
+				// TODO: Update the filesystem for the running containers.
+
+			}
+
 		} else {
 			// The update type is unexpected so simply reject it.
 			acceptedUpdate = false
 		}
 
-		// Send a reply that the secret update was received.
-		if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(msg.AgbotId()); err != nil {
-			glog.Errorf(BPHlogString(fmt.Sprintf("error getting agbot message target: %v", err)))
-		} else if mt, err := exchange.CreateMessageTarget(msg.AgbotId(), nil, pubkey, ""); err != nil {
-			glog.Errorf(BPHlogString(fmt.Sprintf("error creating message target: %v", err)))
-		} else if err := c.agreementPH.SendAgreementUpdateReply(update.AgreementId(), update.UpdateType(), acceptedUpdate, mt, c.GetSendMessage()); err != nil {
-			glog.Errorf(BPHlogString(fmt.Sprintf("error sending secret update reply for agreement %v, error %v", verify.AgreementId(), err)))
+		if sendReply {
+			// Send a reply to the agreement update.
+			if _, pubkey, err := c.BaseProducerProtocolHandler.GetAgbotMessageEndpoint(msg.AgbotId()); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error getting agbot message target: %v", err)))
+			} else if mt, err := exchange.CreateMessageTarget(msg.AgbotId(), nil, pubkey, ""); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error creating message target: %v", err)))
+			} else if err := c.agreementPH.SendAgreementUpdateReply(update.AgreementId(), update.UpdateType(), acceptedUpdate, mt, c.GetSendMessage()); err != nil {
+				glog.Errorf(BPHlogString(fmt.Sprintf("error sending secret update reply for agreement %v, error %v", verify.AgreementId(), err)))
+			}
 		}
 
 		return true, false, update.AgreementId(), nil

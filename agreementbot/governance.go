@@ -1,13 +1,18 @@
 package agreementbot
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/persistence"
+	"github.com/open-horizon/anax/basicprotocol"
+	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"math"
 	"net/http"
@@ -40,6 +45,9 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 	// Reset the updated status of the Node Health manager. This ensures that the agbot will attempt to get updated status
 	// info from the exchange. The exchange might return no updates, but at least the agbot asked for updates.
 	w.NHManager.ResetUpdateStatus()
+
+	// Grab the next set of secret updates to process.
+	secretUpdates := w.secretUpdateManager.GetNextUpdateEvent()
 
 	// Look at all agreements across all protocols
 	for _, agp := range policy.AllAgreementProtocols() {
@@ -195,9 +203,104 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 						w.TerminateAgreement(&ag, protocolHandler.GetTerminationCode(TERM_REASON_NO_REPLY))
 					}
 				}
+
+				// If any secrets have changed, existing agreements will need to be updated with the new secrets. Check this agreement
+				// to see if it needs to be updated.
+				if secretUpdates != nil {
+
+					// Is the current agreement affected by secrets that have changed? If so, return the secrets that have changed.
+					var updatedSecrets []string
+					if ag.Pattern != "" {
+						updatedSecrets = secretUpdates.GetUpdatedSecretsForPattern(ag.Pattern)
+					} else {
+						updatedSecrets = secretUpdates.GetUpdatedSecretsForPolicy(ag.PolicyName)
+					}
+
+					if len(updatedSecrets) != 0 {
+
+						// Extract the consumer policy from agreement.
+						pol, err := policy.DemarshalPolicy(ag.Policy)
+						if err != nil {
+							glog.Errorf(logString(fmt.Sprintf("unable to demarshal consumer policy for agreement %s, error: %v", ag.CurrentAgreementId, err)))
+						}
+
+						// Collect the updated secrets into a list of new secret bindings to send to the agent.
+						updatedBindings := make([]exchangecommon.SecretBinding, 0)
+
+						glog.V(5).Infof(logString(fmt.Sprintf("handling %s with %v for updated secrets %v", ag.CurrentAgreementId, pol.SecretBinding, updatedSecrets)))
+
+						for _, binding := range pol.SecretBinding {
+
+							// The secret details are transported within the proposal in the SecretBinding section where the secret provider secret name is
+							// replaced with the secret details.
+							sb := binding.MakeCopy()
+							sb.Secrets = make([]exchangecommon.BoundSecret, 0)
+							bindingUpdate := false
+
+							for _, bs := range binding.Secrets {
+
+								serviceSecretName, smSecretName := bs.GetBinding()
+								for _, updatedSecretName := range updatedSecrets {
+									glog.V(5).Infof(logString(fmt.Sprintf("checking secret %v against %v", updatedSecretName, bs)))
+									if smSecretName == exchange.GetId(updatedSecretName) {
+
+										// Call the secret manager plugin to get the secret details.
+										secretUser, secretName, err := common.ParseVaultSecretName(exchange.GetId(updatedSecretName), nil)
+										if err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error parsing secret %s, error: %v", updatedSecretName, err)))
+											continue
+										}
+
+										details, err := w.secretProvider.GetSecretDetails(ag.Org, secretUser, secretName)
+										if err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", secretName, ag.PolicyName, err)))
+											continue
+										}
+
+										detailBytes, err := json.Marshal(details)
+										if err != nil {
+											glog.Errorf(logString(fmt.Sprintf("error marshalling secret details %v for policy %v, service %v/%v %v, error: %v", secretName, ag.PolicyName, err)))
+											continue
+										}
+
+										newBS := make(exchangecommon.BoundSecret)
+										newBS[serviceSecretName] = base64.StdEncoding.EncodeToString(detailBytes)
+										sb.Secrets = append(sb.Secrets, newBS)
+										bindingUpdate = true
+
+										glog.V(5).Infof(logString(fmt.Sprintf("collected new details: %v", sb.Secrets)))
+										break
+									}
+								}
+							}
+
+							if bindingUpdate {
+								updatedBindings = append(updatedBindings, sb)
+							}
+
+						}
+
+						glog.V(5).Infof(logString(fmt.Sprintf("sending secret updates %v to the agent for %s", updatedBindings, ag.CurrentAgreementId)))
+
+						// Send the Update Agreement protocol message
+						protocolHandler.UpdateAgreement(&ag, basicprotocol.MsgUpdateTypeSecret, updatedBindings, protocolHandler)
+
+					}
+				}
 			}
+
 		} else {
 			glog.Errorf(logString(fmt.Sprintf("unable to read agreements from database, error: %v", err)))
+		}
+	}
+
+	// After processing all agreements, update the agbot's secret manager DB to indicate that all secrets have been processed.
+	if secretUpdates != nil {
+		for _, su := range secretUpdates.Updates {
+			err := w.db.SetSecretUpdate(su.SecretOrg, su.SecretFullName, su.SecretUpdateTime)
+			if err != nil {
+				glog.Errorf(logString(fmt.Sprintf("unable to save secret update time for %s/%s, error: %v", su.SecretOrg, su.SecretFullName, err)))
+			}
 		}
 	}
 

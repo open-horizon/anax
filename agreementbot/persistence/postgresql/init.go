@@ -91,6 +91,21 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 			return errors.New(fmt.Sprintf("unable to create agreements partition table index, error: %v", err))
 		}
 
+		// Create the secrets table, partition and index if necessary.
+		if _, err := db.db.Exec(SECRET_CREATE_MAIN_TABLE_POLICY); err != nil {
+			return errors.New(fmt.Sprintf("unable to create policy secrets table, error: %v", err))
+		} else if _, err := db.db.Exec(db.GetPrimarySecretPartitionTableCreatePolicy()); err != nil {
+			return errors.New(fmt.Sprintf("unable to create secrets partition table, error: %v", err))
+		} else if _, err := db.db.Exec(db.GetPrimarySecretPartitionTableIndexCreatePolicy()); err != nil {
+			return errors.New(fmt.Sprintf("unable to create secrets partition table index, error: %v", err))
+		} else if _, err := db.db.Exec(SECRET_CREATE_MAIN_TABLE_PATTERN); err != nil {
+			return errors.New(fmt.Sprintf("unable to create pattern secrets table, error: %v", err))
+		} else if _, err := db.db.Exec(db.GetPrimarySecretPartitionTableCreatePattern()); err != nil {
+			return errors.New(fmt.Sprintf("unable to create secrets partition table, error: %v", err))
+		} else if _, err := db.db.Exec(db.GetPrimarySecretPartitionTableIndexCreatePattern()); err != nil {
+			return errors.New(fmt.Sprintf("unable to create secrets partition table index, error: %v", err))
+		}
+
 		glog.V(3).Infof("Postgresql primary partition database tables exist.")
 
 		// Migrate the database tables if necessary. Extract the current schema version from the version table,
@@ -111,7 +126,7 @@ func (db *AgbotPostgresqlDB) Initialize(cfg *config.HorizonConfig) error {
 			// Each new database version has it's own key in the migration SQL map.
 			for v := dbVersion + 1; v <= HIGHEST_DATABASE_VERSION; v++ {
 
-				// Run each SQL statement in the array of SQL statements for the current verion.
+				// Run each SQL statement in the array of SQL statements for the current version.
 				for si := 0; si < len(migrationSQL[v].sql); si++ {
 					if _, err := db.db.Exec(migrationSQL[v].sql[si]); err != nil {
 						return errors.New(fmt.Sprintf("unable to run SQL migration statement version %v, index %v, statement %v, error: %v", v, si, migrationSQL[v].sql[si], err))

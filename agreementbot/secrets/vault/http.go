@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/config"
 	"io"
 	"io/ioutil"
@@ -21,6 +22,10 @@ import (
 // Retry intervals when connecting to the vault
 const EX_MAX_RETRY = 10
 const EX_RETRY_INTERVAL = 2
+
+type ErrorResponse struct {
+	Errors []string `json:"errors"`
+}
 
 type LoginBody struct {
 	Id    string `json:"id"`
@@ -51,28 +56,34 @@ type RenewBody struct {
 	Token string `json:"token"`
 }
 
-type RenewResponse struct {
-	Auth RenewAuthResponse `json:"auth"`
+type SecretCreateRequest struct {
+	Options map[string]string     `json:"options,omitempty"`
+	Data    secrets.SecretDetails `json:"data"`
 }
 
-type RenewAuthResponse struct {
-	ClientToken   string            `json:"client_token"`
-	Policies      []string          `json:"policies"`
-	Metadata      map[string]string `json:"metadata"`
-	LeaseDuration int               `json:"lease_duration"`
-	Renewable     bool              `json:"renewable"`
+type ListSecretResponse struct {
+	Data SecretMetadata `json:"data"`
 }
 
 type KeyData struct {
 	Keys []string `json:"keys"`
 }
 
-type ListSecretResponse struct {
-	Data map[string]string `json:"data"`
-}
-
 type ListSecretsResponse struct {
 	Data KeyData `json:"data"`
+}
+
+type SecretData struct {
+	Data secrets.SecretDetails `json:"data"`
+}
+
+type GetSecretResponse struct {
+	Data SecretData `json:"data"`
+}
+
+type SecretMetadata struct {
+	CreationTime string `json:"created_time"`    // Has format 2018-03-22T02:24:06.945319214Z
+	UpdateTime   string `json:"updated_time"`
 }
 
 // Create an https connection, using a supplied SSL CA certificate.

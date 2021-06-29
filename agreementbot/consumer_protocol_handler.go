@@ -55,6 +55,7 @@ type ConsumerProtocolHandler interface {
 	CreateMeteringNotification(mp policy.Meter, agreement *persistence.Agreement) (*metering.MeteringNotification, error)
 	TerminateAgreement(agreement *persistence.Agreement, reason uint, workerId string)
 	VerifyAgreement(ag *persistence.Agreement, cph ConsumerProtocolHandler)
+	UpdateAgreement(ag *persistence.Agreement, updateType string, metadata interface{}, cph ConsumerProtocolHandler)
 	GetDeviceMessageEndpoint(deviceId string, workerId string) (string, []byte, error)
 	SetBlockchainClientAvailable(ev *events.BlockchainClientInitializedMessage)
 	SetBlockchainClientNotAvailable(ev *events.BlockchainClientStoppingMessage)
@@ -502,7 +503,7 @@ func (b *BaseConsumerProtocolHandler) TerminateAgreement(ag *persistence.Agreeme
 		if aph := cph.AgreementProtocolHandler(bcType, bcName, bcOrg); aph == nil {
 			glog.Warningf(BCPHlogstring2(workerId, fmt.Sprintf("for %v agreement protocol handler not ready", ag.CurrentAgreementId)))
 		} else if err := aph.TerminateAgreement([]policy.Policy{*pol}, ag.CounterPartyAddress, ag.CurrentAgreementId, ag.Org, reason, mt, b.GetSendMessage()); err != nil {
-			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+			glog.Errorf(BCPHlogstring2(workerId, fmt.Sprintf("error terminating agreement %v: %v", ag.CurrentAgreementId, err)))
 		}
 	}
 }
@@ -516,7 +517,21 @@ func (b *BaseConsumerProtocolHandler) VerifyAgreement(ag *persistence.Agreement,
 	} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
 		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating message target: %v", err)))
 	} else if _, err := aph.VerifyAgreement(ag.CurrentAgreementId, "", "", mt, b.GetSendMessage()); err != nil {
-		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error terminating agreement %v on the blockchain: %v", ag.CurrentAgreementId, err)))
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error verifying agreement %v: %v", ag.CurrentAgreementId, err)))
+	}
+
+}
+
+func (b *BaseConsumerProtocolHandler) UpdateAgreement(ag *persistence.Agreement, updateType string,	metadata interface{}, cph ConsumerProtocolHandler) {
+
+	if aph := cph.AgreementProtocolHandler(b.GetKnownBlockchain(ag)); aph == nil {
+		glog.Warningf(BCPHlogstring(b.Name(), fmt.Sprintf("for %v agreement protocol handler not ready", ag.CurrentAgreementId)))
+	} else if whisperTo, pubkeyTo, err := b.GetDeviceMessageEndpoint(ag.DeviceId, b.Name()); err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error obtaining message target for verify message: %v", err)))
+	} else if mt, err := exchange.CreateMessageTarget(ag.DeviceId, nil, pubkeyTo, whisperTo); err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error creating message target: %v", err)))
+	} else if err := aph.UpdateAgreement(ag.CurrentAgreementId, updateType, metadata, mt, b.GetSendMessage()); err != nil {
+		glog.Errorf(BCPHlogstring(b.Name(), fmt.Sprintf("error updating agreement %v: %v", ag.CurrentAgreementId, err)))
 	}
 
 }

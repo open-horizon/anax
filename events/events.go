@@ -116,6 +116,9 @@ const (
 	CHANGE_AGBOT_PATTERN            EventId = "EXCHANGE_CHANGE_AGBOT_PATTERN"
 	CHANGE_AGBOT_POLICY             EventId = "EXCHANGE_CHANGE_AGBOT_POLICY"
 	CHANGE_AGBOT_AGREEMENT_TYPE     EventId = "EXCHANGE_CHANGE_AGBOT_AGREEMENT"
+
+	// Secret related
+	UPDATED_SECRETS EventId = "SECRET_UPDATES"
 )
 
 type EndContractCause string
@@ -2024,4 +2027,34 @@ func GetLaunchContext(launchContext interface{}) LaunchContext {
 		return lc
 	}
 	return nil
+}
+
+type SecretUpdatesMessage struct {
+	event   Event
+	Updates SecretUpdates // Holds a list of secrets that have been updated and the affected policies
+}
+
+func (su *SecretUpdatesMessage) Event() Event {
+	return su.event
+}
+
+func (su *SecretUpdatesMessage) String() string {
+	return su.ShortString()
+}
+
+func (su *SecretUpdatesMessage) ShortString() string {
+	return fmt.Sprintf("Event: %v, Updates: %v", su.event, su.Updates.ShortString())
+}
+
+func (su *SecretUpdatesMessage) GetSecretUpdates() SecretUpdates {
+	return su.Updates
+}
+
+func NewSecretUpdatesMessage(id EventId, sus *SecretUpdates) *SecretUpdatesMessage {
+	return &SecretUpdatesMessage{
+		event: Event{
+			Id: id,
+		},
+		Updates: *sus,
+	}
 }

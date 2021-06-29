@@ -125,6 +125,10 @@ CMD="hzn secretsmanager secret add --secretKey password -d password123 -o ${USER
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
+CMD="hzn secretsmanager secret list -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin"
+RES=$($CMD)
+verify "$CMD" "$RES" "test-password" "secret should exist after add"
+
 CMD="hzn secretsmanager secret list -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
 verify "$CMD" "$RES" "true" "secret should exist after add"
