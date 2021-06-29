@@ -837,6 +837,64 @@ func HorizonPutPost(method string, urlSuffix string, goodHttpCodes []int, body i
 	return
 }
 
+// Runs a GET to the agbot secure API and fills in the specified json structure. if the structure is just a string, fill in the raw json.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotGet(urlSuffix, credentials string, goodHttpCodes []int, structure interface{}) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	httpCode = ExchangeGet("Agbot", agbot_url, urlSuffix, credentials, goodHttpCodes, structure)
+
+	// ExchangeGet checks the http code, so we can just directly return
+	return httpCode
+}
+
+// Runs a PUT, POST, or PATCH to the agbot secure API to create or update a resource. If body is a string, it will be given to the exhcnage
+// as json. Otherwise, the struct will be marshaled to json.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotPutPost(method, urlSuffix, credentials string, goodHttpCodes []int, body interface{}, structure interface{}) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	httpCode = ExchangePutPost("Agbot", method, agbot_url, urlSuffix, credentials, goodHttpCodes, body, structure)
+
+	// ExchangePutPost checks the http code, so we can just directly return
+	return httpCode
+}
+
+// Runs a DELETE to the agbot secure API to delete a resource.
+// If the list of goodHttpCodes is non-empty and none match the actual http code, it will exit with an error; otherwise, the actual code is returned
+func AgbotDelete(urlSuffix, credentials string, goodHttpCodes []int) (httpCode int) {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	// check the agbot url
+	agbot_url := GetAgbotSecureAPIUrlBase()
+	if agbot_url == "" {
+		Fatal(HTTP_ERROR, msgPrinter.Sprintf("HZN_AGBOT_URL is not defined"))
+	}
+
+	// query the agbot secure api
+	httpCode = ExchangeDelete("Agbot", agbot_url, urlSuffix, credentials, goodHttpCodes)
+
+	// ExchangeDelete checks the http code, so we can just directly return
+	return httpCode
+}
+
 // get a value keyed by key in a file. The file contains key=value for each line.
 func GetEnvVarFromFile(filename string, key string) (string, error) {
 	fHandle, err := os.Open(filename)

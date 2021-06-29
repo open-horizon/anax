@@ -397,6 +397,15 @@ if [ "$NOCOMPCHECK" != "1" ] && [ "$TESTFAIL" != "1" ]; then
       echo "Policy compatibility test using hzn command failure."
       exit 1
     fi
+
+    if [ "$HZN_VAULT" == "true" ]; then 
+      ./hzn_secretsmanager.sh 
+      if [ $? -ne 0 ]
+      then
+        echo "Policy compatibility test using hzn secretsmanager command failure."
+        exit 1
+      fi
+    fi
   fi
 
 fi
