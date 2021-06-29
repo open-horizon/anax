@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"fmt"
+
 	"github.com/open-horizon/anax/config"
 )
 
@@ -18,14 +19,15 @@ type AgbotSecrets interface {
 	IsReady() bool
 	GetLastVaultStatus() uint64
 
-	ListOrgSecret(user, token, org, name string) error
-	ListOrgSecrets(user, token, org string) ([]string, error)
-	CreateOrgSecret(user, token, org, vaultSecretName string, data SecretDetails) error
-	DeleteOrgSecret(user, token, org, name string) error
+	ListOrgSecret(user, token, org, path string) error
+	ListOrgSecrets(user, token, org, path string) ([]string, error)
+	CreateOrgSecret(user, token, org, path string, data SecretDetails) error
+	DeleteOrgSecret(user, token, org, path string) error
 
-	ListOrgUserSecret(user, token, org, name string) error
-	CreateOrgUserSecret(user, token, org, vaultSecretName string, data SecretDetails) error
-	DeleteOrgUserSecret(user, token, org, name string) error
+	ListOrgUserSecret(user, token, org, path string) error
+	ListOrgUserSecrets(user, token, org, path string) ([]string, error)
+	CreateOrgUserSecret(user, token, org, path string, data SecretDetails) error
+	DeleteOrgUserSecret(user, token, org, path string) error
 
 	// This function assumes that the plugin maintains an authentication to the secret manager that it can use
 	// when it doesnt need to call APIs with user creds. The creds used instead have the ability to READ secrets.
