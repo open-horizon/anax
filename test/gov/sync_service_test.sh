@@ -147,7 +147,7 @@ echo "$resmeta" > /tmp/meta-large.json
 #Setup files to use in uploads
 dd if=/dev/zero of=/tmp/data.txt count=128 bs=1048576
 dd if=/dev/zero of=/tmp/data-small.txt count=32 bs=1048576
-dd if=/dev/zero of=/tmp/data-large.txt count=1024 bs=1048576
+dd if=/dev/zero of=/tmp/data-large.txt count=512 bs=1048576
 
 RESOURCE_ORG1=e2edev@somecomp.com
 RESOURCE_TYPE=test
@@ -167,12 +167,12 @@ else
 fi
 
 # Test large object publish
-echo "Testing large object publish (1GB)"
+echo "Testing large object publish (512MB)"
 hzn mms object publish -m /tmp/meta-large.json -f /tmp/data-large.txt >/dev/null
 RC=$?
 if [ $RC -ne 0 ]
 then
-  echo -e "Got unexpected error uploading 1GB model object: $RC"
+  echo -e "Got unexpected error uploading 512MB model object: $RC"
   exit 1
 else
   echo "Completed"
@@ -196,9 +196,9 @@ hzn mms object publish -m /tmp/meta-large.json -f /tmp/data-large.txt >/dev/null
 RC=$?
 if [ $RC -eq 5 ] || [ $RC -eq 0 ]
 then
-  echo -e "Complete. Got expected error/return code with 1GB object upload using short HTTP request timeout: $RC"
+  echo -e "Complete. Got expected error/return code with 512MB object upload using short HTTP request timeout: $RC"
 else
-  echo -e "Got unexpected error with 1GB object upload using short HTTP request timeout: $RC"
+  echo -e "Got unexpected error with 512MB object upload using short HTTP request timeout: $RC"
   exit 1
 fi
 
