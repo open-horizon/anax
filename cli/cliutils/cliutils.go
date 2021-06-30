@@ -1400,6 +1400,19 @@ func ExchangeGet(service string, urlBase string, urlSuffix string, credentials s
 	return
 }
 
+// This function will return response directly, the resp need to be closed by caller
+func ExchangeGetResponse(service string, urlBase string, urlSuffix string, credentials string) *http.Response {
+	url := urlBase + "/" + urlSuffix
+	apiMsg := http.MethodGet + " " + url
+
+	Verbose(apiMsg)
+
+	httpClient := GetHTTPClient(config.HTTPRequestTimeoutS)
+
+	resp := InvokeRestApi(httpClient, http.MethodGet, url, credentials, nil, service, apiMsg)
+	return resp
+}
+
 // ExchangePutPost runs a PUT, POST or PATCH to the exchange api to create of update a resource. If body is a string, it will be given to the exchange
 // as json. Otherwise the struct will be marshaled to json.
 // If the list of goodHttpCodes is not empty and none match the actual http code, it will exit with an error. Otherwise the actual code is returned.
