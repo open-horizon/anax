@@ -852,7 +852,7 @@ func (b *BaseAgreementWorker) ValidateAndExtractSecrets(consumerPolicy *policy.P
 				}
 
 				// Call the secret manager plugin to get the secret details.
-				details, err := b.secretsMgr.GetSecretDetails(exchange.GetOrg(deviceId), secretUser, shortSecretName)
+				details, err := b.secretsMgr.GetSecretDetails(b.GetExchangeId(), b.GetExchangeToken(), exchange.GetOrg(deviceId), secretUser, shortSecretName)
 
 				if err != nil {
 					glog.Errorf(BAWlogstring(workerId, fmt.Sprintf("error retrieving secret %v for policy %v, service %v/%v %v, error: %v", secretName, consumerPolicy.Header.Name, binding.ServiceOrgid, binding.ServiceUrl, binding.ServiceVersionRange, err)))

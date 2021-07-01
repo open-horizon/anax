@@ -175,10 +175,10 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/secretbindingcompatible", a.secretbinding_compatible).Methods("GET", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets", a.secrets).Methods("GET", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets/{secret}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets/user/{user}", a.secrets).Methods("GET", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets/user/{user}/{secret}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets", a.orgSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/{secret}", a.orgSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/user/{user}", a.userSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/user/{user}/{secret}", a.userSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 
@@ -656,8 +656,20 @@ func (a *SecureAPI) writeCompCheckResponse(w http.ResponseWriter, output interfa
 	}
 }
 
-// Handles secret fetch, updates and delete using the vault API
-func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
+type SecretRequestInfo struct {
+
+	// information about the user making the request
+	org string                   // the organization of the user making the request
+	ec  exchange.ExchangeContext // holds credential information
+
+	// information about the resources being accessed
+	user            string // if applicable, the user whose resources are being accessed
+	vaultSecretName string // the name of the secret being accessed
+
+	msgPrinter *message.Printer
+}
+
+func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *SecretRequestInfo {
 
 	// Process in the inputs and verify that they are consistent with the logged in user.
 	pathVars := mux.Vars(r)
@@ -673,7 +685,20 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 
 	ec, msgPrinter, userAuthenticated := a.processUserCred(resourceString, w, r)
 	if !userAuthenticated {
-		return
+		return nil
+	}
+
+	// Check if vault is configured in the management hub, and the provider is ready to handle requests.
+	if a.secretProvider == nil {
+		glog.Errorf(APIlogString("There is no secrets provider configured, secrets are unavailable."))
+		writeResponse(w, msgPrinter.Sprintf("There is no secrets provider configured, secrets are unavailable."), http.StatusServiceUnavailable)
+		return nil
+	}
+
+	if !a.secretProvider.IsReady() {
+		unavailMsg := "The secrets provider is not ready. The caller should retry this API call a small number of times with a short delay between calls to ensure that the secrets provider is unavailable."
+		glog.Errorf(APIlogString(unavailMsg))
+		writeResponse(w, msgPrinter.Sprintf(unavailMsg), http.StatusServiceUnavailable)
 	}
 
 	if user != "" {
@@ -686,15 +711,107 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, msgPrinter); err != nil {
 		glog.Errorf(APIlogString(err.Error()))
 		writeResponse(w, err.Error(), httpCode)
+		return nil
+	}
+
+	if org == "" {
+		glog.Errorf(APIlogString(fmt.Sprintf("org must be specified in the API path")))
+		writeResponse(w, msgPrinter.Sprintf("org must be specified in the API path"), http.StatusBadRequest)
+		return nil
+	} else if (strings.Contains(fmt.Sprint(r.URL), "/user/") && user == "") ||
+		(vaultSecretName == "user" && user == "") {
+		glog.Errorf(APIlogString(fmt.Sprintf("user must be specified in the API path")))
+		writeResponse(w, msgPrinter.Sprintf("user must be specified in the API path"), http.StatusBadRequest)
+		return nil
+	}
+
+	return &SecretRequestInfo{org, ec, user, vaultSecretName, msgPrinter}
+}
+
+func parseSecretDetails(w http.ResponseWriter, r *http.Request, msgPrinter *message.Printer) *secrets.SecretDetails {
+	var input secrets.SecretDetails
+	if body, err := ioutil.ReadAll(r.Body); err != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Unable to read request body, error: %v.", err)))
+		writeResponse(w, msgPrinter.Sprintf("Unable to read request body, error: %v.", err), http.StatusInternalServerError)
+		return nil
+	} else if len(body) == 0 {
+		glog.Errorf(APIlogString(fmt.Sprintf("Request body is empty.")))
+		writeResponse(w, msgPrinter.Sprintf("Request body is empty."), http.StatusBadRequest)
+		return nil
+	} else if uerr := json.Unmarshal(body, &input); uerr != nil {
+		glog.Errorf(APIlogString(fmt.Sprintf("Request body parse error, %v", uerr)))
+		writeResponse(w, msgPrinter.Sprintf("Request body parse error, %v", uerr), http.StatusBadRequest)
+		return nil
+	}
+	return &input
+}
+
+func secretExists(secretName string, secretList []string) bool {
+	for _, secret := range secretList {
+		if secretName == secret {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *SecureAPI) errCheck(err error, msgPrinter *message.Printer, w http.ResponseWriter) bool {
+	if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
+		glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))
+		writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr), serr.RespCode)
+		return false
+	} else if err != nil && !ok {
+		glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
+		writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
+		return false
+	} else {
+		return true
+	}
+}
+
+// handler for /org/<org>/secrets - LIST, OPTIONS
+func (a *SecureAPI) orgSecrets(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
 		return
 	}
 
-	// Handle secret API options
-	userPath := "user/" + user + cliutils.AddSlash(vaultSecretName)
+	// handle API options
+	switch r.Method {
+	case "LIST":
+		// list org-level secrets
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// handler for /org/<org>/secrets/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
+func (a *SecureAPI) orgSecret(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
 	switch r.Method {
 	case "GET":
-		// Call the plugged in secrets provider to list the secret(s) for the input org.
-		if payload, err, httpCode := a.getVaultSecret(ec, vaultSecretName, org, user, msgPrinter); err != nil {
+		// pull details for an org-level secret
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, "", info.vaultSecretName)
+		if a.errCheck(err, info.msgPrinter, w) {
+			writeResponse(w, secretDetails, http.StatusOK)
+		}
+	case "LIST":
+		// check existence of an org-level secret
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
 			glog.Errorf(APIlogString(err.Error()))
 			writeResponse(w, err.Error(), httpCode)
 		} else {
@@ -703,54 +820,105 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		fallthrough
 	case "POST":
-		var input secrets.SecretDetails
-		if body, err := ioutil.ReadAll(r.Body); err != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("Unable to read request body, error: %v.", err)))
-			writeResponse(w, msgPrinter.Sprintf("Unable to read request body, error: %v.", err), http.StatusInternalServerError)
-			return
-		} else if len(body) == 0 {
-			glog.Errorf(APIlogString(fmt.Sprintf("Request body is empty.")))
-			writeResponse(w, msgPrinter.Sprintf("Request body is empty."), http.StatusBadRequest)
-			return
-		} else if uerr := json.Unmarshal(body, &input); uerr != nil {
-			glog.Errorf(APIlogString(fmt.Sprintf("Request body parse error, %v", uerr)))
-			writeResponse(w, msgPrinter.Sprintf("Request body parse error, %v", uerr), http.StatusBadRequest)
+		// create an org-level secret
+
+		// parse the request body
+		input := parseSecretDetails(w, r, info.msgPrinter)
+		if input == nil {
 			return
 		}
 
-		var err error
-		if user != "" {
-			err = a.secretProvider.CreateOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath, input)
-		} else {
-			err = a.secretProvider.CreateOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName, input)
-		}
-		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
-			glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))
-			writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr), serr.RespCode)
-		} else if err != nil && !ok {
-			glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
-			writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
-		} else {
+		// create the secret
+		err := a.secretProvider.CreateOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName, *input)
+		if a.errCheck(err, info.msgPrinter, w) {
 			writeResponse(w, "Secret created/updated.", http.StatusCreated)
 		}
 	case "DELETE":
-		var err error
-		if user != "" {
-			err = a.secretProvider.DeleteOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
-		} else {
-			err = a.secretProvider.DeleteOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
-		}
-		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
-			glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))
-			writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr), serr.RespCode)
-		} else if err != nil && !ok {
-			glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v.", err)))
-			writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err), http.StatusInternalServerError)
-		} else {
+		// delete an org-level secret
+		err := a.secretProvider.DeleteOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
+		if a.errCheck(err, info.msgPrinter, w) {
 			writeResponse(w, "Secret is deleted.", http.StatusNoContent)
 		}
 	case "OPTIONS":
-		w.Header().Set("Allow", "GET, PUT, POST, DELETE, OPTIONS")
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// handler for /org/<org>/secrets/user/<user> - LIST, OPTIONS
+func (a *SecureAPI) userSecrets(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
+	switch r.Method {
+	case "LIST":
+		// list user-level secrets
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+// handler for /org/<org>/secrets/user/<user>/<secret> - GET, LIST, PUT, POST, DELETE, OPTIONS
+func (a *SecureAPI) userSecret(w http.ResponseWriter, r *http.Request) {
+	info := a.secretsSetup(w, r)
+	if info == nil {
+		return
+	}
+
+	// handle API options
+	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+	switch r.Method {
+	case "GET":
+		// pull details for a user-level secret
+		secretDetails, err := a.secretProvider.GetSecretDetails(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.user, info.vaultSecretName)
+		if a.errCheck(err, info.msgPrinter, w) {
+			writeResponse(w, secretDetails, http.StatusOK)
+		}
+	case "LIST":
+		// check existence of a user-level secret
+		if payload, err, httpCode := a.listVaultSecret(info); err != nil {
+			glog.Errorf(APIlogString(err.Error()))
+			writeResponse(w, err.Error(), httpCode)
+		} else {
+			writeResponse(w, payload, http.StatusOK)
+		}
+	case "PUT":
+		fallthrough
+	case "POST":
+		// create a user-level secret
+
+		// parse the request body
+		input := parseSecretDetails(w, r, info.msgPrinter)
+		if input == nil {
+			return
+		}
+
+		// create the secret
+		err := a.secretProvider.CreateOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath, *input)
+		if a.errCheck(err, info.msgPrinter, w) {
+			writeResponse(w, "Secret created/updated.", http.StatusCreated)
+		}
+	case "DELETE":
+		err := a.secretProvider.DeleteOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
+		if a.errCheck(err, info.msgPrinter, w) {
+			writeResponse(w, "Secret is deleted.", http.StatusNoContent)
+		}
+	case "OPTIONS":
+		w.Header().Set("Allow", "LIST, OPTIONS")
 		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -780,55 +948,45 @@ func (a *SecureAPI) vaultSecretPreCheck(ec exchange.ExchangeContext,
 		return fmt.Errorf(msgPrinter.Sprintf("user must be specified in the API path")), http.StatusBadRequest
 	}
 
-	// The user could be authenticated but might be trying to access secrets in another org or of a different user.
-	// The second check is automatically enforced by the vault anyways.
-	//_, userId := cutil.SplitOrgSpecUrl(ec.GetExchangeId())
-	//if exchange.GetOrg(ec.GetExchangeId()) != org {
-	//	return fmt.Errorf(msgPrinter.Sprintf("Unauthorized. User %s cannot access secrets in org %s.", ec.GetExchangeId(), org)), http.StatusForbidden
-	//} else if strings.Contains(apiUrl, "/user/") && user != userId {
-	//	return fmt.Errorf(msgPrinter.Sprintf("user %v cannot access secrets for user %v", userId, user)), http.StatusUnauthorized
-	//}
 	return nil, 0
 }
 
 // Call the plugged in secrets provider to list the secret(s) for the input org.
 // It returns the payload, error and httpcode.
-func (a *SecureAPI) getVaultSecret(ec exchange.ExchangeContext,
-	vaultSecretName string, org string, user string,
-	msgPrinter *message.Printer) (interface{}, error, int) {
+func (a *SecureAPI) listVaultSecret(info *SecretRequestInfo) (interface{}, error, int) {
 
-	userPath := "user/" + user + cliutils.AddSlash(vaultSecretName)
-	if vaultSecretName == "" {
+	userPath := "user/" + info.user + cliutils.AddSlash(info.vaultSecretName)
+	if info.vaultSecretName == "" {
 		var secretNames []string
 		var err error
-		if user != "" {
+		if info.user != "" {
 			// listing user level secrets
-			secretNames, err = a.secretProvider.ListOrgUserSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
+			secretNames, err = a.secretProvider.ListOrgUserSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
 		} else {
 			// listing org level secrets
-			secretNames, err = a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+			secretNames, err = a.secretProvider.ListOrgSecrets(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
 		}
 
-		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode == http.StatusNotFound {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("%v", serr)), serr.RespCode
+		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode != http.StatusNotFound {
+			return nil, fmt.Errorf(info.msgPrinter.Sprintf("%v", serr)), serr.RespCode
 		} else if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr)), serr.RespCode
+			return nil, fmt.Errorf(info.msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr)), serr.RespCode
 		} else if err != nil && !ok {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err)), http.StatusInternalServerError
+			return nil, fmt.Errorf(info.msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err)), http.StatusInternalServerError
 		} else {
 			return secretNames, nil, http.StatusOK
 		}
 	} else {
 		var err error
-		if user != "" {
-			err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
+		if info.user != "" {
+			err = a.secretProvider.ListOrgUserSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, userPath)
 		} else {
-			err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+			err = a.secretProvider.ListOrgSecret(info.ec.GetExchangeId(), info.ec.GetExchangeToken(), info.org, info.vaultSecretName)
 		}
 		if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode != http.StatusNotFound {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr)), serr.RespCode
+			return nil, fmt.Errorf(info.msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr)), serr.RespCode
 		} else if err != nil && !ok {
-			return nil, fmt.Errorf(msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err)), http.StatusInternalServerError
+			return nil, fmt.Errorf(info.msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", err)), http.StatusInternalServerError
 		} else {
 			return map[string]bool{"exists": (serr.RespCode != http.StatusNotFound)}, nil, http.StatusOK
 		}
@@ -871,8 +1029,8 @@ func (a *SecureAPI) verifySecretNames(ec exchange.ExchangeContext,
 				return false, "", err
 			}
 
-			// check if the bound secret exists or not
-			payload, err, _ := a.getVaultSecret(ec, shortSecretName, nodeOrg, secretUser, msgPrinter)
+			// check if the bound secret exists or not{}
+			payload, err, _ := a.listVaultSecret(&SecretRequestInfo{nodeOrg, ec, secretUser, shortSecretName, msgPrinter})
 			if err != nil {
 				return false, "", fmt.Errorf(msgPrinter.Sprintf("Error checking secret %v in the secret manager.", fullSecretName))
 			} else if payload != nil {

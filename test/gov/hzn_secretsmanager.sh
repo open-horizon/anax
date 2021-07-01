@@ -56,6 +56,7 @@ E2EDEV_ORG="e2edev@somecomp.com"
 E2EDEV_ADMIN_AUTH="e2edevadmin:e2edevadminpw"
 USERDEV_ORG="userdev"
 USERDEV_ADMIN_AUTH="userdevadmin:userdevadminpw"
+USERDEV_USER_AUTH="userdevuser:userdevuserpw"
 
 # -----------------------
 # ----- ORG SECRETS -----
@@ -84,14 +85,18 @@ CMD="hzn secretsmanager secret list -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} t
 RES=$($CMD)
 verify "$CMD" "$RES" "true" "secret should exist after add"
 
-# update the org secret and check with vault cli
-echo -e "$PREFIX update an org secret and check the updated details using 'vault get'"
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
+RES=$($CMD)
+verify "$CMD" "$RES" "password123" "secret details should be returned on read"
+
+# update the org secret and check with vault and horizon cli
+echo -e "$PREFIX update an org secret and check the updated details"
 
 CMD="hzn secretsmanager secret add --secretKey password -d password321 -O -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
-CMD="vault kv get openhorizon/${USERDEV_ORG}/test-password"
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
 RES=$($CMD)
 verify "$CMD" "$RES" "password321" "secret detail should have been updated after add"
 
@@ -133,14 +138,18 @@ CMD="hzn secretsmanager secret list -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} u
 RES=$($CMD)
 verify "$CMD" "$RES" "true" "secret should exist after add"
 
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
+RES=$($CMD)
+verify "$CMD" "$RES" "password123" "secret details should be returned on read"
+
 # update the user secret and check with vault cli 
-echo -e "$PREFIX update a user secret and check the updated details using 'vault get'"
+echo -e "$PREFIX update a user secret and check the updated details"
 
 CMD="hzn secretsmanager secret add --secretKey password -d password321 -O -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
-CMD="vault kv get openhorizon/${USERDEV_ORG}/user/userdevadmin/test-password"
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
 verify "$CMD" "$RES" "password321" "secret detail should have been updated after add"
 
@@ -160,6 +169,11 @@ verify "$CMD" "$RES" "false" "secret shouldn't exist after remove"
 # ----------------------------
 echo -e "$PREFIX testing expected errors"
 
+echo -e "$PREFIX adding secret for ${USERDEV_ORG} organization"
+CMD="hzn secretsmanager secret add --secretKey password -d password123 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
 echo -e "$PREFIX adding user secret for ${USERDEV_ORG} organization"
 CMD="hzn secretsmanager secret add --secretKey password -d password123 -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
@@ -167,6 +181,11 @@ print_command_and_response "$CMD" "$RES"
 
 echo -e "$PREFIX adding user secret for ${E2EDEV_ORG} organization"
 CMD="hzn secretsmanager secret add --secretKey password -d password321 -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
+echo -e "$PREFIX adding test user for ${USERDEV_ORG} organization"
+CMD="hzn exchange user create -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} userdevuser userdevuserpw"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
@@ -214,6 +233,39 @@ if [ $? -eq 0 ]; then
   exit 1
 fi 
 
+# error on `read` - secret doesn't exist
+echo -e "$PREFIX reading a secret that doesn't exist"
+
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} fake-password"
+echo -e "$CMD"
+$($CMD)
+if [ $? -eq 0 ]; then 
+  echo -e "\nERROR: shouldn't be able to read a secret that doesn't exist"
+  exit 1
+fi 
+
+# error on `read` - user can't read org level secrets 
+echo -e "$PREFIX non-admin shouldn't read org level secrets"
+
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_USER_AUTH} test-password"
+echo -e "$CMD"
+$($CMD)
+if [ $? -eq 0 ]; then 
+  echo -e "\nERROR: user shouldn't be able to read org-level secrets"
+  exit 1
+fi 
+
+# error on `read` - user can't read another user's secrets
+echo -e "$PREFIX user shouldn't read another user's secrets"
+
+CMD="hzn secretsmanager secret read -o ${USERDEV_ORG} -u ${USERDEV_USER_AUTH} user/userdevadmin/test-password"
+echo -e "$CMD"
+$($CMD)
+if [ $? -eq 0 ]; then 
+  echo -e "\nERROR: user shouldn't be able to read org-level secrets"
+  exit 1
+fi 
+
 # error on `add` - secret owned by a different user 
 echo -e "$PREFIX adding a secret owned by a different user"
 
@@ -231,12 +283,22 @@ fi
 echo -e "$PREFIX starting cleanup"
 
 # remove secrets
+echo -e "$PREFIX removing org secrets"
+CMD="hzn secretsmanager secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} test-password"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
 echo -e "$PREFIX removing user secrets"
 CMD="hzn secretsmanager secret remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} user/userdevadmin/test-password"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 
 CMD="hzn secretsmanager secret remove -o ${E2EDEV_ORG} -u ${E2EDEV_ADMIN_AUTH} user/e2edevadmin/test-password"
+RES=$($CMD)
+print_command_and_response "$CMD" "$RES"
+
+echo -e "$PREFIX removing test user"
+CMD="hzn exchange user remove -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} -f userdevuser"
 RES=$($CMD)
 print_command_and_response "$CMD" "$RES"
 

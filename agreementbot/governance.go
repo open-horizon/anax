@@ -251,7 +251,7 @@ func (w *AgreementBotWorker) GovernAgreements() int {
 											continue
 										}
 
-										details, err := w.secretProvider.GetSecretDetails(ag.Org, secretUser, secretName)
+										details, err := w.secretProvider.GetSecretDetails(w.GetExchangeId(), w.GetExchangeToken(), ag.Org, secretUser, secretName)
 										if err != nil {
 											glog.Errorf(logString(fmt.Sprintf("error retrieving secret %v for policy %v, error: %v", secretName, ag.PolicyName, err)))
 											continue
