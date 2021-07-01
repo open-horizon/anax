@@ -1144,3 +1144,28 @@ func NewPolicyCompError1(err error) *PolicyCompError {
 		Err: err.Error(),
 	}
 }
+
+// Obscure the secret details for all secrets in the given proposal
+func ObscureSecretDetails(p *string) error {
+	// prop := p.Proposal
+
+	// var tsandcs map[string]interface{}
+	// if err := json.Unmarshal([]byte(prop), &tsandcs); err != nil {
+	// 	return err
+	// } else if err := json.Unmarshal([]byte(tsandcs["tsandcs"].(string)), &tsandcs); err != nil {
+	// 	return err
+	// } else if _, ok := tsandcs["secretDetails"]; !ok {
+	// 	// there are no secrets to obscure, so return nil
+	// 	return nil
+	// }
+	// secretDetails := tsandcs["secretDetails"].([]interface{})
+
+	// // loop over secrets, if any
+	// for _, secretDetail := range secretDetails {
+	// 	secret := secretDetail.(map[string]interface{})
+	// 	for _, secretKey := range secret { 
+	// 		p.Proposal = strings.ReplaceAll(p.Proposal, secretKey.(string), "********")
+	// 	}
+	// }
+	return nil
+}

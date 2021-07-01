@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
@@ -9,6 +10,7 @@ import (
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
 	"sort"
+	"strings"
 )
 
 func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.EstablishedAgreement, error) {
@@ -29,6 +31,9 @@ func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.E
 	wrap[agreementsKey][activeKey] = []persistence.EstablishedAgreement{}
 
 	for _, agreement := range agreements {
+		if err := obscureSecretDetails(&agreement); err != nil {
+			glog.V(3).Infof(apiLogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
+		}
 		// The archived agreements and the agreements being terminated are returned as archived.
 		if agreement.Archived || agreement.AgreementTerminatedTime != 0 {
 			wrap[agreementsKey][archivedKey] = append(wrap[agreementsKey][archivedKey], agreement)
@@ -43,6 +48,32 @@ func FindAgreementsForOutput(db *bolt.DB) (map[string]map[string][]persistence.E
 
 	return wrap, nil
 }
+
+// Obscure the secret details for all secrets in the given proposal
+func obscureSecretDetails(p *persistence.EstablishedAgreement) error {
+	prop := p.Proposal
+
+	var tsandcs map[string]interface{}
+	if err := json.Unmarshal([]byte(prop), &tsandcs); err != nil {
+		return err
+	} else if err := json.Unmarshal([]byte(tsandcs["tsandcs"].(string)), &tsandcs); err != nil {
+		return err
+	} else if _, ok := tsandcs["secretDetails"]; !ok {
+		// there are no secrets to obscure, so return nil
+		return nil
+	}
+	secretDetails := tsandcs["secretDetails"].([]interface{})
+
+	// loop over secrets, if any
+	for _, secretDetail := range secretDetails {
+		secret := secretDetail.(map[string]interface{})
+		for _, secretKey := range secret { 
+			p.Proposal = strings.ReplaceAll(p.Proposal, secretKey.(string), "********")
+		}
+	}
+	return nil
+}
+
 
 func DeleteAgreement(errorhandler ErrorHandler, agreementId string, db *bolt.DB) (bool, *events.ApiAgreementCancelationMessage) {
 
