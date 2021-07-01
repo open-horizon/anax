@@ -1,0 +1,107 @@
+{
+  "label": "business policy for netspeed",
+  "description": "for netspeed",
+  "service": {
+    "name": "https://bluehorizon.network/services/netspeed",
+    "org": "e2edev@somecomp.com",
+    "arch": "*",
+    "serviceVersions": [
+      {
+        "version": "2.3.0",
+        "priority":{
+          "priority_value": 3,
+          "retries": 1,
+          "retry_durations": 1800,
+          "verified_durations": 45
+       }
+      },
+      {
+        "version": "2.3.0",
+        "priority":{
+          "priority_value": 2,
+          "retries": 1,
+          "retry_durations": 3600
+        }
+      }
+    ],
+    "nodeHealth": {
+      "missing_heartbeat_interval": 0,
+      "check_agreement_status": 0
+    }
+  },
+  "properties": [
+      {
+          "name": "iame2edev",
+          "value": "true"
+      },
+      {
+          "name": "NONS",
+          "value": false
+      },
+      {
+          "name": "number",
+          "value": "12"
+      },
+      {
+          "name": "foo",
+          "value": "bar"
+      }
+  ],
+  "constraints": [
+    "purpose==network-testing"
+  ],
+  "userInput": [
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/services/netspeed",
+      "serviceArch": "",
+      "serviceVersionRange": "2.2.0",
+      "inputs": [
+        {
+          "name": "var1",
+          "value": "bp_string"
+        },
+        {
+          "name": "var2",
+          "value": 10
+        },
+        {
+          "name": "var3",
+          "value": 10.22
+        },
+        {
+          "name": "var4",
+          "value": ["bp_abcd", "bp_1234"]
+        },
+        {
+          "name": "var5",
+          "value": "bp_override2"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "IBM",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "bp_ibm_var1"
+        }
+      ]
+    },
+    {
+      "serviceOrgid": "e2edev@somecomp.com",
+      "serviceUrl": "https://bluehorizon.network/service-cpu",
+      "serviceArch": "",
+      "serviceVersionRange": "1.0.0",
+      "inputs": [
+        {
+          "name": "cpu_var1",
+          "value": "bp_e2edev_var1"
+        }
+      ]
+    }
+  ]
+}
