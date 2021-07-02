@@ -716,7 +716,7 @@ func StartContainers(deployment *containermessage.DeploymentDescription,
 	msgPrinter.Println()
 
 	// Start the dependent service container.
-	_, startErr := cw.ResourcesCreate(id, "", deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org), "")
+	_, startErr := cw.ResourcesCreate(id, "", deployment, []byte(""), environmentAdditions, msNetworks, cutil.FormOrgSpecUrl(cutil.NormalizeURL(specRef), org), "", "")
 	if startErr != nil {
 		return nil, errors.New(msgPrinter.Sprintf("unable to start container using %v, error: %v", dc.CLIString(), startErr))
 	}

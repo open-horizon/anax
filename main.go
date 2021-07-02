@@ -158,6 +158,9 @@ func main() {
 	// Initialize the shared authentication manager for service containers to authentication to the agent.
 	authm := resource.NewAuthenticationManager(cfg.GetFileSyncServiceAuthPath())
 
+	// Initialize the secrets manager to store secrets in the local db and in agent file system.
+	secretm := resource.NewSecretsManager(cfg.GetSecretsManagerFilePath(), db)
+
 	// start workers
 	workers := worker.NewMessageHandlerRegistry()
 
@@ -177,7 +180,7 @@ func main() {
 		workers.Add(agreement.NewAgreementWorker("Agreement", cfg, db, pm))
 		workers.Add(governance.NewGovernanceWorker("Governance", cfg, db, pm))
 		workers.Add(exchange.NewExchangeMessageWorker("ExchangeMessages", cfg, db))
-		if containerWorker := container.NewContainerWorker("Container", cfg, db, authm); containerWorker != nil {
+		if containerWorker := container.NewContainerWorker("Container", cfg, db, authm, secretm); containerWorker != nil {
 			workers.Add(containerWorker)
 		}
 		if imageWorker := imagefetch.NewImageFetchWorker("ImageFetch", cfg, db); imageWorker != nil {

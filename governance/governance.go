@@ -1529,6 +1529,9 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		lc.EnvironmentAdditions = &envAdds
 
 		if w.deviceType == persistence.DEVICE_TYPE_DEVICE {
+			if err := w.processServiceSecrets(tcPolicy, proposal.AgreementId()); err != nil {
+				return err
+			}
 			// Make a list of service dependencies for this workload. For sevices, it is just the top level dependencies.
 			deps := serviceDef.GetServiceDependencies()
 
@@ -1553,6 +1556,7 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 				// the services that are going to be network accessible to the workload container(s).
 				lc.Microservices = ms_specs
 			}
+
 		}
 
 		eventlog.LogAgreementEvent(w.db, persistence.SEVERITY_INFO,
@@ -1568,6 +1572,21 @@ func (w *GovernanceWorker) RecordReply(proposal abstractprotocol.Proposal, proto
 		}
 	}
 
+	return nil
+}
+
+func (w *GovernanceWorker) processServiceSecrets(tcPolicy *policy.Policy, agId string) error {
+	glog.V(5).Infof(logString(fmt.Sprintf("process service secrets for policy: %v", agId)))
+
+	allSecrets := persistence.PersistedSecretFromPolicySecret(tcPolicy.SecretBinding, tcPolicy.SecretDetails, agId)
+
+	for _, secToSave := range allSecrets {
+		if msDef, err := microservice.FindOrCreateMicroserviceDef(w.db, secToSave.SvcUrl, secToSave.SvcOrgid, secToSave.SvcVersionRange, secToSave.SvcArch, exchange.GetHTTPServiceHandler(w)); err != nil {
+			return err
+		} else if err = persistence.SaveSecret(w.db, secToSave.SvcSecretName, msDef.Id, msDef.Version, &secToSave); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

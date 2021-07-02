@@ -72,10 +72,6 @@ import (
  * }
  */
 
-type Secret struct {
-	Description string `json:"description"`
-}
-
 type DeploymentDescription struct {
 	Services       map[string]*Service `json:"services"`
 	ServicePattern Pattern             `json:"service_pattern"`
@@ -145,6 +141,13 @@ func (p *Pattern) IsShared(tp string, serviceName string) bool {
 	}
 
 	return false
+}
+
+type Secret struct {
+	Description     string `json:"description"`
+	SvcOrg          string `json:"svcOrg"`
+	SvcUrl          string `json:"svcUrl"`
+	SvcVersionRange string `json:"svcVersionRange"`
 }
 
 // Service Only those marked "omitempty" may be omitted
