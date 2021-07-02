@@ -1350,8 +1350,8 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	}
 
 	if err := b.GetSecretsManager().WriteServiceSecretsToFile(serviceURL, originalAgreementId, agreementId); err != nil {
-        glog.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
-    }
+		glog.Errorf("Error writing service secrets for agreement %v to file: %v", agreementId, err)
+	}
 	// finished pre-processing
 
 	// process shared by finding existing or creating new then hooking up "private" in pattern to the shared by adding two endpoints. Note! a shared container is not in the agreement bridge it came from

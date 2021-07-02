@@ -106,7 +106,7 @@ func FindAllSecretsForMS(db *bolt.DB, msDefId string) (*PersistedServiceSecrets,
 	if db == nil {
 		return nil, nil
 	}
-	
+
 	var psecretRec *PersistedServiceSecrets
 	readErr := db.View(func(tx *bolt.Tx) error {
 
