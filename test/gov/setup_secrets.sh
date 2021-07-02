@@ -31,16 +31,17 @@ CREATE_ORG_SECRET1="netspeed-secret1"
 CREATE_ORG_SECRET2="netspeed-secret2"
 
 ORG_SECRET_KEY="test"
-ORG_SECRET_VALUE="netspeed-password"
+ORG_SECRET_VALUE1="netspeed-password"
+ORG_SECRET_VALUE2="netspeed-other-password"
 
 # set HZN_AGBOT_URL for the cli
 export HZN_AGBOT_URL=${AGBOT_SAPI_URL}
 
 echo -e "Create netspeed secret1"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET1}"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1}"
 echo "$CMD"
 
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET1})
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE1} ${CREATE_ORG_SECRET1})
 
 # check for erroneous return 
 if [ $? -ne 0 ]; then 
@@ -51,10 +52,10 @@ fi
 echo "$RES"
 
 echo -e "Create netspeed secret2"
-CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET2}"
+CMD="hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2}"
 echo "$CMD"
 
-RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE} ${CREATE_ORG_SECRET2})
+RES=$(hzn secretsmanager secret add -o ${USERDEV_ORG} -u ${USERDEV_ADMIN_AUTH} --secretKey ${ORG_SECRET_KEY} -d ${ORG_SECRET_VALUE2} ${CREATE_ORG_SECRET2})
 
 # check for erroneous return 
 if [ $? -ne 0 ]; then 
