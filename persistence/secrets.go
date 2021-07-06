@@ -30,7 +30,7 @@ type PersistedServiceSecrets struct {
 	MsDefVers  string // Version in the individual secrets is the range from the secret binding. This is the specific version associated with the msdef
 	MsDefUrl   string
 	MsDefOrg   string
-	SecretsMap map[string]PersistedServiceSecret
+	SecretsMap map[string]*PersistedServiceSecret
 }
 
 func PersistedSecretFromPolicySecret(inputSecretBindings []exchangecommon.SecretBinding, agId string) []PersistedServiceSecret {
@@ -51,30 +51,32 @@ func SaveSecret(db *bolt.DB, secretName string, msDefId string, msDefVers string
 	if secretToSave == nil {
 		return nil
 	}
-	secretToSaveAll := PersistedServiceSecrets{MsDefId: msDefId, MsDefOrg: secretToSave.SvcOrgid, MsDefUrl: secretToSave.SvcUrl, MsDefVers: msDefVers, SecretsMap: map[string]PersistedServiceSecret{}}
+	secretToSaveAll := &PersistedServiceSecrets{MsDefId: msDefId, MsDefOrg: secretToSave.SvcOrgid, MsDefUrl: secretToSave.SvcUrl, MsDefVers: msDefVers, SecretsMap: map[string]*PersistedServiceSecret{}}
 	if allSecsForServiceInDB, err := FindAllSecretsForMS(db, msDefId); err != nil {
 		return fmt.Errorf("Failed to get all secrets for microservice %v. Error was: %v", msDefId, err)
 	} else if allSecsForServiceInDB != nil {
-		secretToSaveAll = *allSecsForServiceInDB
+		secretToSaveAll = allSecsForServiceInDB
 	}
 
+	// if TimeCreated == TimeLastUpdated, then secrets API won't return secret name as updated secret
+	timestamp := uint64(time.Now().Unix())
 	if secretToSave.TimeCreated == 0 {
-		secretToSave.TimeCreated = uint64(time.Now().Unix())
+		secretToSave.TimeCreated = timestamp
 	}
-
-	secretToSave.TimeLastUpdated = uint64(time.Now().Unix())
+	secretToSave.TimeLastUpdated = timestamp
 
 	if mergedSec, ok := secretToSaveAll.SecretsMap[secretName]; ok {
 		mergedSec.AgreementIds = append(mergedSec.AgreementIds, secretToSave.AgreementIds...)
+		mergedSec.TimeLastUpdated = secretToSave.TimeLastUpdated
+		mergedSec.SvcSecretValue = secretToSave.SvcSecretValue
 		secretToSaveAll.SecretsMap[secretName] = mergedSec
 	} else {
-		secretToSaveAll.SecretsMap[secretName] = *secretToSave
+		secretToSaveAll.SecretsMap[secretName] = secretToSave
 	}
-
 	return SaveAllServiceSecrets(db, msDefId, secretToSaveAll)
 }
 
-func SaveAllServiceSecrets(db *bolt.DB, msDefId string, secretToSaveAll PersistedServiceSecrets) error {
+func SaveAllServiceSecrets(db *bolt.DB, msDefId string, secretToSaveAll *PersistedServiceSecrets) error {
 	if db == nil {
 		return nil
 	}
@@ -97,9 +99,8 @@ func SaveAllServiceSecrets(db *bolt.DB, msDefId string, secretToSaveAll Persiste
 // Gets the secret from the database, no error returned if none is found in the db
 func FindAllSecretsForMS(db *bolt.DB, msDefId string) (*PersistedServiceSecrets, error) {
 	if db == nil {
-		return nil, nil
-	}
-
+                return nil, nil
+        }
 	var psecretRec *PersistedServiceSecrets
 	readErr := db.View(func(tx *bolt.Tx) error {
 
@@ -134,7 +135,7 @@ func FindSingleSecretForService(db *bolt.DB, secName string, msDefId string) (*P
 
 	if allSec != nil {
 		retSec := allSec.SecretsMap[secName]
-		return &retSec, nil
+		return retSec, nil
 	}
 
 	return nil, nil
@@ -169,11 +170,10 @@ func VersSecFilter(vers string) SecFilter {
 }
 
 func FindAllServiceSecretsWithFilters(db *bolt.DB, filters []SecFilter) ([]PersistedServiceSecrets, error) {
-	if db == nil {
-		return nil, nil
-	}
-
 	matchingSecrets := []PersistedServiceSecrets{}
+	if db == nil {
+		return matchingSecrets, nil
+	}
 
 	readErr := db.View(func(tx *bolt.Tx) error {
 		if b := tx.Bucket([]byte(SECRETS)); b != nil {
@@ -229,7 +229,7 @@ func DeleteSecrets(db *bolt.DB, secName string, msDefId string) (*PersistedServi
 		}
 		if len(allSec.SecretsMap) == 0 {
 			retSec := allSec.SecretsMap[secName]
-			return &retSec, db.Update(func(tx *bolt.Tx) error {
+			return retSec, db.Update(func(tx *bolt.Tx) error {
 				if b, err := tx.CreateBucketIfNotExists([]byte(SECRETS)); err != nil {
 					return err
 				} else if err := b.Delete([]byte(msDefId)); err != nil {
@@ -239,7 +239,7 @@ func DeleteSecrets(db *bolt.DB, secName string, msDefId string) (*PersistedServi
 				}
 			})
 		} else {
-			SaveAllServiceSecrets(db, msDefId, *allSec)
+			SaveAllServiceSecrets(db, msDefId, allSec)
 		}
 	}
 	return nil, nil
@@ -264,7 +264,7 @@ func DeleteAllSecForAgreement(db *bolt.DB, agreementId string) error {
 								break
 							}
 						}
-						if err := SaveAllServiceSecrets(db, svcAllSec.MsDefId, svcAllSec); err != nil {
+						if err := SaveAllServiceSecrets(db, svcAllSec.MsDefId, &svcAllSec); err != nil {
 							glog.Errorf("Error saving updated secret object after deleting secret %v for agreement %v: %v", secName, agreementId, err)
 						}
 					}
@@ -282,7 +282,7 @@ func DeleteSecretsSpec(db *bolt.DB, secName string, svcName string, svcOrg strin
 		for _, dbServiceSecrets := range allServiceSecrets {
 			if _, ok := dbServiceSecrets.SecretsMap[secName]; ok {
 				delete(dbServiceSecrets.SecretsMap, secName)
-				if err = SaveAllServiceSecrets(db, dbServiceSecrets.MsDefId, dbServiceSecrets); err != nil {
+				if err = SaveAllServiceSecrets(db, dbServiceSecrets.MsDefId, &dbServiceSecrets); err != nil {
 					glog.Errorf("Failed to delete secret %v for service %v from db: %v", dbServiceSecrets.MsDefId, secName, err)
 				}
 			}

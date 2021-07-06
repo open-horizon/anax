@@ -8,10 +8,14 @@ package main
 
 import (
 	"github.com/open-horizon/anax/ess"
+	"github.com/open-horizon/anax/resource"
 	"github.com/open-horizon/edge-sync-service/core/base"
 )
 
 func main() {
+	secretsAPI := resource.NewSecretAPI(nil, nil)
+	secretsAPI.SetupHttpHandler()
+
 	base.ConfigStandaloneSyncService()
 	base.StandaloneSyncService(&ess.HZNDEVAuthenticate{})
 }

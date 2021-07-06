@@ -1280,8 +1280,23 @@ func (b *ContainerWorker) ResourcesCreate(agreementId string, agreementProtocol 
 	if b.pattern == "" {
 		serviceVersion = sVer
 	}
-	if err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, !b.isDevInstance); err != nil {
+	cred, err := b.GetAuthenticationManager().CreateCredential(agreementId, serviceURL, serviceVersion, !b.isDevInstance)
+	if err != nil {
 		glog.Errorf("Failed to create MMS Authentication credential file for %v, error %v", agreementId, err)
+	}
+
+	if !b.IsDevInstance() {
+		msInstKey := agreementId
+		if msInstInterface, err := persistence.GetMicroserviceInstIWithKey(b.db, msInstKey); err != nil {
+			return nil, err
+		} else if msInstInterface == nil {
+			return nil, errors.New(fmt.Sprintf("Failed to find microservice instance interface for key: %v", msInstKey))
+		} else {
+			_, err := persistence.NewMSSInst(b.db, msInstKey, msInstInterface.GetServiceDefId(), cred.Token)
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("Failed to persist MicroserviceSecretStatusInstance, err: %v", err))
+			}
+		}
 	}
 
 	servicePairs, err := b.finalizeDeployment(agreementId, deployment, environmentAdditions, workloadRWStorageDir, b.Config.Edge.DefaultCPUSet, b.Config.GetFileSyncServiceAPIUnixDomainSocketPath())
@@ -1560,6 +1575,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 			sVer := ags[0].RunningWorkload.Version
 
 			// Create the docker configuration and launch the containers.
+			// agreementId is the MSSInstanceKey
 			if deploymentConfig, err := b.ResourcesCreate(agreementId, cmd.AgreementLaunchContext.AgreementProtocol, deploymentDesc, cmd.AgreementLaunchContext.ConfigureRaw, *cmd.AgreementLaunchContext.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, agreementId); err != nil {
 				eventlog.LogAgreementEvent(b.db, persistence.SEVERITY_ERROR,
 					persistence.NewMessageMeta(EL_CONT_START_CONTAINER_ERROR, err.Error()),
@@ -2483,8 +2499,13 @@ func (b *ContainerWorker) ResourcesRemove(agreements []string) error {
 		}
 
 		// Remove the File Sync Service API authentication credential file.
-		if err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
+		if essToken, err := b.GetAuthenticationManager().RemoveCredential(agreementId, !b.isDevInstance); err != nil {
 			glog.Errorf("Failed to remove FSS Authentication credential file for %v, error %v", agreementId, err)
+		} else if !b.IsDevInstance() {
+			if _, err := persistence.DeleteMSSInstWithESSToken(b.db, essToken); err != nil {
+				// Remove MSInstSecretStatus by essToken
+				glog.Errorf("Failed to remove MicroserviceSecretStatus record for %v, error %v", agreementId, err)
+			}
 		}
 
 	}
