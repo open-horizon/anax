@@ -166,7 +166,7 @@ func main() {
 
 	workers.Add(agreementbot.NewAgreementBotWorker("AgBot", cfg, agbotDB, agbotSecrets))
 	if cfg.AgreementBot.APIListen != "" {
-		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotDB, *configFile, &agbotSecrets))
+		workers.Add(agreementbot.NewAPIListener("AgBot API", cfg, agbotDB, *configFile, agbotSecrets))
 	}
 	if cfg.AgreementBot.SecureAPIListenHost != "" {
 		workers.Add(agreementbot.NewSecureAPIListener("AgBot Secure API", cfg, agbotDB, agbotSecrets))

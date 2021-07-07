@@ -79,7 +79,7 @@ func (s SecretsManager) WriteServiceSecretsToFile(svcOrgAndName string, agId str
 						return fmt.Errorf("Error decoding base64 encoded secret string: %v", err)
 					} else if err = CreateAndWriteToFile(contentBytes, containerId, path.Join(s.SecretsStorePath, containerId, secName), path.Join(s.SecretsStorePath, containerId)); err != nil {
 						return err
-					} 
+					}
 				}
 			}
 		}

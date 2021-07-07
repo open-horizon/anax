@@ -155,7 +155,7 @@ func (vs *AgbotVaultSecrets) invokeVaultWithRetry(token string, url string, meth
 
 			currRetry--
 			time.Sleep(time.Duration(EX_RETRY_INTERVAL) * time.Second)
-		} else if token == "" && resp.StatusCode == http.StatusForbidden {
+		} else if token == "" && resp != nil && resp.StatusCode == http.StatusForbidden {
 			// The agbot failed to authenticate, something must have happened to the agbot's token, so login again to get a new token.
 			glog.Warningf(vaultPluginLogString("unexpected agbot token expiration, logging in again"))
 			err := vs.Login()

@@ -31,10 +31,10 @@ type API struct {
 	em             *events.EventStateManager
 	shutdownError  string
 	configFile     string
-	secretProvider *secrets.AgbotSecrets
+	secretProvider secrets.AgbotSecrets
 }
 
-func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string, s *secrets.AgbotSecrets) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string, s secrets.AgbotSecrets) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -43,11 +43,11 @@ func NewAPIListener(name string, config *config.HorizonConfig, db persistence.Ag
 			Messages: messages,
 		},
 
-		name:       name,
-		db:         db,
-		EC:         worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
-		em:         events.NewEventStateManager(),
-		configFile: configFile,
+		name:           name,
+		db:             db,
+		EC:             worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
+		em:             events.NewEventStateManager(),
+		configFile:     configFile,
 		secretProvider: s,
 	}
 
@@ -649,7 +649,7 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get DB heartbeat, error: %v", err)))
 		}
 		if a.secretProvider != nil {
-			health.LastVaultInteraction = (*a.secretProvider).GetLastVaultStatus()
+			health.LastVaultInteraction = (a.secretProvider).GetLastVaultStatus()
 		}
 		info.LiveHealth = health
 
