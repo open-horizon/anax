@@ -52,6 +52,7 @@ func NewWorkloadInfo(url string, org string, version string, arch string) (*Work
 
 // N.B. Important!! Ensure new values are handled in Update function below
 // This struct is for persisting agreements
+// It implements MicroserviceInstInterface.
 type EstablishedAgreement struct {
 	Name                         string       `json:"name"`
 	DependentServices            ServiceSpecs `json:"dependent_services"`
@@ -84,6 +85,7 @@ type EstablishedAgreement struct {
 	BlockchainOrg                   string                   `json:"blockchain_org,omitempty"`        // the org of the blockchain instance
 	RunningWorkload                 WorkloadInfo             `json:"workload_to_run,omitempty"`       // For display purposes, a copy of the workload info that this agreement is managing. It should be the same info that is buried inside the proposal.
 	AgreementTimeout                uint64                   `json:"agreement_timeout"`
+	ServiceDefId                    string                   `json:"service_definition_id"` // stores the microservice definiton id
 }
 
 func (c EstablishedAgreement) String() string {
@@ -115,14 +117,15 @@ func (c EstablishedAgreement) String() string {
 		"BlockchainType: %v, "+
 		"BlockchainName: %v, "+
 		"BlockchainOrg: %v, "+
-		"RunningWorkload: %v"+
-		"AgreementTimeout: %v",
+		"RunningWorkload: %v, "+
+		"AgreementTimeout: %v, "+
+		"ServiceDefId: %v",
 		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress, ServiceConfigNames(&c.CurrentDeployment),
 		"********", c.ProposalSig,
 		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementBCUpdateAckTime, c.AgreementFinalizedTime,
 		c.AgreementDataReceivedTime, c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
 		c.AgreementProtocol, c.ProtocolVersion, c.AgreementProtocolTerminatedTime, c.WorkloadTerminatedTime,
-		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload, c.AgreementTimeout)
+		c.MeteringNotificationMsg, c.BlockchainType, c.BlockchainName, c.BlockchainOrg, c.RunningWorkload, c.AgreementTimeout, c.ServiceDefId)
 
 }
 
@@ -188,6 +191,133 @@ func NewEstablishedAgreement(db *bolt.DB, name string, agreementId string, consu
 		// success, close tx
 		return nil
 	})
+}
+
+func (c *EstablishedAgreement) ShortString() string {
+	return fmt.Sprintf("Name: %v, "+
+		"DependentServices: %v, "+
+		"Archived: %v, "+
+		"CurrentAgreementId: %v, "+
+		"ConsumerId: %v, "+
+		"CounterPartyAddress: %v, "+
+		"CurrentDeployment (service names): %v, "+
+		"ExtendedDeployment: %v, "+
+		"AgreementCreationTime: %v, "+
+		"AgreementExecutionStartTime: %v, "+
+		"AgreementAcceptedTime: %v, "+
+		"AgreementFinalizedTime: %v, "+
+		"AgreementDataReceivedTime: %v, "+
+		"AgreementTerminatedTime: %v, "+
+		"AgreementForceTerminatedTime: %v, "+
+		"TerminatedReason: %v, "+
+		"TerminatedDescription: %v, "+
+		"WorkloadTerminatedTime: %v, "+
+		"RunningWorkload: %v"+
+		"AgreementTimeout: %v, "+
+		"ServiceDefId: %v",
+		c.Name, c.DependentServices, c.Archived, c.CurrentAgreementId, c.ConsumerId, c.CounterPartyAddress,
+		ServiceConfigNames(&c.CurrentDeployment), "********",
+		c.AgreementCreationTime, c.AgreementExecutionStartTime, c.AgreementAcceptedTime, c.AgreementFinalizedTime,
+		c.AgreementDataReceivedTime,
+		c.AgreementTerminatedTime, c.AgreementForceTerminatedTime, c.TerminatedReason, c.TerminatedDescription,
+		c.WorkloadTerminatedTime, c.RunningWorkload, c.AgreementTimeout, c.ServiceDefId)
+}
+
+func (a *EstablishedAgreement) GetOrg() string {
+	return a.RunningWorkload.Org
+}
+
+func (a *EstablishedAgreement) GetURL() string {
+	return a.RunningWorkload.URL
+}
+
+func (a *EstablishedAgreement) GetVersion() string {
+	return a.RunningWorkload.Version
+}
+
+func (a *EstablishedAgreement) GetArch() string {
+	return a.RunningWorkload.Arch
+}
+
+func (a *EstablishedAgreement) GetInstanceId() string {
+	return a.CurrentAgreementId
+}
+
+// create a unique name
+// If SpecRef is https://bluehorizon.network/microservices/network, Org is myorg, version is 2.3.1 and the instance id is "abcd1234"
+// the output string will be "myorg_bluehorizon.network-microservices-network_2.3.1_abcd1234"
+func (a *EstablishedAgreement) GetKey() string {
+	return a.CurrentAgreementId
+}
+
+func (a *EstablishedAgreement) GetServiceDefId() string {
+	return a.ServiceDefId
+}
+
+func (a *EstablishedAgreement) IsArchived() bool {
+	return a.Archived
+}
+
+func (a *EstablishedAgreement) IsTopLevelService() bool {
+	return true
+}
+
+func (a *EstablishedAgreement) IsAgreementLess() bool {
+	return false
+}
+
+func (a *EstablishedAgreement) GetEnvVars() map[string]string {
+	return map[string]string{}
+}
+
+func (a *EstablishedAgreement) GetAssociatedAgreements() []string {
+	return []string{a.CurrentAgreementId}
+}
+
+func (a *EstablishedAgreement) GetParentPath() [][]ServiceInstancePathElement {
+	sipe := NewServiceInstancePathElement(a.RunningWorkload.URL, a.RunningWorkload.Org, a.RunningWorkload.Version)
+	return [][]ServiceInstancePathElement{[]ServiceInstancePathElement{*sipe}}
+}
+
+func (a *EstablishedAgreement) GetInstanceCreationTime() uint64 {
+	return a.AgreementCreationTime
+}
+
+func (a *EstablishedAgreement) GetExecutionStartTime() uint64 {
+	return a.AgreementExecutionStartTime
+}
+
+func (a *EstablishedAgreement) GetExecutionFailureCode() uint {
+	return uint(a.TerminatedReason)
+}
+
+func (a *EstablishedAgreement) GetExecutionFailureDesc() string {
+	return a.TerminatedDescription
+}
+
+func (a *EstablishedAgreement) GetCleanupStartTime() uint64 {
+	return a.AgreementTerminatedTime
+}
+
+func (a *EstablishedAgreement) GetMaxRetries() uint {
+	return 0
+}
+
+func (a *EstablishedAgreement) GetMaxRetryDuration() uint {
+	return 0
+}
+
+func (a *EstablishedAgreement) GetCurrentRetryCount() uint {
+	return 0
+}
+
+func (a *EstablishedAgreement) GetRetryStartTime() uint64 {
+	return 0
+}
+
+func (a *EstablishedAgreement) Archive(db *bolt.DB) error {
+	_, err := ArchiveEstablishedAgreement(db, a.CurrentAgreementId, a.AgreementProtocol)
+	return err
 }
 
 // Return either the CurrentDeployment or the ExtendedDeployment, depending on which is set, in a form that
@@ -347,6 +477,13 @@ func SetAgreementTimeout(db *bolt.DB, dbAgreementId string, protocol string, agT
 	})
 }
 
+func SetAgreementServiceDefId(db *bolt.DB, dbAgreementId string, protocol string, svcDefId string) (*EstablishedAgreement, error) {
+	return agreementStateUpdate(db, dbAgreementId, protocol, func(c EstablishedAgreement) *EstablishedAgreement {
+		c.ServiceDefId = svcDefId
+		return &c
+	})
+}
+
 func DeleteEstablishedAgreement(db *bolt.DB, agreementId string, protocol string) error {
 
 	if agreementId == "" {
@@ -474,6 +611,9 @@ func persistUpdatedAgreement(db *bolt.DB, dbAgreementId string, protocol string,
 				if mod.ProposalSig == "" { // 1 transition from empty to non-empty
 					mod.ProposalSig = update.ProposalSig
 				}
+				if mod.ServiceDefId == "" { // transition add microservice definition id
+					mod.ServiceDefId = update.ServiceDefId
+				}
 
 				if serialized, err := json.Marshal(mod); err != nil {
 					return fmt.Errorf("Failed to serialize contract record: %v. Error: %v", mod, err)
@@ -494,6 +634,10 @@ func UnarchivedEAFilter() EAFilter {
 
 func IdEAFilter(id string) EAFilter {
 	return func(e EstablishedAgreement) bool { return e.CurrentAgreementId == id }
+}
+
+func ServiceDefEAFilter(svcDefId string) EAFilter {
+	return func(e EstablishedAgreement) bool { return e.ServiceDefId == svcDefId }
 }
 
 // filter on EstablishedAgreements

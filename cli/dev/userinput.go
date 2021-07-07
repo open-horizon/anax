@@ -8,7 +8,7 @@ import (
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/persistence"
 	"github.com/open-horizon/anax/policy"
@@ -90,7 +90,7 @@ func UserInputExists(directory string) (bool, error) {
 
 // Convert default user inputs to environment variables in a map. The input map is modified
 // by this function. If a variable is already in the input map, it is not modified.
-func AddDefaultUserInputs(uis []exchange.UserInput, envmap map[string]string) {
+func AddDefaultUserInputs(uis []exchangecommon.UserInput, envmap map[string]string) {
 	for _, ui := range uis {
 		if ui.Name != "" && ui.DefaultValue != "" {
 			if _, ok := envmap[ui.Name]; !ok {

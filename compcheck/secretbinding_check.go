@@ -579,7 +579,7 @@ func ValidateSecretBindingForSingleService(secretBinding []exchangecommon.Secret
 	}
 
 	// cluster type does not have secrets
-	if sdef.GetServiceType() == exchange.SERVICE_TYPE_CLUSTER {
+	if sdef.GetServiceType() == exchangecommon.SERVICE_TYPE_CLUSTER {
 		if index == -1 {
 			return index, nil, nil
 		} else {

@@ -6,7 +6,7 @@ import (
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/cutil"
-	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/i18n"
 	"path"
 )
@@ -49,10 +49,10 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 	res.Version = "$SERVICE_VERSION"
 	res.Arch = "$ARCH"
 	res.Description = ""
-	res.Sharable = exchange.MS_SHARING_MODE_MULTIPLE
+	res.Sharable = exchangecommon.SERVICE_SHARING_MODE_MULTIPLE
 	if noImageGen || specRef == "" || !cutil.SliceContains(deploymentType, "native") {
-		res.UserInputs = []exchange.UserInput{
-			exchange.UserInput{
+		res.UserInputs = []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "",
 				Label:        "",
 				Type:         "",
@@ -60,8 +60,8 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 			},
 		}
 	} else {
-		res.UserInputs = []exchange.UserInput{
-			exchange.UserInput{
+		res.UserInputs = []exchangecommon.UserInput{
+			exchangecommon.UserInput{
 				Name:         "HW_WHO",
 				Label:        msgPrinter.Sprintf("Who to say hello to"),
 				Type:         "string",
@@ -69,7 +69,7 @@ func CreateServiceDefinition(directory string, specRef string, imageInfo map[str
 			},
 		}
 	}
-	res.RequiredServices = []exchange.ServiceDependency{}
+	res.RequiredServices = []exchangecommon.ServiceDependency{}
 
 	// Use the deployment plugin registry to obtain the default deployment config objects.
 	for _, dc := range deploymentType {
@@ -151,7 +151,7 @@ func RefreshServiceDependencies(homeDirectory string, newDepDef common.AbstractS
 
 	// If the dependency is already present, no need to add it.
 	if !found {
-		newSD := exchange.ServiceDependency{
+		newSD := exchangecommon.ServiceDependency{
 			URL:          newDepDef.GetURL(),
 			Org:          newDepDef.GetOrg(),
 			VersionRange: newDepDef.GetVersion(),

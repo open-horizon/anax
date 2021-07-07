@@ -199,6 +199,7 @@ then
   then
     echo "API Test failure."
     TESTFAIL="1"
+    exit 1
   else
     echo "API tests completed SUCCESSFULLY."
 

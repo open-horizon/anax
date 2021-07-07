@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/policy"
 	"io/ioutil"
@@ -101,7 +102,7 @@ func getVariablePatternHandler(service exchange.ServiceReference) exchange.Patte
 	}
 }
 
-func getVariableServiceHandler(mUserInput exchange.UserInput) exchange.ServiceHandler {
+func getVariableServiceHandler(mUserInput exchangecommon.UserInput) exchange.ServiceHandler {
 	return func(mUrl string, mOrg string, mVersion string, mArch string) (*exchange.ServiceDefinition, string, error) {
 		md := exchange.ServiceDefinition{
 			Owner:         "owner",
@@ -110,19 +111,19 @@ func getVariableServiceHandler(mUserInput exchange.UserInput) exchange.ServiceHa
 			URL:           mUrl,
 			Version:       mVersion,
 			Arch:          mArch,
-			Sharable:      exchange.MS_SHARING_MODE_EXCLUSIVE,
+			Sharable:      exchangecommon.SERVICE_SHARING_MODE_EXCLUSIVE,
 			MatchHardware: exchange.HardwareRequirement{},
-			UserInputs:    []exchange.UserInput{mUserInput},
+			UserInputs:    []exchangecommon.UserInput{mUserInput},
 			LastUpdated:   "today",
 		}
 		return &md, "service-id", nil
 	}
 }
 
-func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.ServiceResolverHandler {
+func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchangecommon.UserInput) exchange.ServiceResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (*policy.APISpecList, *exchange.ServiceDefinition, []string, error) {
 		sl := policy.APISpecList{}
-		sd := []exchange.ServiceDependency{}
+		sd := []exchangecommon.ServiceDependency{}
 		if mUrl != "" {
 			sl = policy.APISpecList{
 				policy.APISpecification{
@@ -133,16 +134,16 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 					Arch:            mArch,
 				},
 			}
-			sd = append(sd, exchange.ServiceDependency{
+			sd = append(sd, exchangecommon.ServiceDependency{
 				URL:     mUrl,
 				Org:     mOrg,
 				Version: mVersion,
 				Arch:    mArch,
 			})
 		}
-		uis := []exchange.UserInput{}
+		uis := []exchangecommon.UserInput{}
 		if ui != nil {
-			uis = []exchange.UserInput{*ui}
+			uis = []exchangecommon.UserInput{*ui}
 		}
 		wl := exchange.ServiceDefinition{
 			Owner:               "owner",
@@ -163,9 +164,9 @@ func getVariableServiceResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange
 	}
 }
 
-func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *exchange.UserInput) exchange.ServiceDefResolverHandler {
+func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *exchangecommon.UserInput) exchange.ServiceDefResolverHandler {
 	return func(wUrl string, wOrg string, wVersion string, wArch string) (map[string]exchange.ServiceDefinition, *exchange.ServiceDefinition, string, error) {
-		sd := []exchange.ServiceDependency{}
+		sd := []exchangecommon.ServiceDependency{}
 		dep_defs := map[string]exchange.ServiceDefinition{}
 		if mUrl != "" {
 			dep := exchange.ServiceDefinition{
@@ -177,14 +178,14 @@ func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *excha
 				Version:             mVersion,
 				Arch:                mArch,
 				Sharable:            "multiple",
-				RequiredServices:    []exchange.ServiceDependency{},
-				UserInputs:          []exchange.UserInput{},
+				RequiredServices:    []exchangecommon.ServiceDependency{},
+				UserInputs:          []exchangecommon.UserInput{},
 				Deployment:          "",
 				DeploymentSignature: "",
 				LastUpdated:         "updated",
 			}
 			dep_defs[mOrg+"/x2"] = dep
-			sd = append(sd, exchange.ServiceDependency{
+			sd = append(sd, exchangecommon.ServiceDependency{
 				URL:     mUrl,
 				Org:     mOrg,
 				Version: mVersion,
@@ -192,9 +193,9 @@ func getVariableServiceDefResolver(mUrl, mOrg, mVersion, mArch string, ui *excha
 			})
 		}
 
-		uis := []exchange.UserInput{}
+		uis := []exchangecommon.UserInput{}
 		if ui != nil {
-			uis = []exchange.UserInput{*ui}
+			uis = []exchangecommon.UserInput{*ui}
 		}
 		wl := exchange.ServiceDefinition{
 			Owner:               "owner",

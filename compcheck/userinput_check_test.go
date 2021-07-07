@@ -5,6 +5,7 @@ package compcheck
 import (
 	"github.com/open-horizon/anax/common"
 	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/policy"
 	"strings"
 	"testing"
@@ -18,18 +19,18 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 			URL:     "cpu1",
 			Version: "1.0.0",
 			Arch:    "amd64",
-			UserInputs: []exchange.UserInput{
-				exchange.UserInput{
+			UserInputs: []exchangecommon.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var1",
 					Type:         "string",
 					DefaultValue: "",
 				},
-				exchange.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var2",
 					Type:         "string",
 					DefaultValue: "",
 				},
-				exchange.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var3",
 					Type:         "string",
 					DefaultValue: "",
@@ -43,13 +44,13 @@ func Test_CheckRedundantUserinput(t *testing.T) {
 			URL:     "cpu2",
 			Version: "2.0.0",
 			Arch:    "amd64",
-			UserInputs: []exchange.UserInput{
-				exchange.UserInput{
+			UserInputs: []exchangecommon.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var21",
 					Type:         "string",
 					DefaultValue: "",
 				},
-				exchange.UserInput{
+				exchangecommon.UserInput{
 					Name:         "var22",
 					Type:         "string",
 					DefaultValue: "",

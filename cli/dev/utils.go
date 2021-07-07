@@ -21,7 +21,7 @@ import (
 	"github.com/open-horizon/anax/containermessage"
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/events"
-	"github.com/open-horizon/anax/exchange"
+	"github.com/open-horizon/anax/exchangecommon"
 	"github.com/open-horizon/anax/externalpolicy"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/imagefetch"
@@ -317,7 +317,7 @@ func createEnvVarMap(agreementId string,
 	global []common.GlobalSet,
 	msURL string,
 	configVar map[string]interface{},
-	defaultVar []exchange.UserInput,
+	defaultVar []exchangecommon.UserInput,
 	org string,
 	cw *container.ContainerWorker,
 	attrConverter func(attributes []persistence.Attribute,
@@ -621,7 +621,7 @@ func startDependent(dir string,
 	var sId string
 	singletonAlreadyStarted := false
 
-	if serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLE {
+	if serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE {
 		if serviceContainers, err := findContainers(depConfig.AnyServiceName(), cutil.MakeMSInstanceKey(serviceDef.URL, serviceDef.Org, serviceDef.Version, ""), cw); err != nil {
 			return nil, errors.New(msgPrinter.Sprintf("unable to list existing containers: %v", err))
 		} else if len(serviceContainers) > 0 {
@@ -660,7 +660,7 @@ func startDependent(dir string,
 	}
 
 	// If the service we need to start is a sharable singleton then it might already be started. If it is then just return.
-	if (serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchange.MS_SHARING_MODE_SINGLE) && singletonAlreadyStarted {
+	if (serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLETON || serviceDef.Sharable == exchangecommon.SERVICE_SHARING_MODE_SINGLE) && singletonAlreadyStarted {
 		return nil, nil
 	}
 
@@ -672,7 +672,7 @@ func startDependent(dir string,
 func StartContainers(deployment *containermessage.DeploymentDescription,
 	specRef string,
 	globals []common.GlobalSet, // API attributes
-	defUserInputs []exchange.UserInput, // indicates variable defaults
+	defUserInputs []exchangecommon.UserInput, // indicates variable defaults
 	configUserInputs []policy.AbstractUserInput, // indicates configured variables
 	org string,
 	dc *common.DeploymentConfig,
