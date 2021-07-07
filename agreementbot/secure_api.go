@@ -175,10 +175,10 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/userinputcompatible", a.userinput_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/deploycheck/secretbindingcompatible", a.secretbinding_compatible).Methods("GET", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets", a.orgSecrets).Methods("LIST", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets/{secret}", a.orgSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}", a.userSecrets).Methods("LIST", "OPTIONS")
-		router.HandleFunc("/org/{org}/secrets/user/{user}/{secret}", a.userSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc(`/org/{org}/secrets/user/{user}/{secret:[\w\/\-]+}`, a.userSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets", a.orgSecrets).Methods("LIST", "OPTIONS")
+		router.HandleFunc(`/org/{org}/secrets/{secret:[\w\/\-]+}`, a.orgSecret).Methods("GET", "LIST", "PUT", "POST", "DELETE", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
 
@@ -711,17 +711,6 @@ func (a *SecureAPI) secretsSetup(w http.ResponseWriter, r *http.Request) *Secret
 	if err, httpCode := a.vaultSecretPreCheck(ec, fmt.Sprint(r.URL), vaultSecretName, org, user, msgPrinter); err != nil {
 		glog.Errorf(APIlogString(err.Error()))
 		writeResponse(w, err.Error(), httpCode)
-		return nil
-	}
-
-	if org == "" {
-		glog.Errorf(APIlogString(fmt.Sprintf("org must be specified in the API path")))
-		writeResponse(w, msgPrinter.Sprintf("org must be specified in the API path"), http.StatusBadRequest)
-		return nil
-	} else if (strings.Contains(fmt.Sprint(r.URL), "/user/") && user == "") ||
-		(vaultSecretName == "user" && user == "") {
-		glog.Errorf(APIlogString(fmt.Sprintf("user must be specified in the API path")))
-		writeResponse(w, msgPrinter.Sprintf("user must be specified in the API path"), http.StatusBadRequest)
 		return nil
 	}
 

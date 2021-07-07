@@ -11,6 +11,7 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // This function registers an uninitialized agbot secrets implementation with the secrets plugin registry. The plugin's Initialize
@@ -93,7 +94,7 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, token, org, path string) ([]st
 
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in org %s as %s", org, user)))
-	return vs.listSecrets(user, token, org, url)
+	return vs.listSecrets(user, token, org, url, path)
 }
 
 // List all user-level secrets at a specified path in vault.
@@ -102,11 +103,46 @@ func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, token, org, path string) (
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets for user %v in %v", user, org)))
 
 	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
-	return vs.listSecrets(user, token, org, url)
+	secrets, err := vs.listSecrets(user, token, org, url, path)
+	if err != nil {
+		return nil, err 
+	} 
+
+	// trim the user/<user> prefix from the names 
+	var secretList []string 
+	for _, secret := range secrets {
+		secretList = append(secretList, strings.TrimPrefix(secret, path+"/"))
+	}
+	return secretList, nil
+}
+
+// the input queue is a list of secret names and directories. this function gathers the secret names provided
+// and recurses on the directories to output a list of secret names with the input path as the directory
+// of the names in the input queue ("" if top-level vault directory)
+func (vs *AgbotVaultSecrets) gatherSecretNames(user, token, org, path string, queue []string) []string {
+
+	var secretNames []string 
+
+	// go through the queue and check for directories and names
+	for _, secret := range queue {
+		newPath := path + secret
+		if secret[len(secret) - 1] == '/' {
+			// secret directory 
+			secretList, err := vs.ListOrgSecrets(user, token, org, newPath[:len(newPath) - 1])
+			if err == nil {
+				secretNames = append(secretNames, secretList...)
+			}
+		} else {
+			// secret name
+			secretNames = append(secretNames, newPath)
+		}
+	}
+
+	return secretNames
 }
 
 // List the secrets at a specified path within the vault
-func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url string) ([]string, error) {
+func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url, path string) ([]string, error) {
 
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("url: %s", url)))
 
@@ -144,30 +180,26 @@ func (vs *AgbotVaultSecrets) listSecrets(user, token, org, url string) ([]string
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to parse response %v", string(respBytes)), Details: "", RespCode: http.StatusInternalServerError}
 	}
 
-	// filter out user/ and empty secret directories
-	secrets := []string{}
-	for _, secret := range respMsg.Data.Keys {
-		if secret == "user/" {
-			// filter out the user/ directory for user level secrets
-			continue
-		} else if secret[len(secret)-1] == '/' {
-			// filter out empty directories
-			res, listErr := vs.ListOrgSecrets(user, token, org, secret[:len(secret)-1])
-			if listErr != nil && len(res) == 0 {
-				continue
-			} else {
-				// non-empty secret directory
+	// filter out user/ directory if top-level 
+	var secrets []string
+	if path == "" {
+		for _, secret := range respMsg.Data.Keys {
+			if secret != "user/" {
 				secrets = append(secrets, secret)
 			}
-		} else {
-			// secret
-			secrets = append(secrets, secret)
 		}
+	} else {
+		secrets = respMsg.Data.Keys
 	}
 
-	glog.V(3).Infof(vaultPluginLogString("done listing secrets."))
-
-	return secrets, nil
+	// gather all the multi-part secret names 
+	runningPath := ""
+	if path != "" {
+		runningPath = path + "/"
+	}
+	secretList := vs.gatherSecretNames(user, token, org, runningPath, secrets)
+	
+	return secretList, nil
 }
 
 // Available to all users within the org
