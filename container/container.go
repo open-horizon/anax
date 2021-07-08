@@ -1713,8 +1713,13 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 		serviceIdentity := cutil.FormOrgSpecUrl(cutil.NormalizeURL(serviceInfo.URL), serviceInfo.Org)
 		sVer := serviceInfo.Version
 
+		containerName := lc.Name
+		if len(lc.AgreementIds) > 0{
+			containerName = lc.AgreementIds[0]
+		}
+
 		// Get the container started
-		if deployment, err := b.ResourcesCreate(lc.Name, "", deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, lc.AgreementIds[0]); err != nil {
+		if deployment, err := b.ResourcesCreate(lc.Name, "", deploymentDesc, []byte(""), *lc.EnvironmentAdditions, ms_children_networks, serviceIdentity, sVer, containerName); err != nil {
 			log_str := EL_CONT_START_CONTAINER_ERROR_FOR_AG
 			if lc.IsRetry {
 				log_str = EL_CONT_RESTART_CONTAINER_ERROR_FOR_AG
@@ -1865,7 +1870,7 @@ func (b *ContainerWorker) CommandHandler(command worker.Command) bool {
 
 				// ask governer to record it into the db
 				cc := events.NewContainerConfig("", "", "", "", "", "", nil)
-				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, []string{}, []events.MicroserviceSpec{}, []persistence.ServiceInstancePathElement{}, false)
+				ll := events.NewContainerLaunchContext(cc, nil, events.BlockchainConfig{}, cmd.MsInstKey, msinst.AssociatedAgreements, []events.MicroserviceSpec{}, []persistence.ServiceInstancePathElement{}, false)
 				b.Messages() <- events.NewContainerMessage(events.EXECUTION_FAILED, *ll, "", "")
 			}
 		}
