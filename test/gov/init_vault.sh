@@ -35,8 +35,8 @@ then
   fi
 
   # Delete it
-  echo -e "\nvault kv delete openhorizon/${USER_ORG}/${TEST_SECRET}"
-  vault kv delete openhorizon/${USER_ORG}/${TEST_SECRET}
+  echo -e "\nvault kv metadata delete openhorizon/${USER_ORG}/${TEST_SECRET}"
+  vault kv metadata delete openhorizon/${USER_ORG}/${TEST_SECRET}
   if [ $? -ne 0 ]; then
     echo -e "Failed delete temp secret from kv store, vault bootstrap failed"
     exit 1

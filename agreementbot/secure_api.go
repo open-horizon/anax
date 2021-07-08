@@ -592,16 +592,16 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 
 	// The user could be authenticated but might be trying to access secrets in another org or of a different user.
 	// The second check is automatically enforced by the vault anyways.
-	_, userId := cutil.SplitOrgSpecUrl(ec.GetExchangeId())
-	if exchange.GetOrg(ec.GetExchangeId()) != org {
-		glog.Errorf(APIlogString(fmt.Sprintf("user %s cannot access secrets in org %s.", exchange.GetOrg(ec.GetExchangeId()), org)))
-		writeResponse(w, msgPrinter.Sprintf("Unauthorized. User %s cannot access secrets in org %s.", ec.GetExchangeId(), org), http.StatusForbidden)
-		return
-	} else if strings.Contains(fmt.Sprint(r.URL), "/user/") && user != userId {
-		glog.Errorf(APIlogString(fmt.Sprintf("user %v cannot access secrets for user %v", userId, user)))
-		writeResponse(w, msgPrinter.Sprintf("user %v cannot access secrets for user %v", userId, user), http.StatusUnauthorized)
-		return
-	}
+	// _, userId := cutil.SplitOrgSpecUrl(ec.GetExchangeId())
+	// if exchange.GetOrg(ec.GetExchangeId()) != org {
+	// 	glog.Errorf(APIlogString(fmt.Sprintf("user %s cannot access secrets in org %s.", exchange.GetOrg(ec.GetExchangeId()), org)))
+	// 	writeResponse(w, msgPrinter.Sprintf("Unauthorized. User %s cannot access secrets in org %s.", ec.GetExchangeId(), org), http.StatusForbidden)
+	// 	return
+	// } else if strings.Contains(fmt.Sprint(r.URL), "/user/") && user != userId {
+	// 	glog.Errorf(APIlogString(fmt.Sprintf("user %v cannot access secrets for user %v", userId, user)))
+	// 	writeResponse(w, msgPrinter.Sprintf("user %v cannot access secrets for user %v", userId, user), http.StatusUnauthorized)
+	// 	return
+	// }
 
 	// Handle secret API options
 	switch r.Method {
@@ -611,7 +611,10 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 		if vaultSecretName == "" {
 			secretNames, err := a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org)
 
-			if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
+			if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode == http.StatusNotFound {
+				//glog.Errorf(APIlogString(fmt.Sprintf("No secrets in org %s", org)))
+				writeResponse(w, msgPrinter.Sprintf("%v", serr), serr.RespCode)
+			} else if serr, ok := err.(secrets.ErrorResponse); err != nil && ok {
 				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))
 				writeResponse(w, msgPrinter.Sprintf("Unable to access secrets provider, error: %v.", serr), serr.RespCode)
 			} else if err != nil && !ok {
@@ -623,9 +626,9 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var err error
 			if user != "" {
-				_, err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+				err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
 			} else {
-				_, err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+				err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
 			}
 			if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode != http.StatusNotFound {
 				glog.Errorf(APIlogString(fmt.Sprintf("Unable to access secrets provider, error: %v. %v", serr, serr.Details)))

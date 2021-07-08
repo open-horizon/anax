@@ -33,19 +33,12 @@ type PersistedServiceSecrets struct {
 	SecretsMap map[string]PersistedServiceSecret
 }
 
-func PersistedSecretFromPolicySecret(inputSecretBindings []exchangecommon.SecretBinding, inputBoundSecrets []exchangecommon.BoundSecret, agId string) []PersistedServiceSecret {
-	boundSecFullMap := exchangecommon.BoundSecret{}
-	for _, boundSecMap := range inputBoundSecrets {
-		for key, val := range boundSecMap {
-			boundSecFullMap[key] = val
-		}
-	}
-
+func PersistedSecretFromPolicySecret(inputSecretBindings []exchangecommon.SecretBinding, agId string) []PersistedServiceSecret {
 	outputSecrets := []PersistedServiceSecret{}
 	for _, secBind := range inputSecretBindings {
 		for _, secArray := range secBind.Secrets {
-			for secName, _ := range secArray {
-				outputSecrets = append(outputSecrets, PersistedServiceSecret{SvcOrgid: secBind.ServiceOrgid, SvcUrl: secBind.ServiceUrl, SvcArch: secBind.ServiceArch, SvcVersionRange: secBind.ServiceVersionRange, SvcSecretName: secName, SvcSecretValue: boundSecFullMap[secName], AgreementIds: []string{agId}})
+			for secName, secDetails := range secArray {
+				outputSecrets = append(outputSecrets, PersistedServiceSecret{SvcOrgid: secBind.ServiceOrgid, SvcUrl: secBind.ServiceUrl, SvcArch: secBind.ServiceArch, SvcVersionRange: secBind.ServiceVersionRange, SvcSecretName: secName, SvcSecretValue: secDetails, AgreementIds: []string{agId}})
 			}
 		}
 	}

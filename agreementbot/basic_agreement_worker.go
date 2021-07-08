@@ -191,7 +191,7 @@ type BAgreementUpdateReply struct {
 
 func NewBAgreementUpdateReply(reply *basicprotocol.BAgreementUpdateReply, from string, senderPubKey []byte, messageId int) AgreementWork {
 	return BAgreementUpdateReply{
-		workType:     AGREEMENT_UPDATE,
+		workType:     AGREEMENT_UPDATE_REPLY,
 		Reply:        *reply,
 		SenderId:     from,
 		SenderPubKey: senderPubKey,
