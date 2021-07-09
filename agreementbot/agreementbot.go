@@ -1507,7 +1507,7 @@ func (w *AgreementBotWorker) secretsUpdate() int {
 	} else {
 
 		// Send out an event with the changed secrets and affected policies in it.
-		if secretUpdates.Length() != 0 {
+		if secretUpdates != nil && secretUpdates.Length() != 0 {
 			w.Messages() <- events.NewSecretUpdatesMessage(events.UPDATED_SECRETS, secretUpdates)
 		}
 	}
