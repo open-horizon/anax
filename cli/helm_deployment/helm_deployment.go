@@ -108,7 +108,7 @@ func (p *HelmDeploymentConfigPlugin) Validate(dep interface{}, cdep interface{})
 	}
 }
 
-func (p *HelmDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string) bool {
+func (p *HelmDeploymentConfigPlugin) StartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string, secretsFiles map[string]string) bool {
 
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()

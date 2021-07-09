@@ -1,13 +1,8 @@
 package dev
 
 import (
-	"fmt"
-	"os"
-	"runtime"
-	"strings"
-
 	"errors"
-
+	"fmt"
 	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/cli/plugin_registry"
 	"github.com/open-horizon/anax/common"
@@ -15,6 +10,10 @@ import (
 	"github.com/open-horizon/anax/cutil"
 	"github.com/open-horizon/anax/i18n"
 	"github.com/open-horizon/anax/semanticversion"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 // These constants define the hzn dev subcommands supported by this module.
@@ -66,6 +65,7 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 	// If there are any horizon metadata files already in the directory then we wont create any files.
 	cmd := fmt.Sprintf("%v %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND)
 	FileNotExist(dir, cmd, USERINPUT_FILE, UserInputExists)
+	FileNotExist(dir, cmd, SECRETS_FILE, SecretsFileExists)
 	FileNotExist(dir, cmd, SERVICE_DEFINITION_FILE, ServiceDefinitionExists)
 	FileNotExist(dir, cmd, PATTERN_DEFINITION_FILE, PatternDefinitionExists)
 	FileNotExist(dir, cmd, PATTERN_DEFINITION_ALL_ARCHES_FILE, PatternDefinitionAllArchesExists)
@@ -89,6 +89,12 @@ func ServiceNew(homeDirectory string, org string, specRef string, version string
 	// Create the metadata files.
 	cliutils.Verbose(msgPrinter.Sprintf("Creating user input file: %v/%v", dir, USERINPUT_FILE))
 	err = CreateUserInputs(dir, specRef)
+	if err != nil {
+		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
+	}
+
+	cliutils.Verbose(msgPrinter.Sprintf("Creating secrets file: %v/%v", dir, SECRETS_FILE))
+	err = CreateSecretsFile(dir)
 	if err != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "'%v %v' %v", SERVICE_COMMAND, SERVICE_CREATION_COMMAND, err)
 	}
@@ -198,10 +204,27 @@ func verifyNewServiceInputs(homeDirectory string, org string, specRef string, ve
 	return dir, nil
 }
 
-func ServiceStartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string) {
+// Take the filepaths given by --secrets flags
+// map the filename which is the same as the secret name to the filepath
+func mapSecNameToSecPath(secretPaths []string) map[string]string {
+	// get message printer
+	msgPrinter := i18n.GetMessagePrinter()
+
+	finalMap := make(map[string]string, len(secretPaths))
+	for _, secPath := range secretPaths {
+		if _, err := os.Stat(secPath); err != nil {
+			cliutils.Fatal(cliutils.CLI_INPUT_ERROR, msgPrinter.Sprintf("Error verifying filepath %v: %v", secPath, err))
+		}
+		finalMap[filepath.Base(secPath)] = secPath
+	}
+	return finalMap
+}
+
+func ServiceStartTest(homeDirectory string, userInputFile string, configFiles []string, configType string, noFSS bool, userCreds string, secretsFilePaths []string) {
+	secretsFilePathsMap := mapSecNameToSecPath(secretsFilePaths)
 
 	// Allow the right plugin to start a test of this service.
-	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile, configFiles, configType, noFSS, userCreds)
+	startErr := plugin_registry.DeploymentConfigPlugins.StartTest(homeDirectory, userInputFile, configFiles, configType, noFSS, userCreds, secretsFilePathsMap)
 	if startErr != nil {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, "%v", startErr)
 	}
