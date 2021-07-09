@@ -135,7 +135,7 @@ Environment Variables:
 	agbotCancelAgreementId := agbotAgreementCancelCmd.Arg("agreement", msgPrinter.Sprintf("The active agreement to cancel.")).String()
 	agbotAgreementListCmd := agbotAgreementCmd.Command("list | ls", msgPrinter.Sprintf("List the active or archived agreements this Horizon agreement bot has with edge nodes.")).Alias("ls").Alias("list")
 	agbotlistArchivedAgreements := agbotAgreementListCmd.Flag("archived", msgPrinter.Sprintf("List archived agreements instead of the active agreements.")).Short('r').Bool()
-	agbotAgreement := agbotAgreementListCmd.Arg("agreement", msgPrinter.Sprintf("List just this one agreement.")).String()
+	agbotAgreement := agbotAgreementListCmd.Arg("agreement-id", msgPrinter.Sprintf("Show the details of this active or archived agreement.")).String()
 
 	agbotCacheCmd := agbotCmd.Command("cache", msgPrinter.Sprintf("Manage cached agbot-serving organizations, patterns, and deployment policies."))
 	agbotCacheDeployPol := agbotCacheCmd.Command("deploymentpol | dep", msgPrinter.Sprintf("List served deployment policies cached in the agbot.")).Alias("dep").Alias("deploymentpol")
