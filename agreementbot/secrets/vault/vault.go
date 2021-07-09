@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/open-horizon/anax/agreementbot/secrets"
+	"github.com/open-horizon/anax/cli/cliutils"
 	"github.com/open-horizon/anax/config"
 	"github.com/open-horizon/anax/cutil"
 	"io/ioutil"
@@ -34,20 +35,19 @@ func (vs *AgbotVaultSecrets) String() string {
 }
 
 // Available to all users within the org
-func (vs *AgbotVaultSecrets) ListOrgUserSecret(user, password, org, name string) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v as user %v", name, org, user)))
+func (vs *AgbotVaultSecrets) ListOrgUserSecret(user, password, org, path string) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v as user %v", path, org, user)))
 
-	_, userId := cutil.SplitOrgSpecUrl(user)
-	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s/user/%s/%s", vs.cfg.GetAgbotVaultURL(), org, userId, name)
-	return vs.listSecret(user, password, org, name, url)
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.listSecret(user, password, org, path, url)
 }
 
 // Available to only org admin users
-func (vs *AgbotVaultSecrets) ListOrgSecret(user, password, org, name string) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v", name, org)))
+func (vs *AgbotVaultSecrets) ListOrgSecret(user, password, org, path string) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secret %v in org %v", path, org)))
 
-	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s/%s", vs.cfg.GetAgbotVaultURL(), org, name)
-	return vs.listSecret(user, password, org, name, url)
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.listSecret(user, password, org, path, url)
 }
 
 // Get the secret at a specified path within the vault
@@ -84,10 +84,29 @@ func (vs *AgbotVaultSecrets) listSecret(user, password, org, name, url string) e
 	return nil
 }
 
-// List all secrets at a specified path in vault. Available only to org admin users.
-func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]string, error) {
+// List all org-level secrets at a specified path in vault. Available only to org admin users.
+func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org, path string) ([]string, error) {
 
 	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("list secrets in %v", org)))
+
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in org %s as %s", org, user)))
+	return vs.listSecrets(user, password, org, url)
+}
+
+// List all user-level secrets at a specified path in vault.
+func (vs *AgbotVaultSecrets) ListOrgUserSecrets(user, password, org, path string) ([]string, error) {
+
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets for user %v in %v", user, org)))
+
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.listSecrets(user, password, org, url)
+}
+
+// List the secrets at a specified path within the vault
+func (vs *AgbotVaultSecrets) listSecrets(user, password, org, url string) ([]string, error) {
+
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("url: %s", url)))
 
 	// Login the user to ensure that the vault ACLs can take effect
 	userVaultToken, err := vs.loginUser(user, password, org)
@@ -95,10 +114,6 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 		return nil, secrets.ErrorResponse{Msg: fmt.Sprintf("Unable to login user %s, error: %v", user, err), Details: "", RespCode: http.StatusUnauthorized}
 	}
 
-	// Query the vault using the user's credentials
-	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s", vs.cfg.GetAgbotVaultURL(), org)
-
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("listing secrets in org %s as %s", org, user)))
 	resp, err := vs.invokeVaultWithRetry(userVaultToken, url, "LIST", nil)
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
@@ -135,7 +150,7 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 			continue
 		} else if secret[len(secret)-1] == '/' {
 			// filter out empty directories
-			res, listErr := vs.ListOrgSecrets(user, password, org+"/"+(secret[:len(secret)-1]))
+			res, listErr := vs.ListOrgSecrets(user, password, org, secret[:len(secret)-1])
 			if listErr != nil && len(res) == 0 {
 				continue
 			} else {
@@ -154,20 +169,19 @@ func (vs *AgbotVaultSecrets) ListOrgSecrets(user, password, org string) ([]strin
 }
 
 // Available to all users within the org
-func (vs *AgbotVaultSecrets) CreateOrgUserSecret(user, password, org, vaultSecretName string, data secrets.SecretDetails) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("creating secret %s in org %s as user %s", vaultSecretName, org, user)))
+func (vs *AgbotVaultSecrets) CreateOrgUserSecret(user, password, org, path string, data secrets.SecretDetails) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("creating secret %s in org %s as user %s", path, org, user)))
 
-	_, userId := cutil.SplitOrgSpecUrl(user)
-	url := fmt.Sprintf("%s/v1/openhorizon/data/%s/user/%s/%s", vs.cfg.GetAgbotVaultURL(), org, userId, vaultSecretName)
-	return vs.createSecret(user, password, org, vaultSecretName, url, data)
+	url := fmt.Sprintf("%s/v1/openhorizon/data/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.createSecret(user, password, org, path, url, data)
 }
 
 // Available to only org admin users
-func (vs *AgbotVaultSecrets) CreateOrgSecret(user, password, org, vaultSecretName string, data secrets.SecretDetails) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("creating secret %s in org %s", vaultSecretName, org)))
+func (vs *AgbotVaultSecrets) CreateOrgSecret(user, password, org, path string, data secrets.SecretDetails) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("creating secret %s in org %s", path, org)))
 
-	url := fmt.Sprintf("%s/v1/openhorizon/data/%s/%s", vs.cfg.GetAgbotVaultURL(), org, vaultSecretName)
-	return vs.createSecret(user, password, org, vaultSecretName, url, data)
+	url := fmt.Sprintf("%s/v1/openhorizon/data/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.createSecret(user, password, org, path, url, data)
 }
 
 // This utility will be used to create secrets.
@@ -209,20 +223,19 @@ func (vs *AgbotVaultSecrets) createSecret(user, password, org, vaultSecretName, 
 }
 
 // Available to all users within the org
-func (vs *AgbotVaultSecrets) DeleteOrgUserSecret(user, password, org, name string) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s in org %s as user %s", name, org, user)))
+func (vs *AgbotVaultSecrets) DeleteOrgUserSecret(user, password, org, path string) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s in org %s as user %s", path, org, user)))
 
-	_, userId := cutil.SplitOrgSpecUrl(user)
-	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s/user/%s/%s", vs.cfg.GetAgbotVaultURL(), org, userId, name)
-	return vs.deleteSecret(user, password, org, name, url)
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.deleteSecret(user, password, org, path, url)
 }
 
 // Available to only org admin users
-func (vs *AgbotVaultSecrets) DeleteOrgSecret(user, password, org, name string) error {
-	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s in org %s", name, org)))
+func (vs *AgbotVaultSecrets) DeleteOrgSecret(user, password, org, path string) error {
+	glog.V(3).Infof(vaultPluginLogString(fmt.Sprintf("delete secret %s in org %s", path, org)))
 
-	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s/%s", vs.cfg.GetAgbotVaultURL(), org, name)
-	return vs.deleteSecret(user, password, org, name, url)
+	url := fmt.Sprintf("%s/v1/openhorizon/metadata/%s"+cliutils.AddSlash(path), vs.cfg.GetAgbotVaultURL(), org)
+	return vs.deleteSecret(user, password, org, path, url)
 }
 
 // This utility will be used to delete secrets.

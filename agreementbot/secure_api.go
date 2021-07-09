@@ -175,6 +175,7 @@ func (a *SecureAPI) listen() {
 		router.HandleFunc("/deploycheck/deploycompatible", a.deploy_compatible).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets", a.secrets).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/{secret}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
+		router.HandleFunc("/org/{org}/secrets/user/{user}", a.secrets).Methods("GET", "OPTIONS")
 		router.HandleFunc("/org/{org}/secrets/user/{user}/{secret}", a.secrets).Methods("GET", "PUT", "POST", "DELETE", "OPTIONS")
 
 		apiListen := fmt.Sprintf("%v:%v", apiListenHost, apiListenPort)
@@ -584,7 +585,8 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 		glog.Errorf(APIlogString(fmt.Sprintf("org must be specified in the API path")))
 		writeResponse(w, msgPrinter.Sprintf("org must be specified in the API path"), http.StatusBadRequest)
 		return
-	} else if strings.Contains(fmt.Sprint(r.URL), "/user/") && user == "" {
+	} else if (strings.Contains(fmt.Sprint(r.URL), "/user/") && user == "") ||
+		(vaultSecretName == "user" && user == "") {
 		glog.Errorf(APIlogString(fmt.Sprintf("user must be specified in the API path")))
 		writeResponse(w, msgPrinter.Sprintf("user must be specified in the API path"), http.StatusBadRequest)
 		return
@@ -604,12 +606,22 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	// Handle secret API options
+	userPath := "user/"+user+cliutils.AddSlash(vaultSecretName)
 	switch r.Method {
 	case "GET":
 
 		// Call the plugged in secrets provider to list the secret(s) for the input org.
 		if vaultSecretName == "" {
-			secretNames, err := a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org)
+
+			var secretNames []string
+			var err error
+			if user != "" {
+				// listing user level secrets
+				secretNames, err = a.secretProvider.ListOrgUserSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
+			} else {
+				// listing org level secrets
+				secretNames, err = a.secretProvider.ListOrgSecrets(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+			}
 
 			if serr, ok := err.(secrets.ErrorResponse); err != nil && ok && serr.RespCode == http.StatusNotFound {
 				//glog.Errorf(APIlogString(fmt.Sprintf("No secrets in org %s", org)))
@@ -626,7 +638,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var err error
 			if user != "" {
-				err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+				err = a.secretProvider.ListOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
 			} else {
 				err = a.secretProvider.ListOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
 			}
@@ -660,7 +672,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 
 		var err error
 		if user != "" {
-			err = a.secretProvider.CreateOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName, input)
+			err = a.secretProvider.CreateOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath, input)
 		} else {
 			err = a.secretProvider.CreateOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName, input)
 		}
@@ -676,7 +688,7 @@ func (a *SecureAPI) secrets(w http.ResponseWriter, r *http.Request) {
 	case "DELETE":
 		var err error
 		if user != "" {
-			err = a.secretProvider.DeleteOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
+			err = a.secretProvider.DeleteOrgUserSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, userPath)
 		} else {
 			err = a.secretProvider.DeleteOrgSecret(ec.GetExchangeId(), ec.GetExchangeToken(), org, vaultSecretName)
 		}

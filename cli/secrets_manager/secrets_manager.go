@@ -3,13 +3,13 @@ package secrets_manager
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/open-horizon/anax/cli/cliutils"
+	"github.com/open-horizon/anax/i18n"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
-
-	"github.com/open-horizon/anax/cli/cliutils"
-	"github.com/open-horizon/anax/i18n"
 )
 
 type SecretResponse struct {
@@ -56,9 +56,15 @@ func queryWithRetry(query func() int, retryCount, retryInterval int) (httpCode i
 
 // If secretName is empty, lists all the org level secrets and non-empty directories for the specified org in the secrets manager
 // If secretName is specified, prints a json object indicating whether the given secret exists or not in the secrets manager for the org
+// If the name provided is a directory, lists all the secrets in the directory.
 func SecretList(org, credToUse, secretName string) {
 	// get message printer
 	msgPrinter := i18n.GetMessagePrinter()
+
+	// get rid of trailing / from secret name 
+	if strings.HasSuffix(secretName, "/") {
+		secretName = secretName[:len(secretName) - 1]
+	}
 
 	// query the agbot secure api
 	var resp []byte
@@ -68,16 +74,28 @@ func SecretList(org, credToUse, secretName string) {
 	}
 	retCode := queryWithRetry(listQuery, 3, 1)
 
+	// check if listing org/user secrets
+
+	// listing org secrets - empty name 
+	isSecretDirectory := secretName == ""
+
+	// listing user secrets - user/<user>
+	if !isSecretDirectory {
+		nameParts := strings.Split(secretName, "/")
+		partsLength := len(nameParts)
+		isSecretDirectory = nameParts[0] == "user" && partsLength == 2
+	}	
+
 	// parse and print the response
 	if retCode == 401 || retCode == 403 || retCode == 503 {
 		cliutils.Fatal(cliutils.CLI_GENERAL_ERROR, string(resp))
-	} else if secretName == "" { // no secret name provided, list secrets/no secrets found
+	} else if isSecretDirectory { // list org/user secrets
 		if retCode == 200 {
 			// list secrets
 			var secrets []string
 			printResponse(resp, &secrets)
 		} else if retCode == 404 {
-			// no secrets found
+			// no secrets found in the organization or user's directory
 			fmt.Println("[]")
 		}
 	} else { // secret name provided, exists/does not exist
@@ -85,7 +103,7 @@ func SecretList(org, credToUse, secretName string) {
 			var secret SecretResponse
 			printResponse(resp, &secret)
 		} else if retCode == 404 {
-			// secret doesn't exist
+			// secret doesn't exist, output exists: false for consistency
 			secretDNE := SecretResponse{false}
 			jsonBytes, jerr := json.MarshalIndent(secretDNE, "", cliutils.JSON_INDENT)
 			if jerr != nil {
