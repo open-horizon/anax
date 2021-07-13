@@ -195,4 +195,3 @@ func writeDateStreamToFile(dataReader io.Reader, fileName string) error {
 
 	return nil
 }
-

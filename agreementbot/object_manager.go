@@ -242,7 +242,7 @@ func (m *MMSObjectPolicyManager) UpdatePolicies(org string, updatedPolicies *exc
 						policyReplaced = pe.Policy
 						glog.V(3).Infof(mmsLogString(fmt.Sprintf("object %v/%v %v policy removed from %v cache.", objPol.OrgID, objPol.ObjectID, objPol.ObjectType, service)))
 					}
-				} else { 
+				} else {
 					finalList = append(finalList, pe)
 				}
 			}

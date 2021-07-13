@@ -29,8 +29,8 @@ E2EDEV_ADMIN_AUTH="e2edev@somecomp.com/e2edevadmin:e2edevadminpw"
 USERDEV_ADMIN_AUTH="userdev/userdevadmin:userdevadminpw"
 
 export ARCH=${ARCH}
-CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
-CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
+export CPU_IMAGE_NAME="${DOCKER_CPU_INAME}"
+export CPU_IMAGE_TAG="${DOCKER_CPU_TAG}"
 
 export HZN_EXCHANGE_URL="${EXCH_APP_HOST}"
 
@@ -156,36 +156,21 @@ echo -e "Register ppc64le test service:"
 #     exit 2
 # fi
 
-# cpu service - needed by the hzn dev tests and the location top level service as a 3rd level dependency.
-VERS="1.2.2"
-cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
-{
-  "label":"CPU service",
-  "description":"CPU service",
-  "public":true,
-  "url":"https://bluehorizon.network/service-cpu",
-  "version":"$VERS",
-  "arch":"${ARCH}",
-  "sharable":"singleton",
-  "matchHardware":{},
-  "userInput":[
-    {
-      "name":"cpu_var1",
-      "label":"",
-      "type":"string"
-    }
-  ],
-  "deployment":{
-    "services":{
-      "cpu":{
-        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}",
-        "binds":["/tmp:/hosttmp"]
-      }
-    }
-  },
-  "deploymentSignature":""
-}
-EOF
+if [ "${HZN_VAULT}" == "true" ]; then
+  CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2_secrets.json"
+  CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0_secrets.json"
+
+else
+  CPU_FILE_IBM="/root/service_defs/IBM/service-cpu_1.2.2.json"
+  CPU_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/service-cpu_1.0.json"
+
+fi
+
+# IBM cpu service - needed by the hzn dev tests, netspeed, and the location top level service as a 3rd level dependency.
+export VERS="1.2.2"
+
+cat ${CPU_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_cpu.json
+
 echo -e "Register IBM/cpu service $VERS:"
 hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
@@ -194,35 +179,10 @@ then
     exit 2
 fi
 
-# cpu service - needed by the e2edev@somecomp.com/netspeed
-VERS="1.0"
-cat <<EOF >$KEY_TEST_DIR/svc_cpu.json
-{
-  "label":"CPU service",
-  "description":"CPU service",
-  "public":true,
-  "url":"https://bluehorizon.network/service-cpu",
-  "version":"$VERS",
-  "arch":"${ARCH}",
-  "sharable":"singleton",
-  "matchHardware":{},
-  "userInput":[
-    {
-      "name":"cpu_var1",
-      "label":"",
-      "type":"string"
-    }
-  ],
-  "deployment":{
-    "services":{
-      "cpu":{
-        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
-      }
-    }
-  },
-  "deploymentSignature":""
-}
-EOF
+# e2edev@somecomp.com cpu service - needed by the e2edev@somecomp.com/netspeed
+export VERS="1.0"
+
+cat ${CPU_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_cpu.json
 
 echo -e "Register e2edev@somecomp.com/cpu service $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_cpu.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
@@ -231,7 +191,6 @@ then
     echo -e "hzn exchange service publish failed for e2edev@somecomp.com/cpu."
     exit 2
 fi
-
 
 # A no-op network service used by the netspeed service as a dependency.
 VERS="1.5.0"
@@ -472,69 +431,21 @@ fi
 # deployment configuration
 # service definition
 # register version 2.3.0 for execution purposes
-VERS="2.3.0"
-cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
-{
-  "label":"Netspeed for ${ARCH}",
-  "description":"Netspeed service",
-  "sharable":"multiple",
-  "public":true,
-  "url":"https://bluehorizon.network/services/netspeed",
-  "version":"$VERS",
-  "arch":"${ARCH}",
-  "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"},
-    {"url":"https://bluehorizon.network/services/network2","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"},
-    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"}
-  ],
-  "userInput":[
-    {
-      "name":"var1",
-      "label":"",
-      "type":"string"
-    },
-    {
-      "name":"var2",
-      "label":"",
-      "type":"int"
-    },
-    {
-      "name":"var3",
-      "label":"",
-      "type":"float"
-    },
-    {
-      "name":"var4",
-      "label":"",
-      "type":"list of strings"
-    },
-    {
-      "name":"var5",
-      "label":"",
-      "type":"string",
-      "defaultValue":"default"
-    },
-    {
-      "name":"var6",
-      "label":"",
-      "type":"string",
-      "defaultValue":"default"
-    }
-  ],
-  "deployment":{
-    "services":{
-      "netspeed":{
-        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
-      }
-    }
-  },
-  "deploymentSignature":"",
-  "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator.tar.gz"
-  },
-  "clusterDeploymentSignature": ""
-}
-EOF
+
+if [ "${HZN_VAULT}" == "true" ]; then
+  NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0_secrets.json"
+  NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0_secrets.json"
+
+else
+  NS_FILE_IBM="/root/service_defs/IBM/netspeed_2.3.0.json"
+  NS_FILE_E2EDEV="/root/service_defs/e2edev@somecomp.com/netspeed_2.3.0.json"
+
+fi
+
+export VERS="2.3.0"
+
+cat ${NS_FILE_IBM} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
+
 echo -e "Register IBM/netspeed service $VERS:"
 hzn exchange service publish -I -u $IBM_ADMIN_AUTH -o IBM -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
@@ -543,69 +454,8 @@ then
     exit 2
 fi
 
-cat <<EOF >$KEY_TEST_DIR/svc_netspeed.json
-{
-  "label":"Netspeed for ${ARCH}",
-  "description":"Netspeed service",
-  "sharable":"multiple",
-  "public":true,
-  "url":"https://bluehorizon.network/services/netspeed",
-  "version":"$VERS",
-  "arch":"${ARCH}",
-  "requiredServices":[
-    {"url":"https://bluehorizon.network/services/network","versionRange":"1.0.0","arch":"${ARCH}","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/services/network2","version":"1.0.0","arch":"${ARCH}","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","version":"1.0.0","arch":"${ARCH}","org":"e2edev@somecomp.com"},
-    {"url":"https://bluehorizon.network/service-cpu","versionRange":"1.0.0","arch":"${ARCH}","org":"IBM"}
-  ],
-  "userInput":[
-    {
-      "name":"var1",
-      "label":"",
-      "type":"string"
-    },
-    {
-      "name":"var2",
-      "label":"",
-      "type":"int"
-    },
-    {
-      "name":"var3",
-      "label":"",
-      "type":"float"
-    },
-    {
-      "name":"var4",
-      "label":"",
-      "type":"list of strings"
-    },
-    {
-      "name":"var5",
-      "label":"",
-      "type":"string",
-      "defaultValue":"default"
-    },
-    {
-      "name":"var6",
-      "label":"",
-      "type":"string",
-      "defaultValue":"default"
-    }
-  ],
-  "deployment":{
-    "services":{
-      "netspeed":{
-        "image":"${CPU_IMAGE_NAME}:${CPU_IMAGE_TAG}"
-      }
-    }
-  },
-  "deploymentSignature":"",
-  "clusterDeployment": {
-    "operatorYamlArchive": "/root/input_files/k8s_deploy/topservice-operator.tar.gz"
-  },
-  "clusterDeploymentSignature": ""
-}
-EOF
+cat ${NS_FILE_E2EDEV} | envsubst > $KEY_TEST_DIR/svc_netspeed.json
+
 echo -e "Register e2edev@somecomp.com/netspeed service $VERS:"
 hzn exchange service publish -I -u $E2EDEV_ADMIN_AUTH -o e2edev@somecomp.com -f $KEY_TEST_DIR/svc_netspeed.json -k $KEY_TEST_DIR/*private.key -K $KEY_TEST_DIR/*public.pem
 if [ $? -ne 0 ]
@@ -827,111 +677,34 @@ hzn exchange service list -o IBM
 # ======================= Patterns that use top level services ======================
 # sns pattern
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  MHI=120
-  CAS=30
+  export MHI=120
+  export CAS=30
 else
-  MHI=600
-  CAS=600
+  export MHI=600
+  export CAS=600
 fi
 
-VERS="2.3.0"
-read -d '' pdef <<EOF
-{
-  "label": "Netspeed",
-  "description": "a netspeed service based pattern",
-  "public": true,
-  "services": [
-    {
-      "serviceUrl":"https://bluehorizon.network/services/netspeed",
-      "serviceOrgid":"IBM",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$VERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 3,
-            "retries": 1,
-            "retry_durations": 1800,
-            "verified_durations": 45
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"$VERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 2,
-            "retries": 1,
-            "retry_durations": 3600
-          },
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI,
-        "check_agreement_status": $CAS
-      }
-    }
-  ],
-  "agreementProtocols": [
-    {
-      "name": "Basic"
-    }
-  ],
-  "userInput": [
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/services/netspeed",
-      "serviceArch": "",
-      "serviceVersionRange": "2.2.0",
-      "inputs": [
-        {
-          "name": "var1",
-          "value": "bString"
-        },
-        {
-          "name": "var2",
-          "value": 10
-        },
-        {
-          "name": "var3",
-          "value": 10.22
-        },
-        {
-          "name": "var4",
-          "value": ["abcd", "1234"]
-        },
-        {
-          "name": "var5",
-          "value": "override2"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "ibm_var1"
-        }
-      ]
-    }
-  ]
-}
-EOF
+export VERS="2.3.0"
+
+if [ "${HZN_VAULT}" == "true" ]; then
+  NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed_secrets.json"
+
+else
+  NS_PATTERN="/root/patterns/e2edev@somecomp.com/netspeed.json"
+
+fi
+
+export VERS="2.3.0"
+
+cat ${NS_PATTERN} | envsubst > $KEY_TEST_DIR/pattern_netspeed.json
+
 echo -e "Register sns (service based netspeed) pattern $VERS:"
 
-  RES=$(echo "$pdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
+RES=$(cat $KEY_TEST_DIR/pattern_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sns" | jq -r '.')
 
 results "$RES"
 
+# sgps test pattern
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
   MHI=90
   CAS=60
@@ -940,8 +713,6 @@ else
   CAS=600
 fi
 
-
-# sgps test pattern
 VERS="1.0.0"
 read -d '' sdef <<EOF
 {
@@ -1335,388 +1106,42 @@ if [ "${NOHZNDEV}" == "1" ] && [ "${NOHELLO}" == "1" ] && [ "${TEST_PATTERNS}" !
     echo -e "Skipping sall pattern creation"
 else
 
-PWSVERS="1.5.0"
-NSVERS="2.3.0"
-LOCVERS1="2.0.6"
-LOCVERS2="2.0.7"
-GPSVERS="1.0.0"
-UHSVERS="1.0.0"
-K8SVERS="1.0.0"
+export PWSVERS="1.5.0"
+export NSVERS="2.3.0"
+export LOCVERS1="2.0.6"
+export LOCVERS2="2.0.7"
+export GPSVERS="1.0.0"
+export UHSVERS="1.0.0"
+export K8SVERS="1.0.0"
 if [ "${EXCH_APP_HOST}" = "http://exchange-api:8080/v1" ]; then
-  MHI_240=240
-  MHI_180=180
-  MHI_120=120
-  MHI_90=120
-  CAS_60=60
-  CAS_45=45
-  CAS_30=30
+  export MHI_240=240
+  export MHI_180=180
+  export MHI_120=120
+  export MHI_90=120
+  export CAS_60=60
+  export CAS_45=45
+  export CAS_30=30
 else
-  MHI_240=600
-  MHI_180=600
-  MHI_120=600
-  MHI_90=600
-  CAS_60=600
-  CAS_45=600
-  CAS_30=600
+  export MHI_240=600
+  export MHI_180=600
+  export MHI_120=600
+  export MHI_90=600
+  export CAS_60=600
+  export CAS_45=600
+  export CAS_30=600
 fi
-read -d '' msdef <<EOF
-{
-  "label": "All",
-  "description": "a pattern for all service based top level services",
-  "public": true,
-  "services": [
-    {
-      "serviceUrl":"https://bluehorizon.network/services/weather",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$PWSVERS",
-          "deployment_overrides": "",
-          "deployment_overrides_signature": "",
-          "priority":{
-            "priority_value": 3,
-            "retries": 1,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"$PWSVERS",
-          "deployment_overrides": "",
-          "deployment_overrides_signature": "",
-          "priority":{
-            "priority_value": 2,
-            "retries": 1,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI_180,
-        "check_agreement_status": $CAS_45
-      }
-    },
-    {
-      "serviceUrl":"https://bluehorizon.network/services/netspeed",
-      "serviceOrgid":"IBM",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$NSVERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 3,
-            "retries": 1,
-            "retry_durations": 1800,
-            "verified_durations": 45
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"$NSVERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 2,
-            "retries": 1,
-            "retry_durations": 1800
-          },
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI_120,
-        "check_agreement_status": $CAS_30
-      }
-    },
-    {
-      "serviceUrl":"https://bluehorizon.network/services/netspeed",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$NSVERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 3,
-            "retries": 1,
-            "retry_durations": 1800,
-            "verified_durations": 45
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"$NSVERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 2,
-            "retries": 1,
-            "retry_durations": 1800
-          },
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI_120,
-        "check_agreement_status": $CAS_30
-      }
-    },
-    {
-      "serviceUrl":"https://bluehorizon.network/services/location",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$LOCVERS1",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 3,
-            "retries": 2,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        },
-        {
-          "version":"$LOCVERS2",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{
-            "priority_value": 2,
-            "retries": 2,
-            "retry_durations": 3600,
-            "verified_durations": 52
-          },
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI_240,
-        "check_agreement_status": $CAS_60
-      }
-    },
-    {
-      "serviceUrl":"https://bluehorizon.network/services/locgps",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "agreementLess": true,
-      "serviceVersions":[
-        {
-          "version":"2.0.4",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{},
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {}
-    },
-    {
-      "serviceUrl":"my.company.com.services.usehello2",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"1.0.0",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{},
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {}
-    },
-    {
-      "serviceUrl":"https://bluehorizon.network/services/gpstest",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$GPSVERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{},
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {
-        "missing_heartbeat_interval": $MHI_90,
-        "check_agreement_status": $CAS_60
-      }
-    },
-    {
-      "serviceUrl":"k8s-service1",
-      "serviceOrgid":"e2edev@somecomp.com",
-      "serviceArch":"${ARCH}",
-      "serviceVersions":[
-        {
-          "version":"$K8SVERS",
-          "deployment_overrides":"",
-          "deployment_overrides_signature":"",
-          "priority":{},
-          "upgradePolicy": {}
-        }
-      ],
-      "dataVerification": {},
-      "nodeHealth": {}
-    }
-  ],
-  "agreementProtocols": [
-    {
-      "name": "Basic"
-    }
-  ],
-  "userInput": [
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/netspeed",
-      "serviceArch": "",
-      "serviceVersionRange": "2.2.0",
-      "inputs": [
-        {
-          "name": "var3",
-          "value": 10.22
-        },
-        {
-          "name": "var4",
-          "value": ["abcd", "1234"]
-        },
-        {
-          "name": "var5",
-          "value": "override2"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/services/netspeed",
-      "serviceArch": "",
-      "serviceVersionRange": "2.2.0",
-      "inputs": [
-        {
-          "name": "var3",
-          "value": 11.22
-        },
-        {
-          "name": "var4",
-          "value": ["abc", "123"]
-        },
-        {
-          "name": "var5",
-          "value": "override1"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "e2edev_var1"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "ibm_var1"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "e2edev_var1"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/locgps",
-      "serviceArch": "",
-      "serviceVersionRange": "2.0.3",
-      "inputs": [
-        {
-          "name": "test",
-          "value": "testValue"
-        },
-        {
-          "name": "extra",
-          "value": "extraValue"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "ibmvar1"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/weather",
-      "serviceArch": "",
-      "serviceVersionRange": "1.5.0",
-      "inputs": [
-        {
-          "name": "HZN_WUGNAME",
-          "value": "e2edev mocked pws"
-        },
-        {
-          "name": "HZN_PWS_MODEL",
-          "value": "LaCrosse WS2317"
-        },
-        {
-          "name": "MTN_PWS_MODEL",
-          "value": "LaCrosse WS2317"
-        },
-        {
-          "name": "HZN_PWS_ST_TYPE",
-          "value": "WS23xx"
-        },
-        {
-          "name": "MTN_PWS_ST_TYPE",
-          "value": "WS23xx"
-        }
-      ]
-    }
-  ]
-}
-EOF
+
+if [ "${HZN_VAULT}" == "true" ]; then
+  SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall_secrets.json"
+
+else
+  SALL_PATTERN="/root/patterns/e2edev@somecomp.com/sall.json"
+
+fi
+
+cat $SALL_PATTERN | envsubst > $KEY_TEST_DIR/pattern_sall.json
+
+msdef=$(cat $KEY_TEST_DIR/pattern_sall.json)
 
 if [[ $TEST_DIFF_ORG -eq 0 ]]; then
   msdef=$(echo $msdef |jq 'del(.services[] | select(.serviceUrl == "https://bluehorizon.network/services/netspeed") | select(.serviceOrgid == "e2edev@somecomp.com"))')
@@ -1724,128 +1149,32 @@ fi
 
 echo -e "Register service based all pattern:"
 
-  RES=$(echo "$msdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
+  RES=$(echo $msdef | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$E2EDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/e2edev@somecomp.com/patterns/sall" | jq -r '.')
 
 results "$RES"
 
 fi
 
 # ======================= Business Policies that use top level services ======================
-read -d '' bpnsdef <<EOF
-{
-  "label": "business policy for netspeed",
-  "description": "for netspeed",
-  "service": {
-    "name": "https://bluehorizon.network/services/netspeed",
-    "org": "e2edev@somecomp.com",
-    "arch": "*",
-    "serviceVersions": [
-      {
-        "version": "2.3.0",
-        "priority":{
-          "priority_value": 3,
-          "retries": 1,
-          "retry_durations": 1800,
-          "verified_durations": 45
-       }
-      },
-      {
-        "version": "2.3.0",
-        "priority":{
-          "priority_value": 2,
-          "retries": 1,
-          "retry_durations": 3600
-        }
-      }
-    ],
-    "nodeHealth": {
-      "missing_heartbeat_interval": 0,
-      "check_agreement_status": 0
-    }
-  },
-  "properties": [
-      {
-          "name": "iame2edev",
-          "value": "true"
-      },
-      {
-          "name": "NONS",
-          "value": false
-      },
-      {
-          "name": "number",
-          "value": "12"
-      },
-      {
-          "name": "foo",
-          "value": "bar"
-      }
-  ],
-  "constraints": [
-    "purpose==network-testing"
-  ],
-  "userInput": [
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/services/netspeed",
-      "serviceArch": "",
-      "serviceVersionRange": "2.2.0",
-      "inputs": [
-        {
-          "name": "var1",
-          "value": "bp_string"
-        },
-        {
-          "name": "var2",
-          "value": 10
-        },
-        {
-          "name": "var3",
-          "value": 10.22
-        },
-        {
-          "name": "var4",
-          "value": ["bp_abcd", "bp_1234"]
-        },
-        {
-          "name": "var5",
-          "value": "bp_override2"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "IBM",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "bp_ibm_var1"
-        }
-      ]
-    },
-    {
-      "serviceOrgid": "e2edev@somecomp.com",
-      "serviceUrl": "https://bluehorizon.network/service-cpu",
-      "serviceArch": "",
-      "serviceVersionRange": "1.0.0",
-      "inputs": [
-        {
-          "name": "cpu_var1",
-          "value": "bp_e2edev_var1"
-        }
-      ]
-    }
-  ]
-}
-EOF
+
+# netspeed policy
+if [ "${HZN_VAULT}" == "true" ]; then
+  NS_DP="/root/deployment_policies/userdev/netspeed_secrets.json"
+
+else
+  NS_DP="/root/deployment_policies/userdev/netspeed.json"
+
+fi
+
+cat ${NS_DP} | envsubst > $KEY_TEST_DIR/policy_netspeed.json
+
 echo -e "Register business policy for netspeed:"
 
-  RES=$(echo "$bpnsdef" | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
+RES=$(cat $KEY_TEST_DIR/policy_netspeed.json | curl -sLX POST $CERT_VAR --header 'Content-Type: application/json' --header 'Accept: application/json' -u "$USERDEV_ADMIN_AUTH" --data @- "${EXCH_URL}/orgs/userdev/business/policies/bp_netspeed" | jq -r '.')
 
 results "$RES"
 
+# gpstest policy
 read -d '' bpgpstestdef <<EOF
 {
   "label": "business policy for gpstest",

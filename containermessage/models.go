@@ -72,10 +72,6 @@ import (
  * }
  */
 
-type Secret struct {
-	Description string `json:"description"`
-}
-
 type DeploymentDescription struct {
 	Services       map[string]*Service `json:"services"`
 	ServicePattern Pattern             `json:"service_pattern"`
@@ -147,6 +143,13 @@ func (p *Pattern) IsShared(tp string, serviceName string) bool {
 	return false
 }
 
+type Secret struct {
+	Description     string `json:"description"`
+	SvcOrg          string `json:"svcOrg"`
+	SvcUrl          string `json:"svcUrl"`
+	SvcVersionRange string `json:"svcVersionRange"`
+}
+
 // Service Only those marked "omitempty" may be omitted
 type Service struct {
 	Image            string               `json:"image"`
@@ -167,7 +170,7 @@ type Service struct {
 	MaxMemoryMb      int64                `json:"max_memory_mb,omitempty"`
 	MaxCPUs          float32              `json:"max_cpus,omitempty"`
 	LogDriver        string               `json:"log_driver,omitempty"` // Docker's log-driver. Syslog will be used as default driver
-	Secrets          map[string]Secret    `json:"secrets,omitempty"`
+	Secrets          map[string]Secret    `json:"secrets"`
 }
 
 func (s *Service) AddFilesystemBinding(bind string) {

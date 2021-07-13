@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 ARG ARCH
 
 RUN apt-get update
-RUN apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release
+RUN apt-get -y install vim iptables build-essential wget git iputils-ping net-tools curl jq kafkacat apt-transport-https socat software-properties-common lsb-release gettext-base
 
 ARG DOCKER_VER=19.03.8
 

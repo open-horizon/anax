@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
+	"github.com/open-horizon/anax/abstractprotocol"
 	"github.com/open-horizon/anax/agreementbot/persistence"
 	"github.com/open-horizon/anax/agreementbot/secrets"
 	"github.com/open-horizon/anax/apicommon"
@@ -31,10 +32,10 @@ type API struct {
 	em             *events.EventStateManager
 	shutdownError  string
 	configFile     string
-	secretProvider *secrets.AgbotSecrets
+	secretProvider secrets.AgbotSecrets
 }
 
-func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string, s *secrets.AgbotSecrets) *API {
+func NewAPIListener(name string, config *config.HorizonConfig, db persistence.AgbotDatabase, configFile string, s secrets.AgbotSecrets) *API {
 	messages := make(chan events.Message)
 
 	listener := &API{
@@ -43,11 +44,11 @@ func NewAPIListener(name string, config *config.HorizonConfig, db persistence.Ag
 			Messages: messages,
 		},
 
-		name:       name,
-		db:         db,
-		EC:         worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
-		em:         events.NewEventStateManager(),
-		configFile: configFile,
+		name:           name,
+		db:             db,
+		EC:             worker.NewExchangeContext(config.AgreementBot.ExchangeId, config.AgreementBot.ExchangeToken, config.AgreementBot.ExchangeURL, config.GetAgbotCSSURL(), config.Collaborators.HTTPClientFactory),
+		em:             events.NewEventStateManager(),
+		configFile:     configFile,
 		secretProvider: s,
 	}
 
@@ -365,7 +366,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "Internal server error", http.StatusInternalServerError)
 			} else if ag == nil {
 				writeInputErr(w, http.StatusBadRequest, &APIUserInputError{Input: "id", Error: "agreement id not found"})
-			} else if err = policy.ObscureSecretDetails(&ag.Proposal); err != nil {
+			} else if err := abstractprotocol.ObscureProposalSecret(&ag.Proposal); err != nil {
 				glog.Warning(APIlogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
 			} else {
 				// write output
@@ -389,7 +390,7 @@ func (a *API) agreement(w http.ResponseWriter, r *http.Request) {
 				} else {
 
 					for _, agreement := range ags {
-						if err = policy.ObscureSecretDetails(&agreement.Proposal); err != nil {
+						if err := abstractprotocol.ObscureProposalSecret(&agreement.Proposal); err != nil {
 							glog.Warning(APIlogString(fmt.Sprintf("failed to obscure secret details, error: %v", err)))
 						}
 						// The archived agreements and the agreements being terminated are returned as archived.
@@ -654,7 +655,7 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 			glog.Errorf(APIlogString(fmt.Sprintf("Unable to get DB heartbeat, error: %v", err)))
 		}
 		if a.secretProvider != nil {
-			health.LastVaultInteraction = (*a.secretProvider).GetLastVaultStatus()
+			health.LastVaultInteraction = (a.secretProvider).GetLastVaultStatus()
 		}
 		info.LiveHealth = health
 

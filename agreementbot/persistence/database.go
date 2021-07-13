@@ -68,10 +68,26 @@ type AgbotDatabase interface {
 
 	DeleteWorkloadUsage(deviceid string, policyName string) error
 
-	// Function related to persistence of search sessions with the Exchange.
+	// Functions related to persistence of search sessions with the Exchange.
 	ObtainSearchSession(policyName string) (string, uint64, error)
 	UpdateSearchSessionChangedSince(currentChangedSince uint64, newChangedSince uint64, policyName string) (bool, error)
 	ResetAllChangedSince(newChangedSince uint64) error
 	ResetPolicyChangedSince(policy string, newChangedSince uint64) error
 	DumpSearchSessions() error
+
+	// Functions related to persistence of secrets in use by active agreements.
+	AddManagedPolicySecret(secretOrg, secretName, policyOrg, policyName string, updateTime int64) error
+	AddManagedPatternSecret(secretOrg, secretName, patternOrg, patternName string, updateTime int64) error
+	GetManagedPolicySecretNames(policyOrg, policyName string) ([]string, error)
+	GetManagedPatternSecretNames(patternOrg, patternName string) ([]string, error)
+	GetPoliciesWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error)
+	GetPatternsWithUpdatedSecrets(secretOrg, secretName string, lastUpdate int64) ([]string, error)
+	SetSecretUpdate(secretOrg, secretName string, secretUpdateTime int64) error
+	GetPoliciesInOrg(org string) ([]string, error)
+	GetPatternsInOrg(org string) ([]string, error)
+	DeleteSecretsForPolicy(polOrg, polName string) error
+	DeleteSecretsForPattern(polOrg, patternName string) error
+	DeletePolicySecret(secretOrg, secretName, policyOrg, policyName string) error
+	DeletePatternSecret(secretOrg, secretName, patternOrg, patternName string) error
+
 }

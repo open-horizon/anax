@@ -538,6 +538,18 @@ func SliceContains(a []string, s string) bool {
 	return false
 }
 
+// merge 2 slices, removing duplicates
+func MergeSlices(a []string, b []string) []string {
+	ret := make([]string, len(a))
+	copy(ret, a)
+	for _, bEle := range b {
+		if !SliceContains(a, bEle) {
+			ret = append(ret, bEle)
+		}
+	}
+	return ret
+}
+
 // it returns the org/url form for an api spec
 func FormOrgSpecUrl(url string, org string) string {
 	if org == "" {

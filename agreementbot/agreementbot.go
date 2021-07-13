@@ -27,6 +27,7 @@ const DATABASE_HEARTBEAT = "AgbotDatabaseHeartBeat"
 const GOVERN_AGREEMENTS = "AgBotGovernAgreements"
 const GOVERN_ARCHIVED_AGREEMENTS = "AgBotGovernArchivedAgreements"
 const SECRETS_PROVIDER = "AgbotSecretsProvider"
+const SECRETS_UPDATE = "AgbotSecretsUpdate"
 
 //const GOVERN_BC_NEEDS = "AgBotGovernBlockchain"
 const POLICY_WATCHER = "AgBotPolicyWatcher"
@@ -59,6 +60,7 @@ type AgreementBotWorker struct {
 	newMessagesToProcess bool        // True when the agbot has been notified (through the exchange /changes API) that there are messages to process.
 	nodeSearch           *NodeSearch // The object that controls node searches and the state of search sessions.
 	secretProvider       secrets.AgbotSecrets
+	secretUpdateManager  *SecretUpdateManager
 }
 
 func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistence.AgbotDatabase, s secrets.AgbotSecrets) *AgreementBotWorker {
@@ -79,6 +81,7 @@ func NewAgreementBotWorker(name string, cfg *config.HorizonConfig, db persistenc
 		newMessagesToProcess: false,
 		nodeSearch:           NewNodeSearch(),
 		secretProvider:       s,
+		secretUpdateManager:  NewSecretUpdateManager(),
 	}
 
 	patternManager = NewPatternManager()
@@ -256,6 +259,12 @@ func (w *AgreementBotWorker) NewEvent(incoming events.Message) {
 			w.nodeSearch.SetRescanNeeded()
 		}
 
+	case *events.SecretUpdatesMessage:
+		// Queue up the secret updates for the governance function the next time it runs.
+		msg, _ := incoming.(*events.SecretUpdatesMessage)
+		sus := msg.GetSecretUpdates()
+		w.secretUpdateManager.SetUpdateEvent(&sus)
+
 	default: //nothing
 
 	}
@@ -388,6 +397,7 @@ func (w *AgreementBotWorker) Initialize() bool {
 	w.DispatchSubworker(GOVERN_ARCHIVED_AGREEMENTS, w.GovernArchivedAgreements, 1800, false)
 	//w.DispatchSubworker(GOVERN_BC_NEEDS, w.GovernBlockchainNeeds, 60, false)
 	w.DispatchSubworker(MESSAGE_KEY_CHECK, w.messageKeyCheck, w.BaseWorker.Manager.Config.AgreementBot.MessageKeyCheck, false)
+	w.DispatchSubworker(SECRETS_UPDATE, w.secretsUpdate, w.BaseWorker.Manager.Config.GetSecretsUpdateCheck(), false)
 
 	if w.Config.AgreementBot.CheckUpdatedPolicyS != 0 {
 		// Use custom subworker APIs for the policy watcher because it is stateful and already does its own time management.
@@ -1237,6 +1247,11 @@ func (w *AgreementBotWorker) generatePolicyFromPatterns(msg *events.ExchangeChan
 		if err := patternManager.UpdatePatternPolicies(org, exchangePatternMetadata, w.Config.AgreementBot.PolicyPath); err != nil {
 			return errors.New(fmt.Sprintf("unable to update policies for org %v, error %v", org, err))
 		}
+
+		if err := w.secretUpdateManager.UpdatePatterns(org, exchangePatternMetadata, w.secretProvider, w.db); err != nil {
+			return errors.New(fmt.Sprintf("unable to update pattern secrets for org %v, error %v", org, err))
+		}
+
 	}
 
 	// Cached policy has changed, make sure we rescan the nodes.
@@ -1277,6 +1292,11 @@ func (w *AgreementBotWorker) generatePolicyFromBusinessPols(msg *events.Exchange
 		// Check for business policy metadata changes and update policies accordingly
 		if err := businessPolManager.UpdatePolicies(org, exchPolsMetadata, w.pm); err != nil {
 			return errors.New(fmt.Sprintf("unable to update business policies for org %v, error %v", org, err))
+		}
+
+		// Update the secrets being managed by the agbot.
+		if err := w.secretUpdateManager.UpdatePolicies(org, exchPolsMetadata, w.secretProvider, w.db); err != nil {
+			return errors.New(fmt.Sprintf("unable to update policy secrets for org %v, error %v", org, err))
 		}
 
 	}
@@ -1472,6 +1492,23 @@ func (w *AgreementBotWorker) secretsProviderMaintenance() int {
 	} else {
 		if err := w.secretProvider.Renew(); err != nil {
 			glog.Errorf(AWlogString(fmt.Sprintf("Error renewing secret provider token, error: %v", err)))
+		}
+	}
+
+	return 0
+}
+
+// This function is called by the secrets update sub worker to learn about secrets that have been updated.
+func (w *AgreementBotWorker) secretsUpdate() int {
+
+	secretUpdates, err := w.secretUpdateManager.CheckForUpdates(w.secretProvider, w.db)
+	if err != nil {
+		glog.Errorf(AWlogString(err))
+	} else {
+
+		// Send out an event with the changed secrets and affected policies in it.
+		if secretUpdates != nil && secretUpdates.Length() != 0 {
+			w.Messages() <- events.NewSecretUpdatesMessage(events.UPDATED_SECRETS, secretUpdates)
 		}
 	}
 

@@ -177,7 +177,7 @@ func (auth *HorizonAuthenticate) authenticateWithExchange(otherOrg string, appKe
 
 		// Agbots are admins by default. If an error is returned, check if the identity is a user.
 		if err := auth.verifyAgbotIdentity(parts[1], parts[0], appSecret, ExchangeURL()); err == nil {
-			// We have a valid agbot identity. 
+			// We have a valid agbot identity.
 			authCode = security.AuthSyncAdmin // This makes the agbot a super user in the CSS so that it can query multiple orgs.
 			authOrg = parts[0]
 			authId = parts[1]
